@@ -72,12 +72,12 @@ export default function PricingTiers({
   };
 
   return (
-    <div className="mb-6 md:mb-8 bg-white/5 backdrop-blur-sm rounded-lg p-6 md:p-8 border border-white/10">
-      <h3 className="text-sm uppercase tracking-[0.15em] font-semibold mb-6 text-white text-center">
+    <div className="-mx-3 md:mx-0 mb-6 md:mb-8 bg-white/5 backdrop-blur-sm md:rounded-lg py-4 md:p-8 border-y md:border border-white/10">
+      <h3 className="text-sm uppercase tracking-[0.15em] font-semibold mb-4 md:mb-6 text-white text-center px-3">
         Select Quantity
       </h3>
-      <div className="flex items-center justify-center gap-3 sm:gap-4 md:gap-5 overflow-x-auto scrollbar-hide px-2 py-2">
-        <div className="flex items-center gap-3 sm:gap-4 md:gap-5 py-1">
+      <div className="flex items-center justify-center gap-2 sm:gap-3 md:gap-5 overflow-x-auto scrollbar-hide px-3 py-2">
+        <div className="flex items-center gap-2 sm:gap-3 md:gap-5 py-1">
           {tiers.map((tier, index) => {
             const price = typeof tier.price === "string" 
               ? parseFloat(tier.price) 
@@ -87,11 +87,11 @@ export default function PricingTiers({
             
             // Dynamic sizing based on number of tiers
             const tierCount = tiers.length;
-            let sizeClasses = "w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28";
+            let sizeClasses = "w-[72px] h-[72px] sm:w-24 sm:h-24 md:w-28 md:h-28";
             if (tierCount >= 6) {
-              sizeClasses = "w-18 h-18 sm:w-22 sm:h-22 md:w-26 md:h-26";
+              sizeClasses = "w-16 h-16 sm:w-20 sm:h-20 md:w-26 md:h-26";
             } else if (tierCount >= 5) {
-              sizeClasses = "w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28";
+              sizeClasses = "w-[68px] h-[68px] sm:w-22 sm:h-22 md:w-28 md:h-28";
             }
 
             return (
