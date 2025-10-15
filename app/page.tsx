@@ -64,12 +64,12 @@ export default async function Home() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-px md:gap-0.5">
+        <div className="flex overflow-x-auto gap-px scrollbar-hide" style={{ cursor: 'grab' }}>
           {products.map((product: any) => (
             <Link
               key={product.id}
               href={`/products/${product.id}`}
-              className="group block"
+              className="group block flex-shrink-0 w-[45vw] md:w-[30vw] lg:w-[23vw] xl:w-[18vw]"
             >
               <div className="relative aspect-[4/5] mb-3 overflow-hidden bg-[#8a8a87] shadow-sm hover:shadow-md transition-all duration-300">
                 {product.images?.[0] ? (
@@ -79,16 +79,15 @@ export default async function Home() {
                       alt={product.name}
                       className="w-full h-full object-contain transition-all duration-500 group-hover:scale-105"
                     />
-                    {product.images?.[1] && (
-                      <img
-                        src={product.images[1].src}
-                        alt={product.name}
-                        className="absolute inset-0 w-full h-full object-contain opacity-0 group-hover:opacity-100 transition-all duration-500"
-                      />
-                    )}
                   </>
                 ) : (
-                  <div className="w-full h-full bg-[#8a8a87]" />
+                  <div className="w-full h-full flex items-center justify-center p-8 bg-[#b5b5b2]">
+                    <img
+                      src="/logoprint.png"
+                      alt="Flora Distro"
+                      className="w-full h-full object-contain opacity-40 transition-opacity duration-300 group-hover:opacity-60"
+                    />
+                  </div>
                 )}
               </div>
               <div className="space-y-1 px-2 md:px-3">
