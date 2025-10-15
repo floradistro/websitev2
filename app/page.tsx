@@ -230,26 +230,83 @@ export default async function Home() {
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-px md:gap-0.5">
           {locations
             .filter((loc: any) => loc.is_active === "1")
-            .map((location: any) => (
-              <div
-                key={location.id}
-                className="group block bg-[#2a2a2a] hover:bg-[#333333] transition-colors duration-300 border border-white/5"
-              >
-                <div className="relative aspect-[4/5] mb-3 overflow-hidden bg-[#1a1a1a] flex items-center justify-center border-b border-white/5">
-                  <MapPin size={48} className="text-white/40 group-hover:text-white/60 transition-colors duration-300" />
+            .map((location: any) => {
+              // Map location names to addresses and Google Maps links
+              const locationData: { [key: string]: { address: string; googleMapsUrl: string } } = {
+                'Salisbury': {
+                  address: '111 W Bank Street\nSalisbury, NC 28144',
+                  googleMapsUrl: 'https://www.google.com/maps/search/?api=1&query=111+W+Bank+Street+Salisbury+NC+28144'
+                },
+                'Charlotte Monroe': {
+                  address: '3130 Monroe Road\nCharlotte, NC 28205',
+                  googleMapsUrl: 'https://www.google.com/maps/search/?api=1&query=3130+Monroe+Road+Charlotte+NC+28205'
+                },
+                'Charlotte Central': {
+                  address: '5115 Nations Ford Road\nCharlotte, NC 28217',
+                  googleMapsUrl: 'https://www.google.com/maps/search/?api=1&query=5115+Nations+Ford+Road+Charlotte+NC+28217'
+                },
+                'Blowing Rock': {
+                  address: '3894 US 321\nBlowing Rock, NC 28605',
+                  googleMapsUrl: 'https://www.google.com/maps/search/?api=1&query=3894+US+321+Blowing+Rock+NC+28605'
+                },
+                'Elizabethton': {
+                  address: '2157 W Elk Ave\nElizabethton, TN 37643',
+                  googleMapsUrl: 'https://www.google.com/maps/search/?api=1&query=2157+W+Elk+Ave+Elizabethton+TN+37643'
+                }
+              };
+
+              const data = locationData[location.name] || { 
+                address: location.address ? `${location.address}\n${location.city || ''}, ${location.state || ''}` : '',
+                googleMapsUrl: ''
+              };
+
+              const CardContent = (
+                <>
+                  <div className="relative aspect-[4/5] mb-3 overflow-hidden bg-[#1a1a1a] flex flex-col items-center justify-center border-b border-white/5">
+                    <MapPin size={52} className="text-white/40 group-hover:text-white/70 transition-all duration-500 group-hover:scale-110" />
+                    {data.googleMapsUrl && (
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-4">
+                        <span className="text-[10px] uppercase tracking-[0.2em] text-white/90 font-medium flex items-center gap-1.5">
+                          <span>Get Directions</span>
+                          <ArrowRight size={12} />
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="space-y-2 px-3 md:px-3.5 pb-4">
+                    <h3 className="text-sm md:text-sm leading-tight font-medium group-hover:text-white/90 transition-all duration-200 text-white uppercase tracking-[0.15em]">
+                      {location.name}
+                    </h3>
+                    {data.address && (
+                      <p className="text-[11px] text-white/50 font-light leading-relaxed whitespace-pre-line group-hover:text-white/70 transition-colors duration-200">
+                        {data.address}
+                      </p>
+                    )}
+                  </div>
+                </>
+              );
+
+              return data.googleMapsUrl ? (
+                <a
+                  key={location.id}
+                  href={data.googleMapsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group block bg-[#2a2a2a] hover:bg-[#333333] transition-all duration-300 border border-white/5 hover:border-white/20 cursor-pointer hover:shadow-xl hover:-translate-y-1"
+                >
+                  {CardContent}
+                </a>
+              ) : (
+                <div
+                  key={location.id}
+                  className="group block bg-[#2a2a2a] hover:bg-[#333333] transition-all duration-300 border border-white/5"
+                >
+                  {CardContent}
                 </div>
-                <div className="space-y-1 px-2 md:px-3 pb-4">
-                  <h3 className="text-xs md:text-sm leading-tight font-light group-hover:opacity-60 transition-opacity duration-200 text-white">
-                    {location.name}
-                  </h3>
-                  <p className="text-xs text-white/60 font-light line-clamp-2">
-                    {location.address && `${location.address}, ${location.city || ''}, ${location.state || ''}`}
-                  </p>
-                </div>
-              </div>
-            ))}
-        </div>
-      </section>
+              );
+            })}
+          </div>
+        </section>
 
       {/* Shipping & Delivery */}
       <section className="bg-gradient-to-br from-[#1a1a1a] via-[#0f0f0f] to-black text-white py-24 px-4 md:px-6 relative overflow-hidden">
