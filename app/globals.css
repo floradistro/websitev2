@@ -93,9 +93,9 @@ button {
 /* Smooth momentum scrolling */
 .scrollbar-hide {
   -webkit-overflow-scrolling: touch;
-  scroll-snap-type: x mandatory;
   scroll-padding: 0;
   overscroll-behavior-x: contain;
+  scroll-behavior: smooth;
 }
 
 @keyframes subtleShift {
