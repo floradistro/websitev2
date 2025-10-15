@@ -139,7 +139,7 @@ export default async function Home() {
 
         <HorizontalScroll className="flex overflow-x-auto gap-px scrollbar-hide">
           {products.map((product: any, index: number) => (
-            <div key={product.id} className="flex-shrink-0 w-[45vw] md:w-[30vw] lg:w-[23vw] xl:w-[18vw]">
+            <div key={product.id} className="flex-shrink-0 w-[85vw] sm:w-[60vw] md:w-[45vw] lg:w-[32vw] xl:w-[23vw]">
               <ProductCard 
                 product={product} 
                 index={index} 
