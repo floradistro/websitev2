@@ -223,13 +223,22 @@ export default async function Home() {
             Our Locations
           </h2>
           <p className="text-xs md:text-sm uppercase tracking-wider text-black/60">
-            {locations.filter((loc: any) => loc.is_active === "1").length} Active Stores
+            {locations.filter((loc: any) => {
+              const isActive = loc.is_active === "1";
+              const isAllowed = !['hamas', 'warehouse'].includes(loc.name.toLowerCase());
+              return isActive && isAllowed;
+            }).length} Active Stores
           </p>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-px md:gap-0.5">
           {locations
-            .filter((loc: any) => loc.is_active === "1")
+            .filter((loc: any) => {
+              // Filter active locations and exclude unwanted ones
+              const isActive = loc.is_active === "1";
+              const isAllowed = !['hamas', 'warehouse'].includes(loc.name.toLowerCase());
+              return isActive && isAllowed;
+            })
             .map((location: any) => {
               // Map location names to addresses and Google Maps links
               const locationData: { [key: string]: { address: string; googleMapsUrl: string } } = {

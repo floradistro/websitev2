@@ -68,6 +68,29 @@ export async function getLocations() {
   return response.data;
 }
 
+export async function deleteLocation(locationId: number) {
+  const response = await axios.delete(
+    `${baseUrl}/wp-json/flora-im/v1/locations/${locationId}?${authParams}`
+  );
+  return response.data;
+}
+
+export async function updateLocation(locationId: number, data: any) {
+  const response = await axios.put(
+    `${baseUrl}/wp-json/flora-im/v1/locations/${locationId}?${authParams}`,
+    data
+  );
+  return response.data;
+}
+
+export async function createLocation(data: any) {
+  const response = await axios.post(
+    `${baseUrl}/wp-json/flora-im/v1/locations?${authParams}`,
+    data
+  );
+  return response.data;
+}
+
 export async function getProductInventory(productId: string | number) {
   const response = await axios.get(
     `${baseUrl}/wp-json/flora-im/v1/inventory?product_id=${productId}&${authParams}`
