@@ -118,7 +118,11 @@ export default function ProductCard({ product, index, locations, pricingRules, p
       'terpene': 'Terpenes',
       'terpenes': 'Terpenes',
       'effects': 'Effects',
-      'effect': 'Effects'
+      'effect': 'Effects',
+      'mg_per_pack': 'Per Pack',
+      'mg_per_piece': 'Per Piece',
+      'ingredients': 'Made With',
+      'type': 'Type'
     };
     
     // Iterate through all fields and add those with values

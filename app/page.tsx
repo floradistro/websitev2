@@ -47,7 +47,11 @@ export default async function Home() {
       'terpene',
       'terpenes',
       'effects',
-      'effect'
+      'effect',
+      'mg_per_pack',
+      'mg_per_piece',
+      'ingredients',
+      'type'
     ];
     
     metaData.forEach((meta: any) => {

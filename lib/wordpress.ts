@@ -24,6 +24,11 @@ export async function getProduct(id: string | number) {
   return response.data;
 }
 
+export async function updateProduct(id: string | number, data: any) {
+  const response = await api.put(`products/${id}`, data);
+  return response.data;
+}
+
 export async function getProductsByCategory(categoryId: number, perPage = 8) {
   const response = await api.get("products", {
     category: categoryId,
