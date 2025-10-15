@@ -72,42 +72,77 @@ export default function ProductInfo({
 
   return (
     <>
-      <div className="animate-fadeIn">
-        <h1 className="text-2xl md:text-3xl font-light leading-snug mb-4">
-          {product.name}
-        </h1>
+      <div className="animate-fadeIn space-y-6">
+        {/* Product Name & Price */}
+        <div>
+          <div className="relative inline-block mb-4 product-name-animate">
+            <h1 
+              className="logo-font text-3xl md:text-5xl leading-tight tracking-[0.08em] product-name-gradient relative"
+              style={{ 
+                fontWeight: 300
+              }}
+            >
+              {product.name}
+            </h1>
+            {/* Subtle glow effect */}
+            <div 
+              className="absolute -inset-2 bg-gradient-to-r from-transparent via-black/5 to-transparent blur-xl opacity-30 -z-10"
+              style={{
+                animation: 'pulse 3s ease-in-out infinite'
+              }}
+            />
+          </div>
 
-        <div className="text-2xl font-light mb-2">
-          {selectedPrice ? `$${selectedPrice.toFixed(2)}` : (typeof priceDisplay === 'string' ? priceDisplay : `$${priceDisplay}`)}
+          <div className="flex items-baseline gap-3 mb-2">
+            <div className="text-3xl md:text-4xl font-light">
+              {selectedPrice ? `$${selectedPrice.toFixed(2)}` : (typeof priceDisplay === 'string' ? priceDisplay : `$${priceDisplay}`)}
+            </div>
+            {!selectedPrice && hasPricingTiers && (
+              <span className="text-sm text-[#999] font-light">per unit</span>
+            )}
+          </div>
+          
+          {selectedQuantity && (
+            <div className="inline-flex items-center gap-2 bg-black text-white px-3 py-1.5 rounded-full text-xs font-light">
+              {selectedQuantity} selected
+            </div>
+          )}
+          
+          {!selectedPrice && hasPricingTiers && (
+            <p className="text-sm text-[#767676] font-light mt-2 italic">
+              Price varies by quantity - select below
+            </p>
+          )}
         </div>
-        
-        {selectedQuantity && (
-          <p className="text-xs text-black font-light mb-2">
-            {selectedQuantity} selected
-          </p>
+
+        {/* Short Description */}
+        {product.short_description && (
+          <div className="border-l-2 border-white/30 pl-4 py-2 bg-black/20 backdrop-blur-sm rounded-r-lg pr-4">
+            <div
+              className="text-sm md:text-base text-white/90 leading-relaxed font-light prose prose-sm prose-invert max-w-none"
+              dangerouslySetInnerHTML={{ __html: product.short_description }}
+            />
+          </div>
         )}
-        
-        {!selectedPrice && hasPricingTiers && (
-          <p className="text-xs text-[#999] font-light mb-8">
-            Price varies by quantity
-          </p>
+
+        {/* Stock Status Badge */}
+        {product.stock_status === "instock" && (
+          <div className="inline-flex items-center gap-2 text-green-300 text-xs font-light bg-green-950/80 border border-green-800/50 px-3 py-1.5 rounded-full backdrop-blur-sm">
+            <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+            In Stock
+          </div>
         )}
       </div>
 
-      {product.short_description && (
-        <div
-          className="text-[#767676] leading-relaxed font-light"
-          dangerouslySetInnerHTML={{ __html: product.short_description }}
-        />
-      )}
-
       {/* Pricing Tiers */}
       {blueprintName && pricingRules && (
-        <PricingTiers 
-          pricingRules={pricingRules}
-          productBlueprint={blueprintName}
-          onPriceSelect={handlePriceSelect}
-        />
+        <div className="mt-6">
+          <PricingTiers 
+            pricingRules={pricingRules}
+            productBlueprint={blueprintName}
+            onPriceSelect={handlePriceSelect}
+          />
+        </div>
       )}
     </>
   );

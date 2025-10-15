@@ -72,8 +72,8 @@ export default function PricingTiers({
   };
 
   return (
-    <div className="mb-6 md:mb-8">
-      <h3 className="text-xs uppercase tracking-wider font-semibold mb-3 md:mb-4">
+    <div className="mb-6 md:mb-8 bg-black/30 backdrop-blur-sm rounded-lg p-4 md:p-6 border border-white/10">
+      <h3 className="text-xs uppercase tracking-wider font-semibold mb-3 md:mb-4 text-white">
         Quantity Pricing
       </h3>
       <div className="flex items-center justify-center gap-1.5 sm:gap-2 md:gap-3 overflow-x-auto scrollbar-hide px-2 py-2">
@@ -107,15 +107,15 @@ export default function PricingTiers({
               >
                 <div className={`${sizeClasses} rounded-full border-2 transition-all duration-300 flex items-center justify-center overflow-hidden ${
                   isSelected 
-                    ? "border-black bg-black text-white shadow-elevated-lg scale-105" 
-                    : "border-[#e5e5e2] bg-[#f5f5f2] hover:border-black shadow-elevated hover:shadow-elevated-lg"
+                    ? "border-white bg-white text-black shadow-elevated-lg scale-105" 
+                    : "border-white/20 bg-black/40 text-white hover:border-white/60 shadow-elevated hover:shadow-elevated-lg"
                 }`}>
-                  <div className={`absolute inset-0 bg-gradient-to-br from-white/50 to-transparent transition-opacity duration-300 rounded-full ${
-                    isSelected ? "opacity-20" : "opacity-0 group-hover:opacity-100"
+                  <div className={`absolute inset-0 bg-gradient-to-br from-white/20 to-transparent transition-opacity duration-300 rounded-full ${
+                    isSelected ? "opacity-30" : "opacity-0 group-hover:opacity-100"
                   }`}></div>
                   <div className="relative text-center px-0.5 sm:px-1">
                     <div className={`text-[8px] sm:text-[10px] md:text-xs font-light uppercase tracking-wider mb-0.5 ${
-                      isSelected ? "text-white/80" : "text-[#999]"
+                      isSelected ? "text-black/70" : "text-white/60"
                     }`}>
                       {getUnitLabel(tier)}
                     </div>
@@ -124,7 +124,7 @@ export default function PricingTiers({
                     </div>
                     {unitType === "grams" && (
                       <div className={`text-[7px] sm:text-[9px] md:text-[10px] font-light ${
-                        isSelected ? "text-white/70" : "text-[#999]"
+                        isSelected ? "text-black/60" : "text-white/50"
                       }`}>
                         ${(price / tier.min_quantity).toFixed(2)}/g
                       </div>
@@ -136,7 +136,7 @@ export default function PricingTiers({
           })}
         </div>
       </div>
-      <p className="text-xs text-[#999] mt-3 font-light text-center">
+      <p className="text-xs text-white/60 mt-3 font-light text-center">
         Select quantity at checkout for applicable pricing
       </p>
     </div>

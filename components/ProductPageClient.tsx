@@ -8,6 +8,8 @@ import PricingTiers from "@/components/PricingTiers";
 import FloraFields from "@/components/FloraFields";
 import ProductInfo from "@/components/ProductInfo";
 import ProductGallery from "@/components/ProductGallery";
+import CategorySection from "@/components/CategorySection";
+import LabResults from "@/components/LabResults";
 import { useCart } from "@/context/CartContext";
 
 interface ProductPageClientProps {
@@ -90,88 +92,188 @@ export default function ProductPageClient({
         </div>
       </div>
 
-      {/* Product Content */}
-      <div className="px-3 md:px-4 py-6 md:py-8 bg-[#c5c5c2]">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
-          {/* Images */}
+      {/* Product Content - Prada Style Layout */}
+      <div className="bg-[#c5c5c2]">
+        {/* Mobile Layout */}
+        <div className="lg:hidden px-3 md:px-4 py-6 space-y-6">
           <ProductGallery images={product.images} productName={product.name} />
+          
+          <ProductInfo
+            product={product}
+            pricingRules={pricingRules}
+            blueprintName={blueprintName}
+            onPriceSelect={handlePriceSelect}
+          />
 
-          {/* Product Info */}
-          <div className="lg:sticky lg:top-32 h-fit space-y-4 md:space-y-6">
-            <ProductInfo
-              product={product}
-              pricingRules={pricingRules}
-              blueprintName={blueprintName}
-              onPriceSelect={handlePriceSelect}
-            />
+          <DeliveryAvailability
+            inventory={inventory}
+            locations={locations}
+            stockStatus={product.stock_status}
+            initialOrderType={orderType as "pickup" | "delivery" | undefined}
+            onDetailsChange={handleOrderDetailsChange}
+          />
 
-            {/* Delivery & Pickup Availability */}
-            <DeliveryAvailability
-              inventory={inventory}
-              locations={locations}
-              stockStatus={product.stock_status}
-              initialOrderType={orderType as "pickup" | "delivery" | undefined}
-              onDetailsChange={handleOrderDetailsChange}
-            />
-
-            {/* Flora Fields */}
-            {product.meta_data && product.meta_data.length > 0 && (
-              <FloraFields metaData={product.meta_data} />
-            )}
-
-            {/* Add to Cart */}
-            <div className="space-y-3 mb-8 md:mb-12">
-              <button 
-                onClick={handleAddToCart}
-                disabled={addedToCart}
-                className={`w-full py-4 rounded-full text-sm uppercase tracking-[0.15em] shadow-elevated transition-all duration-300 font-light relative overflow-hidden ${
-                  addedToCart 
-                    ? "bg-green-600 text-white" 
-                    : "bg-black text-white hover:bg-[#222] hover:shadow-elevated-lg"
-                }`}
-              >
-                <span className={`inline-flex items-center gap-2 transition-all duration-300 ${addedToCart ? "opacity-0" : "opacity-100"}`}>
-                  Add to Shopping Bag
-                </span>
-                <span className={`absolute inset-0 flex items-center justify-center gap-2 transition-all duration-300 ${addedToCart ? "opacity-100" : "opacity-0"}`}>
-                  <Check size={18} strokeWidth={2} />
-                  Added to Bag
-                </span>
+          <div className="space-y-3">
+            <button 
+              onClick={handleAddToCart}
+              disabled={addedToCart}
+              className={`w-full py-4 rounded-full text-sm uppercase tracking-[0.15em] shadow-elevated transition-all duration-300 font-light relative overflow-hidden ${
+                addedToCart 
+                  ? "bg-green-600 text-white" 
+                  : "bg-white text-black hover:bg-white/90 hover:shadow-elevated-lg"
+              }`}
+            >
+              <span className={`inline-flex items-center gap-2 transition-all duration-300 ${addedToCart ? "opacity-0" : "opacity-100"}`}>
+                Add to Shopping Bag
+              </span>
+              <span className={`absolute inset-0 flex items-center justify-center gap-2 transition-all duration-300 ${addedToCart ? "opacity-100" : "opacity-0"}`}>
+                <Check size={18} strokeWidth={2} />
+                Added to Bag
+              </span>
+            </button>
+            <div className="flex space-x-3">
+              <button className="flex-1 border border-white/20 bg-black/40 text-white py-4 rounded-full text-sm uppercase tracking-[0.15em] shadow-subtle hover:border-white/40 hover:shadow-elevated transition-all duration-300 flex items-center justify-center space-x-2 font-light">
+                <Heart size={16} strokeWidth={1.5} />
+                <span>Wishlist</span>
               </button>
-              <div className="flex space-x-3">
-                <button className="flex-1 border border-[#e5e5e2] bg-[#f5f5f2] py-4 rounded-full text-sm uppercase tracking-[0.15em] shadow-subtle hover:border-black hover:shadow-elevated transition-all duration-300 flex items-center justify-center space-x-2 font-light">
-                  <Heart size={16} strokeWidth={1.5} />
-                  <span>Wishlist</span>
-                </button>
-                <button className="flex-1 border border-[#e5e5e2] bg-[#f5f5f2] py-4 rounded-full text-sm uppercase tracking-[0.15em] shadow-subtle hover:border-black hover:shadow-elevated transition-all duration-300 flex items-center justify-center space-x-2 font-light">
-                  <Share2 size={16} strokeWidth={1.5} />
-                  <span>Share</span>
-                </button>
-              </div>
+              <button className="flex-1 border border-white/20 bg-black/40 text-white py-4 rounded-full text-sm uppercase tracking-[0.15em] shadow-subtle hover:border-white/40 hover:shadow-elevated transition-all duration-300 flex items-center justify-center space-x-2 font-light">
+                <Share2 size={16} strokeWidth={1.5} />
+                <span>Share</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Lab Results */}
+          <LabResults metaData={product.meta_data || []} attributes={product.attributes || []} />
+
+          {/* Specifications */}
+          {product.meta_data && product.meta_data.length > 0 && (
+            <FloraFields metaData={product.meta_data} />
+          )}
+
+          {/* Long Description */}
+          {product.description && (
+            <div className="border border-white/10 rounded-lg overflow-hidden bg-black/30 backdrop-blur-sm p-6">
+              <h3 className="text-sm uppercase tracking-[0.15em] font-semibold mb-4 text-white">
+                Full Product Description
+              </h3>
+              <div
+                className="text-sm text-white/90 leading-loose prose prose-sm prose-invert max-w-none"
+                dangerouslySetInnerHTML={{ __html: product.description }}
+              />
+            </div>
+          )}
+
+          <div className="pt-4">
+            <CategorySection categories={product.categories || []} />
+          </div>
+        </div>
+
+        {/* Desktop Layout - Prada Style */}
+        <div className="hidden lg:block">
+          <div className="flex">
+            {/* Sticky Images - Left Side */}
+            <div className="w-1/2 sticky top-0 h-screen overflow-y-auto scrollbar-hide">
+              <ProductGallery images={product.images} productName={product.name} />
             </div>
 
-            {/* Product Details */}
-            <div className="border-t border-[#a8a8a5] pt-6 md:pt-8 space-y-4 md:space-y-6">
-              <div className="animate-fadeIn">
-                <h3 className="text-xs uppercase tracking-wider font-semibold mb-3 md:mb-4">
-                  Product Details
-                </h3>
-                {product.description && (
-                  <div
-                    className="text-sm text-[#767676] leading-relaxed prose prose-sm max-w-none"
-                    dangerouslySetInnerHTML={{ __html: product.description }}
-                  />
-                )}
+            {/* Flowing Content Blocks - Right Side */}
+            <div className="w-1/2 px-8 py-12">
+              {/* Product Info Block */}
+              <div className="mb-16 animate-fadeIn">
+                <ProductInfo
+                  product={product}
+                  pricingRules={pricingRules}
+                  blueprintName={blueprintName}
+                  onPriceSelect={handlePriceSelect}
+                />
               </div>
 
+              {/* Delivery Block */}
+              <div className="mb-16 animate-fadeIn" style={{animationDelay: '100ms'}}>
+                <DeliveryAvailability
+                  inventory={inventory}
+                  locations={locations}
+                  stockStatus={product.stock_status}
+                  initialOrderType={orderType as "pickup" | "delivery" | undefined}
+                  onDetailsChange={handleOrderDetailsChange}
+                />
+              </div>
+
+              {/* Actions Block */}
+              <div className="mb-16 animate-fadeIn" style={{animationDelay: '300ms'}}>
+                <div className="space-y-4">
+                  <button 
+                    onClick={handleAddToCart}
+                    disabled={addedToCart}
+                    className={`w-full py-5 rounded-full text-sm uppercase tracking-[0.15em] shadow-elevated transition-all duration-300 font-light relative overflow-hidden ${
+                      addedToCart 
+                        ? "bg-green-600 text-white" 
+                        : "bg-white text-black hover:bg-white/90 hover:shadow-elevated-lg"
+                    }`}
+                  >
+                    <span className={`inline-flex items-center gap-2 transition-all duration-300 ${addedToCart ? "opacity-0" : "opacity-100"}`}>
+                      Add to Shopping Bag
+                    </span>
+                    <span className={`absolute inset-0 flex items-center justify-center gap-2 transition-all duration-300 ${addedToCart ? "opacity-100" : "opacity-0"}`}>
+                      <Check size={18} strokeWidth={2} />
+                      Added to Bag
+                    </span>
+                  </button>
+                  <div className="flex space-x-4">
+                    <button className="flex-1 border border-white/20 bg-black/40 text-white py-5 rounded-full text-sm uppercase tracking-[0.15em] shadow-subtle hover:border-white/40 hover:shadow-elevated transition-all duration-300 flex items-center justify-center space-x-2 font-light">
+                      <Heart size={16} strokeWidth={1.5} />
+                      <span>Wishlist</span>
+                    </button>
+                    <button className="flex-1 border border-white/20 bg-black/40 text-white py-5 rounded-full text-sm uppercase tracking-[0.15em] shadow-subtle hover:border-white/40 hover:shadow-elevated transition-all duration-300 flex items-center justify-center space-x-2 font-light">
+                      <Share2 size={16} strokeWidth={1.5} />
+                      <span>Share</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Lab Results Block */}
+              <div className="mb-16 animate-fadeIn" style={{animationDelay: '300ms'}}>
+                <LabResults metaData={product.meta_data || []} attributes={product.attributes || []} />
+              </div>
+
+              {/* Specifications Block */}
+              {product.meta_data && product.meta_data.length > 0 && (
+                <div className="mb-16 animate-fadeIn" style={{animationDelay: '400ms'}}>
+                  <FloraFields metaData={product.meta_data} />
+                </div>
+              )}
+
+              {/* Long Description Block */}
+              {product.description && (
+                <div className="mb-16 animate-fadeIn" style={{animationDelay: '500ms'}}>
+                  <div className="border border-white/10 rounded-lg overflow-hidden bg-black/30 backdrop-blur-sm p-6">
+                    <h3 className="text-sm uppercase tracking-[0.2em] font-semibold mb-6 text-white">
+                      Full Product Description
+                    </h3>
+                    <div
+                      className="text-sm text-white/90 leading-loose prose prose-sm prose-invert max-w-none"
+                      dangerouslySetInnerHTML={{ __html: product.description }}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* SKU Block */}
               {product.sku && (
-                <div className="border-t border-[#a8a8a5] pt-4 md:pt-6">
-                  <div className="flex justify-between py-2 px-3 rounded-lg hover:border-[#e5e5e2] hover:shadow-subtle border border-transparent transition-all duration-200">
-                    <span className="text-[#999] font-light text-sm">SKU</span>
+                <div className="mb-16 animate-fadeIn" style={{animationDelay: '600ms'}}>
+                  <div className="flex justify-between items-center py-4 border-b border-[#a8a8a5]">
+                    <span className="text-xs uppercase tracking-wider text-[#999]">SKU</span>
                     <span className="font-light text-sm">{product.sku}</span>
                   </div>
                 </div>
               )}
+
+              {/* Category Features Block */}
+              <div className="animate-fadeIn" style={{animationDelay: '700ms'}}>
+                <CategorySection categories={product.categories || []} />
+              </div>
             </div>
           </div>
         </div>

@@ -103,15 +103,14 @@ export default function DeliveryAvailability({
           locationId: selectedStore,
           locationName: store?.name || "",
         });
-      } else if (selectedTab === "delivery" && deliveryAddress.city) {
+      } else if (selectedTab === "delivery") {
         onDetailsChange({
           orderType: "delivery",
-          deliveryAddress,
         });
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedTab, selectedStore, deliveryAddress.city, deliveryAddress.state, deliveryAddress.zip, deliveryAddress.address]);
+  }, [selectedTab, selectedStore]);
 
   // Calculate delivery dates
   const getDeliveryDates = () => {
@@ -164,22 +163,22 @@ export default function DeliveryAvailability({
     <div id="delivery-section" className="mb-6 md:mb-8 scroll-mt-24">
       {/* Highlight notification */}
       {showHighlight && initialOrderType && (
-        <div className="mb-3 bg-black text-white px-4 py-2.5 text-xs uppercase tracking-wider text-center animate-fadeIn">
+        <div className="mb-3 bg-white text-black px-4 py-2.5 text-xs uppercase tracking-wider text-center animate-fadeIn">
           {initialOrderType === "pickup" ? "Select your pickup location below" : "Enter delivery address below"}
         </div>
       )}
       
-      <div className={`bg-[#f5f5f2] rounded-2xl shadow-elevated p-4 md:p-6 border transition-all duration-500 ${
-        showHighlight ? "border-black shadow-elevated-lg ring-2 ring-black/10" : "border-[#e5e5e2]"
+      <div className={`bg-black/30 backdrop-blur-sm rounded-2xl shadow-elevated p-4 md:p-6 border transition-all duration-500 ${
+        showHighlight ? "border-white shadow-elevated-lg ring-2 ring-white/10" : "border-white/10"
       }`}>
         {/* Tabs */}
-        <div className="flex border-b border-[#e5e5e2] mb-4">
+        <div className="flex border-b border-white/10 mb-4">
           <button
             onClick={() => setSelectedTab("delivery")}
             className={`flex-1 pb-3 text-sm font-light transition-all duration-200 ${
               selectedTab === "delivery"
-                ? "border-b-2 border-black"
-                : "text-[#999] hover:text-black"
+                ? "border-b-2 border-white text-white"
+                : "text-white/50 hover:text-white"
             }`}
           >
             <Package size={16} className="inline mr-2" strokeWidth={1.5} />
@@ -189,8 +188,8 @@ export default function DeliveryAvailability({
             onClick={() => setSelectedTab("pickup")}
             className={`flex-1 pb-3 text-sm font-light transition-all duration-200 ${
               selectedTab === "pickup"
-                ? "border-b-2 border-black"
-                : "text-[#999] hover:text-black"
+                ? "border-b-2 border-white text-white"
+                : "text-white/50 hover:text-white"
             }`}
           >
             <Store size={16} className="inline mr-2" strokeWidth={1.5} />
@@ -204,86 +203,48 @@ export default function DeliveryAvailability({
             {isInStock ? (
               <>
                 {/* Primary Delivery Option */}
-                <div className="border border-[#e5e5e2] rounded-lg p-4 hover:border-black transition-all duration-200">
+                <div className="border border-white/10 rounded-lg p-4 hover:border-white/30 bg-black/20 transition-all duration-200">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center space-x-2 mb-2">
-                        <div className="text-sm font-light">
-                          Get it by <span className="font-medium text-black">{delivery.express}</span>
+                        <div className="text-sm font-light text-white">
+                          Get it by <span className="font-medium text-white">{delivery.express}</span>
                         </div>
                         {delivery.showExpress && (
-                          <span className="text-[10px] bg-black text-white px-2 py-0.5 rounded-full uppercase tracking-wider">
+                          <span className="text-[10px] bg-white text-black px-2 py-0.5 rounded-full uppercase tracking-wider">
                             Express
                           </span>
                         )}
                       </div>
                       {delivery.cutoffMessage && (
-                        <p className="text-xs text-[#767676] font-light">
+                        <p className="text-xs text-white/60 font-light">
                           {delivery.cutoffMessage}
                         </p>
                       )}
                     </div>
-                    <div className="text-xs font-light">
+                    <div className="text-xs font-light text-white/90">
                       FREE
                     </div>
                   </div>
                 </div>
 
                 {/* Standard Delivery */}
-                <div className="border border-transparent rounded-lg p-4 hover:border-[#e5e5e2] transition-all duration-200">
+                <div className="border border-transparent rounded-lg p-4 hover:border-white/10 transition-all duration-200">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
-                      <div className="text-sm font-light text-[#999]">
+                      <div className="text-sm font-light text-white/70">
                         Standard: {delivery.standard}
                       </div>
                     </div>
-                    <div className="text-xs font-light text-[#999]">
+                    <div className="text-xs font-light text-white/60">
                       FREE
                     </div>
                   </div>
                 </div>
 
-                {/* Delivery Address */}
-                <div className="pt-4 border-t border-[#e5e5e2] space-y-3">
-                  <h4 className="text-xs uppercase tracking-wider font-medium text-black/70">
-                    Delivery Address
-                  </h4>
-                  <input
-                    type="text"
-                    placeholder="Street Address"
-                    value={deliveryAddress.address}
-                    onChange={(e) => setDeliveryAddress({ ...deliveryAddress, address: e.target.value })}
-                    className="w-full px-4 py-2.5 text-sm bg-white border border-black/10 focus:border-black focus:outline-none transition-colors font-light"
-                  />
-                  <div className="grid grid-cols-2 gap-3">
-                    <input
-                      type="text"
-                      placeholder="City"
-                      value={deliveryAddress.city}
-                      onChange={(e) => setDeliveryAddress({ ...deliveryAddress, city: e.target.value })}
-                      className="w-full px-4 py-2.5 text-sm bg-white border border-black/10 focus:border-black focus:outline-none transition-colors font-light"
-                    />
-                    <input
-                      type="text"
-                      placeholder="State"
-                      value={deliveryAddress.state}
-                      onChange={(e) => setDeliveryAddress({ ...deliveryAddress, state: e.target.value })}
-                      maxLength={2}
-                      className="w-full px-4 py-2.5 text-sm bg-white border border-black/10 focus:border-black focus:outline-none transition-colors font-light"
-                    />
-                  </div>
-                  <input
-                    type="text"
-                    placeholder="ZIP Code"
-                    value={deliveryAddress.zip}
-                    onChange={(e) => setDeliveryAddress({ ...deliveryAddress, zip: e.target.value })}
-                    maxLength={5}
-                    className="w-full px-4 py-2.5 text-sm bg-white border border-black/10 focus:border-black focus:outline-none transition-colors font-light"
-                  />
-                </div>
               </>
             ) : (
-              <div className="py-4 text-sm text-[#999] font-light">
+              <div className="py-4 text-sm text-white/50 font-light">
                 Currently unavailable for delivery
               </div>
             )}
@@ -298,25 +259,25 @@ export default function DeliveryAvailability({
                 {/* Store Selector */}
                 <button
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="w-full text-left py-3 px-4 border border-[#e5e5e2] rounded-lg shadow-subtle hover:border-black hover:shadow-elevated transition-all duration-300 bg-white"
+                  className="w-full text-left py-3 px-4 border border-white/10 rounded-lg shadow-subtle hover:border-white/30 hover:shadow-elevated transition-all duration-300 bg-black/40"
                 >
                   {currentStore && (
                     <div className="flex items-center justify-between">
                       <div className="flex-1">
-                        <div className="text-sm font-light mb-1">
+                        <div className="text-sm font-light mb-1 text-white">
                           {currentStore.name}
                         </div>
-                        <div className="text-xs text-[#999] font-light">
+                        <div className="text-xs text-white/60 font-light">
                           {currentStore.address_line_1}
                           {currentStore.city && `, ${currentStore.city}`}
                         </div>
                       </div>
                       <div className="flex items-center space-x-3 ml-4">
-                        <span className={`text-xs font-light ${currentStoreQuantity > 0 ? "text-black" : "text-[#999]"}`}>
+                        <span className={`text-xs font-light ${currentStoreQuantity > 0 ? "text-white" : "text-white/50"}`}>
                           {currentStoreQuantity > 0 ? "In Stock" : "Out of Stock"}
                         </span>
                         <svg
-                          className={`w-3 h-3 text-[#999] transition-transform ${
+                          className={`w-3 h-3 text-white/60 transition-transform ${
                             isDropdownOpen ? "rotate-180" : ""
                           }`}
                           fill="none"
@@ -338,14 +299,14 @@ export default function DeliveryAvailability({
                 {/* Pickup Time */}
                 {currentStoreQuantity > 0 && (
                   <div className="text-sm font-light">
-                    <span className="text-[#767676]">Ready for pickup</span>
-                    <span className="text-black font-medium ml-1">today</span>
+                    <span className="text-white/60">Ready for pickup</span>
+                    <span className="text-white font-medium ml-1">today</span>
                   </div>
                 )}
 
                 {/* Store Dropdown */}
                 {isDropdownOpen && (
-                  <div className="border border-[#e5e5e2] rounded-lg overflow-hidden max-h-64 overflow-y-auto shadow-elevated animate-fadeIn bg-white">
+                  <div className="border border-white/10 rounded-lg overflow-hidden max-h-64 overflow-y-auto shadow-elevated animate-fadeIn bg-black/40">
                     {sortedLocations.map((location, idx) => {
                       const quantity = getQuantity(location.id);
                       const isCurrentlySelected = location.id === selectedStore;
@@ -358,21 +319,21 @@ export default function DeliveryAvailability({
                             setIsDropdownOpen(false);
                           }}
                           style={{ animationDelay: `${idx * 30}ms` }}
-                          className={`w-full text-left py-3 px-4 transition-all duration-200 border-b border-[#e5e5e2] last:border-0 animate-slideIn ${
-                            isCurrentlySelected ? "bg-[#f5f5f2]" : "hover:bg-[#f5f5f2]"
+                          className={`w-full text-left py-3 px-4 transition-all duration-200 border-b border-white/10 last:border-0 animate-slideIn ${
+                            isCurrentlySelected ? "bg-white/10" : "hover:bg-white/5"
                           }`}
                         >
                           <div className="flex items-center justify-between">
                             <div className="flex-1">
-                              <div className="text-sm font-light mb-1">
+                              <div className="text-sm font-light mb-1 text-white">
                                 {location.name}
                               </div>
-                              <div className="text-xs text-[#999] font-light">
+                              <div className="text-xs text-white/60 font-light">
                                 {location.address_line_1}
                                 {location.city && `, ${location.city}`}
                               </div>
                             </div>
-                            <div className={`text-xs font-light ml-4 ${quantity > 0 ? "text-black" : "text-[#999]"}`}>
+                            <div className={`text-xs font-light ml-4 ${quantity > 0 ? "text-white" : "text-white/50"}`}>
                               {quantity > 0 ? "Available" : "Unavailable"}
                             </div>
                           </div>
@@ -383,7 +344,7 @@ export default function DeliveryAvailability({
                 )}
               </>
             ) : (
-              <div className="py-4 text-sm text-[#999] font-light">
+              <div className="py-4 text-sm text-white/50 font-light">
                 Currently unavailable for pickup
               </div>
             )}
