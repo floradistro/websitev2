@@ -80,11 +80,11 @@ export default function ProductPageClient({
   return (
     <div>
       {/* Breadcrumb */}
-      <div className="border-b border-[#a8a8a5] bg-[#c5c5c2]">
+      <div className="border-b border-white/10 bg-black">
         <div className="px-3 md:px-4 py-3">
           <Link
             href="/products"
-            className="inline-flex items-center space-x-2 text-sm hover:opacity-60 transition-all duration-200 font-light"
+            className="inline-flex items-center space-x-2 text-sm text-white hover:opacity-60 transition-all duration-200 font-light"
           >
             <ChevronLeft size={16} strokeWidth={1.5} />
             <span>Back to Products</span>
@@ -93,7 +93,7 @@ export default function ProductPageClient({
       </div>
 
       {/* Product Content - Prada Style Layout */}
-      <div className="bg-[#c5c5c2]">
+      <div className="bg-black">
         {/* Mobile Layout */}
         <div className="lg:hidden px-3 md:px-4 py-6 space-y-6">
           <ProductGallery images={product.images} productName={product.name} />
@@ -132,11 +132,11 @@ export default function ProductPageClient({
               </span>
             </button>
             <div className="flex space-x-3">
-              <button className="flex-1 border border-white/20 bg-black/40 text-white py-4 rounded-full text-sm uppercase tracking-[0.15em] shadow-subtle hover:border-white/40 hover:shadow-elevated transition-all duration-300 flex items-center justify-center space-x-2 font-light">
+              <button className="flex-1 border border-white/20 bg-white/10 text-white py-4 rounded-full text-sm uppercase tracking-[0.15em] shadow-subtle hover:border-white/40 hover:bg-white/20 hover:shadow-elevated transition-all duration-300 flex items-center justify-center space-x-2 font-light">
                 <Heart size={16} strokeWidth={1.5} />
                 <span>Wishlist</span>
               </button>
-              <button className="flex-1 border border-white/20 bg-black/40 text-white py-4 rounded-full text-sm uppercase tracking-[0.15em] shadow-subtle hover:border-white/40 hover:shadow-elevated transition-all duration-300 flex items-center justify-center space-x-2 font-light">
+              <button className="flex-1 border border-white/20 bg-white/10 text-white py-4 rounded-full text-sm uppercase tracking-[0.15em] shadow-subtle hover:border-white/40 hover:bg-white/20 hover:shadow-elevated transition-all duration-300 flex items-center justify-center space-x-2 font-light">
                 <Share2 size={16} strokeWidth={1.5} />
                 <span>Share</span>
               </button>
@@ -153,7 +153,7 @@ export default function ProductPageClient({
 
           {/* Long Description */}
           {product.description && (
-            <div className="border border-white/10 rounded-lg overflow-hidden bg-black/30 backdrop-blur-sm p-6">
+            <div className="border border-white/10 rounded-lg overflow-hidden bg-white/5 backdrop-blur-sm p-6">
               <h3 className="text-sm uppercase tracking-[0.15em] font-semibold mb-4 text-white">
                 Full Product Description
               </h3>
@@ -221,11 +221,11 @@ export default function ProductPageClient({
                     </span>
                   </button>
                   <div className="flex space-x-4">
-                    <button className="flex-1 border border-white/20 bg-black/40 text-white py-5 rounded-full text-sm uppercase tracking-[0.15em] shadow-subtle hover:border-white/40 hover:shadow-elevated transition-all duration-300 flex items-center justify-center space-x-2 font-light">
+                    <button className="flex-1 border border-white/20 bg-white/10 text-white py-5 rounded-full text-sm uppercase tracking-[0.15em] shadow-subtle hover:border-white/40 hover:bg-white/20 hover:shadow-elevated transition-all duration-300 flex items-center justify-center space-x-2 font-light">
                       <Heart size={16} strokeWidth={1.5} />
                       <span>Wishlist</span>
                     </button>
-                    <button className="flex-1 border border-white/20 bg-black/40 text-white py-5 rounded-full text-sm uppercase tracking-[0.15em] shadow-subtle hover:border-white/40 hover:shadow-elevated transition-all duration-300 flex items-center justify-center space-x-2 font-light">
+                    <button className="flex-1 border border-white/20 bg-white/10 text-white py-5 rounded-full text-sm uppercase tracking-[0.15em] shadow-subtle hover:border-white/40 hover:bg-white/20 hover:shadow-elevated transition-all duration-300 flex items-center justify-center space-x-2 font-light">
                       <Share2 size={16} strokeWidth={1.5} />
                       <span>Share</span>
                     </button>
@@ -248,7 +248,7 @@ export default function ProductPageClient({
               {/* Long Description Block */}
               {product.description && (
                 <div className="mb-16 animate-fadeIn" style={{animationDelay: '500ms'}}>
-                  <div className="border border-white/10 rounded-lg overflow-hidden bg-black/30 backdrop-blur-sm p-6">
+                  <div className="border border-white/10 rounded-lg overflow-hidden bg-white/5 backdrop-blur-sm p-6">
                     <h3 className="text-sm uppercase tracking-[0.2em] font-semibold mb-6 text-white">
                       Full Product Description
                     </h3>
@@ -263,9 +263,9 @@ export default function ProductPageClient({
               {/* SKU Block */}
               {product.sku && (
                 <div className="mb-16 animate-fadeIn" style={{animationDelay: '600ms'}}>
-                  <div className="flex justify-between items-center py-4 border-b border-[#a8a8a5]">
-                    <span className="text-xs uppercase tracking-wider text-[#999]">SKU</span>
-                    <span className="font-light text-sm">{product.sku}</span>
+                  <div className="flex justify-between items-center py-4 border-b border-white/20">
+                    <span className="text-xs uppercase tracking-wider text-white/50">SKU</span>
+                    <span className="font-light text-sm text-white">{product.sku}</span>
                   </div>
                 </div>
               )}
@@ -281,9 +281,9 @@ export default function ProductPageClient({
 
       {/* Related Products */}
       {relatedProducts.length > 0 && (
-        <section className="border-t border-[#a8a8a5] bg-[#c5c5c2] py-8 md:py-12">
+        <section className="border-t border-white/10 bg-black py-8 md:py-12">
           <div className="px-3 md:px-4 mb-6">
-            <h2 className="text-xl md:text-2xl font-light uppercase tracking-[0.2em] animate-fadeIn">
+            <h2 className="text-xl md:text-2xl font-light uppercase tracking-[0.2em] animate-fadeIn text-white">
               You May Also Like
             </h2>
           </div>
@@ -298,7 +298,7 @@ export default function ProductPageClient({
                     style={{ animationDelay: `${idx * 100}ms` }}
                     className="group block animate-fadeIn flex-shrink-0 w-[50vw]"
                   >
-                    <div className="relative aspect-[4/5] bg-[#9a9a97] mb-2 overflow-hidden shadow-sm active:shadow-md transition-all duration-300">
+                    <div className="relative aspect-[4/5] bg-white/10 mb-2 overflow-hidden shadow-sm active:shadow-md transition-all duration-300">
                       {item.images?.[0] ? (
                         <>
                           <img
@@ -315,14 +315,14 @@ export default function ProductPageClient({
                           )}
                         </>
                       ) : (
-                        <div className="w-full h-full bg-[#9a9a97]" />
+                        <div className="w-full h-full bg-white/10" />
                       )}
                     </div>
                     <div className="space-y-0.5 px-2">
-                      <h3 className="text-xs leading-tight line-clamp-2 font-light">
+                      <h3 className="text-xs leading-tight line-clamp-2 font-light text-white">
                         {item.name}
                       </h3>
-                      <p className="text-xs font-light">
+                      <p className="text-xs font-light text-white/80">
                         ${item.price ? parseFloat(item.price).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) : '0'}
                       </p>
                     </div>
@@ -340,7 +340,7 @@ export default function ProductPageClient({
                   style={{ animationDelay: `${idx * 100}ms` }}
                   className="group block animate-fadeIn"
                 >
-                  <div className="relative aspect-[4/5] bg-[#9a9a97] mb-3 overflow-hidden shadow-sm hover:shadow-md transition-all duration-300">
+                  <div className="relative aspect-[4/5] bg-white/10 mb-3 overflow-hidden shadow-sm hover:shadow-md transition-all duration-300">
                     {item.images?.[0] ? (
                       <>
                         <img
@@ -350,7 +350,7 @@ export default function ProductPageClient({
                         />
                       </>
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center p-8 bg-[#b5b5b2]">
+                      <div className="w-full h-full flex items-center justify-center p-8 bg-white/10">
                         <img
                           src="/logoprint.png"
                           alt="Flora Distro"
@@ -360,10 +360,10 @@ export default function ProductPageClient({
                     )}
                   </div>
                   <div className="space-y-1 px-2 md:px-3">
-                    <h3 className="text-xs md:text-sm leading-tight line-clamp-2 font-light group-hover:opacity-60 transition-opacity duration-200">
+                    <h3 className="text-xs md:text-sm leading-tight line-clamp-2 font-light text-white group-hover:opacity-60 transition-opacity duration-200">
                       {item.name}
                     </h3>
-                    <p className="text-xs md:text-sm font-light">
+                    <p className="text-xs md:text-sm font-light text-white/80">
                       ${item.price ? parseFloat(item.price).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) : '0'}
                     </p>
                   </div>

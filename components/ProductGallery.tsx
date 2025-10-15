@@ -33,7 +33,8 @@ export default function ProductGallery({
         {/* Main Image - Enhanced */}
         <div className="relative group">
           <div
-            className="aspect-[4/5] bg-[#9a9a97] overflow-hidden shadow-elevated animate-fadeIn cursor-zoom-in group -mx-3 md:mx-0 lg:rounded-sm"
+            className="aspect-[4/5] overflow-hidden shadow-elevated animate-fadeIn cursor-zoom-in group -mx-3 md:mx-0 lg:rounded-sm"
+            style={{ backgroundColor: '#b5b5b2' }}
             onClick={() => openLightbox(mainImageIndex)}
           >
             {images?.[mainImageIndex] ? (
@@ -43,7 +44,7 @@ export default function ProductGallery({
                 className="w-full h-full object-contain transition-all duration-700 group-hover:scale-110"
               />
             ) : (
-              <div className="w-full h-full bg-[#9a9a97] flex items-center justify-center">
+              <div className="w-full h-full flex items-center justify-center" style={{ backgroundColor: '#b5b5b2' }}>
                 <img
                   src="/logoprint.png"
                   alt="Flora Distro"
@@ -72,10 +73,10 @@ export default function ProductGallery({
             {images.map((image: any, idx: number) => (
               <div
                 key={idx}
-                style={{ animationDelay: `${(idx + 1) * 50}ms` }}
-                className={`aspect-[4/5] bg-[#9a9a97] overflow-hidden cursor-pointer transition-all duration-500 animate-fadeIn ${
+                style={{ animationDelay: `${(idx + 1) * 50}ms`, backgroundColor: '#b5b5b2' }}
+                className={`aspect-[4/5] overflow-hidden cursor-pointer transition-all duration-500 animate-fadeIn ${
                   mainImageIndex === idx
-                    ? "ring-2 ring-black shadow-md scale-95"
+                    ? "ring-2 ring-white shadow-md scale-95"
                     : "hover:opacity-70 hover:shadow-md"
                 }`}
                 onClick={() => setMainImageIndex(idx)}

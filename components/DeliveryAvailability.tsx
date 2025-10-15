@@ -168,7 +168,7 @@ export default function DeliveryAvailability({
         </div>
       )}
       
-      <div className={`bg-black/30 backdrop-blur-sm rounded-2xl shadow-elevated p-4 md:p-6 border transition-all duration-500 ${
+      <div className={`bg-white/5 backdrop-blur-sm rounded-2xl shadow-elevated p-4 md:p-6 border transition-all duration-500 ${
         showHighlight ? "border-white shadow-elevated-lg ring-2 ring-white/10" : "border-white/10"
       }`}>
         {/* Tabs */}
@@ -203,7 +203,7 @@ export default function DeliveryAvailability({
             {isInStock ? (
               <>
                 {/* Primary Delivery Option */}
-                <div className="border border-white/10 rounded-lg p-4 hover:border-white/30 bg-black/20 transition-all duration-200">
+                <div className="border border-white/10 rounded-lg p-4 hover:border-white/30 bg-white/5 transition-all duration-200">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center space-x-2 mb-2">
@@ -259,7 +259,7 @@ export default function DeliveryAvailability({
                 {/* Store Selector */}
                 <button
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="w-full text-left py-3 px-4 border border-white/10 rounded-lg shadow-subtle hover:border-white/30 hover:shadow-elevated transition-all duration-300 bg-black/40"
+                  className="w-full text-left py-3 px-4 border border-white/10 rounded-lg shadow-subtle hover:border-white/30 hover:shadow-elevated transition-all duration-300 bg-white/5"
                 >
                   {currentStore && (
                     <div className="flex items-center justify-between">
@@ -306,7 +306,7 @@ export default function DeliveryAvailability({
 
                 {/* Store Dropdown */}
                 {isDropdownOpen && (
-                  <div className="border border-white/10 rounded-lg overflow-hidden max-h-64 overflow-y-auto shadow-elevated animate-fadeIn bg-black/40">
+                  <div className="border border-white/10 rounded-lg overflow-hidden max-h-64 overflow-y-auto shadow-elevated animate-fadeIn bg-white/5">
                     {sortedLocations.map((location, idx) => {
                       const quantity = getQuantity(location.id);
                       const isCurrentlySelected = location.id === selectedStore;

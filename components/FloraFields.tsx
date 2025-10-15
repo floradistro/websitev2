@@ -44,8 +44,8 @@ export default function FloraFields({ metaData }: FloraFieldsProps) {
 
   return (
     <div className="mb-6 md:mb-8">
-      <div className="bg-black/30 backdrop-blur-sm rounded-2xl shadow-elevated p-4 md:p-6 border border-white/10">
-        <h3 className="text-sm font-light tracking-wide mb-4 pb-3 border-b border-white/10 text-white">
+      <div className="bg-white/5 backdrop-blur-sm rounded-2xl shadow-elevated p-4 md:p-6 border border-white/10">
+        <h3 className="text-sm font-light tracking-wide mb-4 pb-3 border-b border-white/10 text-white uppercase tracking-[0.15em]">
           Product Specifications
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">

@@ -60,11 +60,11 @@ export default function LabResults({ metaData, attributes }: LabResultsProps) {
   };
 
   return (
-    <div className="border border-white/10 bg-black/30 backdrop-blur-sm rounded-lg shadow-sm animate-fadeIn">
+    <div className="border border-white/10 bg-white/5 backdrop-blur-sm rounded-lg shadow-sm animate-fadeIn">
       {/* Header */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full px-6 py-5 flex items-center justify-between hover:bg-white/5 transition-colors duration-200"
+        className="w-full px-6 py-5 flex items-center justify-between hover:bg-white/10 transition-colors duration-200"
       >
         <div className="flex items-center gap-3">
           <div className="bg-white/10 p-2 rounded-lg">
@@ -106,7 +106,7 @@ export default function LabResults({ metaData, attributes }: LabResultsProps) {
               <div
                 key={key}
                 style={{ animationDelay: `${idx * 50}ms` }}
-                className="bg-black/40 border border-white/10 rounded-lg p-4 animate-fadeIn hover:shadow-md hover:bg-black/50 transition-all duration-300"
+                className="bg-white/5 border border-white/10 rounded-lg p-4 animate-fadeIn hover:shadow-md hover:bg-white/10 transition-all duration-300"
               >
                 <div className="text-xs uppercase tracking-wider text-white/50 mb-1 font-semibold">
                   {formatKey(key)}
@@ -128,7 +128,7 @@ export default function LabResults({ metaData, attributes }: LabResultsProps) {
               }
               target="_blank"
               rel="noopener noreferrer"
-              className="w-full border border-white/20 bg-black/40 text-white py-3 rounded-full text-sm uppercase tracking-[0.15em] hover:bg-white hover:text-black transition-all duration-300 flex items-center justify-center gap-2 font-light shadow-sm hover:shadow-md"
+              className="w-full border border-white/20 bg-white/10 text-white py-3 rounded-full text-sm uppercase tracking-[0.15em] hover:bg-white hover:text-black transition-all duration-300 flex items-center justify-center gap-2 font-light shadow-sm hover:shadow-md"
             >
               <Download size={16} strokeWidth={1.5} />
               Download Full Certificate of Analysis

@@ -72,8 +72,8 @@ export default function PricingTiers({
   };
 
   return (
-    <div className="mb-6 md:mb-8 bg-black/30 backdrop-blur-sm rounded-lg p-4 md:p-6 border border-white/10">
-      <h3 className="text-xs uppercase tracking-wider font-semibold mb-3 md:mb-4 text-white">
+    <div className="mb-6 md:mb-8 bg-white/5 backdrop-blur-sm rounded-lg p-4 md:p-6 border border-white/10">
+      <h3 className="text-xs uppercase tracking-[0.15em] font-semibold mb-3 md:mb-4 text-white">
         Quantity Pricing
       </h3>
       <div className="flex items-center justify-center gap-1.5 sm:gap-2 md:gap-3 overflow-x-auto scrollbar-hide px-2 py-2">
@@ -108,7 +108,7 @@ export default function PricingTiers({
                 <div className={`${sizeClasses} rounded-full border-2 transition-all duration-300 flex items-center justify-center overflow-hidden ${
                   isSelected 
                     ? "border-white bg-white text-black shadow-elevated-lg scale-105" 
-                    : "border-white/20 bg-black/40 text-white hover:border-white/60 shadow-elevated hover:shadow-elevated-lg"
+                    : "border-white/20 bg-white/5 text-white hover:border-white/60 shadow-elevated hover:shadow-elevated-lg"
                 }`}>
                   <div className={`absolute inset-0 bg-gradient-to-br from-white/20 to-transparent transition-opacity duration-300 rounded-full ${
                     isSelected ? "opacity-30" : "opacity-0 group-hover:opacity-100"
