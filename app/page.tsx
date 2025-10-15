@@ -5,6 +5,7 @@ import AnimatedCategories from "@/components/AnimatedCategories";
 import DarkFloralHero from "@/components/DarkFloralHero";
 import GrowRoomAnimation from "@/components/GrowRoomAnimation";
 import DeliveryAnimation from "@/components/DeliveryAnimation";
+import HorizontalScroll from "@/components/HorizontalScroll";
 
 export default async function Home() {
   const products = await getBestSellingProducts({ per_page: 8 });
@@ -64,7 +65,7 @@ export default async function Home() {
           </Link>
         </div>
 
-        <div className="flex overflow-x-auto gap-px scrollbar-hide" style={{ cursor: 'grab' }}>
+        <HorizontalScroll className="flex overflow-x-auto gap-px scrollbar-hide">
           {products.map((product: any) => (
             <Link
               key={product.id}
@@ -100,7 +101,7 @@ export default async function Home() {
               </div>
             </Link>
           ))}
-        </div>
+        </HorizontalScroll>
       </section>
 
       {/* Distro Pricing Philosophy */}

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import HorizontalScroll from "./HorizontalScroll";
 
 interface Category {
   id: number;
@@ -52,7 +53,7 @@ export default function AnimatedCategories({ categories }: { categories: Categor
         Explore Categories
       </h2>
 
-      <div className="flex overflow-x-auto gap-px scrollbar-hide">
+      <HorizontalScroll className="flex overflow-x-auto gap-px scrollbar-hide">
         {categories.map((category, index) => (
           <Link 
             key={category.id} 
@@ -80,7 +81,7 @@ export default function AnimatedCategories({ categories }: { categories: Categor
             </h3>
           </Link>
         ))}
-      </div>
+      </HorizontalScroll>
     </section>
   );
 }
