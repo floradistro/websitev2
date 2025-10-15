@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, ReactNode } from 'react';
 import { Plus, Minus } from 'lucide-react';
 
 export default function FAQ() {
@@ -31,7 +31,7 @@ export default function FAQ() {
     setOpenItems(prev => ({ ...prev, [id]: !prev[id] }));
   };
 
-  const FAQItem = ({ id, question, answer }: { id: string; question: string; answer: string | JSX.Element }) => (
+  const FAQItem = ({ id, question, answer }: { id: string; question: string; answer: string | ReactNode }) => (
     <div className="border-b border-black/10 last:border-0">
       <button
         onClick={() => toggleItem(id)}
