@@ -168,31 +168,31 @@ export default function DeliveryAvailability({
         </div>
       )}
       
-      <div className={`bg-white/5 backdrop-blur-sm rounded-2xl shadow-elevated p-4 md:p-6 border transition-all duration-500 ${
+      <div className={`bg-white/5 backdrop-blur-sm rounded-2xl shadow-elevated p-6 md:p-8 border transition-all duration-500 ${
         showHighlight ? "border-white shadow-elevated-lg ring-2 ring-white/10" : "border-white/10"
       }`}>
         {/* Tabs */}
-        <div className="flex border-b border-white/10 mb-4">
+        <div className="flex border-b border-white/10 mb-6">
           <button
             onClick={() => setSelectedTab("delivery")}
-            className={`flex-1 pb-3 text-sm font-light transition-all duration-200 ${
+            className={`flex-1 pb-4 text-base font-light transition-all duration-200 ${
               selectedTab === "delivery"
                 ? "border-b-2 border-white text-white"
                 : "text-white/50 hover:text-white"
             }`}
           >
-            <Package size={16} className="inline mr-2" strokeWidth={1.5} />
+            <Package size={18} className="inline mr-2" strokeWidth={1.5} />
             Delivery
           </button>
           <button
             onClick={() => setSelectedTab("pickup")}
-            className={`flex-1 pb-3 text-sm font-light transition-all duration-200 ${
+            className={`flex-1 pb-4 text-base font-light transition-all duration-200 ${
               selectedTab === "pickup"
                 ? "border-b-2 border-white text-white"
                 : "text-white/50 hover:text-white"
             }`}
           >
-            <Store size={16} className="inline mr-2" strokeWidth={1.5} />
+            <Store size={18} className="inline mr-2" strokeWidth={1.5} />
             Pickup
           </button>
         </div>
@@ -203,40 +203,26 @@ export default function DeliveryAvailability({
             {isInStock ? (
               <>
                 {/* Primary Delivery Option */}
-                <div className="border border-white/10 rounded-lg p-4 hover:border-white/30 bg-white/5 transition-all duration-200">
+                <div className="border border-white/10 rounded-lg p-5 hover:border-white/30 bg-white/5 transition-all duration-200">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center space-x-2 mb-2">
-                        <div className="text-sm font-light text-white">
-                          Get it by <span className="font-medium text-white">{delivery.express}</span>
+                        <div className="text-base font-light text-white">
+                          <span className="font-medium text-white">{delivery.express}</span>
                         </div>
                         {delivery.showExpress && (
-                          <span className="text-[10px] bg-white text-black px-2 py-0.5 rounded-full uppercase tracking-wider">
+                          <span className="text-xs bg-white text-black px-2 py-1 rounded-full uppercase tracking-wider font-medium">
                             Express
                           </span>
                         )}
                       </div>
                       {delivery.cutoffMessage && (
-                        <p className="text-xs text-white/60 font-light">
+                        <p className="text-sm text-white/60 font-light">
                           {delivery.cutoffMessage}
                         </p>
                       )}
                     </div>
-                    <div className="text-xs font-light text-white/90">
-                      FREE
-                    </div>
-                  </div>
-                </div>
-
-                {/* Standard Delivery */}
-                <div className="border border-transparent rounded-lg p-4 hover:border-white/10 transition-all duration-200">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="text-sm font-light text-white/70">
-                        Standard: {delivery.standard}
-                      </div>
-                    </div>
-                    <div className="text-xs font-light text-white/60">
+                    <div className="text-sm font-light text-white/90">
                       FREE
                     </div>
                   </div>

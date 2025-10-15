@@ -154,11 +154,11 @@ export default function ProductPageClient({
           {/* Long Description */}
           {product.description && (
             <div className="border border-white/10 rounded-lg overflow-hidden bg-white/5 backdrop-blur-sm p-6">
-              <h3 className="text-sm uppercase tracking-[0.15em] font-semibold mb-4 text-white">
-                Full Product Description
+              <h3 className="text-sm uppercase tracking-[0.15em] font-semibold mb-4 text-white text-center">
+                Description
               </h3>
               <div
-                className="text-sm text-white/90 leading-loose prose prose-sm prose-invert max-w-none"
+                className="text-base text-white/90 leading-relaxed prose prose-sm prose-invert max-w-none text-center"
                 dangerouslySetInnerHTML={{ __html: product.description }}
               />
             </div>
@@ -248,12 +248,12 @@ export default function ProductPageClient({
               {/* Long Description Block */}
               {product.description && (
                 <div className="mb-16 animate-fadeIn" style={{animationDelay: '500ms'}}>
-                  <div className="border border-white/10 rounded-lg overflow-hidden bg-white/5 backdrop-blur-sm p-6">
-                    <h3 className="text-sm uppercase tracking-[0.2em] font-semibold mb-6 text-white">
-                      Full Product Description
+                  <div className="border border-white/10 rounded-lg overflow-hidden bg-white/5 backdrop-blur-sm p-8">
+                    <h3 className="text-sm uppercase tracking-[0.2em] font-semibold mb-6 text-white text-center">
+                      Description
                     </h3>
                     <div
-                      className="text-sm text-white/90 leading-loose prose prose-sm prose-invert max-w-none"
+                      className="text-base text-white/90 leading-relaxed prose prose-sm prose-invert max-w-none"
                       dangerouslySetInnerHTML={{ __html: product.description }}
                     />
                   </div>

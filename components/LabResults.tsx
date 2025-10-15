@@ -36,14 +36,14 @@ export default function LabResults({ metaData, attributes }: LabResultsProps) {
   }
 
   return (
-    <div className="border border-white/10 bg-white/5 backdrop-blur-sm rounded-lg p-6 animate-fadeIn">
+    <div className="border border-white/10 bg-white/5 backdrop-blur-sm rounded-lg p-6 md:p-8 animate-fadeIn">
       <div className="flex items-center justify-between">
         {/* THCa Percentage */}
         <div>
-          <div className="text-xs uppercase tracking-wider text-white/50 mb-1 font-light">
+          <div className="text-sm uppercase tracking-wider text-white/50 mb-2 font-light">
             THCa
           </div>
-          <div className="text-2xl font-light text-white">
+          <div className="text-3xl md:text-4xl font-light text-white">
             {thcaValue}
           </div>
         </div>
@@ -54,10 +54,10 @@ export default function LabResults({ metaData, attributes }: LabResultsProps) {
             href={coaUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center justify-center w-16 h-16 border border-white/20 bg-white/5 rounded-lg hover:bg-white/10 hover:border-white/40 transition-all duration-300"
+            className="flex items-center justify-center w-20 h-20 md:w-24 md:h-24 border-2 border-white/20 bg-white/5 rounded-lg hover:bg-white/10 hover:border-white/40 transition-all duration-300"
             title="View Lab Results"
           >
-            <QrCode size={32} strokeWidth={1.5} className="text-white" />
+            <QrCode size={40} strokeWidth={1.5} className="text-white md:w-12 md:h-12" />
           </a>
         )}
       </div>

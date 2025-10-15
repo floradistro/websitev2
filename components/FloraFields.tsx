@@ -44,21 +44,21 @@ export default function FloraFields({ metaData }: FloraFieldsProps) {
 
   return (
     <div className="mb-6 md:mb-8">
-      <div className="bg-white/5 backdrop-blur-sm rounded-2xl shadow-elevated p-4 md:p-6 border border-white/10">
-        <h3 className="text-sm font-light tracking-wide mb-4 pb-3 border-b border-white/10 text-white uppercase tracking-[0.15em]">
-          Product Specifications
+      <div className="bg-white/5 backdrop-blur-sm rounded-2xl shadow-elevated p-6 md:p-8 border border-white/10">
+        <h3 className="text-sm font-light tracking-wide mb-6 pb-4 border-b border-white/10 text-white uppercase tracking-[0.15em] text-center">
+          Specifications
         </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+        <div className="grid grid-cols-2 md:grid-cols-2 gap-6">
           {fields.map((field, idx) => (
             <div
               key={field.key}
               style={{ animationDelay: `${idx * 50}ms` }}
-              className="animate-fadeIn"
+              className="animate-fadeIn text-center"
             >
-              <div className="text-[10px] uppercase tracking-[0.1em] text-white/50 font-light mb-1.5">
+              <div className="text-xs uppercase tracking-[0.1em] text-white/50 font-light mb-2">
                 {field.label}
               </div>
-              <div className="text-base font-light leading-relaxed text-white/90">
+              <div className="text-lg font-light leading-relaxed text-white/90">
                 {field.value}
               </div>
             </div>

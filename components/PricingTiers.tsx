@@ -72,12 +72,12 @@ export default function PricingTiers({
   };
 
   return (
-    <div className="mb-6 md:mb-8 bg-white/5 backdrop-blur-sm rounded-lg p-4 md:p-6 border border-white/10">
-      <h3 className="text-xs uppercase tracking-[0.15em] font-semibold mb-3 md:mb-4 text-white">
-        Quantity Pricing
+    <div className="mb-6 md:mb-8 bg-white/5 backdrop-blur-sm rounded-lg p-6 md:p-8 border border-white/10">
+      <h3 className="text-sm uppercase tracking-[0.15em] font-semibold mb-6 text-white text-center">
+        Select Quantity
       </h3>
-      <div className="flex items-center justify-center gap-1.5 sm:gap-2 md:gap-3 overflow-x-auto scrollbar-hide px-2 py-2">
-        <div className="flex items-center gap-1.5 sm:gap-2 md:gap-3 py-1">
+      <div className="flex items-center justify-center gap-3 sm:gap-4 md:gap-5 overflow-x-auto scrollbar-hide px-2 py-2">
+        <div className="flex items-center gap-3 sm:gap-4 md:gap-5 py-1">
           {tiers.map((tier, index) => {
             const price = typeof tier.price === "string" 
               ? parseFloat(tier.price) 
@@ -87,11 +87,11 @@ export default function PricingTiers({
             
             // Dynamic sizing based on number of tiers
             const tierCount = tiers.length;
-            let sizeClasses = "w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24";
+            let sizeClasses = "w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28";
             if (tierCount >= 6) {
-              sizeClasses = "w-14 h-14 sm:w-18 sm:h-18 md:w-24 md:h-24";
+              sizeClasses = "w-18 h-18 sm:w-22 sm:h-22 md:w-26 md:h-26";
             } else if (tierCount >= 5) {
-              sizeClasses = "w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24";
+              sizeClasses = "w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28";
             }
 
             return (
@@ -113,17 +113,17 @@ export default function PricingTiers({
                   <div className={`absolute inset-0 bg-gradient-to-br from-white/20 to-transparent transition-opacity duration-300 rounded-full ${
                     isSelected ? "opacity-30" : "opacity-0 group-hover:opacity-100"
                   }`}></div>
-                  <div className="relative text-center px-0.5 sm:px-1">
-                    <div className={`text-[8px] sm:text-[10px] md:text-xs font-light uppercase tracking-wider mb-0.5 ${
+                  <div className="relative text-center px-1">
+                    <div className={`text-[10px] sm:text-xs md:text-sm font-light uppercase tracking-wider mb-1 ${
                       isSelected ? "text-black/70" : "text-white/60"
                     }`}>
                       {getUnitLabel(tier)}
                     </div>
-                    <div className="text-sm sm:text-base md:text-lg font-light">
+                    <div className="text-base sm:text-lg md:text-xl font-light">
                       ${price.toFixed(0)}
                     </div>
                     {unitType === "grams" && (
-                      <div className={`text-[7px] sm:text-[9px] md:text-[10px] font-light ${
+                      <div className={`text-[9px] sm:text-[10px] md:text-xs font-light mt-0.5 ${
                         isSelected ? "text-black/60" : "text-white/50"
                       }`}>
                         ${(price / tier.min_quantity).toFixed(2)}/g
@@ -136,9 +136,6 @@ export default function PricingTiers({
           })}
         </div>
       </div>
-      <p className="text-xs text-white/60 mt-3 font-light text-center">
-        Select quantity at checkout for applicable pricing
-      </p>
     </div>
   );
 }
