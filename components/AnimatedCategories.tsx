@@ -52,12 +52,12 @@ export default function AnimatedCategories({ categories }: { categories: Categor
         Explore Categories
       </h2>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-px">
-        {categories.slice(0, 8).map((category, index) => (
+      <div className="flex overflow-x-auto gap-px scrollbar-hide">
+        {categories.map((category, index) => (
           <Link 
             key={category.id} 
             href={`/products?category=${category.slug}`} 
-            className="group transition-all duration-700"
+            className="group flex-shrink-0 w-[45vw] md:w-[30vw] lg:w-[23vw] transition-all duration-700"
             style={{
               opacity: isVisible ? 1 : 0,
               transform: isVisible ? 'translateY(0)' : 'translateY(50px)',
