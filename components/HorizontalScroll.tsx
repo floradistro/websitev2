@@ -32,16 +32,19 @@ export default function HorizontalScroll({ children, className = "" }: Horizonta
 
     updateScrollButtons();
 
-    // Mouse wheel horizontal scroll
+    const isDesktop = window.innerWidth >= 768;
+
+    // Mouse wheel horizontal scroll - disabled on desktop
     const handleWheel = (e: WheelEvent) => {
-      if (Math.abs(e.deltaY) > 0) {
+      if (!isDesktop && Math.abs(e.deltaY) > 0) {
         e.preventDefault();
         container.scrollLeft += e.deltaY;
       }
     };
 
-    // Drag to scroll
+    // Drag to scroll - disabled on desktop
     const handleMouseDown = (e: MouseEvent) => {
+      if (isDesktop) return;
       isDragging.current = true;
       startX.current = e.pageX - container.offsetLeft;
       scrollLeft.current = container.scrollLeft;
@@ -59,13 +62,21 @@ export default function HorizontalScroll({ children, className = "" }: Horizonta
 
     const handleMouseUp = () => {
       isDragging.current = false;
-      container.style.cursor = 'grab';
+      if (!isDesktop) {
+        container.style.cursor = 'grab';
+      } else {
+        container.style.cursor = 'default';
+      }
       container.style.userSelect = 'auto';
     };
 
     const handleMouseLeave = () => {
       isDragging.current = false;
-      container.style.cursor = 'grab';
+      if (!isDesktop) {
+        container.style.cursor = 'grab';
+      } else {
+        container.style.cursor = 'default';
+      }
       container.style.userSelect = 'auto';
     };
 
@@ -73,11 +84,13 @@ export default function HorizontalScroll({ children, className = "" }: Horizonta
       updateScrollButtons();
     };
 
-    container.addEventListener('wheel', handleWheel, { passive: false });
-    container.addEventListener('mousedown', handleMouseDown);
-    container.addEventListener('mousemove', handleMouseMove);
-    container.addEventListener('mouseup', handleMouseUp);
-    container.addEventListener('mouseleave', handleMouseLeave);
+    if (!isDesktop) {
+      container.addEventListener('wheel', handleWheel, { passive: false });
+      container.addEventListener('mousedown', handleMouseDown);
+      container.addEventListener('mousemove', handleMouseMove);
+      container.addEventListener('mouseup', handleMouseUp);
+      container.addEventListener('mouseleave', handleMouseLeave);
+    }
     container.addEventListener('scroll', handleScroll);
 
     return () => {
@@ -119,7 +132,7 @@ export default function HorizontalScroll({ children, className = "" }: Horizonta
       )}
 
       {/* Scrollable Container */}
-      <div ref={scrollRef} className={className} style={{ cursor: 'grab' }}>
+      <div ref={scrollRef} className={className} style={{ cursor: typeof window !== 'undefined' && window.innerWidth >= 768 ? 'default' : 'grab' }}>
         {children}
       </div>
 

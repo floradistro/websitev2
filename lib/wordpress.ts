@@ -63,7 +63,7 @@ const authParams = `consumer_key=${process.env.WORDPRESS_CONSUMER_KEY}&consumer_
 
 export async function getLocations() {
   const response = await axios.get(
-    `${baseUrl}/wp-json/flora-im/v1/locations?${authParams}`
+    `${baseUrl}/wp-json/flora-im/v1/locations?per_page=100&${authParams}`
   );
   return response.data;
 }
