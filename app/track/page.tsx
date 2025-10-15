@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { Package, Store, Truck, CheckCircle, Clock, MapPin } from "lucide-react";
 import Link from "next/link";
 
-export default function TrackPage() {
+function TrackPageContent() {
   const searchParams = useSearchParams();
   const orderId = searchParams.get("orderId");
   const orderType = searchParams.get("type");
@@ -171,5 +171,20 @@ export default function TrackPage() {
         </div>
       </section>
     </div>
+  );
+}
+
+export default function TrackPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#b5b5b2] flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-black/20 border-t-black rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-sm font-light text-black/60">Loading order details...</p>
+        </div>
+      </div>
+    }>
+      <TrackPageContent />
+    </Suspense>
   );
 }
