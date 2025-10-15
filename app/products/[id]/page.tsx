@@ -1,0 +1,45 @@
+import { getProduct, getProducts, getLocations, getProductInventory, getPricingRules, getProductFields } from "@/lib/wordpress";
+import ProductPageClient from "@/components/ProductPageClient";
+
+export default async function ProductPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ type?: string }>;
+}) {
+  const { id } = await params;
+  const { type: orderType } = await searchParams;
+  const [product, locations, inventory, pricingRules, productFields] = await Promise.all([
+    getProduct(id),
+    getLocations(),
+    getProductInventory(id),
+    getPricingRules(),
+    getProductFields(id),
+  ]);
+
+  // Extract blueprint name from product fields
+  const blueprintName = productFields?.fields?.[0]?.name || null;
+
+  // Get related products from same category
+  const categoryId = product.categories?.[0]?.id;
+  const relatedProducts = categoryId 
+    ? await getProducts({ category: categoryId, per_page: 10 }).then(products => 
+        products.filter((p: any) => p.id !== product.id).slice(0, 6)
+      )
+    : await getProducts({ per_page: 10 }).then(products => 
+        products.filter((p: any) => p.id !== product.id).slice(0, 6)
+      );
+
+  return (
+    <ProductPageClient
+      product={product}
+      locations={locations}
+      inventory={inventory}
+      pricingRules={pricingRules}
+      blueprintName={blueprintName}
+      orderType={orderType}
+      relatedProducts={relatedProducts}
+    />
+  );
+}
