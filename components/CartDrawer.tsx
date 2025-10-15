@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
-import { X, Trash2, Plus, Minus, ArrowRight } from "lucide-react";
+import { useEffect, useState, useCallback } from "react";
+import { X, Trash2, ArrowRight } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import Link from "next/link";
 
@@ -10,8 +10,92 @@ interface CartDrawerProps {
   onClose: () => void;
 }
 
+interface Tier {
+  name: string;
+  min_quantity: number;
+  max_quantity: number | null;
+  price: string | number;
+}
+
+interface PricingRule {
+  id: string;
+  rule_name: string;
+  rule_type: string;
+  conditions: string;
+  status: string;
+}
+
+interface ProductTiers {
+  [productId: number]: {
+    tiers: Tier[];
+    unitType: string;
+    blueprint: string;
+  };
+}
+
 export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
-  const { items, removeFromCart, updateQuantity, total, itemCount } = useCart();
+  const { items, removeFromCart, updateCartItem, total, itemCount } = useCart();
+  const [productTiers, setProductTiers] = useState<ProductTiers>({});
+  const [loading, setLoading] = useState(false);
+
+  const fetchProductTiers = useCallback(async () => {
+    if (items.length === 0) return;
+    
+    setLoading(true);
+    try {
+      const baseUrl = "https://api.floradistro.com";
+      const authParams = "consumer_key=ck_bb8e5fe3d405e6ed6b8c079c93002d7d8b23a7d5&consumer_secret=cs_38194e74c7ddc5d72b6c32c70485728e7e529678";
+      
+      // Fetch pricing rules
+      const rulesResponse = await fetch(`${baseUrl}/wp-json/fd/v2/pricing/rules?${authParams}`);
+      const pricingData = await rulesResponse.json();
+      const rules: PricingRule[] = pricingData.rules || [];
+      
+      // Fetch product fields for each unique product
+      const uniqueProductIds = Array.from(new Set(items.map(item => item.productId)));
+      const tiersData: ProductTiers = {};
+      
+      for (const productId of uniqueProductIds) {
+        try {
+          const fieldsResponse = await fetch(`${baseUrl}/wp-json/fd/v2/products/${productId}/fields?${authParams}`);
+          const fields = await fieldsResponse.json();
+          const blueprint = fields.fields?.[0]?.name || "";
+          
+          // Find matching pricing rule
+          const matchingRule = rules.find((rule) => {
+            if (rule.status !== "active") return false;
+            try {
+              const conditions = JSON.parse(rule.conditions);
+              return conditions.blueprint_name === blueprint;
+            } catch {
+              return false;
+            }
+          });
+          
+          if (matchingRule) {
+            try {
+              const conditions = JSON.parse(matchingRule.conditions);
+              tiersData[productId] = {
+                tiers: conditions.tiers || [],
+                unitType: conditions.unit_type || "units",
+                blueprint: blueprint
+              };
+            } catch (error) {
+              console.error(`Error parsing conditions for product ${productId}:`, error);
+            }
+          }
+        } catch (error) {
+          console.error(`Error fetching fields for product ${productId}:`, error);
+        }
+      }
+      
+      setProductTiers(tiersData);
+    } catch (error) {
+      console.error("Error fetching product tiers:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [items]);
 
   useEffect(() => {
     if (isOpen) {
@@ -20,6 +104,32 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
       document.body.style.overflow = "unset";
     }
   }, [isOpen]);
+
+  useEffect(() => {
+    if (isOpen && items.length > 0) {
+      fetchProductTiers();
+    }
+  }, [isOpen, items, fetchProductTiers]);
+
+  const getUnitLabel = (tier: Tier, unitType: string) => {
+    if (unitType === "grams") {
+      return tier.name;
+    } else if (unitType === "units" || unitType === "pieces") {
+      const qty = tier.min_quantity;
+      return `${qty} ${qty === 1 ? "unit" : "units"}`;
+    }
+    return tier.name;
+  };
+
+  const handleTierSelect = (productId: number, tier: Tier, tierLabel: string) => {
+    const price = typeof tier.price === "string" ? parseFloat(tier.price) : tier.price;
+    
+    updateCartItem(productId, {
+      quantity: tier.min_quantity,
+      price: price,
+      tierName: tierLabel
+    });
+  };
 
   if (!isOpen) return null;
 
@@ -67,78 +177,107 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
             </div>
           ) : (
             <div className="divide-y divide-black/5">
-              {items.map((item) => (
-                <div key={`${item.productId}-${item.tierName}`} className="p-6 group hover:bg-black/[0.02] transition-colors">
-                  <div className="flex gap-4">
-                    {/* Product Image */}
-                    <div className="w-24 h-24 bg-[#f5f5f2] flex-shrink-0 flex items-center justify-center">
-                      {item.image ? (
-                        <img
-                          src={item.image}
-                          alt={item.name}
-                          className="w-full h-full object-contain"
-                        />
-                      ) : (
-                        <img
-                          src="/logoprint.png"
-                          alt="Flora Distro"
-                          className="w-full h-full object-contain opacity-40"
-                        />
-                      )}
-                    </div>
-
-                    {/* Item Details */}
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-sm font-light mb-1 line-clamp-2">
-                        {item.name}
-                      </h3>
-                      <p className="text-xs text-black/50 mb-2">{item.tierName}</p>
-                      
-                      {item.orderType && (
-                        <p className="text-xs text-black/50 mb-2 capitalize">
-                          {item.orderType === "pickup" 
-                            ? `Pickup: ${item.locationName || "Store"}` 
-                            : "Delivery"}
-                        </p>
-                      )}
-
-                      <div className="flex items-center justify-between">
-                        {/* Quantity Controls */}
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => updateQuantity(item.productId, item.quantity - 1)}
-                            className="w-7 h-7 flex items-center justify-center border border-black/10 hover:border-black transition-colors"
-                          >
-                            <Minus size={12} />
-                          </button>
-                          <span className="text-sm font-light w-8 text-center">
-                            {item.quantity}
-                          </span>
-                          <button
-                            onClick={() => updateQuantity(item.productId, item.quantity + 1)}
-                            className="w-7 h-7 flex items-center justify-center border border-black/10 hover:border-black transition-colors"
-                          >
-                            <Plus size={12} />
-                          </button>
-                        </div>
-
-                        {/* Price */}
-                        <p className="text-sm font-light">
-                          ${(item.price * item.quantity).toFixed(2)}
-                        </p>
+              {items.map((item) => {
+                const tiers = productTiers[item.productId]?.tiers || [];
+                const unitType = productTiers[item.productId]?.unitType || "units";
+                
+                return (
+                  <div key={`${item.productId}-${item.tierName}`} className="p-6 group hover:bg-black/[0.02] transition-colors">
+                    <div className="flex gap-4">
+                      {/* Product Image */}
+                      <div className="w-24 h-24 bg-[#f5f5f2] flex-shrink-0 flex items-center justify-center">
+                        {item.image ? (
+                          <img
+                            src={item.image}
+                            alt={item.name}
+                            className="w-full h-full object-contain"
+                          />
+                        ) : (
+                          <img
+                            src="/logoprint.png"
+                            alt="Flora Distro"
+                            className="w-full h-full object-contain opacity-40"
+                          />
+                        )}
                       </div>
-                    </div>
 
-                    {/* Remove Button */}
-                    <button
-                      onClick={() => removeFromCart(item.productId)}
-                      className="opacity-0 group-hover:opacity-100 transition-opacity p-2 hover:bg-black/5 rounded-full h-fit"
-                    >
-                      <Trash2 size={16} className="text-black/40 hover:text-black transition-colors" />
-                    </button>
+                      {/* Item Details */}
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-sm font-light mb-1 line-clamp-2">
+                          {item.name}
+                        </h3>
+                        
+                        {item.orderType && (
+                          <p className="text-xs text-black/50 mb-2 capitalize">
+                            {item.orderType === "pickup" 
+                              ? `Pickup: ${item.locationName || "Store"}` 
+                              : "Delivery"}
+                          </p>
+                        )}
+
+                        {/* Pricing Tiers Selector */}
+                        <div className="mt-3 space-y-2">
+                          {loading && tiers.length === 0 ? (
+                            <div className="h-10 bg-black/5 rounded animate-pulse"></div>
+                          ) : tiers.length > 0 ? (
+                            <>
+                              <div className="relative">
+                                <select
+                                  value={tiers.findIndex(t => getUnitLabel(t, unitType) === item.tierName)}
+                                  onChange={(e) => {
+                                    const selectedIndex = parseInt(e.target.value);
+                                    const tier = tiers[selectedIndex];
+                                    const tierLabel = getUnitLabel(tier, unitType);
+                                    handleTierSelect(item.productId, tier, tierLabel);
+                                  }}
+                                  className="w-full appearance-none bg-white border border-black/10 px-3 py-2 pr-8 text-xs font-light hover:border-black/40 focus:border-black focus:outline-none transition-colors cursor-pointer"
+                                >
+                                  {tiers.map((tier, index) => {
+                                    const price = typeof tier.price === "string" ? parseFloat(tier.price) : tier.price;
+                                    const tierLabel = getUnitLabel(tier, unitType);
+                                    const pricePerUnit = unitType === "grams" 
+                                      ? ` - $${price.toFixed(0)} ($${(price / tier.min_quantity).toFixed(2)}/g)`
+                                      : ` - $${price.toFixed(0)}`;
+                                    
+                                    return (
+                                      <option key={index} value={index}>
+                                        {tierLabel}{pricePerUnit}
+                                      </option>
+                                    );
+                                  })}
+                                </select>
+                                <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                                  <svg className="w-4 h-4 text-black/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                  </svg>
+                                </div>
+                              </div>
+                              <p className="text-sm font-light">
+                                ${(item.price * item.quantity).toFixed(2)}
+                              </p>
+                            </>
+                          ) : (
+                            <>
+                              <p className="text-xs text-black/50 mb-1">{item.tierName}</p>
+                              <p className="text-sm font-light">
+                                ${(item.price * item.quantity).toFixed(2)}
+                              </p>
+                            </>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Remove Button */}
+                      <button
+                        onClick={() => removeFromCart(item.productId)}
+                        className="opacity-0 group-hover:opacity-100 transition-opacity p-2 hover:bg-black/5 rounded-full h-fit"
+                      >
+                        <Trash2 size={16} className="text-black/40 hover:text-black transition-colors" />
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>

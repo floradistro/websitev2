@@ -168,17 +168,17 @@ export default function DeliveryAvailability({
         </div>
       )}
       
-      <div className={`bg-white/5 backdrop-blur-sm rounded-2xl shadow-elevated p-6 md:p-8 border transition-all duration-500 ${
+      <div className={`-mx-3 md:mx-0 bg-white/5 backdrop-blur-sm md:rounded-lg border-y md:border transition-all duration-500 ${
         showHighlight ? "border-white shadow-elevated-lg ring-2 ring-white/10" : "border-white/10"
       }`}>
         {/* Tabs */}
-        <div className="flex border-b border-white/10 mb-6">
+        <div className="flex border-b border-white/10">
           <button
             onClick={() => setSelectedTab("delivery")}
-            className={`flex-1 pb-4 text-base font-light transition-all duration-200 ${
+            className={`flex-1 py-4 text-base font-semibold transition-all duration-200 ${
               selectedTab === "delivery"
-                ? "border-b-2 border-white text-white"
-                : "text-white/50 hover:text-white"
+                ? "bg-white/10 text-white"
+                : "text-white/50 hover:text-white hover:bg-white/5"
             }`}
           >
             <Package size={18} className="inline mr-2" strokeWidth={1.5} />
@@ -186,10 +186,10 @@ export default function DeliveryAvailability({
           </button>
           <button
             onClick={() => setSelectedTab("pickup")}
-            className={`flex-1 pb-4 text-base font-light transition-all duration-200 ${
+            className={`flex-1 py-4 text-base font-semibold transition-all duration-200 ${
               selectedTab === "pickup"
-                ? "border-b-2 border-white text-white"
-                : "text-white/50 hover:text-white"
+                ? "bg-white/10 text-white"
+                : "text-white/50 hover:text-white hover:bg-white/5"
             }`}
           >
             <Store size={18} className="inline mr-2" strokeWidth={1.5} />
@@ -199,38 +199,34 @@ export default function DeliveryAvailability({
 
         {/* Delivery Tab */}
         {selectedTab === "delivery" && (
-          <div className="space-y-4 animate-fadeIn">
+          <div className="p-6 animate-fadeIn">
             {isInStock ? (
-              <>
-                {/* Primary Delivery Option */}
-                <div className="border border-white/10 rounded-lg p-5 hover:border-white/30 bg-white/5 transition-all duration-200">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-2 mb-2">
-                        <div className="text-base font-light text-white">
-                          <span className="font-medium text-white">{delivery.express}</span>
-                        </div>
-                        {delivery.showExpress && (
-                          <span className="text-xs bg-white text-black px-2 py-1 rounded-full uppercase tracking-wider font-medium">
-                            Express
-                          </span>
-                        )}
-                      </div>
-                      {delivery.cutoffMessage && (
-                        <p className="text-sm text-white/60 font-light">
-                          {delivery.cutoffMessage}
-                        </p>
-                      )}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="text-lg font-semibold text-white mb-1">
+                      {delivery.express}
                     </div>
-                    <div className="text-sm font-light text-white/90">
+                    {delivery.cutoffMessage && (
+                      <p className="text-sm text-white/60 font-light">
+                        {delivery.cutoffMessage}
+                      </p>
+                    )}
+                  </div>
+                  <div className="text-right">
+                    {delivery.showExpress && (
+                      <span className="text-xs bg-white text-black px-3 py-1.5 rounded-full uppercase tracking-wider font-semibold block mb-2">
+                        Express
+                      </span>
+                    )}
+                    <div className="text-base font-semibold text-white">
                       FREE
                     </div>
                   </div>
                 </div>
-
-              </>
+              </div>
             ) : (
-              <div className="py-4 text-sm text-white/50 font-light">
+              <div className="py-4 text-base text-white/50 font-light text-center">
                 Currently unavailable for delivery
               </div>
             )}
@@ -239,31 +235,31 @@ export default function DeliveryAvailability({
 
         {/* Pickup Tab */}
         {selectedTab === "pickup" && (
-          <div className="space-y-3 animate-fadeIn">
+          <div className="p-6 animate-fadeIn">
             {locationsWithStock.length > 0 ? (
-              <>
+              <div className="space-y-4">
                 {/* Store Selector */}
                 <button
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="w-full text-left py-3 px-4 border border-white/10 rounded-lg shadow-subtle hover:border-white/30 hover:shadow-elevated transition-all duration-300 bg-white/5"
+                  className="w-full text-left py-4 px-5 border border-white/10 rounded-lg hover:border-white/30 transition-all duration-300 bg-white/5"
                 >
                   {currentStore && (
                     <div className="flex items-center justify-between">
                       <div className="flex-1">
-                        <div className="text-sm font-light mb-1 text-white">
+                        <div className="text-base font-semibold mb-1 text-white">
                           {currentStore.name}
                         </div>
-                        <div className="text-xs text-white/60 font-light">
+                        <div className="text-sm text-white/60 font-light">
                           {currentStore.address_line_1}
                           {currentStore.city && `, ${currentStore.city}`}
                         </div>
                       </div>
                       <div className="flex items-center space-x-3 ml-4">
-                        <span className={`text-xs font-light ${currentStoreQuantity > 0 ? "text-white" : "text-white/50"}`}>
-                          {currentStoreQuantity > 0 ? "In Stock" : "Out of Stock"}
+                        <span className={`text-sm font-medium ${currentStoreQuantity > 0 ? "text-white" : "text-white/50"}`}>
+                          {currentStoreQuantity > 0 ? "Available" : "Out of Stock"}
                         </span>
                         <svg
-                          className={`w-3 h-3 text-white/60 transition-transform ${
+                          className={`w-4 h-4 text-white transition-transform ${
                             isDropdownOpen ? "rotate-180" : ""
                           }`}
                           fill="none"
@@ -284,15 +280,15 @@ export default function DeliveryAvailability({
 
                 {/* Pickup Time */}
                 {currentStoreQuantity > 0 && (
-                  <div className="text-sm font-light">
+                  <div className="text-base font-light">
                     <span className="text-white/60">Ready for pickup</span>
-                    <span className="text-white font-medium ml-1">today</span>
+                    <span className="text-white font-semibold ml-1">today</span>
                   </div>
                 )}
 
                 {/* Store Dropdown */}
                 {isDropdownOpen && (
-                  <div className="border border-white/10 rounded-lg overflow-hidden max-h-64 overflow-y-auto shadow-elevated animate-fadeIn bg-white/5">
+                  <div className="border border-white/10 rounded-lg overflow-hidden max-h-64 overflow-y-auto animate-fadeIn bg-white/5">
                     {sortedLocations.map((location, idx) => {
                       const quantity = getQuantity(location.id);
                       const isCurrentlySelected = location.id === selectedStore;
@@ -305,21 +301,21 @@ export default function DeliveryAvailability({
                             setIsDropdownOpen(false);
                           }}
                           style={{ animationDelay: `${idx * 30}ms` }}
-                          className={`w-full text-left py-3 px-4 transition-all duration-200 border-b border-white/10 last:border-0 animate-slideIn ${
+                          className={`w-full text-left py-4 px-5 transition-all duration-200 border-b border-white/10 last:border-0 animate-slideIn ${
                             isCurrentlySelected ? "bg-white/10" : "hover:bg-white/5"
                           }`}
                         >
                           <div className="flex items-center justify-between">
                             <div className="flex-1">
-                              <div className="text-sm font-light mb-1 text-white">
+                              <div className="text-base font-semibold mb-1 text-white">
                                 {location.name}
                               </div>
-                              <div className="text-xs text-white/60 font-light">
+                              <div className="text-sm text-white/60 font-light">
                                 {location.address_line_1}
                                 {location.city && `, ${location.city}`}
                               </div>
                             </div>
-                            <div className={`text-xs font-light ml-4 ${quantity > 0 ? "text-white" : "text-white/50"}`}>
+                            <div className={`text-sm font-medium ml-4 ${quantity > 0 ? "text-white" : "text-white/50"}`}>
                               {quantity > 0 ? "Available" : "Unavailable"}
                             </div>
                           </div>
@@ -328,9 +324,9 @@ export default function DeliveryAvailability({
                     })}
                   </div>
                 )}
-              </>
+              </div>
             ) : (
-              <div className="py-4 text-sm text-white/50 font-light">
+              <div className="py-4 text-base text-white/50 font-light text-center">
                 Currently unavailable for pickup
               </div>
             )}

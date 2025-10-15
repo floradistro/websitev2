@@ -1,4 +1,4 @@
-import { getProduct, getProducts, getLocations, getProductInventory, getPricingRules, getProductFields } from "@/lib/wordpress";
+import { getProduct, getProducts, getLocations, getProductInventory, getPricingRules, getProductFields, getProductReviews } from "@/lib/wordpress";
 import ProductPageClient from "@/components/ProductPageClient";
 
 export default async function ProductPage({
@@ -10,12 +10,13 @@ export default async function ProductPage({
 }) {
   const { id } = await params;
   const { type: orderType } = await searchParams;
-  const [product, locations, inventory, pricingRules, productFields] = await Promise.all([
+  const [product, locations, inventory, pricingRules, productFields, reviews] = await Promise.all([
     getProduct(id),
     getLocations(),
     getProductInventory(id),
     getPricingRules(),
     getProductFields(id),
+    getProductReviews(id),
   ]);
 
   // Extract blueprint name from product fields
@@ -40,6 +41,7 @@ export default async function ProductPage({
       blueprintName={blueprintName}
       orderType={orderType}
       relatedProducts={relatedProducts}
+      reviews={reviews}
     />
   );
 }

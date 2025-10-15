@@ -130,3 +130,32 @@ export async function getOrders(params?: any) {
   return response.data;
 }
 
+// Product Reviews
+export async function getProductReviews(productId: string | number) {
+  try {
+    const response = await api.get("products/reviews", {
+      product: productId,
+      per_page: 100,
+      status: 'approved'
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching reviews:", error);
+    return [];
+  }
+}
+
+export async function getAllReviews(params?: any) {
+  try {
+    const response = await api.get("products/reviews", {
+      per_page: 100,
+      status: 'approved',
+      ...params
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching all reviews:", error);
+    return [];
+  }
+}
+

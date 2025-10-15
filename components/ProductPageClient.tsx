@@ -10,6 +10,7 @@ import ProductInfo from "@/components/ProductInfo";
 import ProductGallery from "@/components/ProductGallery";
 import CategorySection from "@/components/CategorySection";
 import LabResults from "@/components/LabResults";
+import ProductReviews from "@/components/ProductReviews";
 import { useCart } from "@/context/CartContext";
 
 interface ProductPageClientProps {
@@ -20,6 +21,7 @@ interface ProductPageClientProps {
   blueprintName: string | null;
   orderType?: string;
   relatedProducts: any[];
+  reviews: any[];
 }
 
 export default function ProductPageClient({
@@ -30,6 +32,7 @@ export default function ProductPageClient({
   blueprintName,
   orderType,
   relatedProducts,
+  reviews,
 }: ProductPageClientProps) {
   const [selectedPrice, setSelectedPrice] = useState<number | null>(null);
   const [selectedQuantity, setSelectedQuantity] = useState<number>(1);
@@ -79,21 +82,33 @@ export default function ProductPageClient({
 
   return (
     <div>
-      {/* Breadcrumb */}
-      <div className="border-b border-white/10 bg-black">
-        <div className="px-3 md:px-4 py-3">
+      {/* Breadcrumb - Enhanced */}
+      <div className="border-b border-white/10 bg-gradient-to-br from-[#2a2a2a] via-[#2d2d2d] to-[#2a2a2a] backdrop-blur-sm">
+        <div className="px-3 md:px-6 py-4 flex items-center justify-between">
           <Link
             href="/products"
-            className="inline-flex items-center space-x-2 text-sm text-white hover:opacity-60 transition-all duration-200 font-light"
+            className="group inline-flex items-center space-x-2 text-sm text-white/80 hover:text-white transition-all duration-300 font-light"
           >
-            <ChevronLeft size={16} strokeWidth={1.5} />
-            <span>Back to Products</span>
+            <div className="w-8 h-8 flex items-center justify-center rounded-full bg-white/5 group-hover:bg-white/10 transition-all duration-300">
+              <ChevronLeft size={16} strokeWidth={1.5} />
+            </div>
+            <span className="tracking-wide">Back to Products</span>
           </Link>
+          
+          {/* Optional product category badge */}
+          {product.categories && product.categories.length > 0 && (
+            <div className="hidden md:flex items-center gap-2">
+              <div className="h-px w-8 bg-white/10"></div>
+              <span className="text-xs uppercase tracking-[0.2em] text-white/40 font-light">
+                {product.categories[0].name}
+              </span>
+            </div>
+          )}
         </div>
       </div>
 
       {/* Product Content - Prada Style Layout */}
-      <div className="bg-black">
+      <div className="bg-[#2a2a2a]">
         {/* Mobile Layout */}
         <div className="lg:hidden px-3 md:px-4 py-6 space-y-6">
           <ProductGallery images={product.images} productName={product.name} />
@@ -163,6 +178,9 @@ export default function ProductPageClient({
               />
             </div>
           )}
+
+          {/* Reviews */}
+          <ProductReviews reviews={reviews} />
 
           <div className="pt-4">
             <CategorySection categories={product.categories || []} />
@@ -260,6 +278,11 @@ export default function ProductPageClient({
                 </div>
               )}
 
+              {/* Reviews Block */}
+              <div className="mb-16 animate-fadeIn" style={{animationDelay: '550ms'}}>
+                <ProductReviews reviews={reviews} />
+              </div>
+
               {/* SKU Block */}
               {product.sku && (
                 <div className="mb-16 animate-fadeIn" style={{animationDelay: '600ms'}}>
@@ -281,7 +304,7 @@ export default function ProductPageClient({
 
       {/* Related Products */}
       {relatedProducts.length > 0 && (
-        <section className="border-t border-white/10 bg-black py-8 md:py-12">
+        <section className="border-t border-white/10 bg-[#2a2a2a] py-8 md:py-12">
           <div className="px-3 md:px-4 mb-6">
             <h2 className="text-xl md:text-2xl font-light uppercase tracking-[0.2em] animate-fadeIn text-white">
               You May Also Like

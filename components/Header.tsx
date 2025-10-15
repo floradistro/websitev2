@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { Search, ShoppingBag, User, Heart, Menu, X } from "lucide-react";
 import { useState } from "react";
 import { useCart } from "@/context/CartContext";
@@ -30,8 +31,15 @@ export default function Header() {
           </button>
 
           {/* Logo */}
-          <Link href="/" className="text-2xl logo-font">
-            Flora Distro
+          <Link href="/" className="flex items-center gap-3">
+            <Image 
+              src="/logoprint.png" 
+              alt="Flora Distro Logo" 
+              width={40} 
+              height={40}
+              className="object-contain"
+            />
+            <span className="text-2xl logo-font">Flora Distro</span>
           </Link>
 
           {/* Desktop Navigation */}
