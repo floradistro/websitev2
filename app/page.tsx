@@ -265,8 +265,14 @@ export default async function Home() {
               };
 
               const data = locationData[location.name] || { 
-                address: location.address ? `${location.address}\n${location.city || ''}, ${location.state || ''}` : '',
-                googleMapsUrl: ''
+                address: location.address_line_1 
+                  ? `${location.address_line_1}\n${location.city || ''}, ${location.state || ''} ${location.postal_code || ''}`.trim()
+                  : location.address
+                  ? `${location.address}\n${location.city || ''}, ${location.state || ''}`.trim()
+                  : '',
+                googleMapsUrl: location.address_line_1 || location.address 
+                  ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${location.address_line_1 || location.address} ${location.city} ${location.state} ${location.postal_code || ''}`)}`
+                  : ''
               };
 
               const CardContent = (
