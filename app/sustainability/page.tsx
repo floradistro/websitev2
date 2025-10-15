@@ -41,7 +41,7 @@ export default function Sustainability() {
 
       <div className="container mx-auto px-6 py-24 max-w-5xl">
         <div className="space-y-20 text-black leading-relaxed">
-          <section ref={(el) => (sectionsRef.current[0] = el)} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
+          <section ref={(el) => { sectionsRef.current[0] = el; }} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
             <div className="bg-white/40 backdrop-blur-sm border border-white/60 p-8 md:p-12 shadow-elevated-lg">
               <h2 className="text-3xl md:text-4xl font-light uppercase tracking-wider mb-6">Our Commitment</h2>
               <p className="text-lg md:text-xl font-light leading-relaxed text-black/80">
@@ -51,7 +51,7 @@ export default function Sustainability() {
             </div>
           </section>
 
-          <section ref={(el) => (sectionsRef.current[1] = el)} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
+          <section ref={(el) => { sectionsRef.current[1] = el; }} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
             <div className="grid md:grid-cols-2 gap-12 items-center">
               <div>
                 <h2 className="text-3xl md:text-4xl font-light uppercase tracking-wider mb-6">Sustainable Sourcing</h2>
@@ -82,7 +82,7 @@ export default function Sustainability() {
             </div>
           </section>
 
-          <section ref={(el) => (sectionsRef.current[2] = el)} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
+          <section ref={(el) => { sectionsRef.current[2] = el; }} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
             <div className="grid md:grid-cols-2 gap-12 items-center">
               <div className="bg-black/5 backdrop-blur-sm border border-black/10 p-8 space-y-4 md:order-first order-last">
                 <div className="flex items-start space-x-3 group">
@@ -112,7 +112,7 @@ export default function Sustainability() {
             </div>
           </section>
 
-          <section ref={(el) => (sectionsRef.current[3] = el)} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
+          <section ref={(el) => { sectionsRef.current[3] = el; }} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
             <div className="bg-black text-white p-12 md:p-16 relative overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-br from-black via-[#1a1a1a] to-black opacity-90"></div>
               <div className="relative z-10">
@@ -125,7 +125,7 @@ export default function Sustainability() {
             </div>
           </section>
 
-          <section ref={(el) => (sectionsRef.current[4] = el)} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
+          <section ref={(el) => { sectionsRef.current[4] = el; }} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
             <div className="text-center max-w-3xl mx-auto">
               <h2 className="text-3xl md:text-4xl font-light uppercase tracking-wider mb-6">Continuous Improvement</h2>
               <p className="text-base md:text-lg font-light leading-relaxed text-black/70">

@@ -45,7 +45,7 @@ export default function Shipping() {
       <div className="container mx-auto px-6 py-24 max-w-6xl">
         <div className="space-y-16">
           {/* Shipping Rates */}
-          <section ref={(el) => (sectionsRef.current[0] = el)} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
+          <section ref={(el) => { sectionsRef.current[0] = el; }} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
             <h2 className="text-2xl md:text-3xl font-light uppercase tracking-wider mb-8 text-center">Shipping Rates & Delivery Times</h2>
             <div className="grid md:grid-cols-3 gap-6">
               <div className="bg-white/40 backdrop-blur-sm border border-white/60 p-8 shadow-elevated-lg hover:shadow-elevated-lg hover:scale-105 transition-all duration-300">
@@ -84,7 +84,7 @@ export default function Shipping() {
           </section>
 
           {/* Features */}
-          <section ref={(el) => (sectionsRef.current[1] = el)} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
+          <section ref={(el) => { sectionsRef.current[1] = el; }} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
             <div className="grid md:grid-cols-3 gap-8">
               <div className="text-center group">
                 <div className="w-16 h-16 mx-auto mb-4 bg-black/5 rounded-full flex items-center justify-center group-hover:bg-black/10 transition-colors">
@@ -111,7 +111,7 @@ export default function Shipping() {
           </section>
 
           {/* Restricted States */}
-          <section ref={(el) => (sectionsRef.current[2] = el)} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
+          <section ref={(el) => { sectionsRef.current[2] = el; }} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
             <div className="bg-black text-white p-10 md:p-14">
               <MapPin className="w-10 h-10 mb-6 text-white/60" />
               <h2 className="text-2xl md:text-3xl font-light uppercase tracking-wider mb-6">Shipping Restrictions</h2>
@@ -131,7 +131,7 @@ export default function Shipping() {
           </section>
 
           {/* Policy Details */}
-          <section ref={(el) => (sectionsRef.current[3] = el)} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
+          <section ref={(el) => { sectionsRef.current[3] = el; }} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
             <div className="bg-white/40 backdrop-blur-sm border border-white/60 p-10 md:p-14 shadow-elevated-lg">
               <h2 className="text-2xl md:text-3xl font-light uppercase tracking-wider mb-8">Order Processing</h2>
               <div className="space-y-6 text-sm md:text-base font-light leading-relaxed text-black/70">
@@ -147,7 +147,7 @@ export default function Shipping() {
             </div>
           </section>
 
-          <section ref={(el) => (sectionsRef.current[4] = el)} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
+          <section ref={(el) => { sectionsRef.current[4] = el; }} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
             <div className="grid md:grid-cols-2 gap-8">
               <div className="bg-white/40 backdrop-blur-sm border border-white/60 p-8">
                 <h3 className="text-xl font-light uppercase tracking-wider mb-4">Order Tracking</h3>
@@ -186,7 +186,7 @@ export default function Shipping() {
           </section>
 
           {/* Contact */}
-          <section ref={(el) => (sectionsRef.current[5] = el)} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
+          <section ref={(el) => { sectionsRef.current[5] = el; }} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
             <div className="bg-black text-white p-10 md:p-14 text-center">
               <h2 className="text-2xl md:text-3xl font-light uppercase tracking-wider mb-6">Need Help?</h2>
               <p className="text-base font-light text-white/70 mb-6">
@@ -200,7 +200,7 @@ export default function Shipping() {
           </section>
 
           {/* Important Notice */}
-          <section ref={(el) => (sectionsRef.current[6] = el)} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
+          <section ref={(el) => { sectionsRef.current[6] = el; }} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
             <div className="bg-white/20 backdrop-blur-sm border border-black/10 p-8 md:p-10">
               <h3 className="text-lg font-light uppercase tracking-wider mb-4">⚠️ Important Notice</h3>
               <p className="text-sm font-light text-black/60 leading-relaxed">

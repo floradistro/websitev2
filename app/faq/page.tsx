@@ -77,7 +77,7 @@ export default function FAQ() {
       <div className="container mx-auto px-6 py-24 max-w-5xl">
         <div className="space-y-16">
           {/* Product Information */}
-          <section ref={(el) => (sectionsRef.current[0] = el)} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
+          <section ref={(el) => { sectionsRef.current[0] = el; }} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
             <div className="bg-white/40 backdrop-blur-sm border border-white/60 p-8 md:p-12 shadow-elevated-lg">
               <h2 className="text-2xl md:text-3xl font-light uppercase tracking-wider mb-8">Product Information</h2>
               <div className="space-y-0">
@@ -106,7 +106,7 @@ export default function FAQ() {
           </section>
 
           {/* Legal & Compliance */}
-          <section ref={(el) => (sectionsRef.current[1] = el)} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
+          <section ref={(el) => { sectionsRef.current[1] = el; }} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
             <div className="bg-black text-white p-8 md:p-12">
               <h2 className="text-2xl md:text-3xl font-light uppercase tracking-wider mb-8">Legal & Compliance</h2>
               <div className="space-y-0">
@@ -135,7 +135,7 @@ export default function FAQ() {
           </section>
 
           {/* Ordering & Payment */}
-          <section ref={(el) => (sectionsRef.current[2] = el)} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
+          <section ref={(el) => { sectionsRef.current[2] = el; }} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
             <div className="bg-white/40 backdrop-blur-sm border border-white/60 p-8 md:p-12 shadow-elevated-lg">
               <h2 className="text-2xl md:text-3xl font-light uppercase tracking-wider mb-8">Ordering & Payment</h2>
               <div className="space-y-0">
@@ -159,7 +159,7 @@ export default function FAQ() {
           </section>
 
           {/* Shipping & Delivery */}
-          <section ref={(el) => (sectionsRef.current[3] = el)} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
+          <section ref={(el) => { sectionsRef.current[3] = el; }} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
             <div className="bg-white/40 backdrop-blur-sm border border-white/60 p-8 md:p-12 shadow-elevated-lg">
               <h2 className="text-2xl md:text-3xl font-light uppercase tracking-wider mb-8">Shipping & Delivery</h2>
               <div className="space-y-0">
@@ -188,7 +188,7 @@ export default function FAQ() {
           </section>
 
           {/* Usage & Safety */}
-          <section ref={(el) => (sectionsRef.current[4] = el)} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
+          <section ref={(el) => { sectionsRef.current[4] = el; }} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
             <div className="bg-black text-white p-8 md:p-12">
               <h2 className="text-2xl md:text-3xl font-light uppercase tracking-wider mb-8">Usage & Safety</h2>
               <div className="space-y-0">
@@ -217,7 +217,7 @@ export default function FAQ() {
           </section>
 
           {/* Contact */}
-          <section ref={(el) => (sectionsRef.current[5] = el)} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
+          <section ref={(el) => { sectionsRef.current[5] = el; }} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
             <div className="bg-white/40 backdrop-blur-sm border border-white/60 p-8 md:p-12 text-center shadow-elevated-lg">
               <h2 className="text-2xl md:text-3xl font-light uppercase tracking-wider mb-6">Still Have Questions?</h2>
               <p className="text-base font-light text-black/70 mb-6">

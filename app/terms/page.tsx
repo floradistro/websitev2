@@ -45,7 +45,7 @@ export default function Terms() {
       <div className="container mx-auto px-6 py-24 max-w-5xl">
         <div className="space-y-16">
           {/* Agreement */}
-          <section ref={(el) => (sectionsRef.current[0] = el)} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
+          <section ref={(el) => { sectionsRef.current[0] = el; }} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
             <div className="bg-white/40 backdrop-blur-sm border border-white/60 p-10 md:p-14 shadow-elevated-lg">
               <h2 className="text-2xl md:text-3xl font-light uppercase tracking-wider mb-6">Agreement to Terms</h2>
               <p className="text-base font-light leading-relaxed text-black/70 mb-4">
@@ -60,7 +60,7 @@ export default function Terms() {
           </section>
 
           {/* Important Disclaimers */}
-          <section ref={(el) => (sectionsRef.current[1] = el)} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
+          <section ref={(el) => { sectionsRef.current[1] = el; }} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
             <div className="bg-black text-white p-10 md:p-14">
               <div className="flex items-center space-x-4 mb-6">
                 <AlertTriangle className="w-10 h-10 text-white/60" />
@@ -86,7 +86,7 @@ export default function Terms() {
           </section>
 
           {/* Eligibility */}
-          <section ref={(el) => (sectionsRef.current[2] = el)} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
+          <section ref={(el) => { sectionsRef.current[2] = el; }} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
             <div className="bg-white/40 backdrop-blur-sm border border-white/60 p-10 md:p-14 shadow-elevated-lg">
               <h2 className="text-2xl md:text-3xl font-light uppercase tracking-wider mb-6">Eligibility</h2>
               <p className="text-base font-light text-black/70 mb-4">
@@ -110,7 +110,7 @@ export default function Terms() {
           </section>
 
           {/* Orders and Payments */}
-          <section ref={(el) => (sectionsRef.current[3] = el)} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
+          <section ref={(el) => { sectionsRef.current[3] = el; }} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
             <div className="bg-white/40 backdrop-blur-sm border border-white/60 p-10 md:p-14 shadow-elevated-lg">
               <h2 className="text-2xl md:text-3xl font-light uppercase tracking-wider mb-8">Orders and Payments</h2>
               
@@ -158,7 +158,7 @@ export default function Terms() {
           </section>
 
           {/* Limitation of Liability */}
-          <section ref={(el) => (sectionsRef.current[4] = el)} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
+          <section ref={(el) => { sectionsRef.current[4] = el; }} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
             <div className="bg-black text-white p-10 md:p-14">
               <h2 className="text-2xl md:text-3xl font-light uppercase tracking-wider mb-6">Limitation of Liability</h2>
               <p className="text-base font-light text-white/70 mb-6">
@@ -177,7 +177,7 @@ export default function Terms() {
           </section>
 
           {/* Compliance */}
-          <section ref={(el) => (sectionsRef.current[5] = el)} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
+          <section ref={(el) => { sectionsRef.current[5] = el; }} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
             <div className="bg-white/40 backdrop-blur-sm border border-white/60 p-10 md:p-14 shadow-elevated-lg">
               <div className="flex items-center space-x-4 mb-6">
                 <Shield className="w-8 h-8 text-black/60" />
@@ -196,7 +196,7 @@ export default function Terms() {
           </section>
 
           {/* Governing Law */}
-          <section ref={(el) => (sectionsRef.current[6] = el)} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
+          <section ref={(el) => { sectionsRef.current[6] = el; }} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
             <div className="bg-white/40 backdrop-blur-sm border border-white/60 p-10 md:p-14 shadow-elevated-lg">
               <h2 className="text-2xl md:text-3xl font-light uppercase tracking-wider mb-6">Governing Law and Dispute Resolution</h2>
               <p className="text-base font-light text-black/70 mb-4">
@@ -215,7 +215,7 @@ export default function Terms() {
           </section>
 
           {/* Contact */}
-          <section ref={(el) => (sectionsRef.current[7] = el)} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
+          <section ref={(el) => { sectionsRef.current[7] = el; }} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
             <div className="bg-black text-white p-10 md:p-14 text-center">
               <h2 className="text-2xl md:text-3xl font-light uppercase tracking-wider mb-6">Contact Information</h2>
               <p className="text-base font-light text-white/70 mb-6">

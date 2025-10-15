@@ -45,7 +45,7 @@ export default function Returns() {
       <div className="container mx-auto px-4 md:px-6 py-24 max-w-6xl">
         <div className="space-y-16">
           {/* 30-Day Return Window */}
-          <section ref={(el) => (sectionsRef.current[0] = el)} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
+          <section ref={(el) => { sectionsRef.current[0] = el; }} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
             <div className="bg-white/40 backdrop-blur-sm border border-white/60 p-10 md:p-14 shadow-elevated-lg text-center">
               <Clock className="w-16 h-16 mx-auto mb-6 text-black/60" />
               <h2 className="text-3xl md:text-4xl font-light uppercase tracking-wider mb-6">30-Day Return Window</h2>
@@ -57,7 +57,7 @@ export default function Returns() {
           </section>
 
           {/* Return Conditions */}
-          <section ref={(el) => (sectionsRef.current[1] = el)} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
+          <section ref={(el) => { sectionsRef.current[1] = el; }} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
             <h2 className="text-2xl md:text-3xl font-light uppercase tracking-wider mb-8 text-center">Return Conditions</h2>
             <div className="grid md:grid-cols-2 gap-8">
               <div className="bg-black/5 backdrop-blur-sm border border-black/10 p-8 md:p-10">
@@ -121,7 +121,7 @@ export default function Returns() {
           </section>
 
           {/* How to Return */}
-          <section ref={(el) => (sectionsRef.current[2] = el)} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
+          <section ref={(el) => { sectionsRef.current[2] = el; }} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
             <div className="bg-white/40 backdrop-blur-sm border border-white/60 p-10 md:p-14 shadow-elevated-lg">
               <h2 className="text-2xl md:text-3xl font-light uppercase tracking-wider mb-8">How to Initiate a Return</h2>
               <div className="grid md:grid-cols-4 gap-8">
@@ -161,7 +161,7 @@ export default function Returns() {
           </section>
 
           {/* Refund Processing */}
-          <section ref={(el) => (sectionsRef.current[3] = el)} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
+          <section ref={(el) => { sectionsRef.current[3] = el; }} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
             <div className="bg-black text-white p-10 md:p-14">
               <h2 className="text-2xl md:text-3xl font-light uppercase tracking-wider mb-8">Refund Processing</h2>
               <div className="grid md:grid-cols-2 gap-12">
@@ -199,7 +199,7 @@ export default function Returns() {
           </section>
 
           {/* Defective Products */}
-          <section ref={(el) => (sectionsRef.current[4] = el)} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
+          <section ref={(el) => { sectionsRef.current[4] = el; }} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
             <div className="bg-white/40 backdrop-blur-sm border border-white/60 p-10 md:p-14 shadow-elevated-lg">
               <h2 className="text-2xl md:text-3xl font-light uppercase tracking-wider mb-6">Defective or Damaged Products</h2>
               <p className="text-base font-light text-black/70 leading-relaxed mb-6">
@@ -228,7 +228,7 @@ export default function Returns() {
           </section>
 
           {/* Contact */}
-          <section ref={(el) => (sectionsRef.current[5] = el)} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
+          <section ref={(el) => { sectionsRef.current[5] = el; }} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
             <div className="bg-black text-white p-10 md:p-14 text-center">
               <h2 className="text-2xl md:text-3xl font-light uppercase tracking-wider mb-6">Questions About Returns?</h2>
               <p className="text-base font-light text-white/70 mb-6">
@@ -242,7 +242,7 @@ export default function Returns() {
           </section>
 
           {/* Health & Safety Notice */}
-          <section ref={(el) => (sectionsRef.current[6] = el)} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
+          <section ref={(el) => { sectionsRef.current[6] = el; }} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
             <div className="bg-white/20 backdrop-blur-sm border border-black/10 p-8 md:p-10">
               <h3 className="text-lg font-light uppercase tracking-wider mb-4">⚠️ Health & Safety Notice</h3>
               <p className="text-sm font-light text-black/60 leading-relaxed">

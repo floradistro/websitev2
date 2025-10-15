@@ -45,7 +45,7 @@ export default function Privacy() {
       <div className="container mx-auto px-6 py-24 max-w-5xl">
         <div className="space-y-16">
           {/* Introduction */}
-          <section ref={(el) => (sectionsRef.current[0] = el)} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
+          <section ref={(el) => { sectionsRef.current[0] = el; }} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
             <div className="bg-white/40 backdrop-blur-sm border border-white/60 p-10 md:p-14 shadow-elevated-lg">
               <h2 className="text-2xl md:text-3xl font-light uppercase tracking-wider mb-6">Introduction</h2>
               <p className="text-base font-light leading-relaxed text-black/70 mb-4">
@@ -61,7 +61,7 @@ export default function Privacy() {
           </section>
 
           {/* Key Points */}
-          <section ref={(el) => (sectionsRef.current[1] = el)} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
+          <section ref={(el) => { sectionsRef.current[1] = el; }} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
             <div className="grid md:grid-cols-3 gap-6">
               <div className="bg-black text-white p-8 group hover:bg-[#1a1a1a] transition-colors duration-300">
                 <Eye className="w-8 h-8 mb-4 text-white/60" />
@@ -82,7 +82,7 @@ export default function Privacy() {
           </section>
 
           {/* Information We Collect */}
-          <section ref={(el) => (sectionsRef.current[2] = el)} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
+          <section ref={(el) => { sectionsRef.current[2] = el; }} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
             <div className="bg-white/40 backdrop-blur-sm border border-white/60 p-10 md:p-14 shadow-elevated-lg">
               <h2 className="text-2xl md:text-3xl font-light uppercase tracking-wider mb-8">Information We Collect</h2>
               
@@ -153,7 +153,7 @@ export default function Privacy() {
           </section>
 
           {/* How We Use Your Information */}
-          <section ref={(el) => (sectionsRef.current[3] = el)} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
+          <section ref={(el) => { sectionsRef.current[3] = el; }} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
             <div className="bg-black text-white p-10 md:p-14">
               <h2 className="text-2xl md:text-3xl font-light uppercase tracking-wider mb-8">How We Use Your Information</h2>
               <p className="text-base font-light text-white/70 mb-6">We use the information we collect to:</p>
@@ -178,7 +178,7 @@ export default function Privacy() {
           </section>
 
           {/* Your Privacy Rights */}
-          <section ref={(el) => (sectionsRef.current[4] = el)} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
+          <section ref={(el) => { sectionsRef.current[4] = el; }} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
             <div className="bg-white/40 backdrop-blur-sm border border-white/60 p-10 md:p-14 shadow-elevated-lg">
               <h2 className="text-2xl md:text-3xl font-light uppercase tracking-wider mb-8">Your Privacy Rights</h2>
               <p className="text-base font-light text-black/70 mb-6">
@@ -209,7 +209,7 @@ export default function Privacy() {
           </section>
 
           {/* California Privacy Rights */}
-          <section ref={(el) => (sectionsRef.current[5] = el)} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
+          <section ref={(el) => { sectionsRef.current[5] = el; }} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
             <div className="bg-black text-white p-10 md:p-14">
               <h2 className="text-2xl md:text-3xl font-light uppercase tracking-wider mb-6">California Privacy Rights (CCPA)</h2>
               <p className="text-base font-light text-white/70 mb-6">
@@ -224,7 +224,7 @@ export default function Privacy() {
           </section>
 
           {/* Contact */}
-          <section ref={(el) => (sectionsRef.current[6] = el)} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
+          <section ref={(el) => { sectionsRef.current[6] = el; }} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
             <div className="bg-white/40 backdrop-blur-sm border border-white/60 p-10 md:p-14 text-center shadow-elevated-lg">
               <h2 className="text-2xl md:text-3xl font-light uppercase tracking-wider mb-6">Contact Us</h2>
               <p className="text-base font-light text-black/70 mb-6">

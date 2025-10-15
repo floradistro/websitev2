@@ -45,7 +45,7 @@ export default function Cookies() {
       <div className="container mx-auto px-6 py-24 max-w-5xl">
         <div className="space-y-16">
           {/* What Are Cookies */}
-          <section ref={(el) => (sectionsRef.current[0] = el)} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
+          <section ref={(el) => { sectionsRef.current[0] = el; }} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
             <div className="bg-white/40 backdrop-blur-sm border border-white/60 p-10 md:p-14 shadow-elevated-lg">
               <h2 className="text-2xl md:text-3xl font-light uppercase tracking-wider mb-6">What Are Cookies?</h2>
               <p className="text-base font-light leading-relaxed text-black/70 mb-4">
@@ -61,7 +61,7 @@ export default function Cookies() {
           </section>
 
           {/* How We Use Cookies */}
-          <section ref={(el) => (sectionsRef.current[1] = el)} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
+          <section ref={(el) => { sectionsRef.current[1] = el; }} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
             <div className="grid md:grid-cols-3 gap-6">
               <div className="bg-black text-white p-8 group hover:bg-[#1a1a1a] transition-colors duration-300">
                 <Eye className="w-8 h-8 mb-4 text-white/60" />
@@ -82,7 +82,7 @@ export default function Cookies() {
           </section>
 
           {/* Types of Cookies */}
-          <section ref={(el) => (sectionsRef.current[2] = el)} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
+          <section ref={(el) => { sectionsRef.current[2] = el; }} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
             <div className="bg-white/40 backdrop-blur-sm border border-white/60 p-10 md:p-14 shadow-elevated-lg">
               <h2 className="text-2xl md:text-3xl font-light uppercase tracking-wider mb-8">Types of Cookies We Use</h2>
               <div className="space-y-8">
@@ -128,7 +128,7 @@ export default function Cookies() {
           </section>
 
           {/* Managing Cookies */}
-          <section ref={(el) => (sectionsRef.current[3] = el)} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
+          <section ref={(el) => { sectionsRef.current[3] = el; }} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
             <div className="bg-black text-white p-10 md:p-14">
               <h2 className="text-2xl md:text-3xl font-light uppercase tracking-wider mb-8">Managing Your Cookie Preferences</h2>
               <p className="text-base font-light text-white/70 mb-6">
@@ -175,7 +175,7 @@ export default function Cookies() {
           </section>
 
           {/* Impact of Blocking */}
-          <section ref={(el) => (sectionsRef.current[4] = el)} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
+          <section ref={(el) => { sectionsRef.current[4] = el; }} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
             <div className="bg-white/40 backdrop-blur-sm border border-white/60 p-10 md:p-14 shadow-elevated-lg">
               <h2 className="text-2xl md:text-3xl font-light uppercase tracking-wider mb-6">Impact of Blocking Cookies</h2>
               <p className="text-base font-light text-black/70 mb-6">
@@ -199,7 +199,7 @@ export default function Cookies() {
           </section>
 
           {/* Third-Party Cookies */}
-          <section ref={(el) => (sectionsRef.current[5] = el)} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
+          <section ref={(el) => { sectionsRef.current[5] = el; }} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
             <div className="bg-white/40 backdrop-blur-sm border border-white/60 p-10 md:p-14 shadow-elevated-lg">
               <h2 className="text-2xl md:text-3xl font-light uppercase tracking-wider mb-6">Third-Party Cookies</h2>
               <p className="text-base font-light text-black/70 mb-6">
@@ -222,7 +222,7 @@ export default function Cookies() {
           </section>
 
           {/* Contact */}
-          <section ref={(el) => (sectionsRef.current[6] = el)} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
+          <section ref={(el) => { sectionsRef.current[6] = el; }} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
             <div className="bg-black text-white p-10 md:p-14 text-center">
               <h2 className="text-2xl md:text-3xl font-light uppercase tracking-wider mb-6">Questions About Cookies?</h2>
               <p className="text-base font-light text-white/70 mb-6">
@@ -236,7 +236,7 @@ export default function Cookies() {
           </section>
 
           {/* Quick Reference */}
-          <section ref={(el) => (sectionsRef.current[7] = el)} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
+          <section ref={(el) => { sectionsRef.current[7] = el; }} className="opacity-0 translate-y-8 transition-all duration-1000 ease-out">
             <div className="bg-white/20 backdrop-blur-sm border border-black/10 p-8 md:p-10">
               <h3 className="text-lg font-light uppercase tracking-wider mb-4">📋 Quick Reference</h3>
               <p className="text-sm font-light text-black/60 mb-4">
