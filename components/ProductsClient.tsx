@@ -137,7 +137,7 @@ export default function ProductsClient({
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-px md:gap-0.5">
+          <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-5 gap-px md:gap-0.5">
             {products.map((product: any, index: number) => (
               <ProductCard 
                 key={product.id} 

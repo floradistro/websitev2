@@ -1,4 +1,4 @@
-import { getBestSellingProducts, getCategories, getLocations } from "@/lib/wordpress";
+import { getBestSellingProducts, getCategories, getLocations, getAllInventory, getPricingRules } from "@/lib/wordpress";
 import Link from "next/link";
 import { ArrowRight, MapPin, Clock, Truck, Zap } from "lucide-react";
 import AnimatedCategories from "@/components/AnimatedCategories";
@@ -6,11 +6,83 @@ import DarkFloralHero from "@/components/DarkFloralHero";
 import GrowRoomAnimation from "@/components/GrowRoomAnimation";
 import DeliveryAnimation from "@/components/DeliveryAnimation";
 import HorizontalScroll from "@/components/HorizontalScroll";
+import ProductCard from "@/components/ProductCard";
 
 export default async function Home() {
-  const products = await getBestSellingProducts({ per_page: 8 });
-  const categories = await getCategories({ per_page: 10, hide_empty: true });
-  const locations = await getLocations();
+  const [products, categories, locations, allInventory, pricingRules] = await Promise.all([
+    getBestSellingProducts({ per_page: 8 }),
+    getCategories({ per_page: 10, hide_empty: true }),
+    getLocations(),
+    getAllInventory(),
+    getPricingRules(),
+  ]);
+
+  // Create inventory map from bulk inventory data
+  const inventoryMap: { [key: number]: any[] } = {};
+  
+  allInventory.forEach((inv: any) => {
+    const productId = parseInt(inv.product_id);
+    if (!inventoryMap[productId]) {
+      inventoryMap[productId] = [];
+    }
+    inventoryMap[productId].push(inv);
+  });
+
+  // Extract fields from product metadata
+  const productFieldsMap: { [key: number]: any } = {};
+  
+  products.forEach((product: any) => {
+    const metaData = product.meta_data || [];
+    const fields: { [key: string]: string } = {};
+    
+    // Extract common fields from metadata (only real fields)
+    const fieldKeys = [
+      'strain_type',
+      'thca_%',
+      'thca_percentage', 
+      'thc_%',
+      'thc_percentage',
+      'lineage',
+      'nose',
+      'terpene',
+      'terpenes',
+      'effects',
+      'effect'
+    ];
+    
+    metaData.forEach((meta: any) => {
+      const key = meta.key?.toLowerCase();
+      if (fieldKeys.some(fk => fk === key)) {
+        fields[key] = meta.value;
+      }
+    });
+    
+    // Get blueprint name from metadata
+    let blueprintName = null;
+    const blueprintMeta = metaData.find((m: any) => 
+      m.key && (m.key.includes('blueprint') || m.key === '_blueprint')
+    );
+    
+    if (blueprintMeta) {
+      blueprintName = blueprintMeta.value;
+    }
+    
+    // If no direct blueprint, infer from category
+    if (!blueprintName && product.categories && product.categories.length > 0) {
+      const categoryName = product.categories[0].slug;
+      if (categoryName.includes('flower') || categoryName.includes('pre-roll')) {
+        blueprintName = 'flower_blueprint';
+      } else if (categoryName.includes('concentrate')) {
+        blueprintName = 'concentrate_blueprint';
+      } else if (categoryName.includes('edible')) {
+        blueprintName = 'edible_blueprint';
+      } else if (categoryName.includes('vape')) {
+        blueprintName = 'vape_blueprint';
+      }
+    }
+    
+    productFieldsMap[product.id] = { fields, blueprintName };
+  });
 
   return (
     <div>
@@ -51,7 +123,7 @@ export default async function Home() {
       <AnimatedCategories categories={categories} />
 
       {/* Best Selling Products */}
-      <section className="bg-[#b5b5b2] py-16">
+      <section className="bg-[#c5c5c2] py-16">
         <div className="flex justify-between items-center mb-12 px-3 md:px-4">
           <h2 className="text-2xl md:text-3xl font-light uppercase tracking-wider">
             Best Selling Products
@@ -66,40 +138,16 @@ export default async function Home() {
         </div>
 
         <HorizontalScroll className="flex overflow-x-auto gap-px scrollbar-hide">
-          {products.map((product: any) => (
-            <Link
-              key={product.id}
-              href={`/products/${product.id}`}
-              className="group block flex-shrink-0 w-[45vw] md:w-[30vw] lg:w-[23vw] xl:w-[18vw]"
-            >
-              <div className="relative aspect-[4/5] mb-3 overflow-hidden bg-[#8a8a87] shadow-sm hover:shadow-md transition-all duration-300">
-                {product.images?.[0] ? (
-                  <>
-                    <img
-                      src={product.images[0].src}
-                      alt={product.name}
-                      className="w-full h-full object-contain transition-all duration-500 group-hover:scale-105"
-                    />
-                  </>
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center p-8 bg-[#b5b5b2]">
-                    <img
-                      src="/logoprint.png"
-                      alt="Flora Distro"
-                      className="w-full h-full object-contain opacity-40 transition-opacity duration-300 group-hover:opacity-60"
-                    />
-                  </div>
-                )}
-              </div>
-              <div className="space-y-1 px-2 md:px-3">
-                <h3 className="text-xs md:text-sm leading-tight line-clamp-2 font-light group-hover:opacity-60 transition-opacity duration-200">
-                  {product.name}
-                </h3>
-                <p className="text-xs md:text-sm font-light">
-                  ${product.price ? parseFloat(product.price).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) : '0'}
-                </p>
-              </div>
-            </Link>
+          {products.map((product: any, index: number) => (
+            <div key={product.id} className="flex-shrink-0 w-[45vw] md:w-[30vw] lg:w-[23vw] xl:w-[18vw]">
+              <ProductCard 
+                product={product} 
+                index={index} 
+                locations={locations}
+                pricingRules={pricingRules}
+                productFields={productFieldsMap[product.id]}
+              />
+            </div>
           ))}
         </HorizontalScroll>
       </section>
@@ -169,7 +217,7 @@ export default async function Home() {
       </section>
 
       {/* Locations */}
-      <section className="bg-[#b5b5b2] py-16">
+      <section className="bg-[#c5c5c2] py-16">
         <div className="flex justify-between items-center mb-12 px-3 md:px-4">
           <h2 className="text-2xl md:text-3xl font-light uppercase tracking-wider">
             Our Locations
@@ -185,16 +233,16 @@ export default async function Home() {
             .map((location: any) => (
               <div
                 key={location.id}
-                className="group block bg-[#c5c5c2] hover:bg-[#d5d5d2] transition-colors duration-300"
+                className="group block bg-[#2a2a2a] hover:bg-[#333333] transition-colors duration-300 border border-white/5"
               >
-                <div className="relative aspect-[4/5] mb-3 overflow-hidden bg-[#9a9a97] flex items-center justify-center">
+                <div className="relative aspect-[4/5] mb-3 overflow-hidden bg-[#1a1a1a] flex items-center justify-center border-b border-white/5">
                   <MapPin size={48} className="text-white/40 group-hover:text-white/60 transition-colors duration-300" />
                 </div>
                 <div className="space-y-1 px-2 md:px-3 pb-4">
-                  <h3 className="text-xs md:text-sm leading-tight font-light group-hover:opacity-60 transition-opacity duration-200">
+                  <h3 className="text-xs md:text-sm leading-tight font-light group-hover:opacity-60 transition-opacity duration-200 text-white">
                     {location.name}
                   </h3>
-                  <p className="text-xs text-black/60 font-light line-clamp-2">
+                  <p className="text-xs text-white/60 font-light line-clamp-2">
                     {location.address && `${location.address}, ${location.city || ''}, ${location.state || ''}`}
                   </p>
                 </div>
@@ -288,7 +336,7 @@ export default async function Home() {
       </section>
 
       {/* Logo Divider */}
-      <section className="bg-[#b5b5b2] py-16 px-4 md:px-6 relative overflow-hidden">
+      <section className="bg-[#c5c5c2] py-16 px-4 md:px-6 relative overflow-hidden">
         <div className="max-w-6xl mx-auto">
           <div className="flex items-center justify-center gap-8 md:gap-12">
             <div className="flex-1 h-[1px] bg-gradient-to-r from-transparent to-black/20"></div>

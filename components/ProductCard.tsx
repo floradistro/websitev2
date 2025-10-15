@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
-import { ShoppingBag, Store, Truck, Eye } from "lucide-react";
+import { ShoppingBag, Store, Truck } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 
 interface ProductCardProps {
@@ -186,12 +185,21 @@ export default function ProductCard({ product, index, locations, pricingRules, p
     window.location.href = `/products/${product.id}?type=delivery`;
   };
 
+  const handleCardClick = (e: React.MouseEvent) => {
+    // Don't navigate if clicking on interactive elements
+    const target = e.target as HTMLElement;
+    if (target.tagName === 'SELECT' || target.tagName === 'BUTTON' || target.tagName === 'OPTION' || target.closest('select') || target.closest('button')) {
+      return;
+    }
+    window.location.href = `/products/${product.id}`;
+  };
+
   return (
-    <Link
-      href={`/products/${product.id}`}
-      className="group block relative bg-[#2a2a2a] hover:bg-[#333333] transition-colors duration-300 border border-white/5"
+    <div
+      className="group block relative bg-[#2a2a2a] hover:bg-[#333333] transition-colors duration-300 border border-white/5 cursor-pointer"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      onClick={handleCardClick}
       style={{
         animation: `fadeInUp 0.6s ease-out ${index * 0.05}s both`,
       }}
@@ -251,29 +259,23 @@ export default function ProductCard({ product, index, locations, pricingRules, p
           </div>
         </div>
 
-        {/* View Details Button - Mobile */}
-        <div className="md:hidden absolute bottom-3 right-3 opacity-0 group-active:opacity-100 transition-opacity duration-200">
-          <div className="bg-white/90 backdrop-blur-sm p-2 shadow-lg">
-            <Eye size={16} />
-          </div>
-        </div>
       </div>
 
       {/* Product Info */}
-      <div className="space-y-2.5 px-1.5 md:px-2 py-2.5 transform transition-transform duration-300 group-hover:translate-x-1">
-        <h3 className="text-2xl md:text-3xl leading-snug line-clamp-2 font-thin group-hover:opacity-70 transition-opacity duration-200 logo-font tracking-wider text-white">
+      <div className="space-y-2.5 px-3 md:px-2 py-3 md:py-2.5 transform transition-transform duration-300 group-hover:translate-x-1">
+        <h3 className="text-3xl md:text-3xl leading-snug line-clamp-2 font-thin group-hover:opacity-70 transition-opacity duration-200 logo-font tracking-wider text-white">
           {product.name}
         </h3>
         
         {/* Blueprint Fields */}
         {displayFields.length > 0 && (
-          <div className="space-y-1 bg-white/5 backdrop-blur-sm px-1.5 py-1.5 rounded-sm border border-white/10 w-full">
+          <div className="space-y-1.5 bg-white/5 backdrop-blur-sm px-2.5 py-2 rounded-sm border border-white/10 w-full">
             {displayFields.map((field, idx) => (
               <div key={idx} className="flex items-baseline gap-2 w-full">
-                <span className="uppercase tracking-[0.15em] font-medium text-white/40 text-[9px] min-w-[60px] whitespace-nowrap">
+                <span className="uppercase tracking-[0.15em] font-medium text-white/40 text-[10px] md:text-[9px] min-w-[70px] md:min-w-[60px] whitespace-nowrap">
                   {field.label}
                 </span>
-                <span className="text-xs tracking-wide text-white/70 font-light flex-1 text-right truncate">
+                <span className="text-sm md:text-xs tracking-wide text-white/70 font-light flex-1 text-right truncate">
                   {field.value}
                 </span>
               </div>
@@ -289,7 +291,8 @@ export default function ProductCard({ product, index, locations, pricingRules, p
                 value={selectedTierIndex ?? ""}
                 onChange={handleTierSelect}
                 onClick={handleDropdownClick}
-                className="w-full appearance-none bg-white/5 border border-white/10 px-2 py-2 pr-8 text-xs font-light text-white/90 hover:border-white/30 focus:border-white/50 focus:outline-none transition-colors cursor-pointer"
+                className="w-full appearance-none bg-white/5 border border-white/10 px-3 py-3 md:py-2 pr-8 text-sm md:text-xs font-light text-white/90 hover:border-white/30 focus:border-white/50 focus:outline-none transition-colors cursor-pointer touch-manipulation"
+                style={{ minHeight: '44px' }}
               >
                 <option value="">Select Quantity</option>
                 {tiers.map((tier, index) => {
@@ -306,8 +309,8 @@ export default function ProductCard({ product, index, locations, pricingRules, p
                   );
                 })}
               </select>
-              <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
-                <svg className="w-4 h-4 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="absolute inset-y-0 right-0 flex items-center pr-3 md:pr-2 pointer-events-none">
+                <svg className="w-5 h-5 md:w-4 md:h-4 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
               </div>
@@ -316,9 +319,10 @@ export default function ProductCard({ product, index, locations, pricingRules, p
             {showAddToCart && (
               <button
                 onClick={handleAddToCart}
-                className="w-full bg-white text-black px-3 py-2.5 text-xs uppercase tracking-wider hover:bg-white/90 transition-all font-medium flex items-center justify-center gap-2 animate-fadeIn shadow-lg"
+                className="w-full bg-white text-black px-3 py-3 md:py-2.5 text-sm md:text-xs uppercase tracking-wider hover:bg-white/90 active:bg-white/80 transition-all font-medium flex items-center justify-center gap-2 animate-fadeIn shadow-lg touch-manipulation"
+                style={{ minHeight: '44px' }}
               >
-                <ShoppingBag size={14} />
+                <ShoppingBag size={16} className="md:w-3.5 md:h-3.5" />
                 Add to Cart
               </button>
             )}
@@ -326,7 +330,7 @@ export default function ProductCard({ product, index, locations, pricingRules, p
         )}
         
         <div className="flex items-center justify-between pt-1.5 border-t border-white/10">
-          <p className="text-base md:text-lg font-light tracking-wide text-white">
+          <p className="text-lg md:text-lg font-light tracking-wide text-white">
             {getPriceDisplay()}
           </p>
           
@@ -337,34 +341,7 @@ export default function ProductCard({ product, index, locations, pricingRules, p
           </div>
         </div>
       </div>
-
-      {/* Mobile Quick Actions - Bottom Sheet Style */}
-      <div className="md:hidden px-3 pb-3 space-y-1.5 opacity-0 group-active:opacity-100 transition-opacity duration-200">
-        <button
-          onClick={handleQuickBuy}
-          className="w-full flex items-center justify-center gap-2 bg-black text-white px-3 py-2 text-[10px] uppercase tracking-wider"
-        >
-          <ShoppingBag size={12} />
-          Quick Buy
-        </button>
-        <div className="grid grid-cols-2 gap-1.5">
-          <button
-            onClick={handlePickup}
-            className="flex items-center justify-center gap-1.5 bg-white/80 text-black px-3 py-2 text-[10px] uppercase tracking-wider border border-black/10"
-          >
-            <Store size={12} />
-            Pickup
-          </button>
-          <button
-            onClick={handleDelivery}
-            className="flex items-center justify-center gap-1.5 bg-white/80 text-black px-3 py-2 text-[10px] uppercase tracking-wider border border-black/10"
-          >
-            <Truck size={12} />
-            Delivery
-          </button>
-        </div>
-      </div>
-    </Link>
+    </div>
   );
 }
 

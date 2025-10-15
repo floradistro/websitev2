@@ -41,7 +41,7 @@ export default function AnimatedCategories({ categories }: { categories: Categor
   }, []);
 
   return (
-    <section ref={sectionRef} className="bg-[#b5b5b2] py-8">
+    <section ref={sectionRef} className="bg-[#c5c5c2] py-8">
       <h2 
         className="text-2xl md:text-3xl font-light text-center uppercase tracking-wider mb-6 px-3"
         style={{
@@ -58,14 +58,14 @@ export default function AnimatedCategories({ categories }: { categories: Categor
           <Link 
             key={category.id} 
             href={`/products?category=${category.slug}`} 
-            className="group flex-shrink-0 w-[45vw] md:w-[30vw] lg:w-[23vw] transition-all duration-700"
+            className="group flex-shrink-0 w-[45vw] md:w-[30vw] lg:w-[23vw] transition-all duration-700 bg-[#2a2a2a] hover:bg-[#333333] border border-white/5"
             style={{
               opacity: isVisible ? 1 : 0,
               transform: isVisible ? 'translateY(0)' : 'translateY(50px)',
               transitionDelay: `${index * 100}ms`,
             }}
           >
-            <div className="aspect-[3/4] bg-[#8a8a87] mb-3 overflow-hidden relative shadow-sm transition-all duration-300 group-hover:shadow-md">
+            <div className="aspect-[3/4] bg-[#1a1a1a] mb-3 overflow-hidden relative shadow-sm transition-all duration-300 group-hover:shadow-md border-b border-white/5">
               {category.image ? (
                 <img
                   src={category.image.src}
@@ -73,10 +73,10 @@ export default function AnimatedCategories({ categories }: { categories: Categor
                   className="w-full h-full object-cover transition-all duration-300 group-hover:scale-105"
                 />
               ) : (
-                <div className="w-full h-full bg-[#8a8a87]" />
+                <div className="w-full h-full bg-[#1a1a1a]" />
               )}
             </div>
-            <h3 className="text-sm md:text-base uppercase tracking-[0.25em] font-light text-center px-2 transition-opacity duration-300 group-hover:opacity-60">
+            <h3 className="text-sm md:text-base uppercase tracking-[0.25em] font-light text-center px-2 pb-3 transition-opacity duration-300 group-hover:opacity-60 text-white">
               {category.name}
             </h3>
           </Link>
