@@ -31,12 +31,12 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
     <>
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
+        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100]"
         onClick={onClose}
       />
 
       {/* Drawer */}
-      <div className="fixed right-0 top-0 h-full w-full sm:w-[500px] bg-[#2a2a2a] shadow-2xl z-50 flex flex-col border-l border-white/10 animate-slideInRight">
+      <div className="fixed right-0 top-0 h-full w-full sm:w-[500px] bg-[#2a2a2a] shadow-2xl z-[101] flex flex-col border-l border-white/10 animate-slideInRight">
         {/* Header - Fixed */}
         <div className="px-6 py-5 border-b border-white/10 bg-[#2a2a2a] flex-shrink-0">
           <div className="flex items-center justify-between">
