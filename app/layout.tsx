@@ -25,13 +25,25 @@ export const metadata: Metadata = {
     description: "Premium cannabis products with fast shipping. Direct sourcing, volume pricing, always fresh.",
     type: "website",
     siteName: "Flora Distro",
-    images: ['/og-image.png'],
+    images: [
+      {
+        url: '/api/og-image',
+        width: 1200,
+        height: 630,
+        alt: 'Flora Distro',
+      }
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "Flora Distro | Premium Cannabis Distribution",
     description: "Premium cannabis products with fast shipping.",
-    images: ['/og-image.png'],
+    images: ['/api/og-image'],
+  },
+  icons: {
+    icon: '/favicon.ico',
+    shortcut: '/favicon.ico',
+    apple: '/logoprint.png',
   },
 };
 

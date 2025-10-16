@@ -132,7 +132,7 @@ export default function HorizontalScroll({ children, className = "" }: Horizonta
       )}
 
       {/* Scrollable Container */}
-      <div ref={scrollRef} className={className} style={{ cursor: typeof window !== 'undefined' && window.innerWidth >= 768 ? 'default' : 'grab' }}>
+      <div ref={scrollRef} className={className}>
         {children}
       </div>
 

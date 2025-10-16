@@ -23,7 +23,9 @@ export async function generateMetadata({
     ? product.short_description.replace(/<[^>]*>/g, '').substring(0, 155)
     : `Shop ${product.name} ${price ? `starting at ${price}` : ''} at Flora Distro. Premium cannabis products with fast shipping. In stock now.`;
 
+  // Use product image if available, otherwise use generated OG image
   const productImage = product.images?.[0]?.src;
+  const ogImageUrl = productImage || `/api/og-product?name=${encodeURIComponent(product.name)}&category=${encodeURIComponent(category)}&price=${encodeURIComponent(price)}`;
 
   return {
     title: `${product.name} | ${category}`,
@@ -31,14 +33,14 @@ export async function generateMetadata({
     openGraph: {
       title: `${product.name} - ${category}`,
       description,
-      images: productImage ? [
+      images: [
         {
-          url: productImage,
+          url: ogImageUrl,
           width: 1200,
           height: 630,
           alt: product.name,
         },
-      ] : undefined,
+      ],
       type: "website",
       siteName: "Flora Distro",
     },
@@ -46,7 +48,7 @@ export async function generateMetadata({
       card: "summary_large_image",
       title: `${product.name} - ${category}`,
       description,
-      images: productImage ? [productImage] : undefined,
+      images: [ogImageUrl],
       creator: "@floradistro",
     },
   };
