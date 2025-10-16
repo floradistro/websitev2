@@ -48,18 +48,18 @@ export default function LocationDropdown({
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-2 bg-transparent border border-white/20 hover:border-white/40 transition-all duration-300 text-[11px] font-normal uppercase tracking-[0.12em] group text-white rounded"
+        className="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1.5 sm:py-2 bg-transparent border border-white/20 hover:border-white/40 transition-all duration-300 text-[10px] sm:text-[11px] font-normal uppercase tracking-[0.1em] group text-white rounded"
       >
-        <MapPin size={14} strokeWidth={2} className="text-white/60 group-hover:text-white transition-colors" />
-        <span className="whitespace-nowrap max-w-[100px] sm:max-w-none truncate">
+        <MapPin size={12} strokeWidth={2} className="text-white/60 group-hover:text-white transition-colors sm:w-3.5 sm:h-3.5" />
+        <span className="whitespace-nowrap max-w-[90px] sm:max-w-none truncate">
           {selectedLocationData
             ? `${selectedLocationData.name}`
             : "All Locations"}
         </span>
         <ChevronDown
-          size={14}
+          size={12}
           strokeWidth={2}
-          className={`text-white/60 transition-transform duration-300 ${
+          className={`text-white/60 transition-transform duration-300 sm:w-3.5 sm:h-3.5 ${
             isOpen ? "rotate-180" : ""
           }`}
         />

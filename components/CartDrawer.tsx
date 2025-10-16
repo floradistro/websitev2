@@ -109,9 +109,9 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                         </button>
                       </div>
                       
-                      <p className="text-base font-medium text-white mb-3">${(item.price * item.quantity).toFixed(0)}</p>
+                      <p className="text-sm sm:text-base font-medium text-white mb-2">${(item.price * item.quantity).toFixed(0)}</p>
                       
-                      <p className="text-xs text-white/40 mb-2 uppercase tracking-[0.12em]">{item.tierName}</p>
+                      <p className="text-[11px] text-white/40 mb-2 uppercase tracking-[0.12em] truncate">{item.tierName}</p>
                       
                       {item.orderType && (
                         <div className="flex items-center gap-1 text-xs text-white/50">
@@ -140,19 +140,19 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
         {items.length > 0 && (
           <div className="px-4 sm:px-6 py-5 sm:py-6 border-t border-white/10 bg-[#1a1a1a]/80 backdrop-blur-sm">
             <div className="space-y-4">
-              <div className="flex justify-between items-center text-xl font-light text-white">
+              <div className="flex justify-between items-center text-lg sm:text-xl font-light text-white">
                 <span>Subtotal</span>
                 <span>${total.toFixed(0)}</span>
               </div>
               
-              <p className="text-xs text-white/40 text-center">
+              <p className="text-[11px] text-white/40 text-center">
                 Shipping calculated at checkout
               </p>
               
               <Link
                 href="/checkout"
                 onClick={onClose}
-                className="group block w-full bg-black border border-white/20 text-white text-center px-8 py-4 text-xs uppercase tracking-[0.25em] hover:bg-black/70 hover:border-white/40 transition-all duration-500 font-medium relative overflow-hidden"
+                className="group block w-full bg-black border border-white/20 text-white text-center px-8 py-3.5 sm:py-4 text-xs uppercase tracking-[0.25em] hover:bg-black/70 hover:border-white/40 transition-all duration-500 font-medium relative overflow-hidden"
               >
                 <div className="absolute inset-0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 bg-gradient-to-r from-transparent via-white/10 to-transparent" />
                 <span className="relative z-10">Checkout</span>
@@ -161,7 +161,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
               <button
                 onClick={onClose}
                 type="button"
-                className="block w-full text-center text-sm uppercase tracking-wider text-white/50 hover:text-white transition-colors py-2"
+                className="block w-full text-center text-xs sm:text-sm uppercase tracking-wider text-white/50 hover:text-white transition-colors py-2"
               >
                 Continue Shopping
               </button>

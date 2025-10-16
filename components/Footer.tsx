@@ -51,8 +51,8 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 sm:gap-10">
           {/* Company */}
           <div>
-            <h3 className="text-sm uppercase tracking-wider font-semibold mb-4 text-white">Company</h3>
-            <ul className="space-y-2.5 text-base text-white/60">
+            <h3 className="text-xs sm:text-sm uppercase tracking-wider font-semibold mb-4 text-white">Company</h3>
+            <ul className="space-y-2.5 text-sm sm:text-base text-white/60">
               <li>
                 <Link href="/about" className="hover:text-white transition-colors">
                   About Us
@@ -78,8 +78,8 @@ export default function Footer() {
 
           {/* Customer Service */}
           <div>
-            <h3 className="text-sm uppercase tracking-wider font-semibold mb-4 text-white">Customer Service</h3>
-            <ul className="space-y-2.5 text-base text-white/60">
+            <h3 className="text-xs sm:text-sm uppercase tracking-wider font-semibold mb-4 text-white">Customer Service</h3>
+            <ul className="space-y-2.5 text-sm sm:text-base text-white/60">
               <li>
                 <Link href="/faq" className="hover:text-white transition-colors">
                   FAQ
@@ -105,8 +105,8 @@ export default function Footer() {
 
           {/* Legal */}
           <div>
-            <h3 className="text-sm uppercase tracking-wider font-semibold mb-4 text-white">Legal</h3>
-            <ul className="space-y-2.5 text-base text-white/60">
+            <h3 className="text-xs sm:text-sm uppercase tracking-wider font-semibold mb-4 text-white">Legal</h3>
+            <ul className="space-y-2.5 text-sm sm:text-base text-white/60">
               <li>
                 <Link href="/privacy" className="hover:text-white transition-colors">
                   Privacy Policy
@@ -127,8 +127,8 @@ export default function Footer() {
 
           {/* Newsletter */}
           <div>
-            <h3 className="text-sm uppercase tracking-wider font-semibold mb-4 text-white">Newsletter</h3>
-            <p className="text-sm text-white/60 mb-4">
+            <h3 className="text-xs sm:text-sm uppercase tracking-wider font-semibold mb-4 text-white">Newsletter</h3>
+            <p className="text-xs sm:text-sm text-white/60 mb-4">
               Subscribe to receive updates, access to exclusive deals, and more.
             </p>
             <form onSubmit={handleNewsletterSubmit} className="space-y-2">
@@ -138,18 +138,18 @@ export default function Footer() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter your email"
                 disabled={status === "loading"}
-                className="w-full px-4 py-3 border border-white/20 bg-white/5 focus:border-white/40 focus:outline-none text-sm text-white placeholder:text-white/40 disabled:opacity-50 rounded-sm"
+                className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-white/20 bg-white/5 focus:border-white/40 focus:outline-none text-sm text-white placeholder:text-white/40 disabled:opacity-50 rounded-sm"
               />
               <button
                 type="submit"
                 disabled={status === "loading"}
-                className="w-full bg-black border border-white/20 text-white py-3 text-xs uppercase tracking-wider hover:bg-white hover:text-black hover:border-white transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-black border border-white/20 text-white py-2.5 sm:py-3 text-xs uppercase tracking-wider hover:bg-white hover:text-black hover:border-white transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {status === "loading" ? "Subscribing..." : "Subscribe"}
               </button>
             </form>
             {message && (
-              <p className={`text-sm mt-2 ${status === "success" ? "text-green-400" : "text-red-400"}`}>
+              <p className={`text-xs sm:text-sm mt-2 ${status === "success" ? "text-green-400" : "text-red-400"}`}>
                 {message}
               </p>
             )}

@@ -100,10 +100,10 @@ export default async function Home() {
             </div>
             <Link
               href="/products"
-              className="text-xs uppercase tracking-wider text-white/60 hover:text-white transition-colors flex items-center gap-1.5 sm:gap-2 whitespace-nowrap flex-shrink-0"
+              className="text-[11px] sm:text-xs uppercase tracking-wider text-white/60 hover:text-white transition-colors flex items-center gap-1.5 sm:gap-2 whitespace-nowrap flex-shrink-0"
             >
               <span>View All</span>
-              <ArrowRight size={14} />
+              <ArrowRight size={12} className="sm:w-3.5 sm:h-3.5" />
             </Link>
           </div>
         </div>
