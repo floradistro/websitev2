@@ -21,32 +21,33 @@ export async function generateMetadata({
   const price = product.price ? `$${parseFloat(product.price).toFixed(0)}` : "";
   const description = product.short_description 
     ? product.short_description.replace(/<[^>]*>/g, '').substring(0, 155)
-    : `Shop ${product.name} ${price ? `starting at ${price}` : ''} at Flora Distro. Premium cannabis products with fast shipping.`;
+    : `Shop ${product.name} ${price ? `starting at ${price}` : ''} at Flora Distro. Premium cannabis products with fast shipping. In stock now.`;
 
-  const image = product.images?.[0]?.src || "https://floradistro.com/logoprint.png";
+  const productImage = product.images?.[0]?.src;
 
   return {
-    title: `${product.name} | ${category} | Flora Distro`,
+    title: `${product.name} | ${category}`,
     description,
     openGraph: {
-      title: `${product.name} - Flora Distro`,
+      title: `${product.name} - ${category}`,
       description,
-      images: [
+      images: productImage ? [
         {
-          url: image,
+          url: productImage,
           width: 1200,
           height: 630,
           alt: product.name,
         },
-      ],
+      ] : undefined,
       type: "website",
       siteName: "Flora Distro",
     },
     twitter: {
       card: "summary_large_image",
-      title: `${product.name} - Flora Distro`,
+      title: `${product.name} - ${category}`,
       description,
-      images: [image],
+      images: productImage ? [productImage] : undefined,
+      creator: "@floradistro",
     },
   };
 }
