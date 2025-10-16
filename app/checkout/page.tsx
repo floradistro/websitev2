@@ -84,7 +84,8 @@ export default function CheckoutPage() {
 
   const processPayment = async (paymentToken: string) => {
     try {
-      const response = await fetch("/api/payment", {
+      // Try guest checkout endpoint first (no auth required)
+      const response = await fetch("/api/payment/guest", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -432,7 +433,7 @@ export default function CheckoutPage() {
                     className="w-full px-4 py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-all"
                   />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-3 gap-4">
                   <div>
                     <label className="block text-[10px] uppercase tracking-[0.2em] mb-2 text-white/60">
                       City
@@ -459,6 +460,21 @@ export default function CheckoutPage() {
                       onChange={(e) => setBillingInfo({ ...billingInfo, state: e.target.value.toUpperCase() })}
                       className="w-full px-4 py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-all uppercase"
                       placeholder="NC"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] uppercase tracking-[0.2em] mb-2 text-white/60">
+                      ZIP Code
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      maxLength={5}
+                      autoComplete="postal-code"
+                      value={billingInfo.zipCode}
+                      onChange={(e) => setBillingInfo({ ...billingInfo, zipCode: e.target.value })}
+                      className="w-full px-4 py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-all"
+                      placeholder="28801"
                     />
                   </div>
                 </div>

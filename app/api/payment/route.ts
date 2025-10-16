@@ -62,12 +62,13 @@ export async function POST(request: NextRequest) {
     // Determine if there are any delivery items
     const hasDeliveryItems = items.some((item: any) => item.orderType === "delivery");
 
-    // Create WooCommerce order with payment processing
+    // Create WooCommerce order with payment processing (as guest)
     const orderData = {
       payment_method: "authorize_net_cim",
       payment_method_title: isApplePay ? "Apple Pay (Authorize.net)" : "Credit Card (Authorize.net)",
       set_paid: false,
       status: "pending",
+      customer_id: 0, // 0 = guest checkout
       billing: {
         first_name: billing.firstName,
         last_name: billing.lastName,
