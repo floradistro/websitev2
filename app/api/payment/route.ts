@@ -16,8 +16,8 @@ export async function POST(request: NextRequest) {
 
     // Build checkout form data exactly as WooCommerce expects
     const formData = new URLSearchParams({
-      payment_method: 'authorize_net_cim',
-      'wc-authorize-net-cim-payment-nonce': payment_token,
+      payment_method: 'authorize_net_cim_credit_card',
+      'wc-authorize-net-cim-credit-card-payment-nonce': payment_token,
       billing_first_name: billing.firstName,
       billing_last_name: billing.lastName,
       billing_email: billing.email,
