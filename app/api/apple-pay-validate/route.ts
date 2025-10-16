@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import axios from "axios";
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,28 +12,44 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Forward the validation request to WordPress/Authorize.net
-    // This endpoint should be implemented on your WordPress side
+    // Apple Pay validation requires server-side certificate and merchant ID
+    // This needs to be set up with Apple Developer account
+    // For now, return error indicating it needs configuration
+    
+    return NextResponse.json(
+      {
+        success: false,
+        error: "Apple Pay is not configured. Please set up Apple Pay merchant certificate and validation endpoint on the WordPress backend."
+      },
+      { status: 501 }
+    );
+
+    // Uncomment and configure when Apple Pay is set up:
+    /*
     const baseUrl = process.env.WORDPRESS_API_URL;
     const authParams = `consumer_key=${process.env.WORDPRESS_CONSUMER_KEY}&consumer_secret=${process.env.WORDPRESS_CONSUMER_SECRET}`;
 
-    const response = await axios.post(
-      `${baseUrl}/wp-json/wc/v3/payment_gateways/authorize_net_cim/apple-pay-validate?${authParams}`,
+    const response = await fetch(
+      `${baseUrl}/wp-json/flora/v1/apple-pay/validate`,
       {
-        validation_url: validationURL
-      },
-      {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          "Authorization": `Basic ${Buffer.from(`${process.env.WORDPRESS_CONSUMER_KEY}:${process.env.WORDPRESS_CONSUMER_SECRET}`).toString('base64')}`
         },
-        timeout: 10000
+        body: JSON.stringify({
+          validation_url: validationURL
+        })
       }
     );
 
+    const data = await response.json();
+
     return NextResponse.json({
       success: true,
-      merchantSession: response.data
+      merchantSession: data
     });
+    */
 
   } catch (error: any) {
     console.error("Apple Pay validation error:", error);
@@ -42,9 +57,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         success: false,
-        error: error.response?.data?.message || error.message || "Apple Pay validation failed"
+        error: error.message || "Apple Pay validation failed"
       },
-      { status: error.response?.status || 500 }
+      { status: 500 }
     );
   }
 }

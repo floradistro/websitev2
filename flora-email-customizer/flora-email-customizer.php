@@ -60,6 +60,7 @@ class Flora_Email_Customizer {
         
         // Customize WordPress core emails
         add_filter('wp_mail_from_name', array($this, 'custom_email_from_name'));
+        add_filter('woocommerce_email_from_address', array($this, 'custom_email_from_address'), 10, 2);
         add_filter('retrieve_password_message', array($this, 'custom_password_reset_email'), 10, 4);
         add_filter('wp_new_user_notification_email', array($this, 'custom_new_user_email'), 10, 3);
         

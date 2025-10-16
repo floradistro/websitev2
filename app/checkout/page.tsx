@@ -168,6 +168,12 @@ export default function CheckoutPage() {
   };
 
   const handleApplePay = async () => {
+    setPaymentError("Apple Pay is not configured yet. Please use credit card payment.");
+    setIsProcessing(false);
+    return;
+    
+    // Apple Pay implementation (disabled until configured)
+    /*
     if (!window.ApplePaySession) {
       setPaymentError("Apple Pay is not available on this device");
       return;
@@ -287,6 +293,7 @@ export default function CheckoutPage() {
     };
 
     session.begin();
+    */
   };
 
   if (items.length === 0) {

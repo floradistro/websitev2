@@ -14,10 +14,42 @@ function TrackContent() {
 
   useEffect(() => {
     if (orderId) {
-      const savedOrder = localStorage.getItem(`order-${orderId}`);
-      if (savedOrder) {
-        setOrderData(JSON.parse(savedOrder));
-      }
+      // Fetch real order from WooCommerce
+      fetch(`/api/orders/${orderId}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.success && data.order) {
+            // Transform WooCommerce order to our format
+            const transformedOrder = {
+              billing: {
+                email: data.order.billing.email,
+                firstName: data.order.billing.first_name,
+                lastName: data.order.billing.last_name
+              },
+              items: data.order.line_items.map((item: any) => ({
+                name: item.name,
+                quantity: item.quantity,
+                price: parseFloat(item.price),
+                tierName: item.meta_data?.find((m: any) => m.key === 'tier_name')?.value || '1 unit',
+                orderType: item.meta_data?.find((m: any) => m.key === 'order_type')?.value || 'delivery',
+                locationName: item.meta_data?.find((m: any) => m.key === 'pickup_location_name')?.value,
+                image: item.image?.src
+              })),
+              total: parseFloat(data.order.total),
+              status: data.order.status,
+              payment_method: data.order.payment_method_title
+            };
+            setOrderData(transformedOrder);
+          }
+        })
+        .catch(err => {
+          console.error('Failed to fetch order:', err);
+          // Fallback to localStorage for backwards compatibility
+          const savedOrder = localStorage.getItem(`order-${orderId}`);
+          if (savedOrder) {
+            setOrderData(JSON.parse(savedOrder));
+          }
+        });
     }
   }, [orderId]);
 
