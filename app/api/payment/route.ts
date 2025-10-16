@@ -4,18 +4,29 @@ const baseUrl = process.env.WORDPRESS_API_URL;
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('=== PAYMENT API CALLED ===');
+    console.log('Base URL:', baseUrl);
+    
     const body = await request.json();
     const { payment_token, billing, shipping, items, shipping_cost } = body;
 
+    console.log('Payment token length:', payment_token?.length);
+    console.log('Items count:', items?.length);
+    console.log('Billing email:', billing?.email);
+
     if (!payment_token || !billing || !items || items.length === 0) {
+      console.error('MISSING FIELDS!');
       return NextResponse.json(
         { success: false, error: "Missing required fields" },
         { status: 400 }
       );
     }
 
+    const wpUrl = `${baseUrl}/wp-admin/admin-ajax.php?action=flora_create_order`;
+    console.log('Calling WordPress at:', wpUrl);
+
     // Submit to WordPress admin-ajax (works for guests via nopriv hook)
-    const response = await fetch(`${baseUrl}/wp-admin/admin-ajax.php?action=flora_create_order`, {
+    const response = await fetch(wpUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -29,13 +40,15 @@ export async function POST(request: NextRequest) {
       })
     });
 
+    console.log('WordPress HTTP status:', response.status);
+
     if (!response.ok) {
       console.error('WordPress returned non-200:', response.status);
       throw new Error(`WordPress returned ${response.status}`);
     }
 
     const text = await response.text();
-    console.log('WordPress response:', text);
+    console.log('WordPress raw response:', text);
     
     let data;
     try {
