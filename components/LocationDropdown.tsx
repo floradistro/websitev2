@@ -48,42 +48,43 @@ export default function LocationDropdown({
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="inline-flex items-center space-x-2 px-4 py-2.5 bg-white/80 backdrop-blur-sm border-0 hover:bg-white transition-all duration-200 text-sm font-light shadow-sm hover:shadow-md group"
+        className="inline-flex items-center space-x-2 px-3 py-2 bg-transparent border border-white/20 hover:border-white/40 transition-all duration-300 text-[11px] font-normal uppercase tracking-[0.12em] group text-white"
       >
-        <MapPin size={16} className="text-black/60 group-hover:text-black transition-colors" />
+        <MapPin size={14} strokeWidth={2} className="text-white/60 group-hover:text-white transition-colors" />
         <span className="whitespace-nowrap">
           {selectedLocationData
-            ? `${selectedLocationData.name}${selectedLocationData.city ? `, ${selectedLocationData.city}` : ""}`
+            ? `${selectedLocationData.name}`
             : "All Locations"}
         </span>
         <ChevronDown
-          size={16}
-          className={`text-black/60 transition-transform duration-200 ${
+          size={14}
+          strokeWidth={2}
+          className={`text-white/60 transition-transform duration-300 ${
             isOpen ? "rotate-180" : ""
           }`}
         />
       </button>
 
       {isOpen && (
-        <div className="absolute top-full left-0 mt-2 w-72 bg-white shadow-elevated-lg border-0 z-50 animate-fadeIn">
-          <div className="p-2">
+        <div className="absolute top-full left-0 mt-2 w-64 bg-[#3a3a38] shadow-lg border border-white/20 z-50 animate-fadeIn">
+          <div className="p-1">
             <button
               onClick={() => {
                 onLocationChange(null);
                 setIsOpen(false);
               }}
-              className="w-full flex items-center justify-between px-4 py-3 hover:bg-black/5 transition-colors duration-200 text-left group"
+              className="w-full flex items-center justify-between px-4 py-3 hover:bg-white/5 transition-colors duration-200 text-left group"
             >
               <div className="flex items-center space-x-3">
-                <MapPin size={16} className="text-black/40 group-hover:text-black/60 transition-colors" />
-                <span className="text-sm font-light">All Locations</span>
+                <MapPin size={14} strokeWidth={2} className="text-white/40 group-hover:text-white/70 transition-colors" />
+                <span className="text-[11px] font-normal uppercase tracking-[0.12em] text-white">All Locations</span>
               </div>
               {!selectedLocation && (
-                <Check size={16} className="text-black" />
+                <Check size={14} strokeWidth={2} className="text-white" />
               )}
             </button>
 
-            <div className="h-[1px] bg-black/5 my-2"></div>
+            <div className="h-px bg-white/10 my-1"></div>
 
             {activeLocations.map((location) => (
               <button
@@ -92,14 +93,14 @@ export default function LocationDropdown({
                   onLocationChange(location.id.toString());
                   setIsOpen(false);
                 }}
-                className="w-full flex items-center justify-between px-4 py-3 hover:bg-black/5 transition-colors duration-200 text-left group"
+                className="w-full flex items-center justify-between px-4 py-3 hover:bg-white/5 transition-colors duration-200 text-left group"
               >
                 <div className="flex items-center space-x-3">
-                  <MapPin size={16} className="text-black/40 group-hover:text-black/60 transition-colors" />
+                  <MapPin size={14} strokeWidth={2} className="text-white/40 group-hover:text-white/70 transition-colors" />
                   <div>
-                    <p className="text-sm font-light">{location.name}</p>
+                    <p className="text-[11px] font-normal uppercase tracking-[0.12em] text-white">{location.name}</p>
                     {(location.city || location.state) && (
-                      <p className="text-xs text-black/50 font-light">
+                      <p className="text-[10px] text-white/50 font-normal tracking-wide mt-0.5">
                         {location.city}
                         {location.city && location.state && ", "}
                         {location.state}
@@ -108,7 +109,7 @@ export default function LocationDropdown({
                   </div>
                 </div>
                 {selectedLocation === location.id.toString() && (
-                  <Check size={16} className="text-black" />
+                  <Check size={14} strokeWidth={2} className="text-white" />
                 )}
               </button>
             ))}

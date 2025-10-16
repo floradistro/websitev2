@@ -200,7 +200,7 @@ export default function ProductCard({ product, index, locations, pricingRules, p
 
   return (
     <div
-      className="group block relative bg-[#2a2a2a] hover:bg-[#333333] transition-colors duration-300 border border-white/5 cursor-pointer"
+      className="group block relative bg-[#3a3a38] hover:bg-[#404040] transition-all duration-500 cursor-pointer"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onClick={handleCardClick}
@@ -209,77 +209,84 @@ export default function ProductCard({ product, index, locations, pricingRules, p
       }}
     >
       {/* Product Image Container */}
-      <div className="relative aspect-[4/5] mb-2 overflow-hidden bg-[#1a1a1a] shadow-md group-hover:shadow-2xl transition-all duration-500 border-b border-white/5">
+      <div className="relative aspect-[4/5] overflow-hidden bg-[#2a2a28]">
         {product.images?.[0] ? (
           <>
             {/* Main Image */}
             <img
               src={product.images[0].src}
               alt={product.name}
-              className="w-full h-full object-contain transition-all duration-700 ease-out group-hover:scale-110"
+              className="w-full h-full object-cover transition-all duration-700 ease-out group-hover:scale-105"
             />
           </>
         ) : (
           <>
             {/* Logo Fallback */}
-            <div className="w-full h-full flex items-center justify-center p-8">
+            <div className="w-full h-full flex items-center justify-center p-12">
               <img
                 src="/logoprint.png"
                 alt="Flora Distro"
-                className="w-full h-full object-contain opacity-20 transition-opacity duration-300 group-hover:opacity-30"
+                className="w-full h-full object-contain opacity-10 transition-opacity duration-500 group-hover:opacity-15"
               />
             </div>
           </>
         )}
 
         {/* Quick Actions Overlay - Desktop */}
-        <div className={`hidden md:flex absolute inset-0 bg-gradient-to-t from-black/40 via-black/10 to-transparent items-end justify-center pb-6 transition-all duration-300 ${
+        <div className={`hidden md:flex absolute inset-0 bg-black/30 backdrop-blur-[2px] items-center justify-center transition-all duration-500 ${
           isHovered ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}>
-          <div className="flex items-center gap-2 transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
+          <div className="flex flex-col items-center gap-2 transform translate-y-3 group-hover:translate-y-0 transition-transform duration-500">
             <button
               onClick={handleQuickBuy}
-              className="flex items-center gap-2 bg-white text-black px-4 py-2.5 text-xs uppercase tracking-wider hover:bg-white/90 transition-all font-medium shadow-lg"
+              className="flex items-center gap-2 bg-white text-black px-6 py-3 text-[10px] uppercase tracking-[0.2em] hover:bg-white/90 transition-all font-medium"
             >
-              <ShoppingBag size={14} />
-              <span>Quick Buy</span>
+              <ShoppingBag size={12} strokeWidth={1.5} />
+              <span>View Product</span>
             </button>
             
-            <button
-              onClick={handlePickup}
-              className="flex items-center gap-1.5 bg-white/10 backdrop-blur-md text-white px-3 py-2.5 hover:bg-white/20 transition-all shadow-lg border border-white/20 text-xs uppercase tracking-wider font-medium"
-            >
-              <Store size={14} />
-              <span>Pickup</span>
-            </button>
-            
-            <button
-              onClick={handleDelivery}
-              className="flex items-center gap-1.5 bg-white/10 backdrop-blur-md text-white px-3 py-2.5 hover:bg-white/20 transition-all shadow-lg border border-white/20 text-xs uppercase tracking-wider font-medium"
-            >
-              <Truck size={14} />
-              <span>Delivery</span>
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handlePickup}
+                className="flex items-center gap-1.5 bg-white/20 backdrop-blur-md text-white border border-white/30 px-4 py-2.5 hover:bg-white/30 transition-all text-[9px] uppercase tracking-[0.2em] font-medium"
+              >
+                <Store size={11} strokeWidth={1.5} />
+                <span>Pickup</span>
+              </button>
+              
+              <button
+                onClick={handleDelivery}
+                className="flex items-center gap-1.5 bg-white/20 backdrop-blur-md text-white border border-white/30 px-4 py-2.5 hover:bg-white/30 transition-all text-[9px] uppercase tracking-[0.2em] font-medium"
+              >
+                <Truck size={11} strokeWidth={1.5} />
+                <span>Delivery</span>
+              </button>
+            </div>
           </div>
         </div>
 
       </div>
 
       {/* Product Info */}
-      <div className="space-y-2.5 px-3 md:px-2 py-3 md:py-2.5 transform transition-transform duration-300 group-hover:translate-x-1">
-        <h3 className="text-3xl md:text-3xl leading-snug line-clamp-2 font-thin group-hover:opacity-70 transition-opacity duration-200 logo-font tracking-wider text-white">
+      <div className="space-y-3 px-3 py-4">
+        <h3 className="text-xs uppercase tracking-[0.15em] font-normal text-white line-clamp-2 leading-relaxed">
           {product.name}
         </h3>
         
+        {/* Price */}
+        <p className="text-sm font-medium text-white tracking-wide">
+          {getPriceDisplay()}
+        </p>
+        
         {/* Blueprint Fields */}
         {displayFields.length > 0 && (
-          <div className="space-y-1.5 bg-white/5 backdrop-blur-sm px-2.5 py-2 rounded-sm border border-white/10 w-full">
+          <div className="space-y-1.5 pt-2 border-t border-white/10">
             {displayFields.map((field, idx) => (
-              <div key={idx} className="flex items-baseline gap-2 w-full">
-                <span className="uppercase tracking-[0.15em] font-medium text-white/40 text-[10px] md:text-[9px] min-w-[70px] md:min-w-[60px] whitespace-nowrap">
+              <div key={idx} className="flex items-center justify-between gap-2">
+                <span className="uppercase tracking-[0.12em] font-medium text-white/60 text-[10px] whitespace-nowrap">
                   {field.label}
                 </span>
-                <span className="text-sm md:text-xs tracking-wide text-white/70 font-light flex-1 text-right truncate">
+                <span className="text-[11px] tracking-wide text-white/90 font-normal text-right truncate">
                   {field.value}
                 </span>
               </div>
@@ -289,14 +296,14 @@ export default function ProductCard({ product, index, locations, pricingRules, p
         
         {/* Pricing Tier Selector */}
         {tiers.length > 0 && (
-          <div className="space-y-2" onClick={handleDropdownClick}>
+          <div className="space-y-2 pt-2" onClick={handleDropdownClick}>
             <div className="relative">
-              <select
+                <select
                 value={selectedTierIndex ?? ""}
                 onChange={handleTierSelect}
                 onClick={handleDropdownClick}
-                className="w-full appearance-none bg-white/5 border border-white/10 px-3 py-3 md:py-2 pr-8 text-sm md:text-xs font-light text-white/90 hover:border-white/30 focus:border-white/50 focus:outline-none transition-colors cursor-pointer touch-manipulation"
-                style={{ minHeight: '44px' }}
+                className="w-full appearance-none bg-transparent border border-white/20 px-3 py-2.5 md:py-2 pr-7 text-[11px] font-normal text-white hover:border-white/40 focus:border-white focus:outline-none transition-all cursor-pointer touch-manipulation uppercase tracking-[0.1em]"
+                style={{ minHeight: '40px' }}
               >
                 <option value="">Select Quantity</option>
                 {tiers.map((tier, index) => {
@@ -313,9 +320,9 @@ export default function ProductCard({ product, index, locations, pricingRules, p
                   );
                 })}
               </select>
-              <div className="absolute inset-y-0 right-0 flex items-center pr-3 md:pr-2 pointer-events-none">
-                <svg className="w-5 h-5 md:w-4 md:h-4 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              <div className="absolute inset-y-0 right-0 flex items-center pr-2.5 pointer-events-none">
+                <svg className="w-3.5 h-3.5 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                 </svg>
               </div>
             </div>
@@ -323,27 +330,15 @@ export default function ProductCard({ product, index, locations, pricingRules, p
             {showAddToCart && (
               <button
                 onClick={handleAddToCart}
-                className="w-full bg-white text-black px-3 py-3 md:py-2.5 text-sm md:text-xs uppercase tracking-wider hover:bg-white/90 active:bg-white/80 transition-all font-medium flex items-center justify-center gap-2 animate-fadeIn shadow-lg touch-manipulation"
-                style={{ minHeight: '44px' }}
+                className="w-full bg-white text-black px-3 py-2.5 md:py-2 text-[10px] uppercase tracking-[0.15em] hover:bg-white/90 transition-all font-medium flex items-center justify-center gap-2 animate-fadeIn touch-manipulation"
+                style={{ minHeight: '40px' }}
               >
-                <ShoppingBag size={16} className="md:w-3.5 md:h-3.5" />
+                <ShoppingBag size={13} strokeWidth={2} />
                 Add to Cart
               </button>
             )}
           </div>
         )}
-        
-        <div className="flex items-center justify-between pt-1.5 border-t border-white/10">
-          <p className="text-lg md:text-lg font-light tracking-wide text-white">
-            {getPriceDisplay()}
-          </p>
-          
-          {/* Availability Indicator */}
-          <div className="flex items-center gap-1.5">
-            <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse shadow-sm shadow-green-400/50"></div>
-            <span className="text-[10px] text-white/50 uppercase tracking-[0.15em] font-light">In Stock</span>
-          </div>
-        </div>
       </div>
     </div>
   );
