@@ -14,8 +14,8 @@ import LabResults from "@/components/LabResults";
 import ProductReviews from "@/components/ProductReviews";
 import ProductCard from "@/components/ProductCard";
 import ShippingEstimator from "@/components/ShippingEstimator";
-import RecentlyViewed from "@/components/RecentlyViewed";
-import { ProductSchema, BreadcrumbSchema } from "@/components/StructuredData";
+// import RecentlyViewed from "@/components/RecentlyViewed";
+// import { ProductSchema, BreadcrumbSchema } from "@/components/StructuredData";
 import { useCart } from "@/context/CartContext";
 import { analytics } from "@/lib/analytics";
 
@@ -48,28 +48,28 @@ export default function ProductPageClient({
   const [selectedLocationId, setSelectedLocationId] = useState<number | null>(null);
   
   const { addToCart } = useCart();
-  const { addProduct: addToRecentlyViewed } = useRecentlyViewedContext();
+  // const { addProduct: addToRecentlyViewed } = useRecentlyViewedContext();
 
   // Track this product view - only once per product ID
-  useEffect(() => {
-    const image = product.images?.[0]?.src;
-    const category = product.categories?.[0]?.name;
+  // useEffect(() => {
+  //   const image = product.images?.[0]?.src;
+  //   const category = product.categories?.[0]?.name;
     
-    addToRecentlyViewed({
-      id: product.id,
-      name: product.name,
-      price: product.price,
-      image: image,
-    });
+  //   // addToRecentlyViewed({
+  //   //   id: product.id,
+  //   //   name: product.name,
+  //   //   price: product.price,
+  //   //   image: image,
+  //   // });
 
-    // Track analytics
-    analytics.viewProduct({
-      id: product.id,
-      name: product.name,
-      price: parseFloat(product.price) || 0,
-      category: category,
-    });
-  }, [product.id]); // Only track when product ID changes
+  //   // Track analytics
+  //   analytics.viewProduct({
+  //     id: product.id,
+  //     name: product.name,
+  //     price: parseFloat(product.price) || 0,
+  //     category: category,
+  //   });
+  // }, [product.id]); // Only track when product ID changes
 
   const handlePriceSelect = useCallback((price: number, quantity: number, tierName: string) => {
     setSelectedPrice(price);
@@ -134,8 +134,8 @@ export default function ProductPageClient({
   return (
     <div className="bg-[#1a1a1a]">
       {/* Structured Data for SEO */}
-      <ProductSchema product={product} />
-      <BreadcrumbSchema items={breadcrumbItems} />
+      {/* <ProductSchema product={product} />
+      <BreadcrumbSchema items={breadcrumbItems} /> */}
       
       {/* Breadcrumb Navigation */}
       <div className="border-b border-white/10 bg-[#1a1a1a]">
@@ -385,7 +385,7 @@ export default function ProductPageClient({
       </div>
 
       {/* Recently Viewed Products */}
-      <RecentlyViewed />
+      {/* <RecentlyViewed /> */}
 
       {/* Related Products */}
       {relatedProducts.length > 0 && (

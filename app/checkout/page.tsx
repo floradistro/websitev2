@@ -73,12 +73,12 @@ export default function CheckoutPage() {
     }
 
     // Track begin checkout event
-    if (items.length > 0) {
-      analytics.beginCheckout({
-        items: items,
-        total: total,
-      });
-    }
+    // if (items.length > 0) {
+    //   analytics.beginCheckout({
+    //     items: items,
+    //     total: total,
+    //   });
+    // }
 
     // Fetch Authorize.net keys
     fetch("/api/authorize-keys")

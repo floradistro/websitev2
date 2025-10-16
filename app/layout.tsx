@@ -5,7 +5,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ScrollToTop from "@/components/ScrollToTop";
 import { CartProvider } from "@/context/CartContext";
-import { RecentlyViewedProvider } from "@/context/RecentlyViewedContext";
+// import { RecentlyViewedProvider } from "@/context/RecentlyViewedContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -20,7 +20,6 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Flora Distro | Premium Cannabis Distribution",
   description: "Shop premium cannabis products including flower, concentrates, edibles, vapes, and beverages. Direct from our facilities with next-day regional delivery. Farm Bill compliant.",
-  keywords: ["cannabis", "hemp", "Delta-9 THC", "flower", "concentrates", "edibles", "vapes", "North Carolina", "Tennessee"],
   openGraph: {
     title: "Flora Distro | Premium Cannabis Distribution",
     description: "Premium cannabis products with fast shipping. Direct sourcing, volume pricing, always fresh.",
@@ -32,10 +31,6 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Flora Distro | Premium Cannabis Distribution",
     description: "Premium cannabis products with fast shipping.",
-  },
-  robots: {
-    index: true,
-    follow: true,
   },
 };
 
@@ -51,14 +46,14 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         <CartProvider>
-          <RecentlyViewedProvider>
+          {/* <RecentlyViewedProvider> */}
             <Header />
             <main className="flex-1">
               {children}
             </main>
             <Footer />
             <ScrollToTop />
-          </RecentlyViewedProvider>
+          {/* </RecentlyViewedProvider> */}
         </CartProvider>
       </body>
     </html>

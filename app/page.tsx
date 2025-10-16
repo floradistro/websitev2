@@ -8,7 +8,7 @@ import LocationsCarousel from "@/components/LocationsCarousel";
 
 export default async function Home() {
   const [products, categories, locations, allInventory, pricingRules] = await Promise.all([
-    getBestSellingProducts({ per_page: 4 }),
+    getBestSellingProducts({ per_page: 12 }),
     getCategories({ per_page: 10, hide_empty: true }),
     getLocations(),
     getAllInventory(),
@@ -204,7 +204,7 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Locations - Edge to Edge */}
+      {/* Locations - Carousel */}
       <section className="bg-[#2a2a2a] py-16">
         <div className="flex justify-between items-end mb-12 px-4">
           <div>
@@ -222,61 +222,7 @@ export default async function Home() {
           </p>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-px">
-          {locations
-              .filter((loc: any) => {
-                const isActive = loc.is_active === "1";
-                const isAllowed = !['hamas', 'warehouse'].includes(loc.name.toLowerCase());
-                return isActive && isAllowed;
-              })
-              .map((location: any) => {
-                const locationData: { [key: string]: { address: string; googleMapsUrl: string; hours: string } } = {
-                  'Salisbury': {
-                    address: '111 W Bank Street\nSalisbury, NC 28144',
-                    googleMapsUrl: 'https://www.google.com/maps/search/?api=1&query=111+W+Bank+Street+Salisbury+NC+28144',
-                    hours: 'Daily: 11AM-9PM EST'
-                  },
-                  'Charlotte Monroe': {
-                    address: '3130 Monroe Road\nCharlotte, NC 28205',
-                    googleMapsUrl: 'https://www.google.com/maps/search/?api=1&query=3130+Monroe+Road+Charlotte+NC+28205',
-                    hours: 'Daily: 11AM-9PM EST'
-                  },
-                  'Charlotte Central': {
-                    address: '5115 Nations Ford Road\nCharlotte, NC 28217',
-                    googleMapsUrl: 'https://www.google.com/maps/search/?api=1&query=5115+Nations+Ford+Road+Charlotte+NC+28217',
-                    hours: 'Daily: 11AM-9PM EST'
-                  },
-                  'Blowing Rock': {
-                    address: '3894 US 321\nBlowing Rock, NC 28605',
-                    googleMapsUrl: 'https://www.google.com/maps/search/?api=1&query=3894+US+321+Blowing+Rock+NC+28605',
-                    hours: 'Daily: 11AM-9PM EST'
-                  },
-                  'Elizabethton': {
-                    address: '2157 W Elk Ave\nElizabethton, TN 37643',
-                    googleMapsUrl: 'https://www.google.com/maps/search/?api=1&query=2157+W+Elk+Ave+Elizabethton+TN+37643',
-                    hours: 'Daily: 11AM-9PM EST'
-                  }
-                };
-
-                const data = locationData[location.name] || { 
-                  address: location.address_line_1 
-                    ? `${location.address_line_1}\n${location.city || ''}, ${location.state || ''} ${location.postal_code || ''}`.trim()
-                    : '',
-                  googleMapsUrl: '',
-                  hours: 'Daily: 11AM-9PM EST'
-                };
-
-                return (
-                  <LocationCard
-                    key={location.id}
-                    location={location}
-                    address={data.address}
-                    googleMapsUrl={data.googleMapsUrl}
-                    hours={data.hours}
-                  />
-                );
-              })}
-        </div>
+        <LocationsCarousel locations={locations} />
       </section>
 
       {/* Shipping - Split Layout */}
