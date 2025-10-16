@@ -13,11 +13,14 @@ export async function GET(request: NextRequest) {
     const data = await response.json();
 
     if (data.success && data.data) {
+      // Return apiLoginId as both fields since we don't have separate clientKey
+      // The plugin handles tokenization server-side, not via Accept.js
       return NextResponse.json({
         success: true,
-        clientKey: data.data.clientKey,
+        clientKey: data.data.apiLoginId, // Use API Login ID for both
         apiLoginId: data.data.apiLoginId,
-        environment: data.data.environment
+        environment: data.data.environment,
+        useServerSide: true // Flag that we're not using Accept.js
       });
     } else {
       throw new Error("Failed to fetch keys");
@@ -25,12 +28,12 @@ export async function GET(request: NextRequest) {
   } catch (error: any) {
     console.error("Error fetching Authorize.net keys:", error);
     
-    // Return test credentials as fallback
     return NextResponse.json({
       success: true,
-      clientKey: "7Kz9p6L3qR2mN8vY4wX5tC9bH6jF2dA1",
-      apiLoginId: "5KA4cP7Rz",
-      environment: "sandbox"
+      clientKey: "9SB8Rhk6Ljbu",
+      apiLoginId: "9SB8Rhk6Ljbu",
+      environment: "production",
+      useServerSide: true
     });
   }
 }

@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import Link from "next/link";
 import { ChevronLeft, Heart, Share2, Check } from "lucide-react";
+import { useRecentlyViewedContext } from "@/context/RecentlyViewedContext";
 import DeliveryAvailability from "@/components/DeliveryAvailability";
 import PricingTiers from "@/components/PricingTiers";
 import FloraFields from "@/components/FloraFields";
@@ -89,22 +90,37 @@ export default function ProductPageClient({
 
   return (
     <div className="bg-[#1a1a1a]">
-      {/* Breadcrumb - Minimal */}
+      {/* Breadcrumb Navigation */}
       <div className="border-b border-white/10 bg-[#1a1a1a]">
-        <div className="max-w-[2000px] mx-auto px-4 py-4 flex items-center justify-between">
-          <Link
-            href="/products"
-            className="group inline-flex items-center space-x-2 text-xs text-white/60 hover:text-white transition-all duration-300 uppercase tracking-wider"
-          >
-            <ChevronLeft size={14} strokeWidth={1.5} className="transition-transform group-hover:-translate-x-0.5" />
-            <span>Products</span>
-          </Link>
-          
-          {product.categories && product.categories.length > 0 && (
-            <span className="text-xs uppercase tracking-[0.15em] text-white/40">
-              {product.categories[0].name}
-            </span>
-          )}
+        <div className="max-w-[2000px] mx-auto px-4 py-4">
+          <nav className="flex items-center space-x-2 text-xs uppercase tracking-wider">
+            <Link
+              href="/"
+              className="text-white/40 hover:text-white transition-colors"
+            >
+              Home
+            </Link>
+            <span className="text-white/20">/</span>
+            <Link
+              href="/products"
+              className="text-white/40 hover:text-white transition-colors"
+            >
+              Products
+            </Link>
+            {product.categories && product.categories.length > 0 && (
+              <>
+                <span className="text-white/20">/</span>
+                <Link
+                  href={`/products?category=${product.categories[0].slug}`}
+                  className="text-white/40 hover:text-white transition-colors"
+                >
+                  {product.categories[0].name}
+                </Link>
+              </>
+            )}
+            <span className="text-white/20">/</span>
+            <span className="text-white/60 font-medium line-clamp-1">{product.name}</span>
+          </nav>
         </div>
       </div>
 

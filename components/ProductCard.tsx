@@ -241,6 +241,30 @@ export default function ProductCard({ product, index, locations, pricingRules, p
           </>
         )}
 
+        {/* Badges Overlay - Top Left */}
+        <div className="absolute top-2 left-2 flex flex-col gap-1">
+          {/* New Arrival Badge - Products created within last 7 days */}
+          {product.date_created && new Date(product.date_created).getTime() > Date.now() - 7 * 24 * 60 * 60 * 1000 && (
+            <div className="bg-white text-black px-2 py-0.5 text-[9px] font-medium uppercase tracking-wider">
+              New
+            </div>
+          )}
+          
+          {/* Best Seller Badge - Products with >10 sales */}
+          {product.total_sales && product.total_sales > 10 && (
+            <div className="bg-black border border-white/30 text-white px-2 py-0.5 text-[9px] font-medium uppercase tracking-wider">
+              Popular
+            </div>
+          )}
+          
+          {/* Low Stock Badge - When stock is available but low */}
+          {product.stock_status === 'instock' && product.stock_quantity && product.stock_quantity <= 5 && product.stock_quantity > 0 && (
+            <div className="bg-red-600/90 text-white px-2 py-0.5 text-[9px] font-medium uppercase tracking-wider">
+              Only {product.stock_quantity} Left
+            </div>
+          )}
+        </div>
+
         {/* Quick Actions Overlay - Desktop */}
         <div className={`hidden md:flex absolute inset-0 bg-black/40 backdrop-blur-[3px] items-center justify-center transition-all duration-500 ${
           isHovered ? 'opacity-100' : 'opacity-0 pointer-events-none'
@@ -286,6 +310,19 @@ export default function ProductCard({ product, index, locations, pricingRules, p
         <p className="text-sm font-medium text-white tracking-wide transition-all duration-300 group-hover:text-white/80">
           {getPriceDisplay()}
         </p>
+        
+        {/* Stock Status Indicator */}
+        {product.stock_status === 'instock' ? (
+          <div className="flex items-center gap-1.5">
+            <div className="w-2 h-2 rounded-full bg-green-500"></div>
+            <span className="text-[10px] uppercase tracking-wider text-white/60">In Stock</span>
+          </div>
+        ) : product.stock_status === 'outofstock' ? (
+          <div className="flex items-center gap-1.5">
+            <div className="w-2 h-2 rounded-full bg-red-500"></div>
+            <span className="text-[10px] uppercase tracking-wider text-white/60">Out of Stock</span>
+          </div>
+        ) : null}
         
         {/* Blueprint Fields */}
         {displayFields.length > 0 && (

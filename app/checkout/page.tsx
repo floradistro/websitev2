@@ -119,18 +119,28 @@ export default function CheckoutPage() {
     setIsProcessing(true);
     setPaymentError("");
 
-    if (!acceptJsLoaded || !window.Accept) {
-      setPaymentError("Payment system not loaded. Please refresh and try again.");
-      setIsProcessing(false);
-      return;
-    }
-
-    if (!authorizeKeys || !authorizeKeys.clientKey || !authorizeKeys.apiLoginId) {
+    if (!authorizeKeys || !authorizeKeys.apiLoginId) {
       setPaymentError("Payment configuration not loaded. Please refresh and try again.");
       setIsProcessing(false);
       return;
     }
 
+    // If using server-side processing (no Accept.js)
+    if (authorizeKeys.useServerSide || !acceptJsLoaded || !window.Accept) {
+      // Send card data directly - will be tokenized server-side
+      const [expMonth, expYear] = paymentInfo.expiry.split("/");
+      const paymentData = {
+        cardNumber: paymentInfo.cardNumber.replace(/\s/g, ""),
+        expMonth,
+        expYear,
+        cvv: paymentInfo.cvv
+      };
+      
+      await processPayment(JSON.stringify(paymentData));
+      return;
+    }
+
+    // Use Accept.js if available and configured
     const authData = {
       clientKey: authorizeKeys.clientKey,
       apiLoginID: authorizeKeys.apiLoginId
