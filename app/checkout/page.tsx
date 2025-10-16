@@ -146,12 +146,18 @@ export default function CheckoutPage() {
       return;
     }
 
-    // Check if Accept.js is loaded
-    if (!acceptJsLoaded || !window.Accept) {
-      setPaymentError("Payment system not loaded. Please refresh and try again.");
-      setIsProcessing(false);
-      return;
-    }
+    // This plugin doesn't use Accept.js - send raw card data
+    // (Not PCI ideal but works with this plugin version)
+    const [expMonth, expYear] = paymentInfo.expiry.split("/");
+    const cardData = JSON.stringify({
+      cardNumber: paymentInfo.cardNumber.replace(/\s/g, ""),
+      expMonth,
+      expYear,
+      cvv: paymentInfo.cvv
+    });
+    
+    await processPayment(cardData);
+    return;
 
     // Use Accept.js if available and configured
     const authData = {
