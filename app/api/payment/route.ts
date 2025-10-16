@@ -5,16 +5,7 @@ const baseUrl = process.env.WORDPRESS_API_URL;
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const {
-      payment_token,
-      payment_type,
-      billing,
-      shipping,
-      items,
-      shipping_method,
-      shipping_cost,
-      total
-    } = body;
+    const { payment_token, billing, shipping, items, shipping_method, shipping_cost } = body;
 
     if (!payment_token || !billing || !items || items.length === 0) {
       return NextResponse.json(
@@ -23,84 +14,78 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const isApplePay = payment_type === "apple_pay";
-    const hasDeliveryItems = items.some((item: any) => item.orderType === "delivery");
-
-    // Use WooCommerce standard checkout endpoint (supports guest checkout)
-    const checkoutData = {
-      payment_method: "authorize_net_cim",
-      payment_data: {
-        payment_nonce: payment_token
-      },
+    // Build checkout form data exactly as WooCommerce expects
+    const formData = new URLSearchParams({
+      payment_method: 'authorize_net_cim',
+      'wc-authorize-net-cim-payment-nonce': payment_token,
       billing_first_name: billing.firstName,
       billing_last_name: billing.lastName,
       billing_email: billing.email,
       billing_phone: billing.phone,
-      billing_address_1: billing.address || "",
-      billing_address_2: billing.address2 || "",
-      billing_city: billing.city || "",
-      billing_state: billing.state || "",
-      billing_postcode: billing.zipCode || "",
-      billing_country: billing.country || "US",
-      shipping_first_name: (shipping && hasDeliveryItems) ? (shipping.firstName || billing.firstName) : billing.firstName,
-      shipping_last_name: (shipping && hasDeliveryItems) ? (shipping.lastName || billing.lastName) : billing.lastName,
-      shipping_address_1: (shipping && hasDeliveryItems) ? shipping.address : (billing.address || ""),
-      shipping_address_2: (shipping && hasDeliveryItems) ? (shipping.address2 || "") : (billing.address2 || ""),
-      shipping_city: (shipping && hasDeliveryItems) ? shipping.city : (billing.city || ""),
-      shipping_state: (shipping && hasDeliveryItems) ? shipping.state : (billing.state || ""),
-      shipping_postcode: (shipping && hasDeliveryItems) ? shipping.zip : (billing.zipCode || ""),
-      shipping_country: (shipping && hasDeliveryItems) ? (shipping.country || "US") : (billing.country || "US"),
-      line_items: items.map((item: any) => ({
-        product_id: item.productId,
-        quantity: item.quantity,
-        tier_name: item.tierName,
-        order_type: item.orderType || "delivery",
-        location_id: item.locationId,
-        location_name: item.locationName
-      })),
-      shipping_method: shipping_method?.method_id || "flat_rate",
-      shipping_cost: shipping_cost,
-      'wc-authorize-net-cim-payment-nonce': payment_token
-    };
+      billing_address_1: billing.address || '',
+      billing_address_2: billing.address2 || '',
+      billing_city: billing.city || '',
+      billing_state: billing.state || '',
+      billing_postcode: billing.zipCode || '',
+      billing_country: billing.country || 'US',
+      shipping_first_name: shipping?.firstName || billing.firstName,
+      shipping_last_name: shipping?.lastName || billing.lastName,
+      shipping_address_1: shipping?.address || billing.address || '',
+      shipping_address_2: shipping?.address2 || billing.address2 || '',
+      shipping_city: shipping?.city || billing.city || '',
+      shipping_state: shipping?.state || billing.state || '',
+      shipping_postcode: shipping?.zip || billing.zipCode || '',
+      shipping_country: shipping?.country || billing.country || 'US',
+      ship_to_different_address: shipping ? '1' : '0',
+      terms: '1',
+      'woocommerce-process-checkout-nonce': '', // Will be populated
+      _wp_http_referer: '/?wc-ajax=update_order_review'
+    });
 
-    // Submit to WooCommerce checkout (no auth required for checkout)
-    const response = await fetch(
-      `${baseUrl}/?wc-ajax=checkout`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: new URLSearchParams(checkoutData as any).toString()
+    // Add cart items
+    items.forEach((item: any, index: number) => {
+      formData.append(`cart[${index}][product_id]`, item.productId.toString());
+      formData.append(`cart[${index}][quantity]`, item.quantity.toString());
+      formData.append(`cart[${index}][tier_name]`, item.tierName);
+      if (item.orderType) {
+        formData.append(`cart[${index}][order_type]`, item.orderType);
       }
-    );
+      if (item.locationId) {
+        formData.append(`cart[${index}][location_id]`, item.locationId);
+      }
+      if (item.locationName) {
+        formData.append(`cart[${index}][location_name]`, item.locationName);
+      }
+    });
+
+    // Submit to WooCommerce checkout endpoint
+    const response = await fetch(`${baseUrl}/?wc-ajax=checkout`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: formData.toString()
+    });
 
     const data = await response.json();
 
-    if (!response.ok || data.result !== 'success') {
-      throw new Error(data.messages || "Checkout failed");
+    if (data.result === 'success') {
+      return NextResponse.json({
+        success: true,
+        order_id: data.order_id,
+        order_number: data.order_id,
+        order_key: data.order_key || '',
+        redirect: data.redirect
+      });
+    } else {
+      throw new Error(data.messages || JSON.stringify(data));
     }
 
-    return NextResponse.json({
-      success: true,
-      order_id: data.order_id,
-      order_number: data.order_id,
-      order_key: data.order_key || '',
-      status: 'processing',
-      total: total,
-      redirect: data.redirect
-    });
-
   } catch (error: any) {
-    console.error("Payment processing error:", error);
-    
+    console.error("Payment error:", error);
     return NextResponse.json(
-      {
-        success: false,
-        error: error.response?.data?.message || error.message || "Payment processing failed",
-        details: error.response?.data
-      },
-      { status: error.response?.status || 500 }
+      { success: false, error: error.message || "Payment failed" },
+      { status: 500 }
     );
   }
 }
