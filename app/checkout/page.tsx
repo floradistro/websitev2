@@ -118,7 +118,9 @@ export default function CheckoutPage() {
       console.log('Payment API response status:', response.status);
 
       const data = await response.json();
-      console.log('Payment API response data:', data);
+      console.log('Payment API response data:', JSON.stringify(data, null, 2));
+      console.log('Error message:', data.error);
+      console.log('Debug info:', data.debug);
 
       if (!response.ok || !data.success) {
         throw new Error(data.error || "Payment failed");
