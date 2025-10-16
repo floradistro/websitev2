@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
+import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Package, Store, Truck, CheckCircle, Clock, MapPin } from "lucide-react";
 import Link from "next/link";
 
-function TrackPageContent() {
+export default function TrackPage() {
   const searchParams = useSearchParams();
   const orderId = searchParams.get("orderId");
   const [orderData, setOrderData] = useState<any>(null);
