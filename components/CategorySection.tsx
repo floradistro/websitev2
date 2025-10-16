@@ -14,42 +14,66 @@ export default function CategorySection({ categories }: CategorySectionProps) {
   // FLOWER CATEGORY
   if (categorySlug.includes('flower') || categorySlug.includes('bud')) {
     return (
-      <div className="-mx-3 md:mx-0 border-t border-white/10 pt-8 md:pt-12">
-        {/* Feature List */}
-        <div className="space-y-4 md:space-y-6">
-          <div className="bg-white/5 border-y md:border md:rounded-lg border-white/10 px-6 py-5 hover:bg-white/10 transition-all duration-300">
-            <div className="flex items-start gap-4">
-              <Sparkles className="w-6 h-6 text-white flex-shrink-0 mt-0.5" strokeWidth={1.5} />
-              <div>
-                <h3 className="text-base font-semibold mb-1 text-white">Top Shelf Quality</h3>
-                <p className="text-sm text-white/70 leading-relaxed font-light">
-                  Hand-selected premium flower, harvested at peak potency. Lab tested for quality and purity.
-                </p>
+      <div className="space-y-px pt-6 mt-6">
+        <div 
+          className="relative group/feature border border-white/10 p-4 bg-[#1a1a1a] hover:border-white/20 hover:bg-[#202020] transition-all duration-500 overflow-hidden"
+          style={{ animation: 'fadeIn 0.8s ease-out 0.1s both' }}
+        >
+          <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/5 to-white/0 opacity-0 group-hover/feature:opacity-100 transition-opacity duration-700" 
+               style={{ transform: 'translateX(-100%)', animation: 'shimmer 3s ease-in-out infinite' }} />
+          <div className="relative flex items-start gap-3">
+            <div className="w-6 h-6 flex items-center justify-center flex-shrink-0">
+              <Sparkles size={12} className="text-white/40 group-hover/feature:text-white transition-all duration-500" strokeWidth={1.5} />
+            </div>
+            <div className="flex-1 space-y-1">
+              <div className="text-[10px] uppercase tracking-[0.15em] text-white/80 font-medium group-hover/feature:text-white transition-colors duration-300">
+                Top Shelf Quality
               </div>
+              <p className="text-[9px] text-white/40 leading-relaxed group-hover/feature:text-white/60 transition-colors duration-300">
+                Hand-selected premium flower, lab tested
+              </p>
             </div>
           </div>
+        </div>
 
-          <div className="bg-white/5 border-y md:border md:rounded-lg border-white/10 px-6 py-5 hover:bg-white/10 transition-all duration-300">
-            <div className="flex items-start gap-4">
-              <Truck className="w-6 h-6 text-white flex-shrink-0 mt-0.5" strokeWidth={1.5} />
-              <div>
-                <h3 className="text-base font-semibold mb-1 text-white">Fast Delivery</h3>
-                <p className="text-sm text-white/70 leading-relaxed font-light">
-                  Same-day delivery available. Your order arrives fresh, discreet, and on time—every time.
-                </p>
+        <div 
+          className="relative group/feature border border-white/10 p-4 bg-[#1a1a1a] hover:border-white/20 hover:bg-[#202020] transition-all duration-500 overflow-hidden"
+          style={{ animation: 'fadeIn 0.8s ease-out 0.2s both' }}
+        >
+          <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/5 to-white/0 opacity-0 group-hover/feature:opacity-100 transition-opacity duration-700" 
+               style={{ transform: 'translateX(-100%)', animation: 'shimmer 3s ease-in-out infinite' }} />
+          <div className="relative flex items-start gap-3">
+            <div className="w-6 h-6 flex items-center justify-center flex-shrink-0">
+              <Truck size={12} className="text-white/40 group-hover/feature:text-white transition-all duration-500" strokeWidth={1.5} />
+            </div>
+            <div className="flex-1 space-y-1">
+              <div className="text-[10px] uppercase tracking-[0.15em] text-white/80 font-medium group-hover/feature:text-white transition-colors duration-300">
+                Fast Delivery
               </div>
+              <p className="text-[9px] text-white/40 leading-relaxed group-hover/feature:text-white/60 transition-colors duration-300">
+                Ships daily at 2PM EST, arrives fresh
+              </p>
             </div>
           </div>
+        </div>
 
-          <div className="bg-white/5 border-y md:border md:rounded-lg border-white/10 px-6 py-5 hover:bg-white/10 transition-all duration-300">
-            <div className="flex items-start gap-4">
-              <Award className="w-6 h-6 text-white flex-shrink-0 mt-0.5" strokeWidth={1.5} />
-              <div>
-                <h3 className="text-base font-semibold mb-1 text-white">Always Fresh</h3>
-                <p className="text-sm text-white/70 leading-relaxed font-light">
-                  Climate-controlled storage and sealed at optimal humidity. Maximum aroma, peak freshness.
-                </p>
+        <div 
+          className="relative group/feature border border-white/10 p-4 bg-[#1a1a1a] hover:border-white/20 hover:bg-[#202020] transition-all duration-500 overflow-hidden"
+          style={{ animation: 'fadeIn 0.8s ease-out 0.3s both' }}
+        >
+          <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/5 to-white/0 opacity-0 group-hover/feature:opacity-100 transition-opacity duration-700" 
+               style={{ transform: 'translateX(-100%)', animation: 'shimmer 3s ease-in-out infinite' }} />
+          <div className="relative flex items-start gap-3">
+            <div className="w-6 h-6 flex items-center justify-center flex-shrink-0">
+              <Award size={12} className="text-white/40 group-hover/feature:text-white transition-all duration-500" strokeWidth={1.5} />
+            </div>
+            <div className="flex-1 space-y-1">
+              <div className="text-[10px] uppercase tracking-[0.15em] text-white/80 font-medium group-hover/feature:text-white transition-colors duration-300">
+                Always Fresh
               </div>
+              <p className="text-[9px] text-white/40 leading-relaxed group-hover/feature:text-white/60 transition-colors duration-300">
+                Climate-controlled storage, peak terps
+              </p>
             </div>
           </div>
         </div>
@@ -60,42 +84,66 @@ export default function CategorySection({ categories }: CategorySectionProps) {
   // CONCENTRATES CATEGORY
   if (categorySlug.includes('concentrate') || categorySlug.includes('extract') || categorySlug.includes('dab') || categorySlug.includes('wax') || categorySlug.includes('shatter')) {
     return (
-      <div className="-mx-3 md:mx-0 border-t border-white/10 pt-8 md:pt-12">
-        {/* Feature List */}
-        <div className="space-y-4 md:space-y-6">
-          <div className="bg-white/5 border-y md:border md:rounded-lg border-white/10 px-6 py-5 hover:bg-white/10 transition-all duration-300">
-            <div className="flex items-start gap-4">
-              <Shield className="w-6 h-6 text-white flex-shrink-0 mt-0.5" strokeWidth={1.5} />
-              <div>
-                <h3 className="text-base font-semibold mb-1 text-white">99%+ Purity</h3>
-                <p className="text-sm text-white/70 leading-relaxed font-light">
-                  Solventless extraction ensures the cleanest concentrates. Third-party tested for purity and safety.
-                </p>
+      <div className="space-y-px pt-6 mt-6">
+        <div 
+          className="relative group/feature border border-white/10 p-4 bg-[#1a1a1a] hover:border-white/20 hover:bg-[#202020] transition-all duration-500 overflow-hidden"
+          style={{ animation: 'fadeIn 0.8s ease-out 0.1s both' }}
+        >
+          <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/5 to-white/0 opacity-0 group-hover/feature:opacity-100 transition-opacity duration-700" 
+               style={{ transform: 'translateX(-100%)', animation: 'shimmer 3s ease-in-out infinite' }} />
+          <div className="relative flex items-start gap-3">
+            <div className="w-6 h-6 flex items-center justify-center flex-shrink-0">
+              <Shield size={12} className="text-white/40 group-hover/feature:text-white transition-all duration-500" strokeWidth={1.5} />
+            </div>
+            <div className="flex-1 space-y-1">
+              <div className="text-[10px] uppercase tracking-[0.15em] text-white/80 font-medium group-hover/feature:text-white transition-colors duration-300">
+                99%+ Purity
               </div>
+              <p className="text-[9px] text-white/40 leading-relaxed group-hover/feature:text-white/60 transition-colors duration-300">
+                Solventless extraction, third-party tested
+              </p>
             </div>
           </div>
+        </div>
 
-          <div className="bg-white/5 border-y md:border md:rounded-lg border-white/10 px-6 py-5 hover:bg-white/10 transition-all duration-300">
-            <div className="flex items-start gap-4">
-              <Sparkles className="w-6 h-6 text-white flex-shrink-0 mt-0.5" strokeWidth={1.5} />
-              <div>
-                <h3 className="text-base font-semibold mb-1 text-white">Full Spectrum</h3>
-                <p className="text-sm text-white/70 leading-relaxed font-light">
-                  Complete cannabinoid and terpene profile preserved. Experience the ultimate entourage effect.
-                </p>
+        <div 
+          className="relative group/feature border border-white/10 p-4 bg-[#1a1a1a] hover:border-white/20 hover:bg-[#202020] transition-all duration-500 overflow-hidden"
+          style={{ animation: 'fadeIn 0.8s ease-out 0.2s both' }}
+        >
+          <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/5 to-white/0 opacity-0 group-hover/feature:opacity-100 transition-opacity duration-700" 
+               style={{ transform: 'translateX(-100%)', animation: 'shimmer 3s ease-in-out infinite' }} />
+          <div className="relative flex items-start gap-3">
+            <div className="w-6 h-6 flex items-center justify-center flex-shrink-0">
+              <Sparkles size={12} className="text-white/40 group-hover/feature:text-white transition-all duration-500" strokeWidth={1.5} />
+            </div>
+            <div className="flex-1 space-y-1">
+              <div className="text-[10px] uppercase tracking-[0.15em] text-white/80 font-medium group-hover/feature:text-white transition-colors duration-300">
+                Full Spectrum
               </div>
+              <p className="text-[9px] text-white/40 leading-relaxed group-hover/feature:text-white/60 transition-colors duration-300">
+                Complete terpene profile preserved
+              </p>
             </div>
           </div>
+        </div>
 
-          <div className="bg-white/5 border-y md:border md:rounded-lg border-white/10 px-6 py-5 hover:bg-white/10 transition-all duration-300">
-            <div className="flex items-start gap-4">
-              <Clock className="w-6 h-6 text-white flex-shrink-0 mt-0.5" strokeWidth={1.5} />
-              <div>
-                <h3 className="text-base font-semibold mb-1 text-white">Fresh Drops</h3>
-                <p className="text-sm text-white/70 leading-relaxed font-light">
-                  New extracts weekly. Cold-cured and properly aged for optimal consistency and flavor.
-                </p>
+        <div 
+          className="relative group/feature border border-white/10 p-4 bg-[#1a1a1a] hover:border-white/20 hover:bg-[#202020] transition-all duration-500 overflow-hidden"
+          style={{ animation: 'fadeIn 0.8s ease-out 0.3s both' }}
+        >
+          <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/5 to-white/0 opacity-0 group-hover/feature:opacity-100 transition-opacity duration-700" 
+               style={{ transform: 'translateX(-100%)', animation: 'shimmer 3s ease-in-out infinite' }} />
+          <div className="relative flex items-start gap-3">
+            <div className="w-6 h-6 flex items-center justify-center flex-shrink-0">
+              <Clock size={12} className="text-white/40 group-hover/feature:text-white transition-all duration-500" strokeWidth={1.5} />
+            </div>
+            <div className="flex-1 space-y-1">
+              <div className="text-[10px] uppercase tracking-[0.15em] text-white/80 font-medium group-hover/feature:text-white transition-colors duration-300">
+                Fresh Drops
               </div>
+              <p className="text-[9px] text-white/40 leading-relaxed group-hover/feature:text-white/60 transition-colors duration-300">
+                Weekly batches, cold-cured for consistency
+              </p>
             </div>
           </div>
         </div>
@@ -106,42 +154,66 @@ export default function CategorySection({ categories }: CategorySectionProps) {
   // EDIBLES CATEGORY
   if (categorySlug.includes('edible') || categorySlug.includes('gummies') || categorySlug.includes('chocolate')) {
     return (
-      <div className="-mx-3 md:mx-0 border-t border-white/10 pt-8 md:pt-12">
-        {/* Feature List */}
-        <div className="space-y-4 md:space-y-6">
-          <div className="bg-white/5 border-y md:border md:rounded-lg border-white/10 px-6 py-5 hover:bg-white/10 transition-all duration-300">
-            <div className="flex items-start gap-4">
-              <Award className="w-6 h-6 text-white flex-shrink-0 mt-0.5" strokeWidth={1.5} />
-              <div>
-                <h3 className="text-base font-semibold mb-1 text-white">Perfect Dosing</h3>
-                <p className="text-sm text-white/70 leading-relaxed font-light">
-                  Pharmaceutical-grade precision. Consistent, reliable dosing from 2.5mg to 100mg per serving.
-                </p>
+      <div className="space-y-px pt-6 mt-6">
+        <div 
+          className="relative group/feature border border-white/10 p-4 bg-[#1a1a1a] hover:border-white/20 hover:bg-[#202020] transition-all duration-500 overflow-hidden"
+          style={{ animation: 'fadeIn 0.8s ease-out 0.1s both' }}
+        >
+          <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/5 to-white/0 opacity-0 group-hover/feature:opacity-100 transition-opacity duration-700" 
+               style={{ transform: 'translateX(-100%)', animation: 'shimmer 3s ease-in-out infinite' }} />
+          <div className="relative flex items-start gap-3">
+            <div className="w-6 h-6 flex items-center justify-center flex-shrink-0">
+              <Award size={12} className="text-white/40 group-hover/feature:text-white transition-all duration-500" strokeWidth={1.5} />
+            </div>
+            <div className="flex-1 space-y-1">
+              <div className="text-[10px] uppercase tracking-[0.15em] text-white/80 font-medium group-hover/feature:text-white transition-colors duration-300">
+                Perfect Dosing
               </div>
+              <p className="text-[9px] text-white/40 leading-relaxed group-hover/feature:text-white/60 transition-colors duration-300">
+                Pharmaceutical precision, consistent dosing
+              </p>
             </div>
           </div>
+        </div>
 
-          <div className="bg-white/5 border-y md:border md:rounded-lg border-white/10 px-6 py-5 hover:bg-white/10 transition-all duration-300">
-            <div className="flex items-start gap-4">
-              <Sparkles className="w-6 h-6 text-white flex-shrink-0 mt-0.5" strokeWidth={1.5} />
-              <div>
-                <h3 className="text-base font-semibold mb-1 text-white">Gourmet Quality</h3>
-                <p className="text-sm text-white/70 leading-relaxed font-light">
-                  Premium ingredients, no artificial flavors. Natural, delicious infusions crafted by experts.
-                </p>
+        <div 
+          className="relative group/feature border border-white/10 p-4 bg-[#1a1a1a] hover:border-white/20 hover:bg-[#202020] transition-all duration-500 overflow-hidden"
+          style={{ animation: 'fadeIn 0.8s ease-out 0.2s both' }}
+        >
+          <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/5 to-white/0 opacity-0 group-hover/feature:opacity-100 transition-opacity duration-700" 
+               style={{ transform: 'translateX(-100%)', animation: 'shimmer 3s ease-in-out infinite' }} />
+          <div className="relative flex items-start gap-3">
+            <div className="w-6 h-6 flex items-center justify-center flex-shrink-0">
+              <Sparkles size={12} className="text-white/40 group-hover/feature:text-white transition-all duration-500" strokeWidth={1.5} />
+            </div>
+            <div className="flex-1 space-y-1">
+              <div className="text-[10px] uppercase tracking-[0.15em] text-white/80 font-medium group-hover/feature:text-white transition-colors duration-300">
+                Gourmet Quality
               </div>
+              <p className="text-[9px] text-white/40 leading-relaxed group-hover/feature:text-white/60 transition-colors duration-300">
+                Premium ingredients, natural infusions
+              </p>
             </div>
           </div>
+        </div>
 
-          <div className="bg-white/5 border-y md:border md:rounded-lg border-white/10 px-6 py-5 hover:bg-white/10 transition-all duration-300">
-            <div className="flex items-start gap-4">
-              <Clock className="w-6 h-6 text-white flex-shrink-0 mt-0.5" strokeWidth={1.5} />
-              <div>
-                <h3 className="text-base font-semibold mb-1 text-white">Extended Relief</h3>
-                <p className="text-sm text-white/70 leading-relaxed font-light">
-                  Long-lasting effects for sustained relief. Activated for optimal bioavailability.
-                </p>
+        <div 
+          className="relative group/feature border border-white/10 p-4 bg-[#1a1a1a] hover:border-white/20 hover:bg-[#202020] transition-all duration-500 overflow-hidden"
+          style={{ animation: 'fadeIn 0.8s ease-out 0.3s both' }}
+        >
+          <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/5 to-white/0 opacity-0 group-hover/feature:opacity-100 transition-opacity duration-700" 
+               style={{ transform: 'translateX(-100%)', animation: 'shimmer 3s ease-in-out infinite' }} />
+          <div className="relative flex items-start gap-3">
+            <div className="w-6 h-6 flex items-center justify-center flex-shrink-0">
+              <Clock size={12} className="text-white/40 group-hover/feature:text-white transition-all duration-500" strokeWidth={1.5} />
+            </div>
+            <div className="flex-1 space-y-1">
+              <div className="text-[10px] uppercase tracking-[0.15em] text-white/80 font-medium group-hover/feature:text-white transition-colors duration-300">
+                Extended Relief
               </div>
+              <p className="text-[9px] text-white/40 leading-relaxed group-hover/feature:text-white/60 transition-colors duration-300">
+                Long-lasting effects, optimal bioavailability
+              </p>
             </div>
           </div>
         </div>
@@ -151,42 +223,66 @@ export default function CategorySection({ categories }: CategorySectionProps) {
 
   // DEFAULT CATEGORY (for any other categories)
   return (
-    <div className="-mx-3 md:mx-0 border-t border-white/10 pt-8 md:pt-12">
-      {/* Feature List */}
-      <div className="space-y-4 md:space-y-6">
-        <div className="bg-white/5 border-y md:border md:rounded-lg border-white/10 px-6 py-5 hover:bg-white/10 transition-all duration-300">
-          <div className="flex items-start gap-4">
-            <Star className="w-6 h-6 text-white flex-shrink-0 mt-0.5" strokeWidth={1.5} />
-            <div>
-              <h3 className="text-base font-semibold mb-1 text-white">Top Quality</h3>
-              <p className="text-sm text-white/70 leading-relaxed font-light">
-                Carefully selected and tested to ensure the highest quality standards. Excellence guaranteed.
-              </p>
+    <div className="space-y-px pt-6 mt-6">
+      <div 
+        className="relative group/feature border border-white/10 p-4 bg-[#1a1a1a] hover:border-white/20 hover:bg-[#202020] transition-all duration-500 overflow-hidden"
+        style={{ animation: 'fadeIn 0.8s ease-out 0.1s both' }}
+      >
+        <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/5 to-white/0 opacity-0 group-hover/feature:opacity-100 transition-opacity duration-700" 
+             style={{ transform: 'translateX(-100%)', animation: 'shimmer 3s ease-in-out infinite' }} />
+        <div className="relative flex items-start gap-3">
+          <div className="w-6 h-6 flex items-center justify-center flex-shrink-0">
+            <Star size={12} className="text-white/40 group-hover/feature:text-white transition-all duration-500" strokeWidth={1.5} />
+          </div>
+          <div className="flex-1 space-y-1">
+            <div className="text-[10px] uppercase tracking-[0.15em] text-white/80 font-medium group-hover/feature:text-white transition-colors duration-300">
+              Top Quality
             </div>
+            <p className="text-[9px] text-white/40 leading-relaxed group-hover/feature:text-white/60 transition-colors duration-300">
+              Premium selection, excellence guaranteed
+            </p>
           </div>
         </div>
+      </div>
 
-        <div className="bg-white/5 border-y md:border md:rounded-lg border-white/10 px-6 py-5 hover:bg-white/10 transition-all duration-300">
-          <div className="flex items-start gap-4">
-            <Truck className="w-6 h-6 text-white flex-shrink-0 mt-0.5" strokeWidth={1.5} />
-            <div>
-              <h3 className="text-base font-semibold mb-1 text-white">Fast Delivery</h3>
-              <p className="text-sm text-white/70 leading-relaxed font-light">
-                Same-day delivery available. Your order arrives fresh, secure, and on time with tracking.
-              </p>
+      <div 
+        className="relative group/feature border border-white/10 p-4 bg-[#1a1a1a] hover:border-white/20 hover:bg-[#202020] transition-all duration-500 overflow-hidden"
+        style={{ animation: 'fadeIn 0.8s ease-out 0.2s both' }}
+      >
+        <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/5 to-white/0 opacity-0 group-hover/feature:opacity-100 transition-opacity duration-700" 
+             style={{ transform: 'translateX(-100%)', animation: 'shimmer 3s ease-in-out infinite' }} />
+        <div className="relative flex items-start gap-3">
+          <div className="w-6 h-6 flex items-center justify-center flex-shrink-0">
+            <Truck size={12} className="text-white/40 group-hover/feature:text-white transition-all duration-500" strokeWidth={1.5} />
+          </div>
+          <div className="flex-1 space-y-1">
+            <div className="text-[10px] uppercase tracking-[0.15em] text-white/80 font-medium group-hover/feature:text-white transition-colors duration-300">
+              Fast Delivery
             </div>
+            <p className="text-[9px] text-white/40 leading-relaxed group-hover/feature:text-white/60 transition-colors duration-300">
+              Same-day shipping, secure tracking
+            </p>
           </div>
         </div>
+      </div>
 
-        <div className="bg-white/5 border-y md:border md:rounded-lg border-white/10 px-6 py-5 hover:bg-white/10 transition-all duration-300">
-          <div className="flex items-start gap-4">
-            <Shield className="w-6 h-6 text-white flex-shrink-0 mt-0.5" strokeWidth={1.5} />
-            <div>
-              <h3 className="text-base font-semibold mb-1 text-white">Tested & Verified</h3>
-              <p className="text-sm text-white/70 leading-relaxed font-light">
-                Third-party lab tested for safety, potency, and purity. Full transparency on every batch.
-              </p>
+      <div 
+        className="relative group/feature border border-white/10 p-4 bg-[#1a1a1a] hover:border-white/20 hover:bg-[#202020] transition-all duration-500 overflow-hidden"
+        style={{ animation: 'fadeIn 0.8s ease-out 0.3s both' }}
+      >
+        <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/5 to-white/0 opacity-0 group-hover/feature:opacity-100 transition-opacity duration-700" 
+             style={{ transform: 'translateX(-100%)', animation: 'shimmer 3s ease-in-out infinite' }} />
+        <div className="relative flex items-start gap-3">
+          <div className="w-6 h-6 flex items-center justify-center flex-shrink-0">
+            <Shield size={12} className="text-white/40 group-hover/feature:text-white transition-all duration-500" strokeWidth={1.5} />
+          </div>
+          <div className="flex-1 space-y-1">
+            <div className="text-[10px] uppercase tracking-[0.15em] text-white/80 font-medium group-hover/feature:text-white transition-colors duration-300">
+              Tested & Verified
             </div>
+            <p className="text-[9px] text-white/40 leading-relaxed group-hover/feature:text-white/60 transition-colors duration-300">
+              Third-party lab tested for safety
+            </p>
           </div>
         </div>
       </div>

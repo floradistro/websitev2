@@ -200,7 +200,7 @@ export default function ProductCard({ product, index, locations, pricingRules, p
 
   return (
     <div
-      className="group block relative bg-[#3a3a3a] hover:bg-[#404040] transition-all duration-500 cursor-pointer"
+      className="group block relative bg-[#3a3a3a] hover:bg-[#404040] transition-all duration-500 cursor-pointer hover:shadow-2xl hover:-translate-y-1 border border-transparent hover:border-white/10"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onClick={handleCardClick}
@@ -209,7 +209,7 @@ export default function ProductCard({ product, index, locations, pricingRules, p
       }}
     >
       {/* Product Image Container */}
-      <div className="relative aspect-[4/5] overflow-hidden bg-[#2a2a2a]">
+      <div className="relative aspect-[4/5] overflow-hidden bg-[#2a2a2a] transition-all duration-500">
         {product.images?.[0] ? (
           <>
             {/* Main Image */}
@@ -233,13 +233,13 @@ export default function ProductCard({ product, index, locations, pricingRules, p
         )}
 
         {/* Quick Actions Overlay - Desktop */}
-        <div className={`hidden md:flex absolute inset-0 bg-black/30 backdrop-blur-[2px] items-center justify-center transition-all duration-500 ${
+        <div className={`hidden md:flex absolute inset-0 bg-black/40 backdrop-blur-[3px] items-center justify-center transition-all duration-500 ${
           isHovered ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}>
           <div className="flex flex-col items-center gap-2 transform translate-y-3 group-hover:translate-y-0 transition-transform duration-500">
             <button
               onClick={handleQuickBuy}
-              className="flex items-center gap-2 bg-white text-black px-6 py-3 text-[10px] uppercase tracking-[0.2em] hover:bg-white/90 transition-all font-medium"
+              className="flex items-center gap-2 bg-black border border-white/20 text-white px-6 py-3 text-[10px] uppercase tracking-[0.2em] hover:bg-white hover:text-black hover:border-white transition-all duration-300 font-medium"
             >
               <ShoppingBag size={12} strokeWidth={1.5} />
               <span>View Product</span>
@@ -248,7 +248,7 @@ export default function ProductCard({ product, index, locations, pricingRules, p
             <div className="flex items-center gap-2">
               <button
                 onClick={handlePickup}
-                className="flex items-center gap-1.5 bg-white/20 backdrop-blur-md text-white border border-white/30 px-4 py-2.5 hover:bg-white/30 transition-all text-[9px] uppercase tracking-[0.2em] font-medium"
+                className="flex items-center gap-1.5 bg-black border border-white/20 text-white px-4 py-2.5 hover:bg-white hover:text-black hover:border-white transition-all duration-300 text-[9px] uppercase tracking-[0.2em] font-medium"
               >
                 <Store size={11} strokeWidth={1.5} />
                 <span>Pickup</span>
@@ -256,7 +256,7 @@ export default function ProductCard({ product, index, locations, pricingRules, p
               
               <button
                 onClick={handleDelivery}
-                className="flex items-center gap-1.5 bg-white/20 backdrop-blur-md text-white border border-white/30 px-4 py-2.5 hover:bg-white/30 transition-all text-[9px] uppercase tracking-[0.2em] font-medium"
+                className="flex items-center gap-1.5 bg-black border border-white/20 text-white px-4 py-2.5 hover:bg-white hover:text-black hover:border-white transition-all duration-300 text-[9px] uppercase tracking-[0.2em] font-medium"
               >
                 <Truck size={11} strokeWidth={1.5} />
                 <span>Delivery</span>
@@ -269,12 +269,12 @@ export default function ProductCard({ product, index, locations, pricingRules, p
 
       {/* Product Info */}
       <div className="space-y-3 px-3 py-4">
-        <h3 className="text-xs uppercase tracking-[0.15em] font-normal text-white line-clamp-2 leading-relaxed">
+        <h3 className="text-xs uppercase tracking-[0.15em] font-normal text-white line-clamp-2 leading-relaxed transition-all duration-300 group-hover:tracking-[0.2em]">
           {product.name}
         </h3>
         
         {/* Price */}
-        <p className="text-sm font-medium text-white tracking-wide">
+        <p className="text-sm font-medium text-white tracking-wide transition-all duration-300 group-hover:text-white/80">
           {getPriceDisplay()}
         </p>
         
@@ -302,7 +302,7 @@ export default function ProductCard({ product, index, locations, pricingRules, p
                 value={selectedTierIndex ?? ""}
                 onChange={handleTierSelect}
                 onClick={handleDropdownClick}
-                className="w-full appearance-none bg-transparent border border-white/20 px-3 py-2.5 md:py-2 pr-7 text-[11px] font-normal text-white hover:border-white/40 focus:border-white focus:outline-none transition-all cursor-pointer touch-manipulation uppercase tracking-[0.1em]"
+                className="w-full appearance-none bg-transparent border border-white/20 px-3 py-2.5 md:py-2 pr-7 text-[11px] font-normal text-white hover:border-white/40 hover:bg-white/5 focus:border-white focus:outline-none transition-all duration-300 cursor-pointer touch-manipulation uppercase tracking-[0.1em]"
                 style={{ minHeight: '40px' }}
               >
                 <option value="">Select Quantity</option>
@@ -330,7 +330,7 @@ export default function ProductCard({ product, index, locations, pricingRules, p
             {showAddToCart && (
               <button
                 onClick={handleAddToCart}
-                className="w-full bg-white text-black px-3 py-2.5 md:py-2 text-[10px] uppercase tracking-[0.15em] hover:bg-white/90 transition-all font-medium flex items-center justify-center gap-2 animate-fadeIn touch-manipulation"
+                className="w-full bg-black border border-white/20 text-white px-3 py-2.5 md:py-2 text-[10px] uppercase tracking-[0.15em] hover:bg-white hover:text-black hover:border-white transition-all duration-300 font-medium flex items-center justify-center gap-2 animate-fadeIn touch-manipulation hover:shadow-lg active:scale-95"
                 style={{ minHeight: '40px' }}
               >
                 <ShoppingBag size={13} strokeWidth={2} />

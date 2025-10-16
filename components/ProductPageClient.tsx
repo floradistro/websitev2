@@ -11,6 +11,7 @@ import ProductGallery from "@/components/ProductGallery";
 import CategorySection from "@/components/CategorySection";
 import LabResults from "@/components/LabResults";
 import ProductReviews from "@/components/ProductReviews";
+import ProductCard from "@/components/ProductCard";
 import { useCart } from "@/context/CartContext";
 
 interface ProductPageClientProps {
@@ -81,36 +82,30 @@ export default function ProductPageClient({
   };
 
   return (
-    <div>
-      {/* Breadcrumb - Enhanced */}
-      <div className="border-b border-white/10 bg-gradient-to-br from-[#2a2a2a] via-[#2d2d2d] to-[#2a2a2a] backdrop-blur-sm">
-        <div className="px-3 md:px-6 py-4 flex items-center justify-between">
+    <div className="bg-[#1a1a1a]">
+      {/* Breadcrumb - Minimal */}
+      <div className="border-b border-white/10 bg-[#1a1a1a]">
+        <div className="max-w-[2000px] mx-auto px-6 md:px-8 py-4 flex items-center justify-between">
           <Link
             href="/products"
-            className="group inline-flex items-center space-x-2 text-sm text-white/80 hover:text-white transition-all duration-300 font-light"
+            className="group inline-flex items-center space-x-2 text-xs text-white/60 hover:text-white transition-all duration-300 uppercase tracking-wider"
           >
-            <div className="w-8 h-8 flex items-center justify-center rounded-full bg-white/5 group-hover:bg-white/10 transition-all duration-300">
-              <ChevronLeft size={16} strokeWidth={1.5} />
-            </div>
-            <span className="tracking-wide">Back to Products</span>
+            <ChevronLeft size={14} strokeWidth={1.5} className="transition-transform group-hover:-translate-x-0.5" />
+            <span>Products</span>
           </Link>
           
-          {/* Optional product category badge */}
           {product.categories && product.categories.length > 0 && (
-            <div className="hidden md:flex items-center gap-2">
-              <div className="h-px w-8 bg-white/10"></div>
-              <span className="text-xs uppercase tracking-[0.2em] text-white/40 font-light">
-                {product.categories[0].name}
-              </span>
-            </div>
+            <span className="text-xs uppercase tracking-[0.15em] text-white/40">
+              {product.categories[0].name}
+            </span>
           )}
         </div>
       </div>
 
-      {/* Product Content - Prada Style Layout */}
-      <div className="bg-[#2a2a2a]">
+      {/* Product Content */}
+      <div className="bg-[#1a1a1a]">
         {/* Mobile Layout */}
-        <div className="lg:hidden px-3 md:px-4 py-6 space-y-6">
+        <div className="lg:hidden px-6 md:px-8 py-6 space-y-6">
           <ProductGallery images={product.images} productName={product.name} />
           
           <ProductInfo
@@ -132,28 +127,28 @@ export default function ProductPageClient({
             <button 
               onClick={handleAddToCart}
               disabled={addedToCart}
-              className={`w-full py-4 rounded-full text-sm uppercase tracking-[0.15em] shadow-elevated transition-all duration-300 font-light relative overflow-hidden ${
+              className={`w-full py-4 text-xs uppercase tracking-[0.2em] transition-all duration-300 font-medium relative overflow-hidden ${
                 addedToCart 
-                  ? "bg-green-600 text-white" 
-                  : "bg-white text-black hover:bg-white/90 hover:shadow-elevated-lg"
+                  ? "bg-black text-white border border-white/40" 
+                  : "bg-black border border-white/20 text-white hover:bg-white hover:text-black hover:border-white"
               }`}
             >
               <span className={`inline-flex items-center gap-2 transition-all duration-300 ${addedToCart ? "opacity-0" : "opacity-100"}`}>
-                Add to Shopping Bag
+                Add to Cart
               </span>
               <span className={`absolute inset-0 flex items-center justify-center gap-2 transition-all duration-300 ${addedToCart ? "opacity-100" : "opacity-0"}`}>
-                <Check size={18} strokeWidth={2} />
-                Added to Bag
+                <Check size={16} strokeWidth={2} />
+                Added
               </span>
             </button>
             <div className="flex space-x-3">
-              <button className="flex-1 border border-white/20 bg-white/10 text-white py-4 rounded-full text-sm uppercase tracking-[0.15em] shadow-subtle hover:border-white/40 hover:bg-white/20 hover:shadow-elevated transition-all duration-300 flex items-center justify-center space-x-2 font-light">
-                <Heart size={16} strokeWidth={1.5} />
-                <span>Wishlist</span>
+              <button className="flex-1 border border-white/20 bg-transparent text-white py-4 text-xs uppercase tracking-[0.15em] hover:border-white/40 hover:bg-white/5 transition-all duration-300 flex items-center justify-center space-x-2 active:scale-95">
+                <Heart size={14} strokeWidth={1.5} />
+                <span className="hidden sm:inline">Wishlist</span>
               </button>
-              <button className="flex-1 border border-white/20 bg-white/10 text-white py-4 rounded-full text-sm uppercase tracking-[0.15em] shadow-subtle hover:border-white/40 hover:bg-white/20 hover:shadow-elevated transition-all duration-300 flex items-center justify-center space-x-2 font-light">
-                <Share2 size={16} strokeWidth={1.5} />
-                <span>Share</span>
+              <button className="flex-1 border border-white/20 bg-transparent text-white py-4 text-xs uppercase tracking-[0.15em] hover:border-white/40 hover:bg-white/5 transition-all duration-300 flex items-center justify-center space-x-2 active:scale-95">
+                <Share2 size={14} strokeWidth={1.5} />
+                <span className="hidden sm:inline">Share</span>
               </button>
             </div>
           </div>
@@ -168,12 +163,12 @@ export default function ProductPageClient({
 
           {/* Long Description */}
           {product.description && (
-            <div className="border border-white/10 rounded-lg overflow-hidden bg-white/5 backdrop-blur-sm p-6">
-              <h3 className="text-sm uppercase tracking-[0.15em] font-semibold mb-4 text-white text-center">
+            <div className="border border-white/10 bg-[#1a1a1a] p-4">
+              <h3 className="text-xs uppercase tracking-[0.2em] font-medium mb-3 text-white/60">
                 Description
               </h3>
               <div
-                className="text-base text-white/90 leading-relaxed prose prose-sm prose-invert max-w-none text-center"
+                className="text-xs text-white/80 leading-relaxed prose prose-sm prose-invert max-w-none"
                 dangerouslySetInnerHTML={{ __html: product.description }}
               />
             </div>
@@ -182,23 +177,22 @@ export default function ProductPageClient({
           {/* Reviews */}
           <ProductReviews reviews={reviews} />
 
-          <div className="pt-4">
-            <CategorySection categories={product.categories || []} />
-          </div>
+          {/* Category Features */}
+          <CategorySection categories={product.categories || []} />
         </div>
 
-        {/* Desktop Layout - Prada Style */}
+        {/* Desktop Layout */}
         <div className="hidden lg:block">
-          <div className="flex">
+          <div className="max-w-[2000px] mx-auto flex">
             {/* Sticky Images - Left Side */}
-            <div className="w-1/2 sticky top-0 h-screen overflow-y-auto scrollbar-hide">
+            <div className="w-1/2 sticky top-0 h-screen overflow-y-auto scrollbar-hide bg-black">
               <ProductGallery images={product.images} productName={product.name} />
             </div>
 
-            {/* Flowing Content Blocks - Right Side */}
-            <div className="w-1/2 px-8 py-12">
+            {/* Flowing Content - Right Side */}
+            <div className="w-1/2 px-12 py-12 bg-[#1a1a1a]">
               {/* Product Info Block */}
-              <div className="mb-16 animate-fadeIn">
+              <div className="mb-6 animate-fadeIn">
                 <ProductInfo
                   product={product}
                   pricingRules={pricingRules}
@@ -208,7 +202,7 @@ export default function ProductPageClient({
               </div>
 
               {/* Delivery Block */}
-              <div className="mb-16 animate-fadeIn" style={{animationDelay: '100ms'}}>
+              <div className="mb-6 animate-fadeIn" style={{animationDelay: '100ms'}}>
                 <DeliveryAvailability
                   inventory={inventory}
                   locations={locations}
@@ -219,32 +213,32 @@ export default function ProductPageClient({
               </div>
 
               {/* Actions Block */}
-              <div className="mb-16 animate-fadeIn" style={{animationDelay: '300ms'}}>
-                <div className="space-y-4">
+              <div className="mb-8 animate-fadeIn" style={{animationDelay: '300ms'}}>
+                <div className="space-y-3">
                   <button 
                     onClick={handleAddToCart}
                     disabled={addedToCart}
-                    className={`w-full py-5 rounded-full text-sm uppercase tracking-[0.15em] shadow-elevated transition-all duration-300 font-light relative overflow-hidden ${
+                    className={`w-full py-4 text-xs uppercase tracking-[0.2em] transition-all duration-300 font-medium relative overflow-hidden ${
                       addedToCart 
-                        ? "bg-green-600 text-white" 
-                        : "bg-white text-black hover:bg-white/90 hover:shadow-elevated-lg"
+                        ? "bg-black text-white border border-white/40" 
+                        : "bg-black border border-white/20 text-white hover:bg-white hover:text-black hover:border-white"
                     }`}
                   >
                     <span className={`inline-flex items-center gap-2 transition-all duration-300 ${addedToCart ? "opacity-0" : "opacity-100"}`}>
-                      Add to Shopping Bag
+                      Add to Cart
                     </span>
                     <span className={`absolute inset-0 flex items-center justify-center gap-2 transition-all duration-300 ${addedToCart ? "opacity-100" : "opacity-0"}`}>
-                      <Check size={18} strokeWidth={2} />
-                      Added to Bag
+                      <Check size={16} strokeWidth={2} />
+                      Added
                     </span>
                   </button>
                   <div className="flex space-x-4">
-                    <button className="flex-1 border border-white/20 bg-white/10 text-white py-5 rounded-full text-sm uppercase tracking-[0.15em] shadow-subtle hover:border-white/40 hover:bg-white/20 hover:shadow-elevated transition-all duration-300 flex items-center justify-center space-x-2 font-light">
-                      <Heart size={16} strokeWidth={1.5} />
+                    <button className="flex-1 border border-white/20 bg-transparent text-white py-4 text-xs uppercase tracking-[0.15em] hover:border-white/40 hover:bg-white/5 transition-all duration-300 flex items-center justify-center space-x-2 active:scale-95">
+                      <Heart size={14} strokeWidth={1.5} />
                       <span>Wishlist</span>
                     </button>
-                    <button className="flex-1 border border-white/20 bg-white/10 text-white py-5 rounded-full text-sm uppercase tracking-[0.15em] shadow-subtle hover:border-white/40 hover:bg-white/20 hover:shadow-elevated transition-all duration-300 flex items-center justify-center space-x-2 font-light">
-                      <Share2 size={16} strokeWidth={1.5} />
+                    <button className="flex-1 border border-white/20 bg-transparent text-white py-4 text-xs uppercase tracking-[0.15em] hover:border-white/40 hover:bg-white/5 transition-all duration-300 flex items-center justify-center space-x-2 active:scale-95">
+                      <Share2 size={14} strokeWidth={1.5} />
                       <span>Share</span>
                     </button>
                   </div>
@@ -252,26 +246,26 @@ export default function ProductPageClient({
               </div>
 
               {/* Lab Results Block */}
-              <div className="mb-16 animate-fadeIn" style={{animationDelay: '300ms'}}>
+              <div className="mb-6 animate-fadeIn" style={{animationDelay: '300ms'}}>
                 <LabResults metaData={product.meta_data || []} attributes={product.attributes || []} />
               </div>
 
               {/* Specifications Block */}
               {product.meta_data && product.meta_data.length > 0 && (
-                <div className="mb-16 animate-fadeIn" style={{animationDelay: '400ms'}}>
+                <div className="mb-6 animate-fadeIn" style={{animationDelay: '400ms'}}>
                   <FloraFields metaData={product.meta_data} />
                 </div>
               )}
 
               {/* Long Description Block */}
               {product.description && (
-                <div className="mb-16 animate-fadeIn" style={{animationDelay: '500ms'}}>
-                  <div className="border border-white/10 rounded-lg overflow-hidden bg-white/5 backdrop-blur-sm p-8">
-                    <h3 className="text-sm uppercase tracking-[0.2em] font-semibold mb-6 text-white text-center">
+                <div className="mb-6 animate-fadeIn" style={{animationDelay: '500ms'}}>
+                  <div className="border border-white/10 bg-[#1a1a1a] p-4">
+                    <h3 className="text-xs uppercase tracking-[0.2em] font-medium mb-3 text-white/60">
                       Description
                     </h3>
                     <div
-                      className="text-base text-white/90 leading-relaxed prose prose-sm prose-invert max-w-none"
+                      className="text-xs text-white/80 leading-relaxed prose prose-sm prose-invert max-w-none"
                       dangerouslySetInnerHTML={{ __html: product.description }}
                     />
                   </div>
@@ -279,16 +273,16 @@ export default function ProductPageClient({
               )}
 
               {/* Reviews Block */}
-              <div className="mb-16 animate-fadeIn" style={{animationDelay: '550ms'}}>
+              <div className="mb-6 animate-fadeIn" style={{animationDelay: '550ms'}}>
                 <ProductReviews reviews={reviews} />
               </div>
 
               {/* SKU Block */}
               {product.sku && (
-                <div className="mb-16 animate-fadeIn" style={{animationDelay: '600ms'}}>
-                  <div className="flex justify-between items-center py-4 border-b border-white/20">
-                    <span className="text-xs uppercase tracking-wider text-white/50">SKU</span>
-                    <span className="font-light text-sm text-white">{product.sku}</span>
+                <div className="mb-6 animate-fadeIn" style={{animationDelay: '600ms'}}>
+                  <div className="flex justify-between items-center py-2 border-t border-white/10">
+                    <span className="text-[10px] uppercase tracking-[0.12em] text-white/50">SKU</span>
+                    <span className="text-xs text-white/80">{product.sku}</span>
                   </div>
                 </div>
               )}
@@ -304,95 +298,57 @@ export default function ProductPageClient({
 
       {/* Related Products */}
       {relatedProducts.length > 0 && (
-        <section className="border-t border-white/10 bg-[#2a2a2a] py-8 md:py-12">
-          <div className="px-3 md:px-4 mb-6">
-            <h2 className="text-xl md:text-2xl font-light uppercase tracking-[0.2em] animate-fadeIn text-white">
+        <section className="border-t border-white/10 bg-[#2a2a2a] py-8">
+          <div className="max-w-[2000px] mx-auto px-6 md:px-8 mb-6">
+            <h2 className="text-xs uppercase tracking-[0.2em] text-white/60 font-medium">
               You May Also Like
             </h2>
           </div>
-          <div className="w-full">
-            {/* Mobile: Horizontal Scroll */}
-            <div className="md:hidden overflow-x-auto scrollbar-hide -mx-0.5">
-              <div className="flex gap-px">
-                {relatedProducts.map((item: any, idx: number) => (
-                  <Link
-                    key={item.id}
-                    href={`/products/${item.id}`}
-                    style={{ animationDelay: `${idx * 100}ms` }}
-                    className="group block animate-fadeIn flex-shrink-0 w-[50vw]"
-                  >
-                    <div className="relative aspect-[4/5] bg-white/10 mb-2 overflow-hidden shadow-sm active:shadow-md transition-all duration-300">
-                      {item.images?.[0] ? (
-                        <>
-                          <img
-                            src={item.images[0].src}
-                            alt={item.name}
-                            className="w-full h-full object-contain transition-all duration-500"
-                          />
-                          {item.images?.[1] && (
-                            <img
-                              src={item.images[1].src}
-                              alt={item.name}
-                              className="absolute inset-0 w-full h-full object-contain opacity-0 transition-all duration-500"
-                            />
-                          )}
-                        </>
-                      ) : (
-                        <div className="w-full h-full bg-white/10" />
-                      )}
-                    </div>
-                    <div className="space-y-0.5 px-2">
-                      <h3 className="text-xs leading-tight line-clamp-2 font-light text-white">
-                        {item.name}
-                      </h3>
-                      <p className="text-xs font-light text-white/80">
-                        ${item.price ? parseFloat(item.price).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) : '0'}
-                      </p>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </div>
-
-            {/* Desktop: Grid */}
-            <div className="hidden md:grid grid-cols-4 lg:grid-cols-6 gap-px md:gap-0.5">
-              {relatedProducts.map((item: any, idx: number) => (
-                <Link
+          <div className="max-w-[2000px] mx-auto grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-px">
+            {relatedProducts.map((item: any, idx: number) => {
+              // Extract fields from product metadata for each related product
+              const metaData = item.meta_data || [];
+              const fields: { [key: string]: string } = {};
+              
+              const fieldKeys = [
+                'strain_type', 'thca_%', 'thca_percentage', 'thc_%', 'thc_percentage',
+                'lineage', 'nose', 'terpene', 'terpenes', 'effects', 'effect',
+                'mg_per_pack', 'mg_per_piece', 'ingredients', 'type'
+              ];
+              
+              metaData.forEach((meta: any) => {
+                const key = meta.key?.toLowerCase();
+                if (fieldKeys.some(fk => fk === key)) {
+                  fields[key] = meta.value;
+                }
+              });
+              
+              // Get blueprint name
+              let blueprintName = null;
+              if (item.categories && item.categories.length > 0) {
+                const categoryName = item.categories[0].slug;
+                if (categoryName.includes('flower') || categoryName.includes('pre-roll')) {
+                  blueprintName = 'flower_blueprint';
+                } else if (categoryName.includes('concentrate')) {
+                  blueprintName = 'concentrate_blueprint';
+                } else if (categoryName.includes('edible')) {
+                  blueprintName = 'edible_blueprint';
+                } else if (categoryName.includes('vape')) {
+                  blueprintName = 'vape_blueprint';
+                }
+              }
+              
+              return (
+                <ProductCard
                   key={item.id}
-                  href={`/products/${item.id}`}
-                  style={{ animationDelay: `${idx * 100}ms` }}
-                  className="group block animate-fadeIn"
-                >
-                  <div className="relative aspect-[4/5] bg-white/10 mb-3 overflow-hidden shadow-sm hover:shadow-md transition-all duration-300">
-                    {item.images?.[0] ? (
-                      <>
-                        <img
-                          src={item.images[0].src}
-                          alt={item.name}
-                          className="w-full h-full object-contain transition-all duration-500 group-hover:scale-105"
-                        />
-                      </>
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center p-8 bg-white/10">
-                        <img
-                          src="/logoprint.png"
-                          alt="Flora Distro"
-                          className="w-full h-full object-contain opacity-40"
-                        />
-                      </div>
-                    )}
-                  </div>
-                  <div className="space-y-1 px-2 md:px-3">
-                    <h3 className="text-xs md:text-sm leading-tight line-clamp-2 font-light text-white group-hover:opacity-60 transition-opacity duration-200">
-                      {item.name}
-                    </h3>
-                    <p className="text-xs md:text-sm font-light text-white/80">
-                      ${item.price ? parseFloat(item.price).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) : '0'}
-                    </p>
-                  </div>
-                </Link>
-              ))}
-            </div>
+                  product={item}
+                  index={idx}
+                  locations={locations}
+                  pricingRules={pricingRules}
+                  productFields={{ fields, blueprintName }}
+                />
+              );
+            })}
           </div>
         </section>
       )}

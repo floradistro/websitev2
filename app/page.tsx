@@ -1,16 +1,13 @@
 import { getBestSellingProducts, getCategories, getLocations, getAllInventory, getPricingRules } from "@/lib/wordpress";
 import Link from "next/link";
-import { ArrowRight, MapPin, Clock, Truck, Zap } from "lucide-react";
-import AnimatedCategories from "@/components/AnimatedCategories";
-import DarkFloralHero from "@/components/DarkFloralHero";
-import GrowRoomAnimation from "@/components/GrowRoomAnimation";
-import DeliveryAnimation from "@/components/DeliveryAnimation";
-import HorizontalScroll from "@/components/HorizontalScroll";
+import { ArrowRight } from "lucide-react";
 import ProductCard from "@/components/ProductCard";
+import LuxuryHero from "@/components/LuxuryHero";
+import LocationCard from "@/components/LocationCard";
 
 export default async function Home() {
   const [products, categories, locations, allInventory, pricingRules] = await Promise.all([
-    getBestSellingProducts({ per_page: 8 }),
+    getBestSellingProducts({ per_page: 4 }),
     getCategories({ per_page: 10, hide_empty: true }),
     getLocations(),
     getAllInventory(),
@@ -35,7 +32,6 @@ export default async function Home() {
     const metaData = product.meta_data || [];
     const fields: { [key: string]: string } = {};
     
-    // Extract common fields from metadata (only real fields)
     const fieldKeys = [
       'strain_type',
       'thca_%',
@@ -61,7 +57,6 @@ export default async function Home() {
       }
     });
     
-    // Get blueprint name from metadata
     let blueprintName = null;
     const blueprintMeta = metaData.find((m: any) => 
       m.key && (m.key.includes('blueprint') || m.key === '_blueprint')
@@ -71,7 +66,6 @@ export default async function Home() {
       blueprintName = blueprintMeta.value;
     }
     
-    // If no direct blueprint, infer from category
     if (!blueprintName && product.categories && product.categories.length > 0) {
       const categoryName = product.categories[0].slug;
       if (categoryName.includes('flower') || categoryName.includes('pre-roll')) {
@@ -89,321 +83,376 @@ export default async function Home() {
   });
 
   return (
-    <div>
-      {/* Hero Section */}
-      <section className="relative h-[65vh] flex items-center justify-center bg-black text-white overflow-hidden">
-        {/* Animated floral background */}
-        <DarkFloralHero />
+    <div className="bg-[#2a2a2a]">
+      {/* Hero Section - Animated Luxury */}
+      <LuxuryHero />
 
-        {/* Main content */}
-        <div className="relative z-20 text-center px-4 md:px-6 max-w-5xl mx-auto">
-          <h1 className="logo-font text-6xl md:text-8xl lg:text-9xl font-normal uppercase tracking-tight mb-6 leading-none animate-fadeIn premium-text">
-            Flora Distro
-          </h1>
-          
-          <div className="h-[1px] w-32 bg-gradient-to-r from-transparent via-white/30 to-transparent mx-auto my-8 animate-scaleIn"></div>
-          
-          <p className="text-lg md:text-xl font-light text-white/60 mb-12 tracking-wide animate-fadeIn" style={{ animationDelay: '0.2s' }}>
-            Premium cannabis distribution
-          </p>
-
-          <Link
-            href="/products"
-            className="inline-flex items-center space-x-3 bg-white text-black px-8 py-3 text-xs uppercase tracking-[0.2em] hover:bg-white/90 transition-all font-medium animate-fadeIn"
-            style={{ animationDelay: '0.4s' }}
-          >
-            <span>Shop</span>
-            <ArrowRight size={14} />
-          </Link>
-        </div>
-
-        {/* Scroll indicator */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
-          <div className="w-[1px] h-16 bg-gradient-to-b from-transparent via-white/40 to-transparent"></div>
-        </div>
-      </section>
-
-      {/* Featured Categories */}
-      <AnimatedCategories categories={categories} />
-
-      {/* Best Selling Products */}
+      {/* Featured Products - Clean Grid */}
       <section className="bg-[#2a2a2a] py-16">
-        <div className="flex justify-between items-center mb-12 px-3 md:px-4">
-          <h2 className="text-2xl md:text-3xl font-light uppercase tracking-wider text-white">
-            Best Selling Products
-          </h2>
+        <div className="flex justify-between items-end mb-12 px-4">
+          <div>
+            <h2 className="text-2xl md:text-3xl font-light uppercase tracking-wider text-white mb-3">
+              Featured Products
+            </h2>
+            <div className="h-[1px] w-16 bg-white/20"></div>
+          </div>
           <Link
             href="/products"
-            className="text-xs md:text-sm uppercase tracking-wider text-white/80 hover:text-white transition-colors flex items-center space-x-2"
+            className="text-xs uppercase tracking-wider text-white/60 hover:text-white transition-colors flex items-center space-x-2"
           >
             <span>View All</span>
             <ArrowRight size={14} />
           </Link>
         </div>
 
-        <HorizontalScroll className="flex overflow-x-auto gap-px scrollbar-hide">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-px">
           {products.map((product: any, index: number) => (
-            <div key={product.id} className="flex-shrink-0 w-[85vw] sm:w-[60vw] md:w-[45vw] lg:w-[32vw] xl:w-[23vw]">
-              <ProductCard 
-                product={product} 
-                index={index} 
-                locations={locations}
-                pricingRules={pricingRules}
-                productFields={productFieldsMap[product.id]}
-              />
-            </div>
+            <ProductCard 
+              key={product.id}
+              product={product} 
+              index={index} 
+              locations={locations}
+              pricingRules={pricingRules}
+              productFields={productFieldsMap[product.id]}
+            />
           ))}
-        </HorizontalScroll>
+        </div>
       </section>
 
-      {/* Distro Pricing Philosophy */}
-      <section className="bg-black text-white py-16 px-4 md:px-6">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl md:text-5xl font-light mb-3 animate-fadeIn leading-tight">
-            Real game. Real prices.
+      {/* Categories - Edge to Edge */}
+      <section className="bg-[#3a3a3a] py-16">
+        <div className="flex justify-between items-end mb-12 px-4">
+          <div>
+            <h2 className="text-2xl md:text-3xl font-light uppercase tracking-wider text-white mb-3">
+              Shop by Category
+            </h2>
+            <div className="h-[1px] w-16 bg-white/20"></div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-px">
+          {categories.filter((cat: any) => cat.count > 0).slice(0, 5).map((category: any, index: number) => (
+            <Link
+              key={category.id}
+              href={`/products?category=${category.slug}`}
+              className="group block bg-[#3a3a3a] hover:bg-[#404040] transition-all duration-500 cursor-pointer hover:shadow-xl"
+              style={{
+                animation: `fadeInUp 0.6s ease-out ${index * 0.05}s both`,
+              }}
+            >
+              {/* Image Container */}
+              <div className="relative aspect-[4/5] overflow-hidden bg-[#2a2a2a] transition-all duration-500">
+                {category.image?.src ? (
+                  <img 
+                    src={category.image.src} 
+                    alt={category.name}
+                    className="w-full h-full object-cover transition-all duration-700 ease-out group-hover:scale-105"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center p-12">
+                    <img
+                      src="/logoprint.png"
+                      alt="Flora Distro"
+                      className="w-full h-full object-contain opacity-10 transition-opacity duration-500 group-hover:opacity-15"
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Category Info */}
+              <div className="space-y-3 px-3 py-4">
+                <h3 className="text-xs uppercase tracking-[0.15em] font-normal text-white line-clamp-1 leading-relaxed transition-all duration-300 group-hover:tracking-[0.2em]">
+                  {category.name}
+                </h3>
+                {category.description && (
+                  <p className="text-xs text-white/50 font-light leading-relaxed line-clamp-2">
+                    {category.description.replace(/<[^>]*>/g, '')}
+                  </p>
+                )}
+              </div>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      {/* Philosophy - Clean Statement */}
+      <section className="bg-[#1a1a1a] py-32 px-4 relative overflow-hidden">
+        {/* Subtle background gradient */}
+        <div className="absolute inset-0 opacity-30">
+          <div className="absolute top-0 left-1/4 w-96 h-96 bg-white/5 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-white/5 rounded-full blur-3xl"></div>
+        </div>
+
+        <div className="max-w-6xl mx-auto text-center relative z-10">
+          {/* Accent line */}
+          <div className="flex items-center justify-center mb-8">
+            <div className="h-[1px] w-16 bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
+          </div>
+
+          <h2 className="text-5xl md:text-7xl font-light text-white mb-6 leading-tight tracking-tight">
+            Real game.<br/>Real prices.
           </h2>
-          <p className="text-base md:text-lg font-light text-white/50 mb-12 max-w-2xl mx-auto animate-fadeIn" style={{ animationDelay: '0.1s' }}>
+          
+          <div className="h-[1px] w-24 bg-gradient-to-r from-transparent via-white/20 to-transparent mx-auto mb-12"></div>
+          
+          <p className="text-lg md:text-xl font-light text-white/50 mb-20 leading-relaxed max-w-2xl mx-auto">
             Straight from our facilities and partner farmers we trust. Fresh every time.
           </p>
 
-          <div className="grid md:grid-cols-3 gap-8 mb-12">
-            <div className="animate-fadeIn" style={{ animationDelay: '0.2s' }}>
-              <h3 className="text-xs font-light mb-1.5 text-white/90 uppercase tracking-wider">
-                Volume = Respect
-              </h3>
-              <p className="text-xs font-light text-white/50 leading-relaxed">
-                1g to 28g. The more you buy, the better the ticket.
-              </p>
+          <div className="grid md:grid-cols-3 gap-6">
+            {/* Volume Pricing Card */}
+            <div className="group bg-white/5 backdrop-blur-sm border border-white/10 p-8 hover:bg-white/10 hover:border-white/20 transition-all duration-500 relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <div className="relative z-10">
+                <div className="w-12 h-12 mb-6 mx-auto border border-white/20 rounded-full flex items-center justify-center group-hover:border-white/40 transition-colors duration-500">
+                  <div className="text-xl text-white/80">1</div>
+                </div>
+                <h3 className="text-sm font-normal mb-4 text-white uppercase tracking-[0.25em]">
+                  Volume Pricing
+                </h3>
+                <p className="text-xs font-light text-white/50 leading-relaxed">
+                  The more you buy, the better the price.
+                </p>
+              </div>
             </div>
             
-            <div className="animate-fadeIn" style={{ animationDelay: '0.3s' }}>
-              <h3 className="text-xs font-light mb-1.5 text-white/90 uppercase tracking-wider">
-                Cut The Middleman
-              </h3>
-              <p className="text-xs font-light text-white/50 leading-relaxed">
-                Direct from our grow. No broker tax. Just clean business.
-              </p>
+            {/* Direct Source Card */}
+            <div className="group bg-white/5 backdrop-blur-sm border border-white/10 p-8 hover:bg-white/10 hover:border-white/20 transition-all duration-500 relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <div className="relative z-10">
+                <div className="w-12 h-12 mb-6 mx-auto border border-white/20 rounded-full flex items-center justify-center group-hover:border-white/40 transition-colors duration-500">
+                  <div className="text-xl text-white/80">2</div>
+                </div>
+                <h3 className="text-sm font-normal mb-4 text-white uppercase tracking-[0.25em]">
+                  Direct Source
+                </h3>
+                <p className="text-xs font-light text-white/50 leading-relaxed">
+                  No middleman. Just clean business.
+                </p>
+              </div>
             </div>
 
-            <div className="animate-fadeIn" style={{ animationDelay: '0.4s' }}>
-              <h3 className="text-xs font-light mb-1.5 text-white/90 uppercase tracking-wider">
-                Always Fresh
-              </h3>
-              <p className="text-xs font-light text-white/50 leading-relaxed">
-                No dry product, no old stock. Terps stay loud.
-              </p>
+            {/* Always Fresh Card */}
+            <div className="group bg-white/5 backdrop-blur-sm border border-white/10 p-8 hover:bg-white/10 hover:border-white/20 transition-all duration-500 relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <div className="relative z-10">
+                <div className="w-12 h-12 mb-6 mx-auto border border-white/20 rounded-full flex items-center justify-center group-hover:border-white/40 transition-colors duration-500">
+                  <div className="text-xl text-white/80">3</div>
+                </div>
+                <h3 className="text-sm font-normal mb-4 text-white uppercase tracking-[0.25em]">
+                  Always Fresh
+                </h3>
+                <p className="text-xs font-light text-white/50 leading-relaxed">
+                  No dry product, no old stock.
+                </p>
+              </div>
             </div>
-          </div>
-
-          <div className="border-t border-white/10 pt-8 mb-8 animate-fadeIn" style={{ animationDelay: '0.5s' }}>
-            <p className="text-xs font-light text-white/60 max-w-2xl mx-auto leading-relaxed">
-              Personal amounts to shop volume—every tier gets you better pricing. Need serious weight? Apply for wholesale access and unlock true bulk pricing on pounds and up. Quality stays consistent, price scales with volume.
-            </p>
-          </div>
-
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 animate-fadeIn" style={{ animationDelay: '0.6s' }}>
-            <Link
-              href="/products"
-              className="inline-flex items-center space-x-3 bg-white text-black px-7 py-2.5 text-xs uppercase tracking-[0.2em] hover:bg-white/90 transition-all font-medium"
-            >
-              <span>See Pricing</span>
-              <ArrowRight size={14} />
-            </Link>
-            <Link
-              href="/contact"
-              className="inline-flex items-center space-x-3 bg-transparent border border-white/20 text-white px-7 py-2.5 text-xs uppercase tracking-[0.2em] hover:bg-white/10 transition-all font-medium"
-            >
-              <span>Wholesale Access</span>
-              <ArrowRight size={14} />
-            </Link>
           </div>
         </div>
       </section>
 
-      {/* Locations */}
+      {/* Locations - Edge to Edge */}
       <section className="bg-[#2a2a2a] py-16">
-        <div className="flex justify-between items-center mb-12 px-3 md:px-4">
-          <h2 className="text-2xl md:text-3xl font-light uppercase tracking-wider text-white">
-            Our Locations
-          </h2>
-          <p className="text-xs md:text-sm uppercase tracking-wider text-white/60">
+        <div className="flex justify-between items-end mb-12 px-4">
+          <div>
+            <h2 className="text-2xl md:text-3xl font-light uppercase tracking-wider text-white mb-3">
+              Our Locations
+            </h2>
+            <div className="h-[1px] w-16 bg-white/20"></div>
+          </div>
+          <p className="text-xs uppercase tracking-wider text-white/50">
             {locations.filter((loc: any) => {
               const isActive = loc.is_active === "1";
               const isAllowed = !['hamas', 'warehouse'].includes(loc.name.toLowerCase());
               return isActive && isAllowed;
-            }).length} Active Stores
+            }).length} Stores
           </p>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-px md:gap-0.5">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-px">
           {locations
-            .filter((loc: any) => {
-              // Filter active locations and exclude unwanted ones
-              const isActive = loc.is_active === "1";
-              const isAllowed = !['hamas', 'warehouse'].includes(loc.name.toLowerCase());
-              return isActive && isAllowed;
-            })
-            .map((location: any) => {
-              // Map location names to addresses and Google Maps links
-              const locationData: { [key: string]: { address: string; googleMapsUrl: string } } = {
-                'Salisbury': {
-                  address: '111 W Bank Street\nSalisbury, NC 28144',
-                  googleMapsUrl: 'https://www.google.com/maps/search/?api=1&query=111+W+Bank+Street+Salisbury+NC+28144'
-                },
-                'Charlotte Monroe': {
-                  address: '3130 Monroe Road\nCharlotte, NC 28205',
-                  googleMapsUrl: 'https://www.google.com/maps/search/?api=1&query=3130+Monroe+Road+Charlotte+NC+28205'
-                },
-                'Charlotte Central': {
-                  address: '5115 Nations Ford Road\nCharlotte, NC 28217',
-                  googleMapsUrl: 'https://www.google.com/maps/search/?api=1&query=5115+Nations+Ford+Road+Charlotte+NC+28217'
-                },
-                'Blowing Rock': {
-                  address: '3894 US 321\nBlowing Rock, NC 28605',
-                  googleMapsUrl: 'https://www.google.com/maps/search/?api=1&query=3894+US+321+Blowing+Rock+NC+28605'
-                },
-                'Elizabethton': {
-                  address: '2157 W Elk Ave\nElizabethton, TN 37643',
-                  googleMapsUrl: 'https://www.google.com/maps/search/?api=1&query=2157+W+Elk+Ave+Elizabethton+TN+37643'
-                }
-              };
+              .filter((loc: any) => {
+                const isActive = loc.is_active === "1";
+                const isAllowed = !['hamas', 'warehouse'].includes(loc.name.toLowerCase());
+                return isActive && isAllowed;
+              })
+              .map((location: any) => {
+                const locationData: { [key: string]: { address: string; googleMapsUrl: string; hours: string } } = {
+                  'Salisbury': {
+                    address: '111 W Bank Street\nSalisbury, NC 28144',
+                    googleMapsUrl: 'https://www.google.com/maps/search/?api=1&query=111+W+Bank+Street+Salisbury+NC+28144',
+                    hours: 'Daily: 11AM-9PM EST'
+                  },
+                  'Charlotte Monroe': {
+                    address: '3130 Monroe Road\nCharlotte, NC 28205',
+                    googleMapsUrl: 'https://www.google.com/maps/search/?api=1&query=3130+Monroe+Road+Charlotte+NC+28205',
+                    hours: 'Daily: 11AM-9PM EST'
+                  },
+                  'Charlotte Central': {
+                    address: '5115 Nations Ford Road\nCharlotte, NC 28217',
+                    googleMapsUrl: 'https://www.google.com/maps/search/?api=1&query=5115+Nations+Ford+Road+Charlotte+NC+28217',
+                    hours: 'Daily: 11AM-9PM EST'
+                  },
+                  'Blowing Rock': {
+                    address: '3894 US 321\nBlowing Rock, NC 28605',
+                    googleMapsUrl: 'https://www.google.com/maps/search/?api=1&query=3894+US+321+Blowing+Rock+NC+28605',
+                    hours: 'Daily: 11AM-9PM EST'
+                  },
+                  'Elizabethton': {
+                    address: '2157 W Elk Ave\nElizabethton, TN 37643',
+                    googleMapsUrl: 'https://www.google.com/maps/search/?api=1&query=2157+W+Elk+Ave+Elizabethton+TN+37643',
+                    hours: 'Daily: 11AM-9PM EST'
+                  }
+                };
 
-              const data = locationData[location.name] || { 
-                address: location.address_line_1 
-                  ? `${location.address_line_1}\n${location.city || ''}, ${location.state || ''} ${location.postal_code || ''}`.trim()
-                  : location.address
-                  ? `${location.address}\n${location.city || ''}, ${location.state || ''}`.trim()
-                  : '',
-                googleMapsUrl: location.address_line_1 || location.address 
-                  ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${location.address_line_1 || location.address} ${location.city} ${location.state} ${location.postal_code || ''}`)}`
-                  : ''
-              };
+                const data = locationData[location.name] || { 
+                  address: location.address_line_1 
+                    ? `${location.address_line_1}\n${location.city || ''}, ${location.state || ''} ${location.postal_code || ''}`.trim()
+                    : '',
+                  googleMapsUrl: '',
+                  hours: 'Daily: 11AM-9PM EST'
+                };
 
-              const CardContent = (
-                <>
-                  <div className="relative aspect-[4/5] mb-3 overflow-hidden bg-[#1a1a1a] flex flex-col items-center justify-center border-b border-white/5">
-                    <MapPin size={52} className="text-white/40 group-hover:text-white/70 transition-all duration-500 group-hover:scale-110" />
-                    {data.googleMapsUrl && (
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-4">
-                        <span className="text-[10px] uppercase tracking-[0.2em] text-white/90 font-medium flex items-center gap-1.5">
-                          <span>Get Directions</span>
-                          <ArrowRight size={12} />
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                  <div className="space-y-2 px-3 md:px-3.5 pb-4">
-                    <h3 className="text-sm md:text-sm leading-tight font-medium group-hover:text-white/90 transition-all duration-200 text-white uppercase tracking-[0.15em]">
-                      {location.name}
-                    </h3>
-                    {data.address && (
-                      <p className="text-[11px] text-white/50 font-light leading-relaxed whitespace-pre-line group-hover:text-white/70 transition-colors duration-200">
-                        {data.address}
-                      </p>
-                    )}
-                  </div>
-                </>
-              );
+                return (
+                  <LocationCard
+                    key={location.id}
+                    location={location}
+                    address={data.address}
+                    googleMapsUrl={data.googleMapsUrl}
+                    hours={data.hours}
+                  />
+                );
+              })}
+        </div>
+      </section>
 
-              return data.googleMapsUrl ? (
-                <a
-                  key={location.id}
-                  href={data.googleMapsUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group block bg-[#2a2a2a] hover:bg-[#333333] transition-all duration-300 border border-white/5 hover:border-white/20 cursor-pointer hover:shadow-xl hover:-translate-y-1"
-                >
-                  {CardContent}
-                </a>
-              ) : (
-                <div
-                  key={location.id}
-                  className="group block bg-[#2a2a2a] hover:bg-[#333333] transition-all duration-300 border border-white/5"
-                >
-                  {CardContent}
+      {/* Shipping - Split Layout */}
+      <section className="bg-[#3a3a3a] py-0">
+        <div className="grid md:grid-cols-2">
+          {/* Left - Content */}
+          <div className="flex items-center px-8 md:px-12 py-24 md:py-32 relative overflow-hidden">
+            <div className="absolute inset-0 opacity-10">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
+            </div>
+            <div className="relative z-10">
+              <div className="mb-8">
+                <div className="inline-block px-4 py-1.5 bg-white/5 border border-white/10 text-[9px] uppercase tracking-[0.3em] text-white/60 mb-8">
+                  Shipping
                 </div>
-              );
-            })}
-          </div>
-        </section>
-
-      {/* Shipping & Delivery */}
-      <section className="bg-gradient-to-br from-[#1a1a1a] via-[#0f0f0f] to-black text-white py-24 px-4 md:px-6 relative overflow-hidden">
-        <DeliveryAnimation />
-        
-        {/* Accent lines */}
-        <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
-        <div className="absolute bottom-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
-        
-        <div className="max-w-6xl mx-auto relative z-10">
-          <div className="grid md:grid-cols-2 gap-16 items-center">
-            {/* Left side - Main content */}
-            <div className="animate-fadeIn">
-              <div className="inline-block px-3 py-1 bg-white/5 border border-white/10 text-[10px] uppercase tracking-[0.3em] mb-6 backdrop-blur-sm">
-                Shipping
+                <h2 className="text-4xl md:text-5xl font-light text-white mb-6 leading-tight">
+                  Fast. Reliable.<br/>Every day.
+                </h2>
+                <p className="text-base font-light text-white/50 mb-12 leading-relaxed">
+                  We ship daily at 2PM. Regional orders arrive next day.
+                </p>
               </div>
-              <h2 className="text-4xl md:text-6xl font-light mb-6 leading-tight">
-                Fast.<br/>Reliable.<br/>Every day.
-              </h2>
-              <p className="text-base font-light text-white/60 leading-relaxed mb-8 max-w-md">
-                We ship daily at 2PM. Regional orders can arrive next day. No delays, no excuses. Get your product when you need it.
-              </p>
+
+              <div className="space-y-6 mb-12">
+                <div className="flex items-start gap-4 group">
+                  <div className="w-10 h-10 flex-shrink-0 border border-white/20 flex items-center justify-center group-hover:border-white/40 transition-colors duration-300">
+                    <svg className="w-5 h-5 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-normal text-white uppercase tracking-[0.15em] mb-1">2PM Cutoff</h3>
+                    <p className="text-xs text-white/50 font-light">Order by 2PM EST, ships same day</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-4 group">
+                  <div className="w-10 h-10 flex-shrink-0 border border-white/20 flex items-center justify-center group-hover:border-white/40 transition-colors duration-300">
+                    <svg className="w-5 h-5 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-normal text-white uppercase tracking-[0.15em] mb-1">Next-Day Delivery</h3>
+                    <p className="text-xs text-white/50 font-light">NC and East Tennessee</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-4 group">
+                  <div className="w-10 h-10 flex-shrink-0 border border-white/20 flex items-center justify-center group-hover:border-white/40 transition-colors duration-300">
+                    <svg className="w-5 h-5 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-normal text-white uppercase tracking-[0.15em] mb-1">Fully Tracked</h3>
+                    <p className="text-xs text-white/50 font-light">Track every order in real-time</p>
+                  </div>
+                </div>
+              </div>
+
               <Link
                 href="/shipping"
-                className="inline-flex items-center space-x-3 bg-white text-black px-8 py-3 text-xs uppercase tracking-[0.2em] hover:bg-white/90 transition-all font-medium"
+                className="group inline-flex items-center space-x-3 text-white text-xs uppercase tracking-[0.2em] hover:text-white/80 transition-colors duration-300"
               >
-                <span>Shipping Policy</span>
-                <ArrowRight size={14} />
+                <span>View Shipping Policy</span>
+                <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform duration-300" />
               </Link>
             </div>
+          </div>
 
-            {/* Right side - Info cards */}
-            <div className="space-y-4">
-              <div className="bg-white/5 backdrop-blur-sm border border-white/10 p-6 hover:bg-white/10 transition-all duration-300 animate-fadeIn" style={{ animationDelay: '0.1s' }}>
-                <div className="flex items-start space-x-4">
-                  <div className="w-12 h-12 bg-white/10 rounded flex items-center justify-center flex-shrink-0">
-                    <Clock size={24} className="text-white" />
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-light mb-1 text-white uppercase tracking-wider">
-                      2PM Daily Cutoff
-                    </h3>
-                    <p className="text-xs font-light text-white/50 leading-relaxed">
-                      Order by 2PM EST, ships same day. Weekends are local delivery only.
-                    </p>
+          {/* Right - Visual */}
+          <div className="relative bg-gradient-to-br from-[#2a2a2a] via-[#252525] to-[#1f1f1f] min-h-[400px] md:min-h-[600px] flex items-center justify-center overflow-hidden">
+            {/* Animated gradient orbs */}
+            <div className="absolute inset-0">
+              <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-white/5 rounded-full blur-3xl animate-float"></div>
+              <div className="absolute bottom-1/4 right-1/4 w-48 h-48 bg-white/5 rounded-full blur-2xl animate-float-delayed"></div>
+            </div>
+
+            {/* Animated grid pattern */}
+            <div className="absolute inset-0 opacity-[0.03]">
+              <div className="absolute inset-0" style={{
+                backgroundImage: `linear-gradient(to right, rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+                  linear-gradient(to bottom, rgba(255, 255, 255, 0.1) 1px, transparent 1px)`,
+                backgroundSize: "60px 60px",
+                animation: "slideDown 20s linear infinite"
+              }} />
+            </div>
+
+            {/* Floating particles */}
+            <div className="absolute inset-0">
+              <div className="absolute top-[20%] left-[15%] w-2 h-2 bg-white/20 rounded-full animate-float" style={{ animationDuration: "4s" }}></div>
+              <div className="absolute top-[60%] left-[25%] w-1.5 h-1.5 bg-white/15 rounded-full animate-float-delayed" style={{ animationDuration: "5s" }}></div>
+              <div className="absolute top-[40%] right-[20%] w-2 h-2 bg-white/20 rounded-full animate-float" style={{ animationDuration: "6s" }}></div>
+              <div className="absolute top-[75%] right-[30%] w-1 h-1 bg-white/15 rounded-full animate-float-delayed" style={{ animationDuration: "7s" }}></div>
+              <div className="absolute top-[30%] left-[70%] w-1.5 h-1.5 bg-white/10 rounded-full animate-float" style={{ animationDuration: "5.5s" }}></div>
+            </div>
+
+            {/* Main content */}
+            <div className="relative z-10 text-center">
+              {/* Animated rings around icon */}
+              <div className="relative w-40 h-40 mx-auto mb-8">
+                <div className="absolute inset-0 border border-white/10 rounded-full animate-ping" style={{ animationDuration: "3s" }}></div>
+                <div className="absolute inset-0 border border-white/10 rounded-full animate-ping" style={{ animationDuration: "3s", animationDelay: "1s" }}></div>
+                
+                {/* Main icon container */}
+                <div className="absolute inset-0 border-2 border-white/20 rounded-full flex items-center justify-center backdrop-blur-sm bg-white/5">
+                  {/* Animated truck */}
+                  <div className="relative">
+                    <svg className="w-20 h-20 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12" />
+                    </svg>
+                    {/* Speed lines */}
+                    <div className="absolute top-1/2 -left-8 -translate-y-1/2 space-y-1 opacity-30">
+                      <div className="h-[1px] w-4 bg-white/40 animate-pulse"></div>
+                      <div className="h-[1px] w-3 bg-white/30 animate-pulse" style={{ animationDelay: "0.1s" }}></div>
+                      <div className="h-[1px] w-2 bg-white/20 animate-pulse" style={{ animationDelay: "0.2s" }}></div>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              <div className="bg-white/5 backdrop-blur-sm border border-white/10 p-6 hover:bg-white/10 transition-all duration-300 animate-fadeIn" style={{ animationDelay: '0.2s' }}>
-                <div className="flex items-start space-x-4">
-                  <div className="w-12 h-12 bg-white/10 rounded flex items-center justify-center flex-shrink-0">
-                    <Zap size={24} className="text-white" />
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-light mb-1 text-white uppercase tracking-wider">
-                      Next-Day Regional
-                    </h3>
-                    <p className="text-xs font-light text-white/50 leading-relaxed">
-                      NC and East Tennessee get next-day delivery. Fresh product, lightning fast.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-white/5 backdrop-blur-sm border border-white/10 p-6 hover:bg-white/10 transition-all duration-300 animate-fadeIn" style={{ animationDelay: '0.3s' }}>
-                <div className="flex items-start space-x-4">
-                  <div className="w-12 h-12 bg-white/10 rounded flex items-center justify-center flex-shrink-0">
-                    <Truck size={24} className="text-white" />
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-light mb-1 text-white uppercase tracking-wider">
-                      Tracked & Insured
-                    </h3>
-                    <p className="text-xs font-light text-white/50 leading-relaxed">
-                      Full tracking on every order. Discreet packaging. Insured shipments.
-                    </p>
-                  </div>
+              {/* Text with fade animation */}
+              <div className="space-y-2">
+                <p className="text-xs uppercase tracking-[0.3em] text-white/40 font-light">Daily shipping from North Carolina</p>
+                <div className="flex items-center justify-center gap-2">
+                  <div className="h-[1px] w-8 bg-gradient-to-r from-transparent to-white/20"></div>
+                  <p className="text-sm tracking-[0.25em] text-white/60 font-medium">2PM EST</p>
+                  <div className="h-[1px] w-8 bg-gradient-to-l from-transparent to-white/20"></div>
                 </div>
               </div>
             </div>
@@ -411,106 +460,64 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Logo Divider */}
-      <section className="bg-[#2a2a2a] py-16 px-4 md:px-6 relative overflow-hidden">
-        <div className="max-w-6xl mx-auto">
-          <div className="flex items-center justify-center gap-8 md:gap-12">
-            <div className="flex-1 h-[1px] bg-gradient-to-r from-transparent to-white/20"></div>
-            <div className="relative group">
-              <div className="absolute inset-0 bg-white/5 blur-2xl scale-150 group-hover:scale-175 transition-transform duration-700"></div>
-              <img 
-                src="/logoprint.png" 
-                alt="Flora Distro" 
-                className="h-20 md:h-28 w-auto relative z-10 opacity-90 group-hover:opacity-100 transition-opacity duration-300 filter grayscale hover:grayscale-0"
-              />
-            </div>
-            <div className="flex-1 h-[1px] bg-gradient-to-l from-transparent to-white/20"></div>
+      {/* Logo Mark */}
+      <section className="bg-[#1a1a1a] py-20 px-4">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-center justify-center">
+            <img 
+              src="/logoprint.png" 
+              alt="Flora Distro" 
+              className="h-24 w-auto opacity-30 grayscale"
+            />
           </div>
         </div>
       </section>
 
-      {/* Loyalty Program CTA */}
-      <section className="bg-gradient-to-br from-[#2d5016] via-[#3a6b1f] to-[#2d5016] text-white py-24 px-4 md:px-6 relative overflow-hidden">
-        {/* Decorative elements */}
-        <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-0 left-0 w-96 h-96 bg-black/20 rounded-full blur-3xl"></div>
-        
-        <div className="max-w-5xl mx-auto relative z-10 text-center">
-          <div className="inline-block px-4 py-1.5 bg-white/10 border border-white/20 text-[10px] uppercase tracking-[0.3em] mb-6 backdrop-blur-sm animate-fadeIn">
-            Loyalty Program
-          </div>
-          
-          <h2 className="text-4xl md:text-6xl font-light mb-6 animate-fadeIn leading-tight" style={{ animationDelay: '0.1s' }}>
-            More discounts.<br/>More perks.<br/>More savings.
-          </h2>
-          
-          <p className="text-lg font-light text-white/80 mb-12 max-w-2xl mx-auto animate-fadeIn" style={{ animationDelay: '0.2s' }}>
-            Create an account and unlock exclusive pricing, early access to drops, and member-only deals.
-          </p>
+      {/* Final CTA - Dramatic */}
+      <section className="bg-gradient-to-br from-[#2a2a2a] via-[#1f1f1f] to-[#2a2a2a] py-40 px-4 relative overflow-hidden">
+        {/* Animated gradient orbs */}
+        <div className="absolute inset-0">
+          <div className="absolute top-1/4 left-1/4 w-[600px] h-[600px] bg-white/5 rounded-full blur-3xl animate-float"></div>
+          <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-white/5 rounded-full blur-3xl animate-float-delayed"></div>
+        </div>
 
-          <div className="grid md:grid-cols-3 gap-8 mb-16 max-w-3xl mx-auto">
-            <div className="bg-white/5 backdrop-blur-sm border border-white/10 p-6 animate-fadeIn hover:bg-white/10 transition-all duration-300" style={{ animationDelay: '0.3s' }}>
-              <div className="text-4xl font-light mb-2">10%</div>
-              <p className="text-xs text-white/70 uppercase tracking-wider">First Order</p>
-            </div>
-            <div className="bg-white/5 backdrop-blur-sm border border-white/10 p-6 animate-fadeIn hover:bg-white/10 transition-all duration-300" style={{ animationDelay: '0.4s' }}>
-              <div className="text-4xl font-light mb-2">24h</div>
-              <p className="text-xs text-white/70 uppercase tracking-wider">Early Access</p>
-            </div>
-            <div className="bg-white/5 backdrop-blur-sm border border-white/10 p-6 animate-fadeIn hover:bg-white/10 transition-all duration-300" style={{ animationDelay: '0.5s' }}>
-              <div className="text-4xl font-light mb-2">∞</div>
-              <p className="text-xs text-white/70 uppercase tracking-wider">Exclusive Pricing</p>
-            </div>
+        {/* Scan line effect */}
+        <div className="absolute inset-0 opacity-5 pointer-events-none">
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white to-transparent h-[200px] animate-scan"></div>
+        </div>
+
+        <div className="max-w-5xl mx-auto relative z-10">
+          <div className="text-center mb-16">
+            <h2 className="text-5xl md:text-8xl font-light text-white mb-8 leading-none tracking-tight">
+              Get started
+            </h2>
+            <p className="text-xl md:text-2xl font-light text-white/40 max-w-2xl mx-auto leading-relaxed">
+              Unlock volume pricing and exclusive access
+            </p>
           </div>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fadeIn" style={{ animationDelay: '0.6s' }}>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-6 mb-16">
             <Link
               href="/register"
-              className="inline-flex items-center space-x-3 bg-white text-[#2d5016] px-10 py-4 text-sm uppercase tracking-[0.2em] hover:bg-white/90 transition-all font-medium shadow-lg"
+              className="group w-full sm:w-auto inline-flex items-center justify-center space-x-3 bg-white text-black px-16 py-5 text-xs uppercase tracking-[0.3em] hover:bg-white/90 transition-all duration-300 font-medium"
             >
               <span>Create Account</span>
-              <ArrowRight size={16} />
+              <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform duration-300" />
             </Link>
             <Link
-              href="/about"
-              className="inline-flex items-center space-x-3 bg-transparent border-2 border-white/30 text-white px-10 py-4 text-sm uppercase tracking-[0.2em] hover:bg-white/10 transition-all font-medium"
+              href="/login"
+              className="group w-full sm:w-auto inline-flex items-center justify-center space-x-3 bg-transparent border border-white/30 text-white px-16 py-5 text-xs uppercase tracking-[0.3em] hover:bg-white/5 hover:border-white/50 transition-all duration-300 font-medium"
             >
-              <span>Learn More</span>
-              <ArrowRight size={16} />
+              <span>Sign In</span>
+              <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform duration-300" />
             </Link>
           </div>
 
-          <p className="text-xs text-white/50 mt-8">
-            Already have an account?{" "}
-            <Link href="/login" className="text-white/80 underline hover:no-underline">
-              Sign in here
-            </Link>
-          </p>
-        </div>
-      </section>
-
-      {/* Newsletter */}
-      <section className="bg-black text-white py-16">
-        <div className="container mx-auto px-6 text-center">
-          <h2 className="text-2xl md:text-3xl font-light tracking-wider uppercase mb-3">
-            Stay Updated
-          </h2>
-          <p className="text-sm text-[#aaa] mb-6 max-w-md mx-auto">
-            Get notified about new drops, restocks, and exclusive offers.
-          </p>
-          <form className="max-w-md mx-auto flex">
-            <input
-              type="email"
-              placeholder="Enter your email"
-              className="flex-1 px-5 py-3 text-sm bg-white text-black focus:outline-none"
-            />
-            <button
-              type="submit"
-              className="bg-white text-black px-6 py-3 text-xs uppercase tracking-wider hover:bg-[#ddd] transition-colors"
-            >
-              Subscribe
-            </button>
-          </form>
+          <div className="text-center">
+            <p className="text-xs uppercase tracking-[0.25em] text-white/30">
+              Or browse as guest
+            </p>
+          </div>
         </div>
       </section>
     </div>

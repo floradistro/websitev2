@@ -30,30 +30,18 @@ export default function LabResults({ metaData, attributes }: LabResultsProps) {
       href={coaUrl}
       target="_blank"
       rel="noopener noreferrer"
-      className="-mx-3 md:mx-0 block border-y md:border md:rounded-lg border-white/10 bg-white/5 backdrop-blur-sm hover:bg-white/10 transition-all duration-300 animate-fadeIn group"
+      className="block border border-white/20 hover:border-white/40 transition-all duration-300 p-3 group"
     >
-      <div className="flex items-center justify-between px-6 py-5">
-        <div className="flex items-center gap-4">
-          <div className="bg-white/10 p-3 rounded-full group-hover:bg-white/20 transition-colors duration-300">
-            <ShieldCheck size={24} strokeWidth={2} className="text-white" />
-          </div>
-          <div>
-            <h3 className="text-base font-semibold text-white mb-1">
-              Lab Tested
-            </h3>
-            <p className="text-sm text-white/60 font-light">
-              View certificate →
-            </p>
-          </div>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <ShieldCheck size={14} strokeWidth={1.5} className="text-white/60" />
+          <span className="text-xs uppercase tracking-[0.12em] text-white/80 group-hover:text-white">
+            Lab Tested
+          </span>
         </div>
-        
-        <div className="bg-white/10 p-3 rounded-lg group-hover:bg-white/20 transition-colors duration-300">
-          <img
-            src="/logoprint.png"
-            alt="Flora Distro"
-            className="w-10 h-10 object-contain"
-          />
-        </div>
+        <span className="text-[10px] text-white/60 uppercase tracking-wider">
+          View →
+        </span>
       </div>
     </a>
   );

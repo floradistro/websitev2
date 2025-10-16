@@ -96,7 +96,7 @@ export default function Footer() {
               />
               <button
                 type="submit"
-                className="w-full bg-white text-black py-2 text-xs uppercase tracking-wider hover:bg-white/90 transition-colors"
+                className="w-full bg-black border border-white/20 text-white py-2 text-xs uppercase tracking-wider hover:bg-white hover:text-black hover:border-white transition-all duration-300"
               >
                 Subscribe
               </button>
@@ -104,8 +104,20 @@ export default function Footer() {
           </div>
         </div>
 
+        {/* Legal Compliance */}
+        <div className="mt-12 pt-8 border-t border-white/10">
+          <div className="space-y-3 max-w-5xl">
+            <p className="text-[10px] text-white/40 leading-relaxed font-light">
+              All products contain less than 0.3% hemp-derived Delta-9 THC in compliance with the 2018 Farm Bill.
+            </p>
+            <p className="text-[10px] text-white/40 leading-relaxed font-light">
+              Products are not available for shipment to the following states: Arkansas, Hawaii, Idaho, Kansas, Louisiana, Oklahoma, Oregon, Rhode Island, Utah, Vermont.
+            </p>
+          </div>
+        </div>
+
         {/* Bottom section */}
-        <div className="mt-12 pt-6 border-t border-white/10">
+        <div className="mt-8 pt-6 border-t border-white/10">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <p className="text-xs text-white/60 mb-4 md:mb-0">
               © {new Date().getFullYear()} Flora Distro. All rights reserved.

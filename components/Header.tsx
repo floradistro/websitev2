@@ -3,17 +3,45 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Search, ShoppingBag, User, Heart, Menu, X } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useCart } from "@/context/CartContext";
 import CartDrawer from "./CartDrawer";
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
   const { itemCount } = useCart();
 
+  useEffect(() => {
+    const controlHeader = () => {
+      const currentScrollY = window.scrollY;
+
+      // Show header when at top
+      if (currentScrollY < 10) {
+        setIsVisible(true);
+      }
+      // Hide when scrolling down, show when scrolling up
+      else if (currentScrollY > lastScrollY && currentScrollY > 100) {
+        setIsVisible(false);
+      } else if (currentScrollY < lastScrollY) {
+        setIsVisible(true);
+      }
+
+      setLastScrollY(currentScrollY);
+    };
+
+    window.addEventListener("scroll", controlHeader);
+    return () => window.removeEventListener("scroll", controlHeader);
+  }, [lastScrollY]);
+
   return (
-    <header className="sticky top-0 bg-[#1a1a1a] text-white z-50 border-b border-white/10">
+    <header 
+      className={`sticky top-0 bg-[#1a1a1a] text-white z-50 border-b border-white/10 transition-transform duration-300 ${
+        isVisible ? 'translate-y-0' : '-translate-y-full'
+      }`}
+    >
       {/* Top announcement bar */}
       <div className="bg-black text-white text-center py-1.5 px-4 text-[10px] uppercase tracking-wider">
         Free shipping on orders over $500

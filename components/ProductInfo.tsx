@@ -72,62 +72,39 @@ export default function ProductInfo({
 
   return (
     <>
-      <div className="animate-fadeIn space-y-6 text-center">
-        {/* Product Name & Price */}
-        <div>
-          <div className="relative mb-6 product-name-animate">
-            <h1 
-              className="logo-font text-5xl md:text-6xl leading-tight tracking-[0.08em] text-white relative"
-              style={{ 
-                fontWeight: 300
-              }}
-            >
-              {product.name}
-            </h1>
-            {/* Subtle glow effect */}
-            <div 
-              className="absolute -inset-2 bg-gradient-to-r from-transparent via-white/5 to-transparent blur-xl opacity-30 -z-10"
-              style={{
-                animation: 'pulse 3s ease-in-out infinite'
-              }}
-            />
-          </div>
+      <div className="animate-fadeIn space-y-4">
+        {/* Product Name */}
+        <h1 className="text-xs uppercase tracking-[0.15em] font-normal text-white leading-relaxed">
+          {product.name}
+        </h1>
 
-          <div className="flex items-baseline justify-center gap-2 mb-3">
-            <div className="text-4xl md:text-5xl font-light text-white">
-              {selectedPrice ? `$${selectedPrice.toFixed(0)}` : (typeof priceDisplay === 'string' ? priceDisplay : `$${priceDisplay}`)}
-            </div>
-          </div>
-          
-          {selectedQuantity && (
-            <div className="inline-flex items-center gap-2 bg-white text-black px-4 py-2 rounded-full text-sm font-light mb-3">
-              {selectedQuantity} selected
-            </div>
-          )}
-        </div>
+        {/* Price */}
+        <p className="text-sm font-medium text-white tracking-wide">
+          {selectedPrice ? `$${selectedPrice.toFixed(0)}` : (typeof priceDisplay === 'string' ? priceDisplay : `$${priceDisplay}`)}
+        </p>
 
-        {/* Short Description */}
-        {product.short_description && (
-          <div className="bg-white/5 backdrop-blur-sm rounded-lg p-4 max-w-2xl mx-auto">
-            <div
-              className="text-base md:text-lg text-white/90 leading-relaxed font-light prose prose-sm prose-invert max-w-none"
-              dangerouslySetInnerHTML={{ __html: product.short_description }}
-            />
+        {/* Stock Status */}
+        {product.stock_status === "instock" && (
+          <div className="flex items-center gap-2 text-white/60 text-xs">
+            <div className="w-1.5 h-1.5 bg-white rounded-full" />
+            In Stock
           </div>
         )}
 
-        {/* Stock Status Badge */}
-        {product.stock_status === "instock" && (
-          <div className="inline-flex items-center gap-2 text-green-300 text-sm font-light bg-green-950/80 border border-green-800/50 px-4 py-2 rounded-full backdrop-blur-sm">
-            <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-            In Stock
+        {/* Short Description */}
+        {product.short_description && (
+          <div className="pt-2 border-t border-white/10">
+            <div
+              className="text-xs text-white/80 leading-relaxed prose prose-sm prose-invert max-w-none"
+              dangerouslySetInnerHTML={{ __html: product.short_description }}
+            />
           </div>
         )}
       </div>
 
       {/* Pricing Tiers */}
       {blueprintName && pricingRules && (
-        <div className="mt-8">
+        <div className="mt-6">
           <PricingTiers 
             pricingRules={pricingRules}
             productBlueprint={blueprintName}

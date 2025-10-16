@@ -43,30 +43,17 @@ export default function FloraFields({ metaData }: FloraFieldsProps) {
   }
 
   return (
-    <div className="-mx-3 md:mx-0 mb-6 md:mb-8">
-      <div className="bg-white/5 backdrop-blur-sm md:rounded-lg border-y md:border border-white/10">
-        <div className="px-6 py-5 border-b border-white/10">
-          <h3 className="text-base font-semibold text-white uppercase tracking-[0.15em]">
-            Specifications
-          </h3>
+    <div className="space-y-1.5 pt-2 border-t border-white/10">
+      {fields.map((field, idx) => (
+        <div key={field.key} className="flex items-center justify-between gap-2">
+          <span className="uppercase tracking-[0.12em] font-medium text-white/60 text-[10px] whitespace-nowrap">
+            {field.label}
+          </span>
+          <span className="text-[11px] tracking-wide text-white/90 font-normal text-right truncate">
+            {field.value}
+          </span>
         </div>
-        <div className="divide-y divide-white/10">
-          {fields.map((field, idx) => (
-            <div
-              key={field.key}
-              style={{ animationDelay: `${idx * 50}ms` }}
-              className="animate-fadeIn px-6 py-4 flex items-center justify-between hover:bg-white/5 transition-colors duration-200"
-            >
-              <div className="text-sm uppercase tracking-wider text-white/50 font-light">
-                {field.label}
-              </div>
-              <div className="text-base font-semibold text-white">
-                {field.value}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+      ))}
     </div>
   );
 }

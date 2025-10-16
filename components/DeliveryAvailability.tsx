@@ -160,179 +160,100 @@ export default function DeliveryAvailability({
   const isInStock = locationsWithStock.length > 0 || stockStatus === "instock";
 
   return (
-    <div id="delivery-section" className="mb-6 md:mb-8 scroll-mt-24">
-      {/* Highlight notification */}
-      {showHighlight && initialOrderType && (
-        <div className="mb-3 bg-white text-black px-4 py-2.5 text-xs uppercase tracking-wider text-center animate-fadeIn">
-          {initialOrderType === "pickup" ? "Select your pickup location below" : "Enter delivery address below"}
-        </div>
-      )}
-      
-      <div className={`-mx-3 md:mx-0 bg-white/5 backdrop-blur-sm md:rounded-lg border-y md:border transition-all duration-500 ${
-        showHighlight ? "border-white shadow-elevated-lg ring-2 ring-white/10" : "border-white/10"
-      }`}>
-        {/* Tabs */}
-        <div className="flex border-b border-white/10">
-          <button
-            onClick={() => setSelectedTab("delivery")}
-            className={`flex-1 py-4 text-base font-semibold transition-all duration-200 ${
-              selectedTab === "delivery"
-                ? "bg-white/10 text-white"
-                : "text-white/50 hover:text-white hover:bg-white/5"
-            }`}
-          >
-            <Package size={18} className="inline mr-2" strokeWidth={1.5} />
-            Delivery
-          </button>
-          <button
-            onClick={() => setSelectedTab("pickup")}
-            className={`flex-1 py-4 text-base font-semibold transition-all duration-200 ${
-              selectedTab === "pickup"
-                ? "bg-white/10 text-white"
-                : "text-white/50 hover:text-white hover:bg-white/5"
-            }`}
-          >
-            <Store size={18} className="inline mr-2" strokeWidth={1.5} />
-            Pickup
-          </button>
-        </div>
+    <div id="delivery-section" className="space-y-2">
+      {/* Tabs */}
+      <div className="flex border border-white/20">
+        <button
+          onClick={() => setSelectedTab("delivery")}
+          className={`flex-1 py-2.5 text-xs font-medium uppercase tracking-[0.15em] transition-all duration-300 ${
+            selectedTab === "delivery"
+              ? "bg-black text-white border-white/40"
+              : "text-white/60 hover:bg-white/5"
+          }`}
+        >
+          Delivery
+        </button>
+        <button
+          onClick={() => setSelectedTab("pickup")}
+          className={`flex-1 py-2.5 text-xs font-medium uppercase tracking-[0.15em] transition-all duration-300 border-l border-white/20 ${
+            selectedTab === "pickup"
+              ? "bg-black text-white border-white/40"
+              : "text-white/60 hover:bg-white/5"
+          }`}
+        >
+          Pickup
+        </button>
+      </div>
 
-        {/* Delivery Tab */}
-        {selectedTab === "delivery" && (
-          <div className="p-6 animate-fadeIn">
-            {isInStock ? (
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="text-lg font-semibold text-white mb-1">
-                      {delivery.express}
-                    </div>
-                    {delivery.cutoffMessage && (
-                      <p className="text-sm text-white/60 font-light">
-                        {delivery.cutoffMessage}
-                      </p>
-                    )}
-                  </div>
-                  <div className="text-right">
-                    {delivery.showExpress && (
-                      <span className="text-xs bg-white text-black px-3 py-1.5 rounded-full uppercase tracking-wider font-semibold block mb-2">
-                        Express
-                      </span>
-                    )}
-                    <div className="text-base font-semibold text-white">
-                      FREE
-                    </div>
-                  </div>
+      {/* Delivery Tab */}
+      {selectedTab === "delivery" && (
+        <div className="border border-white/20 p-4 animate-fadeIn">
+          {isInStock ? (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="text-xs text-white/80">
+                  {delivery.express}
+                </div>
+                <div className="text-xs font-medium text-white">
+                  FREE
                 </div>
               </div>
-            ) : (
-              <div className="py-4 text-base text-white/50 font-light text-center">
-                Currently unavailable for delivery
-              </div>
-            )}
-          </div>
-        )}
+              {delivery.cutoffMessage && (
+                <p className="text-[10px] text-white/60 uppercase tracking-wider">
+                  {delivery.cutoffMessage}
+                </p>
+              )}
+            </div>
+          ) : (
+            <div className="py-2 text-xs text-white/50 text-center uppercase tracking-wider">
+              Unavailable
+            </div>
+          )}
+        </div>
+      )}
 
-        {/* Pickup Tab */}
-        {selectedTab === "pickup" && (
-          <div className="p-6 animate-fadeIn">
-            {locationsWithStock.length > 0 ? (
-              <div className="space-y-4">
-                {/* Store Selector */}
-                <button
-                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="w-full text-left py-4 px-5 border border-white/10 rounded-lg hover:border-white/30 transition-all duration-300 bg-white/5"
+      {/* Pickup Tab */}
+      {selectedTab === "pickup" && (
+        <div className="border border-white/20 p-4 animate-fadeIn space-y-2">
+          {locationsWithStock.length > 0 ? (
+            <>
+              {/* Store Selector */}
+              <div className="relative">
+                <select
+                  value={selectedStore || ""}
+                  onChange={(e) => setSelectedStore(e.target.value)}
+                  className="w-full appearance-none bg-transparent border border-white/20 px-3 py-2.5 pr-7 text-[11px] font-normal text-white hover:border-white/40 hover:bg-white/5 focus:border-white focus:outline-none transition-all duration-300 cursor-pointer uppercase tracking-[0.1em]"
                 >
-                  {currentStore && (
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <div className="text-base font-semibold mb-1 text-white">
-                          {currentStore.name}
-                        </div>
-                        <div className="text-sm text-white/60 font-light">
-                          {currentStore.address_line_1}
-                          {currentStore.city && `, ${currentStore.city}`}
-                        </div>
-                      </div>
-                      <div className="flex items-center space-x-3 ml-4">
-                        <span className={`text-sm font-medium ${currentStoreQuantity > 0 ? "text-white" : "text-white/50"}`}>
-                          {currentStoreQuantity > 0 ? "Available" : "Out of Stock"}
-                        </span>
-                        <svg
-                          className={`w-4 h-4 text-white transition-transform ${
-                            isDropdownOpen ? "rotate-180" : ""
-                          }`}
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M19 9l-7 7-7-7"
-                          />
-                        </svg>
-                      </div>
-                    </div>
-                  )}
-                </button>
-
-                {/* Pickup Time */}
-                {currentStoreQuantity > 0 && (
-                  <div className="text-base font-light">
-                    <span className="text-white/60">Ready for pickup</span>
-                    <span className="text-white font-semibold ml-1">today</span>
-                  </div>
-                )}
-
-                {/* Store Dropdown */}
-                {isDropdownOpen && (
-                  <div className="border border-white/10 rounded-lg overflow-hidden max-h-64 overflow-y-auto animate-fadeIn bg-white/5">
-                    {sortedLocations.map((location, idx) => {
-                      const quantity = getQuantity(location.id);
-                      const isCurrentlySelected = location.id === selectedStore;
-                      
-                      return (
-                        <button
-                          key={location.id}
-                          onClick={() => {
-                            setSelectedStore(location.id);
-                            setIsDropdownOpen(false);
-                          }}
-                          style={{ animationDelay: `${idx * 30}ms` }}
-                          className={`w-full text-left py-4 px-5 transition-all duration-200 border-b border-white/10 last:border-0 animate-slideIn ${
-                            isCurrentlySelected ? "bg-white/10" : "hover:bg-white/5"
-                          }`}
-                        >
-                          <div className="flex items-center justify-between">
-                            <div className="flex-1">
-                              <div className="text-base font-semibold mb-1 text-white">
-                                {location.name}
-                              </div>
-                              <div className="text-sm text-white/60 font-light">
-                                {location.address_line_1}
-                                {location.city && `, ${location.city}`}
-                              </div>
-                            </div>
-                            <div className={`text-sm font-medium ml-4 ${quantity > 0 ? "text-white" : "text-white/50"}`}>
-                              {quantity > 0 ? "Available" : "Unavailable"}
-                            </div>
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
+                  {sortedLocations.map((location) => {
+                    const quantity = getQuantity(location.id);
+                    return (
+                      <option key={location.id} value={location.id}>
+                        {location.name} {quantity > 0 ? `(${Math.floor(quantity)} available)` : "(Out of Stock)"}
+                      </option>
+                    );
+                  })}
+                </select>
+                <div className="absolute inset-y-0 right-0 flex items-center pr-2.5 pointer-events-none">
+                  <svg className="w-3.5 h-3.5 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
               </div>
-            ) : (
-              <div className="py-4 text-base text-white/50 font-light text-center">
-                Currently unavailable for pickup
-              </div>
-            )}
-          </div>
-        )}
-      </div>
+
+              {/* Pickup Time */}
+              {currentStoreQuantity > 0 && (
+                <div className="text-xs text-white/60 uppercase tracking-wider">
+                  Ready for pickup today
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="py-2 text-xs text-white/50 text-center uppercase tracking-wider">
+              Unavailable
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
