@@ -66,7 +66,7 @@ export async function GET(request: Request) {
 
   try {
     // Check if we have a cached Place ID
-    let placeId = PLACE_IDS[locationName];
+    let placeId: string | null = PLACE_IDS[locationName];
     
     // If not, search for it
     if (!placeId) {
@@ -81,9 +81,12 @@ export async function GET(request: Request) {
       console.log(`Searching for ${locationName} with queries:`, searchQueries);
       
       for (const query of searchQueries) {
-        placeId = await findPlaceId(query);
-        console.log(`Query "${query}" returned Place ID:`, placeId);
-        if (placeId) break;
+        const foundId = await findPlaceId(query);
+        console.log(`Query "${query}" returned Place ID:`, foundId);
+        if (foundId) {
+          placeId = foundId;
+          break;
+        }
       }
       
       if (!placeId) {
