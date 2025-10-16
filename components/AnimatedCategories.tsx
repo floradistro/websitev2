@@ -41,9 +41,9 @@ export default function AnimatedCategories({ categories }: { categories: Categor
   }, []);
 
   return (
-    <section ref={sectionRef} className="bg-[#c5c5c2] py-8">
+    <section ref={sectionRef} className="bg-[#2a2a2a] py-8">
       <h2 
-        className="text-2xl md:text-3xl font-light text-center uppercase tracking-wider mb-6 px-3"
+        className="text-2xl md:text-3xl font-light text-center uppercase tracking-wider mb-6 px-3 text-white"
         style={{
           opacity: isVisible ? 1 : 0,
           transform: isVisible ? 'translateY(0)' : 'translateY(30px)',

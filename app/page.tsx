@@ -127,14 +127,14 @@ export default async function Home() {
       <AnimatedCategories categories={categories} />
 
       {/* Best Selling Products */}
-      <section className="bg-[#c5c5c2] py-16">
+      <section className="bg-[#2a2a2a] py-16">
         <div className="flex justify-between items-center mb-12 px-3 md:px-4">
-          <h2 className="text-2xl md:text-3xl font-light uppercase tracking-wider">
+          <h2 className="text-2xl md:text-3xl font-light uppercase tracking-wider text-white">
             Best Selling Products
           </h2>
           <Link
             href="/products"
-            className="text-xs md:text-sm uppercase tracking-wider hover:opacity-60 transition-opacity flex items-center space-x-2"
+            className="text-xs md:text-sm uppercase tracking-wider text-white/80 hover:text-white transition-colors flex items-center space-x-2"
           >
             <span>View All</span>
             <ArrowRight size={14} />
@@ -221,12 +221,12 @@ export default async function Home() {
       </section>
 
       {/* Locations */}
-      <section className="bg-[#c5c5c2] py-16">
+      <section className="bg-[#2a2a2a] py-16">
         <div className="flex justify-between items-center mb-12 px-3 md:px-4">
-          <h2 className="text-2xl md:text-3xl font-light uppercase tracking-wider">
+          <h2 className="text-2xl md:text-3xl font-light uppercase tracking-wider text-white">
             Our Locations
           </h2>
-          <p className="text-xs md:text-sm uppercase tracking-wider text-black/60">
+          <p className="text-xs md:text-sm uppercase tracking-wider text-white/60">
             {locations.filter((loc: any) => {
               const isActive = loc.is_active === "1";
               const isAllowed = !['hamas', 'warehouse'].includes(loc.name.toLowerCase());
@@ -412,19 +412,19 @@ export default async function Home() {
       </section>
 
       {/* Logo Divider */}
-      <section className="bg-[#c5c5c2] py-16 px-4 md:px-6 relative overflow-hidden">
+      <section className="bg-[#2a2a2a] py-16 px-4 md:px-6 relative overflow-hidden">
         <div className="max-w-6xl mx-auto">
           <div className="flex items-center justify-center gap-8 md:gap-12">
-            <div className="flex-1 h-[1px] bg-gradient-to-r from-transparent to-black/20"></div>
+            <div className="flex-1 h-[1px] bg-gradient-to-r from-transparent to-white/20"></div>
             <div className="relative group">
-              <div className="absolute inset-0 bg-black/5 blur-2xl scale-150 group-hover:scale-175 transition-transform duration-700"></div>
+              <div className="absolute inset-0 bg-white/5 blur-2xl scale-150 group-hover:scale-175 transition-transform duration-700"></div>
               <img 
                 src="/logoprint.png" 
                 alt="Flora Distro" 
                 className="h-20 md:h-28 w-auto relative z-10 opacity-90 group-hover:opacity-100 transition-opacity duration-300 filter grayscale hover:grayscale-0"
               />
             </div>
-            <div className="flex-1 h-[1px] bg-gradient-to-l from-transparent to-black/20"></div>
+            <div className="flex-1 h-[1px] bg-gradient-to-l from-transparent to-white/20"></div>
           </div>
         </div>
       </section>

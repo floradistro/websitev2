@@ -200,7 +200,7 @@ export default function ProductCard({ product, index, locations, pricingRules, p
 
   return (
     <div
-      className="group block relative bg-[#3a3a38] hover:bg-[#404040] transition-all duration-500 cursor-pointer"
+      className="group block relative bg-[#3a3a3a] hover:bg-[#404040] transition-all duration-500 cursor-pointer"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onClick={handleCardClick}
@@ -209,7 +209,7 @@ export default function ProductCard({ product, index, locations, pricingRules, p
       }}
     >
       {/* Product Image Container */}
-      <div className="relative aspect-[4/5] overflow-hidden bg-[#2a2a28]">
+      <div className="relative aspect-[4/5] overflow-hidden bg-[#2a2a2a]">
         {product.images?.[0] ? (
           <>
             {/* Main Image */}

@@ -18,19 +18,19 @@ export default async function AboutPage() {
       </section>
 
       {/* Content Section */}
-      <section className="container mx-auto px-6 py-24 bg-[#c5c5c2]">
+      <section className="container mx-auto px-6 py-24 bg-[#2a2a2a]">
         {page?.content?.rendered ? (
           <div
-            className="prose prose-lg max-w-4xl mx-auto text-[#767676] leading-relaxed"
+            className="prose prose-lg max-w-4xl mx-auto text-white/80 leading-relaxed"
             dangerouslySetInnerHTML={{ __html: page.content.rendered }}
           />
         ) : (
           <div className="max-w-4xl mx-auto space-y-12">
             <div className="text-center">
-              <h2 className="text-3xl font-light uppercase tracking-wider mb-6">
+              <h2 className="text-3xl font-light uppercase tracking-wider mb-6 text-white">
                 Our Story
               </h2>
-              <p className="text-lg text-[#767676] leading-relaxed">
+              <p className="text-lg text-white/80 leading-relaxed">
                 Flora Distro represents the pinnacle of floral distribution excellence.
                 Our commitment to quality, sustainability, and innovation has established
                 us as the premier choice for discerning clients worldwide.
@@ -39,26 +39,26 @@ export default async function AboutPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-12 pt-12">
               <div className="text-center">
-                <h3 className="text-xl uppercase tracking-wider mb-4 font-light">
+                <h3 className="text-xl uppercase tracking-wider mb-4 font-light text-white">
                   Quality
                 </h3>
-                <p className="text-[#767676]">
+                <p className="text-white/60">
                   Every product meets our rigorous standards for excellence and beauty.
                 </p>
               </div>
               <div className="text-center">
-                <h3 className="text-xl uppercase tracking-wider mb-4 font-light">
+                <h3 className="text-xl uppercase tracking-wider mb-4 font-light text-white">
                   Sustainability
                 </h3>
-                <p className="text-[#767676]">
+                <p className="text-white/60">
                   Committed to environmental responsibility in every aspect of our business.
                 </p>
               </div>
               <div className="text-center">
-                <h3 className="text-xl uppercase tracking-wider mb-4 font-light">
+                <h3 className="text-xl uppercase tracking-wider mb-4 font-light text-white">
                   Innovation
                 </h3>
-                <p className="text-[#767676]">
+                <p className="text-white/60">
                   Pioneering new approaches to floral distribution and presentation.
                 </p>
               </div>

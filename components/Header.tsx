@@ -13,7 +13,7 @@ export default function Header() {
   const { itemCount } = useCart();
 
   return (
-    <header className="sticky top-0 bg-[#c5c5c2] z-50 border-b border-[#a8a8a5]">
+    <header className="sticky top-0 bg-[#1a1a1a] text-white z-50 border-b border-white/10">
       {/* Top announcement bar */}
       <div className="bg-black text-white text-center py-1.5 px-4 text-[10px] uppercase tracking-wider">
         Free shipping on orders over $500
@@ -25,7 +25,7 @@ export default function Header() {
           {/* Mobile menu button */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="lg:hidden"
+            className="lg:hidden text-white"
           >
             {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
@@ -39,26 +39,26 @@ export default function Header() {
               height={40}
               className="object-contain"
             />
-            <span className="text-2xl logo-font">Flora Distro</span>
+            <span className="text-2xl logo-font text-white">Flora Distro</span>
           </Link>
 
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center space-x-8 text-xs uppercase tracking-wider">
             <Link
               href="/products"
-              className="hover:opacity-60 transition-opacity"
+              className="text-white/80 hover:text-white transition-colors"
             >
               Products
             </Link>
             <Link
               href="/about"
-              className="hover:opacity-60 transition-opacity"
+              className="text-white/80 hover:text-white transition-colors"
             >
               About
             </Link>
             <Link
               href="/contact"
-              className="hover:opacity-60 transition-opacity"
+              className="text-white/80 hover:text-white transition-colors"
             >
               Contact
             </Link>
@@ -66,22 +66,22 @@ export default function Header() {
 
           {/* Right icons */}
           <div className="flex items-center space-x-5">
-            <button className="hover:opacity-60 transition-opacity">
+            <button className="text-white/80 hover:text-white transition-colors">
               <Search size={18} />
             </button>
-            <Link href="/register" className="hover:opacity-60 transition-opacity hidden sm:block">
+            <Link href="/register" className="text-white/80 hover:text-white transition-colors hidden sm:block">
               <User size={18} />
             </Link>
-            <button className="hover:opacity-60 transition-opacity hidden sm:block">
+            <button className="text-white/80 hover:text-white transition-colors hidden sm:block">
               <Heart size={18} />
             </button>
             <button 
               onClick={() => setCartOpen(true)}
-              className="hover:opacity-60 transition-opacity relative"
+              className="text-white/80 hover:text-white transition-colors relative"
             >
               <ShoppingBag size={18} />
               {itemCount > 0 && (
-                <span className="absolute -top-2 -right-2 w-5 h-5 bg-black text-white text-[10px] font-medium flex items-center justify-center rounded-full">
+                <span className="absolute -top-2 -right-2 w-5 h-5 bg-white text-black text-[10px] font-medium flex items-center justify-center rounded-full">
                   {itemCount}
                 </span>
               )}
@@ -92,25 +92,25 @@ export default function Header() {
 
       {/* Mobile menu */}
       {mobileMenuOpen && (
-        <div className="lg:hidden border-t border-[#a8a8a5] bg-[#c5c5c2]">
+        <div className="lg:hidden border-t border-white/10 bg-[#1a1a1a]">
           <nav className="container mx-auto px-6 py-4 flex flex-col space-y-3 text-xs uppercase tracking-wider">
             <Link
               href="/products"
-              className="hover:opacity-60 transition-opacity"
+              className="text-white/80 hover:text-white transition-colors"
               onClick={() => setMobileMenuOpen(false)}
             >
               Products
             </Link>
             <Link
               href="/about"
-              className="hover:opacity-60 transition-opacity"
+              className="text-white/80 hover:text-white transition-colors"
               onClick={() => setMobileMenuOpen(false)}
             >
               About
             </Link>
             <Link
               href="/contact"
-              className="hover:opacity-60 transition-opacity"
+              className="text-white/80 hover:text-white transition-colors"
               onClick={() => setMobileMenuOpen(false)}
             >
               Contact

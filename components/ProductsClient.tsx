@@ -67,7 +67,7 @@ export default function ProductsClient({
   }, [selectedLocation, categorySlug, initialProducts, categories, inventoryMap]);
 
   return (
-    <div className="min-h-screen bg-[#2a2a28]">
+    <div className="min-h-screen bg-[#2a2a2a]">
       {/* Header Section */}
       <div className="border-b border-white/10">
         <div className="px-6 md:px-8 py-8 md:py-12 max-w-[2000px] mx-auto">

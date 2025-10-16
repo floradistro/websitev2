@@ -86,13 +86,13 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#b5b5b2]">
+    <div className="min-h-screen bg-[#2a2a2a]">
       {/* Header */}
-      <div className="border-b border-[#a8a8a5] bg-[#c5c5c2]">
+      <div className="border-b border-white/10 bg-[#1a1a1a]">
         <div className="max-w-7xl mx-auto px-4 md:px-6 py-4">
           <Link
             href="/products"
-            className="inline-flex items-center space-x-2 text-sm hover:opacity-60 transition-all font-light"
+            className="inline-flex items-center space-x-2 text-sm text-white/80 hover:text-white transition-colors font-light"
           >
             <ChevronLeft size={16} />
             <span>Continue Shopping</span>
