@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Search, ShoppingBag, User, Menu, X } from "lucide-react";
+import { Search, ShoppingBag, User, Menu, X, RotateCcw } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useCart } from "@/context/CartContext";
 import CartDrawer from "./CartDrawer";
@@ -92,6 +92,20 @@ export default function Header() {
             >
               Contact
             </Link>
+            <button
+              onClick={() => {
+                if (confirm('Clear all cache and reload?')) {
+                  localStorage.clear();
+                  sessionStorage.clear();
+                  window.location.reload();
+                }
+              }}
+              className="text-white/80 hover:text-white transition-colors flex items-center gap-1"
+              title="Clear Cache"
+            >
+              <RotateCcw size={14} />
+              <span>Clear Cache</span>
+            </button>
           </nav>
 
           {/* Right icons */}
