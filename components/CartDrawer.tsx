@@ -38,9 +38,9 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
       {/* Drawer */}
       <div className="fixed right-0 top-0 h-screen w-full sm:w-[500px] bg-[#2a2a2a]/95 backdrop-blur-xl shadow-2xl z-[121] flex flex-col border-l border-white/10 animate-slideInRight overflow-hidden">
         {/* Header - Fixed */}
-        <div className="px-6 py-5 border-b border-white/10 bg-transparent">
+        <div className="px-4 sm:px-6 py-5 border-b border-white/10 bg-transparent">
           <div className="flex items-center justify-between">
-            <h2 className="text-sm font-light uppercase tracking-[0.2em] text-white">
+            <h2 className="text-base font-light uppercase tracking-[0.2em] text-white">
               Cart ({itemCount})
             </h2>
             <button
@@ -48,7 +48,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
               className="p-2 hover:bg-white/5 transition-colors rounded"
               type="button"
             >
-              <X size={20} className="text-white/60 hover:text-white" />
+              <X size={22} className="text-white/60 hover:text-white" />
             </button>
           </div>
         </div>
@@ -60,13 +60,13 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
               <div className="w-20 h-20 border border-white/10 flex items-center justify-center mb-6">
                 <X size={32} className="text-white/20" />
               </div>
-              <p className="text-base font-light text-white/50 mb-6">
+              <p className="text-lg font-light text-white/50 mb-6">
                 Your cart is empty
               </p>
               <Link
                 href="/products"
                 onClick={onClose}
-                className="inline-flex items-center gap-2 bg-black border border-white/20 text-white px-8 py-3 text-xs uppercase tracking-[0.2em] hover:bg-black/70 transition-all font-medium"
+                className="inline-flex items-center gap-2 bg-black border border-white/20 text-white px-8 py-3.5 text-xs uppercase tracking-[0.2em] hover:bg-black/70 transition-all font-medium"
               >
                 <span>Shop Products</span>
                 <ArrowRight size={14} />
@@ -75,21 +75,21 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
           ) : (
             <>
               {items.map((item) => (
-                <div key={`${item.productId}-${item.tierName}`} className="p-6 hover:bg-[#333333] transition-colors group border-b border-white/5">
+                <div key={`${item.productId}-${item.tierName}`} className="p-4 sm:p-6 hover:bg-[#333333] transition-colors group border-b border-white/5">
                   <div className="flex gap-4">
                     {/* Image */}
-                    <div className="w-20 h-20 bg-[#1a1a1a] flex-shrink-0">
+                    <div className="w-20 h-20 bg-[#1a1a1a] flex-shrink-0 rounded">
                       {item.image ? (
                         <img
                           src={item.image}
                           alt={item.name}
-                          className="w-full h-full object-contain"
+                          className="w-full h-full object-contain rounded"
                         />
                       ) : (
                         <img
                           src="/logoprint.png"
                           alt="Flora Distro"
-                          className="w-full h-full object-contain opacity-20"
+                          className="w-full h-full object-contain opacity-20 rounded"
                         />
                       )}
                     </div>
@@ -97,7 +97,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                     {/* Details */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2 mb-3">
-                        <h3 className="text-xs uppercase tracking-[0.15em] font-normal text-white line-clamp-2 flex-1 leading-relaxed">
+                        <h3 className="text-sm uppercase tracking-[0.15em] font-normal text-white line-clamp-2 flex-1 leading-relaxed">
                           {item.name}
                         </h3>
                         <button
@@ -109,20 +109,20 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                         </button>
                       </div>
                       
-                      <p className="text-sm font-medium text-white mb-3">${(item.price * item.quantity).toFixed(0)}</p>
+                      <p className="text-base font-medium text-white mb-3">${(item.price * item.quantity).toFixed(0)}</p>
                       
-                      <p className="text-[10px] text-white/40 mb-2 uppercase tracking-[0.12em]">{item.tierName}</p>
+                      <p className="text-xs text-white/40 mb-2 uppercase tracking-[0.12em]">{item.tierName}</p>
                       
                       {item.orderType && (
-                        <div className="flex items-center gap-1 text-[10px] text-white/50">
+                        <div className="flex items-center gap-1 text-xs text-white/50">
                           {item.orderType === "pickup" ? (
                             <>
-                              <Store size={10} />
+                              <Store size={12} />
                               <span>Pickup: {item.locationName}</span>
                             </>
                           ) : (
                             <>
-                              <Truck size={10} />
+                              <Truck size={12} />
                               <span>Delivery</span>
                             </>
                           )}
@@ -138,14 +138,14 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
 
         {/* Footer - Fixed */}
         {items.length > 0 && (
-          <div className="px-6 py-6 border-t border-white/10 bg-[#1a1a1a]/80 backdrop-blur-sm">
+          <div className="px-4 sm:px-6 py-5 sm:py-6 border-t border-white/10 bg-[#1a1a1a]/80 backdrop-blur-sm">
             <div className="space-y-4">
-              <div className="flex justify-between items-center text-lg font-light text-white">
+              <div className="flex justify-between items-center text-xl font-light text-white">
                 <span>Subtotal</span>
                 <span>${total.toFixed(0)}</span>
               </div>
               
-              <p className="text-[10px] text-white/40 text-center">
+              <p className="text-xs text-white/40 text-center">
                 Shipping calculated at checkout
               </p>
               
@@ -161,7 +161,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
               <button
                 onClick={onClose}
                 type="button"
-                className="block w-full text-center text-xs uppercase tracking-wider text-white/50 hover:text-white transition-colors py-2"
+                className="block w-full text-center text-sm uppercase tracking-wider text-white/50 hover:text-white transition-colors py-2"
               >
                 Continue Shopping
               </button>

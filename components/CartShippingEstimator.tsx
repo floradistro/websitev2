@@ -173,7 +173,7 @@ export default function CartShippingEstimator({
               setSelectedRate(null);
               setAutoCalculated(false);
             }}
-            className="text-[10px] uppercase tracking-wider text-white/40 hover:text-white/60 transition-colors"
+            className="text-xs uppercase tracking-wider text-white/40 hover:text-white/60 transition-colors"
           >
             Change ZIP
           </button>
@@ -284,7 +284,7 @@ export default function CartShippingEstimator({
           className="border-t border-white/10 pt-4 mt-4"
         >
           <div className="flex items-center justify-between mb-2">
-            <span className="text-[10px] uppercase tracking-wider text-white/50">
+            <span className="text-xs uppercase tracking-wider text-white/50">
               Free Shipping Progress
             </span>
             <span className="text-xs text-white/60">

@@ -56,7 +56,7 @@ export default function ProductReviews({ reviews }: ProductReviewsProps) {
         {reviews.length > 3 && (
           <button
             onClick={() => setShowAll(!showAll)}
-            className="text-[10px] text-white/60 uppercase tracking-wider hover:text-white transition-colors"
+            className="text-xs text-white/60 uppercase tracking-wider hover:text-white transition-colors"
           >
             {showAll ? "Show Less" : "Show All"}
           </button>
@@ -69,10 +69,10 @@ export default function ProductReviews({ reviews }: ProductReviewsProps) {
           <div key={review.id} className="pb-3 border-b border-white/10 last:border-0">
             <div className="flex items-center justify-between mb-2">
               <div className="flex flex-col gap-0.5">
-                <span className="text-[10px] uppercase tracking-[0.12em] text-white/60">
+                <span className="text-xs uppercase tracking-[0.12em] text-white/60">
                   {review.reviewer}
                 </span>
-                <span className="text-[9px] text-white/40 tracking-wide">
+                <span className="text-[10px] text-white/40 tracking-wide">
                   {formatDate(review.date_created)}
                 </span>
               </div>

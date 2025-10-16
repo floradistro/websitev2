@@ -46,15 +46,15 @@ export default function RegisterPage() {
         <div className="max-w-4xl mx-auto grid grid-cols-3 gap-8 text-center">
           <div>
             <div className="text-3xl font-light text-white mb-1">10%</div>
-            <p className="text-[10px] uppercase tracking-wider text-white/50">First Order</p>
+            <p className="text-xs uppercase tracking-wider text-white/50">First Order</p>
           </div>
           <div>
             <div className="text-3xl font-light text-white mb-1">24h</div>
-            <p className="text-[10px] uppercase tracking-wider text-white/50">Early Access</p>
+            <p className="text-xs uppercase tracking-wider text-white/50">Early Access</p>
           </div>
           <div>
             <div className="text-3xl font-light text-white mb-1">∞</div>
-            <p className="text-[10px] uppercase tracking-wider text-white/50">Exclusive Pricing</p>
+            <p className="text-xs uppercase tracking-wider text-white/50">Exclusive Pricing</p>
           </div>
         </div>
       </section>
@@ -65,7 +65,7 @@ export default function RegisterPage() {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid md:grid-cols-2 gap-6">
               <div>
-                <label htmlFor="firstName" className="block text-[10px] uppercase tracking-[0.2em] mb-3 text-white/60">
+                <label htmlFor="firstName" className="block text-xs uppercase tracking-[0.2em] mb-3 text-white/60">
                   First Name
                 </label>
                 <input
@@ -80,7 +80,7 @@ export default function RegisterPage() {
                 />
               </div>
               <div>
-                <label htmlFor="lastName" className="block text-[10px] uppercase tracking-[0.2em] mb-3 text-white/60">
+                <label htmlFor="lastName" className="block text-xs uppercase tracking-[0.2em] mb-3 text-white/60">
                   Last Name
                 </label>
                 <input
@@ -97,7 +97,7 @@ export default function RegisterPage() {
             </div>
 
             <div>
-              <label htmlFor="email" className="block text-[10px] uppercase tracking-[0.2em] mb-3 text-white/60">
+              <label htmlFor="email" className="block text-xs uppercase tracking-[0.2em] mb-3 text-white/60">
                 Email
               </label>
               <input
@@ -113,7 +113,7 @@ export default function RegisterPage() {
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-[10px] uppercase tracking-[0.2em] mb-3 text-white/60">
+              <label htmlFor="password" className="block text-xs uppercase tracking-[0.2em] mb-3 text-white/60">
                 Password
               </label>
               <input
@@ -129,7 +129,7 @@ export default function RegisterPage() {
             </div>
 
             <div>
-              <label htmlFor="confirmPassword" className="block text-[10px] uppercase tracking-[0.2em] mb-3 text-white/60">
+              <label htmlFor="confirmPassword" className="block text-xs uppercase tracking-[0.2em] mb-3 text-white/60">
                 Confirm Password
               </label>
               <input
@@ -153,7 +153,7 @@ export default function RegisterPage() {
               <ArrowRight size={14} className="relative z-10 group-hover:translate-x-1 transition-transform" />
             </button>
 
-            <p className="text-[10px] text-white/40 text-center leading-relaxed">
+            <p className="text-xs text-white/40 text-center leading-relaxed">
               By creating an account, you agree to our{" "}
               <Link href="/terms" className="text-white/60 underline hover:text-white transition-colors">
                 Terms

@@ -318,7 +318,7 @@ export default function CheckoutPage() {
           <div className="px-4 sm:px-6 py-3 sm:py-4">
             <Link
               href="/products"
-              className="inline-flex items-center space-x-2 text-[10px] sm:text-xs text-white/60 hover:text-white transition-colors uppercase tracking-wider"
+              className="inline-flex items-center space-x-2 text-xs sm:text-xs text-white/60 hover:text-white transition-colors uppercase tracking-wider"
             >
               <ChevronLeft size={14} />
               <span>Continue Shopping</span>
@@ -340,7 +340,7 @@ export default function CheckoutPage() {
               <div className="space-y-3 sm:space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   <div>
-                    <label className="block text-[10px] uppercase tracking-[0.2em] mb-2 text-white/60">
+                    <label className="block text-xs uppercase tracking-[0.2em] mb-2 text-white/60">
                       First Name
                     </label>
                     <input
@@ -353,7 +353,7 @@ export default function CheckoutPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] uppercase tracking-[0.2em] mb-2 text-white/60">
+                    <label className="block text-xs uppercase tracking-[0.2em] mb-2 text-white/60">
                       Last Name
                     </label>
                     <input
@@ -367,7 +367,7 @@ export default function CheckoutPage() {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-[10px] uppercase tracking-[0.2em] mb-2 text-white/60">
+                  <label className="block text-xs uppercase tracking-[0.2em] mb-2 text-white/60">
                     Email
                   </label>
                   <input
@@ -380,7 +380,7 @@ export default function CheckoutPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] uppercase tracking-[0.2em] mb-2 text-white/60">
+                  <label className="block text-xs uppercase tracking-[0.2em] mb-2 text-white/60">
                     Phone
                   </label>
                   <input
@@ -400,7 +400,7 @@ export default function CheckoutPage() {
               <h2 className="text-sm uppercase tracking-[0.2em] text-white mb-4 sm:mb-6 font-normal">Billing Address</h2>
               <div className="space-y-3 sm:space-y-4">
                 <div>
-                  <label className="block text-[10px] uppercase tracking-[0.2em] mb-2 text-white/60">
+                  <label className="block text-xs uppercase tracking-[0.2em] mb-2 text-white/60">
                     Address
                   </label>
                   <input
@@ -413,7 +413,7 @@ export default function CheckoutPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] uppercase tracking-[0.2em] mb-2 text-white/60">
+                  <label className="block text-xs uppercase tracking-[0.2em] mb-2 text-white/60">
                     Apartment, Suite, etc. (Optional)
                   </label>
                   <input
@@ -426,7 +426,7 @@ export default function CheckoutPage() {
                 </div>
                 <div className="grid grid-cols-3 gap-2 sm:gap-4">
                   <div className="col-span-3 sm:col-span-1">
-                    <label className="block text-[10px] uppercase tracking-[0.2em] mb-2 text-white/60">
+                    <label className="block text-xs uppercase tracking-[0.2em] mb-2 text-white/60">
                       City
                     </label>
                     <input
@@ -439,7 +439,7 @@ export default function CheckoutPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] uppercase tracking-[0.2em] mb-2 text-white/60">
+                    <label className="block text-xs uppercase tracking-[0.2em] mb-2 text-white/60">
                       State
                     </label>
                     <input
@@ -454,7 +454,7 @@ export default function CheckoutPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] uppercase tracking-[0.2em] mb-2 text-white/60">
+                    <label className="block text-xs uppercase tracking-[0.2em] mb-2 text-white/60">
                       ZIP
                     </label>
                     <input
@@ -494,7 +494,7 @@ export default function CheckoutPage() {
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-[10px] uppercase tracking-[0.2em] mb-2 text-white/60">
+                      <label className="block text-xs uppercase tracking-[0.2em] mb-2 text-white/60">
                         First Name
                       </label>
                       <input
@@ -506,7 +506,7 @@ export default function CheckoutPage() {
                       />
                     </div>
                     <div>
-                      <label className="block text-[10px] uppercase tracking-[0.2em] mb-2 text-white/60">
+                      <label className="block text-xs uppercase tracking-[0.2em] mb-2 text-white/60">
                         Last Name
                       </label>
                       <input
@@ -519,7 +519,7 @@ export default function CheckoutPage() {
                     </div>
                   </div>
                   <div>
-                    <label className="block text-[10px] uppercase tracking-[0.2em] mb-2 text-white/60">
+                    <label className="block text-xs uppercase tracking-[0.2em] mb-2 text-white/60">
                       Address
                     </label>
                     <input
@@ -531,7 +531,7 @@ export default function CheckoutPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] uppercase tracking-[0.2em] mb-2 text-white/60">
+                    <label className="block text-xs uppercase tracking-[0.2em] mb-2 text-white/60">
                       Apartment, Suite, etc. (Optional)
                     </label>
                     <input
@@ -543,7 +543,7 @@ export default function CheckoutPage() {
                   </div>
                   <div className="grid grid-cols-3 gap-4">
                     <div>
-                      <label className="block text-[10px] uppercase tracking-[0.2em] mb-2 text-white/60">
+                      <label className="block text-xs uppercase tracking-[0.2em] mb-2 text-white/60">
                         City
                       </label>
                       <input
@@ -555,7 +555,7 @@ export default function CheckoutPage() {
                       />
                     </div>
                     <div>
-                      <label className="block text-[10px] uppercase tracking-[0.2em] mb-2 text-white/60">
+                      <label className="block text-xs uppercase tracking-[0.2em] mb-2 text-white/60">
                         State
                       </label>
                       <input
@@ -569,7 +569,7 @@ export default function CheckoutPage() {
                       />
                     </div>
                     <div>
-                      <label className="block text-[10px] uppercase tracking-[0.2em] mb-2 text-white/60">
+                      <label className="block text-xs uppercase tracking-[0.2em] mb-2 text-white/60">
                         ZIP
                       </label>
                       <input
@@ -613,7 +613,7 @@ export default function CheckoutPage() {
 
               <div className="space-y-3 sm:space-y-4">
                 <div>
-                  <label className="block text-[10px] uppercase tracking-[0.2em] mb-2 text-white/60">
+                  <label className="block text-xs uppercase tracking-[0.2em] mb-2 text-white/60">
                     Card Number
                   </label>
                   <input
@@ -633,7 +633,7 @@ export default function CheckoutPage() {
                 </div>
                 <div className="grid grid-cols-2 gap-3 sm:gap-4">
                   <div>
-                    <label className="block text-[10px] uppercase tracking-[0.2em] mb-2 text-white/60">
+                    <label className="block text-xs uppercase tracking-[0.2em] mb-2 text-white/60">
                       Expiry (MM/YY)
                     </label>
                     <input
@@ -654,7 +654,7 @@ export default function CheckoutPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] uppercase tracking-[0.2em] mb-2 text-white/60">
+                    <label className="block text-xs uppercase tracking-[0.2em] mb-2 text-white/60">
                       CVV
                     </label>
                     <input
@@ -690,20 +690,20 @@ export default function CheckoutPage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="text-sm text-white mb-1 line-clamp-1 font-normal">{item.name}</h3>
-                    <p className="text-[10px] text-white/40 mb-1.5 sm:mb-2">{item.tierName}</p>
+                    <p className="text-xs text-white/40 mb-1.5 sm:mb-2">{item.tierName}</p>
                     {item.orderType === "pickup" ? (
-                      <div className="flex items-center gap-1 text-[10px] text-white/50 mb-1.5 sm:mb-2">
+                      <div className="flex items-center gap-1 text-xs text-white/50 mb-1.5 sm:mb-2">
                         <Store size={10} />
                         <span>{item.locationName}</span>
                       </div>
                     ) : (
-                      <div className="flex items-center gap-1 text-[10px] text-white/50 mb-1.5 sm:mb-2">
+                      <div className="flex items-center gap-1 text-xs text-white/50 mb-1.5 sm:mb-2">
                         <Truck size={10} />
                         <span>Delivery</span>
                       </div>
                     )}
                     <div className="flex items-center justify-between">
-                      <span className="text-[10px] text-white/40">Qty: {item.quantity}</span>
+                      <span className="text-xs text-white/40">Qty: {item.quantity}</span>
                       <span className="text-sm text-white font-normal">${(item.price * item.quantity).toFixed(0)}</span>
                     </div>
                   </div>
@@ -736,7 +736,7 @@ export default function CheckoutPage() {
                 <span>{shippingCost > 0 ? `$${shippingCost.toFixed(2)}` : 'FREE'}</span>
               </div>
               {shippingCost === 0 && total >= 75 && (
-                <div className="flex items-center gap-2 text-[9px] sm:text-[10px] text-emerald-400 uppercase tracking-wider">
+                <div className="flex items-center gap-2 text-[10px] sm:text-xs text-emerald-400 uppercase tracking-wider">
                   <div className="w-1 h-2 bg-emerald-400 rounded-full" />
                   <span>Free shipping applied</span>
                 </div>
@@ -771,7 +771,7 @@ export default function CheckoutPage() {
             </button>
 
             {/* Security Notice */}
-            <div className="mt-3 sm:mt-4 flex items-center justify-center gap-2 text-[10px] text-white/40">
+            <div className="mt-3 sm:mt-4 flex items-center justify-center gap-2 text-xs text-white/40">
               <Lock size={10} />
               <span>Secure checkout · SSL encrypted</span>
             </div>

@@ -49,7 +49,7 @@ export default function RecentlyViewed() {
 
               {/* Product Info */}
               <div className="p-3 space-y-2">
-                <h3 className="text-[10px] uppercase tracking-wider text-white line-clamp-2 leading-relaxed">
+                <h3 className="text-xs uppercase tracking-wider text-white line-clamp-2 leading-relaxed">
                   {product.name}
                 </h3>
                 {product.price && parseFloat(product.price) > 0 && (

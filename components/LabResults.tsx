@@ -39,7 +39,7 @@ export default function LabResults({ metaData, attributes }: LabResultsProps) {
             Lab Tested
           </span>
         </div>
-        <span className="text-[10px] text-white/60 uppercase tracking-wider">
+        <span className="text-xs text-white/60 uppercase tracking-wider">
           View →
         </span>
       </div>

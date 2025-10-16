@@ -261,12 +261,12 @@ export default function DeliveryAvailability({
                           {activeLocations.find((loc) => loc.id === selectedStore)?.name}
                         </span>
                         {storeDistance && (
-                          <span className="text-[10px] text-white/40">
+                          <span className="text-xs text-white/40">
                             {`· ${Math.round(storeDistance)} mi away`}
                           </span>
                         )}
                       </div>
-                      <div className="text-[10px] text-white/40 uppercase tracking-wider mt-0.5">
+                      <div className="text-xs text-white/40 uppercase tracking-wider mt-0.5">
                         Ships from this location
                       </div>
                     </div>
@@ -274,7 +274,7 @@ export default function DeliveryAvailability({
                   <button
                     type="button"
                     onClick={() => setIsDropdownOpen(true)}
-                    className="text-[10px] text-white/60 hover:text-white uppercase tracking-wider transition-colors underline decoration-white/20 hover:decoration-white/60"
+                    className="text-xs text-white/60 hover:text-white uppercase tracking-wider transition-colors underline decoration-white/20 hover:decoration-white/60"
                   >
                     Change
                   </button>
@@ -292,7 +292,7 @@ export default function DeliveryAvailability({
                   </div>
                 </div>
                 {delivery.cutoffMessage && (
-                  <p className="text-[10px] text-white/60 uppercase tracking-wider">
+                  <p className="text-xs text-white/60 uppercase tracking-wider">
                     {delivery.cutoffMessage}
                   </p>
                 )}
@@ -308,13 +308,13 @@ export default function DeliveryAvailability({
           {isDropdownOpen && selectedTab === "delivery" && (
             <div className="absolute inset-0 bg-[#1a1a1a] border border-white/10 z-30 flex flex-col min-h-[400px]">
               <div className="p-4 border-b border-white/10 flex items-center justify-between flex-shrink-0">
-                <span className="text-[10px] uppercase tracking-wider text-white/60">
+                <span className="text-xs uppercase tracking-wider text-white/60">
                   Select Shipping Origin
                 </span>
                 <button
                   type="button"
                   onClick={() => setIsDropdownOpen(false)}
-                  className="text-[10px] text-white/60 hover:text-white uppercase tracking-wider"
+                  className="text-xs text-white/60 hover:text-white uppercase tracking-wider"
                 >
                   Done
                 </button>
@@ -351,12 +351,12 @@ export default function DeliveryAvailability({
                             {location.name}
                           </span>
                           {distance && (
-                            <span className="text-[10px] text-white/40">
+                            <span className="text-xs text-white/40">
                               {`· ${Math.round(distance)} mi`}
                             </span>
                           )}
                         </div>
-                        <div className="text-[10px] text-white/40 uppercase tracking-wider">
+                        <div className="text-xs text-white/40 uppercase tracking-wider">
                           {location.city}, {location.state}
                         </div>
                       </div>
@@ -391,12 +391,12 @@ export default function DeliveryAvailability({
                           {activeLocations.find((loc) => loc.id === selectedStore)?.name}
                         </span>
                         {storeDistance && (
-                          <span className="text-[10px] text-white/40">
+                          <span className="text-xs text-white/40">
                             {`· ${Math.round(storeDistance)} mi away`}
                           </span>
                         )}
                       </div>
-                      <div className="text-[10px] text-white/40 uppercase tracking-wider mt-0.5">
+                      <div className="text-xs text-white/40 uppercase tracking-wider mt-0.5">
                         {currentStoreQuantity} available
                       </div>
                     </div>
@@ -404,7 +404,7 @@ export default function DeliveryAvailability({
                   <button
                     type="button"
                     onClick={() => setIsDropdownOpen(true)}
-                    className="text-[10px] text-white/60 hover:text-white uppercase tracking-wider transition-colors underline decoration-white/20 hover:decoration-white/60"
+                    className="text-xs text-white/60 hover:text-white uppercase tracking-wider transition-colors underline decoration-white/20 hover:decoration-white/60"
                   >
                     Change
                   </button>
@@ -422,13 +422,13 @@ export default function DeliveryAvailability({
               {isDropdownOpen && selectedTab === "pickup" && (
                 <div className="absolute inset-0 bg-[#1a1a1a] border border-white/10 z-30 flex flex-col min-h-[400px]">
                   <div className="p-4 border-b border-white/10 flex items-center justify-between flex-shrink-0">
-                    <span className="text-[10px] uppercase tracking-wider text-white/60">
+                    <span className="text-xs uppercase tracking-wider text-white/60">
                       Select Pickup Location
                     </span>
                     <button
                       type="button"
                       onClick={() => setIsDropdownOpen(false)}
-                      className="text-[10px] text-white/60 hover:text-white uppercase tracking-wider"
+                      className="text-xs text-white/60 hover:text-white uppercase tracking-wider"
                     >
                       Done
                     </button>
@@ -465,12 +465,12 @@ export default function DeliveryAvailability({
                                 {location.name}
                               </span>
                               {distance && (
-                                <span className="text-[10px] text-white/40">
+                                <span className="text-xs text-white/40">
                                   {`· ${Math.round(distance)} mi`}
                                 </span>
                               )}
                             </div>
-                            <div className="text-[10px] text-white/40 uppercase tracking-wider">
+                            <div className="text-xs text-white/40 uppercase tracking-wider">
                               {location.city}, {location.state}
                             </div>
                           </div>

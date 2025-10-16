@@ -59,7 +59,7 @@ export default function ProductGallery({
 
             {/* Image counter */}
             {images?.length > 1 && (
-              <div className="absolute bottom-4 right-4 bg-black/80 backdrop-blur-sm text-white px-3 py-1.5 text-[10px] uppercase tracking-wider border border-white/10">
+              <div className="absolute bottom-4 right-4 bg-black/80 backdrop-blur-sm text-white px-3 py-1.5 text-xs uppercase tracking-wider border border-white/10">
                 {mainImageIndex + 1} / {images.length}
               </div>
             )}

@@ -43,7 +43,7 @@ export default function LoginPage() {
         <div className="max-w-md mx-auto">
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label htmlFor="email" className="block text-[10px] uppercase tracking-[0.2em] mb-3 text-white/60">
+              <label htmlFor="email" className="block text-xs uppercase tracking-[0.2em] mb-3 text-white/60">
                 Email
               </label>
               <input
@@ -59,7 +59,7 @@ export default function LoginPage() {
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-[10px] uppercase tracking-[0.2em] mb-3 text-white/60">
+              <label htmlFor="password" className="block text-xs uppercase tracking-[0.2em] mb-3 text-white/60">
                 Password
               </label>
               <input

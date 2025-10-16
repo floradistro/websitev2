@@ -67,7 +67,7 @@ export default function LocationCard({ location, address, googleMapsUrl, hours }
         </h3>
         
         {address && (
-          <p className="text-[10px] text-white/40 font-light leading-relaxed whitespace-pre-line mb-4">
+          <p className="text-xs text-white/40 font-light leading-relaxed whitespace-pre-line mb-4">
             {address}
           </p>
         )}
@@ -75,7 +75,7 @@ export default function LocationCard({ location, address, googleMapsUrl, hours }
         {/* Hours */}
         {hours && (
           <div className="mb-4 pb-4 border-b border-white/5">
-            <p className="text-[10px] text-white/50 font-light leading-relaxed whitespace-pre-line">
+            <p className="text-xs text-white/50 font-light leading-relaxed whitespace-pre-line">
               {hours}
             </p>
           </div>
@@ -100,7 +100,7 @@ export default function LocationCard({ location, address, googleMapsUrl, hours }
               </div>
               <span className="text-xs text-white font-medium">{reviews.rating.toFixed(1)}</span>
             </div>
-            <p className="text-[9px] text-white/40 uppercase tracking-wider">
+            <p className="text-[10px] text-white/40 uppercase tracking-wider">
               {reviews.user_ratings_total} Google Reviews
             </p>
           </div>

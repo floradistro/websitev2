@@ -47,7 +47,7 @@ export default function ContactPage() {
           <div className="px-8 md:px-12 py-16 bg-[#2a2a2a]">
             <form onSubmit={handleSubmit} className="space-y-6 max-w-xl">
               <div>
-                <label htmlFor="name" className="block text-[10px] uppercase tracking-[0.2em] mb-3 text-white/60">
+                <label htmlFor="name" className="block text-xs uppercase tracking-[0.2em] mb-3 text-white/60">
                   Name
                 </label>
                 <input
@@ -63,7 +63,7 @@ export default function ContactPage() {
 
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
-                  <label htmlFor="email" className="block text-[10px] uppercase tracking-[0.2em] mb-3 text-white/60">
+                  <label htmlFor="email" className="block text-xs uppercase tracking-[0.2em] mb-3 text-white/60">
                     Email
                   </label>
                   <input
@@ -78,7 +78,7 @@ export default function ContactPage() {
                 </div>
 
                 <div>
-                  <label htmlFor="phone" className="block text-[10px] uppercase tracking-[0.2em] mb-3 text-white/60">
+                  <label htmlFor="phone" className="block text-xs uppercase tracking-[0.2em] mb-3 text-white/60">
                     Phone
                   </label>
                   <input
@@ -93,7 +93,7 @@ export default function ContactPage() {
               </div>
 
               <div>
-                <label htmlFor="subject" className="block text-[10px] uppercase tracking-[0.2em] mb-3 text-white/60">
+                <label htmlFor="subject" className="block text-xs uppercase tracking-[0.2em] mb-3 text-white/60">
                   Subject
                 </label>
                 <input
@@ -108,7 +108,7 @@ export default function ContactPage() {
               </div>
 
               <div>
-                <label htmlFor="message" className="block text-[10px] uppercase tracking-[0.2em] mb-3 text-white/60">
+                <label htmlFor="message" className="block text-xs uppercase tracking-[0.2em] mb-3 text-white/60">
                   Message
                 </label>
                 <textarea

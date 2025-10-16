@@ -257,7 +257,7 @@ export default function ShippingEstimator({
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-start gap-3 flex-1">
-                    <div className="px-2 py-1 bg-white/10 border border-white/20 rounded text-[9px] font-medium tracking-wider text-white/80 mt-0.5">
+                    <div className="px-2 py-1 bg-white/10 border border-white/20 rounded text-[10px] font-medium tracking-wider text-white/80 mt-0.5">
                       {getShippingSpeed(rate.method_id)}
                     </div>
                     <div className="space-y-1">
@@ -352,7 +352,7 @@ export default function ShippingEstimator({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5 }}
-          className="flex items-center gap-2 text-[11px] text-white/60 pt-4 border-t border-white/10 mt-4"
+          className="flex items-center gap-2 text-sm text-white/60 pt-4 border-t border-white/10 mt-4"
         >
           <div className="w-1 h-3 bg-white/30 rounded-full" />
           <span className="uppercase tracking-wider font-medium">
@@ -363,7 +363,7 @@ export default function ShippingEstimator({
 
       {/* Info Text */}
       {!showResults && (
-        <p className="text-[10px] text-white/40 leading-relaxed">
+        <p className="text-xs text-white/40 leading-relaxed">
           Enter your ZIP code to see available shipping options and estimated delivery dates.
           All orders include tracking.
         </p>

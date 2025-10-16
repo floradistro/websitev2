@@ -26,10 +26,10 @@ export default function CategorySection({ categories }: CategorySectionProps) {
               <Sparkles size={12} className="text-white/40 group-hover/feature:text-white transition-all duration-500" strokeWidth={1.5} />
             </div>
             <div className="flex-1 space-y-1">
-              <div className="text-[10px] uppercase tracking-[0.15em] text-white/80 font-medium group-hover/feature:text-white transition-colors duration-300">
+              <div className="text-xs uppercase tracking-[0.15em] text-white/80 font-medium group-hover/feature:text-white transition-colors duration-300">
                 Top Shelf Quality
               </div>
-              <p className="text-[9px] text-white/40 leading-relaxed group-hover/feature:text-white/60 transition-colors duration-300">
+              <p className="text-[10px] text-white/40 leading-relaxed group-hover/feature:text-white/60 transition-colors duration-300">
                 Hand-selected premium flower, lab tested
               </p>
             </div>
@@ -47,10 +47,10 @@ export default function CategorySection({ categories }: CategorySectionProps) {
               <Truck size={12} className="text-white/40 group-hover/feature:text-white transition-all duration-500" strokeWidth={1.5} />
             </div>
             <div className="flex-1 space-y-1">
-              <div className="text-[10px] uppercase tracking-[0.15em] text-white/80 font-medium group-hover/feature:text-white transition-colors duration-300">
+              <div className="text-xs uppercase tracking-[0.15em] text-white/80 font-medium group-hover/feature:text-white transition-colors duration-300">
                 Fast Delivery
               </div>
-              <p className="text-[9px] text-white/40 leading-relaxed group-hover/feature:text-white/60 transition-colors duration-300">
+              <p className="text-[10px] text-white/40 leading-relaxed group-hover/feature:text-white/60 transition-colors duration-300">
                 Ships daily at 2PM EST, arrives fresh
               </p>
             </div>
@@ -68,10 +68,10 @@ export default function CategorySection({ categories }: CategorySectionProps) {
               <Award size={12} className="text-white/40 group-hover/feature:text-white transition-all duration-500" strokeWidth={1.5} />
             </div>
             <div className="flex-1 space-y-1">
-              <div className="text-[10px] uppercase tracking-[0.15em] text-white/80 font-medium group-hover/feature:text-white transition-colors duration-300">
+              <div className="text-xs uppercase tracking-[0.15em] text-white/80 font-medium group-hover/feature:text-white transition-colors duration-300">
                 Always Fresh
               </div>
-              <p className="text-[9px] text-white/40 leading-relaxed group-hover/feature:text-white/60 transition-colors duration-300">
+              <p className="text-[10px] text-white/40 leading-relaxed group-hover/feature:text-white/60 transition-colors duration-300">
                 Climate-controlled storage, peak terps
               </p>
             </div>
@@ -96,10 +96,10 @@ export default function CategorySection({ categories }: CategorySectionProps) {
               <Shield size={12} className="text-white/40 group-hover/feature:text-white transition-all duration-500" strokeWidth={1.5} />
             </div>
             <div className="flex-1 space-y-1">
-              <div className="text-[10px] uppercase tracking-[0.15em] text-white/80 font-medium group-hover/feature:text-white transition-colors duration-300">
+              <div className="text-xs uppercase tracking-[0.15em] text-white/80 font-medium group-hover/feature:text-white transition-colors duration-300">
                 99%+ Purity
               </div>
-              <p className="text-[9px] text-white/40 leading-relaxed group-hover/feature:text-white/60 transition-colors duration-300">
+              <p className="text-[10px] text-white/40 leading-relaxed group-hover/feature:text-white/60 transition-colors duration-300">
                 Solventless extraction, third-party tested
               </p>
             </div>
@@ -117,10 +117,10 @@ export default function CategorySection({ categories }: CategorySectionProps) {
               <Sparkles size={12} className="text-white/40 group-hover/feature:text-white transition-all duration-500" strokeWidth={1.5} />
             </div>
             <div className="flex-1 space-y-1">
-              <div className="text-[10px] uppercase tracking-[0.15em] text-white/80 font-medium group-hover/feature:text-white transition-colors duration-300">
+              <div className="text-xs uppercase tracking-[0.15em] text-white/80 font-medium group-hover/feature:text-white transition-colors duration-300">
                 Full Spectrum
               </div>
-              <p className="text-[9px] text-white/40 leading-relaxed group-hover/feature:text-white/60 transition-colors duration-300">
+              <p className="text-[10px] text-white/40 leading-relaxed group-hover/feature:text-white/60 transition-colors duration-300">
                 Complete terpene profile preserved
               </p>
             </div>
@@ -138,10 +138,10 @@ export default function CategorySection({ categories }: CategorySectionProps) {
               <Clock size={12} className="text-white/40 group-hover/feature:text-white transition-all duration-500" strokeWidth={1.5} />
             </div>
             <div className="flex-1 space-y-1">
-              <div className="text-[10px] uppercase tracking-[0.15em] text-white/80 font-medium group-hover/feature:text-white transition-colors duration-300">
+              <div className="text-xs uppercase tracking-[0.15em] text-white/80 font-medium group-hover/feature:text-white transition-colors duration-300">
                 Fresh Drops
               </div>
-              <p className="text-[9px] text-white/40 leading-relaxed group-hover/feature:text-white/60 transition-colors duration-300">
+              <p className="text-[10px] text-white/40 leading-relaxed group-hover/feature:text-white/60 transition-colors duration-300">
                 Weekly batches, cold-cured for consistency
               </p>
             </div>
@@ -166,10 +166,10 @@ export default function CategorySection({ categories }: CategorySectionProps) {
               <Award size={12} className="text-white/40 group-hover/feature:text-white transition-all duration-500" strokeWidth={1.5} />
             </div>
             <div className="flex-1 space-y-1">
-              <div className="text-[10px] uppercase tracking-[0.15em] text-white/80 font-medium group-hover/feature:text-white transition-colors duration-300">
+              <div className="text-xs uppercase tracking-[0.15em] text-white/80 font-medium group-hover/feature:text-white transition-colors duration-300">
                 Perfect Dosing
               </div>
-              <p className="text-[9px] text-white/40 leading-relaxed group-hover/feature:text-white/60 transition-colors duration-300">
+              <p className="text-[10px] text-white/40 leading-relaxed group-hover/feature:text-white/60 transition-colors duration-300">
                 Pharmaceutical precision, consistent dosing
               </p>
             </div>
@@ -187,10 +187,10 @@ export default function CategorySection({ categories }: CategorySectionProps) {
               <Sparkles size={12} className="text-white/40 group-hover/feature:text-white transition-all duration-500" strokeWidth={1.5} />
             </div>
             <div className="flex-1 space-y-1">
-              <div className="text-[10px] uppercase tracking-[0.15em] text-white/80 font-medium group-hover/feature:text-white transition-colors duration-300">
+              <div className="text-xs uppercase tracking-[0.15em] text-white/80 font-medium group-hover/feature:text-white transition-colors duration-300">
                 Gourmet Quality
               </div>
-              <p className="text-[9px] text-white/40 leading-relaxed group-hover/feature:text-white/60 transition-colors duration-300">
+              <p className="text-[10px] text-white/40 leading-relaxed group-hover/feature:text-white/60 transition-colors duration-300">
                 Premium ingredients, natural infusions
               </p>
             </div>
@@ -208,10 +208,10 @@ export default function CategorySection({ categories }: CategorySectionProps) {
               <Clock size={12} className="text-white/40 group-hover/feature:text-white transition-all duration-500" strokeWidth={1.5} />
             </div>
             <div className="flex-1 space-y-1">
-              <div className="text-[10px] uppercase tracking-[0.15em] text-white/80 font-medium group-hover/feature:text-white transition-colors duration-300">
+              <div className="text-xs uppercase tracking-[0.15em] text-white/80 font-medium group-hover/feature:text-white transition-colors duration-300">
                 Extended Relief
               </div>
-              <p className="text-[9px] text-white/40 leading-relaxed group-hover/feature:text-white/60 transition-colors duration-300">
+              <p className="text-[10px] text-white/40 leading-relaxed group-hover/feature:text-white/60 transition-colors duration-300">
                 Long-lasting effects, optimal bioavailability
               </p>
             </div>
@@ -235,10 +235,10 @@ export default function CategorySection({ categories }: CategorySectionProps) {
             <Star size={12} className="text-white/40 group-hover/feature:text-white transition-all duration-500" strokeWidth={1.5} />
           </div>
           <div className="flex-1 space-y-1">
-            <div className="text-[10px] uppercase tracking-[0.15em] text-white/80 font-medium group-hover/feature:text-white transition-colors duration-300">
+            <div className="text-xs uppercase tracking-[0.15em] text-white/80 font-medium group-hover/feature:text-white transition-colors duration-300">
               Top Quality
             </div>
-            <p className="text-[9px] text-white/40 leading-relaxed group-hover/feature:text-white/60 transition-colors duration-300">
+            <p className="text-[10px] text-white/40 leading-relaxed group-hover/feature:text-white/60 transition-colors duration-300">
               Premium selection, excellence guaranteed
             </p>
           </div>
@@ -256,10 +256,10 @@ export default function CategorySection({ categories }: CategorySectionProps) {
             <Truck size={12} className="text-white/40 group-hover/feature:text-white transition-all duration-500" strokeWidth={1.5} />
           </div>
           <div className="flex-1 space-y-1">
-            <div className="text-[10px] uppercase tracking-[0.15em] text-white/80 font-medium group-hover/feature:text-white transition-colors duration-300">
+            <div className="text-xs uppercase tracking-[0.15em] text-white/80 font-medium group-hover/feature:text-white transition-colors duration-300">
               Fast Delivery
             </div>
-            <p className="text-[9px] text-white/40 leading-relaxed group-hover/feature:text-white/60 transition-colors duration-300">
+            <p className="text-[10px] text-white/40 leading-relaxed group-hover/feature:text-white/60 transition-colors duration-300">
               Same-day shipping, secure tracking
             </p>
           </div>
@@ -277,10 +277,10 @@ export default function CategorySection({ categories }: CategorySectionProps) {
             <Shield size={12} className="text-white/40 group-hover/feature:text-white transition-all duration-500" strokeWidth={1.5} />
           </div>
           <div className="flex-1 space-y-1">
-            <div className="text-[10px] uppercase tracking-[0.15em] text-white/80 font-medium group-hover/feature:text-white transition-colors duration-300">
+            <div className="text-xs uppercase tracking-[0.15em] text-white/80 font-medium group-hover/feature:text-white transition-colors duration-300">
               Tested & Verified
             </div>
-            <p className="text-[9px] text-white/40 leading-relaxed group-hover/feature:text-white/60 transition-colors duration-300">
+            <p className="text-[10px] text-white/40 leading-relaxed group-hover/feature:text-white/60 transition-colors duration-300">
               Third-party lab tested for safety
             </p>
           </div>

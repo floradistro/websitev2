@@ -139,8 +139,8 @@ export default function ProductPageClient({
       
       {/* Breadcrumb Navigation */}
       <div className="border-b border-white/10 bg-[#1a1a1a]">
-        <div className="max-w-[2000px] mx-auto px-4 py-4">
-          <nav className="flex items-center space-x-2 text-xs uppercase tracking-wider">
+        <div className="max-w-[2000px] mx-auto px-4 sm:px-6 py-3 sm:py-4">
+          <nav className="flex items-center space-x-2 text-sm uppercase tracking-wider">
             <Link
               href="/"
               className="text-white/40 hover:text-white transition-colors"

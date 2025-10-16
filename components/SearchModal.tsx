@@ -79,7 +79,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
 
   return (
     <div
-      className="fixed inset-0 bg-black/80 z-[200] flex items-start justify-center pt-20 px-4"
+      className="fixed inset-0 bg-black/80 z-[200] flex items-start justify-center pt-16 sm:pt-20 px-4"
       onClick={onClose}
     >
       <div
@@ -87,8 +87,8 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
         onClick={(e) => e.stopPropagation()}
       >
         {/* Search Header */}
-        <div className="p-6 border-b border-white/10">
-          <div className="flex items-center gap-4">
+        <div className="p-4 sm:p-6 border-b border-white/10">
+          <div className="flex items-center gap-3 sm:gap-4">
             <SearchIcon size={20} className="text-white/40" />
             <input
               id="search-input"
@@ -97,11 +97,11 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="Search products..."
-              className="flex-1 bg-transparent text-white text-lg placeholder:text-white/40 focus:outline-none"
+              className="flex-1 bg-transparent text-white text-base sm:text-lg placeholder:text-white/40 focus:outline-none"
             />
             <button
               onClick={onClose}
-              className="text-white/60 hover:text-white transition-colors"
+              className="text-white/60 hover:text-white transition-colors p-2"
             >
               <X size={20} />
             </button>
@@ -113,19 +113,19 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
           {isSearching && (
             <div className="p-6 text-center">
               <div className="w-6 h-6 border-2 border-white/20 border-t-white rounded-full animate-spin mx-auto"></div>
-              <p className="text-sm text-white/40 mt-2">Searching...</p>
+              <p className="text-base text-white/40 mt-2">Searching...</p>
             </div>
           )}
 
           {!isSearching && searchQuery.trim().length >= 2 && searchResults.length === 0 && (
             <div className="p-6 text-center">
-              <p className="text-sm text-white/40">No results found for "{searchQuery}"</p>
+              <p className="text-base text-white/40">No results found for "{searchQuery}"</p>
             </div>
           )}
 
           {!isSearching && searchQuery.trim().length < 2 && (
             <div className="p-6 text-center">
-              <p className="text-sm text-white/40">Type at least 2 characters to search</p>
+              <p className="text-base text-white/40">Type at least 2 characters to search</p>
             </div>
           )}
 
@@ -135,9 +135,9 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
                 <button
                   key={product.id}
                   onClick={() => handleProductClick(product.id)}
-                  className="w-full px-6 py-4 flex items-center gap-4 hover:bg-white/5 transition-colors text-left"
+                  className="w-full px-4 sm:px-6 py-4 flex items-center gap-3 sm:gap-4 hover:bg-white/5 transition-colors text-left"
                 >
-                  <div className="w-16 h-16 bg-[#2a2a2a] flex items-center justify-center flex-shrink-0">
+                  <div className="w-16 h-16 sm:w-18 sm:h-18 bg-[#2a2a2a] flex items-center justify-center flex-shrink-0 rounded">
                     {product.images && product.images[0] ? (
                       <img
                         src={product.images[0].src}
@@ -153,12 +153,12 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm text-white truncate">{product.name}</p>
-                    <p className="text-xs text-white/40 mt-1">
+                    <p className="text-base text-white truncate">{product.name}</p>
+                    <p className="text-sm text-white/40 mt-1">
                       {product.categories && product.categories[0]?.name}
                     </p>
                   </div>
-                  <div className="text-sm text-white/60 whitespace-nowrap">
+                  <div className="text-base text-white/60 whitespace-nowrap">
                     {product.price && product.price !== "0" ? (
                       product.price.includes("-") ? (
                         <span>${product.price.split("-")[0]} - ${product.price.split("-")[1]}</span>
@@ -166,7 +166,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
                         <span>${product.price}</span>
                       )
                     ) : (
-                      <span className="text-xs">Contact</span>
+                      <span className="text-sm">Contact</span>
                     )}
                   </div>
                 </button>
@@ -177,15 +177,15 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
 
         {/* Quick Links */}
         {searchQuery.trim().length === 0 && (
-          <div className="p-6 border-t border-white/10">
-            <p className="text-xs uppercase tracking-wider text-white/40 mb-4">Quick Links</p>
+          <div className="p-4 sm:p-6 border-t border-white/10">
+            <p className="text-sm uppercase tracking-wider text-white/40 mb-4">Quick Links</p>
             <div className="grid grid-cols-2 gap-2">
               <button
                 onClick={() => {
                   router.push("/products?category=flower");
                   onClose();
                 }}
-                className="px-4 py-2 bg-white/5 hover:bg-white/10 text-sm text-white/80 transition-colors"
+                className="px-4 py-3 bg-white/5 hover:bg-white/10 text-base text-white/80 transition-colors rounded-sm"
               >
                 Flower
               </button>
@@ -194,7 +194,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
                   router.push("/products?category=concentrate");
                   onClose();
                 }}
-                className="px-4 py-2 bg-white/5 hover:bg-white/10 text-sm text-white/80 transition-colors"
+                className="px-4 py-3 bg-white/5 hover:bg-white/10 text-base text-white/80 transition-colors rounded-sm"
               >
                 Concentrate
               </button>
@@ -203,7 +203,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
                   router.push("/products?category=edibles");
                   onClose();
                 }}
-                className="px-4 py-2 bg-white/5 hover:bg-white/10 text-sm text-white/80 transition-colors"
+                className="px-4 py-3 bg-white/5 hover:bg-white/10 text-base text-white/80 transition-colors rounded-sm"
               >
                 Edibles
               </button>
@@ -212,7 +212,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
                   router.push("/products?category=vape");
                   onClose();
                 }}
-                className="px-4 py-2 bg-white/5 hover:bg-white/10 text-sm text-white/80 transition-colors"
+                className="px-4 py-3 bg-white/5 hover:bg-white/10 text-base text-white/80 transition-colors rounded-sm"
               >
                 Vape
               </button>
