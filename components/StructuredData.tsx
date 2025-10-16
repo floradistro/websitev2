@@ -48,7 +48,7 @@ export function ProductSchema({ product }: ProductSchemaProps) {
   const image = product.images?.[0]?.src || "https://floradistro.com/logoprint.png";
   const category = product.categories?.[0]?.name || "Products";
 
-  const schema = {
+  const schema: any = {
     "@context": "https://schema.org",
     "@type": "Product",
     "name": product.name,
@@ -76,7 +76,7 @@ export function ProductSchema({ product }: ProductSchemaProps) {
 
   // Add aggregateRating if reviews exist
   if (product.average_rating && product.rating_count > 0) {
-    schema["aggregateRating"] = {
+    schema.aggregateRating = {
       "@type": "AggregateRating",
       "ratingValue": product.average_rating,
       "reviewCount": product.rating_count

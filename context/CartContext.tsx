@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { analytics } from "@/lib/analytics";
 
 interface CartItem {
   productId: number;
@@ -69,10 +70,30 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
       return [...prev, item];
     });
+
+    // Track analytics event
+    analytics.addToCart({
+      id: item.productId,
+      name: item.name,
+      price: item.price,
+      quantity: item.quantity,
+    });
   };
 
   const removeFromCart = (productId: number) => {
+    const item = items.find((i) => i.productId === productId);
+    
     setItems((prev) => prev.filter((item) => item.productId !== productId));
+    
+    // Track analytics event
+    if (item) {
+      analytics.removeFromCart({
+        id: item.productId,
+        name: item.name,
+        price: item.price,
+        quantity: item.quantity,
+      });
+    }
   };
 
   const updateQuantity = (productId: number, quantity: number) => {
