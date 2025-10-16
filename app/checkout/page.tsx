@@ -26,7 +26,6 @@ export default function CheckoutPage() {
 
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // Group items by order type
   const pickupItems = items.filter((item) => item.orderType === "pickup");
   const deliveryItems = items.filter((item) => item.orderType === "delivery");
   const hasPickupItems = pickupItems.length > 0;
@@ -36,10 +35,8 @@ export default function CheckoutPage() {
     e.preventDefault();
     setIsProcessing(true);
 
-    // Simulate order processing
     await new Promise((resolve) => setTimeout(resolve, 2000));
 
-    // Create order data
     const orderData = {
       billing: billingInfo,
       payment: paymentInfo,
@@ -48,36 +45,30 @@ export default function CheckoutPage() {
       timestamp: new Date().toISOString(),
     };
 
-    console.log("Order placed:", orderData);
-
-    // Save order to localStorage for tracking
     const orderId = Date.now().toString();
     localStorage.setItem(`order-${orderId}`, JSON.stringify(orderData));
 
-    // Clear cart
     clearCart();
 
-    // Redirect based on order type
     if (hasPickupItems && !hasDeliveryItems) {
       router.push(`/track?orderId=${orderId}&type=pickup`);
     } else if (hasDeliveryItems && !hasPickupItems) {
       router.push(`/track?orderId=${orderId}&type=delivery`);
     } else {
-      // Mixed order - both pickup and delivery
       router.push(`/track?orderId=${orderId}&type=mixed`);
     }
   };
 
   if (items.length === 0) {
     return (
-      <div className="min-h-screen bg-[#b5b5b2] flex items-center justify-center px-4">
+      <div className="min-h-screen bg-[#1a1a1a] flex items-center justify-center px-4">
         <div className="text-center">
-          <h1 className="text-2xl font-light mb-4">Your cart is empty</h1>
+          <h1 className="text-2xl font-light text-white mb-6">Your cart is empty</h1>
           <Link
             href="/products"
-            className="inline-flex items-center gap-2 bg-black text-white px-6 py-3 text-xs uppercase tracking-wider hover:bg-black/90 transition-all"
+            className="inline-flex items-center gap-2 bg-black border border-white/20 text-white px-10 py-4 text-xs uppercase tracking-[0.25em] hover:bg-black/70 transition-all font-medium"
           >
-            <span>Continue Shopping</span>
+            <span>Shop Products</span>
             <ArrowRight size={14} />
           </Link>
         </div>
@@ -86,48 +77,35 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#2a2a2a]">
-      {/* Header */}
+    <div className="min-h-screen bg-[#1a1a1a]">
+      {/* Breadcrumb */}
       <div className="border-b border-white/10 bg-[#1a1a1a]">
-        <div className="max-w-7xl mx-auto px-4 md:px-6 py-4">
+        <div className="px-4 py-4">
           <Link
             href="/products"
-            className="inline-flex items-center space-x-2 text-sm text-white/80 hover:text-white transition-colors font-light"
+            className="inline-flex items-center space-x-2 text-xs text-white/60 hover:text-white transition-colors uppercase tracking-wider"
           >
-            <ChevronLeft size={16} />
+            <ChevronLeft size={14} />
             <span>Continue Shopping</span>
           </Link>
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="max-w-7xl mx-auto px-4 md:px-6 py-8 md:py-12">
-        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12">
-          {/* Left Column - Forms */}
-          <div className="space-y-8">
-            {/* Order Type Summary */}
-            <div className="bg-white/60 backdrop-blur-sm p-6 space-y-3">
-              <h2 className="text-lg font-light uppercase tracking-wider mb-4">Order Summary</h2>
-              {hasPickupItems && (
-                <div className="flex items-center gap-3 text-sm font-light">
-                  <Store size={16} className="text-black/60" />
-                  <span>{pickupItems.length} item{pickupItems.length > 1 ? "s" : ""} for in-store pickup</span>
-                </div>
-              )}
-              {hasDeliveryItems && (
-                <div className="flex items-center gap-3 text-sm font-light">
-                  <Truck size={16} className="text-black/60" />
-                  <span>{deliveryItems.length} item{deliveryItems.length > 1 ? "s" : ""} for delivery</span>
-                </div>
-              )}
+      <form onSubmit={handleSubmit} className="py-0">
+        <div className="grid lg:grid-cols-2">
+          {/* Left - Forms */}
+          <div className="bg-[#2a2a2a] px-8 md:px-12 py-12 space-y-8">
+            <div>
+              <h1 className="text-3xl md:text-4xl font-light text-white mb-6 uppercase tracking-wider">Checkout</h1>
             </div>
 
-            {/* Contact Information */}
-            <div className="bg-white/60 backdrop-blur-sm p-6">
-              <h2 className="text-lg font-light uppercase tracking-wider mb-6">Contact Information</h2>
+            {/* Contact Info */}
+            <div>
+              <h2 className="text-sm uppercase tracking-[0.2em] text-white mb-6 font-normal">Contact Information</h2>
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-[10px] uppercase tracking-wider mb-2 text-black/70">
+                    <label className="block text-[10px] uppercase tracking-[0.2em] mb-2 text-white/60">
                       First Name
                     </label>
                     <input
@@ -135,11 +113,11 @@ export default function CheckoutPage() {
                       required
                       value={billingInfo.firstName}
                       onChange={(e) => setBillingInfo({ ...billingInfo, firstName: e.target.value })}
-                      className="w-full px-4 py-3 text-sm bg-white border border-black/10 focus:border-black focus:outline-none transition-colors font-light"
+                      className="w-full px-4 py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-all"
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] uppercase tracking-wider mb-2 text-black/70">
+                    <label className="block text-[10px] uppercase tracking-[0.2em] mb-2 text-white/60">
                       Last Name
                     </label>
                     <input
@@ -147,12 +125,12 @@ export default function CheckoutPage() {
                       required
                       value={billingInfo.lastName}
                       onChange={(e) => setBillingInfo({ ...billingInfo, lastName: e.target.value })}
-                      className="w-full px-4 py-3 text-sm bg-white border border-black/10 focus:border-black focus:outline-none transition-colors font-light"
+                      className="w-full px-4 py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-all"
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-[10px] uppercase tracking-wider mb-2 text-black/70">
+                  <label className="block text-[10px] uppercase tracking-[0.2em] mb-2 text-white/60">
                     Email
                   </label>
                   <input
@@ -160,11 +138,11 @@ export default function CheckoutPage() {
                     required
                     value={billingInfo.email}
                     onChange={(e) => setBillingInfo({ ...billingInfo, email: e.target.value })}
-                    className="w-full px-4 py-3 text-sm bg-white border border-black/10 focus:border-black focus:outline-none transition-colors font-light"
+                    className="w-full px-4 py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-all"
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] uppercase tracking-wider mb-2 text-black/70">
+                  <label className="block text-[10px] uppercase tracking-[0.2em] mb-2 text-white/60">
                     Phone
                   </label>
                   <input
@@ -172,21 +150,21 @@ export default function CheckoutPage() {
                     required
                     value={billingInfo.phone}
                     onChange={(e) => setBillingInfo({ ...billingInfo, phone: e.target.value })}
-                    className="w-full px-4 py-3 text-sm bg-white border border-black/10 focus:border-black focus:outline-none transition-colors font-light"
+                    className="w-full px-4 py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-all"
                   />
                 </div>
               </div>
             </div>
 
-            {/* Payment Information */}
-            <div className="bg-white/60 backdrop-blur-sm p-6">
-              <h2 className="text-lg font-light uppercase tracking-wider mb-6 flex items-center gap-2">
-                <Lock size={18} className="text-black/60" />
+            {/* Payment Info */}
+            <div>
+              <h2 className="text-sm uppercase tracking-[0.2em] text-white mb-6 font-normal flex items-center gap-2">
+                <Lock size={16} className="text-white/60" />
                 Payment Information
               </h2>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-[10px] uppercase tracking-wider mb-2 text-black/70">
+                  <label className="block text-[10px] uppercase tracking-[0.2em] mb-2 text-white/60">
                     Card Number
                   </label>
                   <input
@@ -196,13 +174,13 @@ export default function CheckoutPage() {
                     value={paymentInfo.cardNumber}
                     onChange={(e) => setPaymentInfo({ ...paymentInfo, cardNumber: e.target.value })}
                     maxLength={19}
-                    className="w-full px-4 py-3 text-sm bg-white border border-black/10 focus:border-black focus:outline-none transition-colors font-light"
+                    className="w-full px-4 py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-all"
                   />
                 </div>
                 <div className="grid grid-cols-3 gap-4">
                   <div className="col-span-2">
-                    <label className="block text-[10px] uppercase tracking-wider mb-2 text-black/70">
-                      Expiry Date
+                    <label className="block text-[10px] uppercase tracking-[0.2em] mb-2 text-white/60">
+                      Expiry
                     </label>
                     <input
                       type="text"
@@ -211,11 +189,11 @@ export default function CheckoutPage() {
                       value={paymentInfo.expiry}
                       onChange={(e) => setPaymentInfo({ ...paymentInfo, expiry: e.target.value })}
                       maxLength={5}
-                      className="w-full px-4 py-3 text-sm bg-white border border-black/10 focus:border-black focus:outline-none transition-colors font-light"
+                      className="w-full px-4 py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-all"
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] uppercase tracking-wider mb-2 text-black/70">
+                    <label className="block text-[10px] uppercase tracking-[0.2em] mb-2 text-white/60">
                       CVV
                     </label>
                     <input
@@ -225,13 +203,13 @@ export default function CheckoutPage() {
                       value={paymentInfo.cvv}
                       onChange={(e) => setPaymentInfo({ ...paymentInfo, cvv: e.target.value })}
                       maxLength={4}
-                      className="w-full px-4 py-3 text-sm bg-white border border-black/10 focus:border-black focus:outline-none transition-colors font-light"
+                      className="w-full px-4 py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-all"
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-[10px] uppercase tracking-wider mb-2 text-black/70">
-                    Billing ZIP Code
+                  <label className="block text-[10px] uppercase tracking-[0.2em] mb-2 text-white/60">
+                    Billing ZIP
                   </label>
                   <input
                     type="text"
@@ -240,150 +218,98 @@ export default function CheckoutPage() {
                     value={paymentInfo.zipCode}
                     onChange={(e) => setPaymentInfo({ ...paymentInfo, zipCode: e.target.value })}
                     maxLength={5}
-                    className="w-full px-4 py-3 text-sm bg-white border border-black/10 focus:border-black focus:outline-none transition-colors font-light"
+                    className="w-full px-4 py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-all"
                   />
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Right Column - Order Summary */}
-          <div className="lg:sticky lg:top-24 h-fit space-y-6">
-            <div className="bg-white/80 backdrop-blur-sm p-6">
-              <h2 className="text-lg font-light uppercase tracking-wider mb-6">Your Order</h2>
-              
-              {/* Cart Items */}
-              <div className="divide-y divide-black/5 mb-6">
-                {items.map((item) => (
-                  <div key={`${item.productId}-${item.tierName}`} className="py-4 first:pt-0">
-                    <div className="flex gap-4">
-                      <div className="w-16 h-16 bg-[#f5f5f2] flex-shrink-0 flex items-center justify-center">
-                        {item.image ? (
-                          <img
-                            src={item.image}
-                            alt={item.name}
-                            className="w-full h-full object-contain"
-                          />
-                        ) : (
-                          <img
-                            src="/logoprint.png"
-                            alt="Flora Distro"
-                            className="w-full h-full object-contain opacity-40"
-                          />
-                        )}
+          {/* Right - Order Summary */}
+          <div className="bg-[#3a3a3a] px-8 md:px-12 py-12">
+            <h2 className="text-sm uppercase tracking-[0.2em] text-white mb-6 font-normal">Order Summary</h2>
+            
+            {/* Cart Items */}
+            <div className="space-y-4 mb-8 max-h-[400px] overflow-y-auto scrollbar-hide">
+              {items.map((item) => (
+                <div key={`${item.productId}-${item.tierName}`} className="flex gap-4 pb-4 border-b border-white/5 last:border-0">
+                  <div className="w-16 h-16 bg-[#2a2a2a] flex-shrink-0">
+                    {item.image ? (
+                      <img src={item.image} alt={item.name} className="w-full h-full object-contain" />
+                    ) : (
+                      <img src="/logoprint.png" alt="Flora Distro" className="w-full h-full object-contain opacity-20" />
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-xs text-white mb-1 line-clamp-1">{item.name}</h3>
+                    <p className="text-[10px] text-white/40 mb-2">{item.tierName}</p>
+                    {item.orderType === "pickup" ? (
+                      <div className="flex items-center gap-1 text-[10px] text-white/50 mb-2">
+                        <Store size={10} />
+                        <span>{item.locationName}</span>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="text-sm font-light mb-1 line-clamp-2">{item.name}</h3>
-                        <p className="text-xs text-black/50 mb-1">{item.tierName}</p>
-                        <div className="flex items-center gap-2">
-                          {item.orderType === "pickup" ? (
-                            <div className="flex items-center gap-1 text-xs text-black/60">
-                              <Store size={12} />
-                              <span>{item.locationName}</span>
-                            </div>
-                          ) : (
-                            <div className="flex items-center gap-1 text-xs text-black/60">
-                              <Truck size={12} />
-                              <span>Delivery</span>
-                            </div>
-                          )}
-                        </div>
-                        <div className="flex items-center justify-between mt-2">
-                          <span className="text-xs text-black/50">Qty: {item.quantity}</span>
-                          <span className="text-sm font-light">${(item.price * item.quantity).toFixed(2)}</span>
-                        </div>
+                    ) : (
+                      <div className="flex items-center gap-1 text-[10px] text-white/50 mb-2">
+                        <Truck size={10} />
+                        <span>Delivery</span>
                       </div>
+                    )}
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] text-white/40">Qty: {item.quantity}</span>
+                      <span className="text-xs text-white">${(item.price * item.quantity).toFixed(0)}</span>
                     </div>
                   </div>
-                ))}
+                </div>
+              ))}
+            </div>
+
+            {/* Totals */}
+            <div className="space-y-3 pt-6 border-t border-white/10">
+              <div className="flex justify-between text-sm text-white/60">
+                <span>Subtotal</span>
+                <span>${total.toFixed(0)}</span>
               </div>
-
-              {/* Totals */}
-              <div className="space-y-3 pt-4 border-t border-black/10">
-                <div className="flex justify-between text-sm font-light">
-                  <span>Subtotal</span>
-                  <span>${total.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between text-sm font-light">
-                  <span>Shipping</span>
-                  <span className="text-green-600">FREE</span>
-                </div>
-                <div className="flex justify-between text-sm font-light text-black/60">
-                  <span>Tax</span>
-                  <span>Calculated at final step</span>
-                </div>
-                <div className="flex justify-between text-lg font-light pt-3 border-t border-black/10">
-                  <span>Total</span>
-                  <span>${total.toFixed(2)}</span>
-                </div>
+              <div className="flex justify-between text-sm text-white/60">
+                <span>Shipping</span>
+                <span>FREE</span>
               </div>
-
-              {/* Submit Button */}
-              <button
-                type="submit"
-                disabled={isProcessing}
-                className={`w-full mt-6 px-8 py-4 text-xs uppercase tracking-[0.2em] transition-all duration-300 font-medium flex items-center justify-center gap-2 ${
-                  isProcessing
-                    ? "bg-black/40 text-white/60 cursor-not-allowed"
-                    : "bg-black text-white hover:bg-black/90 shadow-elevated hover:shadow-elevated-lg"
-                }`}
-              >
-                {isProcessing ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                    Processing...
-                  </>
-                ) : (
-                  <>
-                    Place Order
-                    <ArrowRight size={14} />
-                  </>
-                )}
-              </button>
-
-              {/* Security Notice */}
-              <div className="mt-4 flex items-center justify-center gap-2 text-xs text-black/50">
-                <Lock size={12} />
-                <span>Secure checkout · SSL encrypted</span>
+              <div className="flex justify-between text-lg text-white pt-3 border-t border-white/10 font-medium">
+                <span>Total</span>
+                <span>${total.toFixed(0)}</span>
               </div>
             </div>
 
-            {/* Order Type Info */}
-            {(hasPickupItems || hasDeliveryItems) && (
-              <div className="bg-[#8a8a87] text-white p-6">
-                <h3 className="text-sm uppercase tracking-wider mb-4 font-medium">
-                  After Checkout
-                </h3>
-                <div className="space-y-3 text-sm font-light">
-                  {hasPickupItems && (
-                    <div className="flex items-start gap-3">
-                      <Store size={16} className="mt-0.5 flex-shrink-0" />
-                      <div>
-                        <p className="font-medium mb-1">In-Store Pickup</p>
-                        <p className="text-xs text-white/80">
-                          You'll receive a notification when your order is ready for pickup
-                        </p>
-                      </div>
-                    </div>
-                  )}
-                  {hasDeliveryItems && (
-                    <div className="flex items-start gap-3">
-                      <Truck size={16} className="mt-0.5 flex-shrink-0" />
-                      <div>
-                        <p className="font-medium mb-1">Delivery</p>
-                        <p className="text-xs text-white/80">
-                          Track your shipment with real-time updates
-                        </p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
+            {/* Submit Button */}
+            <button
+              type="submit"
+              disabled={isProcessing}
+              className={`w-full mt-8 px-8 py-4 text-xs uppercase tracking-[0.25em] transition-all duration-500 font-medium flex items-center justify-center gap-2 ${
+                isProcessing
+                  ? "bg-black/40 text-white/60 cursor-not-allowed border border-white/10"
+                  : "bg-black text-white hover:bg-black/70 border border-white/20 hover:border-white/40"
+              }`}
+            >
+              {isProcessing ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                  Processing...
+                </>
+              ) : (
+                <>
+                  Place Order
+                  <ArrowRight size={14} />
+                </>
+              )}
+            </button>
+
+            {/* Security Notice */}
+            <div className="mt-4 flex items-center justify-center gap-2 text-[10px] text-white/40">
+              <Lock size={10} />
+              <span>Secure checkout · SSL encrypted</span>
+            </div>
           </div>
         </div>
       </form>
     </div>
   );
 }
-
