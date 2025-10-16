@@ -85,7 +85,7 @@ export default function ProductPageClient({
     <div className="bg-[#1a1a1a]">
       {/* Breadcrumb - Minimal */}
       <div className="border-b border-white/10 bg-[#1a1a1a]">
-        <div className="max-w-[2000px] mx-auto px-6 md:px-8 py-4 flex items-center justify-between">
+        <div className="max-w-[2000px] mx-auto px-4 py-4 flex items-center justify-between">
           <Link
             href="/products"
             className="group inline-flex items-center space-x-2 text-xs text-white/60 hover:text-white transition-all duration-300 uppercase tracking-wider"
@@ -105,80 +105,82 @@ export default function ProductPageClient({
       {/* Product Content */}
       <div className="bg-[#1a1a1a]">
         {/* Mobile Layout */}
-        <div className="lg:hidden px-6 md:px-8 py-6 space-y-6">
+        <div className="lg:hidden">
           <ProductGallery images={product.images} productName={product.name} />
           
-          <ProductInfo
-            product={product}
-            pricingRules={pricingRules}
-            blueprintName={blueprintName}
-            onPriceSelect={handlePriceSelect}
-          />
+          <div className="px-4 py-6 space-y-6">
+            <ProductInfo
+              product={product}
+              pricingRules={pricingRules}
+              blueprintName={blueprintName}
+              onPriceSelect={handlePriceSelect}
+            />
 
-          <DeliveryAvailability
-            inventory={inventory}
-            locations={locations}
-            stockStatus={product.stock_status}
-            initialOrderType={orderType as "pickup" | "delivery" | undefined}
-            onDetailsChange={handleOrderDetailsChange}
-          />
+            <DeliveryAvailability
+              inventory={inventory}
+              locations={locations}
+              stockStatus={product.stock_status}
+              initialOrderType={orderType as "pickup" | "delivery" | undefined}
+              onDetailsChange={handleOrderDetailsChange}
+            />
 
-          <div className="space-y-3">
-            <button 
-              onClick={handleAddToCart}
-              disabled={addedToCart}
-              className={`w-full py-4 text-xs uppercase tracking-[0.2em] transition-all duration-300 font-medium relative overflow-hidden ${
-                addedToCart 
-                  ? "bg-black text-white border border-white/40" 
-                  : "bg-black border border-white/20 text-white hover:bg-white hover:text-black hover:border-white"
-              }`}
-            >
-              <span className={`inline-flex items-center gap-2 transition-all duration-300 ${addedToCart ? "opacity-0" : "opacity-100"}`}>
-                Add to Cart
-              </span>
-              <span className={`absolute inset-0 flex items-center justify-center gap-2 transition-all duration-300 ${addedToCart ? "opacity-100" : "opacity-0"}`}>
-                <Check size={16} strokeWidth={2} />
-                Added
-              </span>
-            </button>
-            <div className="flex space-x-3">
-              <button className="flex-1 border border-white/20 bg-transparent text-white py-4 text-xs uppercase tracking-[0.15em] hover:border-white/40 hover:bg-white/5 transition-all duration-300 flex items-center justify-center space-x-2 active:scale-95">
-                <Heart size={14} strokeWidth={1.5} />
-                <span className="hidden sm:inline">Wishlist</span>
+            <div className="space-y-3">
+              <button 
+                onClick={handleAddToCart}
+                disabled={addedToCart}
+                className={`w-full py-4 text-xs uppercase tracking-[0.2em] transition-all duration-300 font-medium relative overflow-hidden ${
+                  addedToCart 
+                    ? "bg-black text-white border border-white/40" 
+                    : "bg-black border border-white/20 text-white hover:bg-white hover:text-black hover:border-white"
+                }`}
+              >
+                <span className={`inline-flex items-center gap-2 transition-all duration-300 ${addedToCart ? "opacity-0" : "opacity-100"}`}>
+                  Add to Cart
+                </span>
+                <span className={`absolute inset-0 flex items-center justify-center gap-2 transition-all duration-300 ${addedToCart ? "opacity-100" : "opacity-0"}`}>
+                  <Check size={16} strokeWidth={2} />
+                  Added
+                </span>
               </button>
-              <button className="flex-1 border border-white/20 bg-transparent text-white py-4 text-xs uppercase tracking-[0.15em] hover:border-white/40 hover:bg-white/5 transition-all duration-300 flex items-center justify-center space-x-2 active:scale-95">
-                <Share2 size={14} strokeWidth={1.5} />
-                <span className="hidden sm:inline">Share</span>
-              </button>
+              <div className="flex space-x-3">
+                <button className="flex-1 border border-white/20 bg-transparent text-white py-4 text-xs uppercase tracking-[0.15em] hover:border-white/40 hover:bg-white/5 transition-all duration-300 flex items-center justify-center space-x-2 active:scale-95">
+                  <Heart size={14} strokeWidth={1.5} />
+                  <span className="hidden sm:inline">Wishlist</span>
+                </button>
+                <button className="flex-1 border border-white/20 bg-transparent text-white py-4 text-xs uppercase tracking-[0.15em] hover:border-white/40 hover:bg-white/5 transition-all duration-300 flex items-center justify-center space-x-2 active:scale-95">
+                  <Share2 size={14} strokeWidth={1.5} />
+                  <span className="hidden sm:inline">Share</span>
+                </button>
+              </div>
             </div>
+
+            {/* Lab Results */}
+            <LabResults metaData={product.meta_data || []} attributes={product.attributes || []} />
+
+            {/* Specifications */}
+            {product.meta_data && product.meta_data.length > 0 && (
+              <FloraFields metaData={product.meta_data} />
+            )}
+
+            {/* Long Description */}
+            {product.description && (
+              <div className="border border-white/10 bg-[#1a1a1a] p-4">
+                <h3 className="text-xs uppercase tracking-[0.2em] font-medium mb-3 text-white/60">
+                  Description
+                </h3>
+                <div
+                  className="text-xs text-white/80 leading-relaxed prose prose-sm prose-invert max-w-none"
+                  dangerouslySetInnerHTML={{ __html: product.description }}
+                />
+              </div>
+            )}
+
+            {/* Reviews */}
+            <ProductReviews reviews={reviews} />
+
+            {/* Category Features */}
+            <CategorySection categories={product.categories || []} />
           </div>
-
-          {/* Lab Results */}
-          <LabResults metaData={product.meta_data || []} attributes={product.attributes || []} />
-
-          {/* Specifications */}
-          {product.meta_data && product.meta_data.length > 0 && (
-            <FloraFields metaData={product.meta_data} />
-          )}
-
-          {/* Long Description */}
-          {product.description && (
-            <div className="border border-white/10 bg-[#1a1a1a] p-4">
-              <h3 className="text-xs uppercase tracking-[0.2em] font-medium mb-3 text-white/60">
-                Description
-              </h3>
-              <div
-                className="text-xs text-white/80 leading-relaxed prose prose-sm prose-invert max-w-none"
-                dangerouslySetInnerHTML={{ __html: product.description }}
-              />
-            </div>
-          )}
-
-          {/* Reviews */}
-          <ProductReviews reviews={reviews} />
-
-          {/* Category Features */}
-          <CategorySection categories={product.categories || []} />
         </div>
 
         {/* Desktop Layout */}
@@ -299,12 +301,12 @@ export default function ProductPageClient({
       {/* Related Products */}
       {relatedProducts.length > 0 && (
         <section className="border-t border-white/10 bg-[#2a2a2a] py-8">
-          <div className="max-w-[2000px] mx-auto px-6 md:px-8 mb-6">
+          <div className="px-4 mb-6">
             <h2 className="text-xs uppercase tracking-[0.2em] text-white/60 font-medium">
               You May Also Like
             </h2>
           </div>
-          <div className="max-w-[2000px] mx-auto grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-px">
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-px">
             {relatedProducts.map((item: any, idx: number) => {
               // Extract fields from product metadata for each related product
               const metaData = item.meta_data || [];

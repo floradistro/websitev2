@@ -68,7 +68,7 @@ export default function ProductGallery({
 
         {/* Thumbnails */}
         {images?.length > 1 && (
-          <div className="grid grid-cols-4 gap-px px-6 lg:px-0">
+          <div className="grid grid-cols-4 gap-px lg:px-0">
             {images.map((image: any, idx: number) => (
               <div
                 key={idx}
