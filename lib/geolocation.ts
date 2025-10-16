@@ -29,7 +29,7 @@ export interface FloraLocation {
 export async function getUserLocation(): Promise<UserLocation | null> {
   try {
     // Use ip-api.com for IP geolocation (free, higher limits, no key needed)
-    const response = await fetch('http://ip-api.com/json/?fields=status,message,country,countryCode,region,regionName,city,zip,lat,lon,query', {
+    const response = await fetch('https://ip-api.com/json/?fields=status,message,country,countryCode,region,regionName,city,zip,lat,lon,query', {
       cache: 'no-store'
     });
     
