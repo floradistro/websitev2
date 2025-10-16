@@ -157,43 +157,6 @@ export default function CheckoutPage() {
     });
     
     await processPayment(cardData);
-    return;
-
-    // Use Accept.js if available and configured
-    const authData = {
-      clientKey: authorizeKeys.clientKey,
-      apiLoginID: authorizeKeys.apiLoginId
-    };
-
-    const [expMonth, expYear] = paymentInfo.expiry.split("/");
-    const fullYear = expYear.length === 2 ? "20" + expYear : expYear;
-
-    const cardData = {
-      cardNumber: paymentInfo.cardNumber.replace(/\s/g, ""),
-      month: expMonth,
-      year: fullYear,
-      cardCode: paymentInfo.cvv,
-      zip: billingInfo.zipCode
-    };
-
-    const secureData = {
-      authData: authData,
-      cardData: cardData
-    };
-
-    window.Accept.dispatchData(secureData, async (response: any) => {
-      if (response.messages.resultCode === "Error") {
-        let errorMessage = "";
-        for (let i = 0; i < response.messages.message.length; i++) {
-          errorMessage += response.messages.message[i].text + " ";
-        }
-        setPaymentError(errorMessage);
-        setIsProcessing(false);
-      } else {
-        const paymentToken = response.opaqueData.dataValue;
-        await processPayment(paymentToken);
-      }
-    });
   };
 
   const handleApplePay = async () => {
