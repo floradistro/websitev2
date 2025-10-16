@@ -89,21 +89,23 @@ export default async function Home() {
       <LuxuryHero />
 
       {/* Featured Products - Carousel */}
-      <section className="bg-[#2a2a2a] py-16">
-        <div className="flex justify-between items-end mb-12 px-4">
-          <div>
-            <h2 className="text-2xl md:text-3xl font-light uppercase tracking-wider text-white mb-3">
-              Featured Products
-            </h2>
-            <div className="h-[1px] w-16 bg-white/20"></div>
+      <section className="bg-[#2a2a2a] py-12 sm:py-16">
+        <div className="px-4 sm:px-6 mb-8 sm:mb-12">
+          <div className="flex justify-between items-center sm:items-end gap-4">
+            <div className="min-w-0">
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-light uppercase tracking-wider text-white mb-2 sm:mb-3">
+                Featured Products
+              </h2>
+              <div className="h-[1px] w-12 sm:w-16 bg-white/20"></div>
+            </div>
+            <Link
+              href="/products"
+              className="text-[10px] sm:text-xs uppercase tracking-wider text-white/60 hover:text-white transition-colors flex items-center gap-1.5 sm:gap-2 whitespace-nowrap flex-shrink-0"
+            >
+              <span>View All</span>
+              <ArrowRight size={14} />
+            </Link>
           </div>
-          <Link
-            href="/products"
-            className="text-xs uppercase tracking-wider text-white/60 hover:text-white transition-colors flex items-center space-x-2"
-          >
-            <span>View All</span>
-            <ArrowRight size={14} />
-          </Link>
         </div>
 
         <ProductsCarousel 
@@ -111,17 +113,20 @@ export default async function Home() {
           locations={locations}
           pricingRules={pricingRules}
           productFieldsMap={productFieldsMap}
+          inventoryMap={inventoryMap}
         />
       </section>
 
       {/* Categories - Carousel */}
-      <section className="bg-[#3a3a3a] py-16">
-        <div className="flex justify-between items-end mb-12 px-4">
-          <div>
-            <h2 className="text-2xl md:text-3xl font-light uppercase tracking-wider text-white mb-3">
-              Shop by Category
-            </h2>
-            <div className="h-[1px] w-16 bg-white/20"></div>
+      <section className="bg-[#3a3a3a] py-12 sm:py-16">
+        <div className="px-4 sm:px-6 mb-8 sm:mb-12">
+          <div className="flex justify-between items-center sm:items-end gap-4">
+            <div className="min-w-0">
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-light uppercase tracking-wider text-white mb-2 sm:mb-3">
+                Shop by Category
+              </h2>
+              <div className="h-[1px] w-12 sm:w-16 bg-white/20"></div>
+            </div>
           </div>
         </div>
 
@@ -129,73 +134,73 @@ export default async function Home() {
       </section>
 
       {/* Philosophy - Clean Statement */}
-      <section className="bg-[#1a1a1a] py-32 px-4 relative overflow-hidden">
+      <section className="bg-[#1a1a1a] py-16 sm:py-24 md:py-32 px-4 sm:px-6 relative overflow-hidden">
         {/* Subtle background gradient */}
         <div className="absolute inset-0 opacity-30">
-          <div className="absolute top-0 left-1/4 w-96 h-96 bg-white/5 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-white/5 rounded-full blur-3xl"></div>
+          <div className="absolute top-0 left-1/4 w-64 h-64 sm:w-96 sm:h-96 bg-white/5 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-0 right-1/4 w-64 h-64 sm:w-96 sm:h-96 bg-white/5 rounded-full blur-3xl"></div>
         </div>
 
         <div className="max-w-6xl mx-auto text-center relative z-10">
           {/* Accent line */}
-          <div className="flex items-center justify-center mb-8">
-            <div className="h-[1px] w-16 bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
+          <div className="flex items-center justify-center mb-6 sm:mb-8">
+            <div className="h-[1px] w-12 sm:w-16 bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
           </div>
 
-          <h2 className="text-5xl md:text-7xl font-light text-white mb-6 leading-tight tracking-tight">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-light text-white mb-4 sm:mb-6 leading-tight tracking-tight">
             Real game.<br/>Real prices.
           </h2>
           
-          <div className="h-[1px] w-24 bg-gradient-to-r from-transparent via-white/20 to-transparent mx-auto mb-12"></div>
+          <div className="h-[1px] w-16 sm:w-24 bg-gradient-to-r from-transparent via-white/20 to-transparent mx-auto mb-8 sm:mb-12"></div>
           
-          <p className="text-lg md:text-xl font-light text-white/50 mb-20 leading-relaxed max-w-2xl mx-auto">
+          <p className="text-sm sm:text-base md:text-lg lg:text-xl font-light text-white/50 mb-12 sm:mb-16 md:mb-20 leading-relaxed max-w-2xl mx-auto">
             Straight from our facilities and partner farmers we trust. Fresh every time.
           </p>
 
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-3 gap-4 sm:gap-6">
             {/* Volume Pricing Card */}
-            <div className="group bg-white/5 backdrop-blur-sm border border-white/10 p-8 hover:bg-white/10 hover:border-white/20 transition-all duration-500 relative overflow-hidden">
+            <div className="group bg-white/5 backdrop-blur-sm border border-white/10 p-6 sm:p-8 hover:bg-white/10 hover:border-white/20 transition-all duration-500 relative overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
               <div className="relative z-10">
-                <div className="w-12 h-12 mb-6 mx-auto border border-white/20 rounded-full flex items-center justify-center group-hover:border-white/40 transition-colors duration-500">
-                  <div className="text-xl text-white/80">1</div>
+                <div className="w-10 h-10 sm:w-12 sm:h-12 mb-4 sm:mb-6 mx-auto border border-white/20 rounded-full flex items-center justify-center group-hover:border-white/40 transition-colors duration-500">
+                  <div className="text-lg sm:text-xl text-white/80">1</div>
                 </div>
-                <h3 className="text-sm font-normal mb-4 text-white uppercase tracking-[0.25em]">
+                <h3 className="text-xs sm:text-sm font-normal mb-3 sm:mb-4 text-white uppercase tracking-[0.2em] sm:tracking-[0.25em]">
                   Volume Pricing
                 </h3>
-                <p className="text-xs font-light text-white/50 leading-relaxed">
+                <p className="text-[11px] sm:text-xs font-light text-white/50 leading-relaxed">
                   The more you buy, the better the price.
                 </p>
               </div>
             </div>
             
             {/* Direct Source Card */}
-            <div className="group bg-white/5 backdrop-blur-sm border border-white/10 p-8 hover:bg-white/10 hover:border-white/20 transition-all duration-500 relative overflow-hidden">
+            <div className="group bg-white/5 backdrop-blur-sm border border-white/10 p-6 sm:p-8 hover:bg-white/10 hover:border-white/20 transition-all duration-500 relative overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
               <div className="relative z-10">
-                <div className="w-12 h-12 mb-6 mx-auto border border-white/20 rounded-full flex items-center justify-center group-hover:border-white/40 transition-colors duration-500">
-                  <div className="text-xl text-white/80">2</div>
+                <div className="w-10 h-10 sm:w-12 sm:h-12 mb-4 sm:mb-6 mx-auto border border-white/20 rounded-full flex items-center justify-center group-hover:border-white/40 transition-colors duration-500">
+                  <div className="text-lg sm:text-xl text-white/80">2</div>
                 </div>
-                <h3 className="text-sm font-normal mb-4 text-white uppercase tracking-[0.25em]">
+                <h3 className="text-xs sm:text-sm font-normal mb-3 sm:mb-4 text-white uppercase tracking-[0.2em] sm:tracking-[0.25em]">
                   Direct Source
                 </h3>
-                <p className="text-xs font-light text-white/50 leading-relaxed">
+                <p className="text-[11px] sm:text-xs font-light text-white/50 leading-relaxed">
                   No middleman. Just clean business.
                 </p>
               </div>
             </div>
 
             {/* Always Fresh Card */}
-            <div className="group bg-white/5 backdrop-blur-sm border border-white/10 p-8 hover:bg-white/10 hover:border-white/20 transition-all duration-500 relative overflow-hidden">
+            <div className="group bg-white/5 backdrop-blur-sm border border-white/10 p-6 sm:p-8 hover:bg-white/10 hover:border-white/20 transition-all duration-500 relative overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
               <div className="relative z-10">
-                <div className="w-12 h-12 mb-6 mx-auto border border-white/20 rounded-full flex items-center justify-center group-hover:border-white/40 transition-colors duration-500">
-                  <div className="text-xl text-white/80">3</div>
+                <div className="w-10 h-10 sm:w-12 sm:h-12 mb-4 sm:mb-6 mx-auto border border-white/20 rounded-full flex items-center justify-center group-hover:border-white/40 transition-colors duration-500">
+                  <div className="text-lg sm:text-xl text-white/80">3</div>
                 </div>
-                <h3 className="text-sm font-normal mb-4 text-white uppercase tracking-[0.25em]">
+                <h3 className="text-xs sm:text-sm font-normal mb-3 sm:mb-4 text-white uppercase tracking-[0.2em] sm:tracking-[0.25em]">
                   Always Fresh
                 </h3>
-                <p className="text-xs font-light text-white/50 leading-relaxed">
+                <p className="text-[11px] sm:text-xs font-light text-white/50 leading-relaxed">
                   No dry product, no old stock.
                 </p>
               </div>
@@ -205,21 +210,23 @@ export default async function Home() {
       </section>
 
       {/* Locations - Carousel */}
-      <section className="bg-[#2a2a2a] py-16">
-        <div className="flex justify-between items-end mb-12 px-4">
-          <div>
-            <h2 className="text-2xl md:text-3xl font-light uppercase tracking-wider text-white mb-3">
-              Our Locations
-            </h2>
-            <div className="h-[1px] w-16 bg-white/20"></div>
+      <section className="bg-[#2a2a2a] py-12 sm:py-16">
+        <div className="px-4 sm:px-6 mb-8 sm:mb-12">
+          <div className="flex justify-between items-center sm:items-end gap-4">
+            <div className="min-w-0">
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-light uppercase tracking-wider text-white mb-2 sm:mb-3">
+                Our Locations
+              </h2>
+              <div className="h-[1px] w-12 sm:w-16 bg-white/20"></div>
+            </div>
+            <p className="text-[10px] sm:text-xs uppercase tracking-wider text-white/50 whitespace-nowrap flex-shrink-0">
+              {locations.filter((loc: any) => {
+                const isActive = loc.is_active === "1";
+                const isAllowed = !['hamas', 'warehouse'].includes(loc.name.toLowerCase());
+                return isActive && isAllowed;
+              }).length} Stores
+            </p>
           </div>
-          <p className="text-xs uppercase tracking-wider text-white/50">
-            {locations.filter((loc: any) => {
-              const isActive = loc.is_active === "1";
-              const isAllowed = !['hamas', 'warehouse'].includes(loc.name.toLowerCase());
-              return isActive && isAllowed;
-            }).length} Stores
-          </p>
         </div>
 
         <LocationsCarousel locations={locations} />
@@ -229,64 +236,64 @@ export default async function Home() {
       <section className="bg-[#3a3a3a] py-0">
         <div className="grid md:grid-cols-2">
           {/* Left - Content */}
-          <div className="flex items-center px-8 md:px-12 py-24 md:py-32 relative overflow-hidden">
+          <div className="flex items-center px-4 sm:px-6 md:px-12 py-16 sm:py-20 md:py-32 relative overflow-hidden">
             <div className="absolute inset-0 opacity-10">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
+              <div className="absolute top-0 right-0 w-48 h-48 sm:w-64 sm:h-64 bg-white/10 rounded-full blur-3xl"></div>
             </div>
-            <div className="relative z-10">
-              <div className="mb-8">
-                <div className="inline-block px-4 py-1.5 bg-white/5 border border-white/10 text-[9px] uppercase tracking-[0.3em] text-white/60 mb-8">
+            <div className="relative z-10 w-full">
+              <div className="mb-6 sm:mb-8">
+                <div className="inline-block px-3 sm:px-4 py-1.5 bg-white/5 border border-white/10 text-[9px] uppercase tracking-[0.25em] sm:tracking-[0.3em] text-white/60 mb-6 sm:mb-8">
                   Shipping
                 </div>
-                <h2 className="text-4xl md:text-5xl font-light text-white mb-6 leading-tight">
+                <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-light text-white mb-4 sm:mb-6 leading-tight">
                   Fast. Reliable.<br/>Every day.
                 </h2>
-                <p className="text-base font-light text-white/50 mb-12 leading-relaxed">
+                <p className="text-sm sm:text-base font-light text-white/50 mb-8 sm:mb-12 leading-relaxed">
                   We ship daily at 2PM. Regional orders arrive next day.
                 </p>
               </div>
 
-              <div className="space-y-6 mb-12">
-                <div className="flex items-start gap-4 group">
-                  <div className="w-10 h-10 flex-shrink-0 border border-white/20 flex items-center justify-center group-hover:border-white/40 transition-colors duration-300">
-                    <svg className="w-5 h-5 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+              <div className="space-y-4 sm:space-y-6 mb-8 sm:mb-12">
+                <div className="flex items-start gap-3 sm:gap-4 group">
+                  <div className="w-9 h-9 sm:w-10 sm:h-10 flex-shrink-0 border border-white/20 flex items-center justify-center group-hover:border-white/40 transition-colors duration-300">
+                    <svg className="w-4 h-4 sm:w-5 sm:h-5 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </div>
                   <div>
-                    <h3 className="text-sm font-normal text-white uppercase tracking-[0.15em] mb-1">2PM Cutoff</h3>
-                    <p className="text-xs text-white/50 font-light">Order by 2PM EST, ships same day</p>
+                    <h3 className="text-xs sm:text-sm font-normal text-white uppercase tracking-[0.15em] mb-1">2PM Cutoff</h3>
+                    <p className="text-[11px] sm:text-xs text-white/50 font-light">Order by 2PM EST, ships same day</p>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-4 group">
-                  <div className="w-10 h-10 flex-shrink-0 border border-white/20 flex items-center justify-center group-hover:border-white/40 transition-colors duration-300">
-                    <svg className="w-5 h-5 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                <div className="flex items-start gap-3 sm:gap-4 group">
+                  <div className="w-9 h-9 sm:w-10 sm:h-10 flex-shrink-0 border border-white/20 flex items-center justify-center group-hover:border-white/40 transition-colors duration-300">
+                    <svg className="w-4 h-4 sm:w-5 sm:h-5 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
                     </svg>
                   </div>
                   <div>
-                    <h3 className="text-sm font-normal text-white uppercase tracking-[0.15em] mb-1">Next-Day Delivery</h3>
-                    <p className="text-xs text-white/50 font-light">NC and East Tennessee</p>
+                    <h3 className="text-xs sm:text-sm font-normal text-white uppercase tracking-[0.15em] mb-1">Next-Day Delivery</h3>
+                    <p className="text-[11px] sm:text-xs text-white/50 font-light">NC and East Tennessee</p>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-4 group">
-                  <div className="w-10 h-10 flex-shrink-0 border border-white/20 flex items-center justify-center group-hover:border-white/40 transition-colors duration-300">
-                    <svg className="w-5 h-5 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                <div className="flex items-start gap-3 sm:gap-4 group">
+                  <div className="w-9 h-9 sm:w-10 sm:h-10 flex-shrink-0 border border-white/20 flex items-center justify-center group-hover:border-white/40 transition-colors duration-300">
+                    <svg className="w-4 h-4 sm:w-5 sm:h-5 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </div>
                   <div>
-                    <h3 className="text-sm font-normal text-white uppercase tracking-[0.15em] mb-1">Fully Tracked</h3>
-                    <p className="text-xs text-white/50 font-light">Track every order in real-time</p>
+                    <h3 className="text-xs sm:text-sm font-normal text-white uppercase tracking-[0.15em] mb-1">Fully Tracked</h3>
+                    <p className="text-[11px] sm:text-xs text-white/50 font-light">Track every order in real-time</p>
                   </div>
                 </div>
               </div>
 
               <Link
                 href="/shipping"
-                className="group inline-flex items-center space-x-3 text-white text-xs uppercase tracking-[0.2em] hover:text-white/80 transition-colors duration-300"
+                className="group inline-flex items-center gap-2 sm:gap-3 text-white text-[10px] sm:text-xs uppercase tracking-[0.2em] hover:text-white/80 transition-colors duration-300"
               >
                 <span>View Shipping Policy</span>
                 <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform duration-300" />
@@ -360,24 +367,24 @@ export default async function Home() {
       </section>
 
       {/* Logo Mark */}
-      <section className="bg-[#1a1a1a] py-20 px-4">
+      <section className="bg-[#1a1a1a] py-12 sm:py-16 md:py-20 px-4">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center justify-center">
             <img 
               src="/logoprint.png" 
               alt="Flora Distro" 
-              className="h-24 w-auto opacity-30 grayscale"
+              className="h-16 sm:h-20 md:h-24 w-auto opacity-30 grayscale"
             />
           </div>
         </div>
       </section>
 
       {/* Final CTA - Dramatic */}
-      <section className="bg-gradient-to-br from-[#2a2a2a] via-[#1f1f1f] to-[#2a2a2a] py-40 px-4 relative overflow-hidden">
+      <section className="bg-gradient-to-br from-[#2a2a2a] via-[#1f1f1f] to-[#2a2a2a] py-20 sm:py-28 md:py-40 px-4 sm:px-6 relative overflow-hidden">
         {/* Animated gradient orbs */}
         <div className="absolute inset-0">
-          <div className="absolute top-1/4 left-1/4 w-[600px] h-[600px] bg-white/5 rounded-full blur-3xl animate-float"></div>
-          <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-white/5 rounded-full blur-3xl animate-float-delayed"></div>
+          <div className="absolute top-1/4 left-1/4 w-[300px] h-[300px] sm:w-[500px] sm:h-[500px] lg:w-[600px] lg:h-[600px] bg-white/5 rounded-full blur-3xl animate-float"></div>
+          <div className="absolute bottom-1/4 right-1/4 w-[250px] h-[250px] sm:w-[400px] sm:h-[400px] lg:w-[500px] lg:h-[500px] bg-white/5 rounded-full blur-3xl animate-float-delayed"></div>
         </div>
 
         {/* Scan line effect */}
@@ -386,26 +393,26 @@ export default async function Home() {
         </div>
 
         <div className="max-w-5xl mx-auto relative z-10">
-          <div className="text-center mb-16">
-            <h2 className="text-5xl md:text-8xl font-light text-white mb-8 leading-none tracking-tight">
+          <div className="text-center mb-12 sm:mb-16">
+            <h2 className="text-3xl sm:text-4xl md:text-6xl lg:text-8xl font-light text-white mb-6 sm:mb-8 leading-none tracking-tight">
               Get started
             </h2>
-            <p className="text-xl md:text-2xl font-light text-white/40 max-w-2xl mx-auto leading-relaxed">
+            <p className="text-base sm:text-lg md:text-xl lg:text-2xl font-light text-white/40 max-w-2xl mx-auto leading-relaxed">
               Unlock volume pricing and exclusive access
             </p>
           </div>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-6 mb-16">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 mb-12 sm:mb-16">
             <Link
               href="/register"
-              className="group w-full sm:w-auto inline-flex items-center justify-center space-x-3 bg-white text-black px-16 py-5 text-xs uppercase tracking-[0.3em] hover:bg-white/90 transition-all duration-300 font-medium"
+              className="group w-full sm:w-auto inline-flex items-center justify-center gap-2 sm:gap-3 bg-white text-black px-10 sm:px-12 md:px-16 py-3.5 sm:py-4 md:py-5 text-[10px] sm:text-xs uppercase tracking-[0.25em] sm:tracking-[0.3em] hover:bg-white/90 transition-all duration-300 font-medium"
             >
               <span>Create Account</span>
               <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform duration-300" />
             </Link>
             <Link
               href="/login"
-              className="group w-full sm:w-auto inline-flex items-center justify-center space-x-3 bg-transparent border border-white/30 text-white px-16 py-5 text-xs uppercase tracking-[0.3em] hover:bg-white/5 hover:border-white/50 transition-all duration-300 font-medium"
+              className="group w-full sm:w-auto inline-flex items-center justify-center gap-2 sm:gap-3 bg-transparent border border-white/30 text-white px-10 sm:px-12 md:px-16 py-3.5 sm:py-4 md:py-5 text-[10px] sm:text-xs uppercase tracking-[0.25em] sm:tracking-[0.3em] hover:bg-white/5 hover:border-white/50 transition-all duration-300 font-medium"
             >
               <span>Sign In</span>
               <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform duration-300" />
@@ -413,7 +420,7 @@ export default async function Home() {
           </div>
 
           <div className="text-center">
-            <p className="text-xs uppercase tracking-[0.25em] text-white/30">
+            <p className="text-[10px] sm:text-xs uppercase tracking-[0.25em] text-white/30">
               Or browse as guest
             </p>
           </div>

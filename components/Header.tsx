@@ -50,26 +50,27 @@ export default function Header() {
       </div>
 
       {/* Main header */}
-      <div className="container mx-auto px-6 relative z-[111]">
+      <div className="px-4 sm:px-6 lg:container lg:mx-auto relative z-[111]">
         <div className="flex items-center justify-between h-16">
           {/* Mobile menu button */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="lg:hidden text-white"
+            className="lg:hidden text-white p-2 -ml-2 hover:bg-white/5 transition-colors rounded"
+            aria-label="Toggle menu"
           >
-            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
 
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-3">
+          <Link href="/" className="flex items-center gap-2 sm:gap-3">
             <Image 
               src="/logoprint.png" 
               alt="Flora Distro Logo" 
-              width={40} 
-              height={40}
-              className="object-contain"
+              width={32} 
+              height={32}
+              className="object-contain sm:w-10 sm:h-10"
             />
-            <span className="text-2xl logo-font text-white">Flora Distro</span>
+            <span className="text-xl sm:text-2xl logo-font text-white">Flora Distro</span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -109,23 +110,25 @@ export default function Header() {
           </nav>
 
           {/* Right icons */}
-          <div className="flex items-center space-x-5">
+          <div className="flex items-center space-x-3 sm:space-x-5">
             <button 
               onClick={() => setSearchOpen(true)}
-              className="text-white/80 hover:text-white transition-colors"
+              className="text-white/80 hover:text-white transition-colors p-2 hover:bg-white/5 rounded"
+              aria-label="Search"
             >
               <Search size={18} />
             </button>
-            <Link href="/register" className="text-white/80 hover:text-white transition-colors hidden sm:block">
+            <Link href="/register" className="text-white/80 hover:text-white transition-colors hidden sm:block p-2 hover:bg-white/5 rounded" aria-label="Account">
               <User size={18} />
             </Link>
             <button 
               onClick={() => setCartOpen(true)}
-              className="text-white/80 hover:text-white transition-colors relative"
+              className="text-white/80 hover:text-white transition-colors relative p-2 hover:bg-white/5 rounded"
+              aria-label="Cart"
             >
               <ShoppingBag size={18} />
               {itemCount > 0 && (
-                <span className="absolute -top-2 -right-2 w-5 h-5 bg-white text-black text-[10px] font-medium flex items-center justify-center rounded-full">
+                <span className="absolute top-0 right-0 w-5 h-5 bg-white text-black text-[10px] font-medium flex items-center justify-center rounded-full">
                   {itemCount}
                 </span>
               )}
@@ -137,27 +140,34 @@ export default function Header() {
       {/* Mobile menu */}
       {mobileMenuOpen && (
         <div className="lg:hidden border-t border-white/10 bg-[#1a1a1a] relative z-[111]">
-          <nav className="container mx-auto px-6 py-4 flex flex-col space-y-3 text-xs uppercase tracking-wider">
+          <nav className="px-4 py-6 flex flex-col space-y-4 text-sm uppercase tracking-wider">
             <Link
               href="/products"
-              className="text-white/80 hover:text-white transition-colors"
+              className="text-white/80 hover:text-white transition-colors py-2 border-b border-white/5"
               onClick={() => setMobileMenuOpen(false)}
             >
               Products
             </Link>
             <Link
               href="/about"
-              className="text-white/80 hover:text-white transition-colors"
+              className="text-white/80 hover:text-white transition-colors py-2 border-b border-white/5"
               onClick={() => setMobileMenuOpen(false)}
             >
               About
             </Link>
             <Link
               href="/contact"
-              className="text-white/80 hover:text-white transition-colors"
+              className="text-white/80 hover:text-white transition-colors py-2 border-b border-white/5"
               onClick={() => setMobileMenuOpen(false)}
             >
               Contact
+            </Link>
+            <Link
+              href="/register"
+              className="text-white/80 hover:text-white transition-colors py-2 sm:hidden"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              My Account
             </Link>
           </nav>
         </div>

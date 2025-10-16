@@ -1,21 +1,28 @@
-import WooCommerceRestApi from "@woocommerce/woocommerce-rest-api";
-import axios from "axios";
+import axios, { AxiosInstance } from "axios";
 
-const api = new WooCommerceRestApi({
-  url: process.env.WORDPRESS_API_URL || "",
-  consumerKey: process.env.WORDPRESS_CONSUMER_KEY || "",
-  consumerSecret: process.env.WORDPRESS_CONSUMER_SECRET || "",
-  version: "wc/v3",
+// WooCommerce API configuration
+const baseUrl = process.env.WORDPRESS_API_URL || "";
+const consumerKey = process.env.WORDPRESS_CONSUMER_KEY || "";
+const consumerSecret = process.env.WORDPRESS_CONSUMER_SECRET || "";
+
+// Create WooCommerce API client with OAuth1 credentials
+const wooApi: AxiosInstance = axios.create({
+  baseURL: `${baseUrl}/wp-json/wc/v3`,
+  params: {
+    consumer_key: consumerKey,
+    consumer_secret: consumerSecret,
+  },
 });
 
-const wordpressApi = axios.create({
-  baseURL: `${process.env.WORDPRESS_API_URL}/wp-json/wp/v2`,
+// Create WordPress REST API client
+const wordpressApi: AxiosInstance = axios.create({
+  baseURL: `${baseUrl}/wp-json/wp/v2`,
 });
 
-export { api, wordpressApi };
+export { wooApi as api, wordpressApi };
 
 export async function getProducts(params?: any) {
-  const response = await api.get("products", params);
+  const response = await wooApi.get("products", { params });
   return response.data;
 }
 
@@ -25,9 +32,11 @@ export async function getAllProducts() {
   let hasMore = true;
   
   while (hasMore) {
-    const response = await api.get("products", {
-      per_page: 100,
-      page: page,
+    const response = await wooApi.get("products", {
+      params: {
+        per_page: 100,
+        page: page,
+      }
     });
     
     allProducts = [...allProducts, ...response.data];
@@ -43,7 +52,7 @@ export async function getAllProducts() {
 
 export async function getProduct(id: string | number) {
   try {
-    const response = await api.get(`products/${id}`);
+    const response = await wooApi.get(`products/${id}`);
     return response.data;
   } catch (error: any) {
     if (error.response?.status === 404) {
@@ -54,20 +63,22 @@ export async function getProduct(id: string | number) {
 }
 
 export async function updateProduct(id: string | number, data: any) {
-  const response = await api.put(`products/${id}`, data);
+  const response = await wooApi.put(`products/${id}`, data);
   return response.data;
 }
 
 export async function getProductsByCategory(categoryId: number, perPage = 8) {
-  const response = await api.get("products", {
-    category: categoryId,
-    per_page: perPage,
+  const response = await wooApi.get("products", {
+    params: {
+      category: categoryId,
+      per_page: perPage,
+    }
   });
   return response.data;
 }
 
 export async function getCategories(params?: any) {
-  const response = await api.get("products/categories", params);
+  const response = await wooApi.get("products/categories", { params });
   return response.data;
 }
 
@@ -92,8 +103,7 @@ export async function getPage(slug: string) {
 }
 
 // Location & Inventory Management
-const baseUrl = process.env.WORDPRESS_API_URL || "";
-const authParams = `consumer_key=${process.env.WORDPRESS_CONSUMER_KEY}&consumer_secret=${process.env.WORDPRESS_CONSUMER_SECRET}`;
+const authParams = `consumer_key=${consumerKey}&consumer_secret=${consumerSecret}`;
 
 export async function getLocations() {
   const response = await axios.get(
@@ -173,27 +183,31 @@ export async function getProductFields(productId: string | number) {
 
 // Get best-selling products based on order data
 export async function getBestSellingProducts(params?: any) {
-  const response = await api.get("products", {
-    orderby: 'popularity',
-    per_page: params?.per_page || 8,
-    ...params,
+  const response = await wooApi.get("products", {
+    params: {
+      orderby: 'popularity',
+      per_page: params?.per_page || 8,
+      ...params,
+    }
   });
   return response.data;
 }
 
 // Get orders to calculate best sellers
 export async function getOrders(params?: any) {
-  const response = await api.get("orders", params);
+  const response = await wooApi.get("orders", { params });
   return response.data;
 }
 
 // Product Reviews
 export async function getProductReviews(productId: string | number) {
   try {
-    const response = await api.get("products/reviews", {
-      product: productId,
-      per_page: 100,
-      status: 'approved'
+    const response = await wooApi.get("products/reviews", {
+      params: {
+        product: productId,
+        per_page: 100,
+        status: 'approved'
+      }
     });
     return response.data;
   } catch (error) {
@@ -204,10 +218,12 @@ export async function getProductReviews(productId: string | number) {
 
 export async function getAllReviews(params?: any) {
   try {
-    const response = await api.get("products/reviews", {
-      per_page: 100,
-      status: 'approved',
-      ...params
+    const response = await wooApi.get("products/reviews", {
+      params: {
+        per_page: 100,
+        status: 'approved',
+        ...params
+      }
     });
     return response.data;
   } catch (error) {

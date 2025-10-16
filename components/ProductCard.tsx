@@ -13,9 +13,10 @@ interface ProductCardProps {
     fields: { [key: string]: string };
     blueprintName?: string | null;
   };
+  inventory?: any[];
 }
 
-export default function ProductCard({ product, index, locations, pricingRules, productFields }: ProductCardProps) {
+export default function ProductCard({ product, index, locations, pricingRules, productFields, inventory = [] }: ProductCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [selectedTierIndex, setSelectedTierIndex] = useState<number | null>(null);
   const [showAddToCart, setShowAddToCart] = useState(false);
@@ -207,6 +208,39 @@ export default function ProductCard({ product, index, locations, pricingRules, p
     window.location.href = `/products/${product.id}`;
   };
 
+  // Get locations where product is in stock
+  const getStockLocations = () => {
+    if (!inventory || inventory.length === 0) {
+      return { inStock: false, locations: [], count: 0 };
+    }
+
+    const activeLocations = locations.filter((loc: any) => loc.is_active === "1");
+    const stockLocations: any[] = [];
+
+    inventory.forEach((inv: any) => {
+      const qty = parseFloat(inv.stock_quantity || inv.quantity || inv.stock || 0);
+      const status = inv.status?.toLowerCase();
+      const hasStock = qty > 0 || status === 'instock' || status === 'in_stock';
+
+      if (hasStock) {
+        const location = activeLocations.find((loc: any) => 
+          loc.id === parseInt(inv.location_id) || loc.id.toString() === inv.location_id?.toString()
+        );
+        if (location && !stockLocations.find(l => l.id === location.id)) {
+          stockLocations.push(location);
+        }
+      }
+    });
+
+    return {
+      inStock: stockLocations.length > 0,
+      locations: stockLocations,
+      count: stockLocations.length
+    };
+  };
+
+  const stockInfo = getStockLocations();
+
   return (
     <div
       className="group block relative bg-[#3a3a3a] hover:bg-[#404040] transition-all duration-500 cursor-pointer hover:shadow-2xl hover:-translate-y-1 border border-transparent hover:border-white/10"
@@ -218,7 +252,7 @@ export default function ProductCard({ product, index, locations, pricingRules, p
       }}
     >
       {/* Product Image Container */}
-      <div className="relative aspect-square md:aspect-[4/5] overflow-hidden bg-[#2a2a2a] transition-all duration-500">
+      <div className="relative aspect-[4/5] overflow-hidden bg-[#2a2a2a] transition-all duration-500">
         {product.images?.[0] ? (
           <>
             {/* Main Image */}
@@ -226,7 +260,7 @@ export default function ProductCard({ product, index, locations, pricingRules, p
               src={product.images[0].src}
               alt={product.name}
               loading="lazy"
-              className="w-full h-full object-cover transition-all duration-700 ease-out group-hover:scale-105"
+              className="w-full h-full object-contain transition-all duration-700 ease-out group-hover:scale-105"
             />
           </>
         ) : (
@@ -247,7 +281,7 @@ export default function ProductCard({ product, index, locations, pricingRules, p
         <div className="absolute top-2 left-2 flex flex-col gap-1">
           {/* New Arrival Badge - Products created within last 7 days */}
           {product.date_created && new Date(product.date_created).getTime() > Date.now() - 7 * 24 * 60 * 60 * 1000 && (
-            <div className="bg-white text-black px-2 py-0.5 text-[9px] font-medium uppercase tracking-wider">
+            <div className="bg-black border border-white/30 text-white px-2 py-0.5 text-[9px] font-medium uppercase tracking-wider">
               New
             </div>
           )}
@@ -313,18 +347,27 @@ export default function ProductCard({ product, index, locations, pricingRules, p
           {getPriceDisplay()}
         </p>
         
-        {/* Stock Status Indicator */}
-        {product.stock_status === 'instock' ? (
-          <div className="flex items-center gap-1.5">
-            <div className="w-2 h-2 rounded-full bg-green-500"></div>
-            <span className="text-[10px] uppercase tracking-wider text-white/60">In Stock</span>
+        {/* Multi-Location Stock Status */}
+        {stockInfo.inStock ? (
+          <div className="flex flex-col gap-1">
+            <div className="flex items-center gap-1.5">
+              <div className="w-2 h-2 rounded-full bg-green-500"></div>
+              <span className="text-[10px] uppercase tracking-wider text-white/60">
+                {stockInfo.count === 1 ? 'In Stock' : `In Stock at ${stockInfo.count} locations`}
+              </span>
+            </div>
+            {stockInfo.count <= 2 && (
+              <span className="text-[9px] text-white/40 truncate">
+                {stockInfo.locations.map((loc: any) => loc.name).join(', ')}
+              </span>
+            )}
           </div>
-        ) : product.stock_status === 'outofstock' ? (
+        ) : (
           <div className="flex items-center gap-1.5">
             <div className="w-2 h-2 rounded-full bg-red-500"></div>
             <span className="text-[10px] uppercase tracking-wider text-white/60">Out of Stock</span>
           </div>
-        ) : null}
+        )}
         
         {/* Blueprint Fields */}
         {displayFields.length > 0 && (
