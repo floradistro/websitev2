@@ -146,18 +146,10 @@ export default function CheckoutPage() {
       return;
     }
 
-    // If using server-side processing (no Accept.js)
-    if (authorizeKeys.useServerSide || !acceptJsLoaded || !window.Accept) {
-      // Send card data directly - will be tokenized server-side
-      const [expMonth, expYear] = paymentInfo.expiry.split("/");
-      const paymentData = {
-        cardNumber: paymentInfo.cardNumber.replace(/\s/g, ""),
-        expMonth,
-        expYear,
-        cvv: paymentInfo.cvv
-      };
-      
-      await processPayment(JSON.stringify(paymentData));
+    // Check if Accept.js is loaded
+    if (!acceptJsLoaded || !window.Accept) {
+      setPaymentError("Payment system not loaded. Please refresh and try again.");
+      setIsProcessing(false);
       return;
     }
 

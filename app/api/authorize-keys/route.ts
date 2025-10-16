@@ -30,10 +30,10 @@ export async function GET(request: NextRequest) {
     
     return NextResponse.json({
       success: true,
-      clientKey: "9SB8Rhk6Ljbu",
+      clientKey: "2HCV7znwGcw3xFpnab492K4Ve7p7Us7HmSc5Wf28Uq5NsjTf22FLXezdC87RY7S8",
       apiLoginId: "9SB8Rhk6Ljbu",
       environment: "production",
-      useServerSide: true
+      useServerSide: false // Now using Accept.js!
     });
   }
 }
