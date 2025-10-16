@@ -58,27 +58,32 @@ export async function POST(request: NextRequest) {
       }
     });
 
-    // Submit to WooCommerce checkout endpoint
-    const response = await fetch(`${baseUrl}/?wc-ajax=checkout`, {
+    // Submit to WordPress admin-ajax (works for guests via nopriv hook)
+    const response = await fetch(`${baseUrl}/wp-admin/admin-ajax.php?action=flora_create_order`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
+        'Content-Type': 'application/json',
       },
-      body: formData.toString()
+      body: JSON.stringify({
+        payment_token,
+        billing,
+        shipping,
+        items,
+        shipping_cost
+      })
     });
 
     const data = await response.json();
 
-    if (data.result === 'success') {
+    if (data.success && data.data) {
       return NextResponse.json({
         success: true,
-        order_id: data.order_id,
-        order_number: data.order_id,
-        order_key: data.order_key || '',
-        redirect: data.redirect
+        order_id: data.data.order_id,
+        order_number: data.data.order_number,
+        order_key: data.data.order_key || ''
       });
     } else {
-      throw new Error(data.messages || JSON.stringify(data));
+      throw new Error(data.data?.error || "Order creation failed");
     }
 
   } catch (error: any) {
