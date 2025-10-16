@@ -139,7 +139,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
       ></div>
 
       {/* Drawer */}
-      <div className="absolute right-0 top-0 h-full w-full sm:w-[440px] bg-[#2a2a2a] shadow-2xl flex flex-col animate-slideInRight border-l border-white/10">
+      <div className="absolute right-0 top-0 h-full w-full max-w-full sm:max-w-[500px] bg-[#2a2a2a] shadow-2xl flex flex-col animate-slideInRight border-l border-white/10">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-5 border-b border-white/10">
           <h2 className="text-sm font-light uppercase tracking-[0.2em] text-white">
