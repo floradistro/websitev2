@@ -84,8 +84,7 @@ export default function CheckoutPage() {
 
   const processPayment = async (paymentToken: string) => {
     try {
-      // Try guest checkout endpoint first (no auth required)
-      const response = await fetch("/api/payment/guest", {
+      const response = await fetch("/api/payment", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
