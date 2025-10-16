@@ -17,6 +17,7 @@ import ShippingEstimator from "@/components/ShippingEstimator";
 import RecentlyViewed from "@/components/RecentlyViewed";
 import { ProductSchema, BreadcrumbSchema } from "@/components/StructuredData";
 import { useCart } from "@/context/CartContext";
+import { analytics } from "@/lib/analytics";
 
 interface ProductPageClientProps {
   product: any;
@@ -57,7 +58,15 @@ export default function ProductPageClient({
       price: product.price,
       image: product.images?.[0]?.src,
     });
-  }, [product.id, product.name, product.price, product.images, addToRecentlyViewed]);
+
+    // Track analytics
+    analytics.viewProduct({
+      id: product.id,
+      name: product.name,
+      price: parseFloat(product.price) || 0,
+      category: product.categories?.[0]?.name,
+    });
+  }, [product.id, product.name, product.price, product.images, product.categories, addToRecentlyViewed]);
 
   const handlePriceSelect = useCallback((price: number, quantity: number, tierName: string) => {
     setSelectedPrice(price);

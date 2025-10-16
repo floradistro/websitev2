@@ -42,22 +42,6 @@ export async function POST(request: NextRequest) {
       _wp_http_referer: '/?wc-ajax=update_order_review'
     });
 
-    // Add cart items
-    items.forEach((item: any, index: number) => {
-      formData.append(`cart[${index}][product_id]`, item.productId.toString());
-      formData.append(`cart[${index}][quantity]`, item.quantity.toString());
-      formData.append(`cart[${index}][tier_name]`, item.tierName);
-      if (item.orderType) {
-        formData.append(`cart[${index}][order_type]`, item.orderType);
-      }
-      if (item.locationId) {
-        formData.append(`cart[${index}][location_id]`, item.locationId);
-      }
-      if (item.locationName) {
-        formData.append(`cart[${index}][location_name]`, item.locationName);
-      }
-    });
-
     // Submit to WordPress admin-ajax (works for guests via nopriv hook)
     const response = await fetch(`${baseUrl}/wp-admin/admin-ajax.php?action=flora_create_order`, {
       method: 'POST',

@@ -7,6 +7,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import CartShippingEstimator from "@/components/CartShippingEstimator";
 import Script from "next/script";
+import { analytics } from "@/lib/analytics";
 
 declare global {
   interface Window {
@@ -69,6 +70,14 @@ export default function CheckoutPage() {
   useEffect(() => {
     if (window.ApplePaySession && window.ApplePaySession.canMakePayments()) {
       setApplePayAvailable(true);
+    }
+
+    // Track begin checkout event
+    if (items.length > 0) {
+      analytics.beginCheckout({
+        items: items,
+        total: total,
+      });
     }
 
     // Fetch Authorize.net keys

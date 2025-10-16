@@ -225,6 +225,7 @@ export default function ProductCard({ product, index, locations, pricingRules, p
             <img
               src={product.images[0].src}
               alt={product.name}
+              loading="lazy"
               className="w-full h-full object-cover transition-all duration-700 ease-out group-hover:scale-105"
             />
           </>
@@ -235,6 +236,7 @@ export default function ProductCard({ product, index, locations, pricingRules, p
               <img
                 src="/logoprint.png"
                 alt="Flora Distro"
+                loading="lazy"
                 className="w-full h-full object-contain opacity-10 transition-opacity duration-500 group-hover:opacity-15"
               />
             </div>
