@@ -60,8 +60,16 @@ export async function POST(request: NextRequest) {
 
   } catch (error: any) {
     console.error("Payment error:", error);
+    console.error("Error stack:", error.stack);
     return NextResponse.json(
-      { success: false, error: error.message || "Payment failed" },
+      { 
+        success: false, 
+        error: error.message || "Payment failed",
+        debug: {
+          message: error.message,
+          stack: error.stack?.substring(0, 500)
+        }
+      },
       { status: 500 }
     );
   }
