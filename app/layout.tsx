@@ -18,8 +18,25 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Flora Distro",
-  description: "Premium floral distribution",
+  title: "Flora Distro | Premium Cannabis Distribution",
+  description: "Shop premium cannabis products including flower, concentrates, edibles, vapes, and beverages. Direct from our facilities with next-day regional delivery. Farm Bill compliant.",
+  keywords: ["cannabis", "hemp", "Delta-9 THC", "flower", "concentrates", "edibles", "vapes", "North Carolina", "Tennessee"],
+  openGraph: {
+    title: "Flora Distro | Premium Cannabis Distribution",
+    description: "Premium cannabis products with fast shipping. Direct sourcing, volume pricing, always fresh.",
+    type: "website",
+    siteName: "Flora Distro",
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Flora Distro | Premium Cannabis Distribution",
+    description: "Premium cannabis products with fast shipping.",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function RootLayout({

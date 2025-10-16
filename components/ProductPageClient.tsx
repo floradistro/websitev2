@@ -15,6 +15,7 @@ import ProductReviews from "@/components/ProductReviews";
 import ProductCard from "@/components/ProductCard";
 import ShippingEstimator from "@/components/ShippingEstimator";
 import RecentlyViewed from "@/components/RecentlyViewed";
+import { ProductSchema, BreadcrumbSchema } from "@/components/StructuredData";
 import { useCart } from "@/context/CartContext";
 
 interface ProductPageClientProps {
@@ -100,8 +101,30 @@ export default function ProductPageClient({
     setTimeout(() => setAddedToCart(false), 2000);
   };
 
+  // Build breadcrumb items for schema
+  const breadcrumbItems = [
+    { name: "Home", url: "https://floradistro.com" },
+    { name: "Products", url: "https://floradistro.com/products" },
+  ];
+  
+  if (product.categories && product.categories.length > 0) {
+    breadcrumbItems.push({
+      name: product.categories[0].name,
+      url: `https://floradistro.com/products?category=${product.categories[0].slug}`
+    });
+  }
+  
+  breadcrumbItems.push({
+    name: product.name,
+    url: `https://floradistro.com/products/${product.id}`
+  });
+
   return (
     <div className="bg-[#1a1a1a]">
+      {/* Structured Data for SEO */}
+      <ProductSchema product={product} />
+      <BreadcrumbSchema items={breadcrumbItems} />
+      
       {/* Breadcrumb Navigation */}
       <div className="border-b border-white/10 bg-[#1a1a1a]">
         <div className="max-w-[2000px] mx-auto px-4 py-4">

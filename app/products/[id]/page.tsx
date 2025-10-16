@@ -1,6 +1,55 @@
 import { getProduct, getProducts, getLocations, getProductInventory, getPricingRules, getProductFields, getProductReviews } from "@/lib/wordpress";
 import ProductPageClient from "@/components/ProductPageClient";
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const product = await getProduct(id);
+
+  if (!product) {
+    return {
+      title: "Product Not Found",
+    };
+  }
+
+  const category = product.categories?.[0]?.name || "Products";
+  const price = product.price ? `$${parseFloat(product.price).toFixed(0)}` : "";
+  const description = product.short_description 
+    ? product.short_description.replace(/<[^>]*>/g, '').substring(0, 155)
+    : `Shop ${product.name} ${price ? `starting at ${price}` : ''} at Flora Distro. Premium cannabis products with fast shipping.`;
+
+  const image = product.images?.[0]?.src || "https://floradistro.com/logoprint.png";
+
+  return {
+    title: `${product.name} | ${category} | Flora Distro`,
+    description,
+    openGraph: {
+      title: `${product.name} - Flora Distro`,
+      description,
+      images: [
+        {
+          url: image,
+          width: 1200,
+          height: 630,
+          alt: product.name,
+        },
+      ],
+      type: "website",
+      siteName: "Flora Distro",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${product.name} - Flora Distro`,
+      description,
+      images: [image],
+    },
+  };
+}
 
 export default async function ProductPage({
   params,

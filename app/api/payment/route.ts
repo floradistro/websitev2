@@ -73,7 +73,16 @@ export async function POST(request: NextRequest) {
       })
     });
 
-    const data = await response.json();
+    const text = await response.text();
+    console.log('WordPress response:', text);
+    
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch (parseError) {
+      console.error('Failed to parse response:', text);
+      throw new Error('Invalid response from WordPress: ' + text.substring(0, 200));
+    }
 
     if (data.success && data.data) {
       return NextResponse.json({
@@ -83,7 +92,9 @@ export async function POST(request: NextRequest) {
         order_key: data.data.order_key || ''
       });
     } else {
-      throw new Error(data.data?.error || "Order creation failed");
+      const errorMsg = data.data?.error || data.error || "Order creation failed";
+      console.error('WordPress error:', errorMsg);
+      throw new Error(errorMsg);
     }
 
   } catch (error: any) {
