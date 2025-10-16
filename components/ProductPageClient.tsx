@@ -140,17 +140,17 @@ export default function ProductPageClient({
       {/* Breadcrumb Navigation */}
       <div className="border-b border-white/10 bg-[#1a1a1a]">
         <div className="max-w-[2000px] mx-auto px-4 sm:px-6 py-3 sm:py-4">
-          <nav className="flex items-center space-x-2 text-sm uppercase tracking-wider">
+          <nav className="flex items-center space-x-2 text-xs sm:text-sm uppercase tracking-wider overflow-x-auto scrollbar-hide">
             <Link
               href="/"
-              className="text-white/40 hover:text-white transition-colors"
+              className="text-white/40 hover:text-white transition-colors whitespace-nowrap"
             >
               Home
             </Link>
             <span className="text-white/20">/</span>
             <Link
               href="/products"
-              className="text-white/40 hover:text-white transition-colors"
+              className="text-white/40 hover:text-white transition-colors whitespace-nowrap"
             >
               Products
             </Link>
@@ -159,14 +159,14 @@ export default function ProductPageClient({
                 <span className="text-white/20">/</span>
                 <Link
                   href={`/products?category=${product.categories[0].slug}`}
-                  className="text-white/40 hover:text-white transition-colors"
+                  className="text-white/40 hover:text-white transition-colors whitespace-nowrap"
                 >
                   {product.categories[0].name}
                 </Link>
               </>
             )}
             <span className="text-white/20">/</span>
-            <span className="text-white/60 font-medium line-clamp-1">{product.name}</span>
+            <span className="text-white/60 font-medium truncate">{product.name}</span>
           </nav>
         </div>
       </div>
@@ -204,7 +204,7 @@ export default function ProductPageClient({
               <button 
                 onClick={handleAddToCart}
                 disabled={addedToCart}
-                className={`w-full py-4 text-xs uppercase tracking-[0.2em] transition-all duration-300 font-medium relative overflow-hidden ${
+                className={`w-full py-3.5 sm:py-4 text-xs uppercase tracking-[0.2em] transition-all duration-300 font-medium relative overflow-hidden ${
                   addedToCart 
                     ? "bg-black text-white border border-white/40" 
                     : "bg-black border border-white/20 text-white hover:bg-white hover:text-black hover:border-white"

@@ -72,22 +72,22 @@ export default function ProductInfo({
 
   return (
     <>
-      <div className="animate-fadeIn space-y-4">
-        {/* Product Name */}
-        <h1 className="text-xs uppercase tracking-[0.15em] font-normal text-white leading-relaxed">
+      <div className="animate-fadeIn space-y-3">
+        {/* Product Name - Matches ProductCard */}
+        <h1 className="text-xs uppercase tracking-[0.12em] font-normal text-white leading-relaxed">
           {product.name}
         </h1>
 
-        {/* Price */}
+        {/* Price - Matches ProductCard */}
         <p className="text-sm font-medium text-white tracking-wide">
           {selectedPrice ? `$${selectedPrice.toFixed(0)}` : (typeof priceDisplay === 'string' ? priceDisplay : `$${priceDisplay}`)}
         </p>
 
-        {/* Stock Status */}
+        {/* Stock Status - Matches ProductCard */}
         {product.stock_status === "instock" && (
-          <div className="flex items-center gap-2 text-white/60 text-xs">
-            <div className="w-1.5 h-1.5 bg-white rounded-full" />
-            In Stock
+          <div className="flex items-center gap-1.5">
+            <div className="w-2 h-2 rounded-full bg-green-500"></div>
+            <span className="text-[11px] uppercase tracking-wider text-white/60">In Stock</span>
           </div>
         )}
 

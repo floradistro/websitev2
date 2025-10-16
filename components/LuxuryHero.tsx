@@ -128,7 +128,7 @@ export default function LuxuryHero() {
         style={{ animationDelay: "1.4s", animationFillMode: "forwards", opacity: 0 }}
       >
         <div className="flex flex-col items-center gap-2">
-          <span className="text-[9px] sm:text-[10px] uppercase tracking-[0.2em] text-white/30">Scroll</span>
+          <span className="text-[10px] uppercase tracking-[0.2em] text-white/30">Scroll</span>
           <div className="w-[1px] h-10 sm:h-16 bg-gradient-to-b from-white/20 via-white/40 to-transparent animate-pulse" />
         </div>
       </div>

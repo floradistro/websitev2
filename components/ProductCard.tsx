@@ -281,21 +281,21 @@ export default function ProductCard({ product, index, locations, pricingRules, p
         <div className="absolute top-2 left-2 flex flex-col gap-1">
           {/* New Arrival Badge - Products created within last 7 days */}
           {product.date_created && new Date(product.date_created).getTime() > Date.now() - 7 * 24 * 60 * 60 * 1000 && (
-            <div className="bg-black border border-white/30 text-white px-2 py-0.5 text-[9px] font-medium uppercase tracking-wider">
+            <div className="bg-black border border-white/30 text-white px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider">
               New
             </div>
           )}
           
           {/* Best Seller Badge - Products with >10 sales */}
           {product.total_sales && product.total_sales > 10 && (
-            <div className="bg-black border border-white/30 text-white px-2 py-0.5 text-[9px] font-medium uppercase tracking-wider">
+            <div className="bg-black border border-white/30 text-white px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider">
               Popular
             </div>
           )}
           
           {/* Low Stock Badge - When stock is available but low */}
           {product.stock_status === 'instock' && product.stock_quantity && product.stock_quantity <= 5 && product.stock_quantity > 0 && (
-            <div className="bg-red-600/90 text-white px-2 py-0.5 text-[9px] font-medium uppercase tracking-wider">
+            <div className="bg-red-600/90 text-white px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider">
               Only {product.stock_quantity} Left
             </div>
           )}
@@ -308,7 +308,7 @@ export default function ProductCard({ product, index, locations, pricingRules, p
           <div className="flex flex-col items-center gap-2 transform translate-y-3 group-hover:translate-y-0 transition-transform duration-500">
             <button
               onClick={handleQuickBuy}
-              className="flex items-center gap-2 bg-black border border-white/20 text-white px-6 py-3 text-[10px] uppercase tracking-[0.2em] hover:bg-white hover:text-black hover:border-white transition-all duration-300 font-medium"
+              className="flex items-center gap-2 bg-black border border-white/20 text-white px-6 py-3 text-xs uppercase tracking-[0.2em] hover:bg-white hover:text-black hover:border-white transition-all duration-300 font-medium"
             >
               <ShoppingBag size={12} strokeWidth={1.5} />
               <span>View Product</span>
@@ -317,7 +317,7 @@ export default function ProductCard({ product, index, locations, pricingRules, p
             <div className="flex items-center gap-2">
               <button
                 onClick={handlePickup}
-                className="flex items-center gap-1.5 bg-black border border-white/20 text-white px-4 py-2.5 hover:bg-white hover:text-black hover:border-white transition-all duration-300 text-[9px] uppercase tracking-[0.2em] font-medium"
+                className="flex items-center gap-1.5 bg-black border border-white/20 text-white px-4 py-2.5 hover:bg-white hover:text-black hover:border-white transition-all duration-300 text-[10px] uppercase tracking-[0.15em] font-medium"
               >
                 <Store size={11} strokeWidth={1.5} />
                 <span>Pickup</span>
@@ -325,7 +325,7 @@ export default function ProductCard({ product, index, locations, pricingRules, p
               
               <button
                 onClick={handleDelivery}
-                className="flex items-center gap-1.5 bg-black border border-white/20 text-white px-4 py-2.5 hover:bg-white hover:text-black hover:border-white transition-all duration-300 text-[9px] uppercase tracking-[0.2em] font-medium"
+                className="flex items-center gap-1.5 bg-black border border-white/20 text-white px-4 py-2.5 hover:bg-white hover:text-black hover:border-white transition-all duration-300 text-[10px] uppercase tracking-[0.15em] font-medium"
               >
                 <Truck size={11} strokeWidth={1.5} />
                 <span>Delivery</span>

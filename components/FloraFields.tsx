@@ -46,10 +46,10 @@ export default function FloraFields({ metaData }: FloraFieldsProps) {
     <div className="space-y-1.5 pt-2 border-t border-white/10">
       {fields.map((field, idx) => (
         <div key={field.key} className="flex items-center justify-between gap-2">
-          <span className="uppercase tracking-[0.12em] font-medium text-white/60 text-xs whitespace-nowrap">
+          <span className="uppercase tracking-[0.12em] font-medium text-white/60 text-[10px] sm:text-xs whitespace-nowrap">
             {field.label}
           </span>
-          <span className="text-sm tracking-wide text-white/90 font-normal text-right truncate">
+          <span className="text-xs sm:text-sm tracking-wide text-white/90 font-normal text-right truncate">
             {field.value}
           </span>
         </div>

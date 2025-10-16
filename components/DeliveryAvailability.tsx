@@ -225,7 +225,7 @@ export default function DeliveryAvailability({
       <div className="flex border border-white/20">
         <button
           onClick={() => setSelectedTab("delivery")}
-          className={`flex-1 py-2.5 text-xs font-medium uppercase tracking-[0.15em] transition-all duration-300 ${
+          className={`flex-1 py-3 text-xs font-medium uppercase tracking-[0.15em] transition-all duration-300 ${
             selectedTab === "delivery"
               ? "bg-black text-white border-white/40"
               : "text-white/60 hover:bg-white/5"
@@ -235,7 +235,7 @@ export default function DeliveryAvailability({
         </button>
         <button
           onClick={() => setSelectedTab("pickup")}
-          className={`flex-1 py-2.5 text-xs font-medium uppercase tracking-[0.15em] transition-all duration-300 border-l border-white/20 ${
+          className={`flex-1 py-3 text-xs font-medium uppercase tracking-[0.15em] transition-all duration-300 border-l border-white/20 ${
             selectedTab === "pickup"
               ? "bg-black text-white border-white/40"
               : "text-white/60 hover:bg-white/5"
@@ -299,7 +299,7 @@ export default function DeliveryAvailability({
               </div>
             </>
           ) : (
-            <div className="py-2 text-xs text-white/50 text-center uppercase tracking-wider">
+            <div className="py-2.5 text-xs text-white/50 text-center uppercase tracking-wider">
               Unavailable
             </div>
           )}
@@ -488,7 +488,7 @@ export default function DeliveryAvailability({
               )}
             </>
           ) : (
-            <div className="py-2 text-xs text-white/50 text-center uppercase tracking-wider">
+            <div className="py-2.5 text-xs text-white/50 text-center uppercase tracking-wider">
               Unavailable
             </div>
           )}
