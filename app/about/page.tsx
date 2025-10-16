@@ -1,3 +1,15 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "About Us | Flora Distro",
+  description: "Learn about Flora Distro - premium cannabis distribution with direct sourcing, volume pricing, and fast regional delivery across North Carolina and Tennessee.",
+  openGraph: {
+    title: "About Flora Distro",
+    description: "Built on quality. Driven by trust. Premium cannabis distribution with 5 locations across NC and TN.",
+    type: "website",
+  },
+};
+
 export default async function AboutPage() {
   return (
     <div className="bg-[#1a1a1a]">
