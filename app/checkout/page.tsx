@@ -93,6 +93,12 @@ export default function CheckoutPage() {
 
   const processPayment = async (paymentToken: string) => {
     try {
+      console.log('Submitting payment...', {
+        payment_token: paymentToken.substring(0, 50),
+        billing: billingInfo,
+        items: items.length
+      });
+
       const response = await fetch("/api/payment", {
         method: "POST",
         headers: {
@@ -109,7 +115,10 @@ export default function CheckoutPage() {
         }),
       });
 
+      console.log('Payment API response status:', response.status);
+
       const data = await response.json();
+      console.log('Payment API response data:', data);
 
       if (!response.ok || !data.success) {
         throw new Error(data.error || "Payment failed");
@@ -118,6 +127,7 @@ export default function CheckoutPage() {
       clearCart();
       router.push(`/track?orderId=${data.order_id}&type=${hasPickupItems && !hasDeliveryItems ? 'pickup' : hasDeliveryItems && !hasPickupItems ? 'delivery' : 'mixed'}`);
     } catch (error: any) {
+      console.error('Payment error:', error);
       setPaymentError(error.message || "Payment processing failed");
       setIsProcessing(false);
     }

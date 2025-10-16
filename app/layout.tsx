@@ -6,7 +6,6 @@ import Footer from "@/components/Footer";
 import ScrollToTop from "@/components/ScrollToTop";
 import { CartProvider } from "@/context/CartContext";
 import { RecentlyViewedProvider } from "@/context/RecentlyViewedContext";
-import { OrganizationSchema } from "@/components/StructuredData";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -51,7 +50,6 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen`}
         suppressHydrationWarning
       >
-        <OrganizationSchema />
         <CartProvider>
           <RecentlyViewedProvider>
             <Header />

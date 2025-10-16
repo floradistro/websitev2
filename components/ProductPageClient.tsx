@@ -50,13 +50,16 @@ export default function ProductPageClient({
   const { addToCart } = useCart();
   const { addProduct: addToRecentlyViewed } = useRecentlyViewedContext();
 
-  // Track this product view
+  // Track this product view - only once per product ID
   useEffect(() => {
+    const image = product.images?.[0]?.src;
+    const category = product.categories?.[0]?.name;
+    
     addToRecentlyViewed({
       id: product.id,
       name: product.name,
       price: product.price,
-      image: product.images?.[0]?.src,
+      image: image,
     });
 
     // Track analytics
@@ -64,9 +67,9 @@ export default function ProductPageClient({
       id: product.id,
       name: product.name,
       price: parseFloat(product.price) || 0,
-      category: product.categories?.[0]?.name,
+      category: category,
     });
-  }, [product.id, product.name, product.price, product.images, product.categories, addToRecentlyViewed]);
+  }, [product.id]); // Only track when product ID changes
 
   const handlePriceSelect = useCallback((price: number, quantity: number, tierName: string) => {
     setSelectedPrice(price);

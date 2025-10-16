@@ -1,9 +1,10 @@
 import { getBestSellingProducts, getCategories, getLocations, getAllInventory, getPricingRules } from "@/lib/wordpress";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import ProductCard from "@/components/ProductCard";
 import LuxuryHero from "@/components/LuxuryHero";
-import LocationCard from "@/components/LocationCard";
+import ProductsCarousel from "@/components/ProductsCarousel";
+import CategoriesCarousel from "@/components/CategoriesCarousel";
+import LocationsCarousel from "@/components/LocationsCarousel";
 
 export default async function Home() {
   const [products, categories, locations, allInventory, pricingRules] = await Promise.all([
@@ -87,7 +88,7 @@ export default async function Home() {
       {/* Hero Section - Animated Luxury */}
       <LuxuryHero />
 
-      {/* Featured Products - Clean Grid */}
+      {/* Featured Products - Carousel */}
       <section className="bg-[#2a2a2a] py-16">
         <div className="flex justify-between items-end mb-12 px-4">
           <div>
@@ -105,21 +106,15 @@ export default async function Home() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-px">
-          {products.map((product: any, index: number) => (
-            <ProductCard 
-              key={product.id}
-              product={product} 
-              index={index} 
-              locations={locations}
-              pricingRules={pricingRules}
-              productFields={productFieldsMap[product.id]}
-            />
-          ))}
-        </div>
+        <ProductsCarousel 
+          products={products}
+          locations={locations}
+          pricingRules={pricingRules}
+          productFieldsMap={productFieldsMap}
+        />
       </section>
 
-      {/* Categories - Edge to Edge */}
+      {/* Categories - Carousel */}
       <section className="bg-[#3a3a3a] py-16">
         <div className="flex justify-between items-end mb-12 px-4">
           <div>
@@ -130,49 +125,7 @@ export default async function Home() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-px">
-          {categories.filter((cat: any) => cat.count > 0).slice(0, 5).map((category: any, index: number) => (
-            <Link
-              key={category.id}
-              href={`/products?category=${category.slug}`}
-              className="group block bg-[#3a3a3a] hover:bg-[#404040] transition-all duration-500 cursor-pointer hover:shadow-xl"
-              style={{
-                animation: `fadeInUp 0.6s ease-out ${index * 0.05}s both`,
-              }}
-            >
-              {/* Image Container */}
-              <div className="relative aspect-[4/5] overflow-hidden bg-[#2a2a2a] transition-all duration-500">
-                {category.image?.src ? (
-                  <img 
-                    src={category.image.src} 
-                    alt={category.name}
-                    className="w-full h-full object-cover transition-all duration-700 ease-out group-hover:scale-105"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center p-12">
-                    <img
-                      src="/logoprint.png"
-                      alt="Flora Distro"
-                      className="w-full h-full object-contain opacity-10 transition-opacity duration-500 group-hover:opacity-15"
-                    />
-                  </div>
-                )}
-              </div>
-
-              {/* Category Info */}
-              <div className="space-y-3 px-3 py-4">
-                <h3 className="text-xs uppercase tracking-[0.15em] font-normal text-white line-clamp-1 leading-relaxed transition-all duration-300 group-hover:tracking-[0.2em]">
-                  {category.name}
-                </h3>
-                {category.description && (
-                  <p className="text-xs text-white/50 font-light leading-relaxed line-clamp-2">
-                    {category.description.replace(/<[^>]*>/g, '')}
-                  </p>
-                )}
-              </div>
-            </Link>
-          ))}
-        </div>
+        <CategoriesCarousel categories={categories} />
       </section>
 
       {/* Philosophy - Clean Statement */}
