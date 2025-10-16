@@ -31,14 +31,14 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
     <>
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100]"
+        className="fixed inset-0 bg-black/40 backdrop-blur-md z-[120]"
         onClick={onClose}
       />
 
       {/* Drawer */}
-      <div className="fixed right-0 top-0 h-full w-full sm:w-[500px] bg-[#2a2a2a] shadow-2xl z-[101] flex flex-col border-l border-white/10 animate-slideInRight">
+      <div className="fixed right-0 top-0 h-screen w-full sm:w-[500px] bg-[#2a2a2a]/95 backdrop-blur-xl shadow-2xl z-[121] flex flex-col border-l border-white/10 animate-slideInRight overflow-hidden">
         {/* Header - Fixed */}
-        <div className="px-6 py-5 border-b border-white/10 bg-[#2a2a2a] flex-shrink-0">
+        <div className="px-6 py-5 border-b border-white/10 bg-transparent">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-light uppercase tracking-[0.2em] text-white">
               Cart ({itemCount})
@@ -54,7 +54,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
         </div>
 
         {/* Items - Scrollable */}
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden bg-transparent">
           {items.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center px-6 text-center">
               <div className="w-20 h-20 border border-white/10 flex items-center justify-center mb-6">
@@ -73,9 +73,9 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
               </Link>
             </div>
           ) : (
-            <div className="divide-y divide-white/5">
+            <>
               {items.map((item) => (
-                <div key={`${item.productId}-${item.tierName}`} className="p-6 hover:bg-[#333333] transition-colors group">
+                <div key={`${item.productId}-${item.tierName}`} className="p-6 hover:bg-[#333333] transition-colors group border-b border-white/5">
                   <div className="flex gap-4">
                     {/* Image */}
                     <div className="w-20 h-20 bg-[#1a1a1a] flex-shrink-0">
@@ -96,8 +96,8 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
 
                     {/* Details */}
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-2 mb-2">
-                        <h3 className="text-xs text-white uppercase tracking-wider line-clamp-2 flex-1">
+                      <div className="flex items-start justify-between gap-2 mb-3">
+                        <h3 className="text-xs uppercase tracking-[0.15em] font-normal text-white line-clamp-2 flex-1 leading-relaxed">
                           {item.name}
                         </h3>
                         <button
@@ -109,10 +109,12 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                         </button>
                       </div>
                       
-                      <p className="text-[10px] text-white/40 mb-3">{item.tierName}</p>
+                      <p className="text-sm font-medium text-white mb-3">${(item.price * item.quantity).toFixed(0)}</p>
+                      
+                      <p className="text-[10px] text-white/40 mb-2 uppercase tracking-[0.12em]">{item.tierName}</p>
                       
                       {item.orderType && (
-                        <div className="flex items-center gap-1 text-[10px] text-white/50 mb-3">
+                        <div className="flex items-center gap-1 text-[10px] text-white/50">
                           {item.orderType === "pickup" ? (
                             <>
                               <Store size={10} />
@@ -126,22 +128,17 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                           )}
                         </div>
                       )}
-                      
-                      <div className="flex items-center justify-between">
-                        <span className="text-[10px] text-white/40">Qty: {item.quantity}</span>
-                        <span className="text-sm text-white font-medium">${(item.price * item.quantity).toFixed(0)}</span>
-                      </div>
                     </div>
                   </div>
                 </div>
               ))}
-            </div>
+            </>
           )}
         </div>
 
         {/* Footer - Fixed */}
         {items.length > 0 && (
-          <div className="px-6 py-6 border-t border-white/10 bg-[#1a1a1a] flex-shrink-0">
+          <div className="px-6 py-6 border-t border-white/10 bg-[#1a1a1a]/80 backdrop-blur-sm">
             <div className="space-y-4">
               <div className="flex justify-between items-center text-lg font-light text-white">
                 <span>Subtotal</span>

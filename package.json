@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack -p 3000",
+    "dev:https": "concurrently \"next dev --turbopack -p 3000\" \"local-ssl-proxy --source 3443 --target 3000\"",
     "build": "next build --turbopack",
     "start": "next start -p 3000"
   },
@@ -13,6 +14,7 @@
     "@woocommerce/woocommerce-rest-api": "^1.0.2",
     "axios": "^1.12.2",
     "dotenv": "^17.2.3",
+    "framer-motion": "^12.23.24",
     "lucide-react": "^0.545.0",
     "next": "15.5.5",
     "p5": "^2.0.5",
@@ -25,6 +27,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "local-ssl-proxy": "^2.0.5",
     "tailwindcss": "^4",
     "tsx": "^4.20.6",
     "typescript": "^5"

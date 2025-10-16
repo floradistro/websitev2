@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { X, ZoomIn, ZoomOut } from "lucide-react";
 
 interface ImageLightboxProps {
@@ -23,6 +24,12 @@ export default function ImageLightbox({
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const imageRef = useRef<HTMLDivElement>(null);
   const [isMobile, setIsMobile] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
 
   useEffect(() => {
     setCurrentIndex(initialIndex);
@@ -110,7 +117,7 @@ export default function ImageLightbox({
     };
   }, [isOpen, zoom]);
 
-  if (!isOpen) return null;
+  if (!isOpen || !mounted) return null;
 
   const handleZoomIn = () => {
     setZoom(Math.min(zoom + 0.5, 3));
@@ -175,22 +182,22 @@ export default function ImageLightbox({
 
   const currentImage = images[currentIndex];
 
-  return (
+  const lightboxContent = (
     <div
-      className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center animate-fadeIn"
+      className="fixed inset-0 z-[9999] bg-black/95 flex items-center justify-center animate-fadeIn"
       onClick={onClose}
     >
       {/* Close Button */}
       <button
         onClick={onClose}
-        className="absolute top-4 right-4 md:top-6 md:right-6 z-50 p-2 md:p-3 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md transition-all duration-200 text-white"
+        className="absolute top-4 right-4 md:top-6 md:right-6 z-[10000] p-2 md:p-3 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md transition-all duration-200 text-white"
       >
         <X size={isMobile ? 20 : 24} strokeWidth={1.5} />
       </button>
 
       {/* Zoom Controls - Desktop Only */}
       {!isMobile && (
-        <div className="absolute bottom-6 right-6 z-50 flex space-x-2">
+        <div className="absolute bottom-6 right-6 z-[10000] flex space-x-2">
           <button
             onClick={(e) => {
               e.stopPropagation();
@@ -214,7 +221,7 @@ export default function ImageLightbox({
 
       {/* Image Counter */}
       {images.length > 1 && (
-        <div className="absolute top-4 left-4 md:top-6 md:left-6 z-50 px-3 py-1.5 md:px-4 md:py-2 rounded-full bg-white/10 backdrop-blur-md text-white text-xs md:text-sm font-light">
+        <div className="absolute top-4 left-4 md:top-6 md:left-6 z-[10000] px-3 py-1.5 md:px-4 md:py-2 rounded-full bg-white/10 backdrop-blur-md text-white text-xs md:text-sm font-light">
           {currentIndex + 1} / {images.length}
         </div>
       )}
@@ -348,11 +355,13 @@ export default function ImageLightbox({
 
       {/* Mobile: Zoom Indicator */}
       {isMobile && zoom > 1 && (
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-full bg-white/10 backdrop-blur-md text-white text-xs font-light">
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-[10000] px-4 py-2 rounded-full bg-white/10 backdrop-blur-md text-white text-xs font-light">
           {Math.round(zoom * 100)}%
         </div>
       )}
     </div>
   );
+
+  return createPortal(lightboxContent, document.body);
 }
 

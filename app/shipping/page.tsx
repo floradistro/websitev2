@@ -79,7 +79,7 @@ export default function Shipping() {
           <h2 className="text-2xl uppercase tracking-[0.2em] text-white mb-8 font-normal">Shipping Policy</h2>
           <div className="space-y-6 text-sm text-white/50 font-light leading-relaxed">
             <p>Orders ship Monday-Friday, excluding major holidays. Orders placed after 2PM EST process the next business day.</p>
-            <p>Free shipping on orders over $500. Standard rates apply otherwise.</p>
+            <p>Free shipping on orders over $45. Standard rates apply otherwise.</p>
             <p>We're not responsible for lost/stolen packages confirmed delivered to your address. Choose a secure delivery location.</p>
             <p>Damaged shipments? Contact us within 7 days with photos for replacement or refund.</p>
           </div>

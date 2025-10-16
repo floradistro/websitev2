@@ -19,9 +19,38 @@ export async function getProducts(params?: any) {
   return response.data;
 }
 
+export async function getAllProducts() {
+  let allProducts: any[] = [];
+  let page = 1;
+  let hasMore = true;
+  
+  while (hasMore) {
+    const response = await api.get("products", {
+      per_page: 100,
+      page: page,
+    });
+    
+    allProducts = [...allProducts, ...response.data];
+    
+    // Check if there are more pages
+    const totalPages = parseInt(response.headers['x-wp-totalpages'] || '1');
+    hasMore = page < totalPages;
+    page++;
+  }
+  
+  return allProducts;
+}
+
 export async function getProduct(id: string | number) {
-  const response = await api.get(`products/${id}`);
-  return response.data;
+  try {
+    const response = await api.get(`products/${id}`);
+    return response.data;
+  } catch (error: any) {
+    if (error.response?.status === 404) {
+      return null; // Product not found
+    }
+    throw error; // Re-throw other errors
+  }
 }
 
 export async function updateProduct(id: string | number, data: any) {

@@ -1,5 +1,6 @@
 import { getProduct, getProducts, getLocations, getProductInventory, getPricingRules, getProductFields, getProductReviews } from "@/lib/wordpress";
 import ProductPageClient from "@/components/ProductPageClient";
+import { notFound } from "next/navigation";
 
 export default async function ProductPage({
   params,
@@ -10,8 +11,16 @@ export default async function ProductPage({
 }) {
   const { id } = await params;
   const { type: orderType } = await searchParams;
-  const [product, locations, inventory, pricingRules, productFields, reviews] = await Promise.all([
-    getProduct(id),
+  
+  // Get product first and check if it exists
+  const product = await getProduct(id);
+  
+  if (!product) {
+    notFound(); // Show 404 page
+  }
+
+  // Get rest of the data
+  const [locations, inventory, pricingRules, productFields, reviews] = await Promise.all([
     getLocations(),
     getProductInventory(id),
     getPricingRules(),

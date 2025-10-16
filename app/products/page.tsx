@@ -1,4 +1,4 @@
-import { getProducts, getCategories, getLocations, getAllInventory, getPricingRules } from "@/lib/wordpress";
+import { getAllProducts, getCategories, getLocations, getAllInventory, getPricingRules } from "@/lib/wordpress";
 import ProductsClient from "@/components/ProductsClient";
 
 export default async function ProductsPage({
@@ -10,9 +10,9 @@ export default async function ProductsPage({
   
   // Fetch all data in parallel using bulk endpoints - single API call for inventory
   const [categories, locations, allProducts, allInventory, pricingRules] = await Promise.all([
-    getCategories({ per_page: 10 }),
+    getCategories({ per_page: 100 }),
     getLocations(),
-    getProducts({ per_page: 99 }),
+    getAllProducts(),
     getAllInventory(),
     getPricingRules(),
   ]);

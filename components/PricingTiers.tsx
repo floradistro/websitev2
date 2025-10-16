@@ -71,6 +71,15 @@ export default function PricingTiers({
     return tier.name;
   };
 
+  // Set initial price on mount
+  useEffect(() => {
+    if (tiers.length > 0 && onPriceSelect) {
+      const tier = tiers[0];
+      const price = typeof tier.price === "string" ? parseFloat(tier.price) : tier.price;
+      onPriceSelect(price, tier.min_quantity, getUnitLabel(tier));
+    }
+  }, []);
+
   return (
     <div className="space-y-2">
       <div className="relative">
@@ -86,8 +95,10 @@ export default function PricingTiers({
             }
           }}
           className="w-full appearance-none bg-transparent border border-white/20 px-3 py-2.5 pr-7 text-[11px] font-normal text-white hover:border-white/40 hover:bg-white/5 focus:border-white focus:outline-none transition-all duration-300 cursor-pointer uppercase tracking-[0.1em]"
+          style={{
+            colorScheme: 'dark'
+          }}
         >
-          <option value="" disabled>Select Quantity</option>
           {tiers.map((tier, index) => {
             const price = typeof tier.price === "string" ? parseFloat(tier.price) : tier.price;
             const tierLabel = getUnitLabel(tier);
@@ -96,7 +107,7 @@ export default function PricingTiers({
               : ` - $${price.toFixed(0)}`;
             
             return (
-              <option key={index} value={index}>
+              <option key={index} value={index} className="bg-[#1a1a1a] text-white">
                 {tierLabel}{pricePerUnit}
               </option>
             );

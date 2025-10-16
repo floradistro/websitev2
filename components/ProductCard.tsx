@@ -89,7 +89,7 @@ export default function ProductCard({ product, index, locations, pricingRules, p
       productId: product.id,
       name: product.name,
       price: price,
-      quantity: tier.min_quantity,
+      quantity: 1,
       tierName: tierLabel,
       image: product.images?.[0]?.src,
     });
@@ -147,28 +147,37 @@ export default function ProductCard({ product, index, locations, pricingRules, p
   
   // Get price range from tiers
   const getPriceDisplay = () => {
-    if (tiers.length === 0) {
-      return `$${product.price ? parseFloat(product.price).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) : '0'}`;
+    // If we have tiers, use them
+    if (tiers.length > 0) {
+      if (selectedTierIndex !== null && tiers[selectedTierIndex]) {
+        const tier = tiers[selectedTierIndex];
+        const price = typeof tier.price === "string" ? parseFloat(tier.price) : tier.price;
+        return `$${price.toFixed(0)}`;
+      }
+      
+      // Show price range from tiers
+      const prices = tiers.map((t: any) => 
+        typeof t.price === "string" ? parseFloat(t.price) : t.price
+      );
+      const minPrice = Math.min(...prices);
+      const maxPrice = Math.max(...prices);
+      
+      if (minPrice === maxPrice) {
+        return `$${minPrice.toFixed(0)}`;
+      }
+      
+      return `$${minPrice.toFixed(0)} - $${maxPrice.toFixed(0)}`;
     }
     
-    if (selectedTierIndex !== null && tiers[selectedTierIndex]) {
-      const tier = tiers[selectedTierIndex];
-      const price = typeof tier.price === "string" ? parseFloat(tier.price) : tier.price;
-      return `$${price.toFixed(0)}`;
+    // Fallback to product.price from WooCommerce
+    const basePrice = product.price ? parseFloat(product.price) : 0;
+    
+    // If product has no price set, return empty/contact message
+    if (basePrice === 0 || !product.price) {
+      return 'Contact for Pricing';
     }
     
-    // Show price range
-    const prices = tiers.map((t: any) => 
-      typeof t.price === "string" ? parseFloat(t.price) : t.price
-    );
-    const minPrice = Math.min(...prices);
-    const maxPrice = Math.max(...prices);
-    
-    if (minPrice === maxPrice) {
-      return `$${minPrice.toFixed(0)}`;
-    }
-    
-    return `$${minPrice.toFixed(0)} - $${maxPrice.toFixed(0)}`;
+    return `$${basePrice.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
   };
 
   const handleQuickBuy = (e: React.MouseEvent) => {
@@ -209,7 +218,7 @@ export default function ProductCard({ product, index, locations, pricingRules, p
       }}
     >
       {/* Product Image Container */}
-      <div className="relative aspect-[4/5] overflow-hidden bg-[#2a2a2a] transition-all duration-500">
+      <div className="relative aspect-square md:aspect-[4/5] overflow-hidden bg-[#2a2a2a] transition-all duration-500">
         {product.images?.[0] ? (
           <>
             {/* Main Image */}

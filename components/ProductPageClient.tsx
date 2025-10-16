@@ -12,6 +12,7 @@ import CategorySection from "@/components/CategorySection";
 import LabResults from "@/components/LabResults";
 import ProductReviews from "@/components/ProductReviews";
 import ProductCard from "@/components/ProductCard";
+import ShippingEstimator from "@/components/ShippingEstimator";
 import { useCart } from "@/context/CartContext";
 
 interface ProductPageClientProps {
@@ -40,6 +41,7 @@ export default function ProductPageClient({
   const [selectedTierName, setSelectedTierName] = useState<string | null>(null);
   const [orderDetails, setOrderDetails] = useState<any>(null);
   const [addedToCart, setAddedToCart] = useState(false);
+  const [selectedLocationId, setSelectedLocationId] = useState<number | null>(null);
   
   const { addToCart } = useCart();
 
@@ -53,6 +55,10 @@ export default function ProductPageClient({
     setOrderDetails((prev: any) => {
       // Only update if actually changed to prevent infinite loops
       if (JSON.stringify(prev) !== JSON.stringify(details)) {
+        // Update selected location for shipping calculation
+        if (details.locationId) {
+          setSelectedLocationId(parseInt(details.locationId));
+        }
         return details;
       }
       return prev;
@@ -122,6 +128,13 @@ export default function ProductPageClient({
               stockStatus={product.stock_status}
               initialOrderType={orderType as "pickup" | "delivery" | undefined}
               onDetailsChange={handleOrderDetailsChange}
+            />
+
+            <ShippingEstimator
+              productId={product.id}
+              quantity={selectedQuantity}
+              productPrice={selectedPrice || parseFloat(product.price) || 0}
+              locationId={selectedLocationId || undefined}
             />
 
             <div className="space-y-3">
@@ -211,6 +224,16 @@ export default function ProductPageClient({
                   stockStatus={product.stock_status}
                   initialOrderType={orderType as "pickup" | "delivery" | undefined}
                   onDetailsChange={handleOrderDetailsChange}
+                />
+              </div>
+
+              {/* Shipping Estimator Block */}
+              <div className="mb-6 animate-fadeIn" style={{animationDelay: '200ms'}}>
+                <ShippingEstimator
+                  productId={product.id}
+                  quantity={selectedQuantity}
+                  productPrice={selectedPrice || parseFloat(product.price) || 0}
+                  locationId={selectedLocationId || undefined}
                 />
               </div>
 

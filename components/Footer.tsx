@@ -1,7 +1,50 @@
+"use client";
+
 import Link from "next/link";
 import { Facebook, Instagram, Twitter, Youtube } from "lucide-react";
+import { useState } from "react";
 
 export default function Footer() {
+  const [email, setEmail] = useState("");
+  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [message, setMessage] = useState("");
+
+  const handleNewsletterSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!email || !email.includes("@")) {
+      setStatus("error");
+      setMessage("Please enter a valid email address");
+      return;
+    }
+
+    setStatus("loading");
+
+    try {
+      const response = await fetch("/api/newsletter", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+
+      if (response.ok) {
+        setStatus("success");
+        setMessage("Successfully subscribed!");
+        setEmail("");
+        setTimeout(() => {
+          setStatus("idle");
+          setMessage("");
+        }, 5000);
+      } else {
+        setStatus("error");
+        setMessage("Failed to subscribe. Please try again.");
+      }
+    } catch (error) {
+      setStatus("error");
+      setMessage("Failed to subscribe. Please try again.");
+    }
+  };
+
   return (
     <footer className="border-t border-white/10 bg-[#1a1a1a] text-white mt-auto">
       <div className="container mx-auto px-6 py-12">
@@ -88,19 +131,28 @@ export default function Footer() {
             <p className="text-xs text-white/60 mb-3">
               Subscribe to receive updates, access to exclusive deals, and more.
             </p>
-            <form className="space-y-2">
+            <form onSubmit={handleNewsletterSubmit} className="space-y-2">
               <input
                 type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter your email"
-                className="w-full px-4 py-2 border border-white/20 bg-white/5 focus:border-white/40 focus:outline-none text-sm text-white placeholder:text-white/40"
+                disabled={status === "loading"}
+                className="w-full px-4 py-2 border border-white/20 bg-white/5 focus:border-white/40 focus:outline-none text-sm text-white placeholder:text-white/40 disabled:opacity-50"
               />
               <button
                 type="submit"
-                className="w-full bg-black border border-white/20 text-white py-2 text-xs uppercase tracking-wider hover:bg-white hover:text-black hover:border-white transition-all duration-300"
+                disabled={status === "loading"}
+                className="w-full bg-black border border-white/20 text-white py-2 text-xs uppercase tracking-wider hover:bg-white hover:text-black hover:border-white transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Subscribe
+                {status === "loading" ? "Subscribing..." : "Subscribe"}
               </button>
             </form>
+            {message && (
+              <p className={`text-xs mt-2 ${status === "success" ? "text-green-400" : "text-red-400"}`}>
+                {message}
+              </p>
+            )}
           </div>
         </div>
 
@@ -123,16 +175,36 @@ export default function Footer() {
               © {new Date().getFullYear()} Flora Distro. All rights reserved.
             </p>
             <div className="flex items-center space-x-5">
-              <a href="#" className="text-white/60 hover:text-white transition-colors">
+              <a 
+                href="https://www.facebook.com/floradistro" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-white/60 hover:text-white transition-colors"
+              >
                 <Facebook size={16} />
               </a>
-              <a href="#" className="text-white/60 hover:text-white transition-colors">
+              <a 
+                href="https://www.instagram.com/floradistro" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-white/60 hover:text-white transition-colors"
+              >
                 <Instagram size={16} />
               </a>
-              <a href="#" className="text-white/60 hover:text-white transition-colors">
+              <a 
+                href="https://twitter.com/floradistro" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-white/60 hover:text-white transition-colors"
+              >
                 <Twitter size={16} />
               </a>
-              <a href="#" className="text-white/60 hover:text-white transition-colors">
+              <a 
+                href="https://www.youtube.com/@floradistro" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-white/60 hover:text-white transition-colors"
+              >
                 <Youtube size={16} />
               </a>
             </div>

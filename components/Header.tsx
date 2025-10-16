@@ -2,14 +2,16 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Search, ShoppingBag, User, Heart, Menu, X } from "lucide-react";
+import { Search, ShoppingBag, User, Menu, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useCart } from "@/context/CartContext";
 import CartDrawer from "./CartDrawer";
+import SearchModal from "./SearchModal";
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const { itemCount } = useCart();
@@ -38,17 +40,17 @@ export default function Header() {
 
   return (
     <header 
-      className={`sticky top-0 bg-[#1a1a1a] text-white z-50 border-b border-white/10 transition-transform duration-300 ${
+      className={`sticky top-0 bg-[#1a1a1a] text-white z-[110] border-b border-white/10 transition-transform duration-300 relative ${
         isVisible ? 'translate-y-0' : '-translate-y-full'
       }`}
     >
       {/* Top announcement bar */}
-      <div className="bg-black text-white text-center py-1.5 px-4 text-[10px] uppercase tracking-wider">
-        Free shipping on orders over $500
+      <div className="bg-black text-white text-center py-1.5 px-4 text-[10px] uppercase tracking-wider relative z-[111]">
+        Free shipping on orders over $45
       </div>
 
       {/* Main header */}
-      <div className="container mx-auto px-6">
+      <div className="container mx-auto px-6 relative z-[111]">
         <div className="flex items-center justify-between h-16">
           {/* Mobile menu button */}
           <button
@@ -94,15 +96,15 @@ export default function Header() {
 
           {/* Right icons */}
           <div className="flex items-center space-x-5">
-            <button className="text-white/80 hover:text-white transition-colors">
+            <button 
+              onClick={() => setSearchOpen(true)}
+              className="text-white/80 hover:text-white transition-colors"
+            >
               <Search size={18} />
             </button>
             <Link href="/register" className="text-white/80 hover:text-white transition-colors hidden sm:block">
               <User size={18} />
             </Link>
-            <button className="text-white/80 hover:text-white transition-colors hidden sm:block">
-              <Heart size={18} />
-            </button>
             <button 
               onClick={() => setCartOpen(true)}
               className="text-white/80 hover:text-white transition-colors relative"
@@ -120,7 +122,7 @@ export default function Header() {
 
       {/* Mobile menu */}
       {mobileMenuOpen && (
-        <div className="lg:hidden border-t border-white/10 bg-[#1a1a1a]">
+        <div className="lg:hidden border-t border-white/10 bg-[#1a1a1a] relative z-[111]">
           <nav className="container mx-auto px-6 py-4 flex flex-col space-y-3 text-xs uppercase tracking-wider">
             <Link
               href="/products"
@@ -149,6 +151,9 @@ export default function Header() {
 
       {/* Cart Drawer */}
       <CartDrawer isOpen={cartOpen} onClose={() => setCartOpen(false)} />
+      
+      {/* Search Modal */}
+      <SearchModal isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
     </header>
   );
 }

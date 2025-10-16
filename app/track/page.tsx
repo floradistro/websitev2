@@ -1,14 +1,16 @@
 "use client";
 
 import { useEffect, useState, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { Package, Store, Truck, CheckCircle, Clock, MapPin } from "lucide-react";
 import Link from "next/link";
 
 function TrackContent() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const orderId = searchParams.get("orderId");
   const [orderData, setOrderData] = useState<any>(null);
+  const [orderInput, setOrderInput] = useState("");
 
   useEffect(() => {
     if (orderId) {
@@ -18,6 +20,13 @@ function TrackContent() {
       }
     }
   }, [orderId]);
+
+  const handleTrackOrder = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (orderInput.trim()) {
+      router.push(`/track?orderId=${orderInput.trim()}`);
+    }
+  };
 
   if (!orderId || !orderData) {
     return (
@@ -29,6 +38,27 @@ function TrackContent() {
             <p className="text-base text-white/50 mb-12">
               Enter your order number to check status
             </p>
+            
+            {/* Order Tracking Form */}
+            <form onSubmit={handleTrackOrder} className="max-w-md mx-auto mb-8">
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={orderInput}
+                  onChange={(e) => setOrderInput(e.target.value)}
+                  placeholder="Order number"
+                  className="flex-1 px-6 py-4 bg-[#2a2a2a] border border-white/20 text-white placeholder:text-white/40 focus:outline-none focus:border-white/40 text-sm"
+                  required
+                />
+                <button
+                  type="submit"
+                  className="px-8 py-4 bg-black border border-white/20 text-white text-xs uppercase tracking-wider hover:bg-white hover:text-black transition-all font-medium"
+                >
+                  Track
+                </button>
+              </div>
+            </form>
+
             <Link
               href="/products"
               className="inline-flex items-center gap-2 bg-black border border-white/20 text-white px-10 py-4 text-xs uppercase tracking-[0.25em] hover:bg-black/70 transition-all"
