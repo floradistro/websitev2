@@ -14,6 +14,7 @@ import LabResults from "@/components/LabResults";
 import ProductReviews from "@/components/ProductReviews";
 import ProductCard from "@/components/ProductCard";
 import ShippingEstimator from "@/components/ShippingEstimator";
+import RecentlyViewed from "@/components/RecentlyViewed";
 import { useCart } from "@/context/CartContext";
 
 interface ProductPageClientProps {
@@ -45,6 +46,17 @@ export default function ProductPageClient({
   const [selectedLocationId, setSelectedLocationId] = useState<number | null>(null);
   
   const { addToCart } = useCart();
+  const { addProduct: addToRecentlyViewed } = useRecentlyViewedContext();
+
+  // Track this product view
+  useEffect(() => {
+    addToRecentlyViewed({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      image: product.images?.[0]?.src,
+    });
+  }, [product.id, product.name, product.price, product.images, addToRecentlyViewed]);
 
   const handlePriceSelect = useCallback((price: number, quantity: number, tierName: string) => {
     setSelectedPrice(price);
@@ -336,6 +348,9 @@ export default function ProductPageClient({
           </div>
         </div>
       </div>
+
+      {/* Recently Viewed Products */}
+      <RecentlyViewed />
 
       {/* Related Products */}
       {relatedProducts.length > 0 && (
