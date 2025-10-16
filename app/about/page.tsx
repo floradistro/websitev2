@@ -1,104 +1,86 @@
-import { getPage } from "@/lib/wordpress";
-
 export default async function AboutPage() {
-  const page = await getPage("about");
-
   return (
-    <div>
-      {/* Hero Section */}
-      <section className="relative h-[60vh] min-h-[500px] bg-[#9a9a97] flex items-center justify-center">
-        <div className="relative z-10 text-center px-6">
-          <h1 className="text-5xl md:text-7xl font-light tracking-wider uppercase mb-6 text-white">
-            {page?.title?.rendered || "About Flora Distro"}
+    <div className="bg-[#1a1a1a]">
+      {/* Hero */}
+      <section className="relative min-h-[70vh] flex items-center justify-center bg-[#1a1a1a] text-white px-4 overflow-hidden">
+        <div className="absolute inset-0 opacity-20">
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-white/5 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-white/5 rounded-full blur-3xl"></div>
+        </div>
+
+        <div className="max-w-4xl mx-auto text-center relative z-10">
+          <div className="h-[1px] w-16 bg-gradient-to-r from-transparent via-white/30 to-transparent mx-auto mb-8"></div>
+          <h1 className="text-5xl md:text-7xl font-light text-white mb-6 leading-tight tracking-tight">
+            About Flora Distro
           </h1>
-          <p className="text-xl md:text-2xl font-light max-w-3xl mx-auto text-gray-200">
-            Cultivating excellence in floral distribution since our inception
+          <div className="h-[1px] w-24 bg-gradient-to-r from-transparent via-white/20 to-transparent mx-auto mb-12"></div>
+          <p className="text-lg md:text-xl font-light text-white/50 leading-relaxed max-w-2xl mx-auto">
+            Premium cannabis distribution. Direct from our facilities.
           </p>
         </div>
       </section>
 
-      {/* Content Section */}
-      <section className="container mx-auto px-6 py-24 bg-[#2a2a2a]">
-        {page?.content?.rendered ? (
-          <div
-            className="prose prose-lg max-w-4xl mx-auto text-white/80 leading-relaxed"
-            dangerouslySetInnerHTML={{ __html: page.content.rendered }}
-          />
-        ) : (
-          <div className="max-w-4xl mx-auto space-y-12">
-            <div className="text-center">
-              <h2 className="text-3xl font-light uppercase tracking-wider mb-6 text-white">
-                Our Story
-              </h2>
-              <p className="text-lg text-white/80 leading-relaxed">
-                Flora Distro represents the pinnacle of floral distribution excellence.
-                Our commitment to quality, sustainability, and innovation has established
-                us as the premier choice for discerning clients worldwide.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-12 pt-12">
-              <div className="text-center">
-                <h3 className="text-xl uppercase tracking-wider mb-4 font-light text-white">
-                  Quality
-                </h3>
-                <p className="text-white/60">
-                  Every product meets our rigorous standards for excellence and beauty.
-                </p>
-              </div>
-              <div className="text-center">
-                <h3 className="text-xl uppercase tracking-wider mb-4 font-light text-white">
-                  Sustainability
-                </h3>
-                <p className="text-white/60">
-                  Committed to environmental responsibility in every aspect of our business.
-                </p>
-              </div>
-              <div className="text-center">
-                <h3 className="text-xl uppercase tracking-wider mb-4 font-light text-white">
-                  Innovation
-                </h3>
-                <p className="text-white/60">
-                  Pioneering new approaches to floral distribution and presentation.
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
+      {/* Story */}
+      <section className="bg-[#2a2a2a] py-32 px-4">
+        <div className="max-w-4xl mx-auto text-center">
+          <h2 className="text-3xl md:text-5xl font-light text-white mb-12 leading-tight">
+            Built on quality.<br/>Driven by trust.
+          </h2>
+          <p className="text-base md:text-lg font-light text-white/50 leading-relaxed">
+            Flora Distro connects premium cannabis from trusted cultivators to stores and consumers across the region. We cut out the middleman, pass savings to you, and deliver fresh product on your schedule.
+          </p>
+        </div>
       </section>
 
-      {/* Values Section */}
-      <section className="bg-black text-white py-24">
-        <div className="container mx-auto px-6 text-center">
-          <h2 className="text-4xl font-light tracking-wider uppercase mb-16">
+      {/* Values Grid */}
+      <section className="bg-[#3a3a3a] py-16">
+        <div className="px-4 mb-12">
+          <h2 className="text-2xl md:text-3xl font-light uppercase tracking-wider text-white mb-3">
             Our Values
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-6xl mx-auto">
-            <div className="p-8 border border-white/20">
-              <h3 className="text-lg uppercase tracking-wider mb-4">Excellence</h3>
-              <p className="text-sm text-[#aaa]">
-                Uncompromising standards in every detail
-              </p>
-            </div>
-            <div className="p-8 border border-white/20">
-              <h3 className="text-lg uppercase tracking-wider mb-4">Integrity</h3>
-              <p className="text-sm text-[#aaa]">
-                Transparency and honesty in all relationships
-              </p>
-            </div>
-            <div className="p-8 border border-white/20">
-              <h3 className="text-lg uppercase tracking-wider mb-4">Passion</h3>
-              <p className="text-sm text-[#aaa]">
-                Dedicated to the art and science of florals
-              </p>
-            </div>
-            <div className="p-8 border border-white/20">
-              <h3 className="text-lg uppercase tracking-wider mb-4">Service</h3>
-              <p className="text-sm text-[#aaa]">
-                Exceeding expectations with every interaction
-              </p>
-            </div>
+          <div className="h-[1px] w-16 bg-white/20"></div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-px">
+          <div className="bg-[#3a3a3a] hover:bg-[#404040] transition-all duration-500 p-8 border border-white/5 hover:border-white/10">
+            <h3 className="text-sm uppercase tracking-[0.2em] text-white mb-4 font-normal">Quality</h3>
+            <p className="text-xs text-white/50 font-light leading-relaxed">
+              Top shelf product. No exceptions.
+            </p>
           </div>
+          
+          <div className="bg-[#3a3a3a] hover:bg-[#404040] transition-all duration-500 p-8 border border-white/5 hover:border-white/10">
+            <h3 className="text-sm uppercase tracking-[0.2em] text-white mb-4 font-normal">Transparency</h3>
+            <p className="text-xs text-white/50 font-light leading-relaxed">
+              Real pricing. Real product. Always.
+            </p>
+          </div>
+          
+          <div className="bg-[#3a3a3a] hover:bg-[#404040] transition-all duration-500 p-8 border border-white/5 hover:border-white/10">
+            <h3 className="text-sm uppercase tracking-[0.2em] text-white mb-4 font-normal">Speed</h3>
+            <p className="text-xs text-white/50 font-light leading-relaxed">
+              Daily shipping. Next-day regional.
+            </p>
+          </div>
+          
+          <div className="bg-[#3a3a3a] hover:bg-[#404040] transition-all duration-500 p-8 border border-white/5 hover:border-white/10">
+            <h3 className="text-sm uppercase tracking-[0.2em] text-white mb-4 font-normal">Service</h3>
+            <p className="text-xs text-white/50 font-light leading-relaxed">
+              Here when you need us. Period.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Mission */}
+      <section className="bg-[#1a1a1a] py-32 px-4">
+        <div className="max-w-3xl mx-auto text-center">
+          <h2 className="text-3xl md:text-5xl font-light text-white mb-12 leading-tight">
+            No middleman. No games.
+          </h2>
+          <p className="text-base md:text-lg font-light text-white/50 leading-relaxed">
+            We source directly from our partner farms and facilities, package fresh, and ship fast. That's it. Clean business.
+          </p>
         </div>
       </section>
     </div>
