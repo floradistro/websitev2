@@ -354,6 +354,7 @@ export default function CheckoutPage() {
                     <input
                       type="text"
                       required
+                      autoComplete="given-name"
                       value={billingInfo.firstName}
                       onChange={(e) => setBillingInfo({ ...billingInfo, firstName: e.target.value })}
                       className="w-full px-4 py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-all"
@@ -366,6 +367,7 @@ export default function CheckoutPage() {
                     <input
                       type="text"
                       required
+                      autoComplete="family-name"
                       value={billingInfo.lastName}
                       onChange={(e) => setBillingInfo({ ...billingInfo, lastName: e.target.value })}
                       className="w-full px-4 py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-all"
@@ -379,6 +381,7 @@ export default function CheckoutPage() {
                   <input
                     type="email"
                     required
+                    autoComplete="email"
                     value={billingInfo.email}
                     onChange={(e) => setBillingInfo({ ...billingInfo, email: e.target.value })}
                     className="w-full px-4 py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-all"
@@ -391,6 +394,7 @@ export default function CheckoutPage() {
                   <input
                     type="tel"
                     required
+                    autoComplete="tel"
                     value={billingInfo.phone}
                     onChange={(e) => setBillingInfo({ ...billingInfo, phone: e.target.value })}
                     className="w-full px-4 py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-all"
@@ -410,6 +414,7 @@ export default function CheckoutPage() {
                   <input
                     type="text"
                     required
+                    autoComplete="street-address"
                     value={billingInfo.address}
                     onChange={(e) => setBillingInfo({ ...billingInfo, address: e.target.value })}
                     className="w-full px-4 py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-all"
@@ -421,6 +426,7 @@ export default function CheckoutPage() {
                   </label>
                   <input
                     type="text"
+                    autoComplete="address-line2"
                     value={billingInfo.address2}
                     onChange={(e) => setBillingInfo({ ...billingInfo, address2: e.target.value })}
                     className="w-full px-4 py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-all"
@@ -434,6 +440,7 @@ export default function CheckoutPage() {
                     <input
                       type="text"
                       required
+                      autoComplete="address-level2"
                       value={billingInfo.city}
                       onChange={(e) => setBillingInfo({ ...billingInfo, city: e.target.value })}
                       className="w-full px-4 py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-all"
@@ -447,6 +454,7 @@ export default function CheckoutPage() {
                       type="text"
                       required
                       maxLength={2}
+                      autoComplete="address-level1"
                       value={billingInfo.state}
                       onChange={(e) => setBillingInfo({ ...billingInfo, state: e.target.value.toUpperCase() })}
                       className="w-full px-4 py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-all uppercase"
@@ -604,6 +612,7 @@ export default function CheckoutPage() {
                   <input
                     type="text"
                     required
+                    autoComplete="cc-number"
                     placeholder="1234 5678 9012 3456"
                     value={paymentInfo.cardNumber}
                     onChange={(e) => {
@@ -623,6 +632,7 @@ export default function CheckoutPage() {
                     <input
                       type="text"
                       required
+                      autoComplete="cc-exp"
                       placeholder="12/25"
                       value={paymentInfo.expiry}
                       onChange={(e) => {
@@ -643,6 +653,7 @@ export default function CheckoutPage() {
                     <input
                       type="text"
                       required
+                      autoComplete="cc-csc"
                       placeholder="123"
                       value={paymentInfo.cvv}
                       onChange={(e) => setPaymentInfo({ ...paymentInfo, cvv: e.target.value.replace(/\D/g, "") })}
