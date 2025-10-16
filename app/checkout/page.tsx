@@ -336,11 +336,11 @@ export default function CheckoutPage() {
 
             {/* Contact Info */}
             <div>
-              <h2 className="text-xs sm:text-sm uppercase tracking-[0.2em] text-white mb-4 sm:mb-6 font-normal">Contact Information</h2>
+              <h2 className="text-sm uppercase tracking-[0.2em] text-white mb-4 sm:mb-6 font-normal">Contact Information</h2>
               <div className="space-y-3 sm:space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   <div>
-                    <label className="block text-[9px] sm:text-[10px] uppercase tracking-[0.2em] mb-2 text-white/60">
+                    <label className="block text-[10px] uppercase tracking-[0.2em] mb-2 text-white/60">
                       First Name
                     </label>
                     <input
@@ -349,11 +349,11 @@ export default function CheckoutPage() {
                       autoComplete="given-name"
                       value={billingInfo.firstName}
                       onChange={(e) => setBillingInfo({ ...billingInfo, firstName: e.target.value })}
-                      className="w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-all rounded-sm"
+                      className="w-full px-3 sm:px-4 py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-all rounded-sm"
                     />
                   </div>
                   <div>
-                    <label className="block text-[9px] sm:text-[10px] uppercase tracking-[0.2em] mb-2 text-white/60">
+                    <label className="block text-[10px] uppercase tracking-[0.2em] mb-2 text-white/60">
                       Last Name
                     </label>
                     <input
@@ -362,12 +362,12 @@ export default function CheckoutPage() {
                       autoComplete="family-name"
                       value={billingInfo.lastName}
                       onChange={(e) => setBillingInfo({ ...billingInfo, lastName: e.target.value })}
-                      className="w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-all rounded-sm"
+                      className="w-full px-3 sm:px-4 py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-all rounded-sm"
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-[9px] sm:text-[10px] uppercase tracking-[0.2em] mb-2 text-white/60">
+                  <label className="block text-[10px] uppercase tracking-[0.2em] mb-2 text-white/60">
                     Email
                   </label>
                   <input
@@ -376,11 +376,11 @@ export default function CheckoutPage() {
                     autoComplete="email"
                     value={billingInfo.email}
                     onChange={(e) => setBillingInfo({ ...billingInfo, email: e.target.value })}
-                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-all rounded-sm"
+                    className="w-full px-3 sm:px-4 py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-all rounded-sm"
                   />
                 </div>
                 <div>
-                  <label className="block text-[9px] sm:text-[10px] uppercase tracking-[0.2em] mb-2 text-white/60">
+                  <label className="block text-[10px] uppercase tracking-[0.2em] mb-2 text-white/60">
                     Phone
                   </label>
                   <input
@@ -389,7 +389,7 @@ export default function CheckoutPage() {
                     autoComplete="tel"
                     value={billingInfo.phone}
                     onChange={(e) => setBillingInfo({ ...billingInfo, phone: e.target.value })}
-                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-all rounded-sm"
+                    className="w-full px-3 sm:px-4 py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-all rounded-sm"
                   />
                 </div>
               </div>
@@ -397,10 +397,10 @@ export default function CheckoutPage() {
 
             {/* Billing Address */}
             <div>
-              <h2 className="text-xs sm:text-sm uppercase tracking-[0.2em] text-white mb-4 sm:mb-6 font-normal">Billing Address</h2>
+              <h2 className="text-sm uppercase tracking-[0.2em] text-white mb-4 sm:mb-6 font-normal">Billing Address</h2>
               <div className="space-y-3 sm:space-y-4">
                 <div>
-                  <label className="block text-[9px] sm:text-[10px] uppercase tracking-[0.2em] mb-2 text-white/60">
+                  <label className="block text-[10px] uppercase tracking-[0.2em] mb-2 text-white/60">
                     Address
                   </label>
                   <input
@@ -409,11 +409,11 @@ export default function CheckoutPage() {
                     autoComplete="street-address"
                     value={billingInfo.address}
                     onChange={(e) => setBillingInfo({ ...billingInfo, address: e.target.value })}
-                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-all rounded-sm"
+                    className="w-full px-3 sm:px-4 py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-all rounded-sm"
                   />
                 </div>
                 <div>
-                  <label className="block text-[9px] sm:text-[10px] uppercase tracking-[0.2em] mb-2 text-white/60">
+                  <label className="block text-[10px] uppercase tracking-[0.2em] mb-2 text-white/60">
                     Apartment, Suite, etc. (Optional)
                   </label>
                   <input
@@ -421,12 +421,12 @@ export default function CheckoutPage() {
                     autoComplete="address-line2"
                     value={billingInfo.address2}
                     onChange={(e) => setBillingInfo({ ...billingInfo, address2: e.target.value })}
-                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-all rounded-sm"
+                    className="w-full px-3 sm:px-4 py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-all rounded-sm"
                   />
                 </div>
                 <div className="grid grid-cols-3 gap-2 sm:gap-4">
                   <div className="col-span-3 sm:col-span-1">
-                    <label className="block text-[9px] sm:text-[10px] uppercase tracking-[0.2em] mb-2 text-white/60">
+                    <label className="block text-[10px] uppercase tracking-[0.2em] mb-2 text-white/60">
                       City
                     </label>
                     <input
@@ -435,11 +435,11 @@ export default function CheckoutPage() {
                       autoComplete="address-level2"
                       value={billingInfo.city}
                       onChange={(e) => setBillingInfo({ ...billingInfo, city: e.target.value })}
-                      className="w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-all rounded-sm"
+                      className="w-full px-3 sm:px-4 py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-all rounded-sm"
                     />
                   </div>
                   <div>
-                    <label className="block text-[9px] sm:text-[10px] uppercase tracking-[0.2em] mb-2 text-white/60">
+                    <label className="block text-[10px] uppercase tracking-[0.2em] mb-2 text-white/60">
                       State
                     </label>
                     <input
@@ -449,12 +449,12 @@ export default function CheckoutPage() {
                       autoComplete="address-level1"
                       value={billingInfo.state}
                       onChange={(e) => setBillingInfo({ ...billingInfo, state: e.target.value.toUpperCase() })}
-                      className="w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-all uppercase rounded-sm"
+                      className="w-full px-3 sm:px-4 py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-all uppercase rounded-sm"
                       placeholder="NC"
                     />
                   </div>
                   <div>
-                    <label className="block text-[9px] sm:text-[10px] uppercase tracking-[0.2em] mb-2 text-white/60">
+                    <label className="block text-[10px] uppercase tracking-[0.2em] mb-2 text-white/60">
                       ZIP
                     </label>
                     <input
@@ -464,7 +464,7 @@ export default function CheckoutPage() {
                       autoComplete="postal-code"
                       value={billingInfo.zipCode}
                       onChange={(e) => setBillingInfo({ ...billingInfo, zipCode: e.target.value })}
-                      className="w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-all rounded-sm"
+                      className="w-full px-3 sm:px-4 py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-all rounded-sm"
                       placeholder="28801"
                     />
                   </div>
@@ -588,7 +588,7 @@ export default function CheckoutPage() {
 
             {/* Payment Info */}
             <div>
-              <h2 className="text-xs sm:text-sm uppercase tracking-[0.2em] text-white mb-4 sm:mb-6 font-normal flex items-center gap-2">
+              <h2 className="text-sm uppercase tracking-[0.2em] text-white mb-4 sm:mb-6 font-normal flex items-center gap-2">
                 <Lock size={14} className="text-white/60" />
                 Payment Information
               </h2>
@@ -613,7 +613,7 @@ export default function CheckoutPage() {
 
               <div className="space-y-3 sm:space-y-4">
                 <div>
-                  <label className="block text-[9px] sm:text-[10px] uppercase tracking-[0.2em] mb-2 text-white/60">
+                  <label className="block text-[10px] uppercase tracking-[0.2em] mb-2 text-white/60">
                     Card Number
                   </label>
                   <input
@@ -628,12 +628,12 @@ export default function CheckoutPage() {
                       setPaymentInfo({ ...paymentInfo, cardNumber: formatted });
                     }}
                     maxLength={19}
-                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-all rounded-sm"
+                    className="w-full px-3 sm:px-4 py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-all rounded-sm"
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-3 sm:gap-4">
                   <div>
-                    <label className="block text-[9px] sm:text-[10px] uppercase tracking-[0.2em] mb-2 text-white/60">
+                    <label className="block text-[10px] uppercase tracking-[0.2em] mb-2 text-white/60">
                       Expiry (MM/YY)
                     </label>
                     <input
@@ -650,11 +650,11 @@ export default function CheckoutPage() {
                         setPaymentInfo({ ...paymentInfo, expiry: value });
                       }}
                       maxLength={5}
-                      className="w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-all rounded-sm"
+                      className="w-full px-3 sm:px-4 py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-all rounded-sm"
                     />
                   </div>
                   <div>
-                    <label className="block text-[9px] sm:text-[10px] uppercase tracking-[0.2em] mb-2 text-white/60">
+                    <label className="block text-[10px] uppercase tracking-[0.2em] mb-2 text-white/60">
                       CVV
                     </label>
                     <input
@@ -665,7 +665,7 @@ export default function CheckoutPage() {
                       value={paymentInfo.cvv}
                       onChange={(e) => setPaymentInfo({ ...paymentInfo, cvv: e.target.value.replace(/\D/g, "") })}
                       maxLength={4}
-                      className="w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-all rounded-sm"
+                      className="w-full px-3 sm:px-4 py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-all rounded-sm"
                     />
                   </div>
                 </div>
@@ -675,7 +675,7 @@ export default function CheckoutPage() {
 
           {/* Right - Order Summary */}
           <div className="bg-[#3a3a3a] px-4 sm:px-6 md:px-8 lg:px-12 py-8 sm:py-10 md:py-12">
-            <h2 className="text-xs sm:text-sm uppercase tracking-[0.2em] text-white mb-4 sm:mb-6 font-normal">Order Summary</h2>
+            <h2 className="text-sm uppercase tracking-[0.2em] text-white mb-4 sm:mb-6 font-normal">Order Summary</h2>
             
             {/* Cart Items */}
             <div className="space-y-3 sm:space-y-4 mb-6 sm:mb-8 max-h-[400px] overflow-y-auto scrollbar-hide">
@@ -689,22 +689,22 @@ export default function CheckoutPage() {
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-xs sm:text-sm text-white mb-1 line-clamp-1 font-normal">{item.name}</h3>
-                    <p className="text-[9px] sm:text-[10px] text-white/40 mb-1.5 sm:mb-2">{item.tierName}</p>
+                    <h3 className="text-sm text-white mb-1 line-clamp-1 font-normal">{item.name}</h3>
+                    <p className="text-[10px] text-white/40 mb-1.5 sm:mb-2">{item.tierName}</p>
                     {item.orderType === "pickup" ? (
-                      <div className="flex items-center gap-1 text-[9px] sm:text-[10px] text-white/50 mb-1.5 sm:mb-2">
+                      <div className="flex items-center gap-1 text-[10px] text-white/50 mb-1.5 sm:mb-2">
                         <Store size={10} />
                         <span>{item.locationName}</span>
                       </div>
                     ) : (
-                      <div className="flex items-center gap-1 text-[9px] sm:text-[10px] text-white/50 mb-1.5 sm:mb-2">
+                      <div className="flex items-center gap-1 text-[10px] text-white/50 mb-1.5 sm:mb-2">
                         <Truck size={10} />
                         <span>Delivery</span>
                       </div>
                     )}
                     <div className="flex items-center justify-between">
-                      <span className="text-[9px] sm:text-[10px] text-white/40">Qty: {item.quantity}</span>
-                      <span className="text-xs sm:text-sm text-white font-normal">${(item.price * item.quantity).toFixed(0)}</span>
+                      <span className="text-[10px] text-white/40">Qty: {item.quantity}</span>
+                      <span className="text-sm text-white font-normal">${(item.price * item.quantity).toFixed(0)}</span>
                     </div>
                   </div>
                 </div>
@@ -751,7 +751,7 @@ export default function CheckoutPage() {
             <button
               type="submit"
               disabled={isProcessing}
-              className={`w-full mt-6 sm:mt-8 px-6 sm:px-8 py-3.5 sm:py-4 text-[10px] sm:text-xs uppercase tracking-[0.25em] transition-all duration-500 font-medium flex items-center justify-center gap-2 rounded-sm ${
+              className={`w-full mt-6 sm:mt-8 px-6 sm:px-8 py-4 text-xs uppercase tracking-[0.25em] transition-all duration-500 font-medium flex items-center justify-center gap-2 rounded-sm ${
                 isProcessing
                   ? "bg-black/40 text-white/60 cursor-not-allowed border border-white/10"
                   : "bg-black text-white hover:bg-black/70 border border-white/20 hover:border-white/40"
@@ -759,7 +759,7 @@ export default function CheckoutPage() {
             >
               {isProcessing ? (
                 <>
-                  <div className="w-3.5 h-3.5 sm:w-4 sm:h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                   <span>Processing...</span>
                 </>
               ) : (
@@ -771,7 +771,7 @@ export default function CheckoutPage() {
             </button>
 
             {/* Security Notice */}
-            <div className="mt-3 sm:mt-4 flex items-center justify-center gap-2 text-[9px] sm:text-[10px] text-white/40">
+            <div className="mt-3 sm:mt-4 flex items-center justify-center gap-2 text-[10px] text-white/40">
               <Lock size={10} />
               <span>Secure checkout · SSL encrypted</span>
             </div>

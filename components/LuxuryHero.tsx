@@ -85,7 +85,7 @@ export default function LuxuryHero() {
 
         {/* Main heading - Mobile optimized with tighter spacing */}
         <h1 
-          className="logo-font text-5xl sm:text-7xl md:text-8xl lg:text-9xl xl:text-[14rem] font-normal uppercase tracking-tight mb-4 sm:mb-8 leading-none premium-text animate-fadeInUp"
+          className="logo-font text-6xl sm:text-7xl md:text-8xl lg:text-9xl xl:text-[14rem] font-normal uppercase tracking-tight mb-4 sm:mb-8 leading-none premium-text animate-fadeInUp"
           style={{ animationDelay: "0.4s", animationFillMode: "forwards", opacity: 0 }}
         >
           Flora Distro
@@ -99,7 +99,7 @@ export default function LuxuryHero() {
         
         {/* Subtitle - Mobile optimized with tighter spacing */}
         <p 
-          className="text-sm sm:text-base md:text-lg lg:text-xl font-light text-white/50 mb-8 sm:mb-12 tracking-[0.12em] sm:tracking-[0.15em] max-w-2xl mx-auto animate-fadeInUp px-2"
+          className="text-base sm:text-base md:text-lg lg:text-xl font-light text-white/50 mb-8 sm:mb-12 tracking-[0.12em] sm:tracking-[0.15em] max-w-2xl mx-auto animate-fadeInUp px-2"
           style={{ animationDelay: "0.8s", animationFillMode: "forwards", opacity: 0 }}
         >
           Quality at every scale
@@ -112,7 +112,7 @@ export default function LuxuryHero() {
         >
           <Link
             href="/products"
-            className="group inline-flex items-center gap-2 sm:gap-3 bg-black text-white px-8 sm:px-10 md:px-12 py-3.5 sm:py-4 md:py-5 text-[10px] sm:text-xs uppercase tracking-[0.25em] sm:tracking-[0.3em] hover:bg-black/70 transition-all duration-500 font-medium border border-white/20 hover:border-white/40 hover:shadow-[0_0_30px_rgba(255,255,255,0.1)] relative overflow-hidden"
+            className="group inline-flex items-center gap-2 sm:gap-3 bg-black text-white px-8 sm:px-10 md:px-12 py-4 sm:py-4 md:py-5 text-xs sm:text-xs uppercase tracking-[0.25em] sm:tracking-[0.3em] hover:bg-black/70 transition-all duration-500 font-medium border border-white/20 hover:border-white/40 hover:shadow-[0_0_30px_rgba(255,255,255,0.1)] relative overflow-hidden"
           >
             {/* Button shine effect */}
             <div className="absolute inset-0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 bg-gradient-to-r from-transparent via-white/10 to-transparent" />

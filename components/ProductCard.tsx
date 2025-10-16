@@ -338,12 +338,12 @@ export default function ProductCard({ product, index, locations, pricingRules, p
 
       {/* Product Info */}
       <div className="space-y-3 px-3 py-4">
-        <h3 className="text-xs uppercase tracking-[0.15em] font-normal text-white line-clamp-2 leading-relaxed transition-all duration-300 group-hover:tracking-[0.2em]">
+        <h3 className="text-sm uppercase tracking-[0.15em] font-normal text-white line-clamp-2 leading-relaxed transition-all duration-300 group-hover:tracking-[0.2em]">
           {product.name}
         </h3>
         
         {/* Price */}
-        <p className="text-sm font-medium text-white tracking-wide transition-all duration-300 group-hover:text-white/80">
+        <p className="text-base font-medium text-white tracking-wide transition-all duration-300 group-hover:text-white/80">
           {getPriceDisplay()}
         </p>
         
@@ -352,12 +352,12 @@ export default function ProductCard({ product, index, locations, pricingRules, p
           <div className="flex flex-col gap-1">
             <div className="flex items-center gap-1.5">
               <div className="w-2 h-2 rounded-full bg-green-500"></div>
-              <span className="text-[10px] uppercase tracking-wider text-white/60">
+              <span className="text-[11px] uppercase tracking-wider text-white/60">
                 {stockInfo.count === 1 ? 'In Stock' : `In Stock at ${stockInfo.count} locations`}
               </span>
             </div>
             {stockInfo.count <= 2 && (
-              <span className="text-[9px] text-white/40 truncate">
+              <span className="text-[10px] text-white/40 truncate">
                 {stockInfo.locations.map((loc: any) => loc.name).join(', ')}
               </span>
             )}
@@ -365,7 +365,7 @@ export default function ProductCard({ product, index, locations, pricingRules, p
         ) : (
           <div className="flex items-center gap-1.5">
             <div className="w-2 h-2 rounded-full bg-red-500"></div>
-            <span className="text-[10px] uppercase tracking-wider text-white/60">Out of Stock</span>
+            <span className="text-[11px] uppercase tracking-wider text-white/60">Out of Stock</span>
           </div>
         )}
         

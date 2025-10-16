@@ -140,31 +140,31 @@ export default function Header() {
       {/* Mobile menu */}
       {mobileMenuOpen && (
         <div className="lg:hidden border-t border-white/10 bg-[#1a1a1a] relative z-[111]">
-          <nav className="px-4 py-6 flex flex-col space-y-4 text-sm uppercase tracking-wider">
+          <nav className="px-4 py-6 flex flex-col space-y-4 text-base uppercase tracking-wider">
             <Link
               href="/products"
-              className="text-white/80 hover:text-white transition-colors py-2 border-b border-white/5"
+              className="text-white/80 hover:text-white transition-colors py-2.5 border-b border-white/5"
               onClick={() => setMobileMenuOpen(false)}
             >
               Products
             </Link>
             <Link
               href="/about"
-              className="text-white/80 hover:text-white transition-colors py-2 border-b border-white/5"
+              className="text-white/80 hover:text-white transition-colors py-2.5 border-b border-white/5"
               onClick={() => setMobileMenuOpen(false)}
             >
               About
             </Link>
             <Link
               href="/contact"
-              className="text-white/80 hover:text-white transition-colors py-2 border-b border-white/5"
+              className="text-white/80 hover:text-white transition-colors py-2.5 border-b border-white/5"
               onClick={() => setMobileMenuOpen(false)}
             >
               Contact
             </Link>
             <Link
               href="/register"
-              className="text-white/80 hover:text-white transition-colors py-2 sm:hidden"
+              className="text-white/80 hover:text-white transition-colors py-2.5 sm:hidden"
               onClick={() => setMobileMenuOpen(false)}
             >
               My Account
