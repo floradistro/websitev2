@@ -60,43 +60,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = useCallback(async (email: string, password: string) => {
     try {
-      // First, authenticate with WordPress JWT or basic auth
-      // Since WooCommerce doesn't have a direct login endpoint, we'll use the customers endpoint
-      // to find the user by email
-      const response = await axios.get(
-        `${baseUrl}/wp-json/wc/v3/customers`,
-        {
-          params: {
-            consumer_key: consumerKey,
-            consumer_secret: consumerSecret,
-            email: email,
-          }
-        }
-      );
+      // Call our login API endpoint which validates credentials
+      const response = await axios.post('/api/auth/login', {
+        email,
+        password
+      });
 
-      if (response.data && response.data.length > 0) {
-        const customerData = response.data[0];
-        
-        // In a real implementation, you'd verify the password via a custom endpoint
-        // For now, we'll store the customer data
-        const userData: User = {
-          id: customerData.id,
-          email: customerData.email,
-          firstName: customerData.first_name,
-          lastName: customerData.last_name,
-          username: customerData.username,
-          billing: customerData.billing,
-          shipping: customerData.shipping,
-          avatar_url: customerData.avatar_url,
-        };
-
-        setUser(userData);
+      if (response.data.success && response.data.user) {
+        setUser(response.data.user);
       } else {
-        throw new Error("Invalid email or password");
+        throw new Error(response.data.error || "Invalid email or password");
       }
     } catch (error: any) {
       console.error("Login error:", error);
-      throw new Error(error.response?.data?.message || "Login failed. Please check your credentials.");
+      throw new Error(error.response?.data?.error || error.message || "Login failed. Please check your credentials.");
     }
   }, []);
 
