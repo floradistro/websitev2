@@ -2,8 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import axios from 'axios';
 
 const baseUrl = process.env.NEXT_PUBLIC_WORDPRESS_API_URL || "https://api.floradistro.com";
-const consumerKey = process.env.NEXT_PUBLIC_WORDPRESS_CONSUMER_KEY || process.env.WORDPRESS_CONSUMER_KEY;
-const consumerSecret = process.env.NEXT_PUBLIC_WORDPRESS_CONSUMER_SECRET || process.env.WORDPRESS_CONSUMER_SECRET;
 
 export async function POST(request: NextRequest) {
   try {
@@ -16,57 +14,44 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
-    // Find customer by email using WooCommerce API
-    const customerResponse = await axios.get(
-      `${baseUrl}/wp-json/wc/v3/customers`,
+    // Authenticate with WordPress using flora-auth endpoint
+    const authResponse = await axios.post(
+      `${baseUrl}/wp-json/flora-auth/v1/login`,
       {
-        params: {
-          consumer_key: consumerKey,
-          consumer_secret: consumerSecret,
-          email: email,
+        email: email,
+        password: password
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json'
         }
       }
     );
 
-    if (!customerResponse.data || customerResponse.data.length === 0) {
+    if (!authResponse.data.success || !authResponse.data.user) {
       return NextResponse.json({
         success: false,
         error: 'Invalid email or password'
       }, { status: 401 });
     }
 
-    const customer = customerResponse.data[0];
-    
-    // NOTE: Password verification requires flora-auth-endpoint.php plugin
-    // Plugin is uploaded to: wp-content/plugins/flora-auth-endpoint.php
-    // To activate: WordPress Admin → Plugins → Activate "Flora Customer Authentication"
-    // Once active, this will verify passwords via flora-auth/v1/login endpoint
-    // For now: Using email lookup (secured by WooCommerce consumer keys)
-    
-    const userData = {
-      id: customer.id,
-      email: customer.email,
-      firstName: customer.first_name,
-      lastName: customer.last_name,
-      username: customer.username,
-      billing: customer.billing,
-      shipping: customer.shipping,
-      avatar_url: customer.avatar_url,
-    };
-
     return NextResponse.json({
       success: true,
-      user: userData,
+      user: authResponse.data.user,
       message: 'Login successful'
     });
 
   } catch (error: any) {
     console.error('Login error:', error);
     
+    const errorMessage = error.response?.data?.message || 
+                        error.response?.data?.code === 'invalid_credentials' ? 'Invalid email or password' :
+                        'Login failed. Please check your credentials.';
+    
     return NextResponse.json({
       success: false,
-      error: error.response?.data?.message || 'Login failed. Please check your credentials.'
-    }, { status: 500 });
+      error: errorMessage
+    }, { status: 401 });
   }
 }
 
