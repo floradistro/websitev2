@@ -46,8 +46,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
         style={{
           paddingTop: 'env(safe-area-inset-top)',
           paddingBottom: 'env(safe-area-inset-bottom)',
-          height: '100vh',
-          height: '100dvh' // Dynamic viewport height for mobile browsers
+          height: '100dvh'
         }}
       >
         {/* Header - Fixed with safe area */}

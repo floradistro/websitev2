@@ -315,8 +315,6 @@ export default function CheckoutPage() {
       <div 
         className="min-h-screen bg-[#1a1a1a]"
         style={{
-          minHeight: '100vh',
-          minHeight: '100dvh',
           paddingTop: 'env(safe-area-inset-top)',
           paddingBottom: 'env(safe-area-inset-bottom)'
         }}
@@ -337,7 +335,6 @@ export default function CheckoutPage() {
       <form onSubmit={handleSubmit} className="py-0">
         <div className="grid lg:grid-cols-2 min-h-screen"
           style={{
-            minHeight: 'calc(100vh - 73px)',
             minHeight: 'calc(100dvh - 73px)'
           }}
         >

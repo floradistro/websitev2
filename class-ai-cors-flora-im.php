@@ -22,6 +22,7 @@ class Flora_AI_CORS {
      */
     public function add_cors_headers() {
         // Allow requests from Next.js dev server AND production
+        // PRIORITY 999 to run LAST and override any other CORS headers
         add_filter('rest_pre_serve_request', function($served, $result, $request) {
             $allowed_origins = [
                 'http://localhost:3000',
@@ -37,6 +38,9 @@ class Flora_AI_CORS {
             // Check if origin is in allowed list OR is a Vercel preview URL
             $is_vercel_preview = strpos($origin, 'vercel.app') !== false && 
                                  strpos($origin, 'floradistros-projects') !== false;
+            
+            // Remove any existing Access-Control-Allow-Origin headers first
+            header_remove('Access-Control-Allow-Origin');
             
             if (in_array($origin, $allowed_origins) || $is_vercel_preview) {
                 header('Access-Control-Allow-Origin: ' . $origin);
@@ -57,7 +61,7 @@ class Flora_AI_CORS {
             }
             
             return $served;
-        }, 10, 3);
+        }, 999, 3);
     }
 }
 
