@@ -46,30 +46,32 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
     setLoaded(true);
   }, []);
 
-  // Load wishlist from WordPress when user logs in
+  // Load wishlist from WordPress when user logs in (only once per user)
   useEffect(() => {
     if (user?.id && loaded) {
       loadWishlistFromWordPress();
     }
-  }, [user?.id, loaded]);
+  }, [user?.id]);
 
   // Save wishlist to localStorage whenever it changes
   useEffect(() => {
     if (loaded) {
       try {
         localStorage.setItem("flora-wishlist", JSON.stringify(items));
+        
+        // Debounced sync to WordPress (only if user is logged in)
+        if (user?.id && !syncing) {
+          const timeoutId = setTimeout(() => {
+            syncWishlistToWordPress();
+          }, 1000); // Wait 1 second before syncing
+          
+          return () => clearTimeout(timeoutId);
+        }
       } catch (error) {
         console.error("Failed to save wishlist:", error);
       }
     }
-  }, [items, loaded]);
-
-  // Sync wishlist to WordPress whenever it changes (if user is logged in)
-  useEffect(() => {
-    if (user?.id && loaded && !syncing) {
-      syncWishlistToWordPress();
-    }
-  }, [items, user?.id, loaded]);
+  }, [items, user?.id]);
 
   const loadWishlistFromWordPress = async () => {
     if (!user?.id) return;
