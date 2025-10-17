@@ -20,7 +20,7 @@ export default function LuxuryHero() {
   }, []);
 
   return (
-    <section className="relative h-auto sm:min-h-[100svh] flex items-center justify-center bg-[#1a1a1a] text-white px-4 sm:px-6 overflow-hidden py-20 sm:py-0">
+    <section className="relative h-auto sm:min-h-[100svh] flex items-center justify-center bg-[#1a1a1a] text-white px-4 sm:px-6 overflow-hidden py-20 sm:py-0 w-full max-w-full">
       {/* Animated gradient orbs - Responsive sizes */}
       <div className="absolute inset-0 overflow-hidden">
         {/* Main gradient orb 1 */}
@@ -77,7 +77,7 @@ export default function LuxuryHero() {
       </div>
 
       {/* Main content */}
-      <div className="relative z-20 text-center max-w-6xl mx-auto px-4 w-full">
+      <div className="relative z-20 text-center max-w-6xl mx-auto px-4 w-full max-w-full overflow-hidden">
         {/* Small accent line above - Hidden on mobile for space */}
         <div className="hidden sm:flex items-center justify-center mb-8 animate-fadeInDown" style={{ animationDelay: "0.2s", animationFillMode: "forwards", opacity: 0 }}>
           <div className="h-[1px] w-12 bg-gradient-to-r from-transparent via-white/40 to-transparent"></div>

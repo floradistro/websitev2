@@ -131,12 +131,12 @@ export default async function Home() {
   });
 
   return (
-    <div className="bg-[#2a2a2a]">
+    <div className="bg-[#2a2a2a] overflow-x-hidden w-full">
       {/* Hero Section - Animated Luxury */}
       <LuxuryHero />
 
       {/* Featured Products - Carousel */}
-      <section className="bg-[#2a2a2a] py-12 sm:py-16">
+      <section className="bg-[#2a2a2a] py-12 sm:py-16 overflow-x-hidden w-full">
         <div className="px-4 sm:px-6 mb-8 sm:mb-12">
           <div className="flex justify-between items-center sm:items-end gap-4">
             <div className="min-w-0">
@@ -165,7 +165,7 @@ export default async function Home() {
       </section>
 
       {/* Categories - Carousel */}
-      <section className="bg-[#3a3a3a] py-12 sm:py-16">
+      <section className="bg-[#3a3a3a] py-12 sm:py-16 overflow-x-hidden w-full">
         <div className="px-4 sm:px-6 mb-8 sm:mb-12">
           <div className="flex justify-between items-center sm:items-end gap-4">
             <div className="min-w-0">
@@ -181,7 +181,7 @@ export default async function Home() {
       </section>
 
       {/* Philosophy - Clean Statement */}
-      <section className="bg-[#1a1a1a] py-16 sm:py-24 md:py-32 px-4 sm:px-6 relative overflow-hidden">
+      <section className="bg-[#1a1a1a] py-16 sm:py-24 md:py-32 px-4 sm:px-6 relative overflow-hidden w-full">
         {/* Subtle background gradient */}
         <div className="absolute inset-0 opacity-30">
           <div className="absolute top-0 left-1/4 w-64 h-64 sm:w-96 sm:h-96 bg-white/5 rounded-full blur-3xl"></div>
@@ -257,7 +257,7 @@ export default async function Home() {
       </section>
 
       {/* Locations - Carousel */}
-      <section className="bg-[#2a2a2a] py-12 sm:py-16">
+      <section className="bg-[#2a2a2a] py-12 sm:py-16 overflow-x-hidden w-full">
         <div className="px-4 sm:px-6 mb-8 sm:mb-12">
           <div className="flex justify-between items-center sm:items-end gap-4">
             <div className="min-w-0">
@@ -280,7 +280,7 @@ export default async function Home() {
       </section>
 
       {/* Shipping - Split Layout */}
-      <section className="bg-[#3a3a3a] py-0">
+      <section className="bg-[#3a3a3a] py-0 overflow-x-hidden w-full">
         <div className="grid md:grid-cols-2">
           {/* Left - Content */}
           <div className="flex items-center px-4 sm:px-6 md:px-12 py-16 sm:py-20 md:py-32 relative overflow-hidden">
@@ -414,7 +414,7 @@ export default async function Home() {
       </section>
 
       {/* Logo Mark */}
-      <section className="bg-[#1a1a1a] py-12 sm:py-16 md:py-20 px-4">
+      <section className="bg-[#1a1a1a] py-12 sm:py-16 md:py-20 px-4 overflow-x-hidden w-full">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center justify-center">
             <img 
@@ -427,7 +427,7 @@ export default async function Home() {
       </section>
 
       {/* Final CTA - Dramatic */}
-      <section className="bg-gradient-to-br from-[#2a2a2a] via-[#1f1f1f] to-[#2a2a2a] py-20 sm:py-28 md:py-40 px-4 sm:px-6 relative overflow-hidden">
+      <section className="bg-gradient-to-br from-[#2a2a2a] via-[#1f1f1f] to-[#2a2a2a] py-20 sm:py-28 md:py-40 px-4 sm:px-6 relative overflow-hidden w-full">
         {/* Animated gradient orbs */}
         <div className="absolute inset-0">
           <div className="absolute top-1/4 left-1/4 w-[300px] h-[300px] sm:w-[500px] sm:h-[500px] lg:w-[600px] lg:h-[600px] bg-white/5 rounded-full blur-3xl animate-float"></div>
