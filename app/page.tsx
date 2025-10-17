@@ -27,8 +27,9 @@ const LocationsCarousel = dynamic(() => import("@/components/LocationsCarousel")
   ssr: true,
 });
 
-// Enable ISR - Revalidate every 5 minutes (300 seconds)
-export const revalidate = 300;
+// Enable dynamic rendering to avoid build-time API calls
+export const dynamic = 'force-dynamic';
+export const revalidate = 60;
 
 export default async function Home() {
   // Optimized: Fetch only necessary data in parallel
