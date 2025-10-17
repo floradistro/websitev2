@@ -3,6 +3,9 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { useState } from "react";
+import { useAuth } from "@/context/AuthContext";
+import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -12,10 +15,35 @@ export default function RegisterPage() {
     password: "",
     confirmPassword: "",
   });
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const { register } = useAuth();
+  const router = useRouter();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Registration form submitted:", formData);
+    setError("");
+
+    if (formData.password !== formData.confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
+
+    if (formData.password.length < 8) {
+      setError("Password must be at least 8 characters");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      await register(formData.email, formData.password, formData.firstName, formData.lastName);
+      router.push("/dashboard");
+    } catch (err: any) {
+      setError(err.message || "Registration failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -26,46 +54,60 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="bg-[#1a1a1a] min-h-screen">
-      {/* Hero */}
-      <section className="relative min-h-[50vh] flex items-center justify-center bg-[#1a1a1a] text-white px-4">
-        <div className="max-w-4xl mx-auto text-center">
-          <div className="h-[1px] w-16 bg-gradient-to-r from-transparent via-white/30 to-transparent mx-auto mb-8"></div>
-          <h1 className="text-5xl md:text-7xl font-light text-white mb-6 leading-tight tracking-tight">
-            Create Account
-          </h1>
-          <div className="h-[1px] w-24 bg-gradient-to-r from-transparent via-white/20 to-transparent mx-auto mb-12"></div>
-          <p className="text-base text-white/50">
-            Unlock exclusive pricing and early access
-          </p>
-        </div>
-      </section>
+    <div className="bg-[#1a1a1a] min-h-screen flex items-center justify-center px-4 py-12">
+      <div className="w-full max-w-2xl">
+        {/* Logo */}
+        <Link href="/" className="flex items-center justify-center gap-3 mb-12 group">
+          <Image 
+            src="/logoprint.png" 
+            alt="Flora Distro" 
+            width={40} 
+            height={40}
+            className="object-contain transition-transform duration-300 group-hover:scale-105"
+          />
+          <span className="text-2xl logo-font text-white">Flora Distro</span>
+        </Link>
 
-      {/* Benefits */}
-      <section className="bg-[#2a2a2a] py-12 px-4">
-        <div className="max-w-4xl mx-auto grid grid-cols-3 gap-8 text-center">
-          <div>
-            <div className="text-3xl font-light text-white mb-1">10%</div>
-            <p className="text-xs uppercase tracking-wider text-white/50">First Order</p>
+        {/* Card */}
+        <div className="bg-[#2a2a2a] border border-white/10 p-8 hover:border-white/20 transition-all duration-300 glow-hover">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-light text-white mb-3 tracking-tight">
+              Create Your Account
+            </h1>
+            <div className="h-[1px] w-16 bg-gradient-to-r from-transparent via-white/30 to-transparent mx-auto mb-4"></div>
+            <p className="text-[11px] text-white/40 uppercase tracking-[0.15em]">
+              Unlock exclusive pricing & early access
+            </p>
           </div>
-          <div>
-            <div className="text-3xl font-light text-white mb-1">24h</div>
-            <p className="text-xs uppercase tracking-wider text-white/50">Early Access</p>
-          </div>
-          <div>
-            <div className="text-3xl font-light text-white mb-1">∞</div>
-            <p className="text-xs uppercase tracking-wider text-white/50">Exclusive Pricing</p>
-          </div>
-        </div>
-      </section>
 
-      {/* Form */}
-      <section className="bg-[#3a3a3a] py-16 px-4">
-        <div className="max-w-2xl mx-auto">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid md:grid-cols-2 gap-6">
+          {/* Benefits */}
+          <div className="grid grid-cols-3 gap-4 mb-8 pb-8 border-b border-white/10">
+            <div className="text-center">
+              <div className="text-2xl font-light text-white mb-1">10%</div>
+              <p className="text-[9px] uppercase tracking-[0.15em] text-white/40">First Order</p>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-light text-white mb-1">24h</div>
+              <p className="text-[9px] uppercase tracking-[0.15em] text-white/40">Early Access</p>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-light text-white mb-1">∞</div>
+              <p className="text-[9px] uppercase tracking-[0.15em] text-white/40">Exclusive Pricing</p>
+            </div>
+          </div>
+
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {error && (
+              <div className="bg-red-500/10 border border-red-500/30 text-red-200 px-4 py-3 text-xs animate-fadeIn">
+                {error}
+              </div>
+            )}
+
+            <div className="grid md:grid-cols-2 gap-5">
               <div>
-                <label htmlFor="firstName" className="block text-xs uppercase tracking-[0.2em] mb-3 text-white/60">
+                <label htmlFor="firstName" className="block text-[10px] uppercase tracking-[0.2em] mb-2 text-white/60 font-medium">
                   First Name
                 </label>
                 <input
@@ -75,12 +117,14 @@ export default function RegisterPage() {
                   value={formData.firstName}
                   onChange={handleChange}
                   autoComplete="given-name"
-                  className="w-full px-4 py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-smooth input-elegant focus-elegant"
+                  placeholder="John"
+                  className="w-full px-4 py-3.5 text-sm bg-black/20 border border-white/10 text-white placeholder:text-white/20 focus:border-white/30 focus:bg-black/30 focus:outline-none transition-all input-elegant focus-elegant"
                   required
+                  disabled={loading}
                 />
               </div>
               <div>
-                <label htmlFor="lastName" className="block text-xs uppercase tracking-[0.2em] mb-3 text-white/60">
+                <label htmlFor="lastName" className="block text-[10px] uppercase tracking-[0.2em] mb-2 text-white/60 font-medium">
                   Last Name
                 </label>
                 <input
@@ -90,15 +134,17 @@ export default function RegisterPage() {
                   value={formData.lastName}
                   onChange={handleChange}
                   autoComplete="family-name"
-                  className="w-full px-4 py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-smooth input-elegant focus-elegant"
+                  placeholder="Doe"
+                  className="w-full px-4 py-3.5 text-sm bg-black/20 border border-white/10 text-white placeholder:text-white/20 focus:border-white/30 focus:bg-black/30 focus:outline-none transition-all input-elegant focus-elegant"
                   required
+                  disabled={loading}
                 />
               </div>
             </div>
 
             <div>
-              <label htmlFor="email" className="block text-xs uppercase tracking-[0.2em] mb-3 text-white/60">
-                Email
+              <label htmlFor="email" className="block text-[10px] uppercase tracking-[0.2em] mb-2 text-white/60 font-medium">
+                Email Address
               </label>
               <input
                 type="email"
@@ -107,73 +153,105 @@ export default function RegisterPage() {
                 value={formData.email}
                 onChange={handleChange}
                 autoComplete="email"
-                className="w-full px-4 py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-all"
+                placeholder="you@example.com"
+                className="w-full px-4 py-3.5 text-sm bg-black/20 border border-white/10 text-white placeholder:text-white/20 focus:border-white/30 focus:bg-black/30 focus:outline-none transition-all input-elegant focus-elegant"
                 required
+                disabled={loading}
               />
             </div>
 
-            <div>
-              <label htmlFor="password" className="block text-xs uppercase tracking-[0.2em] mb-3 text-white/60">
-                Password
-              </label>
-              <input
-                type="password"
-                id="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                autoComplete="new-password"
-                className="w-full px-4 py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-all"
-                required
-              />
-            </div>
-
-            <div>
-              <label htmlFor="confirmPassword" className="block text-xs uppercase tracking-[0.2em] mb-3 text-white/60">
-                Confirm Password
-              </label>
-              <input
-                type="password"
-                id="confirmPassword"
-                name="confirmPassword"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                autoComplete="new-password"
-                className="w-full px-4 py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-all"
-                required
-              />
+            <div className="grid md:grid-cols-2 gap-5">
+              <div>
+                <label htmlFor="password" className="block text-[10px] uppercase tracking-[0.2em] mb-2 text-white/60 font-medium">
+                  Password
+                </label>
+                <input
+                  type="password"
+                  id="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  autoComplete="new-password"
+                  placeholder="••••••••"
+                  className="w-full px-4 py-3.5 text-sm bg-black/20 border border-white/10 text-white placeholder:text-white/20 focus:border-white/30 focus:bg-black/30 focus:outline-none transition-all input-elegant focus-elegant"
+                  required
+                  disabled={loading}
+                  minLength={8}
+                />
+                <p className="text-[10px] text-white/30 mt-1.5">Min. 8 characters</p>
+              </div>
+              <div>
+                <label htmlFor="confirmPassword" className="block text-[10px] uppercase tracking-[0.2em] mb-2 text-white/60 font-medium">
+                  Confirm Password
+                </label>
+                <input
+                  type="password"
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  autoComplete="new-password"
+                  placeholder="••••••••"
+                  className="w-full px-4 py-3.5 text-sm bg-black/20 border border-white/10 text-white placeholder:text-white/20 focus:border-white/30 focus:bg-black/30 focus:outline-none transition-all input-elegant focus-elegant"
+                  required
+                  disabled={loading}
+                />
+              </div>
             </div>
 
             <button
               type="submit"
-              className="interactive-button group w-full inline-flex items-center justify-center space-x-3 bg-black text-white px-10 py-4 text-xs uppercase tracking-[0.25em] hover:bg-white hover:text-black font-medium border border-white/20 hover:border-white"
+              disabled={loading}
+              className="interactive-button group w-full inline-flex items-center justify-center space-x-3 bg-white text-black px-6 py-4 text-[11px] uppercase tracking-[0.2em] hover:bg-white/90 font-medium border border-white/20 hover:border-white disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-xl transition-all duration-300"
             >
-              <span className="relative z-10">Create Account</span>
-              <ArrowRight size={14} className="relative z-10 group-hover:translate-x-1 transition-transform" />
+              <span className="relative z-10">{loading ? "Creating Account..." : "Create Account"}</span>
+              {!loading && <ArrowRight size={13} className="relative z-10 group-hover:translate-x-1 transition-transform" />}
             </button>
 
-            <p className="text-xs text-white/40 text-center leading-relaxed">
+            <p className="text-[10px] text-white/30 text-center leading-relaxed">
               By creating an account, you agree to our{" "}
-              <Link href="/terms" className="text-white/60 underline hover:text-white transition-smooth click-feedback">
+              <Link href="/terms" className="text-white/40 hover:text-white/60 transition-smooth underline-offset-2 hover:underline">
                 Terms
               </Link>{" "}
               and{" "}
-              <Link href="/privacy" className="text-white/60 underline hover:text-white transition-smooth click-feedback">
+              <Link href="/privacy" className="text-white/40 hover:text-white/60 transition-smooth underline-offset-2 hover:underline">
                 Privacy Policy
               </Link>
             </p>
           </form>
 
-          <div className="mt-12 pt-8 border-t border-white/10 text-center">
-            <p className="text-sm text-white/50">
-              Already have an account?{" "}
-              <Link href="/login" className="text-white underline hover:no-underline transition-smooth click-feedback">
-                Sign in
-              </Link>
-            </p>
+          {/* Divider */}
+          <div className="relative my-8">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-white/10"></div>
+            </div>
+            <div className="relative flex justify-center text-[10px] uppercase tracking-[0.2em]">
+              <span className="bg-[#2a2a2a] px-3 text-white/40">Already have an account?</span>
+            </div>
+          </div>
+
+          {/* Login Link */}
+          <Link
+            href="/login"
+            className="interactive-button group w-full inline-flex items-center justify-center space-x-3 bg-black/40 text-white px-6 py-4 text-[11px] uppercase tracking-[0.2em] hover:bg-black/60 font-medium border border-white/10 hover:border-white/30 transition-all duration-300"
+          >
+            <span className="relative z-10">Sign In</span>
+            <ArrowRight size={13} className="relative z-10 group-hover:translate-x-1 transition-transform" />
+          </Link>
+        </div>
+
+        {/* Footer */}
+        <div className="text-center mt-8 space-y-2">
+          <p className="text-[10px] text-white/30 uppercase tracking-[0.2em]">
+            Secure Authentication
+          </p>
+          <div className="flex items-center justify-center gap-4 text-[10px] text-white/40">
+            <Link href="/privacy" className="hover:text-white/60 transition-smooth">Privacy</Link>
+            <span className="text-white/20">·</span>
+            <Link href="/terms" className="hover:text-white/60 transition-smooth">Terms</Link>
           </div>
         </div>
-      </section>
+      </div>
     </div>
   );
 }

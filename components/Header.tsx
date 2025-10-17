@@ -5,8 +5,10 @@ import Image from "next/image";
 import { Search, ShoppingBag, User, Menu, X, RotateCcw } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useCart } from "@/context/CartContext";
+import { useAuth } from "@/context/AuthContext";
 import CartDrawer from "./CartDrawer";
 import SearchModal from "./SearchModal";
+import LoyaltyBadge from "./LoyaltyBadge";
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -15,6 +17,7 @@ export default function Header() {
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const { itemCount } = useCart();
+  const { user, isAuthenticated } = useAuth();
 
   useEffect(() => {
     let ticking = false;
@@ -92,7 +95,8 @@ export default function Header() {
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden lg:flex items-center space-x-8 text-xs uppercase tracking-wider">
+          <nav className="hidden lg:flex items-center space-x-6 text-xs uppercase tracking-wider">
+            <LoyaltyBadge />
             <Link
               href="/products"
               className="nav-link text-white/80 hover:text-white active:text-white click-feedback"
@@ -137,9 +141,27 @@ export default function Header() {
             >
               <Search size={18} className="transition-transform duration-300 group-hover:scale-110 group-active:scale-95" />
             </button>
-            <Link href="/register" className="text-white/80 hover:text-white active:text-white transition-smooth hidden sm:block p-3 hover:bg-white/10 active:bg-white/20 rounded click-feedback group touch-target" aria-label="Account" style={{ minHeight: '44px', minWidth: '44px' }}>
-              <User size={18} className="transition-transform duration-300 group-hover:scale-110 group-active:scale-95" />
-            </Link>
+            {isAuthenticated && user ? (
+              <Link 
+                href="/dashboard" 
+                className="text-white/80 hover:text-white active:text-white transition-smooth hidden sm:flex items-center gap-2 p-3 hover:bg-white/10 active:bg-white/20 rounded click-feedback group touch-target" 
+                aria-label="Dashboard"
+                style={{ minHeight: '44px' }}
+              >
+                <div className="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center text-[10px] font-medium uppercase">
+                  {user.firstName?.[0]}{user.lastName?.[0]}
+                </div>
+              </Link>
+            ) : (
+              <Link 
+                href="/login" 
+                className="text-white/80 hover:text-white active:text-white transition-smooth hidden sm:block p-3 hover:bg-white/10 active:bg-white/20 rounded click-feedback group touch-target" 
+                aria-label="Account" 
+                style={{ minHeight: '44px', minWidth: '44px' }}
+              >
+                <User size={18} className="transition-transform duration-300 group-hover:scale-110 group-active:scale-95" />
+              </Link>
+            )}
             <button 
               onClick={() => setCartOpen(true)}
               className="text-white/80 hover:text-white active:text-white transition-smooth relative p-3 hover:bg-white/10 active:bg-white/20 rounded click-feedback group touch-target"
@@ -182,13 +204,23 @@ export default function Header() {
             >
               Contact
             </Link>
-            <Link
-              href="/register"
-              className="text-white/80 hover:text-white transition-smooth py-2 sm:hidden hover:pl-2 click-feedback"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              My Account
-            </Link>
+            {isAuthenticated ? (
+              <Link
+                href="/dashboard"
+                className="text-white/80 hover:text-white transition-smooth py-2 sm:hidden hover:pl-2 click-feedback"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                My Dashboard
+              </Link>
+            ) : (
+              <Link
+                href="/login"
+                className="text-white/80 hover:text-white transition-smooth py-2 sm:hidden hover:pl-2 click-feedback"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Sign In
+              </Link>
+            )}
           </nav>
         </div>
       )}

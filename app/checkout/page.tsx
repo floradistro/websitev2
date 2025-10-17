@@ -6,6 +6,7 @@ import { ArrowRight, Store, Truck, Lock, ChevronLeft, CreditCard } from "lucide-
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import CartShippingEstimator from "@/components/CartShippingEstimator";
+import ChipRedemption from "@/components/ChipRedemption";
 import Script from "next/script";
 import { analytics } from "@/lib/analytics";
 
@@ -56,6 +57,8 @@ export default function CheckoutPage() {
   const [acceptJsLoaded, setAcceptJsLoaded] = useState(false);
   const [applePayAvailable, setApplePayAvailable] = useState(false);
   const [useShippingAddress, setUseShippingAddress] = useState(false);
+  const [chipDiscount, setChipDiscount] = useState(0);
+  const [chipsUsed, setChipsUsed] = useState(0);
 
   const pickupItems = items.filter((item) => item.orderType === "pickup");
   const deliveryItems = items.filter((item) => item.orderType === "delivery");
@@ -63,7 +66,8 @@ export default function CheckoutPage() {
   const hasDeliveryItems = deliveryItems.length > 0;
 
   const shippingCost = selectedShipping?.cost || 0;
-  const finalTotal = total + shippingCost;
+  const subtotalAfterChips = total - chipDiscount;
+  const finalTotal = Math.max(0, subtotalAfterChips + shippingCost);
 
   const [authorizeKeys, setAuthorizeKeys] = useState<any>(null);
 
@@ -744,6 +748,17 @@ export default function CheckoutPage() {
               ))}
             </div>
 
+            {/* Chip Redemption */}
+            <div className="mb-6">
+              <ChipRedemption
+                cartTotal={total}
+                onApplyDiscount={(discount, chips) => {
+                  setChipDiscount(discount);
+                  setChipsUsed(chips);
+                }}
+              />
+            </div>
+
             {/* Shipping Estimator */}
             {deliveryItems.length > 0 && (
               <div className="mb-6">
@@ -764,6 +779,12 @@ export default function CheckoutPage() {
                 <span>Subtotal</span>
                 <span>${total.toFixed(0)}</span>
               </div>
+              {chipDiscount > 0 && (
+                <div className="flex justify-between text-xs sm:text-sm text-green-400">
+                  <span>Chip Discount ({chipsUsed} chips)</span>
+                  <span>-${chipDiscount.toFixed(2)}</span>
+                </div>
+              )}
               <div className="flex justify-between text-xs sm:text-sm text-white/60">
                 <span>Shipping</span>
                 <span>{shippingCost > 0 ? `$${shippingCost.toFixed(2)}` : 'FREE'}</span>

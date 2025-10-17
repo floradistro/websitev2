@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ShoppingBag, Store, Truck } from "lucide-react";
+import { ShoppingBag, Store, Truck, Heart } from "lucide-react";
 import { useCart } from "@/context/CartContext";
+import { useWishlist } from "@/context/WishlistContext";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useLinkPrefetch } from "@/hooks/usePrefetch";
@@ -24,7 +25,10 @@ export default function ProductCard({ product, index, locations, pricingRules, p
   const [selectedTierIndex, setSelectedTierIndex] = useState<number | null>(null);
   const [showAddToCart, setShowAddToCart] = useState(false);
   const { addToCart } = useCart();
+  const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
   const router = useRouter();
+  
+  const inWishlist = isInWishlist(product.id);
   
   // Aggressive prefetching for instant loads
   const prefetchHandlers = useLinkPrefetch(`/products/${product.id}`);
@@ -214,6 +218,23 @@ export default function ProductCard({ product, index, locations, pricingRules, p
     router.push(`/products/${product.id}?type=delivery`);
   };
 
+  const handleWishlistToggle = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (inWishlist) {
+      removeFromWishlist(product.id);
+    } else {
+      addToWishlist({
+        productId: product.id,
+        name: product.name,
+        price: product.price,
+        image: product.images?.[0]?.src,
+        slug: product.slug,
+      });
+    }
+  };
+
   // Get locations where product is in stock
   const getStockLocations = () => {
     if (!inventory || inventory.length === 0) {
@@ -302,6 +323,25 @@ export default function ProductCard({ product, index, locations, pricingRules, p
             </div>
           </>
         )}
+
+        {/* Wishlist Heart - Top Right */}
+        <button
+          onClick={handleWishlistToggle}
+          className={`absolute top-2 right-2 z-10 w-9 h-9 rounded-full flex items-center justify-center transition-all duration-300 ${
+            inWishlist 
+              ? "bg-white text-black" 
+              : "bg-black/40 backdrop-blur-sm text-white hover:bg-black/60"
+          }`}
+          aria-label={inWishlist ? "Remove from wishlist" : "Add to wishlist"}
+        >
+          <Heart 
+            size={16} 
+            className={`transition-all duration-300 ${
+              inWishlist ? "fill-black" : "fill-none"
+            }`}
+            strokeWidth={2}
+          />
+        </button>
 
         {/* Badges Overlay - Top Left */}
         <div className="absolute top-2 left-2 flex flex-col gap-1">

@@ -4,7 +4,11 @@ import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ScrollToTop from "@/components/ScrollToTop";
+import NotificationToast from "@/components/NotificationToast";
 import { CartProvider } from "@/context/CartContext";
+import { AuthProvider } from "@/context/AuthContext";
+import { WishlistProvider } from "@/context/WishlistContext";
+import { LoyaltyProvider } from "@/context/LoyaltyContext";
 // import { RecentlyViewedProvider } from "@/context/RecentlyViewedContext";
 
 const geistSans = Geist({
@@ -76,16 +80,23 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen`}
         suppressHydrationWarning
       >
-        <CartProvider>
-          {/* <RecentlyViewedProvider> */}
-            <Header />
-            <main className="flex-1">
-              {children}
-            </main>
-            <Footer />
-            <ScrollToTop />
-          {/* </RecentlyViewedProvider> */}
-        </CartProvider>
+        <AuthProvider>
+          <LoyaltyProvider>
+            <WishlistProvider>
+              <CartProvider>
+                {/* <RecentlyViewedProvider> */}
+                  <Header />
+                  <main className="flex-1">
+                    {children}
+                  </main>
+                  <Footer />
+                  <ScrollToTop />
+                  <NotificationToast />
+                {/* </RecentlyViewedProvider> */}
+              </CartProvider>
+            </WishlistProvider>
+          </LoyaltyProvider>
+        </AuthProvider>
       </body>
     </html>
   );

@@ -9,6 +9,9 @@
     "start": "next start -p 3000"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.67.0",
+    "@react-three/drei": "^10.7.6",
+    "@react-three/fiber": "^9.4.0",
     "@types/p5": "^1.7.6",
     "@types/three": "^0.180.0",
     "@vercel/edge": "^1.2.2",

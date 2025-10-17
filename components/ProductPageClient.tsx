@@ -2,8 +2,9 @@
 
 import { useState, useCallback, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { ChevronLeft, Heart, Share2, Check } from "lucide-react";
-import { useRecentlyViewedContext } from "@/context/RecentlyViewedContext";
+// import { useRecentlyViewedContext } from "@/context/RecentlyViewedContext";
 import DeliveryAvailability from "@/components/DeliveryAvailability";
 import PricingTiers from "@/components/PricingTiers";
 import FloraFields from "@/components/FloraFields";
@@ -46,30 +47,81 @@ export default function ProductPageClient({
   const [orderDetails, setOrderDetails] = useState<any>(null);
   const [addedToCart, setAddedToCart] = useState(false);
   const [selectedLocationId, setSelectedLocationId] = useState<number | null>(null);
+  const [aiRecommendations, setAiRecommendations] = useState<any[]>([]);
   
   const { addToCart } = useCart();
   // const { addProduct: addToRecentlyViewed } = useRecentlyViewedContext();
 
   // Track this product view - only once per product ID
-  // useEffect(() => {
-  //   const image = product.images?.[0]?.src;
-  //   const category = product.categories?.[0]?.name;
-    
-  //   // addToRecentlyViewed({
-  //   //   id: product.id,
-  //   //   name: product.name,
-  //   //   price: product.price,
-  //   //   image: image,
-  //   // });
+  useEffect(() => {
+    if (product) {
+      try {
+        // Get existing recently viewed
+        const existing = localStorage.getItem("recentlyViewed");
+        let viewed: any[] = [];
+        
+        if (existing) {
+          try {
+            viewed = JSON.parse(existing);
+            if (!Array.isArray(viewed)) viewed = [];
+          } catch {
+            viewed = [];
+          }
+        }
+        
+        // Check if product already exists
+        const existingIndex = viewed.findIndex((p: any) => p.id === product.id);
+        
+        if (existingIndex > -1) {
+          // Remove existing and add to front
+          viewed.splice(existingIndex, 1);
+        }
+        
+        // Add to front of array
+        viewed.unshift({
+          id: product.id,
+          name: product.name,
+          price: product.price || product.regular_price || "0",
+          image: product.images?.[0]?.src,
+          viewedAt: new Date().toISOString(),
+        });
+        
+        // Keep only last 12 items
+        viewed = viewed.slice(0, 12);
+        
+        // Save back to localStorage
+        localStorage.setItem("recentlyViewed", JSON.stringify(viewed));
+        
+        // Load AI recommendations
+        loadAIRecommendations(viewed);
+      } catch (error) {
+        console.error("Error saving to recently viewed:", error);
+      }
+    }
+  }, [product.id]); // Only track when product ID changes
 
-  //   // Track analytics
-  //   analytics.viewProduct({
-  //     id: product.id,
-  //     name: product.name,
-  //     price: parseFloat(product.price) || 0,
-  //     category: category,
-  //   });
-  // }, [product.id]); // Only track when product ID changes
+  const loadAIRecommendations = async (allProducts: any[]) => {
+    try {
+      const response = await fetch('/api/recommendations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          orderHistory: [],
+          currentProduct: product,
+          wishlist: [],
+          allProducts: allProducts.length > 0 ? allProducts : [product]
+        })
+      });
+
+      const data = await response.json();
+      
+      if (data.success && data.recommendations) {
+        setAiRecommendations(data.recommendations.filter((p: any) => p.id !== product.id).slice(0, 6));
+      }
+    } catch (error) {
+      console.error('Error loading AI recommendations:', error);
+    }
+  };
 
   const handlePriceSelect = useCallback((price: number, quantity: number, tierName: string) => {
     setSelectedPrice(price);
@@ -386,8 +438,54 @@ export default function ProductPageClient({
         </div>
       </div>
 
-      {/* Recently Viewed Products */}
-      {/* <RecentlyViewed /> */}
+      {/* AI Recommendations */}
+      {aiRecommendations.length > 0 && (
+        <section className="border-t border-white/10 bg-[#2a2a2a] py-12">
+          <div className="px-4 mb-8">
+            <div className="flex items-center gap-3">
+              <div className="text-amber-400">✨</div>
+              <h2 className="text-xl font-light uppercase tracking-[0.2em] text-white">
+                You Might Also Like
+              </h2>
+            </div>
+            <p className="text-xs text-white/40 mt-2 uppercase tracking-wider">Flora Budtender's Picks</p>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 px-4">
+            {aiRecommendations.map((rec: any, idx: number) => (
+              <Link
+                key={rec.id}
+                href={`/products/${rec.id}`}
+                className="bg-[#3a3a3a] border border-white/10 hover:border-white/20 transition-all group"
+              >
+                <div className="aspect-square bg-[#2a2a2a] relative overflow-hidden">
+                  {rec.image ? (
+                    <Image
+                      src={rec.image}
+                      alt={rec.name}
+                      fill
+                      className="object-contain p-4 group-hover:scale-105 transition-transform duration-300"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center p-8">
+                      <Image
+                        src="/logoprint.png"
+                        alt="Flora Distro"
+                        width={40}
+                        height={40}
+                        className="opacity-10"
+                      />
+                    </div>
+                  )}
+                </div>
+                <div className="p-3">
+                  <h3 className="text-xs text-white line-clamp-2 mb-2">{rec.name}</h3>
+                  <p className="text-[10px] text-white/40 uppercase tracking-wider">View Product</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Related Products */}
       {relatedProducts.length > 0 && (

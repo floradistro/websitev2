@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import useSWR from 'swr';
 import ProductPageClient from "./ProductPageClient";
+import ProductRecommendations from "./ProductRecommendations";
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
