@@ -131,14 +131,16 @@ export default function ShippingEstimator({
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            "Accept": "application/json",
           },
           body: JSON.stringify(requestBody),
           cache: "no-store", // Prevent caching
+          mode: "cors", // Explicitly set CORS mode
         }
       );
 
-      console.log('Shipping API Response Status:', response.status);
-      console.log('Shipping API Response Headers:', response.headers);
+      console.log('🌐 Shipping API Response Status:', response.status);
+      console.log('🌐 Response OK:', response.ok);
       
       // Check if response is OK
       if (!response.ok) {
@@ -221,6 +223,8 @@ export default function ShippingEstimator({
         <div className="flex-1 relative">
           <input
             type="text"
+            inputMode="numeric"
+            pattern="[0-9]*"
             value={zipCode}
             onChange={(e) => {
               const value = e.target.value.replace(/\D/g, "").slice(0, 5);
@@ -229,7 +233,7 @@ export default function ShippingEstimator({
             }}
             onKeyPress={handleKeyPress}
             placeholder="Enter ZIP code"
-            className="w-full bg-white/5 border border-white/10 rounded px-4 py-2.5 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-white/30 transition-colors"
+            className="w-full bg-white/5 border border-white/10 rounded px-4 py-2.5 text-base text-white placeholder:text-white/30 focus:outline-none focus:border-white/30 transition-colors"
             maxLength={5}
           />
           {zipCode && !validateZipCode(zipCode) && (
@@ -239,9 +243,11 @@ export default function ShippingEstimator({
           )}
         </div>
         <button
+          type="button"
           onClick={calculateShipping}
           disabled={loading || !validateZipCode(zipCode)}
-          className="w-full sm:w-auto px-4 sm:px-6 py-2.5 bg-white text-black text-xs font-medium uppercase tracking-wider rounded hover:bg-white/90 disabled:bg-white/20 disabled:text-white/40 disabled:cursor-not-allowed transition-all whitespace-nowrap"
+          className="w-full sm:w-auto px-4 sm:px-6 py-2.5 bg-white text-black font-medium uppercase tracking-wider rounded hover:bg-white/90 disabled:bg-white/20 disabled:text-white/40 disabled:cursor-not-allowed transition-all whitespace-nowrap touch-manipulation"
+          style={{ fontSize: '16px' }}
         >
           {loading ? (
             <div className="flex items-center justify-center gap-2">

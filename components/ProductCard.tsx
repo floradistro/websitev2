@@ -192,16 +192,18 @@ export default function ProductCard({ product, index, locations, pricingRules, p
   };
 
   const handleQuickBuy = (e: React.MouseEvent) => {
-    e.preventDefault();
+    // Don't prevent default - let Link handle navigation
   };
 
   const handlePickup = (e: React.MouseEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     window.location.href = `/products/${product.id}?type=pickup`;
   };
 
   const handleDelivery = (e: React.MouseEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     window.location.href = `/products/${product.id}?type=delivery`;
   };
 
@@ -317,33 +319,43 @@ export default function ProductCard({ product, index, locations, pricingRules, p
           isHovered ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}>
           <div className="flex flex-col items-center gap-2 transform translate-y-3 group-hover:translate-y-0 transition-transform duration-500">
-            <button
-              onClick={handleQuickBuy}
+            <Link
+              href={`/products/${product.id}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleQuickBuy(e as any);
+              }}
               className="interactive-button flex items-center gap-2 bg-black border border-white/20 text-white px-6 py-3 text-xs uppercase tracking-[0.2em] hover:bg-white hover:text-black active:bg-white active:text-black hover:border-white font-medium touch-target"
               style={{ minHeight: '44px' }}
             >
               <ShoppingBag size={12} strokeWidth={1.5} />
               <span>View Product</span>
-            </button>
+            </Link>
             
             <div className="flex items-center gap-2">
-              <button
-                onClick={handlePickup}
+              <Link
+                href={`/products/${product.id}?type=pickup`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                }}
                 className="interactive-button flex items-center gap-1.5 bg-black border border-white/20 text-white px-4 py-3 hover:bg-white hover:text-black active:bg-white active:text-black hover:border-white text-[10px] uppercase tracking-[0.15em] font-medium touch-target"
                 style={{ minHeight: '44px' }}
               >
                 <Store size={11} strokeWidth={1.5} />
                 <span>Pickup</span>
-              </button>
+              </Link>
               
-              <button
-                onClick={handleDelivery}
+              <Link
+                href={`/products/${product.id}?type=delivery`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                }}
                 className="interactive-button flex items-center gap-1.5 bg-black border border-white/20 text-white px-4 py-3 hover:bg-white hover:text-black active:bg-white active:text-black hover:border-white text-[10px] uppercase tracking-[0.15em] font-medium touch-target"
                 style={{ minHeight: '44px' }}
               >
                 <Truck size={11} strokeWidth={1.5} />
                 <span>Delivery</span>
-              </button>
+              </Link>
             </div>
           </div>
         </div>
@@ -404,18 +416,12 @@ export default function ProductCard({ product, index, locations, pricingRules, p
         
         {/* Pricing Tier Selector */}
         {tiers.length > 0 && (
-          <div className="space-y-2 pt-2" onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-          }}>
+          <div className="space-y-2 pt-2">
             <div className="relative">
                 <select
                 value={selectedTierIndex ?? ""}
                 onChange={handleTierSelect}
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                }}
+                onClick={(e) => e.stopPropagation()}
                 className="w-full appearance-none bg-transparent border border-white/20 px-3 py-2.5 md:py-2 pr-7 text-[11px] font-normal text-white hover:border-white/40 hover:bg-white/5 focus:border-white focus:outline-none transition-smooth cursor-pointer touch-manipulation uppercase tracking-[0.1em] focus-elegant"
                 style={{ minHeight: '40px' }}
               >
@@ -443,7 +449,11 @@ export default function ProductCard({ product, index, locations, pricingRules, p
             
             {showAddToCart && (
               <button
-                onClick={handleAddToCart}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleAddToCart(e);
+                }}
                 className="interactive-button w-full bg-black border border-white/20 text-white px-3 py-3 text-[10px] uppercase tracking-[0.15em] hover:bg-white hover:text-black active:bg-white active:text-black hover:border-white font-medium flex items-center justify-center gap-2 animate-fadeIn touch-manipulation hover:shadow-lg touch-target"
                 style={{ minHeight: '44px' }}
               >

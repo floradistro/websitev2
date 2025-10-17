@@ -21,12 +21,6 @@ export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'),
   title: "Flora Distro | Premium Cannabis Distribution",
   description: "Shop premium cannabis products including flower, concentrates, edibles, vapes, and beverages. Direct from our facilities with next-day regional delivery. Farm Bill compliant.",
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
-    maximumScale: 1,
-    userScalable: false,
-  },
   openGraph: {
     title: "Flora Distro | Premium Cannabis Distribution",
     description: "Premium cannabis products with fast shipping. Direct sourcing, volume pricing, always fresh.",
@@ -62,6 +56,8 @@ export default function RootLayout({
   return (
     <html lang="en" data-scroll-behavior="smooth" suppressHydrationWarning>
       <head>
+        {/* Viewport - prevents zoom issues on mobile */}
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
         {/* Preconnect to WordPress API for faster requests */}
         <link rel="preconnect" href="https://api.floradistro.com" />
         <link rel="dns-prefetch" href="https://api.floradistro.com" />
