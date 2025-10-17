@@ -27,6 +27,14 @@ export interface FloraLocation {
  * Get user's location from IP address
  */
 export async function getUserLocation(): Promise<UserLocation | null> {
+  // Check if already tried and failed in this session
+  if (typeof window !== 'undefined') {
+    const cached = sessionStorage.getItem('geolocation_failed');
+    if (cached === 'true') {
+      return null; // Don't retry if already failed
+    }
+  }
+
   try {
     // Use ip-api.com for IP geolocation (free, higher limits, no key needed)
     const response = await fetch('https://ip-api.com/json/?fields=status,message,country,countryCode,region,regionName,city,zip,lat,lon,query', {
@@ -34,14 +42,19 @@ export async function getUserLocation(): Promise<UserLocation | null> {
     });
     
     if (!response.ok) {
-      console.warn('IP geolocation failed, using fallback');
+      // Mark as failed to prevent retries
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem('geolocation_failed', 'true');
+      }
       return null;
     }
     
     const data = await response.json();
     
     if (data.status !== 'success') {
-      console.warn('IP geolocation unsuccessful:', data.message);
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem('geolocation_failed', 'true');
+      }
       return null;
     }
     
@@ -56,7 +69,10 @@ export async function getUserLocation(): Promise<UserLocation | null> {
       longitude: data.lon,
     };
   } catch (error) {
-    console.error('Error getting user location:', error);
+    // Silently fail and mark as failed
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('geolocation_failed', 'true');
+    }
     return null;
   }
 }

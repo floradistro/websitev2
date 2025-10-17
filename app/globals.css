@@ -795,3 +795,63 @@ a {
   box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
 }
 
+/* Mobile Safe Area Support - Apple-style */
+@supports (padding: env(safe-area-inset-top)) {
+  body {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+}
+
+/* Smooth momentum scrolling for iOS */
+* {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Better touch response - Apple-like */
+button, a, input[type="button"], input[type="submit"] {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  border-radius: 0;
+}
+
+/* Remove default iOS input styling */
+input[type="text"],
+input[type="email"],
+input[type="tel"],
+input[type="number"],
+textarea {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  border-radius: 0;
+}
+
+/* Prevent iOS zoom on focus */
+@media screen and (max-width: 767px) {
+  input[type="text"],
+  input[type="email"],
+  input[type="tel"],
+  input[type="number"],
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+}
+
+/* Mobile-optimized scrolling */
+@media (max-width: 768px) {
+  body {
+    overscroll-behavior-y: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Ensure smooth drawer animations on mobile */
+  .animate-slideInRight {
+    animation: slideInRight 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}
+

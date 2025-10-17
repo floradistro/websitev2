@@ -312,35 +312,49 @@ export default function CheckoutPage() {
         onLoad={() => setAcceptJsLoaded(true)}
         strategy="lazyOnload"
       />
-      <div className="min-h-screen bg-[#1a1a1a]">
-        {/* Breadcrumb */}
-        <div className="border-b border-white/10 bg-[#1a1a1a]">
-          <div className="px-4 sm:px-6 py-3 sm:py-4">
+      <div 
+        className="min-h-screen bg-[#1a1a1a]"
+        style={{
+          minHeight: '100vh',
+          minHeight: '100dvh',
+          paddingTop: 'env(safe-area-inset-top)',
+          paddingBottom: 'env(safe-area-inset-bottom)'
+        }}
+      >
+        {/* Breadcrumb - Mobile Optimized */}
+        <div className="border-b border-white/10 bg-[#1a1a1a] sticky top-0 z-10 backdrop-blur-lg">
+          <div className="px-5 py-4">
             <Link
               href="/products"
-              className="inline-flex items-center space-x-2 text-xs sm:text-xs text-white/60 hover:text-white transition-smooth uppercase tracking-wider click-feedback"
+              className="inline-flex items-center space-x-2 text-sm text-white/60 hover:text-white active:text-white transition-colors uppercase tracking-wider min-h-[44px]"
             >
-              <ChevronLeft size={14} />
-              <span>Continue Shopping</span>
+              <ChevronLeft size={18} />
+              <span>Back</span>
             </Link>
           </div>
         </div>
 
       <form onSubmit={handleSubmit} className="py-0">
-        <div className="grid lg:grid-cols-2">
+        <div className="grid lg:grid-cols-2 min-h-screen"
+          style={{
+            minHeight: 'calc(100vh - 73px)',
+            minHeight: 'calc(100dvh - 73px)'
+          }}
+        >
           {/* Left - Forms */}
-          <div className="bg-[#2a2a2a] px-4 sm:px-6 md:px-8 lg:px-12 py-8 sm:py-10 md:py-12 space-y-6 sm:space-y-8">
+          <div className="bg-[#2a2a2a] px-5 sm:px-6 md:px-8 lg:px-12 py-6 sm:py-10 md:py-12 space-y-8">
             <div>
-              <h1 className="text-2xl sm:text-3xl md:text-4xl font-light text-white mb-4 sm:mb-6 uppercase tracking-wider">Checkout</h1>
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-light text-white mb-2 uppercase tracking-wider">Checkout</h1>
+              <p className="text-sm text-white/50">Complete your order securely</p>
             </div>
 
             {/* Contact Info */}
             <div>
-              <h2 className="text-sm uppercase tracking-[0.2em] text-white mb-4 sm:mb-6 font-normal">Contact Information</h2>
-              <div className="space-y-3 sm:space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+              <h2 className="text-sm uppercase tracking-[0.2em] text-white mb-5 font-medium">Contact Information</h2>
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs uppercase tracking-[0.2em] mb-2 text-white/60">
+                    <label className="block text-xs uppercase tracking-wider mb-2 text-white/60">
                       First Name
                     </label>
                     <input
@@ -349,11 +363,12 @@ export default function CheckoutPage() {
                       autoComplete="given-name"
                       value={billingInfo.firstName}
                       onChange={(e) => setBillingInfo({ ...billingInfo, firstName: e.target.value })}
-                      className="w-full px-3 sm:px-4 py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-smooth rounded-sm input-elegant focus-elegant"
+                      className="w-full px-4 py-3.5 text-base bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:bg-white/10 focus:outline-none transition-all rounded-xl min-h-[48px]"
+                      style={{ WebkitAppearance: 'none', fontSize: '16px' }}
                     />
                   </div>
                   <div>
-                    <label className="block text-xs uppercase tracking-[0.2em] mb-2 text-white/60">
+                    <label className="block text-xs uppercase tracking-wider mb-2 text-white/60">
                       Last Name
                     </label>
                     <input
@@ -362,12 +377,13 @@ export default function CheckoutPage() {
                       autoComplete="family-name"
                       value={billingInfo.lastName}
                       onChange={(e) => setBillingInfo({ ...billingInfo, lastName: e.target.value })}
-                      className="w-full px-3 sm:px-4 py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-smooth rounded-sm input-elegant focus-elegant"
+                      className="w-full px-4 py-3.5 text-base bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:bg-white/10 focus:outline-none transition-all rounded-xl min-h-[48px]"
+                      style={{ WebkitAppearance: 'none', fontSize: '16px' }}
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-xs uppercase tracking-[0.2em] mb-2 text-white/60">
+                  <label className="block text-xs uppercase tracking-wider mb-2 text-white/60">
                     Email
                   </label>
                   <input
@@ -376,11 +392,12 @@ export default function CheckoutPage() {
                     autoComplete="email"
                     value={billingInfo.email}
                     onChange={(e) => setBillingInfo({ ...billingInfo, email: e.target.value })}
-                    className="w-full px-3 sm:px-4 py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-all rounded-sm"
+                    className="w-full px-4 py-3.5 text-base bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:bg-white/10 focus:outline-none transition-all rounded-xl min-h-[48px]"
+                    style={{ WebkitAppearance: 'none', fontSize: '16px' }}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs uppercase tracking-[0.2em] mb-2 text-white/60">
+                  <label className="block text-xs uppercase tracking-wider mb-2 text-white/60">
                     Phone
                   </label>
                   <input
@@ -389,7 +406,8 @@ export default function CheckoutPage() {
                     autoComplete="tel"
                     value={billingInfo.phone}
                     onChange={(e) => setBillingInfo({ ...billingInfo, phone: e.target.value })}
-                    className="w-full px-3 sm:px-4 py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-all rounded-sm"
+                    className="w-full px-4 py-3.5 text-base bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:bg-white/10 focus:outline-none transition-all rounded-xl min-h-[48px]"
+                    style={{ WebkitAppearance: 'none', fontSize: '16px' }}
                   />
                 </div>
               </div>
@@ -397,10 +415,10 @@ export default function CheckoutPage() {
 
             {/* Billing Address */}
             <div>
-              <h2 className="text-sm uppercase tracking-[0.2em] text-white mb-4 sm:mb-6 font-normal">Billing Address</h2>
-              <div className="space-y-3 sm:space-y-4">
+              <h2 className="text-sm uppercase tracking-[0.2em] text-white mb-5 font-medium">Billing Address</h2>
+              <div className="space-y-4">
                 <div>
-                  <label className="block text-xs uppercase tracking-[0.2em] mb-2 text-white/60">
+                  <label className="block text-xs uppercase tracking-wider mb-2 text-white/60">
                     Address
                   </label>
                   <input
@@ -409,11 +427,12 @@ export default function CheckoutPage() {
                     autoComplete="street-address"
                     value={billingInfo.address}
                     onChange={(e) => setBillingInfo({ ...billingInfo, address: e.target.value })}
-                    className="w-full px-3 sm:px-4 py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-all rounded-sm"
+                    className="w-full px-4 py-3.5 text-base bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:bg-white/10 focus:outline-none transition-all rounded-xl min-h-[48px]"
+                    style={{ WebkitAppearance: 'none', fontSize: '16px' }}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs uppercase tracking-[0.2em] mb-2 text-white/60">
+                  <label className="block text-xs uppercase tracking-wider mb-2 text-white/60">
                     Apartment, Suite, etc. (Optional)
                   </label>
                   <input
@@ -421,12 +440,13 @@ export default function CheckoutPage() {
                     autoComplete="address-line2"
                     value={billingInfo.address2}
                     onChange={(e) => setBillingInfo({ ...billingInfo, address2: e.target.value })}
-                    className="w-full px-3 sm:px-4 py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-all rounded-sm"
+                    className="w-full px-4 py-3.5 text-base bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:bg-white/10 focus:outline-none transition-all rounded-xl min-h-[48px]"
+                    style={{ WebkitAppearance: 'none', fontSize: '16px' }}
                   />
                 </div>
-                <div className="grid grid-cols-3 gap-2 sm:gap-4">
-                  <div className="col-span-3 sm:col-span-1">
-                    <label className="block text-xs uppercase tracking-[0.2em] mb-2 text-white/60">
+                <div className="grid grid-cols-6 gap-3">
+                  <div className="col-span-6 sm:col-span-3">
+                    <label className="block text-xs uppercase tracking-wider mb-2 text-white/60">
                       City
                     </label>
                     <input
@@ -435,11 +455,12 @@ export default function CheckoutPage() {
                       autoComplete="address-level2"
                       value={billingInfo.city}
                       onChange={(e) => setBillingInfo({ ...billingInfo, city: e.target.value })}
-                      className="w-full px-3 sm:px-4 py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-smooth rounded-sm input-elegant focus-elegant"
+                      className="w-full px-4 py-3.5 text-base bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:bg-white/10 focus:outline-none transition-all rounded-xl min-h-[48px]"
+                      style={{ WebkitAppearance: 'none', fontSize: '16px' }}
                     />
                   </div>
-                  <div>
-                    <label className="block text-xs uppercase tracking-[0.2em] mb-2 text-white/60">
+                  <div className="col-span-3 sm:col-span-2">
+                    <label className="block text-xs uppercase tracking-wider mb-2 text-white/60">
                       State
                     </label>
                     <input
@@ -449,12 +470,13 @@ export default function CheckoutPage() {
                       autoComplete="address-level1"
                       value={billingInfo.state}
                       onChange={(e) => setBillingInfo({ ...billingInfo, state: e.target.value.toUpperCase() })}
-                      className="w-full px-3 sm:px-4 py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-all uppercase rounded-sm"
+                      className="w-full px-4 py-3.5 text-base bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:bg-white/10 focus:outline-none transition-all uppercase rounded-xl min-h-[48px]"
                       placeholder="NC"
+                      style={{ WebkitAppearance: 'none', fontSize: '16px' }}
                     />
                   </div>
-                  <div>
-                    <label className="block text-xs uppercase tracking-[0.2em] mb-2 text-white/60">
+                  <div className="col-span-3 sm:col-span-1">
+                    <label className="block text-xs uppercase tracking-wider mb-2 text-white/60">
                       ZIP
                     </label>
                     <input
@@ -464,8 +486,9 @@ export default function CheckoutPage() {
                       autoComplete="postal-code"
                       value={billingInfo.zipCode}
                       onChange={(e) => setBillingInfo({ ...billingInfo, zipCode: e.target.value })}
-                      className="w-full px-3 sm:px-4 py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-smooth rounded-sm input-elegant focus-elegant"
+                      className="w-full px-4 py-3.5 text-base bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:bg-white/10 focus:outline-none transition-all rounded-xl min-h-[48px]"
                       placeholder="28801"
+                      style={{ WebkitAppearance: 'none', fontSize: '16px' }}
                     />
                   </div>
                 </div>
@@ -475,14 +498,14 @@ export default function CheckoutPage() {
             {/* Shipping Address Toggle */}
             {hasDeliveryItems && (
               <div>
-                <label className="flex items-center gap-3 cursor-pointer">
+                <label className="flex items-center gap-3 cursor-pointer min-h-[44px] py-2">
                   <input
                     type="checkbox"
                     checked={useShippingAddress}
                     onChange={(e) => setUseShippingAddress(e.target.checked)}
-                    className="w-4 h-4 bg-white/5 border border-white/10 rounded focus:ring-2 focus:ring-white/30"
+                    className="w-5 h-5 bg-white/5 border border-white/10 rounded-md focus:ring-2 focus:ring-white/30"
                   />
-                  <span className="text-xs text-white/80">Ship to a different address</span>
+                  <span className="text-sm text-white/80">Ship to a different address</span>
                 </label>
               </div>
             )}
@@ -490,11 +513,11 @@ export default function CheckoutPage() {
             {/* Shipping Address */}
             {hasDeliveryItems && useShippingAddress && (
               <div>
-                <h2 className="text-sm uppercase tracking-[0.2em] text-white mb-6 font-normal">Shipping Address</h2>
+                <h2 className="text-sm uppercase tracking-[0.2em] text-white mb-5 font-medium">Shipping Address</h2>
                 <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs uppercase tracking-[0.2em] mb-2 text-white/60">
+                      <label className="block text-xs uppercase tracking-wider mb-2 text-white/60">
                         First Name
                       </label>
                       <input
@@ -502,11 +525,12 @@ export default function CheckoutPage() {
                         required
                         value={shippingInfo.firstName}
                         onChange={(e) => setShippingInfo({ ...shippingInfo, firstName: e.target.value })}
-                        className="w-full px-4 py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-smooth input-elegant focus-elegant"
+                        className="w-full px-4 py-3.5 text-base bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:bg-white/10 focus:outline-none transition-all rounded-xl min-h-[48px]"
+                        style={{ WebkitAppearance: 'none', fontSize: '16px' }}
                       />
                     </div>
                     <div>
-                      <label className="block text-xs uppercase tracking-[0.2em] mb-2 text-white/60">
+                      <label className="block text-xs uppercase tracking-wider mb-2 text-white/60">
                         Last Name
                       </label>
                       <input
@@ -514,12 +538,13 @@ export default function CheckoutPage() {
                         required
                         value={shippingInfo.lastName}
                         onChange={(e) => setShippingInfo({ ...shippingInfo, lastName: e.target.value })}
-                        className="w-full px-4 py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-smooth input-elegant focus-elegant"
+                        className="w-full px-4 py-3.5 text-base bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:bg-white/10 focus:outline-none transition-all rounded-xl min-h-[48px]"
+                        style={{ WebkitAppearance: 'none', fontSize: '16px' }}
                       />
                     </div>
                   </div>
                   <div>
-                    <label className="block text-xs uppercase tracking-[0.2em] mb-2 text-white/60">
+                    <label className="block text-xs uppercase tracking-wider mb-2 text-white/60">
                       Address
                     </label>
                     <input
@@ -527,23 +552,25 @@ export default function CheckoutPage() {
                       required
                       value={shippingInfo.address}
                       onChange={(e) => setShippingInfo({ ...shippingInfo, address: e.target.value })}
-                      className="w-full px-4 py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-all"
+                      className="w-full px-4 py-3.5 text-base bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:bg-white/10 focus:outline-none transition-all rounded-xl min-h-[48px]"
+                      style={{ WebkitAppearance: 'none', fontSize: '16px' }}
                     />
                   </div>
                   <div>
-                    <label className="block text-xs uppercase tracking-[0.2em] mb-2 text-white/60">
+                    <label className="block text-xs uppercase tracking-wider mb-2 text-white/60">
                       Apartment, Suite, etc. (Optional)
                     </label>
                     <input
                       type="text"
                       value={shippingInfo.address2}
                       onChange={(e) => setShippingInfo({ ...shippingInfo, address2: e.target.value })}
-                      className="w-full px-4 py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-all"
+                      className="w-full px-4 py-3.5 text-base bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:bg-white/10 focus:outline-none transition-all rounded-xl min-h-[48px]"
+                      style={{ WebkitAppearance: 'none', fontSize: '16px' }}
                     />
                   </div>
-                  <div className="grid grid-cols-3 gap-4">
-                    <div>
-                      <label className="block text-xs uppercase tracking-[0.2em] mb-2 text-white/60">
+                  <div className="grid grid-cols-6 gap-3">
+                    <div className="col-span-6 sm:col-span-3">
+                      <label className="block text-xs uppercase tracking-wider mb-2 text-white/60">
                         City
                       </label>
                       <input
@@ -551,11 +578,12 @@ export default function CheckoutPage() {
                         required
                         value={shippingInfo.city}
                         onChange={(e) => setShippingInfo({ ...shippingInfo, city: e.target.value })}
-                        className="w-full px-4 py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-smooth input-elegant focus-elegant"
+                        className="w-full px-4 py-3.5 text-base bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:bg-white/10 focus:outline-none transition-all rounded-xl min-h-[48px]"
+                        style={{ WebkitAppearance: 'none', fontSize: '16px' }}
                       />
                     </div>
-                    <div>
-                      <label className="block text-xs uppercase tracking-[0.2em] mb-2 text-white/60">
+                    <div className="col-span-3 sm:col-span-2">
+                      <label className="block text-xs uppercase tracking-wider mb-2 text-white/60">
                         State
                       </label>
                       <input
@@ -564,12 +592,13 @@ export default function CheckoutPage() {
                         maxLength={2}
                         value={shippingInfo.state}
                         onChange={(e) => setShippingInfo({ ...shippingInfo, state: e.target.value.toUpperCase() })}
-                        className="w-full px-4 py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-all uppercase"
+                        className="w-full px-4 py-3.5 text-base bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:bg-white/10 focus:outline-none transition-all uppercase rounded-xl min-h-[48px]"
                         placeholder="NC"
+                        style={{ WebkitAppearance: 'none', fontSize: '16px' }}
                       />
                     </div>
-                    <div>
-                      <label className="block text-xs uppercase tracking-[0.2em] mb-2 text-white/60">
+                    <div className="col-span-3 sm:col-span-1">
+                      <label className="block text-xs uppercase tracking-wider mb-2 text-white/60">
                         ZIP
                       </label>
                       <input
@@ -578,7 +607,8 @@ export default function CheckoutPage() {
                         value={shippingInfo.zip}
                         onChange={(e) => setShippingInfo({ ...shippingInfo, zip: e.target.value })}
                         maxLength={5}
-                        className="w-full px-4 py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-smooth input-elegant focus-elegant"
+                        className="w-full px-4 py-3.5 text-base bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:bg-white/10 focus:outline-none transition-all rounded-xl min-h-[48px]"
+                        style={{ WebkitAppearance: 'none', fontSize: '16px' }}
                       />
                     </div>
                   </div>
@@ -588,8 +618,8 @@ export default function CheckoutPage() {
 
             {/* Payment Info */}
             <div>
-              <h2 className="text-sm uppercase tracking-[0.2em] text-white mb-4 sm:mb-6 font-normal flex items-center gap-2">
-                <Lock size={14} className="text-white/60" />
+              <h2 className="text-sm uppercase tracking-[0.2em] text-white mb-5 font-medium flex items-center gap-2">
+                <Lock size={16} className="text-white/60" />
                 Payment Information
               </h2>
               
@@ -598,28 +628,29 @@ export default function CheckoutPage() {
                 <button
                   type="button"
                   onClick={handleApplePay}
-                  className="interactive-button w-full mb-4 px-3 sm:px-4 py-2.5 sm:py-3 bg-black border border-white/20 text-white text-xs sm:text-sm uppercase tracking-[0.2em] hover:bg-white hover:text-black flex items-center justify-center gap-2 rounded-sm"
+                  className="interactive-button w-full mb-5 px-4 py-4 bg-black border border-white/20 text-white text-sm uppercase tracking-wider hover:bg-white hover:text-black active:scale-[0.98] flex items-center justify-center gap-2 rounded-xl min-h-[56px] transition-all font-medium"
                 >
-                  <CreditCard size={16} />
+                  <CreditCard size={18} />
                   Pay with Apple Pay
                 </button>
               )}
 
               {paymentError && (
-                <div className="mb-4 p-3 bg-red-500/10 border border-red-500/50 text-red-400 text-xs rounded-sm">
+                <div className="mb-4 p-4 bg-red-500/10 border border-red-500/50 text-red-400 text-sm rounded-xl">
                   {paymentError}
                 </div>
               )}
 
-              <div className="space-y-3 sm:space-y-4">
+              <div className="space-y-4">
                 <div>
-                  <label className="block text-xs uppercase tracking-[0.2em] mb-2 text-white/60">
+                  <label className="block text-xs uppercase tracking-wider mb-2 text-white/60">
                     Card Number
                   </label>
                   <input
                     type="text"
                     required
                     autoComplete="cc-number"
+                    inputMode="numeric"
                     placeholder="1234 5678 9012 3456"
                     value={paymentInfo.cardNumber}
                     onChange={(e) => {
@@ -628,18 +659,20 @@ export default function CheckoutPage() {
                       setPaymentInfo({ ...paymentInfo, cardNumber: formatted });
                     }}
                     maxLength={19}
-                    className="w-full px-3 sm:px-4 py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-all rounded-sm"
+                    className="w-full px-4 py-3.5 text-base bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:bg-white/10 focus:outline-none transition-all rounded-xl min-h-[48px]"
+                    style={{ WebkitAppearance: 'none', fontSize: '16px' }}
                   />
                 </div>
-                <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs uppercase tracking-[0.2em] mb-2 text-white/60">
+                    <label className="block text-xs uppercase tracking-wider mb-2 text-white/60">
                       Expiry (MM/YY)
                     </label>
                     <input
                       type="text"
                       required
                       autoComplete="cc-exp"
+                      inputMode="numeric"
                       placeholder="12/25"
                       value={paymentInfo.expiry}
                       onChange={(e) => {
@@ -650,22 +683,25 @@ export default function CheckoutPage() {
                         setPaymentInfo({ ...paymentInfo, expiry: value });
                       }}
                       maxLength={5}
-                      className="w-full px-3 sm:px-4 py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-smooth rounded-sm input-elegant focus-elegant"
+                      className="w-full px-4 py-3.5 text-base bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:bg-white/10 focus:outline-none transition-all rounded-xl min-h-[48px]"
+                      style={{ WebkitAppearance: 'none', fontSize: '16px' }}
                     />
                   </div>
                   <div>
-                    <label className="block text-xs uppercase tracking-[0.2em] mb-2 text-white/60">
+                    <label className="block text-xs uppercase tracking-wider mb-2 text-white/60">
                       CVV
                     </label>
                     <input
                       type="text"
                       required
                       autoComplete="cc-csc"
+                      inputMode="numeric"
                       placeholder="123"
                       value={paymentInfo.cvv}
                       onChange={(e) => setPaymentInfo({ ...paymentInfo, cvv: e.target.value.replace(/\D/g, "") })}
                       maxLength={4}
-                      className="w-full px-3 sm:px-4 py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-smooth rounded-sm input-elegant focus-elegant"
+                      className="w-full px-4 py-3.5 text-base bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:bg-white/10 focus:outline-none transition-all rounded-xl min-h-[48px]"
+                      style={{ WebkitAppearance: 'none', fontSize: '16px' }}
                     />
                   </div>
                 </div>
@@ -674,8 +710,8 @@ export default function CheckoutPage() {
           </div>
 
           {/* Right - Order Summary */}
-          <div className="bg-[#3a3a3a] px-4 sm:px-6 md:px-8 lg:px-12 py-8 sm:py-10 md:py-12">
-            <h2 className="text-sm uppercase tracking-[0.2em] text-white mb-4 sm:mb-6 font-normal">Order Summary</h2>
+          <div className="bg-[#3a3a3a] px-5 sm:px-6 md:px-8 lg:px-12 py-6 sm:py-10 md:py-12">
+            <h2 className="text-sm uppercase tracking-[0.2em] text-white mb-6 font-medium">Order Summary</h2>
             
             {/* Cart Items */}
             <div className="space-y-3 sm:space-y-4 mb-6 sm:mb-8 max-h-[400px] overflow-y-auto scrollbar-hide">
@@ -751,28 +787,28 @@ export default function CheckoutPage() {
             <button
               type="submit"
               disabled={isProcessing}
-              className={`w-full mt-6 sm:mt-8 px-6 sm:px-8 py-4 text-xs uppercase tracking-[0.25em] font-medium flex items-center justify-center gap-2 rounded-sm ${
+              className={`w-full mt-8 px-6 py-4 text-sm uppercase tracking-wider font-semibold flex items-center justify-center gap-2 rounded-xl transition-all min-h-[56px] ${
                 isProcessing
                   ? "bg-black/40 text-white/60 cursor-not-allowed border border-white/10"
-                  : "interactive-button bg-black text-white hover:bg-white hover:text-black border border-white/20 hover:border-white"
+                  : "interactive-button bg-white text-black hover:bg-white/90 active:scale-[0.98] border-0"
               }`}
             >
               {isProcessing ? (
                 <>
-                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin-smooth"></div>
+                  <div className="w-5 h-5 border-2 border-black/30 border-t-black rounded-full animate-spin"></div>
                   <span>Processing...</span>
                 </>
               ) : (
                 <>
                   Place Order
-                  <ArrowRight size={14} />
+                  <ArrowRight size={16} />
                 </>
               )}
             </button>
 
             {/* Security Notice */}
-            <div className="mt-3 sm:mt-4 flex items-center justify-center gap-2 text-xs text-white/40">
-              <Lock size={10} />
+            <div className="mt-4 flex items-center justify-center gap-2 text-xs text-white/40">
+              <Lock size={12} />
               <span>Secure checkout · SSL encrypted</span>
             </div>
           </div>
