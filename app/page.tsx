@@ -1,14 +1,18 @@
 import { getBestSellingProducts, getCategories, getLocations, getAllInventory, getPricingRules } from "@/lib/wordpress";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import dynamic from "next/dynamic";
+import dynamicImport from "next/dynamic";
+
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+export const revalidate = 60;
 
 // Lazy load heavy carousel components
-const LuxuryHero = dynamic(() => import("@/components/LuxuryHero"), {
+const LuxuryHero = dynamicImport(() => import("@/components/LuxuryHero"), {
   ssr: true,
 });
 
-const ProductsCarousel = dynamic(() => import("@/components/ProductsCarousel"), {
+const ProductsCarousel = dynamicImport(() => import("@/components/ProductsCarousel"), {
   ssr: true,
   loading: () => (
     <div className="flex gap-4 px-4 animate-pulse">
@@ -19,17 +23,13 @@ const ProductsCarousel = dynamic(() => import("@/components/ProductsCarousel"), 
   ),
 });
 
-const CategoriesCarousel = dynamic(() => import("@/components/CategoriesCarousel"), {
+const CategoriesCarousel = dynamicImport(() => import("@/components/CategoriesCarousel"), {
   ssr: true,
 });
 
-const LocationsCarousel = dynamic(() => import("@/components/LocationsCarousel"), {
+const LocationsCarousel = dynamicImport(() => import("@/components/LocationsCarousel"), {
   ssr: true,
 });
-
-// Enable dynamic rendering to avoid build-time API calls
-export const dynamic = 'force-dynamic';
-export const revalidate = 60;
 
 export default async function Home() {
   // Optimized: Fetch only necessary data in parallel
