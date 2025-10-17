@@ -7,7 +7,7 @@ import { useLoyalty } from "@/context/LoyaltyContext";
 import { showNotification } from "@/components/NotificationToast";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Package, MapPin, User, LogOut, ShoppingBag, CreditCard, ChevronRight, Calendar, DollarSign, Heart, Clock, X, RotateCcw, Star, Award, TrendingUp, Gift, Sparkles } from "lucide-react";
+import { Package, MapPin, User, LogOut, ShoppingBag, CreditCard, ChevronRight, Calendar, DollarSign, Heart, Clock, X, RotateCcw, Star, Award, TrendingUp, Gift, Sparkles, Truck, Store } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import axios from "axios";
