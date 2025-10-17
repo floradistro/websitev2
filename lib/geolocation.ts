@@ -36,8 +36,8 @@ export async function getUserLocation(): Promise<UserLocation | null> {
   }
 
   try {
-    // Use ip-api.com for IP geolocation (free, higher limits, no key needed)
-    const response = await fetch('https://ip-api.com/json/?fields=status,message,country,countryCode,region,regionName,city,zip,lat,lon,query', {
+    // Use our API route which proxies ip-api.com server-side (avoids CORS/403 issues)
+    const response = await fetch('/api/geolocation', {
       cache: 'no-store'
     });
     
@@ -51,7 +51,7 @@ export async function getUserLocation(): Promise<UserLocation | null> {
     
     const data = await response.json();
     
-    if (data.status !== 'success') {
+    if (data.error) {
       if (typeof window !== 'undefined') {
         sessionStorage.setItem('geolocation_failed', 'true');
       }
@@ -59,14 +59,14 @@ export async function getUserLocation(): Promise<UserLocation | null> {
     }
     
     return {
-      ip: data.query,
+      ip: data.ip,
       city: data.city,
-      region: data.regionName,
-      region_code: data.region,
-      country_code: data.countryCode,
-      postal: data.zip,
-      latitude: data.lat,
-      longitude: data.lon,
+      region: data.region,
+      region_code: data.region_code,
+      country_code: data.country_code,
+      postal: data.postal,
+      latitude: data.latitude,
+      longitude: data.longitude,
     };
   } catch (error) {
     // Silently fail and mark as failed

@@ -29,6 +29,8 @@ add_action('rest_api_init', function() {
             'https://web2-seven-bice.vercel.app',
             'https://web2-ml23ngnkq-floradistros-projects.vercel.app',
             'https://web2-iaa1jeuol-floradistros-projects.vercel.app',
+            'https://web2-jz3v3b4ji-floradistros-projects.vercel.app',
+            'https://web2-48ixpv1io-floradistros-projects.vercel.app',
             'https://floradistro.com',
             'https://www.floradistro.com',
             // Add any other Vercel preview URLs as needed
@@ -37,9 +39,12 @@ add_action('rest_api_init', function() {
         // Get the origin
         $origin = isset($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : '';
         
-        // Check if origin is in allowed list OR is a Vercel preview URL
+        // Check if origin is in allowed list OR is any Vercel preview URL from our project
         $is_allowed = in_array($origin, $allowed_origins) || 
-                      (strpos($origin, 'vercel.app') !== false && strpos($origin, 'floradistros-projects') !== false);
+                      (strpos($origin, 'vercel.app') !== false && 
+                       (strpos($origin, 'floradistros-projects') !== false || 
+                        strpos($origin, 'websitev2') !== false ||
+                        strpos($origin, 'web2-') !== false));
         
         if ($is_allowed) {
             header('Access-Control-Allow-Origin: ' . $origin);
@@ -74,13 +79,18 @@ add_filter('rest_request_before_callbacks', function($response, $handler, $reque
             'https://web2-seven-bice.vercel.app',
             'https://web2-ml23ngnkq-floradistros-projects.vercel.app',
             'https://web2-iaa1jeuol-floradistros-projects.vercel.app',
+            'https://web2-jz3v3b4ji-floradistros-projects.vercel.app',
+            'https://web2-48ixpv1io-floradistros-projects.vercel.app',
             'https://floradistro.com',
             'https://www.floradistro.com',
         ];
         
         $origin = isset($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : '';
         $is_allowed = in_array($origin, $allowed_origins) || 
-                      (strpos($origin, 'vercel.app') !== false && strpos($origin, 'floradistros-projects') !== false);
+                      (strpos($origin, 'vercel.app') !== false && 
+                       (strpos($origin, 'floradistros-projects') !== false || 
+                        strpos($origin, 'websitev2') !== false ||
+                        strpos($origin, 'web2-') !== false));
         
         if ($is_allowed) {
             header('Access-Control-Allow-Origin: ' . $origin);
