@@ -1,9 +1,14 @@
 import axios, { AxiosInstance } from "axios";
 
 // WooCommerce API configuration
-const baseUrl = process.env.WORDPRESS_API_URL || "";
-const consumerKey = process.env.WORDPRESS_CONSUMER_KEY || "";
-const consumerSecret = process.env.WORDPRESS_CONSUMER_SECRET || "";
+const baseUrl = process.env.WORDPRESS_API_URL || process.env.NEXT_PUBLIC_WORDPRESS_API_URL || "https://api.floradistro.com";
+const consumerKey = process.env.WORDPRESS_CONSUMER_KEY || process.env.NEXT_PUBLIC_WORDPRESS_CONSUMER_KEY || "";
+const consumerSecret = process.env.WORDPRESS_CONSUMER_SECRET || process.env.NEXT_PUBLIC_WORDPRESS_CONSUMER_SECRET || "";
+
+// Validate configuration
+if (!baseUrl || baseUrl === "") {
+  console.error("⚠️ WORDPRESS_API_URL not configured - using fallback");
+}
 
 // Create WooCommerce API client with OAuth1 credentials
 const wooApi: AxiosInstance = axios.create({
