@@ -115,11 +115,22 @@ export default function ProductPageClient({
 
       const data = await response.json();
       
-      if (data.success && data.recommendations) {
+      if (data.success && data.recommendations && data.recommendations.length > 0) {
         setAiRecommendations(data.recommendations.filter((p: any) => p.id !== product.id).slice(0, 6));
+      } else {
+        // Fallback: show random products from recently viewed
+        const fallback = allProducts
+          .filter((p: any) => p.id !== product.id)
+          .slice(0, 6);
+        setAiRecommendations(fallback);
       }
     } catch (error) {
       console.error('Error loading AI recommendations:', error);
+      // Show fallback on error
+      const fallback = allProducts
+        .filter((p: any) => p.id !== product.id)
+        .slice(0, 6);
+      setAiRecommendations(fallback);
     }
   };
 
