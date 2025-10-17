@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAllProducts, getPricingRules } from "@/lib/wordpress";
+import { getAllProducts, getPricingRules, getAllInventory } from "@/lib/wordpress";
 
 export async function GET(request: NextRequest) {
   try {
@@ -10,16 +10,43 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ products: [] });
     }
 
-    // Get all products and pricing rules
-    const [allProducts, pricingRules] = await Promise.all([
+    // Get all products, pricing rules, and inventory
+    const [allProducts, pricingRules, allInventory] = await Promise.all([
       getAllProducts(),
       getPricingRules(),
+      getAllInventory(),
     ]);
+
+    // Create inventory map
+    const inventoryMap: { [key: number]: any[] } = {};
+    allInventory.forEach((inv: any) => {
+      const productId = parseInt(inv.product_id);
+      if (!inventoryMap[productId]) {
+        inventoryMap[productId] = [];
+      }
+      inventoryMap[productId].push(inv);
+    });
+
+    // Helper to check if product has stock
+    const hasStockAnywhere = (productId: number): boolean => {
+      const inventory = inventoryMap[productId] || [];
+      return inventory.some((inv: any) => {
+        const qty = parseFloat(inv.stock_quantity || inv.quantity || inv.stock || 0);
+        const status = inv.status?.toLowerCase();
+        return qty > 0 || status === 'instock' || status === 'in_stock';
+      });
+    };
 
     const searchQuery = query.toLowerCase().trim();
     
     // Smart search - search across multiple fields including metadata
+    // Also filter out products with no stock at any location
     const filteredProducts = allProducts.filter((product: any) => {
+      // First check if product has stock anywhere
+      if (!hasStockAnywhere(product.id)) {
+        return false;
+      }
+      
       // Search in product name
       const nameMatch = product.name.toLowerCase().includes(searchQuery);
       

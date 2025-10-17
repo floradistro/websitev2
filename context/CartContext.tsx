@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, ReactNode, useCallback, useRef } from "react";
 // import { analytics } from "@/lib/analytics";
 
 interface CartItem {
@@ -36,6 +36,7 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Load cart from localStorage on mount
   useEffect(() => {
@@ -49,12 +50,31 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  // Save cart to localStorage whenever it changes
+  // Debounced save to localStorage - prevents excessive writes
   useEffect(() => {
-    localStorage.setItem("flora-cart", JSON.stringify(items));
+    // Clear existing timeout
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+
+    // Set new timeout to save after 300ms of inactivity
+    saveTimeoutRef.current = setTimeout(() => {
+      try {
+        localStorage.setItem("flora-cart", JSON.stringify(items));
+      } catch (error) {
+        console.error("Failed to save cart:", error);
+      }
+    }, 300);
+
+    // Cleanup
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
   }, [items]);
 
-  const addToCart = (item: CartItem) => {
+  const addToCart = useCallback((item: CartItem) => {
     setItems((prev) => {
       const existingItem = prev.find(
         (i) => i.productId === item.productId && i.tierName === item.tierName
@@ -78,25 +98,27 @@ export function CartProvider({ children }: { children: ReactNode }) {
     //   price: item.price,
     //   quantity: item.quantity,
     // });
-  };
+  }, []);
 
-  const removeFromCart = (productId: number) => {
-    const item = items.find((i) => i.productId === productId);
-    
-    setItems((prev) => prev.filter((item) => item.productId !== productId));
-    
-    // Track analytics event
-    // if (item) {
-    //   analytics.removeFromCart({
-    //     id: item.productId,
-    //     name: item.name,
-    //     price: item.price,
-    //     quantity: item.quantity,
-    //   });
-    // }
-  };
+  const removeFromCart = useCallback((productId: number) => {
+    setItems((prev) => {
+      const item = prev.find((i) => i.productId === productId);
+      
+      // Track analytics event
+      // if (item) {
+      //   analytics.removeFromCart({
+      //     id: item.productId,
+      //     name: item.name,
+      //     price: item.price,
+      //     quantity: item.quantity,
+      //   });
+      // }
+      
+      return prev.filter((item) => item.productId !== productId);
+    });
+  }, []);
 
-  const updateQuantity = (productId: number, quantity: number) => {
+  const updateQuantity = useCallback((productId: number, quantity: number) => {
     if (quantity <= 0) {
       removeFromCart(productId);
       return;
@@ -107,19 +129,19 @@ export function CartProvider({ children }: { children: ReactNode }) {
         item.productId === productId ? { ...item, quantity } : item
       )
     );
-  };
+  }, [removeFromCart]);
 
-  const updateCartItem = (productId: number, updates: Partial<CartItem>) => {
+  const updateCartItem = useCallback((productId: number, updates: Partial<CartItem>) => {
     setItems((prev) =>
       prev.map((item) =>
         item.productId === productId ? { ...item, ...updates } : item
       )
     );
-  };
+  }, []);
 
-  const clearCart = () => {
+  const clearCart = useCallback(() => {
     setItems([]);
-  };
+  }, []);
 
   const itemCount = items.reduce((total, item) => total + item.quantity, 0);
   const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);

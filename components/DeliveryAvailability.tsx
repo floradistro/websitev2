@@ -175,25 +175,34 @@ export default function DeliveryAvailability({
   // Calculate delivery dates
   const getDeliveryDates = () => {
     const now = new Date();
-    const estTime = new Date(now.toLocaleString("en-US", { timeZone: "America/New_York" }));
-    const currentHour = estTime.getHours();
+    
+    // Get current hour in EST/EDT timezone
+    const currentHour = parseInt(now.toLocaleString("en-US", { 
+      timeZone: "America/New_York",
+      hour: "numeric",
+      hour12: false 
+    }));
     
     // Check if before 2pm EST cutoff
     const isSameDayShipping = currentHour < 14;
     
-    const tomorrow = new Date(estTime);
+    // Calculate future dates based on EST/EDT
+    const tomorrow = new Date(now);
     tomorrow.setDate(tomorrow.getDate() + 1);
     
-    const dayAfterTomorrow = new Date(estTime);
+    const dayAfterTomorrow = new Date(now);
     dayAfterTomorrow.setDate(dayAfterTomorrow.getDate() + 2);
     
-    const threeDays = new Date(estTime);
+    const threeDays = new Date(now);
     threeDays.setDate(threeDays.getDate() + 3);
 
     const formatDate = (date: Date) => {
-      const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-      return `${days[date.getDay()]}, ${months[date.getMonth()]} ${date.getDate()}`;
+      return date.toLocaleDateString("en-US", {
+        weekday: "long",
+        month: "short",
+        day: "numeric",
+        timeZone: "America/New_York"
+      });
     };
 
     if (isSameDayShipping) {

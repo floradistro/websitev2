@@ -3,6 +3,9 @@
 import { useState, useEffect } from "react";
 import { ShoppingBag, Store, Truck } from "lucide-react";
 import { useCart } from "@/context/CartContext";
+import Image from "next/image";
+import Link from "next/link";
+import { useLinkPrefetch } from "@/hooks/usePrefetch";
 
 interface ProductCardProps {
   product: any;
@@ -21,6 +24,18 @@ export default function ProductCard({ product, index, locations, pricingRules, p
   const [selectedTierIndex, setSelectedTierIndex] = useState<number | null>(null);
   const [showAddToCart, setShowAddToCart] = useState(false);
   const { addToCart } = useCart();
+  
+  // Aggressive prefetching for instant loads
+  const prefetchHandlers = useLinkPrefetch(`/products/${product.id}`);
+  
+  // Also prefetch the API data
+  useEffect(() => {
+    // Prefetch API data immediately when card enters viewport
+    const timer = setTimeout(() => {
+      fetch(`/api/product/${product.id}`).catch(() => {});
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [product.id]);
   
   // Get pricing tiers for this product
   const [tiers, setTiers] = useState<any[]>([]);
@@ -69,11 +84,6 @@ export default function ProductCard({ product, index, locations, pricingRules, p
     const index = parseInt(e.target.value);
     setSelectedTierIndex(index);
     setShowAddToCart(index >= 0);
-  };
-  
-  const handleDropdownClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
   };
   
   const handleAddToCart = (e: React.MouseEvent) => {
@@ -183,29 +193,16 @@ export default function ProductCard({ product, index, locations, pricingRules, p
 
   const handleQuickBuy = (e: React.MouseEvent) => {
     e.preventDefault();
-    e.stopPropagation();
-    window.location.href = `/products/${product.id}`;
   };
 
   const handlePickup = (e: React.MouseEvent) => {
     e.preventDefault();
-    e.stopPropagation();
     window.location.href = `/products/${product.id}?type=pickup`;
   };
 
   const handleDelivery = (e: React.MouseEvent) => {
     e.preventDefault();
-    e.stopPropagation();
     window.location.href = `/products/${product.id}?type=delivery`;
-  };
-
-  const handleCardClick = (e: React.MouseEvent) => {
-    // Don't navigate if clicking on interactive elements
-    const target = e.target as HTMLElement;
-    if (target.tagName === 'SELECT' || target.tagName === 'BUTTON' || target.tagName === 'OPTION' || target.closest('select') || target.closest('button')) {
-      return;
-    }
-    window.location.href = `/products/${product.id}`;
   };
 
   // Get locations where product is in stock
@@ -242,11 +239,17 @@ export default function ProductCard({ product, index, locations, pricingRules, p
   const stockInfo = getStockLocations();
 
   return (
-    <div
-      className="group block relative bg-[#3a3a3a] hover:bg-[#404040] transition-all duration-500 cursor-pointer hover:shadow-2xl hover:-translate-y-1 border border-transparent hover:border-white/10"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      onClick={handleCardClick}
+    <Link
+      href={`/products/${product.id}`}
+      className={`group block relative bg-[#3a3a3a] hover:bg-[#404040] transition-all duration-500 cursor-pointer hover:shadow-2xl hover:-translate-y-1 border border-transparent hover:border-white/10 glow-hover click-feedback ${!stockInfo.inStock ? 'opacity-75' : ''}`}
+      onMouseEnter={(e) => {
+        setIsHovered(true);
+        prefetchHandlers.onMouseEnter();
+      }}
+      onMouseLeave={(e) => {
+        setIsHovered(false);
+        prefetchHandlers.onMouseLeave();
+      }}
       style={{
         animation: `fadeInUp 0.6s ease-out ${index * 0.05}s both`,
       }}
@@ -255,23 +258,27 @@ export default function ProductCard({ product, index, locations, pricingRules, p
       <div className="relative aspect-[4/5] overflow-hidden bg-[#2a2a2a] transition-all duration-500">
         {product.images?.[0] ? (
           <>
-            {/* Main Image */}
-            <img
+            {/* Main Image - Optimized with Next.js Image */}
+            <Image
               src={product.images[0].src}
               alt={product.name}
+              fill
+              sizes="(max-width: 640px) 85vw, (max-width: 768px) 45vw, (max-width: 1024px) 32vw, 23vw"
+              className="object-contain transition-all duration-700 ease-out group-hover:scale-105"
               loading="lazy"
-              className="w-full h-full object-contain transition-all duration-700 ease-out group-hover:scale-105"
+              quality={85}
             />
           </>
         ) : (
           <>
             {/* Logo Fallback */}
             <div className="w-full h-full flex items-center justify-center p-12">
-              <img
+              <Image
                 src="/logoprint.png"
                 alt="Flora Distro"
+                fill
+                className="object-contain opacity-10 transition-opacity duration-500 group-hover:opacity-15"
                 loading="lazy"
-                className="w-full h-full object-contain opacity-10 transition-opacity duration-500 group-hover:opacity-15"
               />
             </div>
           </>
@@ -308,7 +315,7 @@ export default function ProductCard({ product, index, locations, pricingRules, p
           <div className="flex flex-col items-center gap-2 transform translate-y-3 group-hover:translate-y-0 transition-transform duration-500">
             <button
               onClick={handleQuickBuy}
-              className="flex items-center gap-2 bg-black border border-white/20 text-white px-6 py-3 text-xs uppercase tracking-[0.2em] hover:bg-white hover:text-black hover:border-white transition-all duration-300 font-medium"
+              className="interactive-button flex items-center gap-2 bg-black border border-white/20 text-white px-6 py-3 text-xs uppercase tracking-[0.2em] hover:bg-white hover:text-black hover:border-white font-medium"
             >
               <ShoppingBag size={12} strokeWidth={1.5} />
               <span>View Product</span>
@@ -317,7 +324,7 @@ export default function ProductCard({ product, index, locations, pricingRules, p
             <div className="flex items-center gap-2">
               <button
                 onClick={handlePickup}
-                className="flex items-center gap-1.5 bg-black border border-white/20 text-white px-4 py-2.5 hover:bg-white hover:text-black hover:border-white transition-all duration-300 text-[10px] uppercase tracking-[0.15em] font-medium"
+                className="interactive-button flex items-center gap-1.5 bg-black border border-white/20 text-white px-4 py-2.5 hover:bg-white hover:text-black hover:border-white text-[10px] uppercase tracking-[0.15em] font-medium"
               >
                 <Store size={11} strokeWidth={1.5} />
                 <span>Pickup</span>
@@ -325,7 +332,7 @@ export default function ProductCard({ product, index, locations, pricingRules, p
               
               <button
                 onClick={handleDelivery}
-                className="flex items-center gap-1.5 bg-black border border-white/20 text-white px-4 py-2.5 hover:bg-white hover:text-black hover:border-white transition-all duration-300 text-[10px] uppercase tracking-[0.15em] font-medium"
+                className="interactive-button flex items-center gap-1.5 bg-black border border-white/20 text-white px-4 py-2.5 hover:bg-white hover:text-black hover:border-white text-[10px] uppercase tracking-[0.15em] font-medium"
               >
                 <Truck size={11} strokeWidth={1.5} />
                 <span>Delivery</span>
@@ -363,9 +370,12 @@ export default function ProductCard({ product, index, locations, pricingRules, p
             )}
           </div>
         ) : (
-          <div className="flex items-center gap-1.5">
-            <div className="w-2 h-2 rounded-full bg-red-500 flex-shrink-0"></div>
-            <span className="text-[11px] uppercase tracking-wider text-white/60">Out of Stock</span>
+          <div className="flex flex-col gap-1">
+            <div className="flex items-center gap-1.5">
+              <div className="w-2 h-2 rounded-full bg-red-500/60 flex-shrink-0"></div>
+              <span className="text-[11px] uppercase tracking-wider text-white/40">Out of Stock</span>
+            </div>
+            <span className="text-[10px] text-white/30 ml-3.5">Check back soon</span>
           </div>
         )}
         
@@ -387,13 +397,19 @@ export default function ProductCard({ product, index, locations, pricingRules, p
         
         {/* Pricing Tier Selector */}
         {tiers.length > 0 && (
-          <div className="space-y-2 pt-2" onClick={handleDropdownClick}>
+          <div className="space-y-2 pt-2" onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          }}>
             <div className="relative">
                 <select
                 value={selectedTierIndex ?? ""}
                 onChange={handleTierSelect}
-                onClick={handleDropdownClick}
-                className="w-full appearance-none bg-transparent border border-white/20 px-3 py-2.5 md:py-2 pr-7 text-[11px] font-normal text-white hover:border-white/40 hover:bg-white/5 focus:border-white focus:outline-none transition-all duration-300 cursor-pointer touch-manipulation uppercase tracking-[0.1em]"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                }}
+                className="w-full appearance-none bg-transparent border border-white/20 px-3 py-2.5 md:py-2 pr-7 text-[11px] font-normal text-white hover:border-white/40 hover:bg-white/5 focus:border-white focus:outline-none transition-smooth cursor-pointer touch-manipulation uppercase tracking-[0.1em] focus-elegant"
                 style={{ minHeight: '40px' }}
               >
                 <option value="">Select Quantity</option>
@@ -421,7 +437,7 @@ export default function ProductCard({ product, index, locations, pricingRules, p
             {showAddToCart && (
               <button
                 onClick={handleAddToCart}
-                className="w-full bg-black border border-white/20 text-white px-3 py-2.5 md:py-2 text-[10px] uppercase tracking-[0.15em] hover:bg-white hover:text-black hover:border-white transition-all duration-300 font-medium flex items-center justify-center gap-2 animate-fadeIn touch-manipulation hover:shadow-lg active:scale-95"
+                className="interactive-button w-full bg-black border border-white/20 text-white px-3 py-2.5 md:py-2 text-[10px] uppercase tracking-[0.15em] hover:bg-white hover:text-black hover:border-white font-medium flex items-center justify-center gap-2 animate-fadeIn touch-manipulation hover:shadow-lg"
                 style={{ minHeight: '40px' }}
               >
                 <ShoppingBag size={13} strokeWidth={2} />
@@ -431,7 +447,7 @@ export default function ProductCard({ product, index, locations, pricingRules, p
           </div>
         )}
       </div>
-    </div>
+    </Link>
   );
 }
 

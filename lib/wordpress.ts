@@ -47,7 +47,21 @@ export async function getAllProducts() {
     page++;
   }
   
-  return allProducts;
+  // Deduplicate products by ID (in case API returns duplicates)
+  const uniqueProducts = Array.from(
+    new Map(allProducts.map(product => [product.id, product])).values()
+  );
+  
+  return uniqueProducts;
+}
+
+// OPTIMIZED: Use bulk endpoint - returns products with inventory, fields, and meta data in ONE call
+export async function getBulkProducts(params?: any) {
+  const response = await axios.get(
+    `${baseUrl}/wp-json/flora-im/v1/products/bulk?${authParams}`,
+    { params }
+  );
+  return response.data;
 }
 
 export async function getProduct(id: string | number) {
@@ -191,6 +205,21 @@ export async function getBestSellingProducts(params?: any) {
     }
   });
   return response.data;
+}
+
+// OPTIMIZED: Single product bulk endpoint - returns product with all data
+export async function getBulkProduct(productId: string | number) {
+  try {
+    const response = await axios.get(
+      `${baseUrl}/wp-json/flora-im/v1/products/bulk?${authParams}&include=${productId}`
+    );
+    return response.data?.data?.[0] || null;
+  } catch (error: any) {
+    if (error.response?.status === 404) {
+      return null;
+    }
+    throw error;
+  }
 }
 
 // Get orders to calculate best sellers

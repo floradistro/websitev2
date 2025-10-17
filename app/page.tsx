@@ -1,24 +1,57 @@
 import { getBestSellingProducts, getCategories, getLocations, getAllInventory, getPricingRules } from "@/lib/wordpress";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import LuxuryHero from "@/components/LuxuryHero";
-import ProductsCarousel from "@/components/ProductsCarousel";
-import CategoriesCarousel from "@/components/CategoriesCarousel";
-import LocationsCarousel from "@/components/LocationsCarousel";
+import dynamic from "next/dynamic";
+
+// Lazy load heavy carousel components
+const LuxuryHero = dynamic(() => import("@/components/LuxuryHero"), {
+  ssr: true,
+});
+
+const ProductsCarousel = dynamic(() => import("@/components/ProductsCarousel"), {
+  ssr: true,
+  loading: () => (
+    <div className="flex gap-4 px-4 animate-pulse">
+      {[...Array(4)].map((_, i) => (
+        <div key={i} className="flex-shrink-0 w-[300px] h-[400px] bg-[#3a3a3a]" />
+      ))}
+    </div>
+  ),
+});
+
+const CategoriesCarousel = dynamic(() => import("@/components/CategoriesCarousel"), {
+  ssr: true,
+});
+
+const LocationsCarousel = dynamic(() => import("@/components/LocationsCarousel"), {
+  ssr: true,
+});
+
+// Enable ISR - Revalidate every 5 minutes (300 seconds)
+export const revalidate = 300;
 
 export default async function Home() {
-  const [products, categories, locations, allInventory, pricingRules] = await Promise.all([
+  // Optimized: Fetch only necessary data in parallel
+  const [products, categories, locations, pricingRules] = await Promise.all([
     getBestSellingProducts({ per_page: 12 }),
     getCategories({ per_page: 10, hide_empty: true }),
     getLocations(),
-    getAllInventory(),
     getPricingRules(),
   ]);
 
-  // Create inventory map from bulk inventory data
+  // Get inventory only for the products we're displaying (not all products)
+  const productIds = products.map((p: any) => p.id);
+  const allInventory = await getAllInventory();
+  
+  // Filter inventory to only products on homepage
+  const relevantInventory = allInventory.filter((inv: any) => 
+    productIds.includes(parseInt(inv.product_id))
+  );
+
+  // Create inventory map from filtered inventory data
   const inventoryMap: { [key: number]: any[] } = {};
   
-  allInventory.forEach((inv: any) => {
+  relevantInventory.forEach((inv: any) => {
     const productId = parseInt(inv.product_id);
     if (!inventoryMap[productId]) {
       inventoryMap[productId] = [];
@@ -26,10 +59,23 @@ export default async function Home() {
     inventoryMap[productId].push(inv);
   });
 
-  // Extract fields from product metadata
+  // Helper function to check if product has stock at ANY location
+  const hasStockAnywhere = (productId: number): boolean => {
+    const inventory = inventoryMap[productId] || [];
+    return inventory.some((inv: any) => {
+      const qty = parseFloat(inv.stock_quantity || inv.quantity || inv.stock || 0);
+      const status = inv.status?.toLowerCase();
+      return qty > 0 || status === 'instock' || status === 'in_stock';
+    });
+  };
+
+  // Filter products to only show those with stock at any location
+  const inStockProducts = products.filter((product: any) => hasStockAnywhere(product.id));
+
+  // Extract fields from product metadata (only for in-stock products)
   const productFieldsMap: { [key: number]: any } = {};
   
-  products.forEach((product: any) => {
+  inStockProducts.forEach((product: any) => {
     const metaData = product.meta_data || [];
     const fields: { [key: string]: string } = {};
     
@@ -109,7 +155,7 @@ export default async function Home() {
         </div>
 
         <ProductsCarousel 
-          products={products}
+          products={inStockProducts}
           locations={locations}
           pricingRules={pricingRules}
           productFieldsMap={productFieldsMap}

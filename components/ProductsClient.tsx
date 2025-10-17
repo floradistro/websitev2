@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import LocationDropdown from "./LocationDropdown";
 import ProductCard from "./ProductCard";
 
@@ -35,17 +35,19 @@ export default function ProductsClient({
 }: ProductsClientProps) {
   const [selectedLocation, setSelectedLocation] = useState<string | null>(null);
   const [categorySlug, setCategorySlug] = useState<string | undefined>(initialCategory);
-  const [products, setProducts] = useState(initialProducts);
   const [selectedStrainType, setSelectedStrainType] = useState<string | null>(null);
   const [selectedEffect, setSelectedEffect] = useState<string | null>(null);
   const [priceRange, setPriceRange] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<string>("default");
   const [showFilters, setShowFilters] = useState(false);
 
-  const activeLocations = locations.filter((loc: any) => loc.is_active === "1");
+  const activeLocations = useMemo(
+    () => locations.filter((loc: any) => loc.is_active === "1"),
+    [locations]
+  );
 
-  // Filter products based on all selected filters
-  useEffect(() => {
+  // Optimized filter and sort with useMemo to prevent unnecessary recalculations
+  const products = useMemo(() => {
     let filtered = initialProducts;
 
     // Filter by category
@@ -54,7 +56,9 @@ export default function ProductsClient({
       
       if (selectedCategory) {
         filtered = filtered.filter((product: any) => 
-          product.categories?.some((cat: any) => cat.id === selectedCategory.id)
+          product.categories?.some((cat: any) => 
+            parseInt(cat.id) === parseInt(selectedCategory.id) || cat.slug === categorySlug
+          )
         );
       }
     }
@@ -65,7 +69,7 @@ export default function ProductsClient({
         const productInventory = inventoryMap[product.id] || [];
         
         return productInventory.some((inv: any) => {
-          const locationMatch = inv.location_id === parseInt(selectedLocation) || 
+          const locationMatch = parseInt(inv.location_id) === parseInt(selectedLocation) || 
                                inv.location_id?.toString() === selectedLocation;
           
           const qty = parseFloat(inv.stock_quantity || inv.quantity || inv.stock || 0);
@@ -128,7 +132,7 @@ export default function ProductsClient({
       );
     }
 
-    setProducts(filtered);
+    return filtered;
   }, [selectedLocation, categorySlug, selectedStrainType, selectedEffect, priceRange, sortBy, initialProducts, categories, inventoryMap, productFieldsMap]);
 
   return (

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { X, Search as SearchIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 interface SearchModalProps {
   isOpen: boolean;
@@ -79,11 +80,11 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
 
   return (
     <div
-      className="fixed inset-0 bg-black/80 z-[200] flex items-start justify-center pt-16 sm:pt-20 px-4"
+      className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[200] flex items-start justify-center pt-16 sm:pt-20 px-4 animate-fadeIn"
       onClick={onClose}
     >
       <div
-        className="bg-[#1a1a1a] border border-white/10 max-w-2xl w-full rounded-none"
+        className="bg-[#1a1a1a] border border-white/10 max-w-2xl w-full rounded-none animate-scaleIn"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Search Header */}
@@ -97,11 +98,11 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="Search products..."
-              className="flex-1 bg-transparent text-white text-base sm:text-lg placeholder:text-white/40 focus:outline-none"
+              className="flex-1 bg-transparent text-white text-base sm:text-lg placeholder:text-white/40 focus:outline-none input-elegant"
             />
             <button
               onClick={onClose}
-              className="text-white/60 hover:text-white transition-colors p-2"
+              className="text-white/60 hover:text-white transition-smooth p-2 click-feedback"
             >
               <X size={20} />
             </button>
@@ -112,7 +113,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
         <div className="max-h-[60vh] overflow-y-auto">
           {isSearching && (
             <div className="p-6 text-center">
-              <div className="w-6 h-6 border-2 border-white/20 border-t-white rounded-full animate-spin mx-auto"></div>
+              <div className="w-6 h-6 border-2 border-white/20 border-t-white rounded-full animate-spin-smooth mx-auto"></div>
               <p className="text-sm sm:text-base text-white/40 mt-2">Searching...</p>
             </div>
           )}
@@ -131,24 +132,32 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
 
           {!isSearching && searchResults.length > 0 && (
             <div className="py-2">
-              {searchResults.map((product) => (
+              {searchResults.map((product, index) => (
                 <button
                   key={product.id}
                   onClick={() => handleProductClick(product.id)}
-                  className="w-full px-4 sm:px-6 py-4 flex items-center gap-3 sm:gap-4 hover:bg-white/5 transition-colors text-left"
+                  className="w-full px-4 sm:px-6 py-4 flex items-center gap-3 sm:gap-4 hover:bg-white/10 transition-smooth text-left click-feedback"
+                  style={{
+                    animation: `fadeInUp 0.3s ease-out ${index * 0.03}s both`,
+                  }}
                 >
-                  <div className="w-16 h-16 sm:w-18 sm:h-18 bg-[#2a2a2a] flex items-center justify-center flex-shrink-0 rounded">
+                  <div className="w-16 h-16 sm:w-18 sm:h-18 bg-[#2a2a2a] flex items-center justify-center flex-shrink-0 rounded relative overflow-hidden">
                     {product.images && product.images[0] ? (
-                      <img
+                      <Image
                         src={product.images[0].src}
                         alt={product.name}
-                        className="w-full h-full object-contain"
+                        fill
+                        sizes="72px"
+                        className="object-contain"
+                        loading="lazy"
                       />
                     ) : (
-                      <img
+                      <Image
                         src="/logoprint.png"
                         alt="Flora Distro"
-                        className="w-full h-full object-contain opacity-20"
+                        fill
+                        className="object-contain opacity-20"
+                        loading="lazy"
                       />
                     )}
                   </div>
@@ -185,7 +194,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
                   router.push("/products?category=flower");
                   onClose();
                 }}
-                className="px-3 sm:px-4 py-2.5 sm:py-3 bg-white/5 hover:bg-white/10 text-sm sm:text-base text-white/80 transition-colors rounded-sm"
+                className="px-3 sm:px-4 py-2.5 sm:py-3 bg-white/5 hover:bg-white/10 text-sm sm:text-base text-white/80 transition-smooth rounded-sm click-feedback hover-lift"
               >
                 Flower
               </button>
@@ -194,7 +203,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
                   router.push("/products?category=concentrate");
                   onClose();
                 }}
-                className="px-3 sm:px-4 py-2.5 sm:py-3 bg-white/5 hover:bg-white/10 text-sm sm:text-base text-white/80 transition-colors rounded-sm"
+                className="px-3 sm:px-4 py-2.5 sm:py-3 bg-white/5 hover:bg-white/10 text-sm sm:text-base text-white/80 transition-smooth rounded-sm click-feedback hover-lift"
               >
                 Concentrate
               </button>
@@ -203,7 +212,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
                   router.push("/products?category=edibles");
                   onClose();
                 }}
-                className="px-3 sm:px-4 py-2.5 sm:py-3 bg-white/5 hover:bg-white/10 text-sm sm:text-base text-white/80 transition-colors rounded-sm"
+                className="px-3 sm:px-4 py-2.5 sm:py-3 bg-white/5 hover:bg-white/10 text-sm sm:text-base text-white/80 transition-smooth rounded-sm click-feedback hover-lift"
               >
                 Edibles
               </button>
@@ -212,7 +221,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
                   router.push("/products?category=vape");
                   onClose();
                 }}
-                className="px-3 sm:px-4 py-2.5 sm:py-3 bg-white/5 hover:bg-white/10 text-sm sm:text-base text-white/80 transition-colors rounded-sm"
+                className="px-3 sm:px-4 py-2.5 sm:py-3 bg-white/5 hover:bg-white/10 text-sm sm:text-base text-white/80 transition-smooth rounded-sm click-feedback hover-lift"
               >
                 Vape
               </button>

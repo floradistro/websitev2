@@ -53,7 +53,7 @@ export default function LoginPage() {
                 value={formData.email}
                 onChange={handleChange}
                 autoComplete="email"
-                className="w-full px-4 py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-all"
+                className="w-full px-4 py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-smooth input-elegant focus-elegant"
                 required
               />
             </div>
@@ -69,7 +69,7 @@ export default function LoginPage() {
                 value={formData.password}
                 onChange={handleChange}
                 autoComplete="current-password"
-                className="w-full px-4 py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-all"
+                className="w-full px-4 py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-smooth input-elegant focus-elegant"
                 required
               />
             </div>
@@ -77,18 +77,17 @@ export default function LoginPage() {
             <div className="flex items-center justify-between text-xs">
               <label className="flex items-center group cursor-pointer">
                 <input type="checkbox" className="mr-2 accent-white" />
-                <span className="text-white/50 group-hover:text-white transition-colors">Remember me</span>
+                <span className="text-white/50 group-hover:text-white transition-smooth">Remember me</span>
               </label>
-              <Link href="/contact" className="text-white/60 underline hover:text-white transition-colors">
+              <Link href="/contact" className="text-white/60 underline hover:text-white transition-smooth click-feedback">
                 Forgot password?
               </Link>
             </div>
 
             <button
               type="submit"
-              className="group w-full inline-flex items-center justify-center space-x-3 bg-black text-white px-10 py-4 text-xs uppercase tracking-[0.25em] hover:bg-black/70 transition-all duration-500 font-medium border border-white/20 hover:border-white/40 relative overflow-hidden"
+              className="interactive-button group w-full inline-flex items-center justify-center space-x-3 bg-black text-white px-10 py-4 text-xs uppercase tracking-[0.25em] hover:bg-white hover:text-black font-medium border border-white/20 hover:border-white"
             >
-              <div className="absolute inset-0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 bg-gradient-to-r from-transparent via-white/10 to-transparent" />
               <span className="relative z-10">Sign In</span>
               <ArrowRight size={14} className="relative z-10 group-hover:translate-x-1 transition-transform" />
             </button>
@@ -97,7 +96,7 @@ export default function LoginPage() {
           <div className="mt-12 pt-8 border-t border-white/10 text-center">
             <p className="text-sm text-white/50">
               Don't have an account?{" "}
-              <Link href="/register" className="text-white underline hover:no-underline transition-colors">
+              <Link href="/register" className="text-white underline hover:no-underline transition-smooth click-feedback">
                 Create one
               </Link>
             </p>

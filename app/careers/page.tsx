@@ -1,3 +1,10 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Careers | Flora Distro",
+  description: "Join the Flora Distro team. Explore career opportunities in customer service, fulfillment, quality control, and sales at our NC and TN locations.",
+};
+
 export default function Careers() {
   return (
     <div className="bg-[#1a1a1a]">

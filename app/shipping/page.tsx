@@ -1,4 +1,10 @@
 import { Package, Clock, MapPin, Shield } from 'lucide-react';
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Shipping Policy | Flora Distro",
+  description: "Fast, reliable shipping. Daily 2PM cutoff, next-day regional delivery to NC and East Tennessee. Full tracking and discreet packaging on every order.",
+};
 
 export default function Shipping() {
   return (

@@ -11,22 +11,22 @@ export default function FAQ() {
   };
 
   const FAQItem = ({ id, question, answer }: { id: string; question: string; answer: string }) => (
-    <div className="border-b border-white/10 last:border-0">
+    <div className="border-b border-white/10 last:border-0 transition-smooth hover:bg-white/5">
       <button
         onClick={() => toggleItem(id)}
-        className="w-full py-6 flex items-start justify-between text-left group"
+        className="w-full py-6 flex items-start justify-between text-left group click-feedback"
       >
-        <h3 className="font-light text-sm md:text-base pr-8 text-white group-hover:text-white/80 transition-colors uppercase tracking-[0.15em]">{question}</h3>
-        <div className="mt-1 flex-shrink-0 text-white/60">
+        <h3 className="font-light text-sm md:text-base pr-8 text-white group-hover:text-white/80 transition-smooth uppercase tracking-[0.15em]">{question}</h3>
+        <div className={`mt-1 flex-shrink-0 text-white/60 transition-transform duration-300 ${openItems[id] ? 'rotate-180' : ''}`}>
           {openItems[id] ? <Minus size={16} /> : <Plus size={16} />}
         </div>
       </button>
       <div
-        className={`overflow-hidden transition-all duration-300 ease-in-out ${
+        className={`overflow-hidden transition-all duration-500 ease-in-out ${
           openItems[id] ? 'max-h-[1000px] opacity-100 pb-6' : 'max-h-0 opacity-0'
         }`}
       >
-        <p className="text-xs md:text-sm text-white/50 font-light leading-relaxed">{answer}</p>
+        <p className="text-xs md:text-sm text-white/50 font-light leading-relaxed animate-fadeIn">{answer}</p>
       </div>
     </div>
   );
@@ -126,7 +126,7 @@ export default function FAQ() {
             Still have questions?
           </h2>
           <p className="text-base text-white/50 mb-8">
-            Email us: <a href="mailto:support@floradistro.com" className="text-white underline hover:no-underline">support@floradistro.com</a>
+            Email us: <a href="mailto:support@floradistro.com" className="text-white underline hover:no-underline transition-smooth click-feedback">support@floradistro.com</a>
           </p>
         </div>
       </section>

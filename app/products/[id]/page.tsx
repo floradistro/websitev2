@@ -1,7 +1,22 @@
-import { getProduct, getProducts, getLocations, getProductInventory, getPricingRules, getProductFields, getProductReviews } from "@/lib/wordpress";
-import ProductPageClient from "@/components/ProductPageClient";
-import { notFound } from "next/navigation";
+import { getProduct, getProducts } from "@/lib/wordpress";
+import ProductPageClientOptimized from "@/components/ProductPageClientOptimized";
 import type { Metadata } from "next";
+
+// Enable aggressive ISR - Revalidate every 60 seconds
+export const revalidate = 60;
+
+// Generate static paths for top products at build time
+export async function generateStaticParams() {
+  try {
+    const products = await getProducts({ per_page: 50, orderby: 'popularity' });
+    return products.map((product: any) => ({
+      id: product.id.toString(),
+    }));
+  } catch (error) {
+    console.error('Error generating static params:', error);
+    return [];
+  }
+}
 
 export async function generateMetadata({
   params,
@@ -56,53 +71,11 @@ export async function generateMetadata({
 
 export default async function ProductPage({
   params,
-  searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ type?: string }>;
 }) {
   const { id } = await params;
-  const { type: orderType } = await searchParams;
   
-  // Get product first and check if it exists
-  const product = await getProduct(id);
-  
-  if (!product) {
-    notFound(); // Show 404 page
-  }
-
-  // Get rest of the data
-  const [locations, inventory, pricingRules, productFields, reviews] = await Promise.all([
-    getLocations(),
-    getProductInventory(id),
-    getPricingRules(),
-    getProductFields(id),
-    getProductReviews(id),
-  ]);
-
-  // Extract blueprint name from product fields
-  const blueprintName = productFields?.fields?.[0]?.name || null;
-
-  // Get related products from same category
-  const categoryId = product.categories?.[0]?.id;
-  const relatedProducts = categoryId 
-    ? await getProducts({ category: categoryId, per_page: 10 }).then(products => 
-        products.filter((p: any) => p.id !== product.id).slice(0, 6)
-      )
-    : await getProducts({ per_page: 10 }).then(products => 
-        products.filter((p: any) => p.id !== product.id).slice(0, 6)
-      );
-
-  return (
-    <ProductPageClient
-      product={product}
-      locations={locations}
-      inventory={inventory}
-      pricingRules={pricingRules}
-      blueprintName={blueprintName}
-      orderType={orderType}
-      relatedProducts={relatedProducts}
-      reviews={reviews}
-    />
-  );
+  // Render client component immediately - it will fetch data instantly via SWR
+  return <ProductPageClientOptimized productId={id} />;
 }

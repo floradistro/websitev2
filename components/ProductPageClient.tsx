@@ -140,7 +140,7 @@ export default function ProductPageClient({
       {/* Breadcrumb Navigation */}
       <div className="border-b border-white/10 bg-[#1a1a1a]">
         <div className="max-w-[2000px] mx-auto px-4 sm:px-6 py-3 sm:py-4">
-          <nav className="flex items-center space-x-2 text-xs sm:text-sm uppercase tracking-wider overflow-x-auto scrollbar-hide">
+          <nav className="flex items-center flex-wrap gap-x-2 gap-y-1 text-xs sm:text-sm uppercase tracking-wider">
             <Link
               href="/"
               className="text-white/40 hover:text-white transition-colors whitespace-nowrap"
@@ -166,7 +166,7 @@ export default function ProductPageClient({
               </>
             )}
             <span className="text-white/20">/</span>
-            <span className="text-white/60 font-medium truncate">{product.name}</span>
+            <span className="text-white/60 font-medium break-words">{product.name}</span>
           </nav>
         </div>
       </div>

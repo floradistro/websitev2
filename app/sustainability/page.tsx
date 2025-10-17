@@ -1,3 +1,10 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Sustainability | Flora Distro",
+  description: "Flora Distro's commitment to sustainable cannabis cultivation. Organic growing methods, minimal packaging, renewable energy, and continuous improvement.",
+};
+
 export default function Sustainability() {
   return (
     <div className="bg-[#1a1a1a]">

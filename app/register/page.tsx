@@ -75,7 +75,7 @@ export default function RegisterPage() {
                   value={formData.firstName}
                   onChange={handleChange}
                   autoComplete="given-name"
-                  className="w-full px-4 py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-all"
+                  className="w-full px-4 py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-smooth input-elegant focus-elegant"
                   required
                 />
               </div>
@@ -90,7 +90,7 @@ export default function RegisterPage() {
                   value={formData.lastName}
                   onChange={handleChange}
                   autoComplete="family-name"
-                  className="w-full px-4 py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-all"
+                  className="w-full px-4 py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-smooth input-elegant focus-elegant"
                   required
                 />
               </div>
@@ -146,20 +146,19 @@ export default function RegisterPage() {
 
             <button
               type="submit"
-              className="group w-full inline-flex items-center justify-center space-x-3 bg-black text-white px-10 py-4 text-xs uppercase tracking-[0.25em] hover:bg-black/70 transition-all duration-500 font-medium border border-white/20 hover:border-white/40 relative overflow-hidden"
+              className="interactive-button group w-full inline-flex items-center justify-center space-x-3 bg-black text-white px-10 py-4 text-xs uppercase tracking-[0.25em] hover:bg-white hover:text-black font-medium border border-white/20 hover:border-white"
             >
-              <div className="absolute inset-0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 bg-gradient-to-r from-transparent via-white/10 to-transparent" />
               <span className="relative z-10">Create Account</span>
               <ArrowRight size={14} className="relative z-10 group-hover:translate-x-1 transition-transform" />
             </button>
 
             <p className="text-xs text-white/40 text-center leading-relaxed">
               By creating an account, you agree to our{" "}
-              <Link href="/terms" className="text-white/60 underline hover:text-white transition-colors">
+              <Link href="/terms" className="text-white/60 underline hover:text-white transition-smooth click-feedback">
                 Terms
               </Link>{" "}
               and{" "}
-              <Link href="/privacy" className="text-white/60 underline hover:text-white transition-colors">
+              <Link href="/privacy" className="text-white/60 underline hover:text-white transition-smooth click-feedback">
                 Privacy Policy
               </Link>
             </p>
@@ -168,7 +167,7 @@ export default function RegisterPage() {
           <div className="mt-12 pt-8 border-t border-white/10 text-center">
             <p className="text-sm text-white/50">
               Already have an account?{" "}
-              <Link href="/login" className="text-white underline hover:no-underline transition-colors">
+              <Link href="/login" className="text-white underline hover:no-underline transition-smooth click-feedback">
                 Sign in
               </Link>
             </p>

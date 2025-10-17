@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { X, Trash2, ArrowRight, Store, Truck } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import Link from "next/link";
+import Image from "next/image";
 
 interface CartDrawerProps {
   isOpen: boolean;
@@ -45,10 +46,10 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
             </h2>
             <button
               onClick={onClose}
-              className="p-2 hover:bg-white/5 transition-colors rounded"
+              className="p-2 hover:bg-white/10 transition-smooth rounded click-feedback group"
               type="button"
             >
-              <X size={22} className="text-white/60 hover:text-white" />
+              <X size={22} className="text-white/60 group-hover:text-white transition-smooth" />
             </button>
           </div>
         </div>
@@ -66,7 +67,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
               <Link
                 href="/products"
                 onClick={onClose}
-                className="inline-flex items-center gap-2 bg-black border border-white/20 text-white px-8 py-3.5 text-xs uppercase tracking-[0.2em] hover:bg-black/70 transition-all font-medium"
+                className="interactive-button inline-flex items-center gap-2 bg-black border border-white/20 text-white px-8 py-3.5 text-xs uppercase tracking-[0.2em] hover:bg-white hover:text-black font-medium"
               >
                 <span>Shop Products</span>
                 <ArrowRight size={14} />
@@ -75,21 +76,26 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
           ) : (
             <>
               {items.map((item) => (
-                <div key={`${item.productId}-${item.tierName}`} className="p-4 sm:p-6 hover:bg-[#333333] transition-colors group border-b border-white/5">
+                <div key={`${item.productId}-${item.tierName}`} className="p-4 sm:p-6 hover:bg-[#333333] transition-smooth group border-b border-white/5">
                   <div className="flex gap-4">
                     {/* Image */}
-                    <div className="w-20 h-20 bg-[#1a1a1a] flex-shrink-0 rounded">
+                    <div className="w-20 h-20 bg-[#1a1a1a] flex-shrink-0 rounded relative overflow-hidden">
                       {item.image ? (
-                        <img
+                        <Image
                           src={item.image}
                           alt={item.name}
-                          className="w-full h-full object-contain rounded"
+                          fill
+                          sizes="80px"
+                          className="object-contain"
+                          loading="lazy"
                         />
                       ) : (
-                        <img
+                        <Image
                           src="/logoprint.png"
                           alt="Flora Distro"
-                          className="w-full h-full object-contain opacity-20 rounded"
+                          fill
+                          className="object-contain opacity-20"
+                          loading="lazy"
                         />
                       )}
                     </div>
@@ -102,10 +108,10 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                         </h3>
                         <button
                           onClick={() => removeFromCart(item.productId)}
-                          className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-white/5 rounded flex-shrink-0"
+                          className="opacity-0 group-hover:opacity-100 transition-smooth p-1 hover:bg-white/10 rounded flex-shrink-0 click-feedback"
                           type="button"
                         >
-                          <Trash2 size={14} className="text-white/40 hover:text-white" />
+                          <Trash2 size={14} className="text-white/40 hover:text-red-400 transition-smooth" />
                         </button>
                       </div>
                       
@@ -152,16 +158,15 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
               <Link
                 href="/checkout"
                 onClick={onClose}
-                className="group block w-full bg-black border border-white/20 text-white text-center px-8 py-3.5 sm:py-4 text-xs uppercase tracking-[0.25em] hover:bg-black/70 hover:border-white/40 transition-all duration-500 font-medium relative overflow-hidden"
+                className="interactive-button group block w-full bg-black border border-white/20 text-white text-center px-8 py-3.5 sm:py-4 text-xs uppercase tracking-[0.25em] hover:bg-white hover:text-black hover:border-white font-medium"
               >
-                <div className="absolute inset-0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 bg-gradient-to-r from-transparent via-white/10 to-transparent" />
                 <span className="relative z-10">Checkout</span>
               </Link>
               
               <button
                 onClick={onClose}
                 type="button"
-                className="block w-full text-center text-xs sm:text-sm uppercase tracking-wider text-white/50 hover:text-white transition-colors py-2"
+                className="block w-full text-center text-xs sm:text-sm uppercase tracking-wider text-white/50 hover:text-white transition-smooth py-2 click-feedback"
               >
                 Continue Shopping
               </button>

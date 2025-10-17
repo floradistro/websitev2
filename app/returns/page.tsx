@@ -1,4 +1,10 @@
 import { RotateCcw, Check, X } from 'lucide-react';
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Returns & Refunds | Flora Distro",
+  description: "30-day return policy on eligible items. Learn about our return process, refund timeline, and what products qualify for returns.",
+};
 
 export default function Returns() {
   return (

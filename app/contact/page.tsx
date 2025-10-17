@@ -57,7 +57,7 @@ export default function ContactPage() {
                   value={formData.name}
                   onChange={handleChange}
                   required
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-all duration-300"
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-smooth input-elegant focus-elegant"
                 />
               </div>
 
@@ -73,7 +73,7 @@ export default function ContactPage() {
                     value={formData.email}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-3 bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-all duration-300"
+                    className="w-full px-4 py-3 bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-smooth input-elegant focus-elegant"
                   />
                 </div>
 
@@ -87,7 +87,7 @@ export default function ContactPage() {
                     name="phone"
                     value={formData.phone}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-all duration-300"
+                    className="w-full px-4 py-3 bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-smooth input-elegant focus-elegant"
                   />
                 </div>
               </div>
@@ -103,7 +103,7 @@ export default function ContactPage() {
                   value={formData.subject}
                   onChange={handleChange}
                   required
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-all duration-300"
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-smooth input-elegant focus-elegant"
                 />
               </div>
 
@@ -118,15 +118,14 @@ export default function ContactPage() {
                   onChange={handleChange}
                   rows={6}
                   required
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-all duration-300 resize-none"
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-smooth resize-none input-elegant focus-elegant"
                 />
               </div>
 
               <button
                 type="submit"
-                className="group w-full inline-flex items-center justify-center space-x-3 bg-black text-white px-12 py-4 text-xs uppercase tracking-[0.25em] hover:bg-black/70 transition-all duration-500 font-medium border border-white/20 hover:border-white/40 relative overflow-hidden"
+                className="interactive-button group w-full inline-flex items-center justify-center space-x-3 bg-black text-white px-12 py-4 text-xs uppercase tracking-[0.25em] hover:bg-white hover:text-black font-medium border border-white/20 hover:border-white"
               >
-                <div className="absolute inset-0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 bg-gradient-to-r from-transparent via-white/10 to-transparent" />
                 <span className="relative z-10">Send Message</span>
                 <ArrowRight size={14} className="relative z-10 group-hover:translate-x-1 transition-transform duration-300" />
               </button>
@@ -144,32 +143,22 @@ export default function ContactPage() {
 
               <div className="space-y-6">
                 <div className="flex items-start gap-4 group">
-                  <div className="w-10 h-10 flex-shrink-0 border border-white/20 flex items-center justify-center group-hover:border-white/40 transition-colors duration-300">
-                    <Mail size={18} className="text-white/60" />
+                  <div className="w-10 h-10 flex-shrink-0 border border-white/20 flex items-center justify-center group-hover:border-white/40 transition-smooth">
+                    <Mail size={18} className="text-white/60 group-hover:scale-110 transition-smooth" />
                   </div>
                   <div>
                     <h3 className="text-xs uppercase tracking-[0.15em] text-white mb-1">Email</h3>
-                    <a href="mailto:info@floradistro.com" className="text-sm text-white/50 hover:text-white transition-colors">
+                    <a href="mailto:info@floradistro.com" className="text-sm text-white/50 hover:text-white transition-smooth click-feedback">
                       info@floradistro.com
                     </a>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-4 group">
-                  <div className="w-10 h-10 flex-shrink-0 border border-white/20 flex items-center justify-center group-hover:border-white/40 transition-colors duration-300">
-                    <Phone size={18} className="text-white/60" />
-                  </div>
-                  <div>
-                    <h3 className="text-xs uppercase tracking-[0.15em] text-white mb-1">Phone</h3>
-                    <a href="tel:+1234567890" className="text-sm text-white/50 hover:text-white transition-colors">
-                      +1 (234) 567-890
-                    </a>
-                  </div>
-                </div>
+                {/* Phone number removed - contact via email instead */}
 
                 <div className="flex items-start gap-4 group">
-                  <div className="w-10 h-10 flex-shrink-0 border border-white/20 flex items-center justify-center group-hover:border-white/40 transition-colors duration-300">
-                    <MapPin size={18} className="text-white/60" />
+                  <div className="w-10 h-10 flex-shrink-0 border border-white/20 flex items-center justify-center group-hover:border-white/40 transition-smooth">
+                    <MapPin size={18} className="text-white/60 group-hover:scale-110 transition-smooth" />
                   </div>
                   <div>
                     <h3 className="text-xs uppercase tracking-[0.15em] text-white mb-1">Hours</h3>

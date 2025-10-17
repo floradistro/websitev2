@@ -1,4 +1,10 @@
 import { Scale, AlertTriangle } from 'lucide-react';
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Terms of Service | Flora Distro",
+  description: "Flora Distro terms of service, eligibility requirements, health disclaimers, and legal information for purchasing cannabis products.",
+};
 
 export default function Terms() {
   return (

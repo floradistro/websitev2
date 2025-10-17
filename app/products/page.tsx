@@ -1,6 +1,10 @@
-import { getAllProducts, getCategories, getLocations, getAllInventory, getPricingRules } from "@/lib/wordpress";
+import { getCategories } from "@/lib/wordpress";
+import { getCachedBulkProducts, getCachedLocations, getCachedPricingRules } from "@/lib/api-cache";
 import ProductsClient from "@/components/ProductsClient";
 import type { Metadata } from "next";
+
+// Enable ISR - Revalidate every 3 minutes for instant updates
+export const revalidate = 180;
 
 export const metadata: Metadata = {
   title: "Shop All Products | Flora Distro",
@@ -19,31 +23,61 @@ export default async function ProductsPage({
 }) {
   const { category: categorySlug } = await searchParams;
   
-  // Fetch all data in parallel using bulk endpoints - single API call for inventory
-  const [categories, locations, allProducts, allInventory, pricingRules] = await Promise.all([
+  // OPTIMIZED: Use BULK endpoint - returns products with inventory & fields in ONE call!
+  const [categories, locations, bulkData, pricingRules] = await Promise.all([
     getCategories({ per_page: 100 }),
-    getLocations(),
-    getAllProducts(),
-    getAllInventory(),
-    getPricingRules(),
+    getCachedLocations(),
+    getCachedBulkProducts({ per_page: 1000 }), // Bulk endpoint is FAST
+    getCachedPricingRules(),
   ]);
 
-  // Create inventory map from bulk inventory data
-  const inventoryMap: { [key: number]: any[] } = {};
+  // Extract products from bulk response - inventory already included!
+  const bulkProducts = bulkData?.data || [];
   
-  allInventory.forEach((inv: any) => {
-    const productId = parseInt(inv.product_id);
-    if (!inventoryMap[productId]) {
-      inventoryMap[productId] = [];
-    }
-    inventoryMap[productId].push(inv);
+  // Map bulk products to WooCommerce format
+  const allProducts = bulkProducts.map((bp: any) => ({
+    id: parseInt(bp.id),
+    name: bp.name,
+    slug: bp.name?.toLowerCase().replace(/\s+/g, '-'),
+    type: bp.type,
+    status: bp.status,
+    price: bp.regular_price,
+    regular_price: bp.regular_price,
+    sale_price: bp.sale_price,
+    images: bp.image ? [{ src: bp.image, id: 0, name: bp.name }] : [],
+    categories: (bp.categories || []).map((cat: any) => ({
+      id: parseInt(cat.id), // Convert string to number for consistency
+      name: cat.name,
+      slug: cat.slug
+    })),
+    meta_data: bp.meta_data || [],
+    stock_status: bp.total_stock > 0 ? 'instock' : 'outofstock',
+    total_stock: bp.total_stock,
+    inventory: bp.inventory || [],
+  }));
+
+  // Helper function to check if product has stock at ANY location
+  const hasStockAnywhere = (product: any): boolean => {
+    return product.total_stock > 0 || (product.inventory && product.inventory.some((inv: any) => {
+      const qty = parseFloat(inv.stock || inv.quantity || 0);
+      return qty > 0;
+    }));
+  };
+
+  // Filter products to only show those with stock at any location
+  const inStockProducts = allProducts.filter((product: any) => hasStockAnywhere(product));
+
+  // Create inventory map from products (inventory is already in each product)
+  const inventoryMap: { [key: number]: any[] } = {};
+  allProducts.forEach((product: any) => {
+    inventoryMap[product.id] = product.inventory || [];
   });
 
-  // Extract fields from product metadata
+  // Extract fields from product metadata (already included in bulk response)
   const productFieldsMap: { [key: number]: any } = {};
   
-  allProducts.forEach((product: any) => {
-    const metaData = product.meta_data || [];
+  inStockProducts.forEach((product: any) => {
+    const metaData = product.meta_data || product.fields || [];
     const fields: { [key: string]: string } = {};
     
     // Extract common fields from metadata (only real fields)
@@ -103,7 +137,7 @@ export default async function ProductsPage({
     <ProductsClient 
       categories={categories}
       locations={locations}
-      initialProducts={allProducts}
+      initialProducts={inStockProducts}
       inventoryMap={inventoryMap}
       initialCategory={categorySlug}
       pricingRules={pricingRules}

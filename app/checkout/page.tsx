@@ -295,7 +295,7 @@ export default function CheckoutPage() {
           <h1 className="text-2xl font-light text-white mb-6">Your cart is empty</h1>
           <Link
             href="/products"
-            className="inline-flex items-center gap-2 bg-black border border-white/20 text-white px-10 py-4 text-xs uppercase tracking-[0.25em] hover:bg-black/70 transition-all font-medium"
+            className="interactive-button inline-flex items-center gap-2 bg-black border border-white/20 text-white px-10 py-4 text-xs uppercase tracking-[0.25em] hover:bg-white hover:text-black font-medium"
           >
             <span>Shop Products</span>
             <ArrowRight size={14} />
@@ -318,7 +318,7 @@ export default function CheckoutPage() {
           <div className="px-4 sm:px-6 py-3 sm:py-4">
             <Link
               href="/products"
-              className="inline-flex items-center space-x-2 text-xs sm:text-xs text-white/60 hover:text-white transition-colors uppercase tracking-wider"
+              className="inline-flex items-center space-x-2 text-xs sm:text-xs text-white/60 hover:text-white transition-smooth uppercase tracking-wider click-feedback"
             >
               <ChevronLeft size={14} />
               <span>Continue Shopping</span>
@@ -349,7 +349,7 @@ export default function CheckoutPage() {
                       autoComplete="given-name"
                       value={billingInfo.firstName}
                       onChange={(e) => setBillingInfo({ ...billingInfo, firstName: e.target.value })}
-                      className="w-full px-3 sm:px-4 py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-all rounded-sm"
+                      className="w-full px-3 sm:px-4 py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-smooth rounded-sm input-elegant focus-elegant"
                     />
                   </div>
                   <div>
@@ -362,7 +362,7 @@ export default function CheckoutPage() {
                       autoComplete="family-name"
                       value={billingInfo.lastName}
                       onChange={(e) => setBillingInfo({ ...billingInfo, lastName: e.target.value })}
-                      className="w-full px-3 sm:px-4 py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-all rounded-sm"
+                      className="w-full px-3 sm:px-4 py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-smooth rounded-sm input-elegant focus-elegant"
                     />
                   </div>
                 </div>
@@ -435,7 +435,7 @@ export default function CheckoutPage() {
                       autoComplete="address-level2"
                       value={billingInfo.city}
                       onChange={(e) => setBillingInfo({ ...billingInfo, city: e.target.value })}
-                      className="w-full px-3 sm:px-4 py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-all rounded-sm"
+                      className="w-full px-3 sm:px-4 py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-smooth rounded-sm input-elegant focus-elegant"
                     />
                   </div>
                   <div>
@@ -464,7 +464,7 @@ export default function CheckoutPage() {
                       autoComplete="postal-code"
                       value={billingInfo.zipCode}
                       onChange={(e) => setBillingInfo({ ...billingInfo, zipCode: e.target.value })}
-                      className="w-full px-3 sm:px-4 py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-all rounded-sm"
+                      className="w-full px-3 sm:px-4 py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-smooth rounded-sm input-elegant focus-elegant"
                       placeholder="28801"
                     />
                   </div>
@@ -502,7 +502,7 @@ export default function CheckoutPage() {
                         required
                         value={shippingInfo.firstName}
                         onChange={(e) => setShippingInfo({ ...shippingInfo, firstName: e.target.value })}
-                        className="w-full px-4 py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-all"
+                        className="w-full px-4 py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-smooth input-elegant focus-elegant"
                       />
                     </div>
                     <div>
@@ -514,7 +514,7 @@ export default function CheckoutPage() {
                         required
                         value={shippingInfo.lastName}
                         onChange={(e) => setShippingInfo({ ...shippingInfo, lastName: e.target.value })}
-                        className="w-full px-4 py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-all"
+                        className="w-full px-4 py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-smooth input-elegant focus-elegant"
                       />
                     </div>
                   </div>
@@ -551,7 +551,7 @@ export default function CheckoutPage() {
                         required
                         value={shippingInfo.city}
                         onChange={(e) => setShippingInfo({ ...shippingInfo, city: e.target.value })}
-                        className="w-full px-4 py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-all"
+                        className="w-full px-4 py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-smooth input-elegant focus-elegant"
                       />
                     </div>
                     <div>
@@ -578,7 +578,7 @@ export default function CheckoutPage() {
                         value={shippingInfo.zip}
                         onChange={(e) => setShippingInfo({ ...shippingInfo, zip: e.target.value })}
                         maxLength={5}
-                        className="w-full px-4 py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-all"
+                        className="w-full px-4 py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-smooth input-elegant focus-elegant"
                       />
                     </div>
                   </div>
@@ -598,7 +598,7 @@ export default function CheckoutPage() {
                 <button
                   type="button"
                   onClick={handleApplePay}
-                  className="w-full mb-4 px-3 sm:px-4 py-2.5 sm:py-3 bg-black border border-white/20 text-white text-xs sm:text-sm uppercase tracking-[0.2em] hover:bg-black/70 transition-all flex items-center justify-center gap-2 rounded-sm"
+                  className="interactive-button w-full mb-4 px-3 sm:px-4 py-2.5 sm:py-3 bg-black border border-white/20 text-white text-xs sm:text-sm uppercase tracking-[0.2em] hover:bg-white hover:text-black flex items-center justify-center gap-2 rounded-sm"
                 >
                   <CreditCard size={16} />
                   Pay with Apple Pay
@@ -650,7 +650,7 @@ export default function CheckoutPage() {
                         setPaymentInfo({ ...paymentInfo, expiry: value });
                       }}
                       maxLength={5}
-                      className="w-full px-3 sm:px-4 py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-all rounded-sm"
+                      className="w-full px-3 sm:px-4 py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-smooth rounded-sm input-elegant focus-elegant"
                     />
                   </div>
                   <div>
@@ -665,7 +665,7 @@ export default function CheckoutPage() {
                       value={paymentInfo.cvv}
                       onChange={(e) => setPaymentInfo({ ...paymentInfo, cvv: e.target.value.replace(/\D/g, "") })}
                       maxLength={4}
-                      className="w-full px-3 sm:px-4 py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-all rounded-sm"
+                      className="w-full px-3 sm:px-4 py-3 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-smooth rounded-sm input-elegant focus-elegant"
                     />
                   </div>
                 </div>
@@ -751,15 +751,15 @@ export default function CheckoutPage() {
             <button
               type="submit"
               disabled={isProcessing}
-              className={`w-full mt-6 sm:mt-8 px-6 sm:px-8 py-4 text-xs uppercase tracking-[0.25em] transition-all duration-500 font-medium flex items-center justify-center gap-2 rounded-sm ${
+              className={`w-full mt-6 sm:mt-8 px-6 sm:px-8 py-4 text-xs uppercase tracking-[0.25em] font-medium flex items-center justify-center gap-2 rounded-sm ${
                 isProcessing
                   ? "bg-black/40 text-white/60 cursor-not-allowed border border-white/10"
-                  : "bg-black text-white hover:bg-black/70 border border-white/20 hover:border-white/40"
+                  : "interactive-button bg-black text-white hover:bg-white hover:text-black border border-white/20 hover:border-white"
               }`}
             >
               {isProcessing ? (
                 <>
-                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin-smooth"></div>
                   <span>Processing...</span>
                 </>
               ) : (
