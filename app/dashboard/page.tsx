@@ -56,15 +56,17 @@ export default function DashboardPage() {
     try {
       setLoadingRecommendations(true);
       
+      // Get ALL products for AI analysis
+      const productsResponse = await fetch('/api/products-cache');
+      const productsData = await productsResponse.json();
+      const allProducts = productsData.products || productsData || [];
+      
       // Get data for recommendations
       const orderHistory = orders.map(o => ({
         items: o.line_items.map((item: any) => ({ name: item.name }))
       }));
       
       const wishlistData = wishlistItems.map(w => ({ name: w.name }));
-      
-      // Use recently viewed as product context
-      const productContext = recentlyViewed.slice(0, 50);
       
       const response = await fetch('/api/recommendations', {
         method: 'POST',
@@ -73,17 +75,36 @@ export default function DashboardPage() {
           orderHistory,
           currentProduct: null,
           wishlist: wishlistData,
-          allProducts: productContext
+          allProducts: allProducts.slice(0, 100) // Give AI 100 products
         })
       });
 
       const data = await response.json();
       
-      if (data.success && data.recommendations) {
+      console.log('Dashboard Flora Budtender:', data);
+      
+      if (data.success && data.recommendations && data.recommendations.length > 0) {
         setRecommendations(data.recommendations);
+      } else {
+        // Fallback: show popular products
+        const fallback = allProducts
+          .filter((p: any) => p.stock_status === 'instock')
+          .sort((a: any, b: any) => (b.total_sales || 0) - (a.total_sales || 0))
+          .slice(0, 6);
+        setRecommendations(fallback);
       }
     } catch (error) {
       console.error('Error loading recommendations:', error);
+      // Try to show something
+      try {
+        const productsResponse = await fetch('/api/products-cache');
+        const productsData = await productsResponse.json();
+        const allProducts = productsData.products || productsData || [];
+        const fallback = allProducts.filter((p: any) => p.stock_status === 'instock').slice(0, 6);
+        setRecommendations(fallback);
+      } catch {
+        setRecommendations([]);
+      }
     } finally {
       setLoadingRecommendations(false);
     }

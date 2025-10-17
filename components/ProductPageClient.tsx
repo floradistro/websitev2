@@ -100,8 +100,16 @@ export default function ProductPageClient({
     }
   }, [product.id]); // Only track when product ID changes
 
-  const loadAIRecommendations = async (allProducts: any[]) => {
+  const loadAIRecommendations = async (recentlyViewedProducts: any[]) => {
     try {
+      // Get ALL products from cache/API for better AI recommendations
+      const productsResponse = await fetch('/api/products-cache');
+      const productsData = await productsResponse.json();
+      const allAvailableProducts = productsData.products || productsData || [];
+      
+      // Use larger product set for AI (combine cached products + recently viewed)
+      const fullProductSet = allAvailableProducts.length > 0 ? allAvailableProducts : recentlyViewedProducts;
+
       const response = await fetch('/api/recommendations', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -109,26 +117,43 @@ export default function ProductPageClient({
           orderHistory: [],
           currentProduct: product,
           wishlist: [],
-          allProducts: allProducts.length > 0 ? allProducts : [product]
+          allProducts: fullProductSet.slice(0, 100) // Give AI 100 products to choose from
         })
       });
 
       const data = await response.json();
       
+      console.log('Flora Budtender response:', data);
+      
       if (data.success && data.recommendations && data.recommendations.length > 0) {
         setAiRecommendations(data.recommendations.filter((p: any) => p.id !== product.id).slice(0, 6));
       } else {
-        // Fallback: show random products from recently viewed
-        const fallback = allProducts
-          .filter((p: any) => p.id !== product.id)
+        console.warn('No AI recommendations, using fallback');
+        // Fallback: show products from same category
+        const fallback = fullProductSet
+          .filter((p: any) => 
+            p.id !== product.id && 
+            p.categories?.some((c: any) => 
+              product.categories?.some((pc: any) => pc.id === c.id)
+            )
+          )
           .slice(0, 6);
         setAiRecommendations(fallback);
       }
     } catch (error) {
       console.error('Error loading AI recommendations:', error);
-      // Show fallback on error
+      // Show same-category products on error
+      const productsResponse = await fetch('/api/products-cache');
+      const productsData = await productsResponse.json();
+      const allProducts = productsData.products || productsData || recentlyViewedProducts;
+      
       const fallback = allProducts
-        .filter((p: any) => p.id !== product.id)
+        .filter((p: any) => 
+          p.id !== product.id &&
+          p.categories?.some((c: any) => 
+            product.categories?.some((pc: any) => pc.id === c.id)
+          )
+        )
         .slice(0, 6);
       setAiRecommendations(fallback);
     }
