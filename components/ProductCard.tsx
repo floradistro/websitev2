@@ -249,7 +249,7 @@ export default function ProductCard({ product, index, locations, pricingRules, p
 
   return (
     <div
-      className={`group block relative bg-[#3a3a3a] hover:bg-[#404040] active:bg-[#454545] transition-all duration-300 cursor-pointer hover:shadow-2xl hover:-translate-y-1 active:translate-y-0 active:shadow-lg border border-transparent hover:border-white/10 glow-hover click-feedback ${!stockInfo.inStock ? 'opacity-75' : ''}`}
+      className={`group block relative bg-[#3a3a3a] hover:bg-[#404040] active:bg-[#505050] transition-all duration-200 cursor-pointer hover:shadow-2xl hover:-translate-y-1 active:translate-y-0 active:shadow-xl active:scale-[0.98] border border-transparent hover:border-white/10 glow-hover click-feedback ${!stockInfo.inStock ? 'opacity-75' : ''}`}
       onMouseEnter={(e) => {
         setIsHovered(true);
         prefetchHandlers.onMouseEnter();

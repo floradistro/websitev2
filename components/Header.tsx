@@ -80,7 +80,7 @@ export default function Header() {
           </button>
 
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 sm:gap-3 transition-smooth hover:opacity-80 click-feedback">
+          <Link href="/" className="flex items-center gap-2 sm:gap-3 transition-smooth hover:opacity-80 active:opacity-90 active:scale-95 click-feedback">
             <Image 
               src="/logoprint.png" 
               alt="Flora Distro Logo" 
@@ -95,19 +95,19 @@ export default function Header() {
           <nav className="hidden lg:flex items-center space-x-8 text-xs uppercase tracking-wider">
             <Link
               href="/products"
-              className="nav-link text-white/80 hover:text-white"
+              className="nav-link text-white/80 hover:text-white active:text-white click-feedback"
             >
               Products
             </Link>
             <Link
               href="/about"
-              className="nav-link text-white/80 hover:text-white"
+              className="nav-link text-white/80 hover:text-white active:text-white click-feedback"
             >
               About
             </Link>
             <Link
               href="/contact"
-              className="nav-link text-white/80 hover:text-white"
+              className="nav-link text-white/80 hover:text-white active:text-white click-feedback"
             >
               Contact
             </Link>

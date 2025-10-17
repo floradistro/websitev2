@@ -114,11 +114,12 @@ button, a[role="button"], .touch-target {
   min-width: 44px;
 }
 
-/* Active states for touch */
+/* Active states for touch - instant and satisfying */
 button:active, a:active, select:active {
-  opacity: 0.7;
-  transform: scale(0.98);
-  transition: all 0.1s ease;
+  opacity: 0.8;
+  transform: scale(0.96);
+  transition: all 0.05s ease-out;
+  background-color: rgba(255, 255, 255, 0.05);
 }
 
 /* Ensure links are tappable */
@@ -584,8 +585,10 @@ a {
 }
 
 .interactive-button:active {
-  transform: scale(0.98);
-  transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: scale(0.94);
+  opacity: 0.9;
+  transition: all 0.05s ease-out;
+  filter: brightness(1.15);
 }
 
 .interactive-button::before {
@@ -653,17 +656,42 @@ a {
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
 }
 
-/* Click feedback - instant and obvious */
+/* Click feedback - instant and satisfying */
 .click-feedback:active {
-  transform: scale(0.95);
-  opacity: 0.8;
-  transition: all 0.05s ease;
+  transform: scale(0.94);
+  opacity: 0.85;
+  transition: all 0.05s ease-out;
+  filter: brightness(1.1);
 }
 
 .click-feedback {
   cursor: pointer;
-  -webkit-tap-highlight-color: rgba(255, 255, 255, 0.15);
+  -webkit-tap-highlight-color: rgba(255, 255, 255, 0.2);
   touch-action: manipulation;
+  transition: all 0.05s ease-out;
+}
+
+.click-feedback:active::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, rgba(255, 255, 255, 0.15) 0%, transparent 70%);
+  pointer-events: none;
+  animation: clickPulse 0.3s ease-out;
+}
+
+@keyframes clickPulse {
+  0% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.2);
+  }
 }
 
 /* Smooth scale on hover */
