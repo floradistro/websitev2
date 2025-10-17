@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { ShoppingBag, Store, Truck } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import Image from "next/image";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useLinkPrefetch } from "@/hooks/usePrefetch";
 
 interface ProductCardProps {
@@ -24,6 +24,7 @@ export default function ProductCard({ product, index, locations, pricingRules, p
   const [selectedTierIndex, setSelectedTierIndex] = useState<number | null>(null);
   const [showAddToCart, setShowAddToCart] = useState(false);
   const { addToCart } = useCart();
+  const router = useRouter();
   
   // Aggressive prefetching for instant loads
   const prefetchHandlers = useLinkPrefetch(`/products/${product.id}`);
@@ -191,20 +192,26 @@ export default function ProductCard({ product, index, locations, pricingRules, p
     return `$${basePrice.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
   };
 
+  const handleCardClick = () => {
+    router.push(`/products/${product.id}`);
+  };
+
   const handleQuickBuy = (e: React.MouseEvent) => {
-    // Don't prevent default - let Link handle navigation
+    e.preventDefault();
+    e.stopPropagation();
+    router.push(`/products/${product.id}`);
   };
 
   const handlePickup = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    window.location.href = `/products/${product.id}?type=pickup`;
+    router.push(`/products/${product.id}?type=pickup`);
   };
 
   const handleDelivery = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    window.location.href = `/products/${product.id}?type=delivery`;
+    router.push(`/products/${product.id}?type=delivery`);
   };
 
   // Get locations where product is in stock
@@ -241,8 +248,7 @@ export default function ProductCard({ product, index, locations, pricingRules, p
   const stockInfo = getStockLocations();
 
   return (
-    <Link
-      href={`/products/${product.id}`}
+    <div
       className={`group block relative bg-[#3a3a3a] hover:bg-[#404040] active:bg-[#454545] transition-all duration-300 cursor-pointer hover:shadow-2xl hover:-translate-y-1 active:translate-y-0 active:shadow-lg border border-transparent hover:border-white/10 glow-hover click-feedback ${!stockInfo.inStock ? 'opacity-75' : ''}`}
       onMouseEnter={(e) => {
         setIsHovered(true);
@@ -251,6 +257,13 @@ export default function ProductCard({ product, index, locations, pricingRules, p
       onMouseLeave={(e) => {
         setIsHovered(false);
         prefetchHandlers.onMouseLeave();
+      }}
+      onClick={(e) => {
+        // Only navigate if not clicking on interactive elements
+        const target = e.target as HTMLElement;
+        if (!target.closest('button') && !target.closest('select') && !target.closest('a')) {
+          handleCardClick();
+        }
       }}
       onTouchStart={() => setIsHovered(true)}
       onTouchEnd={() => setIsHovered(false)}
@@ -319,43 +332,33 @@ export default function ProductCard({ product, index, locations, pricingRules, p
           isHovered ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}>
           <div className="flex flex-col items-center gap-2 transform translate-y-3 group-hover:translate-y-0 transition-transform duration-500">
-            <Link
-              href={`/products/${product.id}`}
-              onClick={(e) => {
-                e.stopPropagation();
-                handleQuickBuy(e as any);
-              }}
+            <button
+              onClick={handleQuickBuy}
               className="interactive-button flex items-center gap-2 bg-black border border-white/20 text-white px-6 py-3 text-xs uppercase tracking-[0.2em] hover:bg-white hover:text-black active:bg-white active:text-black hover:border-white font-medium touch-target"
               style={{ minHeight: '44px' }}
             >
               <ShoppingBag size={12} strokeWidth={1.5} />
               <span>View Product</span>
-            </Link>
+            </button>
             
             <div className="flex items-center gap-2">
-              <Link
-                href={`/products/${product.id}?type=pickup`}
-                onClick={(e) => {
-                  e.stopPropagation();
-                }}
+              <button
+                onClick={handlePickup}
                 className="interactive-button flex items-center gap-1.5 bg-black border border-white/20 text-white px-4 py-3 hover:bg-white hover:text-black active:bg-white active:text-black hover:border-white text-[10px] uppercase tracking-[0.15em] font-medium touch-target"
                 style={{ minHeight: '44px' }}
               >
                 <Store size={11} strokeWidth={1.5} />
                 <span>Pickup</span>
-              </Link>
+              </button>
               
-              <Link
-                href={`/products/${product.id}?type=delivery`}
-                onClick={(e) => {
-                  e.stopPropagation();
-                }}
+              <button
+                onClick={handleDelivery}
                 className="interactive-button flex items-center gap-1.5 bg-black border border-white/20 text-white px-4 py-3 hover:bg-white hover:text-black active:bg-white active:text-black hover:border-white text-[10px] uppercase tracking-[0.15em] font-medium touch-target"
                 style={{ minHeight: '44px' }}
               >
                 <Truck size={11} strokeWidth={1.5} />
                 <span>Delivery</span>
-              </Link>
+              </button>
             </div>
           </div>
         </div>
@@ -464,7 +467,7 @@ export default function ProductCard({ product, index, locations, pricingRules, p
           </div>
         )}
       </div>
-    </Link>
+    </div>
   );
 }
 
