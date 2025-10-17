@@ -14,7 +14,7 @@ export default function CategoriesCarousel({ categories }: CategoriesCarouselPro
         <Link
           key={category.id}
           href={`/products?category=${category.slug}`}
-          className="group flex-shrink-0 w-[75vw] sm:w-[45vw] md:w-[32vw] lg:w-[18vw] snap-start block bg-[#3a3a3a] hover:bg-[#404040] active:bg-[#454545] transition-all duration-200 cursor-pointer hover:shadow-xl active:scale-[0.98]"
+          className="group flex-shrink-0 w-[75vw] sm:w-[45vw] md:w-[32vw] lg:w-[18vw] snap-start block bg-[#3a3a3a] md:hover:bg-[#404040] active:bg-[#454545] transition-none md:transition-all md:duration-200 cursor-pointer md:hover:shadow-xl"
           style={{
             animation: `fadeInUp 0.6s ease-out ${index * 0.05}s both`,
           }}

@@ -112,11 +112,22 @@ button, a[role="button"], .touch-target {
   min-width: 44px;
 }
 
-/* Active states for touch - instant and satisfying */
-button:active, a:active, select:active {
-  opacity: 0.85;
-  transform: scale(0.97);
-  transition: all 0.08s ease-out;
+/* Active states for touch - Apple style instant feedback */
+@media (hover: none) and (pointer: coarse) {
+  /* Mobile-only: instant active states with no transition delay */
+  button:active, a:active, select:active, .cursor-pointer:active {
+    opacity: 0.7;
+    transition: none !important;
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  /* Desktop: smooth active states */
+  button:active, a:active, select:active {
+    opacity: 0.85;
+    transform: scale(0.97);
+    transition: all 0.08s ease-out;
+  }
 }
 
 /* Ensure links are tappable */
@@ -167,7 +178,16 @@ a {
   -webkit-overflow-scrolling: touch;
   scroll-padding: 0;
   overscroll-behavior-x: contain;
-  scroll-behavior: smooth;
+  scroll-behavior: auto; /* Changed from smooth to auto for instant response */
+  /* Allow all pointer events to pass through naturally */
+  pointer-events: auto;
+  /* Let child elements handle their own touch events */
+  touch-action: pan-x pan-y;
+}
+
+/* Allow clicks to work inside scrollable containers */
+.scrollbar-hide * {
+  pointer-events: auto;
 }
 
 @keyframes subtleShift {
@@ -574,33 +594,47 @@ a {
 .interactive-button {
   position: relative;
   overflow: hidden;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.interactive-button:hover {
-  transform: translateY(-1px);
+/* Desktop only: hover effects */
+@media (hover: hover) and (pointer: fine) {
+  .interactive-button {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .interactive-button:hover {
+    transform: translateY(-1px);
+  }
+  
+  .interactive-button:active {
+    transform: scale(0.96);
+    opacity: 0.9;
+    transition: all 0.08s ease-out;
+  }
+  
+  .interactive-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transition: left 0.5s ease;
+    pointer-events: none;
+  }
+  
+  .interactive-button:hover::before {
+    left: 100%;
+  }
 }
 
-.interactive-button:active {
-  transform: scale(0.96);
-  opacity: 0.9;
-  transition: all 0.08s ease-out;
-}
-
-.interactive-button::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-  transition: left 0.5s ease;
-  pointer-events: none;
-}
-
-.interactive-button:hover::before {
-  left: 100%;
+/* Mobile only: instant feedback */
+@media (hover: none) and (pointer: coarse) {
+  .interactive-button:active {
+    opacity: 0.7;
+    transition: none;
+  }
 }
 
 /* Ripple effect container */
@@ -643,14 +677,16 @@ a {
   animation: spin-smooth 1s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
-/* Hover lift effect */
-.hover-lift {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
+/* Hover lift effect - Desktop only */
+@media (hover: hover) and (pointer: fine) {
+  .hover-lift {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
 
-.hover-lift:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
+  .hover-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
+  }
 }
 
 /* Click feedback - instant and satisfying */
@@ -660,13 +696,15 @@ a {
   touch-action: manipulation;
 }
 
-/* Smooth scale on hover */
-.scale-hover {
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
+/* Smooth scale on hover - Desktop only */
+@media (hover: hover) and (pointer: fine) {
+  .scale-hover {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
 
-.scale-hover:hover {
-  transform: scale(1.02);
+  .scale-hover:hover {
+    transform: scale(1.02);
+  }
 }
 
 /* Badge pulse animation */
@@ -752,13 +790,15 @@ a {
   animation: cardReveal 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
-/* Subtle glow on hover */
-.glow-hover {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
+/* Subtle glow on hover - Desktop only */
+@media (hover: hover) and (pointer: fine) {
+  .glow-hover {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
 
-.glow-hover:hover {
-  box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+  .glow-hover:hover {
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+  }
 }
 
 /* Mobile Safe Area Support - Apple-style */
