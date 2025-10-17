@@ -233,7 +233,8 @@ export default function ShippingEstimator({
             }}
             onKeyPress={handleKeyPress}
             placeholder="Enter ZIP code"
-            className="w-full bg-white/5 border border-white/10 rounded px-4 py-2.5 text-base text-white placeholder:text-white/30 focus:outline-none focus:border-white/30 transition-colors"
+            className="w-full bg-white/5 border border-white/10 rounded px-4 py-2.5 text-base text-white placeholder:text-white/30 focus:outline-none focus:border-white/30 focus:bg-white/10 active:bg-white/10 transition-colors"
+            style={{ WebkitTapHighlightColor: 'transparent' }}
             maxLength={5}
           />
           {zipCode && !validateZipCode(zipCode) && (
@@ -246,8 +247,8 @@ export default function ShippingEstimator({
           type="button"
           onClick={calculateShipping}
           disabled={loading || !validateZipCode(zipCode)}
-          className="w-full sm:w-auto px-4 sm:px-6 py-2.5 bg-white text-black font-medium uppercase tracking-wider rounded hover:bg-white/90 disabled:bg-white/20 disabled:text-white/40 disabled:cursor-not-allowed transition-all whitespace-nowrap touch-manipulation"
-          style={{ fontSize: '16px' }}
+          className="w-full sm:w-auto px-4 sm:px-6 py-2.5 bg-white text-black font-medium uppercase tracking-wider rounded hover:bg-white/90 active:bg-white/80 active:scale-[0.98] disabled:bg-white/20 disabled:text-white/40 disabled:cursor-not-allowed transition-all whitespace-nowrap"
+          style={{ fontSize: '16px', WebkitTapHighlightColor: 'transparent' }}
         >
           {loading ? (
             <div className="flex items-center justify-center gap-2">

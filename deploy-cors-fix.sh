@@ -20,34 +20,36 @@ echo "📋 Server: $SSH_USER@$SERVER"
 echo "📁 Target: $PLUGIN_DIR"
 echo ""
 
+# SSH key location
+SSH_KEY="$HOME/.ssh/siteground_flora_v2"
+
 # Test SSH connection
 echo "🔌 Testing SSH connection..."
-if ! ssh -p $SSH_PORT -o ConnectTimeout=5 -o BatchMode=yes $SSH_USER@$SERVER "echo 'SSH connection successful'" 2>/dev/null; then
+if ssh -i $SSH_KEY -p $SSH_PORT -o ConnectTimeout=5 $SSH_USER@$SERVER "echo '✅ SSH connection successful'" 2>/dev/null; then
     echo ""
-    echo "⚠️  SSH connection requires key authentication"
-    echo ""
-    echo "Continuing with SSH key..."
-    echo ""
+else
+    echo "❌ SSH connection failed"
+    exit 1
 fi
 
 # Create backup
 echo "💾 Creating backup of current plugin..."
-ssh -p $SSH_PORT $SSH_USER@$SERVER "cp $PLUGIN_DIR/flora-cors-fix.php $PLUGIN_DIR/flora-cors-fix.php.backup.$(date +%Y%m%d_%H%M%S) 2>/dev/null || true"
+ssh -i $SSH_KEY -p $SSH_PORT $SSH_USER@$SERVER "cp $PLUGIN_DIR/flora-cors-fix.php $PLUGIN_DIR/flora-cors-fix.php.backup.$(date +%Y%m%d_%H%M%S) 2>/dev/null || true"
 
 # Upload new plugin
 echo "📤 Uploading new plugin file..."
-scp -P $SSH_PORT flora-cors-fix.php $SSH_USER@$SERVER:$PLUGIN_DIR/flora-cors-fix.php
+scp -i $SSH_KEY -P $SSH_PORT flora-cors-fix.php $SSH_USER@$SERVER:$PLUGIN_DIR/flora-cors-fix.php
 
 if [ $? -eq 0 ]; then
     echo "✅ Plugin uploaded successfully!"
     
     # Set proper permissions
     echo "🔐 Setting file permissions..."
-    ssh -p $SSH_PORT $SSH_USER@$SERVER "chmod 644 $PLUGIN_DIR/flora-cors-fix.php"
+    ssh -i $SSH_KEY -p $SSH_PORT $SSH_USER@$SERVER "chmod 644 $PLUGIN_DIR/flora-cors-fix.php"
     
     # Clear PHP OpCache via WordPress CLI if available
     echo "🗑️  Clearing caches..."
-    ssh -p $SSH_PORT $SSH_USER@$SERVER "cd ~/public_html && wp cache flush 2>/dev/null || echo 'Cache clear skipped (not critical)'"
+    ssh -i $SSH_KEY -p $SSH_PORT $SSH_USER@$SERVER "cd ~/public_html && wp cache flush 2>/dev/null || echo 'Cache clear skipped (not critical)'"
     
     echo ""
     echo "✅ DEPLOYMENT COMPLETE!"
