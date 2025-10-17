@@ -241,7 +241,7 @@ export default function ProductCard({ product, index, locations, pricingRules, p
   return (
     <Link
       href={`/products/${product.id}`}
-      className={`group block relative bg-[#3a3a3a] hover:bg-[#404040] transition-all duration-500 cursor-pointer hover:shadow-2xl hover:-translate-y-1 border border-transparent hover:border-white/10 glow-hover click-feedback ${!stockInfo.inStock ? 'opacity-75' : ''}`}
+      className={`group block relative bg-[#3a3a3a] hover:bg-[#404040] active:bg-[#454545] transition-all duration-300 cursor-pointer hover:shadow-2xl hover:-translate-y-1 active:translate-y-0 active:shadow-lg border border-transparent hover:border-white/10 glow-hover click-feedback ${!stockInfo.inStock ? 'opacity-75' : ''}`}
       onMouseEnter={(e) => {
         setIsHovered(true);
         prefetchHandlers.onMouseEnter();
@@ -250,8 +250,12 @@ export default function ProductCard({ product, index, locations, pricingRules, p
         setIsHovered(false);
         prefetchHandlers.onMouseLeave();
       }}
+      onTouchStart={() => setIsHovered(true)}
+      onTouchEnd={() => setIsHovered(false)}
       style={{
         animation: `fadeInUp 0.6s ease-out ${index * 0.05}s both`,
+        WebkitTapHighlightColor: 'rgba(255, 255, 255, 0.1)',
+        touchAction: 'manipulation',
       }}
     >
       {/* Product Image Container */}
@@ -315,7 +319,8 @@ export default function ProductCard({ product, index, locations, pricingRules, p
           <div className="flex flex-col items-center gap-2 transform translate-y-3 group-hover:translate-y-0 transition-transform duration-500">
             <button
               onClick={handleQuickBuy}
-              className="interactive-button flex items-center gap-2 bg-black border border-white/20 text-white px-6 py-3 text-xs uppercase tracking-[0.2em] hover:bg-white hover:text-black hover:border-white font-medium"
+              className="interactive-button flex items-center gap-2 bg-black border border-white/20 text-white px-6 py-3 text-xs uppercase tracking-[0.2em] hover:bg-white hover:text-black active:bg-white active:text-black hover:border-white font-medium touch-target"
+              style={{ minHeight: '44px' }}
             >
               <ShoppingBag size={12} strokeWidth={1.5} />
               <span>View Product</span>
@@ -324,7 +329,8 @@ export default function ProductCard({ product, index, locations, pricingRules, p
             <div className="flex items-center gap-2">
               <button
                 onClick={handlePickup}
-                className="interactive-button flex items-center gap-1.5 bg-black border border-white/20 text-white px-4 py-2.5 hover:bg-white hover:text-black hover:border-white text-[10px] uppercase tracking-[0.15em] font-medium"
+                className="interactive-button flex items-center gap-1.5 bg-black border border-white/20 text-white px-4 py-3 hover:bg-white hover:text-black active:bg-white active:text-black hover:border-white text-[10px] uppercase tracking-[0.15em] font-medium touch-target"
+                style={{ minHeight: '44px' }}
               >
                 <Store size={11} strokeWidth={1.5} />
                 <span>Pickup</span>
@@ -332,7 +338,8 @@ export default function ProductCard({ product, index, locations, pricingRules, p
               
               <button
                 onClick={handleDelivery}
-                className="interactive-button flex items-center gap-1.5 bg-black border border-white/20 text-white px-4 py-2.5 hover:bg-white hover:text-black hover:border-white text-[10px] uppercase tracking-[0.15em] font-medium"
+                className="interactive-button flex items-center gap-1.5 bg-black border border-white/20 text-white px-4 py-3 hover:bg-white hover:text-black active:bg-white active:text-black hover:border-white text-[10px] uppercase tracking-[0.15em] font-medium touch-target"
+                style={{ minHeight: '44px' }}
               >
                 <Truck size={11} strokeWidth={1.5} />
                 <span>Delivery</span>
@@ -437,8 +444,8 @@ export default function ProductCard({ product, index, locations, pricingRules, p
             {showAddToCart && (
               <button
                 onClick={handleAddToCart}
-                className="interactive-button w-full bg-black border border-white/20 text-white px-3 py-2.5 md:py-2 text-[10px] uppercase tracking-[0.15em] hover:bg-white hover:text-black hover:border-white font-medium flex items-center justify-center gap-2 animate-fadeIn touch-manipulation hover:shadow-lg"
-                style={{ minHeight: '40px' }}
+                className="interactive-button w-full bg-black border border-white/20 text-white px-3 py-3 text-[10px] uppercase tracking-[0.15em] hover:bg-white hover:text-black active:bg-white active:text-black hover:border-white font-medium flex items-center justify-center gap-2 animate-fadeIn touch-manipulation hover:shadow-lg touch-target"
+                style={{ minHeight: '44px' }}
               >
                 <ShoppingBag size={13} strokeWidth={2} />
                 Add to Cart

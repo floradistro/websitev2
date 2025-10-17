@@ -34,6 +34,11 @@ export default function ShippingEstimator({
   const [showResults, setShowResults] = useState(false);
   const [originLocation, setOriginLocation] = useState<any>(null);
 
+  // Debug: Log props on mount and when they change
+  useEffect(() => {
+    console.log('🚚 ShippingEstimator props:', { productId, quantity, productPrice, locationId });
+  }, [productId, quantity, productPrice, locationId]);
+
   // Load saved zip code from localStorage
   useEffect(() => {
     const saved = localStorage.getItem("shipping_zip");
@@ -83,10 +88,18 @@ export default function ShippingEstimator({
     setShowResults(false);
 
     try {
+      // Validate productId
+      if (!productId || isNaN(productId)) {
+        console.error('❌ Invalid productId:', productId);
+        setError("Invalid product ID");
+        setLoading(false);
+        return;
+      }
+
       const requestBody: any = {
         items: [
           {
-            product_id: productId,
+            product_id: parseInt(String(productId)),
             quantity: quantity,
           },
         ],
@@ -104,7 +117,13 @@ export default function ShippingEstimator({
         console.log('⚠️ No location_id provided, will use default origin');
       }
       
-      console.log('📦 Request body:', requestBody);
+      console.log('📦 Shipping Request:', {
+        productId,
+        quantity,
+        zipCode,
+        locationId,
+        requestBody
+      });
 
       const response = await fetch(
         "https://api.floradistro.com/wp-json/flora/v1/shipping/calculate",
@@ -147,10 +166,19 @@ export default function ShippingEstimator({
 
       if (data.success && data.rates) {
         console.log('✓ Success! Setting rates:', data.rates.length);
+        console.log('✓ Rates data:', data.rates);
         console.log('✓ Origin data received:', data.origin);
+        
+        if (data.rates.length === 0) {
+          console.warn('⚠️ No shipping rates returned');
+          setError("No shipping options available for this location");
+          setLoading(false);
+          return;
+        }
+        
         setRates(data.rates);
-        setFreeShippingThreshold(data.free_shipping_threshold);
-        setAmountUntilFree(data.amount_until_free_shipping);
+        setFreeShippingThreshold(data.free_shipping_threshold || 45);
+        setAmountUntilFree(data.amount_until_free_shipping || 0);
         
         // Force origin location
         const origin = data.origin || { name: 'Blowing Rock', city: 'Blowing Rock', state: 'NC' };
@@ -161,12 +189,12 @@ export default function ShippingEstimator({
         // Save zip code
         localStorage.setItem("shipping_zip", zipCode);
       } else {
-        console.error('Shipping API error - no success or rates:', data);
-        setError(data.error || "Unable to calculate shipping");
+        console.error('❌ Shipping API error - no success or rates:', data);
+        setError(data.error || "Unable to calculate shipping rates");
       }
-    } catch (err) {
-      console.error('Shipping API exception:', err);
-      setError("Service temporarily unavailable. Please try again.");
+    } catch (err: any) {
+      console.error('❌ Shipping API exception:', err);
+      setError(err.message || "Service temporarily unavailable. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -189,7 +217,7 @@ export default function ShippingEstimator({
       </div>
 
       {/* ZIP Code Input */}
-      <div className="flex gap-2">
+      <div className="flex flex-col sm:flex-row gap-2">
         <div className="flex-1 relative">
           <input
             type="text"
@@ -213,12 +241,13 @@ export default function ShippingEstimator({
         <button
           onClick={calculateShipping}
           disabled={loading || !validateZipCode(zipCode)}
-          className="px-6 py-2.5 bg-white text-black text-xs font-medium uppercase tracking-wider rounded hover:bg-white/90 disabled:bg-white/20 disabled:text-white/40 disabled:cursor-not-allowed transition-all"
+          className="w-full sm:w-auto px-4 sm:px-6 py-2.5 bg-white text-black text-xs font-medium uppercase tracking-wider rounded hover:bg-white/90 disabled:bg-white/20 disabled:text-white/40 disabled:cursor-not-allowed transition-all whitespace-nowrap"
         >
           {loading ? (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center justify-center gap-2">
               <div className="w-3 h-3 border border-current border-t-transparent rounded-full animate-spin" />
-              <span>Calculating...</span>
+              <span className="hidden sm:inline">Calculating...</span>
+              <span className="sm:hidden">Loading...</span>
             </div>
           ) : (
             "Get Rates"

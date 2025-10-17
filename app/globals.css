@@ -78,8 +78,30 @@ html {
   to { opacity: 1; }
 }
 
-button {
-  -webkit-tap-highlight-color: transparent;
+button, a, select, input {
+  -webkit-tap-highlight-color: rgba(255, 255, 255, 0.1);
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Make touch targets larger */
+button, a[role="button"], .touch-target {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Active states for touch */
+button:active, a:active, select:active {
+  opacity: 0.7;
+  transform: scale(0.98);
+  transition: all 0.1s ease;
+}
+
+/* Ensure links are tappable */
+a {
+  cursor: pointer;
+  -webkit-touch-callout: none;
 }
 
 .logo-font {
@@ -608,10 +630,17 @@ button {
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
 }
 
-/* Click feedback */
+/* Click feedback - instant and obvious */
 .click-feedback:active {
-  transform: scale(0.97);
-  transition: transform 0.1s ease;
+  transform: scale(0.95);
+  opacity: 0.8;
+  transition: all 0.05s ease;
+}
+
+.click-feedback {
+  cursor: pointer;
+  -webkit-tap-highlight-color: rgba(255, 255, 255, 0.15);
+  touch-action: manipulation;
 }
 
 /* Smooth scale on hover */

@@ -136,9 +136,11 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
                 <button
                   key={product.id}
                   onClick={() => handleProductClick(product.id)}
-                  className="w-full px-4 sm:px-6 py-4 flex items-center gap-3 sm:gap-4 hover:bg-white/10 transition-smooth text-left click-feedback"
+                  className="w-full px-4 sm:px-6 py-4 flex items-center gap-3 sm:gap-4 hover:bg-white/10 active:bg-white/15 transition-smooth text-left click-feedback touch-target"
                   style={{
                     animation: `fadeInUp 0.3s ease-out ${index * 0.03}s both`,
+                    minHeight: '72px',
+                    touchAction: 'manipulation',
                   }}
                 >
                   <div className="w-16 h-16 sm:w-18 sm:h-18 bg-[#2a2a2a] flex items-center justify-center flex-shrink-0 rounded relative overflow-hidden">

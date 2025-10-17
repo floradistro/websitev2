@@ -72,8 +72,9 @@ export default function Header() {
           {/* Mobile menu button */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="lg:hidden text-white p-2 -ml-2 hover:bg-white/10 transition-smooth rounded click-feedback"
+            className="lg:hidden text-white p-3 -ml-2 hover:bg-white/10 active:bg-white/20 transition-smooth rounded click-feedback touch-target"
             aria-label="Toggle menu"
+            style={{ minHeight: '44px', minWidth: '44px' }}
           >
             {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
@@ -130,18 +131,20 @@ export default function Header() {
           <div className="flex items-center space-x-3 sm:space-x-5">
             <button 
               onClick={() => setSearchOpen(true)}
-              className="text-white/80 hover:text-white transition-smooth p-2 hover:bg-white/10 rounded click-feedback group"
+              className="text-white/80 hover:text-white active:text-white transition-smooth p-3 hover:bg-white/10 active:bg-white/20 rounded click-feedback group touch-target"
               aria-label="Search"
+              style={{ minHeight: '44px', minWidth: '44px' }}
             >
-              <Search size={18} className="transition-transform duration-300 group-hover:scale-110" />
+              <Search size={18} className="transition-transform duration-300 group-hover:scale-110 group-active:scale-95" />
             </button>
-            <Link href="/register" className="text-white/80 hover:text-white transition-smooth hidden sm:block p-2 hover:bg-white/10 rounded click-feedback group" aria-label="Account">
-              <User size={18} className="transition-transform duration-300 group-hover:scale-110" />
+            <Link href="/register" className="text-white/80 hover:text-white active:text-white transition-smooth hidden sm:block p-3 hover:bg-white/10 active:bg-white/20 rounded click-feedback group touch-target" aria-label="Account" style={{ minHeight: '44px', minWidth: '44px' }}>
+              <User size={18} className="transition-transform duration-300 group-hover:scale-110 group-active:scale-95" />
             </Link>
             <button 
               onClick={() => setCartOpen(true)}
-              className="text-white/80 hover:text-white transition-smooth relative p-2 hover:bg-white/10 rounded click-feedback group"
+              className="text-white/80 hover:text-white active:text-white transition-smooth relative p-3 hover:bg-white/10 active:bg-white/20 rounded click-feedback group touch-target"
               aria-label="Cart"
+              style={{ minHeight: '44px', minWidth: '44px' }}
             >
               <ShoppingBag size={18} className="transition-transform duration-300 group-hover:scale-110" />
               {itemCount > 0 && (

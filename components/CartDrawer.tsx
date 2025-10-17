@@ -158,7 +158,8 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
               <Link
                 href="/checkout"
                 onClick={onClose}
-                className="interactive-button group block w-full bg-black border border-white/20 text-white text-center px-8 py-3.5 sm:py-4 text-xs uppercase tracking-[0.25em] hover:bg-white hover:text-black hover:border-white font-medium"
+                className="interactive-button group block w-full bg-black border border-white/20 text-white text-center px-8 py-4 text-xs uppercase tracking-[0.25em] hover:bg-white hover:text-black active:bg-white active:text-black hover:border-white font-medium touch-target"
+                style={{ minHeight: '52px' }}
               >
                 <span className="relative z-10">Checkout</span>
               </Link>
