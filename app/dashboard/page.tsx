@@ -119,23 +119,21 @@ export default function DashboardPage() {
     if (!user) return;
     
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_WORDPRESS_API_URL || "https://api.floradistro.com";
-      const consumerKey = process.env.NEXT_PUBLIC_WORDPRESS_CONSUMER_KEY || "ck_bb8e5fe3d405e6ed6b8c079c93002d7d8b23a7d5";
-      const consumerSecret = process.env.NEXT_PUBLIC_WORDPRESS_CONSUMER_SECRET || "cs_38194e74c7ddc5d72b6c32c70485728e7e529678";
+      const consumerKey = "ck_bb8e5fe3d405e6ed6b8c079c93002d7d8b23a7d5";
+      const consumerSecret = "cs_38194e74c7ddc5d72b6c32c70485728e7e529678";
       
-      const response = await axios.get(
-        `${baseUrl}/wp-json/wc/v3/orders`,
-        {
-          params: {
-            consumer_key: consumerKey,
-            consumer_secret: consumerSecret,
-            customer: user.id,
-            per_page: 10,
-            orderby: 'date',
-            order: 'desc',
-          }
+      // Use Next.js proxy to avoid CORS issues
+      const response = await axios.get(`/api/wp-proxy`, {
+        params: {
+          path: '/wp-json/wc/v3/orders',
+          consumer_key: consumerKey,
+          consumer_secret: consumerSecret,
+          customer: user.id,
+          per_page: 10,
+          orderby: 'date',
+          order: 'desc',
         }
-      );
+      });
       
       setOrders(response.data);
     } catch (error) {

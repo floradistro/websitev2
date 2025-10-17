@@ -34,9 +34,8 @@ interface LoyaltyContextType {
 
 const LoyaltyContext = createContext<LoyaltyContextType | undefined>(undefined);
 
-const baseUrl = process.env.NEXT_PUBLIC_WORDPRESS_API_URL || "https://api.floradistro.com";
-const consumerKey = process.env.NEXT_PUBLIC_WORDPRESS_CONSUMER_KEY || "ck_bb8e5fe3d405e6ed6b8c079c93002d7d8b23a7d5";
-const consumerSecret = process.env.NEXT_PUBLIC_WORDPRESS_CONSUMER_SECRET || "cs_38194e74c7ddc5d72b6c32c70485728e7e529678";
+const consumerKey = "ck_bb8e5fe3d405e6ed6b8c079c93002d7d8b23a7d5";
+const consumerSecret = "cs_38194e74c7ddc5d72b6c32c70485728e7e529678";
 
 export function LoyaltyProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
@@ -63,15 +62,13 @@ export function LoyaltyProvider({ children }: { children: ReactNode }) {
 
   const loadSettings = async () => {
     try {
-      const response = await axios.get(
-        `${baseUrl}/wp-json/wc-points-rewards/v1/settings`,
-        {
-          params: {
-            consumer_key: consumerKey,
-            consumer_secret: consumerSecret,
-          }
+      const response = await axios.get(`/api/wp-proxy`, {
+        params: {
+          path: '/wp-json/wc-points-rewards/v1/settings',
+          consumer_key: consumerKey,
+          consumer_secret: consumerSecret,
         }
-      );
+      });
       setSettings(response.data);
     } catch (error) {
       console.error("Error loading loyalty settings:", error);
@@ -84,27 +81,23 @@ export function LoyaltyProvider({ children }: { children: ReactNode }) {
     try {
       setLoading(true);
       
-      // Get balance and history in parallel
+      // Get balance and history in parallel - use proxy to avoid CORS
       const [balanceRes, historyRes] = await Promise.all([
-        axios.get(
-          `${baseUrl}/wp-json/wc-points-rewards/v1/user/${user.id}/balance`,
-          {
-            params: {
-              consumer_key: consumerKey,
-              consumer_secret: consumerSecret,
-            }
+        axios.get(`/api/wp-proxy`, {
+          params: {
+            path: `/wp-json/wc-points-rewards/v1/user/${user.id}/balance`,
+            consumer_key: consumerKey,
+            consumer_secret: consumerSecret,
           }
-        ),
-        axios.get(
-          `${baseUrl}/wp-json/wc-points-rewards/v1/user/${user.id}/history`,
-          {
-            params: {
-              consumer_key: consumerKey,
-              consumer_secret: consumerSecret,
-              per_page: 50,
-            }
+        }),
+        axios.get(`/api/wp-proxy`, {
+          params: {
+            path: `/wp-json/wc-points-rewards/v1/user/${user.id}/history`,
+            consumer_key: consumerKey,
+            consumer_secret: consumerSecret,
+            per_page: 50,
           }
-        )
+        })
       ]);
 
       setPoints(balanceRes.data.balance || 0);
