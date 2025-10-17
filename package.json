@@ -11,6 +11,7 @@
   "dependencies": {
     "@types/p5": "^1.7.6",
     "@types/three": "^0.180.0",
+    "@vercel/edge": "^1.2.2",
     "axios": "^1.12.2",
     "dotenv": "^17.2.3",
     "framer-motion": "^12.23.24",
