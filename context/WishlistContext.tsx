@@ -30,8 +30,8 @@ const consumerSecret = "cs_38194e74c7ddc5d72b6c32c70485728e7e529678";
 export function WishlistProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const [items, setItems] = useState<WishlistItem[]>([]);
-  const [syncing, setSyncing] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  const [loadedFromWordPress, setLoadedFromWordPress] = useState(false);
 
   // Load wishlist from localStorage on mount
   useEffect(() => {
@@ -48,33 +48,20 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
 
   // Load wishlist from WordPress when user logs in (only once per user)
   useEffect(() => {
-    if (user?.id && loaded) {
+    if (user?.id && loaded && !loadedFromWordPress) {
       loadWishlistFromWordPress();
     }
-  }, [user?.id]);
+  }, [user?.id, loaded]);
 
   // Save wishlist to localStorage whenever it changes
   useEffect(() => {
     if (loaded) {
-      try {
-        localStorage.setItem("flora-wishlist", JSON.stringify(items));
-        
-        // Debounced sync to WordPress (only if user is logged in)
-        if (user?.id && !syncing) {
-          const timeoutId = setTimeout(() => {
-            syncWishlistToWordPress();
-          }, 1000); // Wait 1 second before syncing
-          
-          return () => clearTimeout(timeoutId);
-        }
-      } catch (error) {
-        console.error("Failed to save wishlist:", error);
-      }
+      localStorage.setItem("flora-wishlist", JSON.stringify(items));
     }
-  }, [items, user?.id]);
+  }, [items, loaded]);
 
   const loadWishlistFromWordPress = async () => {
-    if (!user?.id) return;
+    if (!user?.id || loadedFromWordPress) return;
 
     try {
       const response = await axios.get(`/api/wp-proxy`, {
@@ -101,17 +88,18 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
           console.error("Error parsing wishlist from WordPress:", e);
         }
       }
+      
+      setLoadedFromWordPress(true);
     } catch (error) {
       console.error("Error loading wishlist from WordPress:", error);
+      setLoadedFromWordPress(true);
     }
   };
 
   const syncWishlistToWordPress = async () => {
-    if (!user?.id || syncing) return;
+    if (!user?.id || !loadedFromWordPress) return;
 
     try {
-      setSyncing(true);
-      
       await axios.put(
         `/api/wp-proxy?path=/wp-json/wc/v3/customers/${user.id}&consumer_key=${consumerKey}&consumer_secret=${consumerSecret}`,
         {
@@ -125,8 +113,6 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
       );
     } catch (error) {
       console.error("Error syncing wishlist to WordPress:", error);
-    } finally {
-      setSyncing(false);
     }
   };
 
@@ -137,13 +123,39 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
         return prev;
       }
       
-      return [...prev, { ...item, dateAdded: new Date().toISOString() }];
+      const newItems = [...prev, { ...item, dateAdded: new Date().toISOString() }];
+      
+      // Sync to WordPress after state update
+      if (user?.id && loadedFromWordPress) {
+        setTimeout(() => {
+          axios.put(
+            `/api/wp-proxy?path=/wp-json/wc/v3/customers/${user.id}&consumer_key=${consumerKey}&consumer_secret=${consumerSecret}`,
+            { meta_data: [{ key: 'flora_wishlist', value: JSON.stringify(newItems) }] }
+          ).catch(e => console.error('Wishlist sync error:', e));
+        }, 1000);
+      }
+      
+      return newItems;
     });
-  }, []);
+  }, [user?.id, loadedFromWordPress]);
 
   const removeFromWishlist = useCallback((productId: number) => {
-    setItems((prev) => prev.filter((item) => item.productId !== productId));
-  }, []);
+    setItems((prev) => {
+      const newItems = prev.filter((item) => item.productId !== productId);
+      
+      // Sync to WordPress after state update
+      if (user?.id && loadedFromWordPress) {
+        setTimeout(() => {
+          axios.put(
+            `/api/wp-proxy?path=/wp-json/wc/v3/customers/${user.id}&consumer_key=${consumerKey}&consumer_secret=${consumerSecret}`,
+            { meta_data: [{ key: 'flora_wishlist', value: JSON.stringify(newItems) }] }
+          ).catch(e => console.error('Wishlist sync error:', e));
+        }, 1000);
+      }
+      
+      return newItems;
+    });
+  }, [user?.id, loadedFromWordPress]);
 
   const isInWishlist = useCallback((productId: number) => {
     return items.some((item) => item.productId === productId);
@@ -151,7 +163,17 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
 
   const clearWishlist = useCallback(() => {
     setItems([]);
-  }, []);
+    
+    // Sync to WordPress
+    if (user?.id && loadedFromWordPress) {
+      setTimeout(() => {
+        axios.put(
+          `/api/wp-proxy?path=/wp-json/wc/v3/customers/${user.id}&consumer_key=${consumerKey}&consumer_secret=${consumerSecret}`,
+          { meta_data: [{ key: 'flora_wishlist', value: JSON.stringify([]) }] }
+        ).catch(e => console.error('Wishlist sync error:', e));
+      }, 1000);
+    }
+  }, [user?.id, loadedFromWordPress]);
 
   const itemCount = items.length;
 
