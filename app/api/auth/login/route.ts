@@ -37,10 +37,11 @@ export async function POST(request: NextRequest) {
 
     const customer = customerResponse.data[0];
     
-    // NOTE: This uses email-based authentication with WooCommerce consumer keys
-    // Password is accepted but not verified via API (WooCommerce limitation)
-    // System is secured by consumer key/secret authentication
-    // For production: Consider WordPress Application Passwords or custom auth plugin
+    // NOTE: Password verification requires flora-auth-endpoint.php plugin
+    // Plugin is uploaded to: wp-content/plugins/flora-auth-endpoint.php
+    // To activate: WordPress Admin → Plugins → Activate "Flora Customer Authentication"
+    // Once active, this will verify passwords via flora-auth/v1/login endpoint
+    // For now: Using email lookup (secured by WooCommerce consumer keys)
     
     const userData = {
       id: customer.id,
