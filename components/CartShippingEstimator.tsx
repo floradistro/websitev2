@@ -87,7 +87,7 @@ export default function CartShippingEstimator({
       }));
 
       const response = await fetch(
-        "https://api.floradistro.com/wp-json/flora/v1/shipping/calculate",
+        "/api/shipping/calculate",
         {
           method: "POST",
           headers: {

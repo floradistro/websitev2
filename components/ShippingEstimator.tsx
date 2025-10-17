@@ -126,7 +126,7 @@ export default function ShippingEstimator({
       });
 
       const response = await fetch(
-        "https://api.floradistro.com/wp-json/flora/v1/shipping/calculate",
+        "/api/shipping/calculate",
         {
           method: "POST",
           headers: {
@@ -134,8 +134,7 @@ export default function ShippingEstimator({
             "Accept": "application/json",
           },
           body: JSON.stringify(requestBody),
-          cache: "no-store", // Prevent caching
-          mode: "cors", // Explicitly set CORS mode
+          cache: "no-store",
         }
       );
 
