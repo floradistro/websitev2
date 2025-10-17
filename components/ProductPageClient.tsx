@@ -83,7 +83,9 @@ export default function ProductPageClient({
       if (JSON.stringify(prev) !== JSON.stringify(details)) {
         // Update selected location for shipping calculation
         if (details.locationId) {
-          setSelectedLocationId(parseInt(details.locationId));
+          const locationId = typeof details.locationId === 'string' ? parseInt(details.locationId) : details.locationId;
+          console.log('🏪 Setting location ID for shipping:', locationId);
+          setSelectedLocationId(locationId);
         }
         return details;
       }
@@ -194,7 +196,7 @@ export default function ProductPageClient({
             />
 
             <ShippingEstimator
-              productId={product.id}
+              productId={typeof product.id === 'string' ? parseInt(product.id) : product.id}
               quantity={selectedQuantity}
               productPrice={selectedPrice || parseFloat(product.price) || 0}
               locationId={selectedLocationId || undefined}
@@ -293,7 +295,7 @@ export default function ProductPageClient({
               {/* Shipping Estimator Block */}
               <div className="mb-6 animate-fadeIn" style={{animationDelay: '200ms'}}>
                 <ShippingEstimator
-                  productId={product.id}
+                  productId={typeof product.id === 'string' ? parseInt(product.id) : product.id}
                   quantity={selectedQuantity}
                   productPrice={selectedPrice || parseFloat(product.price) || 0}
                   locationId={selectedLocationId || undefined}
