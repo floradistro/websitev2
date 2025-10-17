@@ -120,16 +120,10 @@ export function LoyaltyProvider({ children }: { children: ReactNode }) {
     
     try {
       await axios.post(
-        `${baseUrl}/wp-json/wc-points-rewards/v1/user/${user.id}/adjust`,
+        `/api/wp-proxy?path=/wp-json/wc-points-rewards/v1/user/${user.id}/adjust&consumer_key=${consumerKey}&consumer_secret=${consumerSecret}`,
         {
           points: amount,
           description: description,
-        },
-        {
-          params: {
-            consumer_key: consumerKey,
-            consumer_secret: consumerSecret,
-          }
         }
       );
       
