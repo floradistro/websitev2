@@ -37,6 +37,12 @@ export default function ProductPageClientOptimized({
     return () => clearTimeout(timer);
   }, []);
 
+  // Show nothing while loading (instant feel)
+  if (isLoading || !data) {
+    return <div className="min-h-screen bg-[#1a1a1a]" />;
+  }
+
+  // Only show error if actual error after data loaded
   if (error || !data?.success) {
     return (
       <div className="min-h-screen bg-[#1a1a1a] flex items-center justify-center">
@@ -75,28 +81,24 @@ export default function ProductPageClientOptimized({
   }
 
   return (
-    <AnimatePresence mode="wait">
-      <motion.div
-        key={productId}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: isReady ? 1 : 0 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
-      >
-        {data && (
-          <ProductPageClient
-            product={product}
-            locations={locations || []}
-            inventory={inventory || []}
-            pricingRules={pricingRules}
-            blueprintName={blueprintName}
-            orderType={undefined}
-            relatedProducts={[]}
-            reviews={[]}
-          />
-        )}
-      </motion.div>
-    </AnimatePresence>
+    <motion.div
+      key={productId}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.15, ease: [0.4, 0, 0.2, 1] }}
+    >
+      <ProductPageClient
+        product={product}
+        locations={locations || []}
+        inventory={inventory || []}
+        pricingRules={pricingRules}
+        blueprintName={blueprintName}
+        orderType={undefined}
+        relatedProducts={[]}
+        reviews={[]}
+      />
+    </motion.div>
   );
 }
 

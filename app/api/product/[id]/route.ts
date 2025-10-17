@@ -79,17 +79,17 @@ export async function GET(
       );
     }
 
-    // Check if product has stock
-    const hasStock = data.total_stock > 0 || data.inventory.some((inv: any) => 
-      (inv.stock || inv.quantity || 0) > 0
-    );
+    // Check if product has stock (commenting out to allow all products to be viewable)
+    // const hasStock = data.total_stock > 0 || data.inventory.some((inv: any) => 
+    //   (inv.stock || inv.quantity || 0) > 0
+    // );
 
-    if (!hasStock) {
-      return NextResponse.json(
-        { success: false, error: "Product out of stock" },
-        { status: 404 }
-      );
-    }
+    // if (!hasStock) {
+    //   return NextResponse.json(
+    //     { success: false, error: "Product out of stock" },
+    //     { status: 404 }
+    //   );
+    // }
 
     return NextResponse.json({
       success: true,

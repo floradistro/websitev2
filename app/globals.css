@@ -22,6 +22,12 @@
   --font-mono: var(--font-geist-mono);
 }
 
+html, body {
+  overflow-x: hidden;
+  max-width: 100vw;
+  position: relative;
+}
+
 body {
   background: #b5b5b2;
   color: var(--foreground);
