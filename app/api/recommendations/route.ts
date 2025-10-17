@@ -7,6 +7,10 @@ export async function POST(request: NextRequest) {
     // Use Claude Sonnet 4.5 for recommendations
     const apiKey = process.env.ANTHROPIC_API_KEY || process.env.NEXT_PUBLIC_ANTHROPIC_API_KEY;
     
+    if (!apiKey) {
+      throw new Error('Anthropic API key not configured');
+    }
+    
     // Build simple context for Claude
     const productsContext = allProducts.slice(0, 30).map((p: any) => 
       `ID: ${p.id}, Name: ${p.name}, Category: ${p.categories?.[0]?.name || 'Unknown'}`
