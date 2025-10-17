@@ -187,10 +187,15 @@ export async function getProductInventoryByLocation(
 
 // Pricing & Fields System
 export async function getPricingRules() {
-  const response = await axios.get(
-    `${baseUrl}/wp-json/fd/v2/pricing/rules?${authParams}`
-  );
-  return response.data;
+  try {
+    const response = await axios.get(
+      `${baseUrl}/wp-json/fd/v2/pricing/rules?${authParams}`
+    );
+    return response.data;
+  } catch (error) {
+    console.error('Pricing rules endpoint not available:', error);
+    return [];
+  }
 }
 
 export async function getProductFields(productId: string | number) {
