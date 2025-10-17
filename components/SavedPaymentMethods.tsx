@@ -38,20 +38,9 @@ export default function SavedPaymentMethods() {
     
     try {
       setLoading(true);
-      const baseUrl = process.env.NEXT_PUBLIC_WORDPRESS_API_URL || "https://api.floradistro.com";
-      const consumerKey = process.env.NEXT_PUBLIC_WORDPRESS_CONSUMER_KEY || "ck_bb8e5fe3d405e6ed6b8c079c93002d7d8b23a7d5";
-      const consumerSecret = process.env.NEXT_PUBLIC_WORDPRESS_CONSUMER_SECRET || "cs_38194e74c7ddc5d72b6c32c70485728e7e529678";
       
-      // Get payment methods from customer metadata
-      const response = await axios.get(
-        `${baseUrl}/wp-json/wc/v3/customers/${user.id}`,
-        {
-          params: {
-            consumer_key: consumerKey,
-            consumer_secret: consumerSecret,
-          }
-        }
-      );
+      // Use proxy to avoid CORS
+      const response = await axios.get(`/api/customers/${user.id}`);
 
       const customerData = response.data;
       const methodsMeta = customerData.meta_data?.find((m: any) => m.key === 'payment_methods');
@@ -117,23 +106,15 @@ export default function SavedPaymentMethods() {
 
       const updatedMethods = [...methods, newMethod];
 
-      await axios.put(
-        `${baseUrl}/wp-json/wc/v3/customers/${user.id}`,
-        {
-          meta_data: [
-            {
-              key: 'payment_methods',
-              value: JSON.stringify(updatedMethods)
-            }
-          ]
-        },
-        {
-          params: {
-            consumer_key: consumerKey,
-            consumer_secret: consumerSecret,
+      // Use proxy to avoid CORS
+      await axios.put(`/api/customers/${user.id}`, {
+        meta_data: [
+          {
+            key: 'payment_methods',
+            value: JSON.stringify(updatedMethods)
           }
-        }
-      );
+        ]
+      });
 
       setMethods(updatedMethods);
       setShowAddCard(false);
@@ -149,29 +130,17 @@ export default function SavedPaymentMethods() {
     if (!user) return;
 
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_WORDPRESS_API_URL || "https://api.floradistro.com";
-      const consumerKey = process.env.NEXT_PUBLIC_WORDPRESS_CONSUMER_KEY || "ck_bb8e5fe3d405e6ed6b8c079c93002d7d8b23a7d5";
-      const consumerSecret = process.env.NEXT_PUBLIC_WORDPRESS_CONSUMER_SECRET || "cs_38194e74c7ddc5d72b6c32c70485728e7e529678";
-      
       const updatedMethods = methods.filter(m => m.id !== methodId);
 
-      await axios.put(
-        `${baseUrl}/wp-json/wc/v3/customers/${user.id}`,
-        {
-          meta_data: [
-            {
-              key: 'payment_methods',
-              value: JSON.stringify(updatedMethods)
-            }
-          ]
-        },
-        {
-          params: {
-            consumer_key: consumerKey,
-            consumer_secret: consumerSecret,
+      // Use proxy to avoid CORS
+      await axios.put(`/api/customers/${user.id}`, {
+        meta_data: [
+          {
+            key: 'payment_methods',
+            value: JSON.stringify(updatedMethods)
           }
-        }
-      );
+        ]
+      });
 
       setMethods(updatedMethods);
     } catch (error) {

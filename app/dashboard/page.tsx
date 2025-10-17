@@ -219,10 +219,8 @@ export default function DashboardPage() {
       const updateData: any = {};
       updateData[editingAddress] = addressForm;
       
-      await axios.put(
-        `${baseUrl}/wp-json/wc/v3/customers/${user.id}?consumer_key=${consumerKey}&consumer_secret=${consumerSecret}`,
-        updateData
-      );
+      // Use proxy to avoid CORS
+      await axios.put(`/api/customers/${user.id}`, updateData);
       
       // Refresh user data by reloading
       window.location.reload();

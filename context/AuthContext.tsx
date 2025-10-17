@@ -130,9 +130,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!user) return;
 
     try {
-      // Update customer via WooCommerce API
+      // Update customer via proxy to avoid CORS
       const response = await axios.put(
-        `${baseUrl}/wp-json/wc/v3/customers/${user.id}?consumer_key=${consumerKey}&consumer_secret=${consumerSecret}`,
+        `/api/customers/${user.id}`,
         {
           first_name: userData.firstName,
           last_name: userData.lastName,
