@@ -262,7 +262,7 @@ export default function ProductCard({ product, index, locations, pricingTiers = 
 
   return (
     <div
-      className={`group block relative bg-[#3a3a3a] md:hover:bg-[#404040] active:bg-[#454545] cursor-pointer md:hover:shadow-2xl md:hover:-translate-y-1 border border-transparent md:hover:border-white/10 transition-none md:transition-all md:duration-300 ${!stockInfo.inStock ? 'opacity-75' : ''}`}
+      className={`group flex flex-col relative bg-[#3a3a3a] md:hover:bg-[#404040] active:bg-[#454545] cursor-pointer md:hover:shadow-2xl md:hover:-translate-y-1 border border-transparent md:hover:border-white/10 transition-none md:transition-all md:duration-300 ${!stockInfo.inStock ? 'opacity-75' : ''}`}
       onMouseEnter={(e) => {
         if (window.innerWidth >= 768) {
           setIsHovered(true);
@@ -399,8 +399,8 @@ export default function ProductCard({ product, index, locations, pricingTiers = 
       </div>
 
       {/* Product Info */}
-      <div className="flex flex-col px-3 py-4 h-full">
-        <div className="space-y-3 flex-1">
+      <div className="flex flex-col flex-1 px-3 py-4">
+        <div className="space-y-3">
           <h3 className="text-xs uppercase tracking-[0.12em] font-normal text-white line-clamp-2 leading-relaxed transition-all duration-300">
             {product.name}
           </h3>
