@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Plus, Search, Filter, Package } from 'lucide-react';
+import { Plus, Search, Filter, Package, FileText, CheckCircle, AlertCircle, XCircle } from 'lucide-react';
 
 interface Product {
   id: number;
@@ -12,6 +12,7 @@ interface Product {
   quantity: number;
   price: string;
   category: string;
+  coaStatus?: 'approved' | 'pending' | 'missing' | 'expired';
 }
 
 export default function VendorProducts() {
@@ -32,7 +33,8 @@ export default function VendorProducts() {
           status: "approved",
           quantity: 127.5,
           price: "$14.99",
-          category: "Flower"
+          category: "Flower",
+          coaStatus: "approved"
         },
         {
           id: 41734,
@@ -41,7 +43,8 @@ export default function VendorProducts() {
           status: "approved",
           quantity: 98.25,
           price: "$14.99",
-          category: "Flower"
+          category: "Flower",
+          coaStatus: "approved"
         },
         {
           id: 41733,
@@ -50,7 +53,8 @@ export default function VendorProducts() {
           status: "pending",
           quantity: 0,
           price: "$14.99",
-          category: "Flower"
+          category: "Flower",
+          coaStatus: "pending"
         },
         {
           id: 41732,
@@ -95,7 +99,8 @@ export default function VendorProducts() {
           status: "approved",
           quantity: 156.75,
           price: "$14.99",
-          category: "Flower"
+          category: "Flower",
+          coaStatus: "expired"
         },
         {
           id: 41587,
@@ -113,7 +118,8 @@ export default function VendorProducts() {
           status: "rejected",
           quantity: 0,
           price: "$14.99",
-          category: "Flower"
+          category: "Flower",
+          coaStatus: "missing"
         },
         {
           id: 41585,
@@ -122,7 +128,8 @@ export default function VendorProducts() {
           status: "approved",
           quantity: 12.25,
           price: "$14.99",
-          category: "Flower"
+          category: "Flower",
+          coaStatus: "approved"
         },
         {
           id: 41584,
@@ -131,7 +138,8 @@ export default function VendorProducts() {
           status: "approved",
           quantity: 89.0,
           price: "$14.99",
-          category: "Flower"
+          category: "Flower",
+          coaStatus: "approved"
         },
       ]);
       setLoading(false);
@@ -149,6 +157,26 @@ export default function VendorProducts() {
       <span className={`px-2 py-1 text-xs font-medium uppercase tracking-wider border rounded ${styles[status as keyof typeof styles]}`}>
         {status}
       </span>
+    );
+  };
+
+  const getCOABadge = (coaStatus?: string) => {
+    if (!coaStatus) return null;
+
+    const config = {
+      approved: { icon: CheckCircle, text: 'COA', className: 'text-green-500/60' },
+      pending: { icon: AlertCircle, text: 'COA', className: 'text-yellow-500/60' },
+      missing: { icon: XCircle, text: 'No COA', className: 'text-red-500/60' },
+      expired: { icon: AlertCircle, text: 'Expired', className: 'text-orange-500/60' },
+    };
+
+    const { icon: Icon, text, className } = config[coaStatus as keyof typeof config] || config.missing;
+
+    return (
+      <div className={`flex items-center gap-1 ${className}`} title={`COA Status: ${coaStatus}`}>
+        <Icon size={14} />
+        <span className="text-xs">{text}</span>
+      </div>
     );
   };
 
@@ -268,6 +296,7 @@ export default function VendorProducts() {
                 <th className="text-left text-xs font-medium text-white/60 uppercase tracking-wider p-4">Category</th>
                 <th className="text-left text-xs font-medium text-white/60 uppercase tracking-wider p-4">Price</th>
                 <th className="text-left text-xs font-medium text-white/60 uppercase tracking-wider p-4">Stock</th>
+                <th className="text-left text-xs font-medium text-white/60 uppercase tracking-wider p-4">COA</th>
                 <th className="text-left text-xs font-medium text-white/60 uppercase tracking-wider p-4">Status</th>
                 <th className="text-left text-xs font-medium text-white/60 uppercase tracking-wider p-4">Actions</th>
               </tr>
@@ -296,6 +325,9 @@ export default function VendorProducts() {
                     <span className={`text-sm ${product.quantity > 0 ? 'text-white' : 'text-red-500'}`}>
                       {product.quantity > 0 ? `${product.quantity}g` : 'Out of stock'}
                     </span>
+                  </td>
+                  <td className="p-4">
+                    {getCOABadge(product.coaStatus)}
                   </td>
                   <td className="p-4">
                     {getStatusBadge(product.status)}
