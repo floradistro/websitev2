@@ -271,7 +271,7 @@ export default function VendorDashboard() {
         >
           <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
           <div className="relative flex items-center gap-4">
-            <div className="w-12 h-12 bg-white/5 group-hover:bg-white/10 flex items-center justify-center transition-all duration-300">
+            <div className="w-12 h-12 bg-black group-hover:bg-white/10 flex items-center justify-center transition-all duration-300">
               <Plus size={24} className="text-white/60 group-hover:text-white transition-colors duration-300" />
             </div>
             <div className="text-white/80 group-hover:text-white font-medium transition-colors duration-300">Add Product</div>
@@ -284,7 +284,7 @@ export default function VendorDashboard() {
         >
           <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
           <div className="relative flex items-center gap-4">
-            <div className="w-12 h-12 bg-white/5 group-hover:bg-white/10 flex items-center justify-center transition-all duration-300">
+            <div className="w-12 h-12 bg-black group-hover:bg-white/10 flex items-center justify-center transition-all duration-300">
               <Package size={24} className="text-white/60 group-hover:text-white transition-colors duration-300" />
             </div>
             <div className="text-white/80 group-hover:text-white font-medium transition-colors duration-300">My Products</div>
@@ -297,7 +297,7 @@ export default function VendorDashboard() {
         >
           <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
           <div className="relative flex items-center gap-4">
-            <div className="w-12 h-12 bg-white/5 group-hover:bg-white/10 flex items-center justify-center transition-all duration-300">
+            <div className="w-12 h-12 bg-black group-hover:bg-white/10 flex items-center justify-center transition-all duration-300">
               <TrendingUp size={24} className="text-white/60 group-hover:text-white transition-colors duration-300" />
             </div>
             <div className="text-white/80 group-hover:text-white font-medium transition-colors duration-300">Inventory</div>
@@ -310,7 +310,7 @@ export default function VendorDashboard() {
         >
           <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
           <div className="relative flex items-center gap-4">
-            <div className="w-12 h-12 bg-white/5 group-hover:bg-white/10 flex items-center justify-center transition-all duration-300">
+            <div className="w-12 h-12 bg-black group-hover:bg-white/10 flex items-center justify-center transition-all duration-300">
               <Package size={24} className="text-white/60 group-hover:text-white transition-colors duration-300" />
             </div>
             <div className="text-white/80 group-hover:text-white font-medium transition-colors duration-300">Branding</div>
