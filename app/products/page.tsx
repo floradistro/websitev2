@@ -115,6 +115,19 @@ export default async function ProductsPage({
     productFieldsMap[product.id] = { fields, pricingTiers };
   });
 
+  // Add mock inventory for Yacht Club products FIRST
+  const yachtClubInventory: { [key: number]: any[] } = {
+    50001: [{ product_id: '50001', location_id: '1', quantity: 156.75, stock_quantity: 156.75, status: 'instock' }],
+    50002: [{ product_id: '50002', location_id: '1', quantity: 203.5, stock_quantity: 203.5, status: 'instock' }],
+    50005: [{ product_id: '50005', location_id: '1', quantity: 98.5, stock_quantity: 98.5, status: 'instock' }],
+    50004: [{ product_id: '50004', location_id: '1', quantity: 145.0, stock_quantity: 145.0, status: 'instock' }],
+  };
+
+  // Merge Yacht Club inventory into main inventory map
+  Object.keys(yachtClubInventory).forEach(productId => {
+    inventoryMap[parseInt(productId)] = yachtClubInventory[parseInt(productId)];
+  });
+
   // Mock Yacht Club vendor products with fields
   const yachtClubProducts = [
     { 
@@ -207,12 +220,8 @@ export default async function ProductsPage({
     },
   ];
 
-  // Add mock inventory for Yacht Club products
+  // Process Yacht Club products fields
   yachtClubProducts.forEach((product: any) => {
-    inventoryMap[product.id] = [
-      { product_id: product.id.toString(), location_id: '1', quantity: 100, stock_quantity: 100, status: 'instock' }
-    ];
-    
     // Extract fields from meta_data
     const fields: any = {};
     product.meta_data.forEach((meta: any) => {
