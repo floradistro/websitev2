@@ -35,8 +35,8 @@ export default function VendorLayout({
               >
                 Back to Store
               </Link>
-              <button className="text-white/60 hover:text-white text-sm transition-colors flex items-center gap-2">
-                <LogOut size={16} />
+              <button className="group text-white/60 hover:text-white text-xs uppercase tracking-wider transition-all duration-300 flex items-center gap-2">
+                <LogOut size={16} className="group-hover:-translate-x-0.5 transition-transform duration-300" />
                 Logout
               </button>
             </div>
@@ -96,7 +96,7 @@ export default function VendorLayout({
               <p className="text-white/50 text-xs mb-3 leading-relaxed">
                 Contact our vendor support team
               </p>
-              <button className="text-xs text-white/80 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 px-3 py-2 transition-all w-full uppercase tracking-wider">
+              <button className="text-xs text-white bg-black border border-white/20 hover:bg-white hover:text-black hover:border-white px-3 py-2 transition-all duration-300 w-full uppercase tracking-wider">
                 Contact Support
               </button>
             </div>

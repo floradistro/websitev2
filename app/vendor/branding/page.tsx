@@ -310,9 +310,9 @@ export default function VendorBranding() {
               <button
                 type="submit"
                 disabled={loading}
-                className="flex items-center gap-2 px-6 py-3 bg-white text-black hover:bg-white/90 text-sm font-medium uppercase tracking-wider transition-colors disabled:opacity-50"
+                className="group flex items-center gap-2 px-6 py-3 bg-white text-black border border-white hover:bg-black hover:text-white hover:border-white/20 text-xs font-medium uppercase tracking-[0.2em] transition-all duration-300 disabled:opacity-50"
               >
-                <Save size={18} />
+                <Save size={18} className="group-hover:scale-110 transition-transform duration-300" />
                 {loading ? 'Saving...' : 'Save Branding'}
               </button>
             </div>

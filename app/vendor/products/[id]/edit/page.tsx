@@ -414,16 +414,16 @@ export default function EditProduct() {
         <div className="flex justify-end gap-4">
           <Link
             href="/vendor/products"
-            className="px-6 py-3 bg-white/5 text-white border border-white/10 hover:bg-white/10 text-sm font-medium uppercase tracking-wider transition-colors"
+            className="px-6 py-3 bg-black text-white border border-white/20 hover:bg-white hover:text-black hover:border-white text-xs font-medium uppercase tracking-[0.2em] transition-all duration-300"
           >
             Cancel
           </Link>
           <button
             type="submit"
             disabled={saving}
-            className="flex items-center gap-2 px-6 py-3 bg-white text-black hover:bg-white/90 text-sm font-medium uppercase tracking-wider transition-colors disabled:opacity-50"
+            className="group flex items-center gap-2 px-6 py-3 bg-white text-black border border-white hover:bg-black hover:text-white hover:border-white/20 text-xs font-medium uppercase tracking-[0.2em] transition-all duration-300 disabled:opacity-50"
           >
-            <Save size={18} />
+            <Save size={18} className="group-hover:scale-110 transition-transform duration-300" />
             {saving ? 'Saving...' : product.status === 'approved' ? 'Submit Change Request' : 'Save & Resubmit'}
           </button>
         </div>

@@ -313,16 +313,23 @@ export default function NewProduct() {
         <div className="flex justify-end gap-4">
           <Link
             href="/vendor/products"
-            className="px-6 py-3 bg-white/5 text-white border border-white/10 hover:bg-white/10 text-sm font-medium uppercase tracking-wider transition-colors"
+            className="px-6 py-3 bg-black text-white border border-white/20 hover:bg-white hover:text-black hover:border-white text-xs font-medium uppercase tracking-[0.2em] transition-all duration-300"
           >
             Cancel
           </Link>
           <button
             type="submit"
             disabled={loading}
-            className="px-6 py-3 bg-white text-black hover:bg-white/90 text-sm font-medium uppercase tracking-wider transition-colors disabled:opacity-50"
+            className="group px-6 py-3 bg-white text-black border border-white hover:bg-black hover:text-white hover:border-white/20 text-xs font-medium uppercase tracking-[0.2em] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? 'Submitting...' : 'Submit for Review'}
+            <span className="flex items-center gap-2">
+              {loading ? 'Submitting...' : 'Submit for Review'}
+              {!loading && (
+                <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
+              )}
+            </span>
           </button>
         </div>
       </form>

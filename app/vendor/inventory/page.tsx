@@ -252,17 +252,17 @@ export default function VendorInventory() {
                         />
                         <button
                           onClick={() => submitAdjustment(item.id, 'add')}
-                          className="p-1 bg-green-500/20 text-green-500 rounded hover:bg-green-500/30 transition-colors"
+                          className="group p-1.5 bg-green-500/10 text-green-500 border border-green-500/20 hover:bg-green-500 hover:text-white hover:border-green-500 transition-all duration-300"
                           title="Add"
                         >
-                          <Plus size={16} />
+                          <Plus size={16} className="group-hover:scale-110 transition-transform duration-300" />
                         </button>
                         <button
                           onClick={() => submitAdjustment(item.id, 'subtract')}
-                          className="p-1 bg-red-500/20 text-red-500 rounded hover:bg-red-500/30 transition-colors"
+                          className="group p-1.5 bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500 hover:text-white hover:border-red-500 transition-all duration-300"
                           title="Subtract"
                         >
-                          <Minus size={16} />
+                          <Minus size={16} className="group-hover:scale-110 transition-transform duration-300" />
                         </button>
                         <button
                           onClick={() => setAdjusting(null)}

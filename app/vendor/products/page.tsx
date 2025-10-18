@@ -172,9 +172,9 @@ export default function VendorProducts() {
         </div>
         <Link
           href="/vendor/products/new"
-          className="flex items-center gap-2 bg-white text-black px-6 py-3 text-sm font-medium uppercase tracking-wider hover:bg-white/90 transition-colors"
+          className="group flex items-center gap-2 bg-black border border-white/20 text-white px-6 py-3 text-xs font-medium uppercase tracking-[0.2em] hover:bg-white hover:text-black hover:border-white transition-all duration-300"
         >
-          <Plus size={18} />
+          <Plus size={18} className="group-hover:rotate-90 transition-transform duration-300" />
           Add Product
         </Link>
       </div>
@@ -252,9 +252,9 @@ export default function VendorProducts() {
             <div className="text-white/60 mb-4">No products found</div>
             <Link
               href="/vendor/products/new"
-              className="inline-flex items-center gap-2 bg-white text-black px-6 py-3 text-sm font-medium uppercase tracking-wider hover:bg-white/90 transition-colors"
+              className="group inline-flex items-center gap-2 bg-black border border-white/20 text-white px-6 py-3 text-xs font-medium uppercase tracking-[0.2em] hover:bg-white hover:text-black hover:border-white transition-all duration-300"
             >
-              <Plus size={18} />
+              <Plus size={18} className="group-hover:rotate-90 transition-transform duration-300" />
               Add Your First Product
             </Link>
           </div>

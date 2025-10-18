@@ -203,7 +203,9 @@ export default function VendorDashboard() {
       {/* Stats Grid - Enhanced */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {/* Total Products */}
-        <div className="bg-[#2a2a2a] border border-white/5 p-6 hover:border-white/10 transition-all">
+        <div className="bg-[#2a2a2a] border border-white/5 p-6 hover:border-white/10 hover:-translate-y-0.5 transition-all duration-300 cursor-pointer relative overflow-hidden group">
+          <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+          <div className="relative">
           <div className="flex items-center justify-between mb-4">
             <div className="text-white/60 text-xs uppercase tracking-wider">Live Products</div>
             <Package size={20} className="text-white/40" />
@@ -212,10 +214,13 @@ export default function VendorDashboard() {
             {loading ? '—' : stats.approved}
           </div>
           <div className="text-white/40 text-xs">Currently selling</div>
+          </div>
         </div>
 
         {/* Pending Review */}
-        <div className="bg-[#2a2a2a] border border-white/5 p-6 hover:border-white/10 transition-all">
+        <div className="bg-[#2a2a2a] border border-white/5 p-6 hover:border-white/10 hover:-translate-y-0.5 transition-all duration-300 cursor-pointer relative overflow-hidden group">
+          <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+          <div className="relative">
           <div className="flex items-center justify-between mb-4">
             <div className="text-white/60 text-xs uppercase tracking-wider">Pending Review</div>
             <AlertCircle size={20} className="text-yellow-500/60" />
@@ -224,10 +229,13 @@ export default function VendorDashboard() {
             {loading ? '—' : stats.pending}
           </div>
           <div className="text-yellow-500/60 text-xs">Awaiting approval</div>
+          </div>
         </div>
 
         {/* Total Sales (30 Days) */}
-        <div className="bg-[#2a2a2a] border border-white/5 p-6 hover:border-white/10 transition-all">
+        <div className="bg-[#2a2a2a] border border-white/5 p-6 hover:border-white/10 hover:-translate-y-0.5 transition-all duration-300 cursor-pointer relative overflow-hidden group">
+          <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+          <div className="relative">
           <div className="flex items-center justify-between mb-4">
             <div className="text-white/60 text-xs uppercase tracking-wider">Sales (30 Days)</div>
             <DollarSign size={20} className="text-green-500/60" />
@@ -236,10 +244,13 @@ export default function VendorDashboard() {
             {loading ? '—' : `$${stats.totalSales30d.toLocaleString()}`}
           </div>
           <div className="text-green-500/60 text-xs">Revenue this month</div>
+          </div>
         </div>
 
         {/* Low Stock Alerts */}
-        <div className="bg-[#2a2a2a] border border-white/5 p-6 hover:border-white/10 transition-all">
+        <div className="bg-[#2a2a2a] border border-white/5 p-6 hover:border-white/10 hover:-translate-y-0.5 transition-all duration-300 cursor-pointer relative overflow-hidden group">
+          <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+          <div className="relative">
           <div className="flex items-center justify-between mb-4">
             <div className="text-white/60 text-xs uppercase tracking-wider">Low Stock</div>
             <AlertTriangle size={20} className="text-red-500/60" />
@@ -248,6 +259,7 @@ export default function VendorDashboard() {
             {loading ? '—' : stats.lowStock}
           </div>
           <div className="text-red-500/60 text-xs">Items need restocking</div>
+          </div>
         </div>
       </div>
 
@@ -255,60 +267,64 @@ export default function VendorDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
         <Link
           href="/vendor/products/new"
-          className="group bg-[#2a2a2a] hover:bg-[#303030] border border-white/5 hover:border-white/10 p-6 transition-all"
+          className="group bg-black hover:bg-white border border-white/20 hover:border-white p-6 transition-all duration-300 relative overflow-hidden"
         >
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center group-hover:bg-white/20 transition-colors">
-              <Plus size={24} className="text-white" />
+          <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+          <div className="relative flex items-center gap-4">
+            <div className="w-12 h-12 bg-white/10 group-hover:bg-black/20 flex items-center justify-center transition-all duration-300">
+              <Plus size={24} className="text-white group-hover:text-black transition-colors duration-300" />
             </div>
             <div>
-              <div className="text-white font-medium">Add Product</div>
-              <div className="text-white/60 text-xs">Submit new product</div>
+              <div className="text-white group-hover:text-black font-medium transition-colors duration-300">Add Product</div>
+              <div className="text-white/60 group-hover:text-black/60 text-xs transition-colors duration-300">Submit new product</div>
             </div>
           </div>
         </Link>
 
         <Link
           href="/vendor/products"
-          className="group bg-[#2a2a2a] hover:bg-[#303030] border border-white/5 hover:border-white/10 p-6 transition-all"
+          className="group bg-black hover:bg-white border border-white/20 hover:border-white p-6 transition-all duration-300 relative overflow-hidden"
         >
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center group-hover:bg-white/20 transition-colors">
-              <Package size={24} className="text-white" />
+          <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+          <div className="relative flex items-center gap-4">
+            <div className="w-12 h-12 bg-white/10 group-hover:bg-black/20 flex items-center justify-center transition-all duration-300">
+              <Package size={24} className="text-white group-hover:text-black transition-colors duration-300" />
             </div>
             <div>
-              <div className="text-white font-medium">My Products</div>
-              <div className="text-white/60 text-xs">View all products</div>
+              <div className="text-white group-hover:text-black font-medium transition-colors duration-300">My Products</div>
+              <div className="text-white/60 group-hover:text-black/60 text-xs transition-colors duration-300">View all products</div>
             </div>
           </div>
         </Link>
 
         <Link
           href="/vendor/inventory"
-          className="group bg-[#2a2a2a] hover:bg-[#303030] border border-white/5 hover:border-white/10 p-6 transition-all"
+          className="group bg-black hover:bg-white border border-white/20 hover:border-white p-6 transition-all duration-300 relative overflow-hidden"
         >
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center group-hover:bg-white/20 transition-colors">
-              <TrendingUp size={24} className="text-white" />
+          <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+          <div className="relative flex items-center gap-4">
+            <div className="w-12 h-12 bg-white/10 group-hover:bg-black/20 flex items-center justify-center transition-all duration-300">
+              <TrendingUp size={24} className="text-white group-hover:text-black transition-colors duration-300" />
             </div>
             <div>
-              <div className="text-white font-medium">Inventory</div>
-              <div className="text-white/60 text-xs">Manage stock</div>
+              <div className="text-white group-hover:text-black font-medium transition-colors duration-300">Inventory</div>
+              <div className="text-white/60 group-hover:text-black/60 text-xs transition-colors duration-300">Manage stock</div>
             </div>
           </div>
         </Link>
 
         <Link
-          href="/vendor/settings"
-          className="group bg-[#2a2a2a] hover:bg-[#303030] border border-white/5 hover:border-white/10 p-6 transition-all"
+          href="/vendor/branding"
+          className="group bg-black hover:bg-white border border-white/20 hover:border-white p-6 transition-all duration-300 relative overflow-hidden"
         >
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center group-hover:bg-white/20 transition-colors">
-              <Package size={24} className="text-white" />
+          <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+          <div className="relative flex items-center gap-4">
+            <div className="w-12 h-12 bg-white/10 group-hover:bg-black/20 flex items-center justify-center transition-all duration-300">
+              <Package size={24} className="text-white group-hover:text-black transition-colors duration-300" />
             </div>
             <div>
-              <div className="text-white font-medium">Settings</div>
-              <div className="text-white/60 text-xs">Edit profile</div>
+              <div className="text-white group-hover:text-black font-medium transition-colors duration-300">Branding</div>
+              <div className="text-white/60 group-hover:text-black/60 text-xs transition-colors duration-300">Customize store</div>
             </div>
           </div>
         </Link>
@@ -382,7 +398,7 @@ export default function VendorDashboard() {
                       </div>
                       <Link
                         href="/vendor/inventory"
-                        className="text-xs text-white bg-white/10 hover:bg-white/20 px-4 py-2 rounded transition-colors"
+                        className="text-xs text-white bg-black border border-white/20 hover:bg-white hover:text-black hover:border-white px-4 py-2 uppercase tracking-wider transition-all duration-300"
                       >
                         Restock
                       </Link>
