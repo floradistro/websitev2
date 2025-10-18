@@ -149,7 +149,7 @@ export default function VendorStorefront() {
   let vendorProducts = productsByVendor[vendor.slug] || [];
 
   // Get unique categories from products
-  const categories = [...new Set(vendorProducts.map((p: any) => p.categories[0]?.name))].filter(Boolean);
+  const categories = [...new Set(vendorProducts.map((p: any) => p.categories[0]?.name))].filter(Boolean) as string[];
 
   // Filter products
   let filteredProducts = vendorProducts.filter((product: any) => {
