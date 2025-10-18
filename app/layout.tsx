@@ -1,9 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
-import ScrollToTop from "@/components/ScrollToTop";
+import ConditionalLayout from "@/components/ConditionalLayout";
 import NotificationToast from "@/components/NotificationToast";
 import { CartProvider } from "@/context/CartContext";
 import { AuthProvider } from "@/context/AuthContext";
@@ -86,12 +84,9 @@ export default function RootLayout({
             <WishlistProvider>
               <CartProvider>
                 {/* <RecentlyViewedProvider> */}
-                  <Header />
-                  <main className="flex-1">
+                  <ConditionalLayout>
                     {children}
-                  </main>
-                  <Footer />
-                  <ScrollToTop />
+                  </ConditionalLayout>
                   <NotificationToast />
                 {/* </RecentlyViewedProvider> */}
               </CartProvider>

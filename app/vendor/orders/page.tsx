@@ -109,9 +109,9 @@ export default function VendorOrders() {
 
   const getStatusBadge = (status: string) => {
     const styles = {
-      completed: "bg-green-500/10 text-green-500 border-green-500/20",
-      processing: "bg-blue-500/10 text-blue-500 border-blue-500/20",
-      pending: "bg-yellow-500/10 text-yellow-500 border-yellow-500/20",
+      completed: "bg-white/5 text-white/60 border-white/10",
+      processing: "bg-white/5 text-white/60 border-white/10",
+      pending: "bg-white/5 text-white/60 border-white/10",
       cancelled: "bg-red-500/10 text-red-500 border-red-500/20",
     };
 
@@ -132,19 +132,19 @@ export default function VendorOrders() {
   const totalCommission = filteredOrders.reduce((sum, order) => sum + order.commission, 0);
 
   return (
-    <div className="max-w-7xl mx-auto animate-fadeIn">
+    <div className="lg:max-w-7xl lg:mx-auto animate-fadeIn px-4 lg:px-0 py-6 lg:py-0 overflow-x-hidden">
       {/* Header */}
-      <div className="mb-8" style={{ animation: 'fadeInUp 0.5s ease-out' }}>
-        <h1 className="text-3xl font-light text-white mb-2 tracking-tight">
+      <div className="mb-6 lg:mb-8" style={{ animation: 'fadeInUp 0.5s ease-out' }}>
+        <h1 className="text-2xl lg:text-3xl font-light text-white mb-2 tracking-tight">
           Orders & Sales
         </h1>
-        <p className="text-white/60 text-sm">
+        <p className="text-white/60 text-xs lg:text-sm">
           Track orders containing your products and commission earnings
         </p>
       </div>
 
       {/* Summary Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6" style={{ animation: 'fadeInUp 0.6s ease-out 0.1s both' }}>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 lg:gap-4 mb-6" style={{ animation: 'fadeInUp 0.6s ease-out 0.1s both' }}>
         <div className="bg-[#1a1a1a] border border-white/5 p-6 hover:border-white/10 hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
           <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
           <div className="relative">
@@ -164,12 +164,12 @@ export default function VendorOrders() {
           <div className="relative">
             <div className="flex items-center justify-between mb-4">
               <div className="text-white/60 text-xs uppercase tracking-wider">Gross Revenue</div>
-              <DollarSign size={20} className="text-green-500/60" />
+              <DollarSign size={20} className="text-white/40" />
             </div>
             <div className="text-3xl font-light text-white mb-1">
               {loading ? '—' : `$${totalRevenue.toFixed(2)}`}
             </div>
-            <div className="text-green-500/60 text-xs">Before commission</div>
+            <div className="text-white/40 text-xs">Before commission</div>
           </div>
         </div>
 
@@ -178,19 +178,19 @@ export default function VendorOrders() {
           <div className="relative">
             <div className="flex items-center justify-between mb-4">
               <div className="text-white/60 text-xs uppercase tracking-wider">Your Earnings</div>
-              <DollarSign size={20} className="text-green-500/60" />
+              <DollarSign size={20} className="text-white/40" />
             </div>
             <div className="text-3xl font-light text-white mb-1">
               {loading ? '—' : `$${(totalRevenue - totalCommission).toFixed(2)}`}
             </div>
-            <div className="text-green-500/60 text-xs">After 15% commission</div>
+            <div className="text-white/40 text-xs">After 15% commission</div>
           </div>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="bg-[#1a1a1a] border border-white/5 p-4 mb-6" style={{ animation: 'fadeInUp 0.6s ease-out 0.2s both' }}>
-        <div className="flex flex-col md:flex-row gap-4">
+      <div className="bg-[#1a1a1a] lg:border border-t border-b border-white/5 p-4 mb-6 -mx-4 lg:mx-0" style={{ animation: 'fadeInUp 0.6s ease-out 0.2s both' }}>
+        <div className="flex flex-col lg:flex-row gap-3 lg:gap-4">
           {/* Search */}
           <div className="flex-1 relative">
             <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" />
@@ -199,15 +199,15 @@ export default function VendorOrders() {
               placeholder="Search by customer name or order number..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-white/10 transition-colors"
+              className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 pl-10 pr-4 py-3 focus:outline-none focus:border-white/10 transition-colors text-base"
             />
           </div>
 
           {/* Status Filter */}
-          <div className="flex gap-2">
+          <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 lg:mx-0 lg:px-0 lg:pb-0 scrollbar-hide">
             <button
               onClick={() => setStatusFilter('all')}
-              className={`px-4 py-2 text-xs uppercase tracking-wider transition-all ${
+              className={`px-4 py-2 text-xs uppercase tracking-wider transition-all whitespace-nowrap ${
                 statusFilter === 'all'
                   ? 'bg-white text-black border border-white'
                   : 'bg-[#1a1a1a] text-white/60 hover:text-white border border-white/5 hover:border-white/10'
@@ -217,9 +217,9 @@ export default function VendorOrders() {
             </button>
             <button
               onClick={() => setStatusFilter('completed')}
-              className={`px-4 py-2 text-xs uppercase tracking-wider transition-all ${
+              className={`px-4 py-2 text-xs uppercase tracking-wider transition-all whitespace-nowrap ${
                 statusFilter === 'completed'
-                  ? 'bg-green-500/10 text-green-500 border border-green-500/20'
+                  ? 'bg-white/10 text-white border border-white/20'
                   : 'bg-[#1a1a1a] text-white/60 hover:text-white border border-white/5 hover:border-white/10'
               }`}
             >
@@ -227,9 +227,9 @@ export default function VendorOrders() {
             </button>
             <button
               onClick={() => setStatusFilter('processing')}
-              className={`px-4 py-2 text-xs uppercase tracking-wider transition-all ${
+              className={`px-4 py-2 text-xs uppercase tracking-wider transition-all whitespace-nowrap ${
                 statusFilter === 'processing'
-                  ? 'bg-blue-500/10 text-blue-500 border border-blue-500/20'
+                  ? 'bg-white/10 text-white border border-white/20'
                   : 'bg-[#1a1a1a] text-white/60 hover:text-white border border-white/5 hover:border-white/10'
               }`}
             >
@@ -241,18 +241,43 @@ export default function VendorOrders() {
 
       {/* Orders Table */}
       {loading ? (
-        <div className="bg-[#1a1a1a] border border-white/5 p-12">
+        <div className="bg-[#1a1a1a] lg:border border-white/5 p-12">
           <div className="text-center text-white/60">Loading orders...</div>
         </div>
       ) : filteredOrders.length === 0 ? (
-        <div className="bg-[#1a1a1a] border border-white/5 p-12">
+        <div className="bg-[#1a1a1a] lg:border border-white/5 p-12">
           <div className="text-center">
             <Package size={48} className="text-white/20 mx-auto mb-4" />
             <div className="text-white/60">No orders found</div>
           </div>
         </div>
       ) : (
-        <div className="bg-[#1a1a1a] border border-white/5 overflow-hidden" style={{ animation: 'fadeInUp 0.6s ease-out 0.3s both' }}>
+        <>
+          {/* Mobile List View */}
+          <div className="lg:hidden divide-y divide-white/5 -mx-4" style={{ animation: 'fadeInUp 0.6s ease-out 0.3s both' }}>
+            {filteredOrders.map((order) => (
+              <div
+                key={order.id}
+                onClick={() => setSelectedOrder(order)}
+                className="px-4 py-3 active:bg-white/5 transition-all bg-[#1a1a1a]"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <div>
+                    <div className="text-white text-sm font-medium mb-0.5">{order.customerName}</div>
+                    <div className="text-white/40 text-xs font-mono">{order.orderNumber}</div>
+                  </div>
+                  {getStatusBadge(order.status)}
+                </div>
+                <div className="flex items-center justify-between text-xs text-white/60">
+                  <span>{new Date(order.date).toLocaleDateString()}</span>
+                  <span className="text-white font-medium">${order.vendorTotal.toFixed(2)}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Desktop Table View */}
+          <div className="hidden lg:block bg-[#1a1a1a] border border-white/5 overflow-hidden" style={{ animation: 'fadeInUp 0.6s ease-out 0.3s both' }}>
           <table className="w-full">
             <thead className="border-b border-white/5 bg-[#1a1a1a]">
               <tr>
@@ -313,6 +338,7 @@ export default function VendorOrders() {
             </tbody>
           </table>
         </div>
+        </>
       )}
 
       {/* Order Detail Modal */}
@@ -362,7 +388,7 @@ export default function VendorOrders() {
               </div>
               <div className="flex justify-between pt-2 border-t border-white/10">
                 <span className="text-white font-medium">Your Earnings</span>
-                <span className="text-green-500 font-medium">${(selectedOrder.vendorTotal - selectedOrder.commission).toFixed(2)}</span>
+                <span className="text-white font-medium">${(selectedOrder.vendorTotal - selectedOrder.commission).toFixed(2)}</span>
               </div>
             </div>
 

@@ -187,8 +187,8 @@ export default function EditProduct() {
 
   if (loading) {
     return (
-      <div className="max-w-4xl mx-auto">
-        <div className="bg-[#1a1a1a] border border-white/5 p-12 text-center text-white/60">
+      <div className="lg:max-w-4xl lg:mx-auto px-4 lg:px-0 py-6 lg:py-0">
+        <div className="bg-[#1a1a1a] lg:border border-white/5 p-12 text-center text-white/60">
           Loading product...
         </div>
       </div>
@@ -196,9 +196,9 @@ export default function EditProduct() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto animate-fadeIn">
+    <div className="lg:max-w-4xl lg:mx-auto animate-fadeIn px-4 lg:px-0 py-6 lg:py-0 overflow-x-hidden">
       {/* Header */}
-      <div className="mb-8" style={{ animation: 'fadeInUp 0.5s ease-out' }}>
+      <div className="mb-6 lg:mb-8" style={{ animation: 'fadeInUp 0.5s ease-out' }}>
         <Link
           href="/vendor/products"
           className="inline-flex items-center gap-2 text-white/60 hover:text-white text-sm mb-4 transition-colors"
@@ -206,10 +206,10 @@ export default function EditProduct() {
           <ArrowLeft size={16} />
           Back to Products
         </Link>
-        <h1 className="text-3xl font-light text-white mb-2 tracking-tight">
+        <h1 className="text-2xl lg:text-3xl font-light text-white mb-2 tracking-tight">
           Edit Product
         </h1>
-        <p className="text-white/60 text-sm">
+        <p className="text-white/60 text-xs lg:text-sm">
           {product.status === 'approved' 
             ? 'Editing will create a change request for admin approval' 
             : 'Update and resubmit for review'}
@@ -218,7 +218,7 @@ export default function EditProduct() {
 
       {/* Status Notice */}
       {product.status === 'rejected' && (
-        <div className="mb-6 bg-red-500/5 border border-red-500/10 p-4">
+        <div className="mb-6 bg-red-500/5 lg:border border-t border-b border-red-500/10 p-4 -mx-4 lg:mx-0">
           <div className="flex gap-3">
             <AlertCircle size={20} className="text-red-500 flex-shrink-0" />
             <div>
@@ -232,11 +232,11 @@ export default function EditProduct() {
       )}
 
       {product.status === 'pending' && (
-        <div className="mb-6 bg-yellow-500/5 border border-yellow-500/10 p-4">
+        <div className="mb-6 bg-white/5 lg:border border-t border-b border-white/10 p-4 -mx-4 lg:mx-0">
           <div className="flex gap-3">
-            <AlertCircle size={20} className="text-yellow-500 flex-shrink-0" />
+            <AlertCircle size={20} className="text-white/60 flex-shrink-0" />
             <div>
-              <div className="text-yellow-500 text-sm font-medium mb-1">Pending Review</div>
+              <div className="text-white text-sm font-medium mb-1">Pending Review</div>
               <div className="text-white/60 text-xs">
                 This product is currently under review by our team.
               </div>
@@ -245,9 +245,9 @@ export default function EditProduct() {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-0 lg:space-y-6">
         {/* Basic Information */}
-        <div className="bg-[#1a1a1a] border border-white/5 p-6">
+        <div className="bg-[#1a1a1a] lg:border border-t border-white/5 p-4 lg:p-6 -mx-4 lg:mx-0">
           <h2 className="text-white font-medium mb-6">Basic Information</h2>
           
           <div className="space-y-4">
@@ -262,7 +262,7 @@ export default function EditProduct() {
                 value={product.name}
                 onChange={(e) => setProduct({...product, name: e.target.value})}
                 placeholder="e.g., Blue Dream"
-                className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors"
+                className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors text-base"
               />
             </div>
 
@@ -277,7 +277,7 @@ export default function EditProduct() {
                 value={product.description}
                 onChange={(e) => setProduct({...product, description: e.target.value})}
                 placeholder="Describe your product..."
-                className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors resize-none"
+                className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors resize-none text-base"
               />
             </div>
 
@@ -290,7 +290,7 @@ export default function EditProduct() {
                 required
                 value={product.category}
                 onChange={(e) => setProduct({...product, category: e.target.value})}
-                className="w-full bg-[#1a1a1a] border border-white/5 text-white px-4 py-3 focus:outline-none focus:border-white/10 transition-colors"
+                className="w-full bg-[#1a1a1a] border border-white/5 text-white px-4 py-3 focus:outline-none focus:border-white/10 transition-colors text-base"
               >
                 <option value="">Select category</option>
                 <option value="flower">Flower</option>
@@ -315,7 +315,7 @@ export default function EditProduct() {
                   value={product.price}
                   onChange={(e) => setProduct({...product, price: e.target.value})}
                   placeholder="14.99"
-                  className="w-full bg-white/5 border border-white/10 text-white placeholder-white/40 pl-8 pr-4 py-3 rounded focus:outline-none focus:border-white/20"
+                  className="w-full bg-white/5 border border-white/10 text-white placeholder-white/40 pl-8 pr-4 py-3 rounded focus:outline-none focus:border-white/20 text-base"
                 />
               </div>
             </div>
@@ -323,7 +323,7 @@ export default function EditProduct() {
         </div>
 
         {/* Product Images */}
-        <div className="bg-[#1a1a1a] border border-white/5 p-6">
+        <div className="bg-[#1a1a1a] lg:border border-t border-white/5 p-4 lg:p-6 -mx-4 lg:mx-0">
           <h2 className="text-white font-medium mb-6">Product Images</h2>
           
           <div className="space-y-4">
@@ -362,7 +362,7 @@ export default function EditProduct() {
         </div>
 
         {/* Lab Results / COA */}
-        <div className="bg-[#1a1a1a] border border-white/5 p-6">
+        <div className="bg-[#1a1a1a] lg:border border-t border-white/5 p-4 lg:p-6 -mx-4 lg:mx-0">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-white font-medium">Certificate of Analysis (COA)</h2>
             <Link 
@@ -378,18 +378,18 @@ export default function EditProduct() {
             <div className="mb-4 bg-white/5 border border-white/10 p-4">
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-2">
-                  <FileText size={18} className="text-green-500" />
+                  <FileText size={18} className="text-white/60" />
                   <div>
                     <div className="text-white text-sm font-medium">Current COA</div>
                     <div className="text-white/60 text-xs font-mono">{existingCOA.coaNumber}</div>
                   </div>
                 </div>
-                <span className="px-2 py-1 text-xs font-medium uppercase tracking-wider bg-green-500/10 text-green-500 border border-green-500/20 inline-flex items-center gap-1">
+                <span className="px-2 py-1 text-xs font-medium uppercase tracking-wider bg-white/5 text-white/60 border border-white/10 inline-flex items-center gap-1">
                   <CheckCircle size={12} />
                   {existingCOA.status}
                 </span>
               </div>
-              <div className="grid grid-cols-3 gap-4 text-xs">
+              <div className="grid grid-cols-3 gap-3 lg:gap-4 text-xs">
                 <div>
                   <div className="text-white/60 mb-1">Test Date</div>
                   <div className="text-white">{new Date(existingCOA.testDate).toLocaleDateString()}</div>
@@ -450,10 +450,10 @@ export default function EditProduct() {
           </div>
 
           {!existingCOA && !coaFile && (
-            <div className="mt-4 bg-yellow-500/5 border border-yellow-500/10 p-3">
+            <div className="mt-4 bg-white/5 border border-white/10 p-3">
               <div className="flex gap-2">
-                <AlertCircle size={16} className="text-yellow-500/80 flex-shrink-0 mt-0.5" />
-                <div className="text-yellow-500/80 text-xs leading-relaxed">
+                <AlertCircle size={16} className="text-white/60 flex-shrink-0 mt-0.5" />
+                <div className="text-white/60 text-xs leading-relaxed">
                   Products require a valid COA to be approved and sold on the marketplace.
                 </div>
               </div>
@@ -462,10 +462,10 @@ export default function EditProduct() {
         </div>
 
         {/* Strain Details */}
-        <div className="bg-[#1a1a1a] border border-white/5 p-6">
+        <div className="bg-[#1a1a1a] lg:border border-t border-white/5 p-4 lg:p-6 -mx-4 lg:mx-0">
           <h2 className="text-white font-medium mb-6">Strain Details</h2>
           
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {/* THC % */}
             <div>
               <label className="block text-white/80 text-sm mb-2">
@@ -478,7 +478,7 @@ export default function EditProduct() {
                   value={product.thc_percentage}
                   onChange={(e) => setProduct({...product, thc_percentage: e.target.value})}
                   placeholder="24.5"
-                  className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors"
+                  className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors text-base"
                 />
                 <span className="absolute right-4 top-1/2 -translate-y-1/2 text-white/60">%</span>
               </div>
@@ -496,7 +496,7 @@ export default function EditProduct() {
                   value={product.cbd_percentage}
                   onChange={(e) => setProduct({...product, cbd_percentage: e.target.value})}
                   placeholder="0.5"
-                  className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors"
+                  className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors text-base"
                 />
                 <span className="absolute right-4 top-1/2 -translate-y-1/2 text-white/60">%</span>
               </div>
@@ -510,7 +510,7 @@ export default function EditProduct() {
               <select
                 value={product.strain_type}
                 onChange={(e) => setProduct({...product, strain_type: e.target.value})}
-                className="w-full bg-[#1a1a1a] border border-white/5 text-white px-4 py-3 focus:outline-none focus:border-white/10 transition-colors"
+                className="w-full bg-[#1a1a1a] border border-white/5 text-white px-4 py-3 focus:outline-none focus:border-white/10 transition-colors text-base"
               >
                 <option value="">Select type</option>
                 <option value="indica">Indica</option>
@@ -530,7 +530,7 @@ export default function EditProduct() {
                 value={product.quantity}
                 onChange={(e) => setProduct({...product, quantity: e.target.value})}
                 placeholder="100"
-                className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors"
+                className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors text-base"
                 disabled={product.status === 'approved'}
               />
               {product.status === 'approved' && (
@@ -539,7 +539,7 @@ export default function EditProduct() {
             </div>
 
             {/* Lineage */}
-            <div className="col-span-2">
+            <div className="lg:col-span-2">
               <label className="block text-white/80 text-sm mb-2">
                 Lineage / Genetics
               </label>
@@ -548,12 +548,12 @@ export default function EditProduct() {
                 value={product.lineage}
                 onChange={(e) => setProduct({...product, lineage: e.target.value})}
                 placeholder="e.g., Blueberry × Haze"
-                className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors"
+                className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors text-base"
               />
             </div>
 
             {/* Terpenes */}
-            <div className="col-span-2">
+            <div className="lg:col-span-2">
               <label className="block text-white/80 text-sm mb-2">
                 Dominant Terpenes
               </label>
@@ -562,12 +562,12 @@ export default function EditProduct() {
                 value={product.terpenes}
                 onChange={(e) => setProduct({...product, terpenes: e.target.value})}
                 placeholder="e.g., Myrcene, Pinene, Caryophyllene"
-                className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors"
+                className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors text-base"
               />
             </div>
 
             {/* Effects */}
-            <div className="col-span-2">
+            <div className="lg:col-span-2">
               <label className="block text-white/80 text-sm mb-2">
                 Effects
               </label>
@@ -576,24 +576,24 @@ export default function EditProduct() {
                 value={product.effects}
                 onChange={(e) => setProduct({...product, effects: e.target.value})}
                 placeholder="e.g., Relaxed, Creative, Euphoric"
-                className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors"
+                className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors text-base"
               />
             </div>
           </div>
         </div>
 
         {/* Submit */}
-        <div className="flex justify-end gap-4">
+        <div className="flex flex-col-reverse lg:flex-row justify-end gap-3 lg:gap-4 px-4 lg:px-0 py-6 lg:py-0 border-t lg:border-t-0 border-white/5 -mx-4 lg:mx-0">
           <Link
             href="/vendor/products"
-            className="px-6 py-3 bg-black text-white border border-white/20 hover:bg-white hover:text-black hover:border-white text-xs font-medium uppercase tracking-[0.2em] transition-all duration-300"
+            className="w-full lg:w-auto text-center px-6 py-3 bg-black text-white border border-white/20 hover:bg-white hover:text-black hover:border-white text-xs font-medium uppercase tracking-[0.2em] transition-all duration-300"
           >
             Cancel
           </Link>
           <button
             type="submit"
             disabled={saving}
-            className="group flex items-center gap-2 px-6 py-3 bg-white text-black border border-white hover:bg-black hover:text-white hover:border-white/20 text-xs font-medium uppercase tracking-[0.2em] transition-all duration-300 disabled:opacity-50"
+            className="group flex items-center justify-center gap-2 w-full lg:w-auto px-6 py-3 bg-black text-white border border-white/20 hover:bg-white hover:text-black hover:border-white text-xs font-medium uppercase tracking-[0.2em] transition-all duration-300 disabled:opacity-50"
           >
             <Save size={18} className="group-hover:scale-110 transition-transform duration-300" />
             {saving ? 'Saving...' : product.status === 'approved' ? 'Submit Change Request' : 'Save & Resubmit'}

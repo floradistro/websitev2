@@ -64,9 +64,9 @@ export default function NewProduct() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto animate-fadeIn">
+    <div className="lg:max-w-4xl lg:mx-auto animate-fadeIn px-4 lg:px-0 py-6 lg:py-0 overflow-x-hidden">
       {/* Header */}
-      <div className="mb-8" style={{ animation: 'fadeInUp 0.5s ease-out' }}>
+      <div className="mb-6 lg:mb-8" style={{ animation: 'fadeInUp 0.5s ease-out' }}>
         <Link
           href="/vendor/products"
           className="inline-flex items-center gap-2 text-white/60 hover:text-white text-sm mb-4 transition-colors"
@@ -74,17 +74,17 @@ export default function NewProduct() {
           <ArrowLeft size={16} />
           Back to Products
         </Link>
-        <h1 className="text-3xl font-light text-white mb-2 tracking-tight">
+        <h1 className="text-2xl lg:text-3xl font-light text-white mb-2 tracking-tight">
           Add New Product
         </h1>
-        <p className="text-white/60 text-sm">
+        <p className="text-white/60 text-xs lg:text-sm">
           Submit a new product for admin approval
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-0 lg:space-y-6">
         {/* Basic Information */}
-        <div className="bg-[#1a1a1a] border border-white/5 p-6">
+        <div className="bg-[#1a1a1a] lg:border border-t border-white/5 p-4 lg:p-6 -mx-4 lg:mx-0">
           <h2 className="text-white font-medium mb-6">Basic Information</h2>
           
           <div className="space-y-4">
@@ -99,7 +99,7 @@ export default function NewProduct() {
                 value={formData.name}
                 onChange={(e) => setFormData({...formData, name: e.target.value})}
                 placeholder="e.g., Blue Dream"
-                className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors"
+                className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors text-base"
               />
             </div>
 
@@ -114,7 +114,7 @@ export default function NewProduct() {
                 value={formData.description}
                 onChange={(e) => setFormData({...formData, description: e.target.value})}
                 placeholder="Describe your product..."
-                className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors resize-none"
+                className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors resize-none text-base"
               />
             </div>
 
@@ -127,7 +127,7 @@ export default function NewProduct() {
                 required
                 value={formData.category}
                 onChange={(e) => setFormData({...formData, category: e.target.value})}
-                className="w-full bg-[#1a1a1a] border border-white/5 text-white px-4 py-3 focus:outline-none focus:border-white/10 transition-colors"
+                className="w-full bg-[#1a1a1a] border border-white/5 text-white px-4 py-3 focus:outline-none focus:border-white/10 transition-colors text-base"
               >
                 <option value="">Select category</option>
                 <option value="flower">Flower</option>
@@ -152,7 +152,7 @@ export default function NewProduct() {
                   value={formData.price}
                   onChange={(e) => setFormData({...formData, price: e.target.value})}
                   placeholder="14.99"
-                  className="w-full bg-white/5 border border-white/10 text-white placeholder-white/40 pl-8 pr-4 py-3 rounded focus:outline-none focus:border-white/20"
+                  className="w-full bg-white/5 border border-white/10 text-white placeholder-white/40 pl-8 pr-4 py-3 rounded focus:outline-none focus:border-white/20 text-base"
                 />
               </div>
             </div>
@@ -160,7 +160,7 @@ export default function NewProduct() {
         </div>
 
         {/* Product Images */}
-        <div className="bg-[#1a1a1a] border border-white/5 p-6">
+        <div className="bg-[#1a1a1a] lg:border border-t border-white/5 p-4 lg:p-6 -mx-4 lg:mx-0">
           <h2 className="text-white font-medium mb-6">Product Images</h2>
           
           <div className="space-y-4">
@@ -201,7 +201,7 @@ export default function NewProduct() {
         </div>
 
         {/* Certificate of Analysis */}
-        <div className="bg-[#1a1a1a] border border-white/5 p-6">
+        <div className="bg-[#1a1a1a] lg:border border-t border-white/5 p-4 lg:p-6 -mx-4 lg:mx-0">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-white font-medium">Certificate of Analysis (COA)</h2>
             <span className="text-red-500 text-xs uppercase tracking-wider">Required</span>
@@ -210,7 +210,7 @@ export default function NewProduct() {
           {coaFile ? (
             <div className="bg-white/5 border border-white/10 p-4 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <FileText size={20} className="text-green-500" />
+                <FileText size={20} className="text-white/60" />
                 <div>
                   <div className="text-white text-sm">{coaFile.name}</div>
                   <div className="text-white/60 text-xs">{(coaFile.size / 1024).toFixed(1)} KB</div>
@@ -251,10 +251,10 @@ export default function NewProduct() {
         </div>
 
         {/* Strain Details */}
-        <div className="bg-[#1a1a1a] border border-white/5 p-6">
+        <div className="bg-[#1a1a1a] lg:border border-t border-white/5 p-4 lg:p-6 -mx-4 lg:mx-0">
           <h2 className="text-white font-medium mb-6">Strain Details</h2>
           
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {/* THC % */}
             <div>
               <label className="block text-white/80 text-sm mb-2">
@@ -267,7 +267,7 @@ export default function NewProduct() {
                   value={formData.thc_percentage}
                   onChange={(e) => setFormData({...formData, thc_percentage: e.target.value})}
                   placeholder="24.5"
-                  className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors"
+                  className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors text-base"
                 />
                 <span className="absolute right-4 top-1/2 -translate-y-1/2 text-white/60">%</span>
               </div>
@@ -285,7 +285,7 @@ export default function NewProduct() {
                   value={formData.cbd_percentage}
                   onChange={(e) => setFormData({...formData, cbd_percentage: e.target.value})}
                   placeholder="0.5"
-                  className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors"
+                  className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors text-base"
                 />
                 <span className="absolute right-4 top-1/2 -translate-y-1/2 text-white/60">%</span>
               </div>
@@ -299,7 +299,7 @@ export default function NewProduct() {
               <select
                 value={formData.strain_type}
                 onChange={(e) => setFormData({...formData, strain_type: e.target.value})}
-                className="w-full bg-[#1a1a1a] border border-white/5 text-white px-4 py-3 focus:outline-none focus:border-white/10 transition-colors"
+                className="w-full bg-[#1a1a1a] border border-white/5 text-white px-4 py-3 focus:outline-none focus:border-white/10 transition-colors text-base"
               >
                 <option value="">Select type</option>
                 <option value="indica">Indica</option>
@@ -319,12 +319,12 @@ export default function NewProduct() {
                 value={formData.initial_quantity}
                 onChange={(e) => setFormData({...formData, initial_quantity: e.target.value})}
                 placeholder="100"
-                className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors"
+                className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors text-base"
               />
             </div>
 
             {/* Lineage */}
-            <div className="col-span-2">
+            <div className="lg:col-span-2">
               <label className="block text-white/80 text-sm mb-2">
                 Lineage / Genetics
               </label>
@@ -333,12 +333,12 @@ export default function NewProduct() {
                 value={formData.lineage}
                 onChange={(e) => setFormData({...formData, lineage: e.target.value})}
                 placeholder="e.g., Blueberry × Haze"
-                className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors"
+                className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors text-base"
               />
             </div>
 
             {/* Terpenes */}
-            <div className="col-span-2">
+            <div className="lg:col-span-2">
               <label className="block text-white/80 text-sm mb-2">
                 Dominant Terpenes
               </label>
@@ -347,12 +347,12 @@ export default function NewProduct() {
                 value={formData.terpenes}
                 onChange={(e) => setFormData({...formData, terpenes: e.target.value})}
                 placeholder="e.g., Myrcene, Pinene, Caryophyllene"
-                className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors"
+                className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors text-base"
               />
             </div>
 
             {/* Effects */}
-            <div className="col-span-2">
+            <div className="lg:col-span-2">
               <label className="block text-white/80 text-sm mb-2">
                 Effects
               </label>
@@ -361,24 +361,24 @@ export default function NewProduct() {
                 value={formData.effects}
                 onChange={(e) => setFormData({...formData, effects: e.target.value})}
                 placeholder="e.g., Relaxed, Creative, Euphoric"
-                className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors"
+                className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors text-base"
               />
             </div>
           </div>
         </div>
 
         {/* Submit */}
-        <div className="flex justify-end gap-4">
+        <div className="flex flex-col-reverse lg:flex-row justify-end gap-3 lg:gap-4 px-4 lg:px-0 py-6 lg:py-0 border-t lg:border-t-0 border-white/5 -mx-4 lg:mx-0">
           <Link
             href="/vendor/products"
-            className="px-6 py-3 bg-black text-white border border-white/20 hover:bg-white hover:text-black hover:border-white text-xs font-medium uppercase tracking-[0.2em] transition-all duration-300"
+            className="w-full lg:w-auto text-center px-6 py-3 bg-black text-white border border-white/20 hover:bg-white hover:text-black hover:border-white text-xs font-medium uppercase tracking-[0.2em] transition-all duration-300"
           >
             Cancel
           </Link>
           <button
             type="submit"
             disabled={loading}
-            className="group px-6 py-3 bg-white text-black border border-white hover:bg-black hover:text-white hover:border-white/20 text-xs font-medium uppercase tracking-[0.2em] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="group w-full lg:w-auto px-6 py-3 bg-black text-white border border-white/20 hover:bg-white hover:text-black hover:border-white text-xs font-medium uppercase tracking-[0.2em] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <span className="flex items-center gap-2">
               {loading ? 'Submitting...' : 'Submit for Review'}

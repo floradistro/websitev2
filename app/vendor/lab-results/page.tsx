@@ -108,10 +108,10 @@ export default function VendorLabResults() {
 
   const getStatusBadge = (status: string) => {
     const styles = {
-      approved: { bg: "bg-green-500/10", text: "text-green-500", border: "border-green-500/20", icon: CheckCircle },
-      pending: { bg: "bg-yellow-500/10", text: "text-yellow-500", border: "border-yellow-500/20", icon: AlertCircle },
+      approved: { bg: "bg-white/5", text: "text-white/60", border: "border-white/10", icon: CheckCircle },
+      pending: { bg: "bg-white/5", text: "text-white/60", border: "border-white/10", icon: AlertCircle },
       rejected: { bg: "bg-red-500/10", text: "text-red-500", border: "border-red-500/20", icon: XCircle },
-      expired: { bg: "bg-gray-500/10", text: "text-gray-500", border: "border-gray-500/20", icon: AlertCircle },
+      expired: { bg: "bg-red-500/10", text: "text-red-500", border: "border-red-500/20", icon: AlertCircle },
     };
 
     const style = styles[status as keyof typeof styles];
@@ -139,28 +139,29 @@ export default function VendorLabResults() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto animate-fadeIn">
+    <div className="lg:max-w-7xl lg:mx-auto animate-fadeIn px-4 lg:px-0 py-6 lg:py-0 overflow-x-hidden">
       {/* Header */}
-      <div className="mb-8" style={{ animation: 'fadeInUp 0.5s ease-out' }}>
-        <h1 className="text-3xl font-light text-white mb-2 tracking-tight">
+      <div className="mb-6 lg:mb-8" style={{ animation: 'fadeInUp 0.5s ease-out' }}>
+        <h1 className="text-2xl lg:text-3xl font-light text-white mb-2 tracking-tight">
           Lab Results & COAs
         </h1>
-        <p className="text-white/60 text-sm">
+        <p className="text-white/60 text-xs lg:text-sm">
           Manage Certificates of Analysis for your products
         </p>
       </div>
 
       {/* Summary Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6" style={{ animation: 'fadeInUp 0.6s ease-out 0.1s both' }}>
-        <div className="bg-[#1a1a1a] border border-white/5 p-6 hover:border-white/10 hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4 mb-6" style={{ animation: 'fadeInUp 0.6s ease-out 0.1s both' }}>
+        <div className="bg-[#1a1a1a] border border-white/5 p-4 lg:p-6 active:bg-white/5 lg:hover:border-white/10 lg:hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
           <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
           <div className="relative">
-            <div className="flex items-center justify-between mb-4">
-              <div className="text-white/60 text-xs uppercase tracking-wider">Total COAs</div>
-              <FileText size={20} className="text-white/40" />
+            <div className="flex items-center justify-between mb-2 lg:mb-4">
+              <div className="text-white/60 text-[10px] lg:text-xs uppercase tracking-wider">Total COAs</div>
+              <FileText size={18} className="lg:hidden text-white/40" />
+              <FileText size={20} className="hidden lg:block text-white/40" />
             </div>
-            <div className="text-3xl font-light text-white mb-1">{loading ? '—' : stats.total}</div>
-            <div className="text-white/40 text-xs">All certificates</div>
+            <div className="text-2xl lg:text-3xl font-light text-white mb-0.5 lg:mb-1">{loading ? '—' : stats.total}</div>
+            <div className="text-white/40 text-[10px] lg:text-xs">All certificates</div>
           </div>
         </div>
 
@@ -169,10 +170,10 @@ export default function VendorLabResults() {
           <div className="relative">
             <div className="flex items-center justify-between mb-4">
               <div className="text-white/60 text-xs uppercase tracking-wider">Approved</div>
-              <CheckCircle size={20} className="text-green-500/60" />
+              <CheckCircle size={20} className="text-white/40" />
             </div>
             <div className="text-3xl font-light text-white mb-1">{loading ? '—' : stats.approved}</div>
-            <div className="text-green-500/60 text-xs">Ready to sell</div>
+            <div className="text-white/40 text-xs">Ready to sell</div>
           </div>
         </div>
 
@@ -181,10 +182,10 @@ export default function VendorLabResults() {
           <div className="relative">
             <div className="flex items-center justify-between mb-4">
               <div className="text-white/60 text-xs uppercase tracking-wider">Pending Review</div>
-              <AlertCircle size={20} className="text-yellow-500/60" />
+              <AlertCircle size={20} className="text-white/40" />
             </div>
             <div className="text-3xl font-light text-white mb-1">{loading ? '—' : stats.pending}</div>
-            <div className="text-yellow-500/60 text-xs">Under review</div>
+            <div className="text-white/40 text-xs">Under review</div>
           </div>
         </div>
 
@@ -193,17 +194,17 @@ export default function VendorLabResults() {
           <div className="relative">
             <div className="flex items-center justify-between mb-4">
               <div className="text-white/60 text-xs uppercase tracking-wider">Expired</div>
-              <AlertCircle size={20} className="text-red-500/60" />
+              <AlertCircle size={20} className="text-red-500" />
             </div>
             <div className="text-3xl font-light text-white mb-1">{loading ? '—' : stats.expired}</div>
-            <div className="text-red-500/60 text-xs">Need renewal</div>
+            <div className="text-red-500 text-xs">Need renewal</div>
           </div>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="bg-[#1a1a1a] border border-white/5 p-4 mb-6" style={{ animation: 'fadeInUp 0.6s ease-out 0.2s both' }}>
-        <div className="flex flex-col md:flex-row gap-4">
+      <div className="bg-[#1a1a1a] lg:border border-t border-b border-white/5 p-4 mb-6 -mx-4 lg:mx-0" style={{ animation: 'fadeInUp 0.6s ease-out 0.2s both' }}>
+        <div className="flex flex-col lg:flex-row gap-3 lg:gap-4">
           {/* Search */}
           <div className="flex-1 relative">
             <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" />
@@ -212,15 +213,15 @@ export default function VendorLabResults() {
               placeholder="Search by product name or COA number..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-white/10 transition-colors"
+              className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 pl-10 pr-4 py-3 focus:outline-none focus:border-white/10 transition-colors text-base"
             />
           </div>
 
           {/* Status Filter */}
-          <div className="flex gap-2">
+          <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 lg:mx-0 lg:px-0 lg:pb-0 scrollbar-hide">
             <button
               onClick={() => setStatusFilter('all')}
-              className={`px-4 py-2 text-xs uppercase tracking-wider transition-all ${
+              className={`px-4 py-2 text-xs uppercase tracking-wider transition-all whitespace-nowrap ${
                 statusFilter === 'all'
                   ? 'bg-white text-black border border-white'
                   : 'bg-[#1a1a1a] text-white/60 hover:text-white border border-white/5 hover:border-white/10'
@@ -230,9 +231,9 @@ export default function VendorLabResults() {
             </button>
             <button
               onClick={() => setStatusFilter('approved')}
-              className={`px-4 py-2 text-xs uppercase tracking-wider transition-all ${
+              className={`px-4 py-2 text-xs uppercase tracking-wider transition-all whitespace-nowrap ${
                 statusFilter === 'approved'
-                  ? 'bg-green-500/10 text-green-500 border border-green-500/20'
+                  ? 'bg-white/10 text-white border border-white/20'
                   : 'bg-[#1a1a1a] text-white/60 hover:text-white border border-white/5 hover:border-white/10'
               }`}
             >
@@ -240,9 +241,9 @@ export default function VendorLabResults() {
             </button>
             <button
               onClick={() => setStatusFilter('pending')}
-              className={`px-4 py-2 text-xs uppercase tracking-wider transition-all ${
+              className={`px-4 py-2 text-xs uppercase tracking-wider transition-all whitespace-nowrap ${
                 statusFilter === 'pending'
-                  ? 'bg-yellow-500/10 text-yellow-500 border border-yellow-500/20'
+                  ? 'bg-white/10 text-white border border-white/20'
                   : 'bg-[#1a1a1a] text-white/60 hover:text-white border border-white/5 hover:border-white/10'
               }`}
             >
@@ -250,7 +251,7 @@ export default function VendorLabResults() {
             </button>
             <button
               onClick={() => setStatusFilter('expired')}
-              className={`px-4 py-2 text-xs uppercase tracking-wider transition-all ${
+              className={`px-4 py-2 text-xs uppercase tracking-wider transition-all whitespace-nowrap ${
                 statusFilter === 'expired'
                   ? 'bg-red-500/10 text-red-500 border border-red-500/20'
                   : 'bg-[#1a1a1a] text-white/60 hover:text-white border border-white/5 hover:border-white/10'
@@ -264,11 +265,11 @@ export default function VendorLabResults() {
 
       {/* COAs Table */}
       {loading ? (
-        <div className="bg-[#1a1a1a] border border-white/5 p-12">
+        <div className="bg-[#1a1a1a] lg:border border-white/5 p-12">
           <div className="text-center text-white/60">Loading lab results...</div>
         </div>
       ) : filteredCOAs.length === 0 ? (
-        <div className="bg-[#1a1a1a] border border-white/5 p-12">
+        <div className="bg-[#1a1a1a] lg:border border-white/5 p-12">
           <div className="text-center">
             <FileText size={48} className="text-white/20 mx-auto mb-4" />
             <div className="text-white/60 mb-4">No lab results found</div>
@@ -276,7 +277,31 @@ export default function VendorLabResults() {
           </div>
         </div>
       ) : (
-        <div className="bg-[#1a1a1a] border border-white/5 overflow-hidden" style={{ animation: 'fadeInUp 0.6s ease-out 0.3s both' }}>
+        <>
+          {/* Mobile List View */}
+          <div className="lg:hidden divide-y divide-white/5 -mx-4" style={{ animation: 'fadeInUp 0.6s ease-out 0.3s both' }}>
+            {filteredCOAs.map((coa) => (
+              <div
+                key={coa.id}
+                onClick={() => setSelectedCOA(coa)}
+                className="px-4 py-3 active:bg-white/5 transition-all bg-[#1a1a1a]"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <div className="text-white text-sm font-medium">{coa.productName}</div>
+                  {getStatusBadge(coa.status)}
+                </div>
+                <div className="flex items-center gap-3 text-xs text-white/40 mb-2">
+                  <span>THC: <span className="text-white/60">{coa.thc}</span></span>
+                  <span>•</span>
+                  <span>CBD: <span className="text-white/60">{coa.cbd}</span></span>
+                </div>
+                <div className="text-xs text-white/40 font-mono">{coa.coaNumber}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Desktop Table View */}
+          <div className="hidden lg:block bg-[#1a1a1a] border border-white/5 overflow-hidden" style={{ animation: 'fadeInUp 0.6s ease-out 0.3s both' }}>
           <table className="w-full">
             <thead className="border-b border-white/5 bg-[#1a1a1a]">
               <tr>
@@ -341,6 +366,7 @@ export default function VendorLabResults() {
             </tbody>
           </table>
         </div>
+        </>
       )}
 
       {/* COA Detail Modal */}
@@ -410,20 +436,20 @@ export default function VendorLabResults() {
                 <div className="flex items-center gap-3">
                   {getStatusBadge(selectedCOA.status)}
                   {selectedCOA.status === 'approved' && (
-                    <span className="text-green-500/80 text-xs">Verified by Flora Distro Quality Team</span>
+                    <span className="text-white/60 text-xs">Verified by Flora Distro Quality Team</span>
                   )}
                   {selectedCOA.status === 'expired' && (
-                    <span className="text-red-500/80 text-xs">COA is older than 90 days - renewal required</span>
+                    <span className="text-red-500 text-xs">COA is older than 90 days - renewal required</span>
                   )}
                   {selectedCOA.status === 'rejected' && (
-                    <span className="text-red-500/80 text-xs">COA rejected - please contact support</span>
+                    <span className="text-red-500 text-xs">COA rejected - please contact support</span>
                   )}
                 </div>
               </div>
 
               {/* Actions */}
               <div className="flex gap-3">
-                <button className="flex items-center gap-2 px-6 py-3 bg-white text-black border border-white hover:bg-black hover:text-white hover:border-white/20 text-xs font-medium uppercase tracking-[0.2em] transition-all duration-300">
+                <button className="flex items-center gap-2 px-6 py-3 bg-black text-white border border-white/20 hover:bg-white hover:text-black hover:border-white text-xs font-medium uppercase tracking-[0.2em] transition-all duration-300">
                   <Download size={16} />
                   Download PDF
                 </button>
@@ -440,13 +466,13 @@ export default function VendorLabResults() {
       )}
 
       {/* Info Box */}
-      <div className="mt-6 bg-blue-500/5 border border-blue-500/10 p-4">
+      <div className="mt-6 bg-white/5 lg:border border-t border-b border-white/10 p-4 -mx-4 lg:mx-0">
         <div className="flex gap-3">
-          <div className="text-blue-500/80 flex-shrink-0">
+          <div className="text-white/60 flex-shrink-0">
             <FileText size={20} />
           </div>
           <div>
-            <div className="text-blue-500/80 text-sm font-medium mb-1 uppercase tracking-wider">COA Requirements</div>
+            <div className="text-white/80 text-sm font-medium mb-1 uppercase tracking-wider">COA Requirements</div>
             <div className="text-white/60 text-xs leading-relaxed">
               All products must have a valid Certificate of Analysis from an accredited lab. COAs expire after 90 days and must be renewed. 
               Products without approved COAs cannot be sold on the marketplace.

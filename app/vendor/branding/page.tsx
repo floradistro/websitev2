@@ -55,7 +55,7 @@ export default function VendorBranding() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto animate-fadeIn">
+    <div className="lg:max-w-6xl lg:mx-auto animate-fadeIn px-4 lg:px-0 py-6 lg:py-0 overflow-x-hidden">
       {/* Header */}
       <div className="mb-8" style={{ animation: 'fadeInUp 0.5s ease-out' }}>
         <h1 className="text-3xl font-light text-white mb-2 tracking-tight">
@@ -71,7 +71,7 @@ export default function VendorBranding() {
         <div className="lg:col-span-2 space-y-6">
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Visual Assets */}
-            <div className="bg-[#1a1a1a] border border-white/5 p-6">
+            <div className="bg-[#1a1a1a] lg:border border-t border-b border-white/5 p-4 lg:p-6 -mx-4 lg:mx-0">
               <h2 className="text-white font-medium mb-6">Visual Assets</h2>
               
               <div className="space-y-6">
@@ -142,11 +142,11 @@ export default function VendorBranding() {
             </div>
 
             {/* Store Information */}
-            <div className="bg-[#1a1a1a] border border-white/5 p-6">
+            <div className="bg-[#1a1a1a] lg:border border-t border-b border-white/5 p-4 lg:p-6 -mx-4 lg:mx-0">
               <h2 className="text-white font-medium mb-6">Store Information</h2>
               
               <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-white/80 text-sm mb-2">
                       Company Name
@@ -155,7 +155,7 @@ export default function VendorBranding() {
                       type="text"
                       value={branding.companyName}
                       onChange={(e) => setBranding({...branding, companyName: e.target.value})}
-                      className="w-full bg-[#1a1a1a] border border-white/5 text-white px-4 py-3 focus:outline-none focus:border-white/10 transition-colors"
+                      className="w-full bg-[#1a1a1a] border border-white/5 text-white px-4 py-3 text-base focus:outline-none focus:border-white/10 transition-colors"
                     />
                   </div>
 
@@ -167,7 +167,7 @@ export default function VendorBranding() {
                       type="text"
                       value={branding.storeName}
                       onChange={(e) => setBranding({...branding, storeName: e.target.value})}
-                      className="w-full bg-[#1a1a1a] border border-white/5 text-white px-4 py-3 focus:outline-none focus:border-white/10 transition-colors"
+                      className="w-full bg-[#1a1a1a] border border-white/5 text-white px-4 py-3 text-base focus:outline-none focus:border-white/10 transition-colors"
                     />
                   </div>
                 </div>
@@ -181,7 +181,7 @@ export default function VendorBranding() {
                     value={branding.tagline}
                     onChange={(e) => setBranding({...branding, tagline: e.target.value})}
                     placeholder="Short description of your brand"
-                    className="w-full bg-white/5 border border-white/10 text-white placeholder-white/40 px-4 py-3 rounded focus:outline-none focus:border-white/20"
+                    className="w-full bg-white/5 border border-white/10 text-white placeholder-white/40 px-4 py-3 rounded focus:outline-none focus:border-white/20 text-base"
                   />
                 </div>
 
@@ -195,7 +195,7 @@ export default function VendorBranding() {
                     onChange={(e) => setBranding({...branding, about: e.target.value})}
                     placeholder="Tell customers about your brand, farming practices, values..."
                     maxLength={5000}
-                    className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors resize-none"
+                    className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors resize-none text-base"
                   />
                   <div className="text-white/40 text-xs mt-1">
                     {branding.about.length} / 5000 characters
@@ -205,13 +205,13 @@ export default function VendorBranding() {
             </div>
 
             {/* Brand Colors */}
-            <div className="bg-[#1a1a1a] border border-white/5 p-6">
+            <div className="bg-[#1a1a1a] lg:border border-t border-b border-white/5 p-4 lg:p-6 -mx-4 lg:mx-0">
               <h2 className="text-white font-medium mb-6">Brand Colors</h2>
               <p className="text-white/60 text-sm mb-4">
                 Choose colors that represent your brand. These will be used in your storefront accents.
               </p>
               
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-white/80 text-sm mb-2">
                     Primary Color
@@ -227,7 +227,7 @@ export default function VendorBranding() {
                       type="text"
                       value={branding.primaryColor}
                       onChange={(e) => setBranding({...branding, primaryColor: e.target.value})}
-                      className="flex-1 bg-white/5 border border-white/10 text-white px-4 py-3 rounded focus:outline-none focus:border-white/20 font-mono text-sm"
+                      className="flex-1 bg-white/5 border border-white/10 text-white px-4 py-3 rounded focus:outline-none focus:border-white/20 font-mono text-sm min-w-0"
                     />
                   </div>
                 </div>
@@ -247,7 +247,7 @@ export default function VendorBranding() {
                       type="text"
                       value={branding.accentColor}
                       onChange={(e) => setBranding({...branding, accentColor: e.target.value})}
-                      className="flex-1 bg-white/5 border border-white/10 text-white px-4 py-3 rounded focus:outline-none focus:border-white/20 font-mono text-sm"
+                      className="flex-1 bg-white/5 border border-white/10 text-white px-4 py-3 rounded focus:outline-none focus:border-white/20 font-mono text-sm min-w-0"
                     />
                   </div>
                 </div>
@@ -255,7 +255,7 @@ export default function VendorBranding() {
             </div>
 
             {/* Social Links */}
-            <div className="bg-[#1a1a1a] border border-white/5 p-6">
+            <div className="bg-[#1a1a1a] lg:border border-t border-b border-white/5 p-4 lg:p-6 -mx-4 lg:mx-0">
               <h2 className="text-white font-medium mb-6">Social & Links</h2>
               
               <div className="space-y-4">
@@ -268,7 +268,7 @@ export default function VendorBranding() {
                     value={branding.website}
                     onChange={(e) => setBranding({...branding, website: e.target.value})}
                     placeholder="https://yourwebsite.com"
-                    className="w-full bg-white/5 border border-white/10 text-white placeholder-white/40 px-4 py-3 rounded focus:outline-none focus:border-white/20"
+                    className="w-full bg-white/5 border border-white/10 text-white placeholder-white/40 px-4 py-3 rounded focus:outline-none focus:border-white/20 text-base break-all"
                   />
                 </div>
 
@@ -281,14 +281,14 @@ export default function VendorBranding() {
                     value={branding.instagram}
                     onChange={(e) => setBranding({...branding, instagram: e.target.value})}
                     placeholder="@yourbrand"
-                    className="w-full bg-white/5 border border-white/10 text-white placeholder-white/40 px-4 py-3 rounded focus:outline-none focus:border-white/20"
+                    className="w-full bg-white/5 border border-white/10 text-white placeholder-white/40 px-4 py-3 rounded focus:outline-none focus:border-white/20 text-base"
                   />
                 </div>
               </div>
             </div>
 
             {/* Store Policies */}
-            <div className="bg-[#1a1a1a] border border-white/5 p-6">
+            <div className="bg-[#1a1a1a] lg:border border-t border-b border-white/5 p-4 lg:p-6 -mx-4 lg:mx-0">
               <h2 className="text-white font-medium mb-6">Store Policies</h2>
               
               <div>
@@ -300,17 +300,17 @@ export default function VendorBranding() {
                   value={branding.customPolicies}
                   onChange={(e) => setBranding({...branding, customPolicies: e.target.value})}
                   placeholder="Enter your store's policies..."
-                  className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors resize-none"
+                  className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors resize-none text-base"
                 />
               </div>
             </div>
 
             {/* Save Button */}
-            <div className="flex justify-end">
+            <div className="flex justify-end px-4 lg:px-0 -mx-4 lg:mx-0">
               <button
                 type="submit"
                 disabled={loading}
-                className="group flex items-center gap-2 px-6 py-3 bg-white text-black border border-white hover:bg-black hover:text-white hover:border-white/20 text-xs font-medium uppercase tracking-[0.2em] transition-all duration-300 disabled:opacity-50"
+                className="group flex items-center gap-2 px-6 py-3 bg-black text-white border border-white/20 hover:bg-white hover:text-black hover:border-white text-xs font-medium uppercase tracking-[0.2em] transition-all duration-300 disabled:opacity-50"
               >
                 <Save size={18} className="group-hover:scale-110 transition-transform duration-300" />
                 {loading ? 'Saving...' : 'Save Branding'}
@@ -320,7 +320,7 @@ export default function VendorBranding() {
         </div>
 
         {/* Preview - 1/3 width */}
-        <div className="space-y-6">
+        <div className="space-y-6 hidden lg:block">
           {/* Storefront Preview */}
           <div className="bg-[#1a1a1a] border border-white/5 overflow-hidden">
             <div className="border-b border-white/5 p-4 bg-[#1a1a1a]">
@@ -409,8 +409,8 @@ export default function VendorBranding() {
           </div>
 
           {/* Branding Tips */}
-          <div className="bg-blue-500/5 border border-blue-500/10 p-4">
-            <h3 className="text-blue-500/80 text-xs font-medium uppercase tracking-wider mb-3">Branding Tips</h3>
+          <div className="bg-white/5 border border-white/10 p-4">
+            <h3 className="text-white/80 text-xs font-medium uppercase tracking-wider mb-3">Branding Tips</h3>
             <ul className="text-white/50 text-xs space-y-2 leading-relaxed">
               <li>• Use high-quality square logo (transparent PNG works best)</li>
               <li>• Banner should be landscape, showcasing your brand</li>

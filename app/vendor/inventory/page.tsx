@@ -141,9 +141,9 @@ export default function VendorInventory() {
     if (quantity === 0) {
       return { text: 'Out of Stock', color: 'text-red-500' };
     } else if (quantity < 10) {
-      return { text: 'Low Stock', color: 'text-yellow-500' };
+      return { text: 'Low Stock', color: 'text-red-500' };
     }
-    return { text: 'In Stock', color: 'text-green-500' };
+    return { text: 'In Stock', color: 'text-white/60' };
   };
 
   const filteredInventory = inventory.filter(item =>
@@ -152,45 +152,70 @@ export default function VendorInventory() {
   );
 
   return (
-    <div className="max-w-7xl mx-auto animate-fadeIn">
+    <div className="lg:max-w-7xl lg:mx-auto animate-fadeIn px-4 lg:px-0 py-6 lg:py-0 overflow-x-hidden">
       {/* Header */}
-      <div className="mb-8" style={{ animation: 'fadeInUp 0.5s ease-out' }}>
-        <h1 className="text-3xl font-light text-white mb-2 tracking-tight">
+      <div className="mb-6 lg:mb-8" style={{ animation: 'fadeInUp 0.5s ease-out' }}>
+        <h1 className="text-2xl lg:text-3xl font-light text-white mb-2 tracking-tight">
           Inventory Management
         </h1>
-        <p className="text-white/60 text-sm">
+        <p className="text-white/60 text-xs lg:text-sm">
           Manage stock levels for your location
         </p>
       </div>
 
       {/* Search */}
-      <div className="mb-6">
-        <div className="relative">
-          <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" />
+      <div className="mb-6 -mx-4 lg:mx-0">
+        <div className="relative px-4 lg:px-0">
+          <Search size={18} className="absolute left-7 lg:left-3 top-1/2 -translate-y-1/2 text-white/40" />
           <input
             type="text"
             placeholder="Search by product name or SKU..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 pl-10 pr-4 py-3 focus:outline-none focus:border-white/10 transition-colors"
+            className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 pl-10 pr-4 py-3 focus:outline-none focus:border-white/10 transition-colors text-base"
           />
         </div>
       </div>
 
       {/* Inventory Table */}
       {loading ? (
-        <div className="bg-[#1a1a1a] border border-white/5 p-12">
+        <div className="bg-[#1a1a1a] lg:border border-white/5 p-12">
           <div className="text-center text-white/60">Loading inventory...</div>
         </div>
       ) : filteredInventory.length === 0 ? (
-        <div className="bg-[#1a1a1a] border border-white/5 p-12">
+        <div className="bg-[#1a1a1a] lg:border border-white/5 p-12">
           <div className="text-center">
             <Package size={48} className="text-white/20 mx-auto mb-4" />
             <div className="text-white/60">No inventory items found</div>
           </div>
         </div>
       ) : (
-        <div className="bg-[#1a1a1a] border border-white/5 overflow-hidden">
+        <>
+          {/* Mobile List View */}
+          <div className="lg:hidden divide-y divide-white/5 -mx-4">
+            {filteredInventory.map((item) => (
+              <div key={item.id} className="px-4 py-3 active:bg-white/5 transition-all bg-[#1a1a1a]">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 bg-white/5 rounded flex items-center justify-center flex-shrink-0">
+                    <Package size={20} className="text-white/40" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-white text-sm font-medium mb-0.5">{item.name}</div>
+                    <div className="flex items-center gap-2 text-xs text-white/40">
+                      <span className="font-mono">{item.sku}</span>
+                      <span>•</span>
+                      <span className={getStockStatus(item.quantity).color}>
+                        {item.quantity.toFixed(2)}g
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Desktop Table View */}
+          <div className="hidden lg:block bg-[#1a1a1a] border border-white/5 overflow-hidden">
           <table className="w-full">
             <thead className="border-b border-white/5 bg-[#1a1a1a]">
               <tr>
@@ -276,16 +301,17 @@ export default function VendorInventory() {
             </tbody>
           </table>
         </div>
+        </>
       )}
 
       {/* Info Box */}
-      <div className="mt-6 bg-blue-500/5 border border-blue-500/10 p-4">
+      <div className="mt-6 bg-white/5 lg:border border-t border-b border-white/10 p-4 -mx-4 lg:mx-0">
         <div className="flex gap-3">
-          <div className="text-blue-500 flex-shrink-0">
+          <div className="text-white/60 flex-shrink-0">
             <Package size={20} />
           </div>
           <div>
-            <div className="text-blue-500 text-sm font-medium mb-1">Inventory Notes</div>
+            <div className="text-white/80 text-sm font-medium mb-1">Inventory Notes</div>
             <div className="text-white/60 text-xs">
               All inventory changes are logged for auditing. Adjustments below 10g will trigger a low stock warning.
             </div>

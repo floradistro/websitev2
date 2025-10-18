@@ -133,8 +133,8 @@ export default function VendorProducts() {
 
   const getStatusBadge = (status: string) => {
     const styles = {
-      approved: "bg-green-500/10 text-green-500 border-green-500/20",
-      pending: "bg-yellow-500/10 text-yellow-500 border-yellow-500/20",
+      approved: "bg-white/5 text-white/60 border-white/10",
+      pending: "bg-white/5 text-white/60 border-white/10",
       rejected: "bg-red-500/10 text-red-500 border-red-500/20",
     };
 
@@ -149,10 +149,10 @@ export default function VendorProducts() {
     if (!coaStatus) return null;
 
     const config = {
-      approved: { icon: CheckCircle, text: 'COA', className: 'text-green-500/60' },
-      pending: { icon: AlertCircle, text: 'COA', className: 'text-yellow-500/60' },
-      missing: { icon: XCircle, text: 'No COA', className: 'text-red-500/60' },
-      expired: { icon: AlertCircle, text: 'Expired', className: 'text-orange-500/60' },
+      approved: { icon: CheckCircle, text: 'COA', className: 'text-white/40' },
+      pending: { icon: AlertCircle, text: 'COA', className: 'text-white/40' },
+      missing: { icon: XCircle, text: 'No COA', className: 'text-red-500' },
+      expired: { icon: AlertCircle, text: 'Expired', className: 'text-red-500' },
     };
 
     const { icon: Icon, text, className } = config[coaStatus as keyof typeof config] || config.missing;
@@ -172,29 +172,31 @@ export default function VendorProducts() {
   });
 
   return (
-    <div className="max-w-7xl mx-auto animate-fadeIn">
+    <div className="lg:max-w-7xl lg:mx-auto animate-fadeIn overflow-x-hidden">
       {/* Header */}
-      <div className="flex justify-between items-center mb-8" style={{ animation: 'fadeInUp 0.5s ease-out' }}>
+      <div className="flex justify-between items-center px-4 lg:px-0 py-6 lg:py-0 lg:mb-8 border-b lg:border-b-0 border-white/5" style={{ animation: 'fadeInUp 0.5s ease-out' }}>
         <div>
-          <h1 className="text-3xl font-light text-white mb-2 tracking-tight">
+          <h1 className="text-2xl lg:text-3xl font-light text-white mb-1 lg:mb-2 tracking-tight">
             My Products
           </h1>
-          <p className="text-white/60 text-sm">
+          <p className="text-white/60 text-xs lg:text-sm">
             {filteredProducts.length} {filteredProducts.length === 1 ? 'product' : 'products'}
           </p>
         </div>
         <Link
           href="/vendor/products/new"
-          className="group flex items-center gap-2 bg-black border border-white/20 text-white px-6 py-3 text-xs font-medium uppercase tracking-[0.2em] hover:bg-white hover:text-black hover:border-white transition-all duration-300"
+          className="group flex items-center gap-2 bg-black border border-white/20 text-white px-4 lg:px-6 py-2.5 lg:py-3 text-[10px] lg:text-xs font-medium uppercase tracking-[0.2em] active:bg-white active:text-black lg:hover:bg-white lg:hover:text-black lg:hover:border-white transition-all duration-300"
         >
-          <Plus size={18} className="group-hover:rotate-90 transition-transform duration-300" />
-          Add Product
+          <Plus size={16} className="lg:hidden" />
+          <Plus size={18} className="hidden lg:block group-hover:rotate-90 transition-transform duration-300" />
+          <span className="hidden sm:inline">Add Product</span>
+          <span className="sm:hidden">Add</span>
         </Link>
       </div>
 
       {/* Filters */}
-      <div className="bg-[#1a1a1a] border border-white/5 p-4 mb-6" style={{ animation: 'fadeInUp 0.6s ease-out 0.1s both' }}>
-        <div className="flex flex-col md:flex-row gap-4">
+      <div className="bg-[#1a1a1a] lg:border border-t border-b border-white/5 px-4 lg:p-4 py-3 mb-0 lg:mb-6" style={{ animation: 'fadeInUp 0.6s ease-out 0.1s both' }}>
+        <div className="flex flex-col lg:flex-row gap-3 lg:gap-4">
           {/* Search */}
           <div className="flex-1 relative">
             <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" />
@@ -203,15 +205,15 @@ export default function VendorProducts() {
               placeholder="Search products..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-white/10 transition-colors"
+              className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 pl-10 pr-4 py-3 focus:outline-none focus:border-white/10 transition-colors text-base"
             />
           </div>
 
           {/* Status Filter */}
-          <div className="flex gap-2">
+          <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 lg:mx-0 lg:px-0 lg:pb-0 scrollbar-hide">
             <button
               onClick={() => setFilter('all')}
-              className={`px-4 py-2 text-xs uppercase tracking-wider transition-all ${
+              className={`px-4 py-2 text-xs uppercase tracking-wider transition-all whitespace-nowrap ${
                 filter === 'all'
                   ? 'bg-white text-black border border-white'
                   : 'bg-[#1a1a1a] text-white/60 hover:text-white border border-white/5 hover:border-white/10'
@@ -221,9 +223,9 @@ export default function VendorProducts() {
             </button>
             <button
               onClick={() => setFilter('approved')}
-              className={`px-4 py-2 text-xs uppercase tracking-wider transition-all ${
+              className={`px-4 py-2 text-xs uppercase tracking-wider transition-all whitespace-nowrap ${
                 filter === 'approved'
-                  ? 'bg-green-500/10 text-green-500 border border-green-500/20'
+                  ? 'bg-white/10 text-white border border-white/20'
                   : 'bg-[#1a1a1a] text-white/60 hover:text-white border border-white/5 hover:border-white/10'
               }`}
             >
@@ -231,9 +233,9 @@ export default function VendorProducts() {
             </button>
             <button
               onClick={() => setFilter('pending')}
-              className={`px-4 py-2 text-xs uppercase tracking-wider transition-all ${
+              className={`px-4 py-2 text-xs uppercase tracking-wider transition-all whitespace-nowrap ${
                 filter === 'pending'
-                  ? 'bg-yellow-500/10 text-yellow-500 border border-yellow-500/20'
+                  ? 'bg-white/10 text-white border border-white/20'
                   : 'bg-[#1a1a1a] text-white/60 hover:text-white border border-white/5 hover:border-white/10'
               }`}
             >
@@ -241,7 +243,7 @@ export default function VendorProducts() {
             </button>
             <button
               onClick={() => setFilter('rejected')}
-              className={`px-4 py-2 text-xs uppercase tracking-wider transition-all ${
+              className={`px-4 py-2 text-xs uppercase tracking-wider transition-all whitespace-nowrap ${
                 filter === 'rejected'
                   ? 'bg-red-500/10 text-red-500 border border-red-500/20'
                   : 'bg-[#1a1a1a] text-white/60 hover:text-white border border-white/5 hover:border-white/10'
@@ -253,13 +255,13 @@ export default function VendorProducts() {
         </div>
       </div>
 
-      {/* Products Table */}
+      {/* Products Table - Mobile: List View, Desktop: Table */}
       {loading ? (
-        <div className="bg-[#1a1a1a] border border-white/5 p-12">
+        <div className="bg-[#1a1a1a] lg:border border-white/5 p-12">
           <div className="text-center text-white/60">Loading products...</div>
         </div>
       ) : filteredProducts.length === 0 ? (
-        <div className="bg-[#1a1a1a] border border-white/5 p-12">
+        <div className="bg-[#1a1a1a] lg:border border-white/5 p-12">
           <div className="text-center">
             <Package size={48} className="text-white/20 mx-auto mb-4" />
             <div className="text-white/60 mb-4">No products found</div>
@@ -273,7 +275,40 @@ export default function VendorProducts() {
           </div>
         </div>
       ) : (
-        <div className="bg-[#1a1a1a] border border-white/5 overflow-hidden">
+        <>
+          {/* Mobile List View */}
+          <div className="lg:hidden divide-y divide-white/5">
+            {filteredProducts.map((product) => (
+              <Link
+                key={product.id}
+                href={`/vendor/products/${product.id}/edit`}
+                className="flex items-center gap-3 px-4 py-3 active:bg-white/5 transition-all bg-[#1a1a1a]"
+              >
+                <div className="w-12 h-12 bg-white/5 rounded flex items-center justify-center flex-shrink-0">
+                  <Package size={20} className="text-white/40" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-white text-sm font-medium mb-0.5">{product.name}</div>
+                  <div className="flex items-center gap-2 text-xs text-white/40">
+                    <span>{product.category}</span>
+                    <span>•</span>
+                    <span>{product.price}</span>
+                    <span>•</span>
+                    <span className={product.quantity > 0 ? 'text-white/60' : 'text-red-500'}>
+                      {product.quantity > 0 ? `${product.quantity}g` : 'Out of stock'}
+                    </span>
+                  </div>
+                </div>
+                <div className="flex flex-col items-end gap-2">
+                  {getStatusBadge(product.status)}
+                  {getCOABadge(product.coaStatus)}
+                </div>
+              </Link>
+            ))}
+          </div>
+
+          {/* Desktop Table View */}
+          <div className="hidden lg:block bg-[#1a1a1a] border border-white/5 overflow-hidden">
           <table className="w-full">
             <thead className="border-b border-white/5 bg-[#1a1a1a]">
               <tr>
@@ -330,6 +365,7 @@ export default function VendorProducts() {
             </tbody>
           </table>
         </div>
+        </>
       )}
     </div>
   );
