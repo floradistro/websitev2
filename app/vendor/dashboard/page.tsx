@@ -47,77 +47,115 @@ export default function VendorDashboard() {
     setTimeout(() => {
       setStats({
         totalProducts: 12,
-        approved: 8,
-        pending: 3,
+        approved: 10,
+        pending: 1,
         rejected: 1,
-        totalSales30d: 3482.35,
-        lowStock: 2,
+        totalSales30d: 8247.68,
+        lowStock: 3,
       });
 
       setRecentProducts([
         {
-          id: 1,
-          name: "Blue Dream",
+          id: 41735,
+          name: "Lemon Cherry Diesel",
           image: "/placeholder.jpg",
           status: "approved",
-          submittedDate: "2025-10-15"
+          submittedDate: "2025-10-16"
         },
         {
-          id: 2,
-          name: "OG Kush",
+          id: 41733,
+          name: "Detroit Runts",
           image: "/placeholder.jpg",
           status: "pending",
           submittedDate: "2025-10-17"
         },
         {
-          id: 3,
-          name: "Sour Diesel",
+          id: 41588,
+          name: "Black Jack",
           image: "/placeholder.jpg",
           status: "approved",
           submittedDate: "2025-10-14"
         },
         {
-          id: 4,
-          name: "Purple Haze",
+          id: 41587,
+          name: "Space Runtz",
+          image: "/placeholder.jpg",
+          status: "approved",
+          submittedDate: "2025-10-15"
+        },
+        {
+          id: 41586,
+          name: "Black Ice Runtz",
           image: "/placeholder.jpg",
           status: "rejected",
-          submittedDate: "2025-10-16"
+          submittedDate: "2025-10-13"
+        },
+        {
+          id: 41734,
+          name: "Blue Zushi",
+          image: "/placeholder.jpg",
+          status: "approved",
+          submittedDate: "2025-10-12"
         },
       ]);
 
       setLowStockItems([
         {
-          id: 1,
-          name: "OG Kush",
-          currentStock: 5.0,
+          id: 41733,
+          name: "Detroit Runts",
+          currentStock: 8.5,
           threshold: 20
         },
         {
-          id: 2,
-          name: "Gelato",
-          currentStock: 3.5,
+          id: 41585,
+          name: "Mango Gusher",
+          currentStock: 12.25,
           threshold: 20
+        },
+        {
+          id: 41732,
+          name: "Dirty Sprite",
+          currentStock: 4.0,
+          threshold: 15
         },
       ]);
 
       setNotices([
         {
           id: 1,
-          message: "Your product 'Blue Dream' was approved and is now live!",
+          message: "Your product 'Lemon Cherry Diesel' was approved and is now live!",
           type: "success",
           date: "2 hours ago"
         },
         {
           id: 2,
-          message: "Product 'Purple Haze' needs better photos. Please resubmit.",
+          message: "New order from Zachariah Kryger - $50.75 (Order #41778)",
+          type: "success",
+          date: "3 hours ago"
+        },
+        {
+          id: 3,
+          message: "Product 'Black Ice Runtz' needs better photos and COA. Please resubmit.",
           type: "warning",
           date: "1 day ago"
         },
         {
-          id: 3,
-          message: "Commission payout for October is scheduled for Nov 5th.",
+          id: 4,
+          message: "Low stock alert: 'Detroit Runts' has only 8.5g remaining",
+          type: "warning",
+          date: "2 days ago"
+        },
+        {
+          id: 5,
+          message: "Commission payout for October ($3,482.35) is scheduled for Nov 5th.",
           type: "info",
           date: "3 days ago"
+        },
+        {
+          id: 6,
+          message: "Your product 'Blue Zushi' received a 5-star review from Jordan Cooper",
+          type: "success",
+          date: "4 days ago"
         },
       ]);
 

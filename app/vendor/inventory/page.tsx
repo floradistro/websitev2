@@ -27,28 +27,91 @@ export default function VendorInventory() {
       setInventory([
         {
           id: 1,
-          product_id: 123,
-          name: "Blue Dream",
-          sku: "BD-001",
-          quantity: 150.5,
+          product_id: 41735,
+          name: "Lemon Cherry Diesel",
+          sku: "LCD-FLW-001",
+          quantity: 127.5,
           category: "Flower",
           image: "/placeholder.jpg"
         },
         {
           id: 2,
-          product_id: 124,
-          name: "Sour Diesel",
-          sku: "SD-001",
-          quantity: 75.25,
+          product_id: 41734,
+          name: "Blue Zushi",
+          sku: "BZ-FLW-002",
+          quantity: 98.25,
           category: "Flower",
           image: "/placeholder.jpg"
         },
         {
           id: 3,
-          product_id: 125,
-          name: "OG Kush",
-          sku: "OG-001",
-          quantity: 5.0,
+          product_id: 41588,
+          name: "Black Jack",
+          sku: "BJ-FLW-003",
+          quantity: 156.75,
+          category: "Flower",
+          image: "/placeholder.jpg"
+        },
+        {
+          id: 4,
+          product_id: 41587,
+          name: "Space Runtz",
+          sku: "SR-FLW-004",
+          quantity: 203.5,
+          category: "Flower",
+          image: "/placeholder.jpg"
+        },
+        {
+          id: 5,
+          product_id: 41585,
+          name: "Mango Gusher",
+          sku: "MG-FLW-005",
+          quantity: 12.25,
+          category: "Flower",
+          image: "/placeholder.jpg"
+        },
+        {
+          id: 6,
+          product_id: 41732,
+          name: "Dirty Sprite",
+          sku: "DS-VAP-006",
+          quantity: 4.0,
+          category: "Vape",
+          image: "/placeholder.jpg"
+        },
+        {
+          id: 7,
+          product_id: 41731,
+          name: "Pink Lemonade",
+          sku: "PL-VAP-007",
+          quantity: 45.0,
+          category: "Vape",
+          image: "/placeholder.jpg"
+        },
+        {
+          id: 8,
+          product_id: 41730,
+          name: "Orange Candy Crush",
+          sku: "OCC-VAP-008",
+          quantity: 32.0,
+          category: "Vape",
+          image: "/placeholder.jpg"
+        },
+        {
+          id: 9,
+          product_id: 41729,
+          name: "Girl Scout Cookie",
+          sku: "GSC-VAP-009",
+          quantity: 28.0,
+          category: "Vape",
+          image: "/placeholder.jpg"
+        },
+        {
+          id: 10,
+          product_id: 41584,
+          name: "Zkittlez",
+          sku: "ZKT-FLW-010",
+          quantity: 89.0,
           category: "Flower",
           image: "/placeholder.jpg"
         },

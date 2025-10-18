@@ -26,39 +26,111 @@ export default function VendorProducts() {
     setTimeout(() => {
       setProducts([
         {
-          id: 1,
-          name: "Blue Dream",
+          id: 41735,
+          name: "Lemon Cherry Diesel",
           image: "/placeholder.jpg",
           status: "approved",
-          quantity: 150,
+          quantity: 127.5,
           price: "$14.99",
           category: "Flower"
         },
         {
-          id: 2,
-          name: "OG Kush",
+          id: 41734,
+          name: "Blue Zushi",
+          image: "/placeholder.jpg",
+          status: "approved",
+          quantity: 98.25,
+          price: "$14.99",
+          category: "Flower"
+        },
+        {
+          id: 41733,
+          name: "Detroit Runts",
           image: "/placeholder.jpg",
           status: "pending",
           quantity: 0,
-          price: "$16.99",
+          price: "$14.99",
           category: "Flower"
         },
         {
-          id: 3,
-          name: "Sour Diesel",
+          id: 41732,
+          name: "Dirty Sprite",
           image: "/placeholder.jpg",
           status: "approved",
-          quantity: 75,
-          price: "$15.99",
+          quantity: 4.0,
+          price: "$34.99",
+          category: "Vape"
+        },
+        {
+          id: 41731,
+          name: "Pink Lemonade",
+          image: "/placeholder.jpg",
+          status: "approved",
+          quantity: 45.0,
+          price: "$34.99",
+          category: "Vape"
+        },
+        {
+          id: 41730,
+          name: "Orange Candy Crush",
+          image: "/placeholder.jpg",
+          status: "approved",
+          quantity: 32.0,
+          price: "$34.99",
+          category: "Vape"
+        },
+        {
+          id: 41729,
+          name: "Girl Scout Cookie",
+          image: "/placeholder.jpg",
+          status: "approved",
+          quantity: 28.0,
+          price: "$34.99",
+          category: "Vape"
+        },
+        {
+          id: 41588,
+          name: "Black Jack",
+          image: "/placeholder.jpg",
+          status: "approved",
+          quantity: 156.75,
+          price: "$14.99",
           category: "Flower"
         },
         {
-          id: 4,
-          name: "Purple Haze",
+          id: 41587,
+          name: "Space Runtz",
+          image: "/placeholder.jpg",
+          status: "approved",
+          quantity: 203.5,
+          price: "$14.99",
+          category: "Flower"
+        },
+        {
+          id: 41586,
+          name: "Black Ice Runtz",
           image: "/placeholder.jpg",
           status: "rejected",
           quantity: 0,
-          price: "$17.99",
+          price: "$14.99",
+          category: "Flower"
+        },
+        {
+          id: 41585,
+          name: "Mango Gusher",
+          image: "/placeholder.jpg",
+          status: "approved",
+          quantity: 12.25,
+          price: "$14.99",
+          category: "Flower"
+        },
+        {
+          id: 41584,
+          name: "Zkittlez",
+          image: "/placeholder.jpg",
+          status: "approved",
+          quantity: 89.0,
+          price: "$14.99",
           category: "Flower"
         },
       ]);
