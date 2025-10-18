@@ -86,13 +86,13 @@ export default function VendorSupportChat({ isOpen, onClose }: VendorSupportChat
     <>
       {/* Backdrop */}
       <div 
-        className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] animate-fadeIn"
+        className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[9998] animate-fadeIn"
         onClick={onClose}
       />
 
       {/* Chat Panel */}
       <div 
-        className="fixed right-0 top-0 h-full w-full md:w-[420px] bg-[#0a0a0a] border-l border-white/5 z-[101] flex flex-col"
+        className="fixed right-0 top-0 h-full w-full md:w-[420px] bg-[#0a0a0a] border-l border-white/5 z-[9999] flex flex-col"
         style={{ animation: 'slideInRight 0.3s ease-out' }}
       >
         {/* Header */}
@@ -169,18 +169,18 @@ export default function VendorSupportChat({ isOpen, onClose }: VendorSupportChat
         </div>
 
         {/* Quick Actions */}
-        <div className="border-t border-white/5 px-6 py-3 bg-black">
-          <div className="flex gap-2 overflow-x-auto scrollbar-hide">
-            <button className="flex-shrink-0 px-3 py-2 bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/10 text-white/60 hover:text-white text-[10px] uppercase tracking-[0.15em] transition-all duration-300">
+        <div className="border-t border-white/5 px-6 py-4 bg-black">
+          <div className="grid grid-cols-4 gap-2">
+            <button className="px-3 py-2.5 bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/10 text-white/60 hover:text-white text-[10px] uppercase tracking-[0.15em] transition-all duration-300">
               COA
             </button>
-            <button className="flex-shrink-0 px-3 py-2 bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/10 text-white/60 hover:text-white text-[10px] uppercase tracking-[0.15em] transition-all duration-300">
+            <button className="px-3 py-2.5 bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/10 text-white/60 hover:text-white text-[10px] uppercase tracking-[0.15em] transition-all duration-300">
               Approval
             </button>
-            <button className="flex-shrink-0 px-3 py-2 bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/10 text-white/60 hover:text-white text-[10px] uppercase tracking-[0.15em] transition-all duration-300">
+            <button className="px-3 py-2.5 bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/10 text-white/60 hover:text-white text-[10px] uppercase tracking-[0.15em] transition-all duration-300">
               Payout
             </button>
-            <button className="flex-shrink-0 px-3 py-2 bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/10 text-white/60 hover:text-white text-[10px] uppercase tracking-[0.15em] transition-all duration-300">
+            <button className="px-3 py-2.5 bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/10 text-white/60 hover:text-white text-[10px] uppercase tracking-[0.15em] transition-all duration-300">
               Technical
             </button>
           </div>
@@ -188,9 +188,9 @@ export default function VendorSupportChat({ isOpen, onClose }: VendorSupportChat
 
         {/* Input Area */}
         <div className="border-t border-white/5 p-6 bg-black">
-          <div className="flex items-center gap-3">
+          <div className="flex items-end gap-3">
             {/* Input */}
-            <div className="flex-1 relative">
+            <div className="flex-1">
               <textarea
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
@@ -198,7 +198,7 @@ export default function VendorSupportChat({ isOpen, onClose }: VendorSupportChat
                 placeholder="Message..."
                 rows={1}
                 className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-4 py-3 text-sm focus:outline-none focus:border-white/10 transition-colors resize-none"
-                style={{ minHeight: '44px' }}
+                style={{ minHeight: '48px' }}
               />
             </div>
 
@@ -206,7 +206,7 @@ export default function VendorSupportChat({ isOpen, onClose }: VendorSupportChat
             <button
               onClick={sendMessage}
               disabled={!inputText.trim()}
-              className="p-3 bg-white text-black border border-white hover:bg-black hover:text-white hover:border-white/20 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-300 flex-shrink-0"
+              className="w-12 h-12 bg-white text-black border border-white hover:bg-black hover:text-white hover:border-white/20 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-300 flex items-center justify-center flex-shrink-0"
               title="Send"
             >
               <Send size={18} strokeWidth={1.5} />
