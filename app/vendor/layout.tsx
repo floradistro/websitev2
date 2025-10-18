@@ -1,4 +1,5 @@
-import { redirect } from 'next/navigation';
+"use client";
+
 import Link from 'next/link';
 import { Home, Package, BarChart3, Settings, LogOut, Palette, ShoppingBag, FileText } from 'lucide-react';
 
