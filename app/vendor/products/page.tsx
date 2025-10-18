@@ -63,7 +63,8 @@ export default function VendorProducts() {
           status: "approved",
           quantity: 4.0,
           price: "$34.99",
-          category: "Vape"
+          category: "Vape",
+          coaStatus: "approved"
         },
         {
           id: 41731,
@@ -72,7 +73,8 @@ export default function VendorProducts() {
           status: "approved",
           quantity: 45.0,
           price: "$34.99",
-          category: "Vape"
+          category: "Vape",
+          coaStatus: "approved"
         },
         {
           id: 41730,
@@ -81,7 +83,8 @@ export default function VendorProducts() {
           status: "approved",
           quantity: 32.0,
           price: "$34.99",
-          category: "Vape"
+          category: "Vape",
+          coaStatus: "approved"
         },
         {
           id: 41729,
@@ -90,7 +93,8 @@ export default function VendorProducts() {
           status: "approved",
           quantity: 28.0,
           price: "$34.99",
-          category: "Vape"
+          category: "Vape",
+          coaStatus: "approved"
         },
         {
           id: 41588,
@@ -109,7 +113,8 @@ export default function VendorProducts() {
           status: "approved",
           quantity: 203.5,
           price: "$14.99",
-          category: "Flower"
+          category: "Flower",
+          coaStatus: "approved"
         },
         {
           id: 41586,
