@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, Upload, X, Save, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Upload, X, Save, AlertCircle, FileText, CheckCircle } from 'lucide-react';
 import Link from 'next/link';
 
 export default function EditProduct() {
