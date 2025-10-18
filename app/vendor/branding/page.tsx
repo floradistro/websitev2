@@ -343,42 +343,42 @@ export default function VendorBranding() {
               {/* Store Header */}
               <div className="p-6 border-b border-white/5">
                 <div className="flex items-center gap-4 mb-4">
-                  <div className="w-16 h-16 bg-[#2a2a2a] overflow-hidden border border-white/10 flex items-center justify-center">
+                  <div className="w-16 h-16 bg-[#2a2a2a] overflow-hidden border border-white/5 flex items-center justify-center">
                     <img src={logo} alt="Logo" className="w-full h-full object-contain p-2" />
                   </div>
                   <div>
-                    <h2 className="text-white font-medium text-lg">{branding.storeName}</h2>
-                    <p className="text-white/60 text-xs">{branding.tagline}</p>
+                    <h2 className="text-white font-light text-base uppercase tracking-wider">{branding.storeName}</h2>
+                    <p className="text-white/50 text-xs tracking-wide">{branding.tagline}</p>
                   </div>
                 </div>
                 
                 {/* Color Preview */}
                 <div className="flex gap-2 mb-3">
                   <div 
-                    className="w-12 h-12 rounded border border-white/10"
+                    className="w-10 h-10 border border-white/10"
                     style={{ backgroundColor: branding.primaryColor }}
                   />
                   <div 
-                    className="w-12 h-12 rounded border border-white/10"
+                    className="w-10 h-10 border border-white/10"
                     style={{ backgroundColor: branding.accentColor }}
                   />
                 </div>
 
                 {/* About Preview */}
-                <p className="text-white/70 text-xs leading-relaxed line-clamp-3">
+                <p className="text-white/60 text-xs leading-relaxed line-clamp-3">
                   {branding.about}
                 </p>
 
                 {/* Social Links Preview */}
                 {(branding.website || branding.instagram) && (
-                  <div className="mt-4 pt-4 border-t border-white/10 flex gap-3 text-xs">
+                  <div className="mt-4 pt-4 border-t border-white/5 flex gap-3 text-xs">
                     {branding.website && (
-                      <a href={branding.website} className="text-white/60 hover:text-white transition-colors">
+                      <a href={branding.website} className="text-white/50 hover:text-white transition-colors uppercase tracking-wider">
                         Website
                       </a>
                     )}
                     {branding.instagram && (
-                      <span className="text-white/60">{branding.instagram}</span>
+                      <span className="text-white/50 tracking-wide">{branding.instagram}</span>
                     )}
                   </div>
                 )}
@@ -386,16 +386,16 @@ export default function VendorBranding() {
 
               {/* Sample Product Card with Brand Colors */}
               <div className="p-4">
-                <div className="text-white/60 text-xs mb-3 uppercase tracking-wider">Products</div>
+                <div className="text-white/50 text-xs mb-3 uppercase tracking-[0.15em]">Products</div>
                 <div 
-                  className="bg-white/5 border rounded p-4"
-                  style={{ borderColor: branding.primaryColor + '40' }}
+                  className="bg-[#2a2a2a] border p-4"
+                  style={{ borderColor: branding.primaryColor + '20' }}
                 >
-                  <div className="aspect-square bg-white/5 rounded mb-3"></div>
-                  <div className="text-white text-sm font-medium mb-1">Sample Product</div>
+                  <div className="aspect-square bg-[#1a1a1a] mb-3"></div>
+                  <div className="text-white text-xs font-light uppercase tracking-wider mb-1">Sample Product</div>
                   <div className="text-white/60 text-xs mb-2">$14.99</div>
                   <button 
-                    className="w-full text-sm py-2 rounded transition-colors"
+                    className="w-full text-xs py-2 uppercase tracking-wider font-medium transition-all hover:opacity-90"
                     style={{ 
                       backgroundColor: branding.primaryColor,
                       color: '#000'
@@ -409,9 +409,9 @@ export default function VendorBranding() {
           </div>
 
           {/* Branding Tips */}
-          <div className="bg-blue-500/10 border border-blue-500/20 rounded p-4">
-            <h3 className="text-blue-500 text-sm font-medium mb-2">Branding Tips</h3>
-            <ul className="text-white/60 text-xs space-y-2">
+          <div className="bg-blue-500/5 border border-blue-500/10 p-4">
+            <h3 className="text-blue-500/80 text-xs font-medium uppercase tracking-wider mb-3">Branding Tips</h3>
+            <ul className="text-white/50 text-xs space-y-2 leading-relaxed">
               <li>• Use high-quality square logo (transparent PNG works best)</li>
               <li>• Banner should be landscape, showcasing your brand</li>
               <li>• Choose colors with good contrast against dark backgrounds</li>
