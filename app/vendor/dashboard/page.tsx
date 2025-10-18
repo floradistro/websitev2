@@ -267,64 +267,64 @@ export default function VendorDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8" style={{ animation: 'fadeInUp 0.6s ease-out 0.2s both' }}>
         <Link
           href="/vendor/products/new"
-          className="group bg-black hover:bg-white border border-white/20 hover:border-white p-6 transition-all duration-300 relative overflow-hidden"
+          className="group bg-transparent hover:bg-black border border-white/10 hover:border-white/20 p-6 transition-all duration-300 relative overflow-hidden"
         >
           <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
           <div className="relative flex items-center gap-4">
-            <div className="w-12 h-12 bg-white/5 group-hover:bg-black/10 flex items-center justify-center transition-all duration-300">
-              <Plus size={24} className="text-white group-hover:text-black transition-colors duration-300" />
+            <div className="w-12 h-12 bg-white/5 group-hover:bg-white/10 flex items-center justify-center transition-all duration-300">
+              <Plus size={24} className="text-white/60 group-hover:text-white transition-colors duration-300" />
             </div>
             <div>
-              <div className="text-white group-hover:text-black font-medium transition-colors duration-300">Add Product</div>
-              <div className="text-white/60 group-hover:text-black/60 text-xs transition-colors duration-300">Submit new product</div>
+              <div className="text-white/80 group-hover:text-white font-medium transition-colors duration-300">Add Product</div>
+              <div className="text-white/50 group-hover:text-white/70 text-xs transition-colors duration-300">Submit new product</div>
             </div>
           </div>
         </Link>
 
         <Link
           href="/vendor/products"
-          className="group bg-black hover:bg-white border border-white/20 hover:border-white p-6 transition-all duration-300 relative overflow-hidden"
+          className="group bg-transparent hover:bg-black border border-white/10 hover:border-white/20 p-6 transition-all duration-300 relative overflow-hidden"
         >
           <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
           <div className="relative flex items-center gap-4">
-            <div className="w-12 h-12 bg-white/5 group-hover:bg-black/10 flex items-center justify-center transition-all duration-300">
-              <Package size={24} className="text-white group-hover:text-black transition-colors duration-300" />
+            <div className="w-12 h-12 bg-white/5 group-hover:bg-white/10 flex items-center justify-center transition-all duration-300">
+              <Package size={24} className="text-white/60 group-hover:text-white transition-colors duration-300" />
             </div>
             <div>
-              <div className="text-white group-hover:text-black font-medium transition-colors duration-300">My Products</div>
-              <div className="text-white/60 group-hover:text-black/60 text-xs transition-colors duration-300">View all products</div>
+              <div className="text-white/80 group-hover:text-white font-medium transition-colors duration-300">My Products</div>
+              <div className="text-white/50 group-hover:text-white/70 text-xs transition-colors duration-300">View all products</div>
             </div>
           </div>
         </Link>
 
         <Link
           href="/vendor/inventory"
-          className="group bg-black hover:bg-white border border-white/20 hover:border-white p-6 transition-all duration-300 relative overflow-hidden"
+          className="group bg-transparent hover:bg-black border border-white/10 hover:border-white/20 p-6 transition-all duration-300 relative overflow-hidden"
         >
           <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
           <div className="relative flex items-center gap-4">
-            <div className="w-12 h-12 bg-white/5 group-hover:bg-black/10 flex items-center justify-center transition-all duration-300">
-              <TrendingUp size={24} className="text-white group-hover:text-black transition-colors duration-300" />
+            <div className="w-12 h-12 bg-white/5 group-hover:bg-white/10 flex items-center justify-center transition-all duration-300">
+              <TrendingUp size={24} className="text-white/60 group-hover:text-white transition-colors duration-300" />
             </div>
             <div>
-              <div className="text-white group-hover:text-black font-medium transition-colors duration-300">Inventory</div>
-              <div className="text-white/60 group-hover:text-black/60 text-xs transition-colors duration-300">Manage stock</div>
+              <div className="text-white/80 group-hover:text-white font-medium transition-colors duration-300">Inventory</div>
+              <div className="text-white/50 group-hover:text-white/70 text-xs transition-colors duration-300">Manage stock</div>
             </div>
           </div>
         </Link>
 
         <Link
           href="/vendor/branding"
-          className="group bg-black hover:bg-white border border-white/20 hover:border-white p-6 transition-all duration-300 relative overflow-hidden"
+          className="group bg-transparent hover:bg-black border border-white/10 hover:border-white/20 p-6 transition-all duration-300 relative overflow-hidden"
         >
           <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
           <div className="relative flex items-center gap-4">
-            <div className="w-12 h-12 bg-white/5 group-hover:bg-black/10 flex items-center justify-center transition-all duration-300">
-              <Package size={24} className="text-white group-hover:text-black transition-colors duration-300" />
+            <div className="w-12 h-12 bg-white/5 group-hover:bg-white/10 flex items-center justify-center transition-all duration-300">
+              <Package size={24} className="text-white/60 group-hover:text-white transition-colors duration-300" />
             </div>
             <div>
-              <div className="text-white group-hover:text-black font-medium transition-colors duration-300">Branding</div>
-              <div className="text-white/60 group-hover:text-black/60 text-xs transition-colors duration-300">Customize store</div>
+              <div className="text-white/80 group-hover:text-white font-medium transition-colors duration-300">Branding</div>
+              <div className="text-white/50 group-hover:text-white/70 text-xs transition-colors duration-300">Customize store</div>
             </div>
           </div>
         </Link>
