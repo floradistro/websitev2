@@ -151,6 +151,21 @@ export default function ProductsClient({
 
   return (
     <div className="min-h-screen bg-[#2a2a2a]">
+      {/* Inject Fonts */}
+      <style jsx global>{`
+        @font-face {
+          font-family: 'Lobster';
+          src: url('/Lobster 1.4.otf') format('opentype');
+          font-weight: normal;
+          font-style: normal;
+        }
+        @font-face {
+          font-family: 'Monkey Act';
+          src: url('/Monkey Act - Personal Use.otf') format('opentype');
+          font-weight: normal;
+          font-style: normal;
+        }
+      `}</style>
       {/* Header Section */}
       <div className="border-b border-white/10">
         <div className="px-4 sm:px-6 md:px-8 py-6 sm:py-8 md:py-12 max-w-[2000px] mx-auto">
