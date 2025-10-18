@@ -2,13 +2,14 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Upload, X, Plus } from 'lucide-react';
+import { ArrowLeft, Upload, X, Plus, FileText } from 'lucide-react';
 import Link from 'next/link';
 
 export default function NewProduct() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [images, setImages] = useState<string[]>([]);
+  const [coaFile, setCoAFile] = useState<File | null>(null);
   
   const [formData, setFormData] = useState({
     name: '',
@@ -42,12 +43,19 @@ export default function NewProduct() {
     setImages(prev => prev.filter((_, i) => i !== index));
   };
 
+  const handleCOAUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setCoAFile(file);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     // TODO: Submit to API
-    console.log('Submitting product:', formData, images);
+    console.log('Submitting product:', formData, images, coaFile);
     
     setTimeout(() => {
       setLoading(false);
@@ -189,6 +197,56 @@ export default function NewProduct() {
                 className="hidden"
               />
             </label>
+          </div>
+        </div>
+
+        {/* Certificate of Analysis */}
+        <div className="bg-[#1a1a1a] border border-white/5 p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-white font-medium">Certificate of Analysis (COA)</h2>
+            <span className="text-red-500 text-xs uppercase tracking-wider">Required</span>
+          </div>
+
+          {coaFile ? (
+            <div className="bg-white/5 border border-white/10 p-4 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <FileText size={20} className="text-green-500" />
+                <div>
+                  <div className="text-white text-sm">{coaFile.name}</div>
+                  <div className="text-white/60 text-xs">{(coaFile.size / 1024).toFixed(1)} KB</div>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setCoAFile(null)}
+                className="text-red-500 hover:text-red-400 transition-colors"
+              >
+                <X size={20} />
+              </button>
+            </div>
+          ) : (
+            <label className="block">
+              <div className="border-2 border-dashed border-white/10 p-8 text-center hover:border-white/20 transition-colors cursor-pointer bg-[#1a1a1a]">
+                <Upload size={32} className="text-white/40 mx-auto mb-3" />
+                <div className="text-white/80 text-sm mb-1">Upload Certificate of Analysis</div>
+                <div className="text-white/40 text-xs">PDF format, max 5MB - Required for approval</div>
+              </div>
+              <input
+                type="file"
+                accept=".pdf"
+                onChange={handleCOAUpload}
+                className="hidden"
+              />
+            </label>
+          )}
+
+          <div className="mt-4 bg-blue-500/5 border border-blue-500/10 p-3">
+            <div className="flex gap-2">
+              <FileText size={16} className="text-blue-500/80 flex-shrink-0 mt-0.5" />
+              <div className="text-blue-500/80 text-xs leading-relaxed">
+                All products must include a Certificate of Analysis from an accredited laboratory. COAs must be less than 90 days old.
+              </div>
+            </div>
           </div>
         </div>
 
