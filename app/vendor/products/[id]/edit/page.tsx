@@ -12,6 +12,8 @@ export default function EditProduct() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [images, setImages] = useState<string[]>([]);
+  const [coaFile, setCoAFile] = useState<File | null>(null);
+  const [existingCOA, setExistingCOA] = useState<any>(null);
   
   const [product, setProduct] = useState({
     name: '',
@@ -79,6 +81,19 @@ export default function EditProduct() {
 
       const data = mockProducts[productId as string] || mockProducts['41735'];
       setProduct(data);
+      
+      // Mock existing COA for approved products
+      if (data.status === 'approved' && productId === '41735') {
+        setExistingCOA({
+          coaNumber: 'COA-2025-001547',
+          testDate: '2025-10-15',
+          status: 'approved',
+          thc: '24.5%',
+          cbd: '0.8%',
+          lab: 'Quantix Analytics'
+        });
+      }
+      
       setLoading(false);
     }, 1000);
   }, [productId]);
@@ -100,12 +115,19 @@ export default function EditProduct() {
     setImages(prev => prev.filter((_, i) => i !== index));
   };
 
+  const handleCOAUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setCoAFile(file);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
 
     // TODO: Submit to API as change request
-    console.log('Submitting change request for product:', productId, product, images);
+    console.log('Submitting change request for product:', productId, product, images, coaFile);
     
     setTimeout(() => {
       setSaving(false);
@@ -287,6 +309,106 @@ export default function EditProduct() {
               />
             </label>
           </div>
+        </div>
+
+        {/* Lab Results / COA */}
+        <div className="bg-[#1a1a1a] border border-white/5 p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-white font-medium">Certificate of Analysis (COA)</h2>
+            <Link 
+              href="/vendor/lab-results"
+              className="text-white/60 hover:text-white text-xs uppercase tracking-wider transition-colors"
+            >
+              View All COAs
+            </Link>
+          </div>
+
+          {/* Existing COA */}
+          {existingCOA && (
+            <div className="mb-4 bg-white/5 border border-white/10 p-4">
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <FileText size={18} className="text-green-500" />
+                  <div>
+                    <div className="text-white text-sm font-medium">Current COA</div>
+                    <div className="text-white/60 text-xs font-mono">{existingCOA.coaNumber}</div>
+                  </div>
+                </div>
+                <span className="px-2 py-1 text-xs font-medium uppercase tracking-wider bg-green-500/10 text-green-500 border border-green-500/20 inline-flex items-center gap-1">
+                  <CheckCircle size={12} />
+                  {existingCOA.status}
+                </span>
+              </div>
+              <div className="grid grid-cols-3 gap-4 text-xs">
+                <div>
+                  <div className="text-white/60 mb-1">Test Date</div>
+                  <div className="text-white">{new Date(existingCOA.testDate).toLocaleDateString()}</div>
+                </div>
+                <div>
+                  <div className="text-white/60 mb-1">THC</div>
+                  <div className="text-white font-medium">{existingCOA.thc}</div>
+                </div>
+                <div>
+                  <div className="text-white/60 mb-1">CBD</div>
+                  <div className="text-white font-medium">{existingCOA.cbd}</div>
+                </div>
+              </div>
+              <div className="mt-3 pt-3 border-t border-white/10 text-xs text-white/50">
+                Tested by {existingCOA.lab}
+              </div>
+            </div>
+          )}
+
+          {/* Upload New COA */}
+          <div>
+            <label className="block text-white/80 text-sm mb-3">
+              {existingCOA ? 'Upload Updated COA (New Batch)' : 'Upload COA'}
+            </label>
+            
+            {coaFile ? (
+              <div className="bg-white/5 border border-white/10 p-4 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <FileText size={20} className="text-white/60" />
+                  <div>
+                    <div className="text-white text-sm">{coaFile.name}</div>
+                    <div className="text-white/60 text-xs">{(coaFile.size / 1024).toFixed(1)} KB</div>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setCoAFile(null)}
+                  className="text-red-500 hover:text-red-400 transition-colors"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+            ) : (
+              <label className="block">
+                <div className="border-2 border-dashed border-white/10 p-8 text-center hover:border-white/20 transition-colors cursor-pointer bg-[#1a1a1a]">
+                  <Upload size={32} className="text-white/40 mx-auto mb-3" />
+                  <div className="text-white/80 text-sm mb-1">Upload Certificate of Analysis</div>
+                  <div className="text-white/40 text-xs">PDF format, max 5MB</div>
+                </div>
+                <input
+                  type="file"
+                  accept=".pdf"
+                  onChange={handleCOAUpload}
+                  className="hidden"
+                />
+              </label>
+            )}
+          </div>
+
+          {!existingCOA && !coaFile && (
+            <div className="mt-4 bg-yellow-500/5 border border-yellow-500/10 p-3">
+              <div className="flex gap-2">
+                <AlertCircle size={16} className="text-yellow-500/80 flex-shrink-0 mt-0.5" />
+                <div className="text-yellow-500/80 text-xs leading-relaxed">
+                  Products require a valid COA to be approved and sold on the marketplace.
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Strain Details */}
