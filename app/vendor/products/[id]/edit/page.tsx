@@ -116,7 +116,7 @@ export default function EditProduct() {
   if (loading) {
     return (
       <div className="max-w-4xl mx-auto">
-        <div className="bg-[#2a2a2a] border border-white/10 rounded p-12 text-center text-white/60">
+        <div className="bg-[#2a2a2a] border border-white/5 p-12 text-center text-white/60">
           Loading product...
         </div>
       </div>
@@ -146,7 +146,7 @@ export default function EditProduct() {
 
       {/* Status Notice */}
       {product.status === 'rejected' && (
-        <div className="mb-6 bg-red-500/10 border border-red-500/20 rounded p-4">
+        <div className="mb-6 bg-red-500/5 border border-red-500/10 p-4">
           <div className="flex gap-3">
             <AlertCircle size={20} className="text-red-500 flex-shrink-0" />
             <div>
@@ -160,7 +160,7 @@ export default function EditProduct() {
       )}
 
       {product.status === 'pending' && (
-        <div className="mb-6 bg-yellow-500/10 border border-yellow-500/20 rounded p-4">
+        <div className="mb-6 bg-yellow-500/5 border border-yellow-500/10 p-4">
           <div className="flex gap-3">
             <AlertCircle size={20} className="text-yellow-500 flex-shrink-0" />
             <div>
@@ -175,7 +175,7 @@ export default function EditProduct() {
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Basic Information */}
-        <div className="bg-[#2a2a2a] border border-white/10 rounded p-6">
+        <div className="bg-[#2a2a2a] border border-white/5 p-6">
           <h2 className="text-white font-medium mb-6">Basic Information</h2>
           
           <div className="space-y-4">
@@ -190,7 +190,7 @@ export default function EditProduct() {
                 value={product.name}
                 onChange={(e) => setProduct({...product, name: e.target.value})}
                 placeholder="e.g., Blue Dream"
-                className="w-full bg-white/5 border border-white/10 text-white placeholder-white/40 px-4 py-3 rounded focus:outline-none focus:border-white/20"
+                className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors"
               />
             </div>
 
@@ -205,7 +205,7 @@ export default function EditProduct() {
                 value={product.description}
                 onChange={(e) => setProduct({...product, description: e.target.value})}
                 placeholder="Describe your product..."
-                className="w-full bg-white/5 border border-white/10 text-white placeholder-white/40 px-4 py-3 rounded focus:outline-none focus:border-white/20 resize-none"
+                className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors resize-none"
               />
             </div>
 
@@ -218,7 +218,7 @@ export default function EditProduct() {
                 required
                 value={product.category}
                 onChange={(e) => setProduct({...product, category: e.target.value})}
-                className="w-full bg-white/5 border border-white/10 text-white px-4 py-3 rounded focus:outline-none focus:border-white/20"
+                className="w-full bg-[#1a1a1a] border border-white/5 text-white px-4 py-3 focus:outline-none focus:border-white/10 transition-colors"
               >
                 <option value="">Select category</option>
                 <option value="flower">Flower</option>
@@ -251,7 +251,7 @@ export default function EditProduct() {
         </div>
 
         {/* Product Images */}
-        <div className="bg-[#2a2a2a] border border-white/10 rounded p-6">
+        <div className="bg-[#2a2a2a] border border-white/5 p-6">
           <h2 className="text-white font-medium mb-6">Product Images</h2>
           
           <div className="space-y-4">
@@ -273,7 +273,7 @@ export default function EditProduct() {
             )}
 
             <label className="block">
-              <div className="border-2 border-dashed border-white/20 rounded p-8 text-center hover:border-white/40 transition-colors cursor-pointer">
+              <div className="border-2 border-dashed border-white/10 p-8 text-center hover:border-white/20 transition-colors cursor-pointer bg-[#1a1a1a]">
                 <Upload size={32} className="text-white/40 mx-auto mb-3" />
                 <div className="text-white/80 text-sm mb-1">Click to upload new images</div>
                 <div className="text-white/40 text-xs">PNG, JPG up to 10MB</div>
@@ -290,7 +290,7 @@ export default function EditProduct() {
         </div>
 
         {/* Strain Details */}
-        <div className="bg-[#2a2a2a] border border-white/10 rounded p-6">
+        <div className="bg-[#2a2a2a] border border-white/5 p-6">
           <h2 className="text-white font-medium mb-6">Strain Details</h2>
           
           <div className="grid grid-cols-2 gap-4">
@@ -306,7 +306,7 @@ export default function EditProduct() {
                   value={product.thc_percentage}
                   onChange={(e) => setProduct({...product, thc_percentage: e.target.value})}
                   placeholder="24.5"
-                  className="w-full bg-white/5 border border-white/10 text-white placeholder-white/40 px-4 py-3 rounded focus:outline-none focus:border-white/20"
+                  className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors"
                 />
                 <span className="absolute right-4 top-1/2 -translate-y-1/2 text-white/60">%</span>
               </div>
@@ -324,7 +324,7 @@ export default function EditProduct() {
                   value={product.cbd_percentage}
                   onChange={(e) => setProduct({...product, cbd_percentage: e.target.value})}
                   placeholder="0.5"
-                  className="w-full bg-white/5 border border-white/10 text-white placeholder-white/40 px-4 py-3 rounded focus:outline-none focus:border-white/20"
+                  className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors"
                 />
                 <span className="absolute right-4 top-1/2 -translate-y-1/2 text-white/60">%</span>
               </div>
@@ -338,7 +338,7 @@ export default function EditProduct() {
               <select
                 value={product.strain_type}
                 onChange={(e) => setProduct({...product, strain_type: e.target.value})}
-                className="w-full bg-white/5 border border-white/10 text-white px-4 py-3 rounded focus:outline-none focus:border-white/20"
+                className="w-full bg-[#1a1a1a] border border-white/5 text-white px-4 py-3 focus:outline-none focus:border-white/10 transition-colors"
               >
                 <option value="">Select type</option>
                 <option value="indica">Indica</option>
@@ -358,7 +358,7 @@ export default function EditProduct() {
                 value={product.quantity}
                 onChange={(e) => setProduct({...product, quantity: e.target.value})}
                 placeholder="100"
-                className="w-full bg-white/5 border border-white/10 text-white placeholder-white/40 px-4 py-3 rounded focus:outline-none focus:border-white/20"
+                className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors"
                 disabled={product.status === 'approved'}
               />
               {product.status === 'approved' && (
@@ -376,7 +376,7 @@ export default function EditProduct() {
                 value={product.lineage}
                 onChange={(e) => setProduct({...product, lineage: e.target.value})}
                 placeholder="e.g., Blueberry × Haze"
-                className="w-full bg-white/5 border border-white/10 text-white placeholder-white/40 px-4 py-3 rounded focus:outline-none focus:border-white/20"
+                className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors"
               />
             </div>
 
@@ -390,7 +390,7 @@ export default function EditProduct() {
                 value={product.terpenes}
                 onChange={(e) => setProduct({...product, terpenes: e.target.value})}
                 placeholder="e.g., Myrcene, Pinene, Caryophyllene"
-                className="w-full bg-white/5 border border-white/10 text-white placeholder-white/40 px-4 py-3 rounded focus:outline-none focus:border-white/20"
+                className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors"
               />
             </div>
 
@@ -404,7 +404,7 @@ export default function EditProduct() {
                 value={product.effects}
                 onChange={(e) => setProduct({...product, effects: e.target.value})}
                 placeholder="e.g., Relaxed, Creative, Euphoric"
-                className="w-full bg-white/5 border border-white/10 text-white placeholder-white/40 px-4 py-3 rounded focus:outline-none focus:border-white/20"
+                className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors"
               />
             </div>
           </div>

@@ -203,7 +203,7 @@ export default function VendorDashboard() {
       {/* Stats Grid - Enhanced */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {/* Total Products */}
-        <div className="bg-[#2a2a2a] border border-white/10 p-6 rounded">
+        <div className="bg-[#2a2a2a] border border-white/5 p-6 hover:border-white/10 transition-all">
           <div className="flex items-center justify-between mb-4">
             <div className="text-white/60 text-xs uppercase tracking-wider">Live Products</div>
             <Package size={20} className="text-white/40" />
@@ -215,7 +215,7 @@ export default function VendorDashboard() {
         </div>
 
         {/* Pending Review */}
-        <div className="bg-[#2a2a2a] border border-white/10 p-6 rounded">
+        <div className="bg-[#2a2a2a] border border-white/5 p-6 hover:border-white/10 transition-all">
           <div className="flex items-center justify-between mb-4">
             <div className="text-white/60 text-xs uppercase tracking-wider">Pending Review</div>
             <AlertCircle size={20} className="text-yellow-500/60" />
@@ -227,7 +227,7 @@ export default function VendorDashboard() {
         </div>
 
         {/* Total Sales (30 Days) */}
-        <div className="bg-[#2a2a2a] border border-white/10 p-6 rounded">
+        <div className="bg-[#2a2a2a] border border-white/5 p-6 hover:border-white/10 transition-all">
           <div className="flex items-center justify-between mb-4">
             <div className="text-white/60 text-xs uppercase tracking-wider">Sales (30 Days)</div>
             <DollarSign size={20} className="text-green-500/60" />
@@ -239,7 +239,7 @@ export default function VendorDashboard() {
         </div>
 
         {/* Low Stock Alerts */}
-        <div className="bg-[#2a2a2a] border border-white/10 p-6 rounded">
+        <div className="bg-[#2a2a2a] border border-white/5 p-6 hover:border-white/10 transition-all">
           <div className="flex items-center justify-between mb-4">
             <div className="text-white/60 text-xs uppercase tracking-wider">Low Stock</div>
             <AlertTriangle size={20} className="text-red-500/60" />
@@ -255,7 +255,7 @@ export default function VendorDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
         <Link
           href="/vendor/products/new"
-          className="group bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 p-6 rounded transition-all"
+          className="group bg-[#2a2a2a] hover:bg-[#303030] border border-white/5 hover:border-white/10 p-6 transition-all"
         >
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center group-hover:bg-white/20 transition-colors">
@@ -270,7 +270,7 @@ export default function VendorDashboard() {
 
         <Link
           href="/vendor/products"
-          className="group bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 p-6 rounded transition-all"
+          className="group bg-[#2a2a2a] hover:bg-[#303030] border border-white/5 hover:border-white/10 p-6 transition-all"
         >
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center group-hover:bg-white/20 transition-colors">
@@ -285,7 +285,7 @@ export default function VendorDashboard() {
 
         <Link
           href="/vendor/inventory"
-          className="group bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 p-6 rounded transition-all"
+          className="group bg-[#2a2a2a] hover:bg-[#303030] border border-white/5 hover:border-white/10 p-6 transition-all"
         >
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center group-hover:bg-white/20 transition-colors">
@@ -300,7 +300,7 @@ export default function VendorDashboard() {
 
         <Link
           href="/vendor/settings"
-          className="group bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 p-6 rounded transition-all"
+          className="group bg-[#2a2a2a] hover:bg-[#303030] border border-white/5 hover:border-white/10 p-6 transition-all"
         >
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center group-hover:bg-white/20 transition-colors">
@@ -319,9 +319,9 @@ export default function VendorDashboard() {
         {/* Left Column - 2/3 width */}
         <div className="lg:col-span-2 space-y-6">
           {/* Recent Product Submissions */}
-          <div className="bg-[#2a2a2a] border border-white/10 rounded">
-            <div className="border-b border-white/10 p-6 flex justify-between items-center">
-              <h2 className="text-white font-medium">Recent Product Submissions</h2>
+          <div className="bg-[#2a2a2a] border border-white/5">
+            <div className="border-b border-white/5 p-6 flex justify-between items-center">
+              <h2 className="text-white/90 text-sm uppercase tracking-wider font-light">Recent Product Submissions</h2>
               <Link href="/vendor/products" className="text-white/60 hover:text-white text-xs uppercase tracking-wider transition-colors">
                 View All
               </Link>
@@ -365,12 +365,12 @@ export default function VendorDashboard() {
 
           {/* Low Inventory Warnings */}
           {lowStockItems.length > 0 && (
-            <div className="bg-[#2a2a2a] border border-red-500/20 rounded">
-              <div className="border-b border-white/10 p-6 flex items-center gap-3">
-                <AlertTriangle size={20} className="text-red-500" />
-                <h2 className="text-white font-medium">Low Inventory Warnings</h2>
+            <div className="bg-[#2a2a2a] border border-red-500/10">
+              <div className="border-b border-white/5 p-6 flex items-center gap-3">
+                <AlertTriangle size={18} className="text-red-500/80" strokeWidth={1.5} />
+                <h2 className="text-white/90 text-sm uppercase tracking-wider font-light">Low Inventory Warnings</h2>
               </div>
-              <div className="divide-y divide-white/10">
+              <div className="divide-y divide-white/5">
                 {lowStockItems.map((item) => (
                   <div key={item.id} className="p-4 hover:bg-white/5 transition-colors">
                     <div className="flex items-center justify-between">
@@ -397,11 +397,11 @@ export default function VendorDashboard() {
         {/* Right Column - 1/3 width */}
         <div className="space-y-6">
           {/* Vendor Notices */}
-          <div className="bg-[#2a2a2a] border border-white/10 rounded">
-            <div className="border-b border-white/10 p-6">
-              <h2 className="text-white font-medium">Notices</h2>
+          <div className="bg-[#2a2a2a] border border-white/5">
+            <div className="border-b border-white/5 p-6">
+              <h2 className="text-white/90 text-sm uppercase tracking-wider font-light">Notices</h2>
             </div>
-            <div className="divide-y divide-white/10">
+            <div className="divide-y divide-white/5">
               {loading ? (
                 <div className="p-6 text-center text-white/60 text-sm">Loading...</div>
               ) : notices.length === 0 ? (

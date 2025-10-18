@@ -43,7 +43,7 @@ export default function VendorSettings() {
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Company Information */}
-        <div className="bg-[#2a2a2a] border border-white/10 rounded p-6">
+        <div className="bg-[#2a2a2a] border border-white/5 p-6">
           <h2 className="text-white font-medium mb-6">Company Information</h2>
           
           <div className="grid grid-cols-2 gap-4">
@@ -56,7 +56,7 @@ export default function VendorSettings() {
                 value={settings.companyName}
                 onChange={(e) => setSettings({...settings, companyName: e.target.value})}
                 placeholder="Your Company LLC"
-                className="w-full bg-white/5 border border-white/10 text-white placeholder-white/40 px-4 py-3 rounded focus:outline-none focus:border-white/20"
+                className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors"
               />
             </div>
 
@@ -69,7 +69,7 @@ export default function VendorSettings() {
                 value={settings.contactName}
                 onChange={(e) => setSettings({...settings, contactName: e.target.value})}
                 placeholder="John Doe"
-                className="w-full bg-white/5 border border-white/10 text-white placeholder-white/40 px-4 py-3 rounded focus:outline-none focus:border-white/20"
+                className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors"
               />
             </div>
 
@@ -82,7 +82,7 @@ export default function VendorSettings() {
                 value={settings.email}
                 onChange={(e) => setSettings({...settings, email: e.target.value})}
                 placeholder="contact@company.com"
-                className="w-full bg-white/5 border border-white/10 text-white placeholder-white/40 px-4 py-3 rounded focus:outline-none focus:border-white/20"
+                className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors"
               />
             </div>
 
@@ -95,7 +95,7 @@ export default function VendorSettings() {
                 value={settings.phone}
                 onChange={(e) => setSettings({...settings, phone: e.target.value})}
                 placeholder="(555) 123-4567"
-                className="w-full bg-white/5 border border-white/10 text-white placeholder-white/40 px-4 py-3 rounded focus:outline-none focus:border-white/20"
+                className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors"
               />
             </div>
 
@@ -108,14 +108,14 @@ export default function VendorSettings() {
                 value={settings.taxId}
                 onChange={(e) => setSettings({...settings, taxId: e.target.value})}
                 placeholder="XX-XXXXXXX"
-                className="w-full bg-white/5 border border-white/10 text-white placeholder-white/40 px-4 py-3 rounded focus:outline-none focus:border-white/20"
+                className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors"
               />
             </div>
           </div>
         </div>
 
         {/* Address */}
-        <div className="bg-[#2a2a2a] border border-white/10 rounded p-6">
+        <div className="bg-[#2a2a2a] border border-white/5 p-6">
           <h2 className="text-white font-medium mb-6">Business Address</h2>
           
           <div className="space-y-4">
@@ -128,7 +128,7 @@ export default function VendorSettings() {
                 value={settings.address}
                 onChange={(e) => setSettings({...settings, address: e.target.value})}
                 placeholder="123 Main St"
-                className="w-full bg-white/5 border border-white/10 text-white placeholder-white/40 px-4 py-3 rounded focus:outline-none focus:border-white/20"
+                className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors"
               />
             </div>
 
@@ -142,7 +142,7 @@ export default function VendorSettings() {
                   value={settings.city}
                   onChange={(e) => setSettings({...settings, city: e.target.value})}
                   placeholder="Charlotte"
-                  className="w-full bg-white/5 border border-white/10 text-white placeholder-white/40 px-4 py-3 rounded focus:outline-none focus:border-white/20"
+                  className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors"
                 />
               </div>
 
@@ -155,7 +155,7 @@ export default function VendorSettings() {
                   value={settings.state}
                   onChange={(e) => setSettings({...settings, state: e.target.value})}
                   placeholder="NC"
-                  className="w-full bg-white/5 border border-white/10 text-white placeholder-white/40 px-4 py-3 rounded focus:outline-none focus:border-white/20"
+                  className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors"
                 />
               </div>
 
@@ -168,7 +168,7 @@ export default function VendorSettings() {
                   value={settings.zip}
                   onChange={(e) => setSettings({...settings, zip: e.target.value})}
                   placeholder="28202"
-                  className="w-full bg-white/5 border border-white/10 text-white placeholder-white/40 px-4 py-3 rounded focus:outline-none focus:border-white/20"
+                  className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors"
                 />
               </div>
             </div>

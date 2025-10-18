@@ -76,7 +76,7 @@ export default function NewProduct() {
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Basic Information */}
-        <div className="bg-[#2a2a2a] border border-white/10 rounded p-6">
+        <div className="bg-[#2a2a2a] border border-white/5 p-6">
           <h2 className="text-white font-medium mb-6">Basic Information</h2>
           
           <div className="space-y-4">
@@ -91,7 +91,7 @@ export default function NewProduct() {
                 value={formData.name}
                 onChange={(e) => setFormData({...formData, name: e.target.value})}
                 placeholder="e.g., Blue Dream"
-                className="w-full bg-white/5 border border-white/10 text-white placeholder-white/40 px-4 py-3 rounded focus:outline-none focus:border-white/20"
+                className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors"
               />
             </div>
 
@@ -106,7 +106,7 @@ export default function NewProduct() {
                 value={formData.description}
                 onChange={(e) => setFormData({...formData, description: e.target.value})}
                 placeholder="Describe your product..."
-                className="w-full bg-white/5 border border-white/10 text-white placeholder-white/40 px-4 py-3 rounded focus:outline-none focus:border-white/20 resize-none"
+                className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors resize-none"
               />
             </div>
 
@@ -119,7 +119,7 @@ export default function NewProduct() {
                 required
                 value={formData.category}
                 onChange={(e) => setFormData({...formData, category: e.target.value})}
-                className="w-full bg-white/5 border border-white/10 text-white px-4 py-3 rounded focus:outline-none focus:border-white/20"
+                className="w-full bg-[#1a1a1a] border border-white/5 text-white px-4 py-3 focus:outline-none focus:border-white/10 transition-colors"
               >
                 <option value="">Select category</option>
                 <option value="flower">Flower</option>
@@ -152,7 +152,7 @@ export default function NewProduct() {
         </div>
 
         {/* Product Images */}
-        <div className="bg-[#2a2a2a] border border-white/10 rounded p-6">
+        <div className="bg-[#2a2a2a] border border-white/5 p-6">
           <h2 className="text-white font-medium mb-6">Product Images</h2>
           
           <div className="space-y-4">
@@ -176,7 +176,7 @@ export default function NewProduct() {
 
             {/* Upload Button */}
             <label className="block">
-              <div className="border-2 border-dashed border-white/20 rounded p-8 text-center hover:border-white/40 transition-colors cursor-pointer">
+              <div className="border-2 border-dashed border-white/10 p-8 text-center hover:border-white/20 transition-colors cursor-pointer bg-[#1a1a1a]">
                 <Upload size={32} className="text-white/40 mx-auto mb-3" />
                 <div className="text-white/80 text-sm mb-1">Click to upload images</div>
                 <div className="text-white/40 text-xs">PNG, JPG up to 10MB (min 3 images recommended)</div>
@@ -193,7 +193,7 @@ export default function NewProduct() {
         </div>
 
         {/* Strain Details */}
-        <div className="bg-[#2a2a2a] border border-white/10 rounded p-6">
+        <div className="bg-[#2a2a2a] border border-white/5 p-6">
           <h2 className="text-white font-medium mb-6">Strain Details</h2>
           
           <div className="grid grid-cols-2 gap-4">
@@ -209,7 +209,7 @@ export default function NewProduct() {
                   value={formData.thc_percentage}
                   onChange={(e) => setFormData({...formData, thc_percentage: e.target.value})}
                   placeholder="24.5"
-                  className="w-full bg-white/5 border border-white/10 text-white placeholder-white/40 px-4 py-3 rounded focus:outline-none focus:border-white/20"
+                  className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors"
                 />
                 <span className="absolute right-4 top-1/2 -translate-y-1/2 text-white/60">%</span>
               </div>
@@ -227,7 +227,7 @@ export default function NewProduct() {
                   value={formData.cbd_percentage}
                   onChange={(e) => setFormData({...formData, cbd_percentage: e.target.value})}
                   placeholder="0.5"
-                  className="w-full bg-white/5 border border-white/10 text-white placeholder-white/40 px-4 py-3 rounded focus:outline-none focus:border-white/20"
+                  className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors"
                 />
                 <span className="absolute right-4 top-1/2 -translate-y-1/2 text-white/60">%</span>
               </div>
@@ -241,7 +241,7 @@ export default function NewProduct() {
               <select
                 value={formData.strain_type}
                 onChange={(e) => setFormData({...formData, strain_type: e.target.value})}
-                className="w-full bg-white/5 border border-white/10 text-white px-4 py-3 rounded focus:outline-none focus:border-white/20"
+                className="w-full bg-[#1a1a1a] border border-white/5 text-white px-4 py-3 focus:outline-none focus:border-white/10 transition-colors"
               >
                 <option value="">Select type</option>
                 <option value="indica">Indica</option>
@@ -261,7 +261,7 @@ export default function NewProduct() {
                 value={formData.initial_quantity}
                 onChange={(e) => setFormData({...formData, initial_quantity: e.target.value})}
                 placeholder="100"
-                className="w-full bg-white/5 border border-white/10 text-white placeholder-white/40 px-4 py-3 rounded focus:outline-none focus:border-white/20"
+                className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors"
               />
             </div>
 
@@ -275,7 +275,7 @@ export default function NewProduct() {
                 value={formData.lineage}
                 onChange={(e) => setFormData({...formData, lineage: e.target.value})}
                 placeholder="e.g., Blueberry × Haze"
-                className="w-full bg-white/5 border border-white/10 text-white placeholder-white/40 px-4 py-3 rounded focus:outline-none focus:border-white/20"
+                className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors"
               />
             </div>
 
@@ -289,7 +289,7 @@ export default function NewProduct() {
                 value={formData.terpenes}
                 onChange={(e) => setFormData({...formData, terpenes: e.target.value})}
                 placeholder="e.g., Myrcene, Pinene, Caryophyllene"
-                className="w-full bg-white/5 border border-white/10 text-white placeholder-white/40 px-4 py-3 rounded focus:outline-none focus:border-white/20"
+                className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors"
               />
             </div>
 
@@ -303,7 +303,7 @@ export default function NewProduct() {
                 value={formData.effects}
                 onChange={(e) => setFormData({...formData, effects: e.target.value})}
                 placeholder="e.g., Relaxed, Creative, Euphoric"
-                className="w-full bg-white/5 border border-white/10 text-white placeholder-white/40 px-4 py-3 rounded focus:outline-none focus:border-white/20"
+                className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors"
               />
             </div>
           </div>

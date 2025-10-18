@@ -180,7 +180,7 @@ export default function VendorProducts() {
       </div>
 
       {/* Filters */}
-      <div className="bg-[#2a2a2a] border border-white/10 p-4 rounded mb-6">
+      <div className="bg-[#2a2a2a] border border-white/5 p-4 mb-6">
         <div className="flex flex-col md:flex-row gap-4">
           {/* Search */}
           <div className="flex-1 relative">
@@ -190,7 +190,7 @@ export default function VendorProducts() {
               placeholder="Search products..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-white/5 border border-white/10 text-white placeholder-white/40 pl-10 pr-4 py-2 text-sm rounded focus:outline-none focus:border-white/20"
+              className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-white/10 transition-colors"
             />
           </div>
 
@@ -198,40 +198,40 @@ export default function VendorProducts() {
           <div className="flex gap-2">
             <button
               onClick={() => setFilter('all')}
-              className={`px-4 py-2 text-sm rounded transition-colors ${
+              className={`px-4 py-2 text-xs uppercase tracking-wider transition-all ${
                 filter === 'all'
-                  ? 'bg-white text-black'
-                  : 'bg-white/5 text-white/60 hover:text-white'
+                  ? 'bg-white text-black border border-white'
+                  : 'bg-[#1a1a1a] text-white/60 hover:text-white border border-white/5 hover:border-white/10'
               }`}
             >
               All
             </button>
             <button
               onClick={() => setFilter('approved')}
-              className={`px-4 py-2 text-sm rounded transition-colors ${
+              className={`px-4 py-2 text-xs uppercase tracking-wider transition-all ${
                 filter === 'approved'
-                  ? 'bg-green-500/20 text-green-500 border border-green-500/20'
-                  : 'bg-white/5 text-white/60 hover:text-white'
+                  ? 'bg-green-500/10 text-green-500 border border-green-500/20'
+                  : 'bg-[#1a1a1a] text-white/60 hover:text-white border border-white/5 hover:border-white/10'
               }`}
             >
               Approved
             </button>
             <button
               onClick={() => setFilter('pending')}
-              className={`px-4 py-2 text-sm rounded transition-colors ${
+              className={`px-4 py-2 text-xs uppercase tracking-wider transition-all ${
                 filter === 'pending'
-                  ? 'bg-yellow-500/20 text-yellow-500 border border-yellow-500/20'
-                  : 'bg-white/5 text-white/60 hover:text-white'
+                  ? 'bg-yellow-500/10 text-yellow-500 border border-yellow-500/20'
+                  : 'bg-[#1a1a1a] text-white/60 hover:text-white border border-white/5 hover:border-white/10'
               }`}
             >
               Pending
             </button>
             <button
               onClick={() => setFilter('rejected')}
-              className={`px-4 py-2 text-sm rounded transition-colors ${
+              className={`px-4 py-2 text-xs uppercase tracking-wider transition-all ${
                 filter === 'rejected'
-                  ? 'bg-red-500/20 text-red-500 border border-red-500/20'
-                  : 'bg-white/5 text-white/60 hover:text-white'
+                  ? 'bg-red-500/10 text-red-500 border border-red-500/20'
+                  : 'bg-[#1a1a1a] text-white/60 hover:text-white border border-white/5 hover:border-white/10'
               }`}
             >
               Rejected
@@ -242,11 +242,11 @@ export default function VendorProducts() {
 
       {/* Products Table */}
       {loading ? (
-        <div className="bg-[#2a2a2a] border border-white/10 rounded p-12">
+        <div className="bg-[#2a2a2a] border border-white/5 p-12">
           <div className="text-center text-white/60">Loading products...</div>
         </div>
       ) : filteredProducts.length === 0 ? (
-        <div className="bg-[#2a2a2a] border border-white/10 rounded p-12">
+        <div className="bg-[#2a2a2a] border border-white/5 p-12">
           <div className="text-center">
             <Package size={48} className="text-white/20 mx-auto mb-4" />
             <div className="text-white/60 mb-4">No products found</div>
@@ -260,9 +260,9 @@ export default function VendorProducts() {
           </div>
         </div>
       ) : (
-        <div className="bg-[#2a2a2a] border border-white/10 rounded overflow-hidden">
+        <div className="bg-[#2a2a2a] border border-white/5 overflow-hidden">
           <table className="w-full">
-            <thead className="border-b border-white/10">
+            <thead className="border-b border-white/5 bg-[#1a1a1a]">
               <tr>
                 <th className="text-left text-xs font-medium text-white/60 uppercase tracking-wider p-4">Product</th>
                 <th className="text-left text-xs font-medium text-white/60 uppercase tracking-wider p-4">Category</th>
@@ -272,9 +272,9 @@ export default function VendorProducts() {
                 <th className="text-left text-xs font-medium text-white/60 uppercase tracking-wider p-4">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/10">
+            <tbody className="divide-y divide-white/5">
               {filteredProducts.map((product) => (
-                <tr key={product.id} className="hover:bg-white/5 transition-colors">
+                <tr key={product.id} className="hover:bg-[#303030] transition-all">
                   <td className="p-4">
                     <div className="flex items-center gap-3">
                       <div className="w-12 h-12 bg-white/5 rounded flex items-center justify-center">

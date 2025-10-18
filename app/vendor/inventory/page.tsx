@@ -181,27 +181,27 @@ export default function VendorInventory() {
             placeholder="Search by product name or SKU..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-[#2a2a2a] border border-white/10 text-white placeholder-white/40 pl-10 pr-4 py-3 rounded focus:outline-none focus:border-white/20"
+            className="w-full bg-[#2a2a2a] border border-white/5 text-white placeholder-white/40 pl-10 pr-4 py-3 focus:outline-none focus:border-white/10 transition-colors"
           />
         </div>
       </div>
 
       {/* Inventory Table */}
       {loading ? (
-        <div className="bg-[#2a2a2a] border border-white/10 rounded p-12">
+        <div className="bg-[#2a2a2a] border border-white/5 p-12">
           <div className="text-center text-white/60">Loading inventory...</div>
         </div>
       ) : filteredInventory.length === 0 ? (
-        <div className="bg-[#2a2a2a] border border-white/10 rounded p-12">
+        <div className="bg-[#2a2a2a] border border-white/5 p-12">
           <div className="text-center">
             <Package size={48} className="text-white/20 mx-auto mb-4" />
             <div className="text-white/60">No inventory items found</div>
           </div>
         </div>
       ) : (
-        <div className="bg-[#2a2a2a] border border-white/10 rounded overflow-hidden">
+        <div className="bg-[#2a2a2a] border border-white/5 overflow-hidden">
           <table className="w-full">
-            <thead className="border-b border-white/10">
+            <thead className="border-b border-white/5 bg-[#1a1a1a]">
               <tr>
                 <th className="text-left text-xs font-medium text-white/60 uppercase tracking-wider p-4">Product</th>
                 <th className="text-left text-xs font-medium text-white/60 uppercase tracking-wider p-4">SKU</th>
@@ -211,9 +211,9 @@ export default function VendorInventory() {
                 <th className="text-left text-xs font-medium text-white/60 uppercase tracking-wider p-4">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/10">
+            <tbody className="divide-y divide-white/5">
               {filteredInventory.map((item) => (
-                <tr key={item.id} className="hover:bg-white/5 transition-colors">
+                <tr key={item.id} className="hover:bg-[#303030] transition-all">
                   <td className="p-4">
                     <div className="flex items-center gap-3">
                       <div className="w-12 h-12 bg-white/5 rounded flex items-center justify-center">
@@ -247,7 +247,7 @@ export default function VendorInventory() {
                           value={adjustAmount}
                           onChange={(e) => setAdjustAmount(e.target.value)}
                           placeholder="Amount"
-                          className="w-24 bg-white/5 border border-white/10 text-white placeholder-white/40 px-2 py-1 text-sm rounded focus:outline-none"
+                          className="w-24 bg-[#1a1a1a] border border-white/10 text-white placeholder-white/40 px-2 py-1 text-sm focus:outline-none focus:border-white/20 transition-colors"
                           autoFocus
                         />
                         <button
@@ -288,7 +288,7 @@ export default function VendorInventory() {
       )}
 
       {/* Info Box */}
-      <div className="mt-6 bg-blue-500/10 border border-blue-500/20 rounded p-4">
+      <div className="mt-6 bg-blue-500/5 border border-blue-500/10 p-4">
         <div className="flex gap-3">
           <div className="text-blue-500 flex-shrink-0">
             <Package size={20} />

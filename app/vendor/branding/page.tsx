@@ -71,7 +71,7 @@ export default function VendorBranding() {
         <div className="lg:col-span-2 space-y-6">
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Visual Assets */}
-            <div className="bg-[#2a2a2a] border border-white/10 rounded p-6">
+            <div className="bg-[#2a2a2a] border border-white/5 p-6">
               <h2 className="text-white font-medium mb-6">Visual Assets</h2>
               
               <div className="space-y-6">
@@ -81,7 +81,7 @@ export default function VendorBranding() {
                     Store Logo (Square, 500×500px recommended)
                   </label>
                   <div className="flex items-start gap-4">
-                    <div className="w-24 h-24 bg-white/5 rounded border border-white/10 flex items-center justify-center overflow-hidden">
+                    <div className="w-24 h-24 bg-[#1a1a1a] border border-white/5 flex items-center justify-center overflow-hidden">
                       {logo ? (
                         <img src={logo} alt="Logo" className="w-full h-full object-contain" />
                       ) : (
@@ -90,7 +90,7 @@ export default function VendorBranding() {
                     </div>
                     <div className="flex-1">
                       <label className="block">
-                        <div className="border-2 border-dashed border-white/20 rounded p-4 text-center hover:border-white/40 transition-colors cursor-pointer">
+                        <div className="border-2 border-dashed border-white/10 p-4 text-center hover:border-white/20 transition-colors cursor-pointer bg-[#1a1a1a]">
                           <Upload size={24} className="text-white/40 mx-auto mb-2" />
                           <div className="text-white/80 text-sm">Upload Logo</div>
                         </div>
@@ -124,7 +124,7 @@ export default function VendorBranding() {
                       </div>
                     )}
                     <label className="block">
-                      <div className="border-2 border-dashed border-white/20 rounded p-8 text-center hover:border-white/40 transition-colors cursor-pointer">
+                      <div className="border-2 border-dashed border-white/10 p-8 text-center hover:border-white/20 transition-colors cursor-pointer bg-[#1a1a1a]">
                         <Upload size={32} className="text-white/40 mx-auto mb-3" />
                         <div className="text-white/80 text-sm mb-1">Upload Banner Image</div>
                         <div className="text-white/40 text-xs">Wide banner for your storefront header</div>
@@ -142,7 +142,7 @@ export default function VendorBranding() {
             </div>
 
             {/* Store Information */}
-            <div className="bg-[#2a2a2a] border border-white/10 rounded p-6">
+            <div className="bg-[#2a2a2a] border border-white/5 p-6">
               <h2 className="text-white font-medium mb-6">Store Information</h2>
               
               <div className="space-y-4">
@@ -155,7 +155,7 @@ export default function VendorBranding() {
                       type="text"
                       value={branding.companyName}
                       onChange={(e) => setBranding({...branding, companyName: e.target.value})}
-                      className="w-full bg-white/5 border border-white/10 text-white px-4 py-3 rounded focus:outline-none focus:border-white/20"
+                      className="w-full bg-[#1a1a1a] border border-white/5 text-white px-4 py-3 focus:outline-none focus:border-white/10 transition-colors"
                     />
                   </div>
 
@@ -167,7 +167,7 @@ export default function VendorBranding() {
                       type="text"
                       value={branding.storeName}
                       onChange={(e) => setBranding({...branding, storeName: e.target.value})}
-                      className="w-full bg-white/5 border border-white/10 text-white px-4 py-3 rounded focus:outline-none focus:border-white/20"
+                      className="w-full bg-[#1a1a1a] border border-white/5 text-white px-4 py-3 focus:outline-none focus:border-white/10 transition-colors"
                     />
                   </div>
                 </div>
@@ -195,7 +195,7 @@ export default function VendorBranding() {
                     onChange={(e) => setBranding({...branding, about: e.target.value})}
                     placeholder="Tell customers about your brand, farming practices, values..."
                     maxLength={5000}
-                    className="w-full bg-white/5 border border-white/10 text-white placeholder-white/40 px-4 py-3 rounded focus:outline-none focus:border-white/20 resize-none"
+                    className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors resize-none"
                   />
                   <div className="text-white/40 text-xs mt-1">
                     {branding.about.length} / 5000 characters
@@ -205,7 +205,7 @@ export default function VendorBranding() {
             </div>
 
             {/* Brand Colors */}
-            <div className="bg-[#2a2a2a] border border-white/10 rounded p-6">
+            <div className="bg-[#2a2a2a] border border-white/5 p-6">
               <h2 className="text-white font-medium mb-6">Brand Colors</h2>
               <p className="text-white/60 text-sm mb-4">
                 Choose colors that represent your brand. These will be used in your storefront accents.
@@ -255,7 +255,7 @@ export default function VendorBranding() {
             </div>
 
             {/* Social Links */}
-            <div className="bg-[#2a2a2a] border border-white/10 rounded p-6">
+            <div className="bg-[#2a2a2a] border border-white/5 p-6">
               <h2 className="text-white font-medium mb-6">Social & Links</h2>
               
               <div className="space-y-4">
@@ -288,7 +288,7 @@ export default function VendorBranding() {
             </div>
 
             {/* Store Policies */}
-            <div className="bg-[#2a2a2a] border border-white/10 rounded p-6">
+            <div className="bg-[#2a2a2a] border border-white/5 p-6">
               <h2 className="text-white font-medium mb-6">Store Policies</h2>
               
               <div>
@@ -300,7 +300,7 @@ export default function VendorBranding() {
                   value={branding.customPolicies}
                   onChange={(e) => setBranding({...branding, customPolicies: e.target.value})}
                   placeholder="Enter your store's policies..."
-                  className="w-full bg-white/5 border border-white/10 text-white placeholder-white/40 px-4 py-3 rounded focus:outline-none focus:border-white/20 resize-none"
+                  className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors resize-none"
                 />
               </div>
             </div>
@@ -322,9 +322,9 @@ export default function VendorBranding() {
         {/* Preview - 1/3 width */}
         <div className="space-y-6">
           {/* Storefront Preview */}
-          <div className="bg-[#2a2a2a] border border-white/10 rounded overflow-hidden">
-            <div className="border-b border-white/10 p-4">
-              <h3 className="text-white text-sm font-medium">Storefront Preview</h3>
+          <div className="bg-[#2a2a2a] border border-white/5 overflow-hidden">
+            <div className="border-b border-white/5 p-4 bg-[#1a1a1a]">
+              <h3 className="text-white/90 text-xs uppercase tracking-wider font-light">Storefront Preview</h3>
             </div>
             
             {/* Preview Content */}
@@ -341,9 +341,9 @@ export default function VendorBranding() {
               )}
 
               {/* Store Header */}
-              <div className="p-6 border-b border-white/10">
+              <div className="p-6 border-b border-white/5">
                 <div className="flex items-center gap-4 mb-4">
-                  <div className="w-16 h-16 bg-white/5 rounded-full overflow-hidden border-2 border-white/10 flex items-center justify-center">
+                  <div className="w-16 h-16 bg-[#2a2a2a] overflow-hidden border border-white/10 flex items-center justify-center">
                     <img src={logo} alt="Logo" className="w-full h-full object-contain p-2" />
                   </div>
                   <div>
