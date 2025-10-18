@@ -117,13 +117,14 @@ export default function ProductsClient({
     }
 
     // Filter by vendor
-    if (selectedVendor) {
-      if (selectedVendor === 'flora') {
-        filtered = filtered.filter((product: any) => !product.vendorId);
-      } else {
-        filtered = filtered.filter((product: any) => product.vendorSlug === selectedVendor);
-      }
+    if (selectedVendor === 'flora') {
+      // Show only Flora products (no vendorId)
+      filtered = filtered.filter((product: any) => !product.vendorId);
+    } else if (selectedVendor && selectedVendor !== null) {
+      // Show only selected vendor's products
+      filtered = filtered.filter((product: any) => product.vendorSlug === selectedVendor);
     }
+    // If selectedVendor is null, show ALL products (Flora + all vendors) - no filter needed
 
     // Sort products
     if (sortBy === "price-asc") {
