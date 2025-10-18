@@ -152,7 +152,13 @@ export default function ProductsClient({
   }, [selectedLocation, categorySlug, selectedStrainType, selectedEffect, priceRange, selectedVendor, sortBy, initialProducts, vendorProducts, categories, inventoryMap, productFieldsMap]);
 
   return (
-    <div className="min-h-screen bg-[#2a2a2a]">
+    <div className="min-h-screen bg-[#2a2a2a] relative overflow-hidden">
+      {/* Floating gradient orbs background */}
+      <div className="absolute inset-0 opacity-20 pointer-events-none">
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-white/5 rounded-full blur-3xl animate-float"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-white/5 rounded-full blur-3xl animate-float-delayed"></div>
+      </div>
+      
       {/* Inject Fonts */}
       <style jsx global>{`
         @font-face {
@@ -169,10 +175,10 @@ export default function ProductsClient({
         }
       `}</style>
       {/* Header Section */}
-      <div className="border-b border-white/10">
-        <div className="px-4 sm:px-6 md:px-8 py-6 sm:py-8 md:py-12 max-w-[2000px] mx-auto">
+      <div className="border-b border-white/10 relative">
+        <div className="px-4 sm:px-6 md:px-8 py-6 sm:py-8 md:py-12 max-w-[2000px] mx-auto relative">
           {/* Title with Item Count */}
-          <div className="flex items-baseline gap-2.5 mb-6 md:mb-8">
+          <div className="flex items-baseline gap-2.5 mb-4">
             <h1 className="text-xl sm:text-2xl md:text-3xl font-normal uppercase tracking-[0.15em] sm:tracking-[0.25em] text-white">
               Products
             </h1>
@@ -180,6 +186,7 @@ export default function ProductsClient({
               {products.length} Items
             </span>
           </div>
+          <div className="h-[1px] w-16 bg-white/20 mb-6"></div>
           
           {/* Vendor Filter - MAIN FEATURE - Always Visible */}
           <div className="mb-6 pb-6 border-b border-white/10">

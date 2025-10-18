@@ -47,7 +47,12 @@ export default function HomeClient({
   productFieldsMap,
 }: HomeClientProps) {
   return (
-    <div className="bg-[#2a2a2a] overflow-x-hidden w-full">
+    <div className="bg-[#2a2a2a] overflow-x-hidden w-full relative">
+      {/* Floating gradient orbs throughout page */}
+      <div className="absolute inset-0 opacity-20 pointer-events-none">
+        <div className="absolute top-1/4 right-1/4 w-[500px] h-[500px] bg-white/5 rounded-full blur-3xl animate-float"></div>
+        <div className="absolute bottom-1/4 left-1/4 w-[400px] h-[400px] bg-white/5 rounded-full blur-3xl animate-float-delayed"></div>
+      </div>
       {/* Hero Section - Animated Luxury */}
       <LuxuryHero />
 

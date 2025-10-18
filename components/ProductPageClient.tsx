@@ -220,13 +220,19 @@ export default function ProductPageClient({
   });
 
   return (
-    <div className="bg-[#1a1a1a]">
+    <div className="bg-[#1a1a1a] relative overflow-hidden">
+      {/* Floating gradient orbs background */}
+      <div className="absolute inset-0 opacity-20 pointer-events-none">
+        <div className="absolute top-1/4 right-1/4 w-96 h-96 bg-white/5 rounded-full blur-3xl animate-float"></div>
+        <div className="absolute bottom-1/3 left-1/4 w-64 h-64 bg-white/5 rounded-full blur-3xl animate-float-delayed"></div>
+      </div>
+      
       {/* Structured Data for SEO */}
       {/* <ProductSchema product={product} />
       <BreadcrumbSchema items={breadcrumbItems} /> */}
       
       {/* Breadcrumb Navigation */}
-      <div className="border-b border-white/10 bg-[#1a1a1a]">
+      <div className="border-b border-white/10 bg-[#1a1a1a] relative">
         <div className="max-w-[2000px] mx-auto px-4 sm:px-6 py-3 sm:py-4">
           <nav className="flex items-center flex-wrap gap-x-2 gap-y-1 text-xs sm:text-sm uppercase tracking-wider">
             <Link
@@ -260,7 +266,7 @@ export default function ProductPageClient({
       </div>
 
       {/* Product Content */}
-      <div className="bg-[#1a1a1a]">
+      <div className="bg-[#1a1a1a] relative">
         {/* Mobile Layout */}
         <div className="lg:hidden">
           <ProductGallery images={product.images} productName={product.name} />
