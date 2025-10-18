@@ -5,6 +5,7 @@ import { ShoppingBag, Store, Truck, Heart } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useLinkPrefetch } from "@/hooks/usePrefetch";
 
