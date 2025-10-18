@@ -94,7 +94,7 @@ export default function VendorsPage() {
               {/* Info */}
               <div className="p-6">
                 <h3 
-                  className="text-base text-white mb-2 truncate tracking-wide"
+                  className="text-2xl md:text-3xl text-white mb-3 truncate tracking-wide"
                   style={{ 
                     fontFamily: vendor.id === 1 ? 'Lobster' : vendor.id === 2 ? 'Monkey Act' : vendor.id === 3 ? 'monospace' : 'inherit' 
                   }}
@@ -102,7 +102,7 @@ export default function VendorsPage() {
                   {vendor.id === 3 ? `[${vendor.name.toUpperCase()}]` : vendor.name}
                 </h3>
                 
-                <p className="text-white/50 text-xs mb-4 line-clamp-2">{vendor.tagline}</p>
+                <p className="text-white/50 text-xs mb-4 line-clamp-2 leading-relaxed">{vendor.tagline}</p>
 
                 {/* Stats */}
                 <div className="flex items-center gap-2 text-[10px] text-white/40 mb-3">
