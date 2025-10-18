@@ -44,6 +44,45 @@ const vendors: any = {
     instagram: '@cannaboyz',
     productIds: [60001, 60002, 60003, 60004, 60005, 60006],
     fontFamily: 'Monkey Act'
+  },
+  'moonwater': {
+    id: 3,
+    name: 'Moonwater',
+    slug: 'moonwater',
+    logo: '/moonwater.png',
+    banner: '',
+    tagline: 'Premium THC Beverages',
+    about: 'Moonwater crafts premium THC-infused beverages for the modern cannabis consumer. Our drinks feature precise 10mg dosing, zero calories, and fast-acting nano-emulsion technology. Based in San Diego, we\'re redefining cannabis consumption with clean ingredients and sophisticated flavors.',
+    primaryColor: '#1e40af',
+    location: 'San Diego, CA',
+    joinedDate: '2025-07-20',
+    rating: 4.9,
+    totalReviews: 52,
+    verified: true,
+    website: 'https://trymoonwater.com',
+    instagram: '@moonwater',
+    productIds: [70001, 70002, 70003, 70004],
+    fontFamily: 'monospace',
+    useBrackets: true
+  },
+  'zarati': {
+    id: 4,
+    name: 'Zarati',
+    slug: 'zarati',
+    logo: '/zarati.png',
+    banner: '',
+    tagline: 'Exotic Genetics, Premium Quality',
+    about: 'Zarati specializes in rare exotic genetics and premium indoor cultivation. Based in Oakland, we hunt the latest hype strains and bring them to market with meticulous care. Every batch is small-batch, hand-trimmed, and lab tested by Quantix Analytics for maximum potency and purity.',
+    primaryColor: '#8b5cf6',
+    location: 'Oakland, CA',
+    joinedDate: '2025-09-01',
+    rating: 4.7,
+    totalReviews: 29,
+    verified: true,
+    website: 'https://zarati.com',
+    instagram: '@zaraticannabis',
+    productIds: [80001, 80002, 80003, 80004, 80005],
+    fontFamily: 'inherit'
   }
 };
 
@@ -87,6 +126,19 @@ export default function VendorStorefront() {
       { id: 60004, name: 'AK-47', price: '16.99', images: [], categories: [{ name: 'Flower' }], meta_data: [] },
       { id: 60005, name: 'Granddaddy Purple', price: '17.99', images: [], categories: [{ name: 'Flower' }], meta_data: [] },
       { id: 60006, name: 'Jack Herer', price: '16.99', images: [], categories: [{ name: 'Flower' }], meta_data: [] },
+    ],
+    'moonwater': [
+      { id: 70001, name: '[CITRUS BLEND]', price: '8.99', images: [], categories: [{ name: 'Beverages' }], meta_data: [] },
+      { id: 70002, name: '[BERRY FUSION]', price: '8.99', images: [], categories: [{ name: 'Beverages' }], meta_data: [] },
+      { id: 70003, name: '[TROPICAL WAVE]', price: '8.99', images: [], categories: [{ name: 'Beverages' }], meta_data: [] },
+      { id: 70004, name: '[MINT REFRESH]', price: '8.99', images: [], categories: [{ name: 'Beverages' }], meta_data: [] },
+    ],
+    'zarati': [
+      { id: 80001, name: 'Runtz', price: '19.99', images: [], categories: [{ name: 'Flower' }], meta_data: [] },
+      { id: 80002, name: 'Biscotti', price: '18.99', images: [], categories: [{ name: 'Flower' }], meta_data: [] },
+      { id: 80003, name: 'Jealousy', price: '20.99', images: [], categories: [{ name: 'Flower' }], meta_data: [] },
+      { id: 80004, name: 'Cereal Milk', price: '19.99', images: [], categories: [{ name: 'Flower' }], meta_data: [] },
+      { id: 80005, name: 'Ice Cream Cake', price: '18.99', images: [], categories: [{ name: 'Flower' }], meta_data: [] },
     ]
   };
 
@@ -129,7 +181,7 @@ export default function VendorStorefront() {
               <div className="flex items-start justify-between mb-4">
               <div>
                 <h1 className="text-3xl text-white mb-2 tracking-wide" style={{ fontFamily: vendor.fontFamily || 'Lobster' }}>
-                  {vendor.name}
+                  {vendor.useBrackets ? `[${vendor.name.toUpperCase()}]` : vendor.name}
                 </h1>
                   <p className="text-white/60 text-sm mb-3">{vendor.tagline}</p>
                   

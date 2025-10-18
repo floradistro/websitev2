@@ -531,6 +531,290 @@ export default async function ProductsPage({
     }
   ];
 
+  // Add Moonwater inventory
+  const moonwaterInventory: { [key: number]: any[] } = {
+    70001: [{ product_id: '70001', location_id: '1', quantity: 248.0, stock_quantity: 248.0, status: 'instock' }],
+    70002: [{ product_id: '70002', location_id: '1', quantity: 196.0, stock_quantity: 196.0, status: 'instock' }],
+    70003: [{ product_id: '70003', location_id: '1', quantity: 312.0, stock_quantity: 312.0, status: 'instock' }],
+    70004: [{ product_id: '70004', location_id: '1', quantity: 284.0, stock_quantity: 284.0, status: 'instock' }],
+  };
+
+  Object.keys(moonwaterInventory).forEach(productId => {
+    inventoryMap[parseInt(productId)] = moonwaterInventory[parseInt(productId)];
+  });
+
+  // Moonwater vendor products - THC beverages with bracket naming
+  const moonwaterProducts = [
+    { 
+      id: 70001, 
+      name: '[CITRUS BLEND]', 
+      price: '8.99', 
+      images: [], 
+      categories: [{ id: 29, name: 'Beverages', slug: 'beverages' }], 
+      meta_data: [
+        { key: '_product_price_tiers', value: [
+          { weight: '1 can', qty: 1, price: 8.99 },
+          { weight: '4-pack', qty: 4, price: 29.99 },
+          { weight: '12-pack', qty: 12, price: 79.99 }
+        ]},
+        { key: '_field_thc_per_serving', value: '10mg' },
+        { key: '_field_servings_per_package', value: '1' },
+        { key: '_field_total_thc', value: '10mg' },
+        { key: '_field_flavor', value: 'Citrus, Lemon, Lime' },
+        { key: '_field_ingredients', value: 'Purified Water, THC Extract, Natural Flavors, Citric Acid' }
+      ],
+      vendorId: 3,
+      vendorSlug: 'moonwater',
+      stock_status: 'instock'
+    },
+    { 
+      id: 70002, 
+      name: '[BERRY FUSION]', 
+      price: '8.99', 
+      images: [], 
+      categories: [{ id: 29, name: 'Beverages', slug: 'beverages' }], 
+      meta_data: [
+        { key: '_product_price_tiers', value: [
+          { weight: '1 can', qty: 1, price: 8.99 },
+          { weight: '4-pack', qty: 4, price: 29.99 },
+          { weight: '12-pack', qty: 12, price: 79.99 }
+        ]},
+        { key: '_field_thc_per_serving', value: '10mg' },
+        { key: '_field_servings_per_package', value: '1' },
+        { key: '_field_total_thc', value: '10mg' },
+        { key: '_field_flavor', value: 'Mixed Berry, Blueberry, Raspberry' },
+        { key: '_field_ingredients', value: 'Purified Water, THC Extract, Natural Flavors, Citric Acid' }
+      ],
+      vendorId: 3,
+      vendorSlug: 'moonwater',
+      stock_status: 'instock'
+    },
+    { 
+      id: 70003, 
+      name: '[TROPICAL WAVE]', 
+      price: '8.99', 
+      images: [], 
+      categories: [{ id: 29, name: 'Beverages', slug: 'beverages' }], 
+      meta_data: [
+        { key: '_product_price_tiers', value: [
+          { weight: '1 can', qty: 1, price: 8.99 },
+          { weight: '4-pack', qty: 4, price: 29.99 },
+          { weight: '12-pack', qty: 12, price: 79.99 }
+        ]},
+        { key: '_field_thc_per_serving', value: '10mg' },
+        { key: '_field_servings_per_package', value: '1' },
+        { key: '_field_total_thc', value: '10mg' },
+        { key: '_field_flavor', value: 'Pineapple, Mango, Coconut' },
+        { key: '_field_ingredients', value: 'Purified Water, THC Extract, Natural Flavors, Citric Acid' }
+      ],
+      vendorId: 3,
+      vendorSlug: 'moonwater',
+      stock_status: 'instock'
+    },
+    { 
+      id: 70004, 
+      name: '[MINT REFRESH]', 
+      price: '8.99', 
+      images: [], 
+      categories: [{ id: 29, name: 'Beverages', slug: 'beverages' }], 
+      meta_data: [
+        { key: '_product_price_tiers', value: [
+          { weight: '1 can', qty: 1, price: 8.99 },
+          { weight: '4-pack', qty: 4, price: 29.99 },
+          { weight: '12-pack', qty: 12, price: 79.99 }
+        ]},
+        { key: '_field_thc_per_serving', value: '10mg' },
+        { key: '_field_servings_per_package', value: '1' },
+        { key: '_field_total_thc', value: '10mg' },
+        { key: '_field_flavor', value: 'Mint, Cucumber, Lime' },
+        { key: '_field_ingredients', value: 'Purified Water, THC Extract, Natural Flavors, Citric Acid' }
+      ],
+      vendorId: 3,
+      vendorSlug: 'moonwater',
+      stock_status: 'instock'
+    },
+  ];
+
+  moonwaterProducts.forEach((product: any) => {
+    const fields: any = {};
+    product.meta_data.forEach((meta: any) => {
+      if (meta.key.startsWith('_field_')) {
+        const fieldName = meta.key.replace('_field_', '');
+        fields[fieldName] = meta.value;
+      }
+    });
+    const pricingTiers = product.meta_data.find((m: any) => m.key === '_product_price_tiers')?.value || [];
+    productFieldsMap[product.id] = { fields, pricingTiers };
+  });
+
+  // Add Zarati inventory
+  const zaratiInventory: { [key: number]: any[] } = {
+    80001: [{ product_id: '80001', location_id: '1', quantity: 92.5, stock_quantity: 92.5, status: 'instock' }],
+    80002: [{ product_id: '80002', location_id: '1', quantity: 78.25, stock_quantity: 78.25, status: 'instock' }],
+    80003: [{ product_id: '80003', location_id: '1', quantity: 104.0, stock_quantity: 104.0, status: 'instock' }],
+    80004: [{ product_id: '80004', location_id: '1', quantity: 88.75, stock_quantity: 88.75, status: 'instock' }],
+    80005: [{ product_id: '80005', location_id: '1', quantity: 116.5, stock_quantity: 116.5, status: 'instock' }],
+  };
+
+  Object.keys(zaratiInventory).forEach(productId => {
+    inventoryMap[parseInt(productId)] = zaratiInventory[parseInt(productId)];
+  });
+
+  // Zarati vendor products - Premium exotics
+  const zaratiProducts = [
+    { 
+      id: 80001, 
+      name: 'Runtz', 
+      price: '19.99', 
+      images: [], 
+      categories: [{ id: 25, name: 'Flower', slug: 'flower' }], 
+      meta_data: [
+        { key: '_product_price_tiers', value: [
+          { weight: '1g', qty: 1, price: 19.99 },
+          { weight: '3.5g', qty: 3.5, price: 59.99 },
+          { weight: '7g', qty: 7, price: 109.99 },
+          { weight: '28g', qty: 28, price: 389.99 }
+        ]},
+        { key: '_field_strain_type', value: 'Hybrid' },
+        { key: '_field_terpenes', value: 'Caryophyllene, Limonene, Linalool' },
+        { key: '_field_effects', value: 'Euphoric, Relaxed, Happy, Creative' },
+        { key: '_field_lineage', value: 'Zkittlez × Gelato' }
+      ],
+      vendorId: 4,
+      vendorSlug: 'zarati',
+      stock_status: 'instock'
+    },
+    { 
+      id: 80002, 
+      name: 'Biscotti', 
+      price: '18.99', 
+      images: [], 
+      categories: [{ id: 25, name: 'Flower', slug: 'flower' }], 
+      meta_data: [
+        { key: '_product_price_tiers', value: [
+          { weight: '1g', qty: 1, price: 18.99 },
+          { weight: '3.5g', qty: 3.5, price: 54.99 },
+          { weight: '7g', qty: 7, price: 99.99 },
+          { weight: '28g', qty: 28, price: 359.99 }
+        ]},
+        { key: '_field_strain_type', value: 'Hybrid' },
+        { key: '_field_terpenes', value: 'Caryophyllene, Limonene, Humulene' },
+        { key: '_field_effects', value: 'Relaxed, Euphoric, Sleepy, Happy' },
+        { key: '_field_lineage', value: 'Gelato #25 × Girl Scout Cookies × Gorilla Glue' }
+      ],
+      vendorId: 4,
+      vendorSlug: 'zarati',
+      stock_status: 'instock'
+    },
+    { 
+      id: 80003, 
+      name: 'Jealousy', 
+      price: '20.99', 
+      images: [], 
+      categories: [{ id: 25, name: 'Flower', slug: 'flower' }], 
+      meta_data: [
+        { key: '_product_price_tiers', value: [
+          { weight: '1g', qty: 1, price: 20.99 },
+          { weight: '3.5g', qty: 3.5, price: 64.99 },
+          { weight: '7g', qty: 7, price: 119.99 },
+          { weight: '28g', qty: 28, price: 429.99 }
+        ]},
+        { key: '_field_strain_type', value: 'Hybrid' },
+        { key: '_field_terpenes', value: 'Caryophyllene, Limonene, Myrcene' },
+        { key: '_field_effects', value: 'Euphoric, Uplifted, Relaxed, Creative' },
+        { key: '_field_lineage', value: 'Sherbert Bx1 × Gelato #41' }
+      ],
+      vendorId: 4,
+      vendorSlug: 'zarati',
+      stock_status: 'instock'
+    },
+    { 
+      id: 80004, 
+      name: 'Cereal Milk', 
+      price: '19.99', 
+      images: [], 
+      categories: [{ id: 25, name: 'Flower', slug: 'flower' }], 
+      meta_data: [
+        { key: '_product_price_tiers', value: [
+          { weight: '1g', qty: 1, price: 19.99 },
+          { weight: '3.5g', qty: 3.5, price: 59.99 },
+          { weight: '7g', qty: 7, price: 109.99 },
+          { weight: '28g', qty: 28, price: 389.99 }
+        ]},
+        { key: '_field_strain_type', value: 'Hybrid' },
+        { key: '_field_terpenes', value: 'Caryophyllene, Limonene, Myrcene' },
+        { key: '_field_effects', value: 'Happy, Relaxed, Euphoric, Uplifted' },
+        { key: '_field_lineage', value: 'Y Life × Snowman' }
+      ],
+      vendorId: 4,
+      vendorSlug: 'zarati',
+      stock_status: 'instock'
+    },
+    { 
+      id: 80005, 
+      name: 'Ice Cream Cake', 
+      price: '18.99', 
+      images: [], 
+      categories: [{ id: 25, name: 'Flower', slug: 'flower' }], 
+      meta_data: [
+        { key: '_product_price_tiers', value: [
+          { weight: '1g', qty: 1, price: 18.99 },
+          { weight: '3.5g', qty: 3.5, price: 54.99 },
+          { weight: '7g', qty: 7, price: 99.99 },
+          { weight: '28g', qty: 28, price: 359.99 }
+        ]},
+        { key: '_field_strain_type', value: 'Indica' },
+        { key: '_field_terpenes', value: 'Caryophyllene, Limonene, Linalool' },
+        { key: '_field_effects', value: 'Relaxed, Sleepy, Euphoric, Happy' },
+        { key: '_field_lineage', value: 'Wedding Cake × Gelato #33' }
+      ],
+      vendorId: 4,
+      vendorSlug: 'zarati',
+      stock_status: 'instock'
+    },
+  ];
+
+  moonwaterProducts.forEach((product: any) => {
+    const fields: any = {};
+    product.meta_data.forEach((meta: any) => {
+      if (meta.key.startsWith('_field_')) {
+        const fieldName = meta.key.replace('_field_', '');
+        fields[fieldName] = meta.value;
+      }
+    });
+    const pricingTiers = product.meta_data.find((m: any) => m.key === '_product_price_tiers')?.value || [];
+    productFieldsMap[product.id] = { fields, pricingTiers };
+  });
+
+  zaratiProducts.forEach((product: any) => {
+    const fields: any = {};
+    product.meta_data.forEach((meta: any) => {
+      if (meta.key.startsWith('_field_')) {
+        const fieldName = meta.key.replace('_field_', '');
+        fields[fieldName] = meta.value;
+      }
+    });
+    const pricingTiers = product.meta_data.find((m: any) => m.key === '_product_price_tiers')?.value || [];
+    productFieldsMap[product.id] = { fields, pricingTiers };
+  });
+
+  // Extended vendors
+  const allVendors = [
+    ...vendors,
+    {
+      id: 3,
+      name: 'Moonwater',
+      slug: 'moonwater',
+      logo: '/moonwater.png',
+    },
+    {
+      id: 4,
+      name: 'Zarati',
+      slug: 'zarati',
+      logo: '/zarati.png',
+    }
+  ];
+
   return (
     <ProductsClient 
       categories={categories}
@@ -539,8 +823,8 @@ export default async function ProductsPage({
       inventoryMap={inventoryMap}
       initialCategory={categorySlug}
       productFieldsMap={productFieldsMap}
-      vendorProducts={[...yachtClubProducts, ...cannaBoyzProducts]}
-      vendors={vendors}
+      vendorProducts={[...yachtClubProducts, ...cannaBoyzProducts, ...moonwaterProducts, ...zaratiProducts]}
+      vendors={allVendors}
     />
   );
 }

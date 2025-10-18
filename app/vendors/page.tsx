@@ -28,6 +28,30 @@ const vendors = [
     totalReviews: 38,
     totalProducts: 6,
     verified: true,
+  },
+  {
+    id: 3,
+    name: 'Moonwater',
+    slug: 'moonwater',
+    logo: '/moonwater.png',
+    tagline: 'Premium THC Beverages',
+    location: 'San Diego, CA',
+    rating: 4.9,
+    totalReviews: 52,
+    totalProducts: 4,
+    verified: true,
+  },
+  {
+    id: 4,
+    name: 'Zarati',
+    slug: 'zarati',
+    logo: '/zarati.png',
+    tagline: 'Exotic Genetics, Premium Quality',
+    location: 'Oakland, CA',
+    rating: 4.7,
+    totalReviews: 29,
+    totalProducts: 5,
+    verified: true,
   }
 ];
 
@@ -61,8 +85,13 @@ export default function VendorsPage() {
               </div>
 
               {/* Info */}
-              <h3 className="text-xl text-white mb-1 tracking-wide" style={{ fontFamily: vendor.id === 1 ? 'Lobster' : 'Monkey Act' }}>
-                {vendor.name}
+              <h3 
+                className="text-xl text-white mb-1 tracking-wide" 
+                style={{ 
+                  fontFamily: vendor.id === 1 ? 'Lobster' : vendor.id === 2 ? 'Monkey Act' : vendor.id === 3 ? 'monospace' : 'inherit' 
+                }}
+              >
+                {vendor.id === 3 ? `[${vendor.name.toUpperCase()}]` : vendor.name}
               </h3>
               <p className="text-white/60 text-sm mb-4">{vendor.tagline}</p>
 

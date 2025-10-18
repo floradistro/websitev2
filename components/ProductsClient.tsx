@@ -204,21 +204,35 @@ export default function ProductsClient({
                 <img src="/logoprint.png" alt="Flora" className="w-5 h-5 object-contain opacity-80" />
                 Flora Distro
               </button>
-              {vendors.map((vendor: any) => (
-                <button
-                  key={vendor.slug}
-                  onClick={() => setSelectedVendor(vendor.slug)}
-                  className={`flex items-center gap-2 px-4 py-2.5 text-xs uppercase tracking-[0.15em] transition-all whitespace-nowrap flex-shrink-0 ${
-                    selectedVendor === vendor.slug
-                      ? 'bg-white text-black border border-white'
-                      : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white border border-white/10'
-                  }`}
-                  style={selectedVendor === vendor.slug ? { fontFamily: vendor.id === 1 ? 'Lobster' : vendor.id === 2 ? 'Monkey Act' : 'inherit' } : {}}
-                >
-                  <img src={vendor.logo} alt={vendor.name} className="w-5 h-5 object-contain" />
-                  {vendor.name}
-                </button>
-              ))}
+              {vendors.map((vendor: any) => {
+                let fontFamily = 'inherit';
+                let displayName = vendor.name;
+                
+                if (selectedVendor === vendor.slug) {
+                  if (vendor.id === 1) fontFamily = 'Lobster';
+                  else if (vendor.id === 2) fontFamily = 'Monkey Act';
+                  else if (vendor.id === 3) {
+                    fontFamily = 'monospace';
+                    displayName = `[${vendor.name.toUpperCase()}]`;
+                  }
+                }
+                
+                return (
+                  <button
+                    key={vendor.slug}
+                    onClick={() => setSelectedVendor(vendor.slug)}
+                    className={`flex items-center gap-2 px-4 py-2.5 text-xs uppercase tracking-[0.15em] transition-all whitespace-nowrap flex-shrink-0 ${
+                      selectedVendor === vendor.slug
+                        ? 'bg-white text-black border border-white'
+                        : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white border border-white/10'
+                    }`}
+                    style={{ fontFamily }}
+                  >
+                    <img src={vendor.logo} alt={vendor.name} className="w-5 h-5 object-contain" />
+                    {displayName}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
