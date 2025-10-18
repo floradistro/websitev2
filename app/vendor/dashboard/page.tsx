@@ -274,10 +274,7 @@ export default function VendorDashboard() {
             <div className="w-12 h-12 bg-white/5 group-hover:bg-white/10 flex items-center justify-center transition-all duration-300">
               <Plus size={24} className="text-white/60 group-hover:text-white transition-colors duration-300" />
             </div>
-            <div>
-              <div className="text-white/80 group-hover:text-white font-medium transition-colors duration-300">Add Product</div>
-              <div className="text-white/50 group-hover:text-white/70 text-xs transition-colors duration-300">Submit new product</div>
-            </div>
+            <div className="text-white/80 group-hover:text-white font-medium transition-colors duration-300">Add Product</div>
           </div>
         </Link>
 
@@ -290,10 +287,7 @@ export default function VendorDashboard() {
             <div className="w-12 h-12 bg-white/5 group-hover:bg-white/10 flex items-center justify-center transition-all duration-300">
               <Package size={24} className="text-white/60 group-hover:text-white transition-colors duration-300" />
             </div>
-            <div>
-              <div className="text-white/80 group-hover:text-white font-medium transition-colors duration-300">My Products</div>
-              <div className="text-white/50 group-hover:text-white/70 text-xs transition-colors duration-300">View all products</div>
-            </div>
+            <div className="text-white/80 group-hover:text-white font-medium transition-colors duration-300">My Products</div>
           </div>
         </Link>
 
@@ -306,10 +300,7 @@ export default function VendorDashboard() {
             <div className="w-12 h-12 bg-white/5 group-hover:bg-white/10 flex items-center justify-center transition-all duration-300">
               <TrendingUp size={24} className="text-white/60 group-hover:text-white transition-colors duration-300" />
             </div>
-            <div>
-              <div className="text-white/80 group-hover:text-white font-medium transition-colors duration-300">Inventory</div>
-              <div className="text-white/50 group-hover:text-white/70 text-xs transition-colors duration-300">Manage stock</div>
-            </div>
+            <div className="text-white/80 group-hover:text-white font-medium transition-colors duration-300">Inventory</div>
           </div>
         </Link>
 
@@ -322,10 +313,7 @@ export default function VendorDashboard() {
             <div className="w-12 h-12 bg-white/5 group-hover:bg-white/10 flex items-center justify-center transition-all duration-300">
               <Package size={24} className="text-white/60 group-hover:text-white transition-colors duration-300" />
             </div>
-            <div>
-              <div className="text-white/80 group-hover:text-white font-medium transition-colors duration-300">Branding</div>
-              <div className="text-white/50 group-hover:text-white/70 text-xs transition-colors duration-300">Customize store</div>
-            </div>
+            <div className="text-white/80 group-hover:text-white font-medium transition-colors duration-300">Branding</div>
           </div>
         </Link>
       </div>
