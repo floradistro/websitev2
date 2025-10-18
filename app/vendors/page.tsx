@@ -59,15 +59,28 @@ export default function VendorsPage() {
   return (
     <div className="min-h-screen bg-[#1a1a1a]">
       {/* Hero */}
-      <div className="border-b border-white/5">
-        <div className="max-w-[2000px] mx-auto px-4 sm:px-6 md:px-8 py-16 md:py-24">
+      <div className="border-b border-white/5 relative overflow-hidden">
+        {/* Subtle animated gradient */}
+        <div className="absolute inset-0 opacity-30">
+          <div className="absolute top-0 right-1/4 w-96 h-96 bg-white/5 rounded-full blur-3xl animate-float"></div>
+        </div>
+        
+        <div className="max-w-[2000px] mx-auto px-4 sm:px-6 md:px-8 py-16 md:py-24 relative">
           <h1 className="text-3xl md:text-5xl font-light text-white mb-3 tracking-tight uppercase">
             Vendors
           </h1>
-          <div className="h-[1px] w-16 bg-white/20 mb-6"></div>
-          <p className="text-white/50 text-sm max-w-xl">
-            Curated cannabis brands. Verified quality.
-          </p>
+          <div className="h-[1px] w-16 bg-white/20 mb-8"></div>
+          
+          {/* Trust Message */}
+          <div className="inline-block bg-white/5 border border-white/10 px-6 py-4 backdrop-blur-sm">
+            <div className="flex items-center gap-3">
+              <div className="w-1 h-10 bg-gradient-to-b from-white/40 via-white/20 to-transparent"></div>
+              <p className="text-white/70 text-sm font-light leading-relaxed max-w-lg">
+                Every vendor is thoroughly examined and held to our highest standards.<br/>
+                <span className="text-white/50">Lab tested. Quality verified.</span>
+              </p>
+            </div>
+          </div>
         </div>
       </div>
 
