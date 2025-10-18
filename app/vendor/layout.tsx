@@ -98,6 +98,22 @@ export default function VendorLayout({
             </Link>
             
             <Link
+              href="/vendor/payouts"
+              className="flex items-center gap-3 px-4 py-2.5 text-white/60 hover:text-white hover:bg-white/5 transition-all duration-200 border border-transparent hover:border-white/5"
+            >
+              <DollarSign size={18} strokeWidth={1.5} />
+              <span className="text-xs uppercase tracking-wider">Payouts</span>
+            </Link>
+
+            <Link
+              href="/vendor/reviews"
+              className="flex items-center gap-3 px-4 py-2.5 text-white/60 hover:text-white hover:bg-white/5 transition-all duration-200 border border-transparent hover:border-white/5"
+            >
+              <Star size={18} strokeWidth={1.5} />
+              <span className="text-xs uppercase tracking-wider">Reviews</span>
+            </Link>
+            
+            <Link
               href="/vendor/branding"
               className="flex items-center gap-3 px-4 py-2.5 text-white/60 hover:text-white hover:bg-white/5 transition-all duration-200 border border-transparent hover:border-white/5"
             >
