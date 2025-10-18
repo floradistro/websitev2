@@ -16,6 +16,18 @@ const vendors = [
     totalReviews: 47,
     totalProducts: 9,
     verified: true,
+  },
+  {
+    id: 2,
+    name: 'CannaBoyz',
+    slug: 'cannaboyz',
+    logo: '/CannaBoyz.png',
+    tagline: 'Street Certified, Lab Tested',
+    location: 'Los Angeles, CA',
+    rating: 4.8,
+    totalReviews: 38,
+    totalProducts: 6,
+    verified: true,
   }
 ];
 
@@ -49,7 +61,7 @@ export default function VendorsPage() {
               </div>
 
               {/* Info */}
-              <h3 className="text-xl text-white mb-1 tracking-wide" style={{ fontFamily: 'Lobster' }}>
+              <h3 className="text-xl text-white mb-1 tracking-wide" style={{ fontFamily: vendor.id === 1 ? 'Lobster' : 'Monkey Act' }}>
                 {vendor.name}
               </h3>
               <p className="text-white/60 text-sm mb-4">{vendor.tagline}</p>
@@ -80,11 +92,17 @@ export default function VendorsPage() {
         </div>
       </div>
 
-      {/* Inject Lobster font */}
+      {/* Inject Fonts */}
       <style jsx global>{`
         @font-face {
           font-family: 'Lobster';
           src: url('/Lobster 1.4.otf') format('opentype');
+          font-weight: normal;
+          font-style: normal;
+        }
+        @font-face {
+          font-family: 'Monkey Act';
+          src: url('/Monkey Act - Personal Use.otf') format('opentype');
           font-weight: normal;
           font-style: normal;
         }

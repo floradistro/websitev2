@@ -350,6 +350,171 @@ export default async function ProductsPage({
     productFieldsMap[product.id] = { fields, pricingTiers };
   });
 
+  // Add CannaBoyz inventory
+  const cannaBoyzInventory: { [key: number]: any[] } = {
+    60001: [{ product_id: '60001', location_id: '1', quantity: 184.5, stock_quantity: 184.5, status: 'instock' }],
+    60002: [{ product_id: '60002', location_id: '1', quantity: 142.75, stock_quantity: 142.75, status: 'instock' }],
+    60003: [{ product_id: '60003', location_id: '1', quantity: 198.0, stock_quantity: 198.0, status: 'instock' }],
+    60004: [{ product_id: '60004', location_id: '1', quantity: 167.25, stock_quantity: 167.25, status: 'instock' }],
+    60005: [{ product_id: '60005', location_id: '1', quantity: 211.5, stock_quantity: 211.5, status: 'instock' }],
+    60006: [{ product_id: '60006', location_id: '1', quantity: 123.75, stock_quantity: 123.75, status: 'instock' }],
+  };
+
+  // Merge CannaBoyz inventory
+  Object.keys(cannaBoyzInventory).forEach(productId => {
+    inventoryMap[parseInt(productId)] = cannaBoyzInventory[parseInt(productId)];
+  });
+
+  // CannaBoyz vendor products - Urban street style strains
+  const cannaBoyzProducts = [
+    { 
+      id: 60001, 
+      name: 'Gorilla Glue #4', 
+      price: '16.99', 
+      images: [], 
+      categories: [{ id: 25, name: 'Flower', slug: 'flower' }], 
+      meta_data: [
+        { key: '_product_price_tiers', value: [
+          { weight: '1g', qty: 1, price: 16.99 },
+          { weight: '3.5g', qty: 3.5, price: 47.99 },
+          { weight: '7g', qty: 7, price: 84.99 },
+          { weight: '28g', qty: 28, price: 299.99 }
+        ]},
+        { key: '_field_strain_type', value: 'Hybrid' },
+        { key: '_field_terpenes', value: 'Caryophyllene, Myrcene, Limonene' },
+        { key: '_field_effects', value: 'Relaxed, Euphoric, Happy, Uplifted' },
+        { key: '_field_lineage', value: 'Chem\'s Sister × Sour Dubb × Chocolate Diesel' }
+      ],
+      vendorId: 2,
+      vendorSlug: 'cannaboyz',
+      stock_status: 'instock'
+    },
+    { 
+      id: 60002, 
+      name: 'White Widow', 
+      price: '15.99', 
+      images: [], 
+      categories: [{ id: 25, name: 'Flower', slug: 'flower' }], 
+      meta_data: [
+        { key: '_product_price_tiers', value: [
+          { weight: '1g', qty: 1, price: 15.99 },
+          { weight: '3.5g', qty: 3.5, price: 44.99 },
+          { weight: '7g', qty: 7, price: 79.99 },
+          { weight: '28g', qty: 28, price: 279.99 }
+        ]},
+        { key: '_field_strain_type', value: 'Hybrid' },
+        { key: '_field_terpenes', value: 'Myrcene, Pinene, Caryophyllene' },
+        { key: '_field_effects', value: 'Energetic, Euphoric, Creative, Happy' },
+        { key: '_field_lineage', value: 'South Indian × Brazilian Landrace' }
+      ],
+      vendorId: 2,
+      vendorSlug: 'cannaboyz',
+      stock_status: 'instock'
+    },
+    { 
+      id: 60003, 
+      name: 'Northern Lights', 
+      price: '14.99', 
+      images: [], 
+      categories: [{ id: 25, name: 'Flower', slug: 'flower' }], 
+      meta_data: [
+        { key: '_product_price_tiers', value: [
+          { weight: '1g', qty: 1, price: 14.99 },
+          { weight: '3.5g', qty: 3.5, price: 41.99 },
+          { weight: '7g', qty: 7, price: 74.99 },
+          { weight: '28g', qty: 28, price: 259.99 }
+        ]},
+        { key: '_field_strain_type', value: 'Indica' },
+        { key: '_field_terpenes', value: 'Myrcene, Caryophyllene, Pinene' },
+        { key: '_field_effects', value: 'Relaxed, Sleepy, Happy, Euphoric' },
+        { key: '_field_lineage', value: 'Afghani × Thai' }
+      ],
+      vendorId: 2,
+      vendorSlug: 'cannaboyz',
+      stock_status: 'instock'
+    },
+    { 
+      id: 60004, 
+      name: 'AK-47', 
+      price: '16.99', 
+      images: [], 
+      categories: [{ id: 25, name: 'Flower', slug: 'flower' }], 
+      meta_data: [
+        { key: '_product_price_tiers', value: [
+          { weight: '1g', qty: 1, price: 16.99 },
+          { weight: '3.5g', qty: 3.5, price: 47.99 },
+          { weight: '7g', qty: 7, price: 84.99 },
+          { weight: '28g', qty: 28, price: 299.99 }
+        ]},
+        { key: '_field_strain_type', value: 'Sativa' },
+        { key: '_field_terpenes', value: 'Terpinolene, Caryophyllene, Myrcene' },
+        { key: '_field_effects', value: 'Energetic, Creative, Uplifted, Happy' },
+        { key: '_field_lineage', value: 'Colombian × Mexican × Thai × Afghani' }
+      ],
+      vendorId: 2,
+      vendorSlug: 'cannaboyz',
+      stock_status: 'instock'
+    },
+    { 
+      id: 60005, 
+      name: 'Granddaddy Purple', 
+      price: '17.99', 
+      images: [], 
+      categories: [{ id: 25, name: 'Flower', slug: 'flower' }], 
+      meta_data: [
+        { key: '_product_price_tiers', value: [
+          { weight: '1g', qty: 1, price: 17.99 },
+          { weight: '3.5g', qty: 3.5, price: 49.99 },
+          { weight: '7g', qty: 7, price: 89.99 },
+          { weight: '28g', qty: 28, price: 319.99 }
+        ]},
+        { key: '_field_strain_type', value: 'Indica' },
+        { key: '_field_terpenes', value: 'Myrcene, Caryophyllene, Pinene' },
+        { key: '_field_effects', value: 'Relaxed, Sleepy, Euphoric, Happy' },
+        { key: '_field_lineage', value: 'Big Bud × Purple Urkle' }
+      ],
+      vendorId: 2,
+      vendorSlug: 'cannaboyz',
+      stock_status: 'instock'
+    },
+    { 
+      id: 60006, 
+      name: 'Jack Herer', 
+      price: '16.99', 
+      images: [], 
+      categories: [{ id: 25, name: 'Flower', slug: 'flower' }], 
+      meta_data: [
+        { key: '_product_price_tiers', value: [
+          { weight: '1g', qty: 1, price: 16.99 },
+          { weight: '3.5g', qty: 3.5, price: 46.99 },
+          { weight: '7g', qty: 7, price: 82.99 },
+          { weight: '28g', qty: 28, price: 289.99 }
+        ]},
+        { key: '_field_strain_type', value: 'Sativa' },
+        { key: '_field_terpenes', value: 'Terpinolene, Caryophyllene, Pinene' },
+        { key: '_field_effects', value: 'Energetic, Creative, Uplifted, Focused' },
+        { key: '_field_lineage', value: 'Haze × Northern Lights #5 × Shiva Skunk' }
+      ],
+      vendorId: 2,
+      vendorSlug: 'cannaboyz',
+      stock_status: 'instock'
+    },
+  ];
+
+  // Process CannaBoyz products fields
+  cannaBoyzProducts.forEach((product: any) => {
+    const fields: any = {};
+    product.meta_data.forEach((meta: any) => {
+      if (meta.key.startsWith('_field_')) {
+        const fieldName = meta.key.replace('_field_', '');
+        fields[fieldName] = meta.value;
+      }
+    });
+    
+    const pricingTiers = product.meta_data.find((m: any) => m.key === '_product_price_tiers')?.value || [];
+    productFieldsMap[product.id] = { fields, pricingTiers };
+  });
+
   // Mock vendors data
   const vendors = [
     {
@@ -357,6 +522,12 @@ export default async function ProductsPage({
       name: 'Yacht Club',
       slug: 'yacht-club',
       logo: '/yachtclub.png',
+    },
+    {
+      id: 2,
+      name: 'CannaBoyz',
+      slug: 'cannaboyz',
+      logo: '/CannaBoyz.png',
     }
   ];
 
@@ -368,7 +539,7 @@ export default async function ProductsPage({
       inventoryMap={inventoryMap}
       initialCategory={categorySlug}
       productFieldsMap={productFieldsMap}
-      vendorProducts={yachtClubProducts}
+      vendorProducts={[...yachtClubProducts, ...cannaBoyzProducts]}
       vendors={vendors}
     />
   );

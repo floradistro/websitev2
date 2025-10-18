@@ -198,7 +198,7 @@ export default function ProductsClient({
                       ? 'bg-white text-black border border-white'
                       : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white border border-white/10'
                   }`}
-                  style={selectedVendor === vendor.slug ? { fontFamily: 'Lobster' } : {}}
+                  style={selectedVendor === vendor.slug ? { fontFamily: vendor.id === 1 ? 'Lobster' : vendor.id === 2 ? 'Monkey Act' : 'inherit' } : {}}
                 >
                   <img src={vendor.logo} alt={vendor.name} className="w-5 h-5 object-contain" />
                   {vendor.name}

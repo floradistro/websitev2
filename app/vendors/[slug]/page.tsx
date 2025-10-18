@@ -23,7 +23,27 @@ const vendors: any = {
     verified: true,
     website: 'https://yachtclubcannabis.com',
     instagram: '@yachtclubcannabis',
-    productIds: [50001, 50002, 50003, 50004, 50005, 50006, 50007, 50008, 50009]
+    productIds: [50001, 50002, 50003, 50004, 50005, 50006, 50007, 50008, 50009],
+    fontFamily: 'Lobster'
+  },
+  'cannaboyz': {
+    id: 2,
+    name: 'CannaBoyz',
+    slug: 'cannaboyz',
+    logo: '/CannaBoyz.png',
+    banner: '',
+    tagline: 'Street Certified, Lab Tested',
+    about: 'CannaBoyz is bringing authentic street culture to the legal cannabis market. Based in LA, we source the realest cuts and provide lab-tested quality without the boutique price tag. Every product is grown with passion and tested by Quantix Analytics for your safety.',
+    primaryColor: '#10B981',
+    location: 'Los Angeles, CA',
+    joinedDate: '2025-09-15',
+    rating: 4.8,
+    totalReviews: 38,
+    verified: true,
+    website: 'https://cannaboyz.com',
+    instagram: '@cannaboyz',
+    productIds: [60001, 60002, 60003, 60004, 60005, 60006],
+    fontFamily: 'Monkey Act'
   }
 };
 
@@ -32,9 +52,10 @@ export default function VendorStorefront() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Mock vendor for demo - normally would get from params
-    const yachtClub = vendors['yacht-club'];
-    setVendor(yachtClub);
+    // Get slug from URL
+    const slug = window.location.pathname.split('/').pop();
+    const vendorData = vendors[slug || 'yacht-club'];
+    setVendor(vendorData);
     setLoading(false);
   }, []);
 
@@ -46,18 +67,30 @@ export default function VendorStorefront() {
     );
   }
 
-  // Mock product data matching Yacht Club products
-  const vendorProducts = [
-    { id: 50001, name: 'OG Kush', price: '15.99', images: [], categories: [{ name: 'Flower' }], meta_data: [] },
-    { id: 50002, name: 'Blue Dream', price: '14.99', images: [], categories: [{ name: 'Flower' }], meta_data: [] },
-    { id: 50003, name: 'Sour Diesel', price: '16.99', images: [], categories: [{ name: 'Flower' }], meta_data: [] },
-    { id: 50004, name: 'Girl Scout Cookies', price: '17.99', images: [], categories: [{ name: 'Flower' }], meta_data: [] },
-    { id: 50005, name: 'Gelato', price: '18.99', images: [], categories: [{ name: 'Flower' }], meta_data: [] },
-    { id: 50006, name: 'Sunset Sherbet', price: '17.99', images: [], categories: [{ name: 'Flower' }], meta_data: [] },
-    { id: 50007, name: 'Purple Punch', price: '16.99', images: [], categories: [{ name: 'Flower' }], meta_data: [] },
-    { id: 50008, name: 'Zkittlez', price: '15.99', images: [], categories: [{ name: 'Flower' }], meta_data: [] },
-    { id: 50009, name: 'Wedding Cake', price: '18.99', images: [], categories: [{ name: 'Flower' }], meta_data: [] },
-  ];
+  // Mock product data based on vendor
+  const productsByVendor: any = {
+    'yacht-club': [
+      { id: 50001, name: 'OG Kush', price: '15.99', images: [], categories: [{ name: 'Flower' }], meta_data: [] },
+      { id: 50002, name: 'Blue Dream', price: '14.99', images: [], categories: [{ name: 'Flower' }], meta_data: [] },
+      { id: 50003, name: 'Sour Diesel', price: '16.99', images: [], categories: [{ name: 'Flower' }], meta_data: [] },
+      { id: 50004, name: 'Girl Scout Cookies', price: '17.99', images: [], categories: [{ name: 'Flower' }], meta_data: [] },
+      { id: 50005, name: 'Gelato', price: '18.99', images: [], categories: [{ name: 'Flower' }], meta_data: [] },
+      { id: 50006, name: 'Sunset Sherbet', price: '17.99', images: [], categories: [{ name: 'Flower' }], meta_data: [] },
+      { id: 50007, name: 'Purple Punch', price: '16.99', images: [], categories: [{ name: 'Flower' }], meta_data: [] },
+      { id: 50008, name: 'Zkittlez', price: '15.99', images: [], categories: [{ name: 'Flower' }], meta_data: [] },
+      { id: 50009, name: 'Wedding Cake', price: '18.99', images: [], categories: [{ name: 'Flower' }], meta_data: [] },
+    ],
+    'cannaboyz': [
+      { id: 60001, name: 'Gorilla Glue #4', price: '16.99', images: [], categories: [{ name: 'Flower' }], meta_data: [] },
+      { id: 60002, name: 'White Widow', price: '15.99', images: [], categories: [{ name: 'Flower' }], meta_data: [] },
+      { id: 60003, name: 'Northern Lights', price: '14.99', images: [], categories: [{ name: 'Flower' }], meta_data: [] },
+      { id: 60004, name: 'AK-47', price: '16.99', images: [], categories: [{ name: 'Flower' }], meta_data: [] },
+      { id: 60005, name: 'Granddaddy Purple', price: '17.99', images: [], categories: [{ name: 'Flower' }], meta_data: [] },
+      { id: 60006, name: 'Jack Herer', price: '16.99', images: [], categories: [{ name: 'Flower' }], meta_data: [] },
+    ]
+  };
+
+  const vendorProducts = productsByVendor[vendor.slug] || [];
 
   const locations: any[] = [];
   const inventoryMap: { [key: number]: any[] } = {};
@@ -94,10 +127,10 @@ export default function VendorStorefront() {
             {/* Info */}
             <div className="flex-1">
               <div className="flex items-start justify-between mb-4">
-                <div>
-                  <h1 className="text-3xl text-white mb-2 tracking-wide" style={{ fontFamily: 'Lobster' }}>
-                    {vendor.name}
-                  </h1>
+              <div>
+                <h1 className="text-3xl text-white mb-2 tracking-wide" style={{ fontFamily: vendor.fontFamily || 'Lobster' }}>
+                  {vendor.name}
+                </h1>
                   <p className="text-white/60 text-sm mb-3">{vendor.tagline}</p>
                   
                   {/* Meta Info */}
@@ -185,11 +218,17 @@ export default function VendorStorefront() {
         )}
       </div>
 
-      {/* Inject Lobster font */}
+      {/* Inject Fonts */}
       <style jsx global>{`
         @font-face {
           font-family: 'Lobster';
           src: url('/Lobster 1.4.otf') format('opentype');
+          font-weight: normal;
+          font-style: normal;
+        }
+        @font-face {
+          font-family: 'Monkey Act';
+          src: url('/Monkey Act - Personal Use.otf') format('opentype');
           font-weight: normal;
           font-style: normal;
         }
