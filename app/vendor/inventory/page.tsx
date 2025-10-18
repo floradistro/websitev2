@@ -181,25 +181,25 @@ export default function VendorInventory() {
             placeholder="Search by product name or SKU..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-[#2a2a2a] border border-white/5 text-white placeholder-white/40 pl-10 pr-4 py-3 focus:outline-none focus:border-white/10 transition-colors"
+            className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 pl-10 pr-4 py-3 focus:outline-none focus:border-white/10 transition-colors"
           />
         </div>
       </div>
 
       {/* Inventory Table */}
       {loading ? (
-        <div className="bg-[#2a2a2a] border border-white/5 p-12">
+        <div className="bg-[#1a1a1a] border border-white/5 p-12">
           <div className="text-center text-white/60">Loading inventory...</div>
         </div>
       ) : filteredInventory.length === 0 ? (
-        <div className="bg-[#2a2a2a] border border-white/5 p-12">
+        <div className="bg-[#1a1a1a] border border-white/5 p-12">
           <div className="text-center">
             <Package size={48} className="text-white/20 mx-auto mb-4" />
             <div className="text-white/60">No inventory items found</div>
           </div>
         </div>
       ) : (
-        <div className="bg-[#2a2a2a] border border-white/5 overflow-hidden">
+        <div className="bg-[#1a1a1a] border border-white/5 overflow-hidden">
           <table className="w-full">
             <thead className="border-b border-white/5 bg-[#1a1a1a]">
               <tr>

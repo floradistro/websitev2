@@ -180,7 +180,7 @@ export default function VendorProducts() {
       </div>
 
       {/* Filters */}
-      <div className="bg-[#2a2a2a] border border-white/5 p-4 mb-6" style={{ animation: 'fadeInUp 0.6s ease-out 0.1s both' }}>
+      <div className="bg-[#1a1a1a] border border-white/5 p-4 mb-6" style={{ animation: 'fadeInUp 0.6s ease-out 0.1s both' }}>
         <div className="flex flex-col md:flex-row gap-4">
           {/* Search */}
           <div className="flex-1 relative">
@@ -242,11 +242,11 @@ export default function VendorProducts() {
 
       {/* Products Table */}
       {loading ? (
-        <div className="bg-[#2a2a2a] border border-white/5 p-12">
+        <div className="bg-[#1a1a1a] border border-white/5 p-12">
           <div className="text-center text-white/60">Loading products...</div>
         </div>
       ) : filteredProducts.length === 0 ? (
-        <div className="bg-[#2a2a2a] border border-white/5 p-12">
+        <div className="bg-[#1a1a1a] border border-white/5 p-12">
           <div className="text-center">
             <Package size={48} className="text-white/20 mx-auto mb-4" />
             <div className="text-white/60 mb-4">No products found</div>
@@ -260,7 +260,7 @@ export default function VendorProducts() {
           </div>
         </div>
       ) : (
-        <div className="bg-[#2a2a2a] border border-white/5 overflow-hidden">
+        <div className="bg-[#1a1a1a] border border-white/5 overflow-hidden">
           <table className="w-full">
             <thead className="border-b border-white/5 bg-[#1a1a1a]">
               <tr>

@@ -71,7 +71,7 @@ export default function VendorBranding() {
         <div className="lg:col-span-2 space-y-6">
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Visual Assets */}
-            <div className="bg-[#2a2a2a] border border-white/5 p-6">
+            <div className="bg-[#1a1a1a] border border-white/5 p-6">
               <h2 className="text-white font-medium mb-6">Visual Assets</h2>
               
               <div className="space-y-6">
@@ -142,7 +142,7 @@ export default function VendorBranding() {
             </div>
 
             {/* Store Information */}
-            <div className="bg-[#2a2a2a] border border-white/5 p-6">
+            <div className="bg-[#1a1a1a] border border-white/5 p-6">
               <h2 className="text-white font-medium mb-6">Store Information</h2>
               
               <div className="space-y-4">
@@ -205,7 +205,7 @@ export default function VendorBranding() {
             </div>
 
             {/* Brand Colors */}
-            <div className="bg-[#2a2a2a] border border-white/5 p-6">
+            <div className="bg-[#1a1a1a] border border-white/5 p-6">
               <h2 className="text-white font-medium mb-6">Brand Colors</h2>
               <p className="text-white/60 text-sm mb-4">
                 Choose colors that represent your brand. These will be used in your storefront accents.
@@ -255,7 +255,7 @@ export default function VendorBranding() {
             </div>
 
             {/* Social Links */}
-            <div className="bg-[#2a2a2a] border border-white/5 p-6">
+            <div className="bg-[#1a1a1a] border border-white/5 p-6">
               <h2 className="text-white font-medium mb-6">Social & Links</h2>
               
               <div className="space-y-4">
@@ -288,7 +288,7 @@ export default function VendorBranding() {
             </div>
 
             {/* Store Policies */}
-            <div className="bg-[#2a2a2a] border border-white/5 p-6">
+            <div className="bg-[#1a1a1a] border border-white/5 p-6">
               <h2 className="text-white font-medium mb-6">Store Policies</h2>
               
               <div>
@@ -322,7 +322,7 @@ export default function VendorBranding() {
         {/* Preview - 1/3 width */}
         <div className="space-y-6">
           {/* Storefront Preview */}
-          <div className="bg-[#2a2a2a] border border-white/5 overflow-hidden">
+          <div className="bg-[#1a1a1a] border border-white/5 overflow-hidden">
             <div className="border-b border-white/5 p-4 bg-[#1a1a1a]">
               <h3 className="text-white/90 text-xs uppercase tracking-wider font-light">Storefront Preview</h3>
             </div>

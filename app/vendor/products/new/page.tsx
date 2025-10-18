@@ -76,7 +76,7 @@ export default function NewProduct() {
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Basic Information */}
-        <div className="bg-[#2a2a2a] border border-white/5 p-6">
+        <div className="bg-[#1a1a1a] border border-white/5 p-6">
           <h2 className="text-white font-medium mb-6">Basic Information</h2>
           
           <div className="space-y-4">
@@ -152,7 +152,7 @@ export default function NewProduct() {
         </div>
 
         {/* Product Images */}
-        <div className="bg-[#2a2a2a] border border-white/5 p-6">
+        <div className="bg-[#1a1a1a] border border-white/5 p-6">
           <h2 className="text-white font-medium mb-6">Product Images</h2>
           
           <div className="space-y-4">
@@ -193,7 +193,7 @@ export default function NewProduct() {
         </div>
 
         {/* Strain Details */}
-        <div className="bg-[#2a2a2a] border border-white/5 p-6">
+        <div className="bg-[#1a1a1a] border border-white/5 p-6">
           <h2 className="text-white font-medium mb-6">Strain Details</h2>
           
           <div className="grid grid-cols-2 gap-4">

@@ -43,7 +43,7 @@ export default function VendorSettings() {
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Company Information */}
-        <div className="bg-[#2a2a2a] border border-white/5 p-6">
+        <div className="bg-[#1a1a1a] border border-white/5 p-6">
           <h2 className="text-white font-medium mb-6">Company Information</h2>
           
           <div className="grid grid-cols-2 gap-4">
@@ -115,7 +115,7 @@ export default function VendorSettings() {
         </div>
 
         {/* Address */}
-        <div className="bg-[#2a2a2a] border border-white/5 p-6">
+        <div className="bg-[#1a1a1a] border border-white/5 p-6">
           <h2 className="text-white font-medium mb-6">Business Address</h2>
           
           <div className="space-y-4">
