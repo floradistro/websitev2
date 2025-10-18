@@ -98,11 +98,16 @@ export default function VendorSupportChat({ isOpen, onClose }: VendorSupportChat
         {/* Header */}
         <div className="border-b border-white/5 p-6 bg-black">
           <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-white text-sm uppercase tracking-[0.2em] font-light mb-1">Support</h2>
-              <div className="flex items-center gap-2 text-xs text-white/40">
-                <div className="w-1.5 h-1.5 bg-green-500/80 rounded-full"></div>
-                <span className="uppercase tracking-wider">Online</span>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-white/5 flex items-center justify-center overflow-hidden">
+                <img src="/logoprint.png" alt="Flora Distro" className="w-full h-full object-contain p-1.5 opacity-80" />
+              </div>
+              <div>
+                <h2 className="text-white text-sm uppercase tracking-[0.2em] font-light mb-1">Support</h2>
+                <div className="flex items-center gap-2 text-xs text-white/40">
+                  <div className="w-1.5 h-1.5 bg-green-500/80 rounded-full"></div>
+                  <span className="uppercase tracking-wider">Online</span>
+                </div>
               </div>
             </div>
             <button
