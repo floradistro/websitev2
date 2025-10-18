@@ -96,10 +96,8 @@ export default async function ProductsPage({
       fields[field.field_name] = field.field_value || '';
     });
     
-    // Extract pricing tiers from meta_data
-    const metaData = product.meta_data || [];
-    const pricingTiersMeta = metaData.find((m: any) => m.key === '_product_price_tiers');
-    const pricingTiers = pricingTiersMeta?.value || [];
+    // Extract pricing tiers from bulk response
+    const pricingTiers = product.pricing_tiers || product.quantity_tiers || [];
     
     productFieldsMap[product.id] = { fields, pricingTiers };
   });
