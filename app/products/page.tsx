@@ -115,12 +115,17 @@ export default async function ProductsPage({
     productFieldsMap[product.id] = { fields, pricingTiers };
   });
 
-  // Add mock inventory for Yacht Club products FIRST
+  // Add mock inventory for ALL Yacht Club products FIRST
   const yachtClubInventory: { [key: number]: any[] } = {
     50001: [{ product_id: '50001', location_id: '1', quantity: 156.75, stock_quantity: 156.75, status: 'instock' }],
     50002: [{ product_id: '50002', location_id: '1', quantity: 203.5, stock_quantity: 203.5, status: 'instock' }],
-    50005: [{ product_id: '50005', location_id: '1', quantity: 98.5, stock_quantity: 98.5, status: 'instock' }],
+    50003: [{ product_id: '50003', location_id: '1', quantity: 127.25, stock_quantity: 127.25, status: 'instock' }],
     50004: [{ product_id: '50004', location_id: '1', quantity: 145.0, stock_quantity: 145.0, status: 'instock' }],
+    50005: [{ product_id: '50005', location_id: '1', quantity: 98.5, stock_quantity: 98.5, status: 'instock' }],
+    50006: [{ product_id: '50006', location_id: '1', quantity: 76.25, stock_quantity: 76.25, status: 'instock' }],
+    50007: [{ product_id: '50007', location_id: '1', quantity: 112.0, stock_quantity: 112.0, status: 'instock' }],
+    50008: [{ product_id: '50008', location_id: '1', quantity: 89.75, stock_quantity: 89.75, status: 'instock' }],
+    50009: [{ product_id: '50009', location_id: '1', quantity: 134.5, stock_quantity: 134.5, status: 'instock' }],
   };
 
   // Merge Yacht Club inventory into main inventory map
@@ -213,6 +218,116 @@ export default async function ProductsPage({
         { key: '_field_terpenes', value: 'Caryophyllene, Limonene, Humulene' },
         { key: '_field_effects', value: 'Euphoric, Happy, Relaxed, Creative' },
         { key: '_field_lineage', value: 'OG Kush × Durban Poison' }
+      ],
+      vendorId: 1,
+      vendorSlug: 'yacht-club',
+      stock_status: 'instock'
+    },
+    { 
+      id: 50003, 
+      name: 'Sour Diesel', 
+      price: '16.99', 
+      images: [], 
+      categories: [{ id: 25, name: 'Flower', slug: 'flower' }], 
+      meta_data: [
+        { key: '_product_price_tiers', value: [
+          { weight: '1g', qty: 1, price: 16.99 },
+          { weight: '3.5g', qty: 3.5, price: 47.99 },
+          { weight: '7g', qty: 7, price: 84.99 },
+          { weight: '28g', qty: 28, price: 299.99 }
+        ]},
+        { key: '_field_strain_type', value: 'Sativa' },
+        { key: '_field_terpenes', value: 'Caryophyllene, Limonene, Myrcene' },
+        { key: '_field_effects', value: 'Energetic, Uplifted, Creative, Focused' },
+        { key: '_field_lineage', value: 'Chemdawg 91 × Super Skunk' }
+      ],
+      vendorId: 1,
+      vendorSlug: 'yacht-club',
+      stock_status: 'instock'
+    },
+    { 
+      id: 50006, 
+      name: 'Sunset Sherbet', 
+      price: '17.99', 
+      images: [], 
+      categories: [{ id: 25, name: 'Flower', slug: 'flower' }], 
+      meta_data: [
+        { key: '_product_price_tiers', value: [
+          { weight: '1g', qty: 1, price: 17.99 },
+          { weight: '3.5g', qty: 3.5, price: 49.99 },
+          { weight: '7g', qty: 7, price: 89.99 },
+          { weight: '28g', qty: 28, price: 319.99 }
+        ]},
+        { key: '_field_strain_type', value: 'Hybrid' },
+        { key: '_field_terpenes', value: 'Caryophyllene, Limonene, Linalool' },
+        { key: '_field_effects', value: 'Relaxed, Happy, Euphoric, Sleepy' },
+        { key: '_field_lineage', value: 'Pink Panties × Girl Scout Cookies' }
+      ],
+      vendorId: 1,
+      vendorSlug: 'yacht-club',
+      stock_status: 'instock'
+    },
+    { 
+      id: 50007, 
+      name: 'Purple Punch', 
+      price: '16.99', 
+      images: [], 
+      categories: [{ id: 25, name: 'Flower', slug: 'flower' }], 
+      meta_data: [
+        { key: '_product_price_tiers', value: [
+          { weight: '1g', qty: 1, price: 16.99 },
+          { weight: '3.5g', qty: 3.5, price: 46.99 },
+          { weight: '7g', qty: 7, price: 82.99 },
+          { weight: '28g', qty: 28, price: 289.99 }
+        ]},
+        { key: '_field_strain_type', value: 'Indica' },
+        { key: '_field_terpenes', value: 'Caryophyllene, Pinene, Humulene' },
+        { key: '_field_effects', value: 'Relaxed, Sleepy, Happy, Euphoric' },
+        { key: '_field_lineage', value: 'Larry OG × Granddaddy Purple' }
+      ],
+      vendorId: 1,
+      vendorSlug: 'yacht-club',
+      stock_status: 'instock'
+    },
+    { 
+      id: 50008, 
+      name: 'Zkittlez', 
+      price: '15.99', 
+      images: [], 
+      categories: [{ id: 25, name: 'Flower', slug: 'flower' }], 
+      meta_data: [
+        { key: '_product_price_tiers', value: [
+          { weight: '1g', qty: 1, price: 15.99 },
+          { weight: '3.5g', qty: 3.5, price: 44.99 },
+          { weight: '7g', qty: 7, price: 79.99 },
+          { weight: '28g', qty: 28, price: 279.99 }
+        ]},
+        { key: '_field_strain_type', value: 'Hybrid' },
+        { key: '_field_terpenes', value: 'Humulene, Caryophyllene, Limonene' },
+        { key: '_field_effects', value: 'Happy, Relaxed, Euphoric, Uplifted' },
+        { key: '_field_lineage', value: 'Grape Ape × Grapefruit' }
+      ],
+      vendorId: 1,
+      vendorSlug: 'yacht-club',
+      stock_status: 'instock'
+    },
+    { 
+      id: 50009, 
+      name: 'Wedding Cake', 
+      price: '18.99', 
+      images: [], 
+      categories: [{ id: 25, name: 'Flower', slug: 'flower' }], 
+      meta_data: [
+        { key: '_product_price_tiers', value: [
+          { weight: '1g', qty: 1, price: 18.99 },
+          { weight: '3.5g', qty: 3.5, price: 54.99 },
+          { weight: '7g', qty: 7, price: 99.99 },
+          { weight: '28g', qty: 28, price: 349.99 }
+        ]},
+        { key: '_field_strain_type', value: 'Hybrid' },
+        { key: '_field_terpenes', value: 'Limonene, Caryophyllene, Humulene' },
+        { key: '_field_effects', value: 'Relaxed, Happy, Euphoric, Hungry' },
+        { key: '_field_lineage', value: 'Cherry Pie × Girl Scout Cookies' }
       ],
       vendorId: 1,
       vendorSlug: 'yacht-club',

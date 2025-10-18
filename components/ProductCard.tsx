@@ -309,11 +309,11 @@ export default function ProductCard({ product, index, locations, pricingTiers = 
           </>
         ) : (
           <>
-            {/* Logo Fallback */}
+            {/* Logo Fallback - Use vendor logo if available */}
             <div className="relative w-full h-full flex items-center justify-center p-12">
               <Image
-                src="/logoprint.png"
-                alt="Flora Distro"
+                src={vendorInfo?.logo || "/logoprint.png"}
+                alt={vendorInfo?.name || "Flora Distro"}
                 fill
                 sizes="(max-width: 640px) 85vw, (max-width: 768px) 45vw, (max-width: 1024px) 32vw, 23vw"
                 className="object-contain opacity-10 transition-opacity duration-500 group-hover:opacity-15"
