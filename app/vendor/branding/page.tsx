@@ -5,19 +5,19 @@ import { Upload, X, Save } from 'lucide-react';
 
 export default function VendorBranding() {
   const [loading, setLoading] = useState(false);
-  const [logo, setLogo] = useState<string>('/logoprint.png');
+  const [logo, setLogo] = useState<string>('/yachtclub.png');
   const [banner, setBanner] = useState<string>('');
   
   const [branding, setBranding] = useState({
-    companyName: 'Premium Cannabis Co.',
-    storeName: 'Premium Cannabis',
-    tagline: 'Quality Cannabis, Delivered Fresh',
-    about: 'We are a family-owned cannabis farm dedicated to producing the highest quality flower and concentrates. Our products are grown with care, tested rigorously, and delivered fresh.',
-    primaryColor: '#22c55e',
-    accentColor: '#10b981',
-    website: 'https://premiumcannabis.com',
-    instagram: '@premiumcannabis',
-    customPolicies: 'All products are lab tested and come with certificates of analysis. We stand behind our quality with a satisfaction guarantee.',
+    companyName: 'Yacht Club',
+    storeName: 'Yacht Club',
+    tagline: 'Premium Cannabis from the Coast',
+    about: 'Yacht Club brings you premium coastal cannabis cultivated with the same attention to detail as a luxury yacht. Every product is carefully crafted, lab tested, and delivered with the highest standards of quality and service.',
+    primaryColor: '#0EA5E9',
+    accentColor: '#06B6D4',
+    website: 'https://yachtclubcannabis.com',
+    instagram: '@yachtclubcannabis',
+    customPolicies: 'All Yacht Club products are lab tested by Quantix Analytics and come with certificates of analysis. We guarantee quality and freshness with every order.',
   });
 
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -347,7 +347,7 @@ export default function VendorBranding() {
                     <img src={logo} alt="Logo" className="w-full h-full object-contain p-2" />
                   </div>
                   <div>
-                    <h2 className="text-white font-light text-base uppercase tracking-wider">{branding.storeName}</h2>
+                    <h2 className="text-white text-xl tracking-wide" style={{ fontFamily: 'Lobster' }}>{branding.storeName}</h2>
                     <p className="text-white/50 text-xs tracking-wide">{branding.tagline}</p>
                   </div>
                 </div>

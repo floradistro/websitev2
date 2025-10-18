@@ -192,8 +192,8 @@ export default function VendorDashboard() {
     <div className="max-w-7xl mx-auto animate-fadeIn">
       {/* Welcome Header */}
       <div className="mb-8" style={{ animation: 'fadeInUp 0.5s ease-out' }}>
-        <h1 className="text-3xl font-light text-white mb-2 tracking-tight">
-          Welcome Back
+        <h1 className="text-4xl text-white mb-2" style={{ fontFamily: 'Lobster' }}>
+          Welcome Back, Yacht Club
         </h1>
         <p className="text-white/60 text-sm">
           Here's what's happening with your store today

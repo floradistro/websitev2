@@ -12,6 +12,14 @@ export default function VendorLayout({
   
   return (
     <div className="min-h-screen bg-[#1a1a1a]">
+      <style jsx global>{`
+        @font-face {
+          font-family: 'Lobster';
+          src: url('/Lobster 1.4.otf') format('opentype');
+          font-weight: normal;
+          font-style: normal;
+        }
+      `}</style>
       {/* Vendor Navigation */}
       <nav className="bg-[#1a1a1a] border-b border-white/5">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -19,11 +27,11 @@ export default function VendorLayout({
             {/* Logo */}
             <Link href="/vendor/dashboard" className="flex items-center gap-3">
               <div className="w-10 h-10 bg-white/5 rounded flex items-center justify-center overflow-hidden">
-                <img src="/logoprint.png" alt="Flora" className="w-full h-full object-contain p-1.5 opacity-80" />
+                <img src="/yachtclub.png" alt="Yacht Club" className="w-full h-full object-contain p-0.5" />
               </div>
               <div>
-                <div className="text-white text-sm font-medium uppercase tracking-wider">Vendor Portal</div>
-                <div className="text-white/40 text-xs tracking-wide">Flora Distro</div>
+                <div className="text-white text-base tracking-wide" style={{ fontFamily: 'Lobster' }}>Yacht Club</div>
+                <div className="text-white/40 text-xs tracking-wide">Vendor Portal</div>
               </div>
             </Link>
 

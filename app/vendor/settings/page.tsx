@@ -6,15 +6,15 @@ import { Save } from 'lucide-react';
 export default function VendorSettings() {
   const [loading, setLoading] = useState(false);
   const [settings, setSettings] = useState({
-    companyName: '',
-    contactName: '',
-    email: '',
-    phone: '',
-    address: '',
-    city: '',
-    state: '',
-    zip: '',
-    taxId: '',
+    companyName: 'Yacht Club LLC',
+    contactName: 'Captain James Harbor',
+    email: 'info@yachtclubcannabis.com',
+    phone: '(555) YACHT-01',
+    address: '1 Marina Boulevard',
+    city: 'Newport Beach',
+    state: 'CA',
+    zip: '92663',
+    taxId: '98-7654321',
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
