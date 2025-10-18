@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import LocationDropdown from "./LocationDropdown";
 import ProductCard from "./ProductCard";
 
@@ -181,7 +183,16 @@ export default function ProductsClient({
           
           {/* Vendor Filter - MAIN FEATURE - Always Visible */}
           <div className="mb-6 pb-6 border-b border-white/10">
-            <h3 className="text-xs uppercase tracking-[0.2em] text-white/60 mb-4">Shop By Vendor</h3>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xs uppercase tracking-[0.2em] text-white/60">Shop By Vendor</h3>
+              <Link 
+                href="/vendors"
+                className="text-[10px] uppercase tracking-wider text-white/60 hover:text-white transition-colors flex items-center gap-1"
+              >
+                View All Vendors
+                <ArrowRight size={12} />
+              </Link>
+            </div>
             <div className="flex items-center gap-3 overflow-x-auto scrollbar-hide -mx-4 px-4 sm:-mx-6 sm:px-6 md:-mx-8 md:px-8">
               <button
                 onClick={() => setSelectedVendor(null)}
