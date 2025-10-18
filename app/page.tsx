@@ -1,19 +1,20 @@
 import { getBestSellingProducts, getCategories, getLocations, getAllInventory } from "@/lib/wordpress";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import dynamicImport from "next/dynamic";
+import dynamic from "next/dynamic";
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
 export const revalidate = 60;
 
-// Lazy load heavy carousel components
-const LuxuryHero = dynamicImport(() => import("@/components/LuxuryHero"), {
-  ssr: true,
+// Lazy load heavy carousel components - client side only to avoid SSR issues
+const LuxuryHero = dynamic(() => import("@/components/LuxuryHero"), {
+  ssr: false,
+  loading: () => <div className="w-full h-[600px] bg-[#2a2a2a] animate-pulse" />,
 });
 
-const ProductsCarousel = dynamicImport(() => import("@/components/ProductsCarousel"), {
-  ssr: true,
+const ProductsCarousel = dynamic(() => import("@/components/ProductsCarousel"), {
+  ssr: false,
   loading: () => (
     <div className="flex gap-4 px-4 animate-pulse">
       {[...Array(4)].map((_, i) => (
@@ -23,12 +24,14 @@ const ProductsCarousel = dynamicImport(() => import("@/components/ProductsCarous
   ),
 });
 
-const CategoriesCarousel = dynamicImport(() => import("@/components/CategoriesCarousel"), {
-  ssr: true,
+const CategoriesCarousel = dynamic(() => import("@/components/CategoriesCarousel"), {
+  ssr: false,
+  loading: () => <div className="w-full h-[200px] bg-[#3a3a3a] animate-pulse" />,
 });
 
-const LocationsCarousel = dynamicImport(() => import("@/components/LocationsCarousel"), {
-  ssr: true,
+const LocationsCarousel = dynamic(() => import("@/components/LocationsCarousel"), {
+  ssr: false,
+  loading: () => <div className="w-full h-[200px] bg-[#2a2a2a] animate-pulse" />,
 });
 
 export default async function Home() {
