@@ -17,9 +17,14 @@ interface ProductCardProps {
     fields: { [key: string]: string };
   };
   inventory?: any[];
+  vendorInfo?: {
+    name: string;
+    logo: string;
+    slug: string;
+  };
 }
 
-export default function ProductCard({ product, index, locations, pricingTiers = [], productFields, inventory = [] }: ProductCardProps) {
+export default function ProductCard({ product, index, locations, pricingTiers = [], productFields, inventory = [], vendorInfo }: ProductCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [selectedTierIndex, setSelectedTierIndex] = useState<number | null>(null);
   const [showAddToCart, setShowAddToCart] = useState(false);
@@ -317,10 +322,28 @@ export default function ProductCard({ product, index, locations, pricingTiers = 
           </>
         )}
 
-        {/* Wishlist Heart - Top Right */}
+        {/* Vendor Badge - Top Right */}
+        {vendorInfo && (
+          <div className="absolute top-2 right-2 z-10">
+            <Link
+              href={`/vendors/${vendorInfo.slug}`}
+              onClick={(e) => e.stopPropagation()}
+              className="block w-10 h-10 bg-black/90 backdrop-blur-sm border border-white/20 hover:border-white/40 transition-all duration-300 overflow-hidden group"
+              title={`Sold by ${vendorInfo.name}`}
+            >
+              <img 
+                src={vendorInfo.logo} 
+                alt={vendorInfo.name} 
+                className="w-full h-full object-contain p-1.5 opacity-90 group-hover:opacity-100 transition-opacity"
+              />
+            </Link>
+          </div>
+        )}
+
+        {/* Wishlist Heart - Top Right (moved if vendor badge exists) */}
         <button
           onClick={handleWishlistToggle}
-          className={`absolute top-2 right-2 z-10 w-9 h-9 rounded-full flex items-center justify-center transition-all duration-300 ${
+          className={`absolute ${vendorInfo ? 'top-14 right-2' : 'top-2 right-2'} z-10 w-9 h-9 rounded-full flex items-center justify-center transition-all duration-300 ${
             inWishlist 
               ? "bg-white text-black" 
               : "bg-black/40 backdrop-blur-sm text-white hover:bg-black/60"

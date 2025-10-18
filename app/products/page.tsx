@@ -115,6 +115,127 @@ export default async function ProductsPage({
     productFieldsMap[product.id] = { fields, pricingTiers };
   });
 
+  // Mock Yacht Club vendor products with fields
+  const yachtClubProducts = [
+    { 
+      id: 50001, 
+      name: 'OG Kush', 
+      price: '15.99', 
+      images: [], 
+      categories: [{ id: 25, name: 'Flower', slug: 'flower' }], 
+      meta_data: [
+        { key: '_product_price_tiers', value: [
+          { weight: '1g', qty: 1, price: 15.99 },
+          { weight: '3.5g', qty: 3.5, price: 44.99 },
+          { weight: '7g', qty: 7, price: 79.99 },
+          { weight: '28g', qty: 28, price: 279.99 }
+        ]},
+        { key: '_field_strain_type', value: 'Hybrid' },
+        { key: '_field_terpenes', value: 'β-Caryophyllene, Limonene, Myrcene' },
+        { key: '_field_effects', value: 'Relaxed, Happy, Euphoric, Uplifted' },
+        { key: '_field_lineage', value: 'Chemdawg × Lemon Thai × Pakistani Kush' }
+      ],
+      vendorId: 1,
+      vendorSlug: 'yacht-club',
+      stock_status: 'instock'
+    },
+    { 
+      id: 50002, 
+      name: 'Blue Dream', 
+      price: '14.99', 
+      images: [], 
+      categories: [{ id: 25, name: 'Flower', slug: 'flower' }], 
+      meta_data: [
+        { key: '_product_price_tiers', value: [
+          { weight: '1g', qty: 1, price: 14.99 },
+          { weight: '3.5g', qty: 3.5, price: 39.99 },
+          { weight: '7g', qty: 7, price: 69.99 },
+          { weight: '28g', qty: 28, price: 249.99 }
+        ]},
+        { key: '_field_strain_type', value: 'Hybrid' },
+        { key: '_field_terpenes', value: 'Myrcene, Pinene, Caryophyllene' },
+        { key: '_field_effects', value: 'Creative, Uplifted, Relaxed, Focused' },
+        { key: '_field_lineage', value: 'Blueberry × Haze' }
+      ],
+      vendorId: 1,
+      vendorSlug: 'yacht-club',
+      stock_status: 'instock'
+    },
+    { 
+      id: 50005, 
+      name: 'Gelato', 
+      price: '18.99', 
+      images: [], 
+      categories: [{ id: 25, name: 'Flower', slug: 'flower' }], 
+      meta_data: [
+        { key: '_product_price_tiers', value: [
+          { weight: '1g', qty: 1, price: 18.99 },
+          { weight: '3.5g', qty: 3.5, price: 54.99 },
+          { weight: '7g', qty: 7, price: 99.99 },
+          { weight: '28g', qty: 28, price: 349.99 }
+        ]},
+        { key: '_field_strain_type', value: 'Hybrid' },
+        { key: '_field_terpenes', value: 'Limonene, Caryophyllene, Humulene' },
+        { key: '_field_effects', value: 'Relaxed, Happy, Euphoric, Uplifted' },
+        { key: '_field_lineage', value: 'Sunset Sherbet × Thin Mint Cookies' }
+      ],
+      vendorId: 1,
+      vendorSlug: 'yacht-club',
+      stock_status: 'instock'
+    },
+    { 
+      id: 50004, 
+      name: 'Girl Scout Cookies', 
+      price: '17.99', 
+      images: [], 
+      categories: [{ id: 25, name: 'Flower', slug: 'flower' }], 
+      meta_data: [
+        { key: '_product_price_tiers', value: [
+          { weight: '1g', qty: 1, price: 17.99 },
+          { weight: '3.5g', qty: 3.5, price: 49.99 },
+          { weight: '7g', qty: 7, price: 89.99 },
+          { weight: '28g', qty: 28, price: 319.99 }
+        ]},
+        { key: '_field_strain_type', value: 'Hybrid' },
+        { key: '_field_terpenes', value: 'Caryophyllene, Limonene, Humulene' },
+        { key: '_field_effects', value: 'Euphoric, Happy, Relaxed, Creative' },
+        { key: '_field_lineage', value: 'OG Kush × Durban Poison' }
+      ],
+      vendorId: 1,
+      vendorSlug: 'yacht-club',
+      stock_status: 'instock'
+    },
+  ];
+
+  // Add mock inventory for Yacht Club products
+  yachtClubProducts.forEach((product: any) => {
+    inventoryMap[product.id] = [
+      { product_id: product.id.toString(), location_id: '1', quantity: 100, stock_quantity: 100, status: 'instock' }
+    ];
+    
+    // Extract fields from meta_data
+    const fields: any = {};
+    product.meta_data.forEach((meta: any) => {
+      if (meta.key.startsWith('_field_')) {
+        const fieldName = meta.key.replace('_field_', '');
+        fields[fieldName] = meta.value;
+      }
+    });
+    
+    const pricingTiers = product.meta_data.find((m: any) => m.key === '_product_price_tiers')?.value || [];
+    productFieldsMap[product.id] = { fields, pricingTiers };
+  });
+
+  // Mock vendors data
+  const vendors = [
+    {
+      id: 1,
+      name: 'Yacht Club',
+      slug: 'yacht-club',
+      logo: '/yachtclub.png',
+    }
+  ];
+
   return (
     <ProductsClient 
       categories={categories}
@@ -123,6 +244,8 @@ export default async function ProductsPage({
       inventoryMap={inventoryMap}
       initialCategory={categorySlug}
       productFieldsMap={productFieldsMap}
+      vendorProducts={yachtClubProducts}
+      vendors={vendors}
     />
   );
 }

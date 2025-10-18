@@ -11,6 +11,8 @@ interface ProductsClientProps {
   inventoryMap: { [key: number]: any[] };
   initialCategory?: string;
   productFieldsMap: { [key: number]: any };
+  vendorProducts?: any[];
+  vendors?: any[];
 }
 
 // Move static data outside component to prevent re-creation
@@ -30,12 +32,15 @@ export default function ProductsClient({
   inventoryMap,
   initialCategory,
   productFieldsMap,
+  vendorProducts = [],
+  vendors = [],
 }: ProductsClientProps) {
   const [selectedLocation, setSelectedLocation] = useState<string | null>(null);
   const [categorySlug, setCategorySlug] = useState<string | undefined>(initialCategory);
   const [selectedStrainType, setSelectedStrainType] = useState<string | null>(null);
   const [selectedEffect, setSelectedEffect] = useState<string | null>(null);
   const [priceRange, setPriceRange] = useState<string | null>(null);
+  const [selectedVendor, setSelectedVendor] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<string>("default");
   const [showFilters, setShowFilters] = useState(false);
 
@@ -46,7 +51,9 @@ export default function ProductsClient({
 
   // Optimized filter and sort with useMemo to prevent unnecessary recalculations
   const products = useMemo(() => {
-    let filtered = initialProducts;
+    // Combine Flora products with vendor products
+    let allProducts = [...initialProducts, ...vendorProducts];
+    let filtered = allProducts;
 
     // Filter by category
     if (categorySlug) {
@@ -107,6 +114,15 @@ export default function ProductsClient({
       }
     }
 
+    // Filter by vendor
+    if (selectedVendor) {
+      if (selectedVendor === 'flora') {
+        filtered = filtered.filter((product: any) => !product.vendorId);
+      } else {
+        filtered = filtered.filter((product: any) => product.vendorSlug === selectedVendor);
+      }
+    }
+
     // Sort products
     if (sortBy === "price-asc") {
       filtered = [...filtered].sort((a: any, b: any) => 
@@ -131,7 +147,7 @@ export default function ProductsClient({
     }
 
     return filtered;
-  }, [selectedLocation, categorySlug, selectedStrainType, selectedEffect, priceRange, sortBy, initialProducts, categories, inventoryMap, productFieldsMap]);
+  }, [selectedLocation, categorySlug, selectedStrainType, selectedEffect, priceRange, selectedVendor, sortBy, initialProducts, vendorProducts, categories, inventoryMap, productFieldsMap]);
 
   return (
     <div className="min-h-screen bg-[#2a2a2a]">
@@ -212,6 +228,44 @@ export default function ProductsClient({
             {/* Filter Pills Row - Compact Mobile Layout */}
             {showFilters && (
               <div className="space-y-2.5 pb-2 animate-fadeIn">
+                {/* Vendor Filter - Primary Feature */}
+                <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0 pb-1">
+                  <button
+                    onClick={() => setSelectedVendor(null)}
+                    className={`px-2.5 sm:px-3 py-1.5 text-[11px] uppercase tracking-wide transition-all whitespace-nowrap flex-shrink-0 rounded ${
+                      !selectedVendor
+                        ? 'bg-white text-black'
+                        : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white border border-white/10'
+                    }`}
+                  >
+                    All Products
+                  </button>
+                  <button
+                    onClick={() => setSelectedVendor('flora')}
+                    className={`px-2.5 sm:px-3 py-1.5 text-[11px] uppercase tracking-wide transition-all whitespace-nowrap flex-shrink-0 rounded ${
+                      selectedVendor === 'flora'
+                        ? 'bg-white text-black'
+                        : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white border border-white/10'
+                    }`}
+                  >
+                    Flora Distro
+                  </button>
+                  {vendors.map((vendor: any) => (
+                    <button
+                      key={vendor.slug}
+                      onClick={() => setSelectedVendor(vendor.slug)}
+                      className={`px-2.5 sm:px-3 py-1.5 text-[11px] uppercase tracking-wide transition-all whitespace-nowrap flex-shrink-0 rounded flex items-center gap-1.5 ${
+                        selectedVendor === vendor.slug
+                          ? 'bg-white text-black'
+                          : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white border border-white/10'
+                      }`}
+                    >
+                      <img src={vendor.logo} alt={vendor.name} className="w-4 h-4 object-contain" />
+                      {vendor.name}
+                    </button>
+                  ))}
+                </div>
+
                 {/* Strain Type - Horizontal Scroll on Mobile */}
                 <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0 pb-1">
                   {strainTypes.map((type) => (
@@ -315,17 +369,27 @@ export default function ProductsClient({
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-px">
-            {products.map((product: any, index: number) => (
-              <ProductCard 
-                key={product.id} 
-                product={product} 
-                index={index} 
-                locations={locations}
-                pricingTiers={productFieldsMap[product.id]?.pricingTiers || []}
-                productFields={productFieldsMap[product.id]}
-                inventory={inventoryMap[product.id] || []}
-              />
-            ))}
+            {products.map((product: any, index: number) => {
+              // Get vendor info if product is from a vendor
+              const vendorInfo = product.vendorId ? vendors.find((v: any) => v.id === product.vendorId) : null;
+              
+              return (
+                <ProductCard 
+                  key={product.id} 
+                  product={product} 
+                  index={index} 
+                  locations={locations}
+                  pricingTiers={productFieldsMap[product.id]?.pricingTiers || []}
+                  productFields={productFieldsMap[product.id]}
+                  inventory={inventoryMap[product.id] || []}
+                  vendorInfo={vendorInfo ? {
+                    name: vendorInfo.name,
+                    logo: vendorInfo.logo,
+                    slug: vendorInfo.slug
+                  } : undefined}
+                />
+              );
+            })}
           </div>
         )}
       </div>
