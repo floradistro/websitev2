@@ -32,16 +32,30 @@ const LocationsCarousel = dynamicImport(() => import("@/components/LocationsCaro
 });
 
 export default async function Home() {
-  // Optimized: Fetch only necessary data in parallel
-  const [products, categories, locations] = await Promise.all([
-    getBestSellingProducts({ per_page: 12 }),
-    getCategories({ per_page: 10, hide_empty: true }),
-    getLocations(),
-  ]);
+  // Optimized: Fetch only necessary data in parallel with error handling
+  let products: any[] = [];
+  let categories: any[] = [];
+  let locations: any[] = [];
+  
+  try {
+    [products, categories, locations] = await Promise.all([
+      getBestSellingProducts({ per_page: 12 }).catch(e => { console.error('Products error:', e); return []; }),
+      getCategories({ per_page: 10, hide_empty: true }).catch(e => { console.error('Categories error:', e); return []; }),
+      getLocations().catch(e => { console.error('Locations error:', e); return []; }),
+    ]);
+  } catch (error) {
+    console.error('Data fetching error:', error);
+  }
 
   // Get inventory only for the products we're displaying (not all products)
   const productIds = products.map((p: any) => p.id);
-  const allInventory = await getAllInventory();
+  let allInventory: any[] = [];
+  
+  try {
+    allInventory = await getAllInventory();
+  } catch (error) {
+    console.error('Inventory error:', error);
+  }
   
   // Filter inventory to only products on homepage
   const relevantInventory = allInventory.filter((inv: any) => 
