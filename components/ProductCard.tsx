@@ -399,60 +399,62 @@ export default function ProductCard({ product, index, locations, pricingTiers = 
       </div>
 
       {/* Product Info */}
-      <div className="space-y-3 px-3 py-4">
-        <h3 className="text-xs uppercase tracking-[0.12em] font-normal text-white line-clamp-2 leading-relaxed transition-all duration-300">
-          {product.name}
-        </h3>
-        
-        {/* Price */}
-        <p className="text-sm font-medium text-white tracking-wide transition-all duration-300 group-hover:text-white/80">
-          {getPriceDisplay()}
-        </p>
-        
-        {/* Multi-Location Stock Status */}
-        {stockInfo.inStock ? (
-          <div className="flex flex-col gap-0.5">
-            <div className="flex items-center gap-1.5">
-              <div className="w-2 h-2 rounded-full bg-green-500 flex-shrink-0"></div>
-              <span className="text-[11px] uppercase tracking-wider text-white/60 truncate">
-                {stockInfo.count === 1 ? 'In Stock' : `In Stock · ${stockInfo.count} locations`}
-              </span>
-            </div>
-            {stockInfo.count <= 2 && (
-              <span className="text-[10px] text-white/40 truncate ml-3.5">
-                {stockInfo.locations.map((loc: any) => loc.name).join(', ')}
-              </span>
-            )}
-          </div>
-        ) : (
-          <div className="flex flex-col gap-1">
-            <div className="flex items-center gap-1.5">
-              <div className="w-2 h-2 rounded-full bg-red-500/60 flex-shrink-0"></div>
-              <span className="text-[11px] uppercase tracking-wider text-white/40">Out of Stock</span>
-            </div>
-            <span className="text-[10px] text-white/30 ml-3.5">Check back soon</span>
-          </div>
-        )}
-        
-        {/* Blueprint Fields */}
-        {displayFields.length > 0 && (
-          <div className="space-y-1.5 pt-2 border-t border-white/10">
-            {displayFields.map((field, idx) => (
-              <div key={idx} className="flex items-center justify-between gap-2">
-                <span className="uppercase tracking-[0.12em] font-medium text-white/60 text-[10px] whitespace-nowrap">
-                  {field.label}
-                </span>
-                <span className="text-[11px] tracking-wide text-white/90 font-normal text-right truncate">
-                  {field.value}
+      <div className="flex flex-col px-3 py-4 h-full">
+        <div className="space-y-3 flex-1">
+          <h3 className="text-xs uppercase tracking-[0.12em] font-normal text-white line-clamp-2 leading-relaxed transition-all duration-300">
+            {product.name}
+          </h3>
+          
+          {/* Price */}
+          <p className="text-sm font-medium text-white tracking-wide transition-all duration-300 group-hover:text-white/80">
+            {getPriceDisplay()}
+          </p>
+          
+          {/* Multi-Location Stock Status */}
+          {stockInfo.inStock ? (
+            <div className="flex flex-col gap-0.5">
+              <div className="flex items-center gap-1.5">
+                <div className="w-2 h-2 rounded-full bg-green-500 flex-shrink-0"></div>
+                <span className="text-[11px] uppercase tracking-wider text-white/60 truncate">
+                  {stockInfo.count === 1 ? 'In Stock' : `In Stock · ${stockInfo.count} locations`}
                 </span>
               </div>
-            ))}
-          </div>
-        )}
+              {stockInfo.count <= 2 && (
+                <span className="text-[10px] text-white/40 truncate ml-3.5">
+                  {stockInfo.locations.map((loc: any) => loc.name).join(', ')}
+                </span>
+              )}
+            </div>
+          ) : (
+            <div className="flex flex-col gap-1">
+              <div className="flex items-center gap-1.5">
+                <div className="w-2 h-2 rounded-full bg-red-500/60 flex-shrink-0"></div>
+                <span className="text-[11px] uppercase tracking-wider text-white/40">Out of Stock</span>
+              </div>
+              <span className="text-[10px] text-white/30 ml-3.5">Check back soon</span>
+            </div>
+          )}
+          
+          {/* Blueprint Fields */}
+          {displayFields.length > 0 && (
+            <div className="space-y-1.5 pt-2 border-t border-white/10">
+              {displayFields.map((field, idx) => (
+                <div key={idx} className="flex items-center justify-between gap-2">
+                  <span className="uppercase tracking-[0.12em] font-medium text-white/60 text-[10px] whitespace-nowrap">
+                    {field.label}
+                  </span>
+                  <span className="text-[11px] tracking-wide text-white/90 font-normal text-right truncate">
+                    {field.value}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
         
-        {/* Pricing Tier Selector */}
+        {/* Pricing Tier Selector - Always at bottom */}
         {tiers.length > 0 && (
-          <div className="space-y-2 pt-2">
+          <div className="space-y-2 pt-3 mt-auto border-t border-white/10">
             <div className="relative">
                 <select
                 value={selectedTierIndex ?? ""}
