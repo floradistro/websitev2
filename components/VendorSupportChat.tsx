@@ -188,7 +188,7 @@ export default function VendorSupportChat({ isOpen, onClose }: VendorSupportChat
 
         {/* Input Area */}
         <div className="border-t border-white/5 p-6 bg-black">
-          <div className="flex items-end gap-3">
+          <div className="flex items-stretch gap-3">
             {/* Input */}
             <div className="flex-1">
               <textarea
@@ -197,8 +197,7 @@ export default function VendorSupportChat({ isOpen, onClose }: VendorSupportChat
                 onKeyPress={handleKeyPress}
                 placeholder="Message..."
                 rows={1}
-                className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-4 py-3 text-sm focus:outline-none focus:border-white/10 transition-colors resize-none"
-                style={{ minHeight: '48px' }}
+                className="w-full h-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-4 py-3 text-sm focus:outline-none focus:border-white/10 transition-colors resize-none"
               />
             </div>
 
@@ -206,7 +205,7 @@ export default function VendorSupportChat({ isOpen, onClose }: VendorSupportChat
             <button
               onClick={sendMessage}
               disabled={!inputText.trim()}
-              className="w-12 h-12 bg-white text-black border border-white hover:bg-black hover:text-white hover:border-white/20 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-300 flex items-center justify-center flex-shrink-0"
+              className="w-12 bg-white text-black border border-white hover:bg-black hover:text-white hover:border-white/20 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-300 flex items-center justify-center flex-shrink-0"
               title="Send"
             >
               <Send size={18} strokeWidth={1.5} />
