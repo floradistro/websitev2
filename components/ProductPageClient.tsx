@@ -24,8 +24,7 @@ interface ProductPageClientProps {
   product: any;
   locations: any[];
   inventory: any[];
-  pricingRules: any;
-  blueprintName: string | null;
+  pricingTiers: any[];
   orderType?: string;
   relatedProducts: any[];
   reviews: any[];
@@ -35,8 +34,7 @@ export default function ProductPageClient({
   product,
   locations,
   inventory,
-  pricingRules,
-  blueprintName,
+  pricingTiers,
   orderType,
   relatedProducts,
   reviews,
@@ -270,8 +268,7 @@ export default function ProductPageClient({
           <div className="px-4 py-6 space-y-6">
             <ProductInfo
               product={product}
-              pricingRules={pricingRules}
-              blueprintName={blueprintName}
+              pricingTiers={pricingTiers}
               onPriceSelect={handlePriceSelect}
             />
 
@@ -363,8 +360,7 @@ export default function ProductPageClient({
               <div className="mb-6 animate-fadeIn">
                 <ProductInfo
                   product={product}
-                  pricingRules={pricingRules}
-                  blueprintName={blueprintName}
+                  pricingTiers={pricingTiers}
                   onPriceSelect={handlePriceSelect}
                 />
               </div>
@@ -551,28 +547,14 @@ export default function ProductPageClient({
               });
               
               // Get blueprint name
-              let blueprintName = null;
-              if (item.categories && item.categories.length > 0) {
-                const categoryName = item.categories[0].slug;
-                if (categoryName.includes('flower') || categoryName.includes('pre-roll')) {
-                  blueprintName = 'flower_blueprint';
-                } else if (categoryName.includes('concentrate')) {
-                  blueprintName = 'concentrate_blueprint';
-                } else if (categoryName.includes('edible')) {
-                  blueprintName = 'edible_blueprint';
-                } else if (categoryName.includes('vape')) {
-                  blueprintName = 'vape_blueprint';
-                }
-              }
-              
               return (
                 <ProductCard
                   key={item.id}
                   product={item}
                   index={idx}
                   locations={locations}
-                  pricingRules={pricingRules}
-                  productFields={{ fields, blueprintName }}
+                  pricingTiers={pricingTiers}
+                  productFields={{ fields }}
                 />
               );
             })}

@@ -9,7 +9,6 @@ interface ProductRecommendationsProps {
   currentProduct?: any;
   allProducts: any[];
   locations: any[];
-  pricingRules: any;
   inventoryMap: any;
   productFieldsMap: any;
 }
@@ -18,7 +17,6 @@ export default function ProductRecommendations({
   currentProduct, 
   allProducts,
   locations,
-  pricingRules,
   inventoryMap,
   productFieldsMap
 }: ProductRecommendationsProps) {
@@ -107,7 +105,7 @@ export default function ProductRecommendations({
               product={product}
               index={index}
               locations={locations}
-              pricingRules={pricingRules}
+              pricingTiers={productFieldsMap[product.id]?.pricingTiers || []}
               productFields={productFieldsMap[product.id]}
               inventory={inventoryMap[product.id] || []}
             />

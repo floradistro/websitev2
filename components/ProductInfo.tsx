@@ -5,15 +5,13 @@ import PricingTiers from "./PricingTiers";
 
 interface ProductInfoProps {
   product: any;
-  pricingRules: any;
-  blueprintName: string | null;
+  pricingTiers: any[];
   onPriceSelect?: (price: number, quantity: number, tierName: string) => void;
 }
 
 export default function ProductInfo({
   product,
-  pricingRules,
-  blueprintName,
+  pricingTiers = [],
   onPriceSelect,
 }: ProductInfoProps) {
   const [selectedPrice, setSelectedPrice] = useState<number | null>(null);
@@ -21,42 +19,20 @@ export default function ProductInfo({
 
   // Calculate price range from pricing tiers
   const getPriceRange = () => {
-    if (!pricingRules || !blueprintName) {
+    if (!pricingTiers || pricingTiers.length === 0) {
       return product.price ? parseFloat(product.price) : 0;
     }
 
-    const matchingRule = pricingRules.rules.find((rule: any) => {
-      if (rule.status !== "active") return false;
-      try {
-        const conditions = JSON.parse(rule.conditions);
-        return conditions.blueprint_name === blueprintName;
-      } catch {
-        return false;
-      }
-    });
-
-    if (matchingRule) {
-      try {
-        const conditions = JSON.parse(matchingRule.conditions);
-        const tiers = conditions.tiers || [];
-        if (tiers.length > 0) {
-          const prices = tiers.map((t: any) => 
-            typeof t.price === "string" ? parseFloat(t.price) : t.price
-          );
-          const minPrice = Math.min(...prices);
-          const maxPrice = Math.max(...prices);
-          
-          if (minPrice === maxPrice) {
-            return `$${minPrice.toFixed(0)}`;
-          }
-          return `$${minPrice.toFixed(0)} - $${maxPrice.toFixed(0)}`;
-        }
-      } catch {
-        return product.price ? parseFloat(product.price) : 0;
-      }
+    const prices = pricingTiers.map((t: any) => 
+      typeof t.price === "string" ? parseFloat(t.price) : t.price
+    );
+    const minPrice = Math.min(...prices);
+    const maxPrice = Math.max(...prices);
+    
+    if (minPrice === maxPrice) {
+      return `$${minPrice.toFixed(0)}`;
     }
-
-    return product.price ? parseFloat(product.price) : 0;
+    return `$${minPrice.toFixed(0)} - $${maxPrice.toFixed(0)}`;
   };
 
   const priceDisplay = getPriceRange();
@@ -103,11 +79,10 @@ export default function ProductInfo({
       </div>
 
       {/* Pricing Tiers */}
-      {blueprintName && pricingRules && (
+      {pricingTiers && pricingTiers.length > 0 && (
         <div className="mt-6">
           <PricingTiers 
-            pricingRules={pricingRules}
-            productBlueprint={blueprintName}
+            tiers={pricingTiers}
             onPriceSelect={handlePriceSelect}
           />
         </div>

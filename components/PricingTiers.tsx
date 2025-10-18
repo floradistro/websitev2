@@ -3,72 +3,32 @@
 import { useState, useEffect } from "react";
 
 interface Tier {
-  name: string;
-  min_quantity: number;
-  max_quantity: number | null;
+  weight?: string;
+  qty: number;
   price: string | number;
 }
 
-interface PricingRule {
-  id: string;
-  rule_name: string;
-  rule_type: string;
-  conditions: string;
-  status: string;
-}
-
 interface PricingTiersProps {
-  pricingRules: { rules: PricingRule[] };
-  productBlueprint?: string;
+  tiers: Tier[];
   onPriceSelect?: (price: number, quantity: number, tierName: string) => void;
 }
 
 export default function PricingTiers({
-  pricingRules,
-  productBlueprint,
+  tiers = [],
   onPriceSelect,
 }: PricingTiersProps) {
   const [selectedTierIndex, setSelectedTierIndex] = useState<number>(0);
-  // Find the pricing rule that matches the product's blueprint
-  const matchingRule = pricingRules.rules.find((rule) => {
-    if (rule.status !== "active") return false;
-    
-    try {
-      const conditions = JSON.parse(rule.conditions);
-      return conditions.blueprint_name === productBlueprint;
-    } catch {
-      return false;
-    }
-  });
 
-  if (!matchingRule) {
-    return null;
-  }
-
-  let tiers: Tier[] = [];
-  let unitType = "units";
-
-  try {
-    const conditions = JSON.parse(matchingRule.conditions);
-    tiers = conditions.tiers || [];
-    unitType = conditions.unit_type || "units";
-  } catch (error) {
-    console.error("Failed to parse pricing conditions", error);
-    return null;
-  }
-
-  if (tiers.length === 0) {
+  if (!tiers || tiers.length === 0) {
     return null;
   }
 
   const getUnitLabel = (tier: Tier) => {
-    if (unitType === "grams") {
-      return tier.name; // Already formatted as "1g", "3.5g", etc.
-    } else if (unitType === "units" || unitType === "pieces") {
-      const qty = tier.min_quantity;
-      return `${qty} ${qty === 1 ? "unit" : "units"}`;
+    if (tier.weight) {
+      return tier.weight; // e.g., "1g", "3.5g", "7g"
     }
-    return tier.name;
+    const qty = tier.qty;
+    return `${qty} ${qty === 1 ? "unit" : "units"}`;
   };
 
   // Set initial price on mount
@@ -76,7 +36,7 @@ export default function PricingTiers({
     if (tiers.length > 0 && onPriceSelect) {
       const tier = tiers[0];
       const price = typeof tier.price === "string" ? parseFloat(tier.price) : tier.price;
-      onPriceSelect(price, tier.min_quantity, getUnitLabel(tier));
+      onPriceSelect(price, tier.qty, getUnitLabel(tier));
     }
   }, []);
 
@@ -91,7 +51,7 @@ export default function PricingTiers({
             const tier = tiers[index];
             const price = typeof tier.price === "string" ? parseFloat(tier.price) : tier.price;
             if (onPriceSelect) {
-              onPriceSelect(price, tier.min_quantity, getUnitLabel(tier));
+              onPriceSelect(price, tier.qty, getUnitLabel(tier));
             }
           }}
           className="w-full appearance-none bg-transparent border border-white/20 px-3 py-3 pr-7 text-sm font-normal text-white hover:border-white/40 hover:bg-white/5 focus:border-white focus:outline-none transition-all duration-300 cursor-pointer uppercase tracking-[0.1em] rounded-sm"
@@ -102,8 +62,8 @@ export default function PricingTiers({
           {tiers.map((tier, index) => {
             const price = typeof tier.price === "string" ? parseFloat(tier.price) : tier.price;
             const tierLabel = getUnitLabel(tier);
-            const pricePerUnit = unitType === "grams" 
-              ? ` - $${price.toFixed(0)} ($${(price / tier.min_quantity).toFixed(2)}/g)`
+            const pricePerUnit = tier.weight
+              ? ` - $${price.toFixed(0)} ($${(price / tier.qty).toFixed(2)}/g)`
               : ` - $${price.toFixed(0)}`;
             
             return (

@@ -55,31 +55,7 @@ export default function ProductPageClientOptimized({
     );
   }
 
-  const { product, inventory, locations, pricingRules, productFields } = data;
-
-  // Extract blueprint name from productFields
-  let blueprintName = null;
-  if (productFields?.fields && Array.isArray(productFields.fields) && productFields.fields.length > 0) {
-    // Fields is an array of field objects, find the blueprint
-    const blueprintField = productFields.fields.find((f: any) => f.type === 'blueprint');
-    blueprintName = blueprintField?.name || null;
-  }
-  
-  // Fallback: infer from category
-  if (!blueprintName && product?.categories && product.categories.length > 0) {
-    const categorySlug = product.categories[0].slug;
-    if (categorySlug.includes('flower') || categorySlug.includes('pre-roll')) {
-      blueprintName = 'flower_blueprint';
-    } else if (categorySlug.includes('concentrate') || categorySlug.includes('extract')) {
-      blueprintName = 'concentrate_blueprint';
-    } else if (categorySlug.includes('edible')) {
-      blueprintName = 'edible_blueprint';
-    } else if (categorySlug.includes('vape') || categorySlug.includes('cart')) {
-      blueprintName = 'vape_blueprint';
-    } else if (categorySlug.includes('beverage') || categorySlug.includes('drink')) {
-      blueprintName = 'beverage_blueprint';
-    }
-  }
+  const { product, inventory, locations, pricingTiers, productFields } = data;
 
   return (
     <motion.div
@@ -93,8 +69,7 @@ export default function ProductPageClientOptimized({
         product={product}
         locations={locations || []}
         inventory={inventory || []}
-        pricingRules={pricingRules}
-        blueprintName={blueprintName}
+        pricingTiers={pricingTiers || []}
         orderType={undefined}
         relatedProducts={[]}
         reviews={[]}

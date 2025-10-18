@@ -60,17 +60,12 @@ export const getCachedProductInventory = unstable_cache(
   { revalidate: CACHE_TIMES.INVENTORY }
 );
 
-export const getCachedPricingRules = unstable_cache(
-  async () => {
-    return wordpress.getPricingRules();
-  },
-  ['pricing-rules'],
-  { revalidate: CACHE_TIMES.PRICING }
-);
+// V3 Native Fields - no more global pricing rules
+// Pricing is now stored per-product in _product_price_tiers meta
 
 export const getCachedProductFields = unstable_cache(
   async (productId: string | number) => {
-    return wordpress.getProductFields(productId);
+    return wordpress.getProductFieldsV3(productId);
   },
   ['product-fields'],
   { revalidate: CACHE_TIMES.PRODUCT }
@@ -105,11 +100,10 @@ export const getCachedBulkProducts = unstable_cache(
 // OPTIMIZED: Hybrid approach - use regular endpoints with caching for single products
 export async function getBulkProductData(productId: string | number) {
   // Fetch all data in parallel using cached functions
-  const [product, locations, inventory, pricingRules, productFields, reviews] = await Promise.all([
+  const [product, locations, inventory, productFields, reviews] = await Promise.all([
     getCachedProduct(productId),
     getCachedLocations(),
     getCachedProductInventory(productId),
-    getCachedPricingRules(),
     getCachedProductFields(productId),
     getCachedProductReviews(productId),
   ]);
@@ -118,7 +112,6 @@ export async function getBulkProductData(productId: string | number) {
     product,
     locations,
     inventory,
-    pricingRules,
     productFields,
     reviews,
   };

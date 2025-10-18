@@ -12,15 +12,14 @@ interface ProductCardProps {
   product: any;
   index: number;
   locations: any[];
-  pricingRules?: any;
+  pricingTiers?: any[];
   productFields?: {
     fields: { [key: string]: string };
-    blueprintName?: string | null;
   };
   inventory?: any[];
 }
 
-export default function ProductCard({ product, index, locations, pricingRules, productFields, inventory = [] }: ProductCardProps) {
+export default function ProductCard({ product, index, locations, pricingTiers = [], productFields, inventory = [] }: ProductCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [selectedTierIndex, setSelectedTierIndex] = useState<number | null>(null);
   const [showAddToCart, setShowAddToCart] = useState(false);
@@ -43,45 +42,14 @@ export default function ProductCard({ product, index, locations, pricingRules, p
   }, [product.id]);
   
   // Get pricing tiers for this product
-  const [tiers, setTiers] = useState<any[]>([]);
-  const [unitType, setUnitType] = useState<string>("units");
-  
-  useEffect(() => {
-    if (!pricingRules || !productFields) return;
-    
-    const blueprintName = productFields.blueprintName;
-    if (!blueprintName) return;
-    
-    // Find matching pricing rule
-    const matchingRule = pricingRules.rules?.find((rule: any) => {
-      if (rule.status !== "active") return false;
-      try {
-        const conditions = JSON.parse(rule.conditions);
-        return conditions.blueprint_name === blueprintName;
-      } catch {
-        return false;
-      }
-    });
-    
-    if (matchingRule) {
-      try {
-        const conditions = JSON.parse(matchingRule.conditions);
-        setTiers(conditions.tiers || []);
-        setUnitType(conditions.unit_type || "units");
-      } catch (error) {
-        console.error("Error parsing tier conditions:", error);
-      }
-    }
-  }, [pricingRules, productFields, product]);
+  const tiers = pricingTiers || [];
   
   const getUnitLabel = (tier: any) => {
-    if (unitType === "grams") {
-      return tier.name;
-    } else if (unitType === "units" || unitType === "pieces") {
-      const qty = tier.min_quantity;
-      return `${qty} ${qty === 1 ? "unit" : "units"}`;
+    if (tier.weight) {
+      return tier.weight; // e.g., "1g", "3.5g", "7g"
     }
-    return tier.name;
+    const qty = tier.qty || tier.min_quantity || 1;
+    return `${qty} ${qty === 1 ? "unit" : "units"}`;
   };
   
   const handleTierSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -124,10 +92,12 @@ export default function ProductCard({ product, index, locations, pricingRules, p
     
     // Field configuration with proper labels (only real fields)
     const fieldConfig: { [key: string]: string } = {
-      'thc_%': 'THC',
-      'thc_percentage': 'THC',
-      'thca_%': 'THCa',
-      'thca_percentage': 'THCa',
+      // Flower fields
+      'thc_%': 'THC %',
+      'thc_percentage': 'THCa %',
+      'delta9_percentage': 'Δ9 %',
+      'thca_%': 'THCa %',
+      'thca_percentage': 'THCa %',
       'strain_type': 'Strain',
       'lineage': 'Lineage',
       'nose': 'Aroma',
@@ -135,24 +105,46 @@ export default function ProductCard({ product, index, locations, pricingRules, p
       'terpenes': 'Terpenes',
       'effects': 'Effects',
       'effect': 'Effects',
+      // Edible fields
+      'edible_type': 'Type',
+      'thc_per_serving': 'THC/Serving',
+      'servings_per_package': 'Servings',
+      'total_thc': 'Total THC',
+      'ingredients': 'Ingredients',
+      'allergens': 'Allergens',
+      'flavor': 'Flavor',
+      'calories_per_serving': 'Calories',
+      // Concentrate fields
+      'consistency': 'Type',
+      'extraction_method': 'Method',
+      'thc_concentration': 'THC %',
+      // Vape fields
+      'vape_type': 'Type',
+      'battery_type': 'Battery',
+      'volume_ml': 'Volume',
+      // Generic
       'mg_per_pack': 'Per Pack',
       'mg_per_piece': 'Per Piece',
-      'ingredients': 'Made With',
+      'description': 'Description',
       'type': 'Type'
     };
     
-    // Iterate through all fields and add those with values
-    Object.keys(fields).forEach((key) => {
+    // Iterate through all fields with consistent sorting
+    const sortedKeys = Object.keys(fields).sort();
+    
+    sortedKeys.forEach((key) => {
       const value = fields[key];
       const label = fieldConfig[key];
       
-      // Only add if field has a value and label exists
-      if (value && value.trim() !== '' && label) {
-        // Check if we already added this label (e.g., THC from different keys)
-        const existingField = displayFields.find(f => f.label === label);
-        if (!existingField) {
-          displayFields.push({ label, value });
-        }
+      // Only show fields we have labels for
+      if (!label) return;
+      
+      // Check if we already added this label (e.g., THCa from different keys)
+      const existingField = displayFields.find(f => f.label === label);
+      if (!existingField) {
+        // Show all fields, even empty ones - display "—" for empty
+        const displayValue = (value && value.trim() !== '') ? value : '—';
+        displayFields.push({ label, value: displayValue });
       }
     });
     
@@ -312,11 +304,12 @@ export default function ProductCard({ product, index, locations, pricingRules, p
         ) : (
           <>
             {/* Logo Fallback */}
-            <div className="w-full h-full flex items-center justify-center p-12">
+            <div className="relative w-full h-full flex items-center justify-center p-12">
               <Image
                 src="/logoprint.png"
                 alt="Flora Distro"
                 fill
+                sizes="(max-width: 640px) 85vw, (max-width: 768px) 45vw, (max-width: 1024px) 32vw, 23vw"
                 className="object-contain opacity-10 transition-opacity duration-500 group-hover:opacity-15"
                 loading="lazy"
               />
@@ -472,8 +465,9 @@ export default function ProductCard({ product, index, locations, pricingRules, p
                 {tiers.map((tier, index) => {
                   const price = typeof tier.price === "string" ? parseFloat(tier.price) : tier.price;
                   const tierLabel = getUnitLabel(tier);
-                  const pricePerUnit = unitType === "grams" 
-                    ? ` - $${price.toFixed(0)} ($${(price / tier.min_quantity).toFixed(2)}/g)`
+                  const qty = tier.qty || tier.min_quantity || 1;
+                  const pricePerUnit = tier.weight
+                    ? ` - $${price.toFixed(0)} ($${(price / qty).toFixed(2)}/g)`
                     : ` - $${price.toFixed(0)}`;
                   
                   return (

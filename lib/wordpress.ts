@@ -185,22 +185,17 @@ export async function getProductInventoryByLocation(
   return response.data[0] || null;
 }
 
-// Pricing & Fields System
-export async function getPricingRules() {
-  try {
-    const response = await axios.get(
-      `${baseUrl}/wp-json/fd/v2/pricing/rules?${authParams}`
-    );
-    return response.data;
-  } catch (error) {
-    console.error('Pricing rules endpoint not available:', error);
-    return [];
-  }
+// V3 Native Fields System
+export async function getProductFieldsV3(productId: string | number) {
+  const response = await axios.get(
+    `${baseUrl}/wp-json/fd/v3/products/${productId}/fields?${authParams}`
+  );
+  return response.data;
 }
 
-export async function getProductFields(productId: string | number) {
+export async function getProductPricingV3(productId: string | number) {
   const response = await axios.get(
-    `${baseUrl}/wp-json/fd/v2/products/${productId}/fields?${authParams}`
+    `${baseUrl}/wp-json/fd/v3/products/${productId}/pricing?${authParams}`
   );
   return response.data;
 }

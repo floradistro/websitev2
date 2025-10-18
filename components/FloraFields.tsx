@@ -9,32 +9,61 @@ interface FloraFieldsProps {
 
 export default function FloraFields({ metaData }: FloraFieldsProps) {
   // Define the fields we want to display and their labels
-  const fieldConfig = [
-    { key: "strain_type", label: "Strain Type" },
-    { key: "thca_%", label: "THCa" },
-    { key: "thca_percentage", label: "THCa" },
-    { key: "lineage", label: "Lineage" },
-    { key: "nose", label: "Nose" },
-    { key: "terpene", label: "Terpenes" },
-    { key: "terpenes", label: "Terpenes" },
-    { key: "effects", label: "Effects" },
-    { key: "effect", label: "Effects" },
-  ];
+  const fieldConfig: { [key: string]: string } = {
+    // Flower fields
+    'strain_type': 'Strain',
+    'thc_percentage': 'THCa %',
+    'delta9_percentage': 'Δ9 %',
+    'thca_%': 'THCa %',
+    'thca_percentage': 'THCa %',
+    'lineage': 'Lineage',
+    'nose': 'Aroma',
+    'terpene': 'Terpenes',
+    'terpenes': 'Terpenes',
+    'effects': 'Effects',
+    'effect': 'Effects',
+    // Edible fields
+    'edible_type': 'Type',
+    'thc_per_serving': 'THC/Serving',
+    'servings_per_package': 'Servings',
+    'total_thc': 'Total THC',
+    'ingredients': 'Ingredients',
+    'allergens': 'Allergens',
+    'flavor': 'Flavor',
+    'calories_per_serving': 'Calories',
+    // Concentrate fields
+    'consistency': 'Type',
+    'extraction_method': 'Method',
+    'thc_concentration': 'THC %',
+    // Vape fields
+    'vape_type': 'Type',
+    'battery_type': 'Battery',
+    'volume_ml': 'Volume',
+    // Generic
+    'description': 'Description'
+  };
 
-  // Extract flora fields from metadata
+  // Extract flora fields from metadata (only _field_ prefixed ones)
   const fields: { key: string; label: string; value: string }[] = [];
   
-  fieldConfig.forEach((config) => {
-    const metaItem = metaData.find(
-      (meta) => meta.key.toLowerCase() === config.key.toLowerCase()
-    );
-    
-    if (metaItem && metaItem.value && !fields.find(f => f.label === config.label)) {
-      fields.push({
-        key: config.key,
-        label: config.label,
-        value: metaItem.value,
-      });
+  metaData.forEach((meta) => {
+    if (meta.key && meta.key.startsWith('_field_')) {
+      const fieldName = meta.key.replace('_field_', '');
+      const label = fieldConfig[fieldName];
+      
+      // Only show fields we have labels for
+      if (!label) return;
+      
+      // Check if we already added this label
+      const existingField = fields.find(f => f.label === label);
+      if (!existingField) {
+        const displayValue = (meta.value && meta.value.trim() !== '') ? meta.value : '—';
+        fields.push({
+          key: fieldName,
+          label: label,
+          value: displayValue,
+        });
+      }
     }
   });
 

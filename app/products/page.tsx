@@ -1,5 +1,5 @@
 import { getCategories } from "@/lib/wordpress";
-import { getCachedBulkProducts, getCachedLocations, getCachedPricingRules } from "@/lib/api-cache";
+import { getCachedBulkProducts, getCachedLocations } from "@/lib/api-cache";
 import ProductsClient from "@/components/ProductsClient";
 import type { Metadata } from "next";
 
@@ -24,11 +24,10 @@ export default async function ProductsPage({
   const { category: categorySlug } = await searchParams;
   
   // OPTIMIZED: Use BULK endpoint - returns products with inventory & fields in ONE call!
-  const [categories, locations, bulkData, pricingRules] = await Promise.all([
+  const [categories, locations, bulkData] = await Promise.all([
     getCategories({ per_page: 100 }),
     getCachedLocations(),
     getCachedBulkProducts({ per_page: 1000 }), // Bulk endpoint is FAST
-    getCachedPricingRules(),
   ]);
 
   // Extract products from bulk response - inventory already included!
@@ -51,6 +50,7 @@ export default async function ProductsPage({
       slug: cat.slug
     })),
     meta_data: bp.meta_data || [],
+    blueprint_fields: bp.blueprint_fields || [],
     stock_status: bp.total_stock > 0 ? 'instock' : 'outofstock',
     total_stock: bp.total_stock,
     inventory: bp.inventory || [],
@@ -76,61 +76,32 @@ export default async function ProductsPage({
   // Extract fields from product metadata (already included in bulk response)
   const productFieldsMap: { [key: number]: any } = {};
   
-  inStockProducts.forEach((product: any) => {
-    const metaData = product.meta_data || product.fields || [];
+  bulkProducts.forEach((product: any) => {
+    const blueprintFields = product.blueprint_fields || [];
+    
+    // Filter and sort fields to ensure consistent order
+    const sortedFields = blueprintFields
+      .filter((field: any) => 
+        // Skip blueprint-type fields (metadata, not display fields)
+        field.field_type !== 'blueprint' && !field.field_name.includes('blueprint')
+      )
+      .sort((a: any, b: any) => {
+        // Sort by field name for consistent ordering
+        return a.field_name.localeCompare(b.field_name);
+      });
+    
+    // Convert to object with consistent key order
     const fields: { [key: string]: string } = {};
-    
-    // Extract common fields from metadata (only real fields)
-    const fieldKeys = [
-      'strain_type',
-      'thca_%',
-      'thca_percentage', 
-      'thc_%',
-      'thc_percentage',
-      'lineage',
-      'nose',
-      'terpene',
-      'terpenes',
-      'effects',
-      'effect',
-      'mg_per_pack',
-      'mg_per_piece',
-      'ingredients',
-      'type'
-    ];
-    
-    metaData.forEach((meta: any) => {
-      const key = meta.key?.toLowerCase();
-      if (fieldKeys.some(fk => fk === key)) {
-        fields[key] = meta.value;
-      }
+    sortedFields.forEach((field: any) => {
+      fields[field.field_name] = field.field_value || '';
     });
     
-    // Get blueprint name from metadata
-    let blueprintName = null;
-    const blueprintMeta = metaData.find((m: any) => 
-      m.key && (m.key.includes('blueprint') || m.key === '_blueprint')
-    );
+    // Extract pricing tiers from meta_data
+    const metaData = product.meta_data || [];
+    const pricingTiersMeta = metaData.find((m: any) => m.key === '_product_price_tiers');
+    const pricingTiers = pricingTiersMeta?.value || [];
     
-    if (blueprintMeta) {
-      blueprintName = blueprintMeta.value;
-    }
-    
-    // If no direct blueprint, infer from category
-    if (!blueprintName && product.categories && product.categories.length > 0) {
-      const categoryName = product.categories[0].slug;
-      if (categoryName.includes('flower') || categoryName.includes('pre-roll')) {
-        blueprintName = 'flower_blueprint';
-      } else if (categoryName.includes('concentrate')) {
-        blueprintName = 'concentrate_blueprint';
-      } else if (categoryName.includes('edible')) {
-        blueprintName = 'edible_blueprint';
-      } else if (categoryName.includes('vape')) {
-        blueprintName = 'vape_blueprint';
-      }
-    }
-    
-    productFieldsMap[product.id] = { fields, blueprintName };
+    productFieldsMap[product.id] = { fields, pricingTiers };
   });
 
   return (
@@ -140,7 +111,6 @@ export default async function ProductsPage({
       initialProducts={inStockProducts}
       inventoryMap={inventoryMap}
       initialCategory={categorySlug}
-      pricingRules={pricingRules}
       productFieldsMap={productFieldsMap}
     />
   );

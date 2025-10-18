@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAllProducts, getPricingRules, getAllInventory } from "@/lib/wordpress";
+import { getAllProducts, getAllInventory } from "@/lib/wordpress";
 
 export async function GET(request: NextRequest) {
   try {
@@ -10,10 +10,9 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ products: [] });
     }
 
-    // Get all products, pricing rules, and inventory
-    const [allProducts, pricingRules, allInventory] = await Promise.all([
+    // Get all products and inventory
+    const [allProducts, allInventory] = await Promise.all([
       getAllProducts(),
-      getPricingRules(),
       getAllInventory(),
     ]);
 
@@ -96,64 +95,28 @@ export async function GET(request: NextRequest) {
       return 0;
     });
 
-    // Get pricing for each product
+    // Get pricing for each product from V3 native pricing tiers
     const results = sortedProducts.slice(0, 15).map((product: any) => {
-      // Extract blueprint name from metadata
       const metaData = product.meta_data || [];
-      let blueprintName = null;
-      const blueprintMeta = metaData.find((m: any) => 
-        m.key && (m.key.includes('blueprint') || m.key === '_blueprint')
-      );
       
-      if (blueprintMeta) {
-        blueprintName = blueprintMeta.value;
-      }
-      
-      // Infer from category if no blueprint
-      if (!blueprintName && product.categories && product.categories.length > 0) {
-        const categoryName = product.categories[0].slug;
-        if (categoryName.includes('flower') || categoryName.includes('pre-roll')) {
-          blueprintName = 'flower_blueprint';
-        } else if (categoryName.includes('concentrate')) {
-          blueprintName = 'concentrate_blueprint';
-        } else if (categoryName.includes('edible')) {
-          blueprintName = 'edible_blueprint';
-        } else if (categoryName.includes('vape')) {
-          blueprintName = 'vape_blueprint';
-        }
-      }
-      
-      // Get pricing tiers for this product
+      // Get pricing tiers from V3 native storage
       let priceDisplay = product.price || "0";
-      if (blueprintName && pricingRules?.rules) {
-        const matchingRule = pricingRules.rules.find((rule: any) => {
-          if (rule.status !== "active") return false;
-          try {
-            const conditions = JSON.parse(rule.conditions);
-            return conditions.blueprint_name === blueprintName;
-          } catch {
-            return false;
+      const pricingTiersMeta = metaData.find((m: any) => m.key === '_product_price_tiers');
+      
+      if (pricingTiersMeta?.value && Array.isArray(pricingTiersMeta.value)) {
+        const tiers = pricingTiersMeta.value;
+        if (tiers.length > 0) {
+          const prices = tiers.map((t: any) => 
+            typeof t.price === "string" ? parseFloat(t.price) : t.price
+          );
+          const minPrice = Math.min(...prices);
+          const maxPrice = Math.max(...prices);
+          
+          if (minPrice === maxPrice) {
+            priceDisplay = `${minPrice}`;
+          } else {
+            priceDisplay = `${minPrice}-${maxPrice}`;
           }
-        });
-        
-        if (matchingRule) {
-          try {
-            const conditions = JSON.parse(matchingRule.conditions);
-            const tiers = conditions.tiers || [];
-            if (tiers.length > 0) {
-              const prices = tiers.map((t: any) => 
-                typeof t.price === "string" ? parseFloat(t.price) : t.price
-              );
-              const minPrice = Math.min(...prices);
-              const maxPrice = Math.max(...prices);
-              
-              if (minPrice === maxPrice) {
-                priceDisplay = `${minPrice}`;
-              } else {
-                priceDisplay = `${minPrice}-${maxPrice}`;
-              }
-            }
-          } catch {}
         }
       }
 

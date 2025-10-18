@@ -10,7 +10,6 @@ interface ProductsClientProps {
   initialProducts: any[];
   inventoryMap: { [key: number]: any[] };
   initialCategory?: string;
-  pricingRules: any;
   productFieldsMap: { [key: number]: any };
 }
 
@@ -30,7 +29,6 @@ export default function ProductsClient({
   initialProducts,
   inventoryMap,
   initialCategory,
-  pricingRules,
   productFieldsMap,
 }: ProductsClientProps) {
   const [selectedLocation, setSelectedLocation] = useState<string | null>(null);
@@ -323,7 +321,7 @@ export default function ProductsClient({
                 product={product} 
                 index={index} 
                 locations={locations}
-                pricingRules={pricingRules}
+                pricingTiers={productFieldsMap[product.id]?.pricingTiers || []}
                 productFields={productFieldsMap[product.id]}
                 inventory={inventoryMap[product.id] || []}
               />

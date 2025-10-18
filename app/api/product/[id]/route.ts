@@ -10,46 +10,73 @@ const authParams = `consumer_key=${consumerKey}&consumer_secret=${consumerSecret
 // Ultra-fast cached single product fetch with ALL data
 const getCachedProductComplete = unstable_cache(
   async (productId: string) => {
-    // Fetch ALL data in parallel - single round trip
-    const [productRes, inventoryRes, fieldsRes, locationsRes, pricingRes] = await Promise.all([
-      axios.get(`${baseUrl}/wp-json/wc/v3/products/${productId}?${authParams}`),
-      axios.get(`${baseUrl}/wp-json/flora-im/v1/inventory?product_id=${productId}&${authParams}`),
-      axios.get(`${baseUrl}/wp-json/fd/v2/products/${productId}/fields?${authParams}`),
-      axios.get(`${baseUrl}/wp-json/flora-im/v1/locations?per_page=100&${authParams}`),
-      axios.get(`${baseUrl}/wp-json/fd/v2/pricing/rules?${authParams}`)
-    ]);
+    try {
+      // Fetch ALL data in parallel - single round trip
+      const [productRes, inventoryRes, fieldsRes, locationsRes, pricingRes] = await Promise.all([
+        axios.get(`${baseUrl}/wp-json/wc/v3/products/${productId}?${authParams}`).catch(err => {
+          if (err.response?.status === 404) return null;
+          throw err;
+        }),
+        axios.get(`${baseUrl}/wp-json/flora-im/v1/inventory?product_id=${productId}&${authParams}`).catch(() => ({ data: [] })),
+        axios.get(`${baseUrl}/wp-json/fd/v3/products/${productId}/fields?${authParams}`).catch(() => ({ data: { fields: [] } })),
+        axios.get(`${baseUrl}/wp-json/flora-im/v1/locations?per_page=100&${authParams}`).catch(() => ({ data: [] })),
+        axios.get(`${baseUrl}/wp-json/fd/v3/products/${productId}/pricing?${authParams}`).catch(() => ({ data: { base_price: 0, quantity_tiers: [] } }))
+      ]);
 
-    // Map location names to inventory
-    const locations = locationsRes.data;
-    const locationMap = locations.reduce((acc: any, loc: any) => {
-      acc[loc.id] = loc.name;
-      return acc;
-    }, {});
-
-    // Enrich inventory with location names
-    const enrichedInventory = inventoryRes.data.map((inv: any) => ({
-      ...inv,
-      location_name: locationMap[inv.location_id] || null,
-    }));
-
-    // Calculate total stock
-    const totalStock = enrichedInventory.reduce((sum: number, inv: any) => {
-      return sum + parseFloat(inv.stock_quantity || inv.quantity || inv.stock || 0);
-    }, 0);
-
-    return {
-      product: productRes.data,
-      inventory: enrichedInventory,
-      locations: locations,
-      pricingRules: pricingRes.data,
-      productFields: fieldsRes.data,
-      total_stock: totalStock,
-      meta: {
-        cached: true,
-        timestamp: new Date().toISOString(),
-        load_time_ms: Date.now(),
+      // If product doesn't exist, return null
+      if (!productRes) {
+        return null;
       }
-    };
+
+      // Map location names to inventory
+      const locations = Array.isArray(locationsRes.data) ? locationsRes.data : [];
+      const locationMap = locations.reduce((acc: any, loc: any) => {
+        acc[loc.id] = loc.name;
+        return acc;
+      }, {});
+
+      // Enrich inventory with location names
+      const inventoryData = Array.isArray(inventoryRes.data) ? inventoryRes.data : [];
+      const enrichedInventory = inventoryData.map((inv: any) => ({
+        ...inv,
+        location_name: locationMap[inv.location_id] || null,
+      }));
+
+      // Calculate total stock
+      const totalStock = enrichedInventory.reduce((sum: number, inv: any) => {
+        return sum + parseFloat(inv.stock_quantity || inv.quantity || inv.stock || 0);
+      }, 0);
+
+      // Transform V3 fields response to match expected format
+      const fieldsData = fieldsRes.data;
+      const transformedFields: any = {};
+      
+      // Convert V3 array format to V2-style object format
+      if (Array.isArray(fieldsData.fields)) {
+        fieldsData.fields.forEach((field: any) => {
+          transformedFields[field.name] = field.value || '';
+        });
+      }
+
+      return {
+        product: productRes.data,
+        inventory: enrichedInventory,
+        locations: locations,
+        pricingTiers: pricingRes.data?.quantity_tiers || [],
+        productFields: {
+          fields: transformedFields
+        },
+        total_stock: totalStock,
+        meta: {
+          cached: true,
+          timestamp: new Date().toISOString(),
+          load_time_ms: Date.now(),
+        }
+      };
+    } catch (error) {
+      console.error(`Error fetching product ${productId}:`, error);
+      return null;
+    }
   },
   ['product-complete'],
   { revalidate: 180, tags: ['product'] } // 3 minutes cache
@@ -97,7 +124,10 @@ export async function GET(
     });
 
   } catch (error: any) {
-    console.error("Product API error:", error);
+    // Don't log 404 errors as they're expected for non-existent products
+    if (!error.message?.includes('404')) {
+      console.error("Product API error:", error);
+    }
     return NextResponse.json(
       { success: false, error: error.message || "Failed to fetch product" },
       { status: 500 }

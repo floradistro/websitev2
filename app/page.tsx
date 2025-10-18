@@ -1,4 +1,4 @@
-import { getBestSellingProducts, getCategories, getLocations, getAllInventory, getPricingRules } from "@/lib/wordpress";
+import { getBestSellingProducts, getCategories, getLocations, getAllInventory } from "@/lib/wordpress";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import dynamicImport from "next/dynamic";
@@ -33,11 +33,10 @@ const LocationsCarousel = dynamicImport(() => import("@/components/LocationsCaro
 
 export default async function Home() {
   // Optimized: Fetch only necessary data in parallel
-  const [products, categories, locations, pricingRules] = await Promise.all([
+  const [products, categories, locations] = await Promise.all([
     getBestSellingProducts({ per_page: 12 }),
     getCategories({ per_page: 10, hide_empty: true }),
     getLocations(),
-    getPricingRules(),
   ]);
 
   // Get inventory only for the products we're displaying (not all products)
@@ -76,58 +75,32 @@ export default async function Home() {
   // Extract fields from product metadata (only for in-stock products)
   const productFieldsMap: { [key: number]: any } = {};
   
-  inStockProducts.forEach((product: any) => {
-    const metaData = product.meta_data || [];
+  products.forEach((product: any) => {
+    const blueprintFields = product.blueprint_fields || [];
+    
+    // Filter and sort fields to ensure consistent order
+    const sortedFields = blueprintFields
+      .filter((field: any) => 
+        // Skip blueprint-type fields (metadata, not display fields)
+        field.field_type !== 'blueprint' && !field.field_name.includes('blueprint')
+      )
+      .sort((a: any, b: any) => {
+        // Sort by field name for consistent ordering
+        return a.field_name.localeCompare(b.field_name);
+      });
+    
+    // Convert to object with consistent key order
     const fields: { [key: string]: string } = {};
-    
-    const fieldKeys = [
-      'strain_type',
-      'thca_%',
-      'thca_percentage', 
-      'thc_%',
-      'thc_percentage',
-      'lineage',
-      'nose',
-      'terpene',
-      'terpenes',
-      'effects',
-      'effect',
-      'mg_per_pack',
-      'mg_per_piece',
-      'ingredients',
-      'type'
-    ];
-    
-    metaData.forEach((meta: any) => {
-      const key = meta.key?.toLowerCase();
-      if (fieldKeys.some(fk => fk === key)) {
-        fields[key] = meta.value;
-      }
+    sortedFields.forEach((field: any) => {
+      fields[field.field_name] = field.field_value || '';
     });
     
-    let blueprintName = null;
-    const blueprintMeta = metaData.find((m: any) => 
-      m.key && (m.key.includes('blueprint') || m.key === '_blueprint')
-    );
+    // Extract pricing tiers from meta_data
+    const metaData = product.meta_data || [];
+    const pricingTiersMeta = metaData.find((m: any) => m.key === '_product_price_tiers');
+    const pricingTiers = pricingTiersMeta?.value || [];
     
-    if (blueprintMeta) {
-      blueprintName = blueprintMeta.value;
-    }
-    
-    if (!blueprintName && product.categories && product.categories.length > 0) {
-      const categoryName = product.categories[0].slug;
-      if (categoryName.includes('flower') || categoryName.includes('pre-roll')) {
-        blueprintName = 'flower_blueprint';
-      } else if (categoryName.includes('concentrate')) {
-        blueprintName = 'concentrate_blueprint';
-      } else if (categoryName.includes('edible')) {
-        blueprintName = 'edible_blueprint';
-      } else if (categoryName.includes('vape')) {
-        blueprintName = 'vape_blueprint';
-      }
-    }
-    
-    productFieldsMap[product.id] = { fields, blueprintName };
+    productFieldsMap[product.id] = { fields, pricingTiers };
   });
 
   return (
@@ -158,7 +131,6 @@ export default async function Home() {
         <ProductsCarousel 
           products={inStockProducts}
           locations={locations}
-          pricingRules={pricingRules}
           productFieldsMap={productFieldsMap}
           inventoryMap={inventoryMap}
         />

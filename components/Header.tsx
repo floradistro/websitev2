@@ -84,13 +84,16 @@ export default function Header() {
 
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 sm:gap-3 transition-smooth hover:opacity-80 active:opacity-90 active:scale-95 click-feedback">
-            <Image 
-              src="/logoprint.png" 
-              alt="Flora Distro Logo" 
-              width={32} 
-              height={32}
-              className="object-contain sm:w-10 sm:h-10 transition-transform duration-300 hover:scale-105"
-            />
+            <div className="relative w-8 h-8 sm:w-10 sm:h-10">
+              <Image 
+                src="/logoprint.png" 
+                alt="Flora Distro Logo" 
+                fill
+                priority
+                sizes="(max-width: 640px) 32px, 40px"
+                className="object-contain transition-transform duration-300 hover:scale-105"
+              />
+            </div>
             <span className="text-xl sm:text-2xl logo-font text-white">Flora Distro</span>
           </Link>
 
