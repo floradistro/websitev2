@@ -343,7 +343,7 @@ export default function VendorBranding() {
               {/* Store Header */}
               <div className="p-6 border-b border-white/5">
                 <div className="flex items-center gap-4 mb-4">
-                  <div className="w-16 h-16 bg-[#2a2a2a] overflow-hidden border border-white/5 flex items-center justify-center">
+                  <div className="w-16 h-16 bg-[#0a0a0a] overflow-hidden border border-white/10 flex items-center justify-center">
                     <img src={logo} alt="Logo" className="w-full h-full object-contain p-2" />
                   </div>
                   <div>
@@ -388,10 +388,10 @@ export default function VendorBranding() {
               <div className="p-4">
                 <div className="text-white/50 text-xs mb-3 uppercase tracking-[0.15em]">Products</div>
                 <div 
-                  className="bg-[#2a2a2a] border p-4"
+                  className="bg-[#0a0a0a] border p-4"
                   style={{ borderColor: branding.primaryColor + '20' }}
                 >
-                  <div className="aspect-square bg-[#1a1a1a] mb-3"></div>
+                  <div className="aspect-square bg-[#000000] mb-3"></div>
                   <div className="text-white text-xs font-light uppercase tracking-wider mb-1">Sample Product</div>
                   <div className="text-white/60 text-xs mb-2">$14.99</div>
                   <button 
