@@ -159,9 +159,9 @@ export default function VendorProducts() {
   });
 
   return (
-    <div className="max-w-7xl mx-auto">
+    <div className="max-w-7xl mx-auto animate-fadeIn">
       {/* Header */}
-      <div className="flex justify-between items-center mb-8">
+      <div className="flex justify-between items-center mb-8" style={{ animation: 'fadeInUp 0.5s ease-out' }}>
         <div>
           <h1 className="text-3xl font-light text-white mb-2 tracking-tight">
             My Products
@@ -180,7 +180,7 @@ export default function VendorProducts() {
       </div>
 
       {/* Filters */}
-      <div className="bg-[#2a2a2a] border border-white/5 p-4 mb-6">
+      <div className="bg-[#2a2a2a] border border-white/5 p-4 mb-6" style={{ animation: 'fadeInUp 0.6s ease-out 0.1s both' }}>
         <div className="flex flex-col md:flex-row gap-4">
           {/* Search */}
           <div className="flex-1 relative">

@@ -124,9 +124,9 @@ export default function EditProduct() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="max-w-4xl mx-auto animate-fadeIn">
       {/* Header */}
-      <div className="mb-8">
+      <div className="mb-8" style={{ animation: 'fadeInUp 0.5s ease-out' }}>
         <Link
           href="/vendor/products"
           className="inline-flex items-center gap-2 text-white/60 hover:text-white text-sm mb-4 transition-colors"

@@ -189,9 +189,9 @@ export default function VendorDashboard() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto">
+    <div className="max-w-7xl mx-auto animate-fadeIn">
       {/* Welcome Header */}
-      <div className="mb-8">
+      <div className="mb-8" style={{ animation: 'fadeInUp 0.5s ease-out' }}>
         <h1 className="text-3xl font-light text-white mb-2 tracking-tight">
           Welcome Back
         </h1>
@@ -201,7 +201,7 @@ export default function VendorDashboard() {
       </div>
 
       {/* Stats Grid - Enhanced */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8" style={{ animation: 'fadeInUp 0.6s ease-out 0.1s both' }}>
         {/* Total Products */}
         <div className="bg-[#2a2a2a] border border-white/5 p-6 hover:border-white/10 hover:-translate-y-0.5 transition-all duration-300 cursor-pointer relative overflow-hidden group">
           <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
@@ -264,7 +264,7 @@ export default function VendorDashboard() {
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8" style={{ animation: 'fadeInUp 0.6s ease-out 0.2s both' }}>
         <Link
           href="/vendor/products/new"
           className="group bg-black hover:bg-white border border-white/20 hover:border-white p-6 transition-all duration-300 relative overflow-hidden"
@@ -331,7 +331,7 @@ export default function VendorDashboard() {
       </div>
 
       {/* 2-Column Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8" style={{ animation: 'fadeInUp 0.6s ease-out 0.3s both' }}>
         {/* Left Column - 2/3 width */}
         <div className="lg:col-span-2 space-y-6">
           {/* Recent Product Submissions */}

@@ -30,9 +30,9 @@ export default function VendorSettings() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="max-w-4xl mx-auto animate-fadeIn">
       {/* Header */}
-      <div className="mb-8">
+      <div className="mb-8" style={{ animation: 'fadeInUp 0.5s ease-out' }}>
         <h1 className="text-3xl font-light text-white mb-2 tracking-tight">
           Vendor Settings
         </h1>

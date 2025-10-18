@@ -55,9 +55,9 @@ export default function VendorBranding() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto">
+    <div className="max-w-6xl mx-auto animate-fadeIn">
       {/* Header */}
-      <div className="mb-8">
+      <div className="mb-8" style={{ animation: 'fadeInUp 0.5s ease-out' }}>
         <h1 className="text-3xl font-light text-white mb-2 tracking-tight">
           Vendor Branding
         </h1>
