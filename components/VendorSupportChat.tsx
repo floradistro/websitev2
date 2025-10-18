@@ -86,76 +86,58 @@ export default function VendorSupportChat({ isOpen, onClose }: VendorSupportChat
     <>
       {/* Backdrop */}
       <div 
-        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 animate-fadeIn"
+        className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] animate-fadeIn"
         onClick={onClose}
       />
 
       {/* Chat Panel */}
       <div 
-        className="fixed right-0 top-0 h-full w-full md:w-[450px] bg-[#1a1a1a] border-l border-white/10 z-50 flex flex-col shadow-2xl"
+        className="fixed right-0 top-0 h-full w-full md:w-[420px] bg-[#0a0a0a] border-l border-white/5 z-[101] flex flex-col"
         style={{ animation: 'slideInRight 0.3s ease-out' }}
       >
         {/* Header */}
-        <div className="border-b border-white/5 p-6 bg-[#0a0a0a]">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-sky-500/20 rounded-full flex items-center justify-center">
-                <MessageCircle size={20} className="text-sky-500" />
-              </div>
-              <div>
-                <h2 className="text-white font-medium">Vendor Support</h2>
-                <div className="flex items-center gap-2 text-xs text-white/60">
-                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                  <span>Online</span>
-                </div>
+        <div className="border-b border-white/5 p-6 bg-black">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-white text-sm uppercase tracking-[0.2em] font-light mb-1">Support</h2>
+              <div className="flex items-center gap-2 text-xs text-white/40">
+                <div className="w-1.5 h-1.5 bg-green-500/80 rounded-full"></div>
+                <span className="uppercase tracking-wider">Online</span>
               </div>
             </div>
             <button
               onClick={onClose}
               className="text-white/60 hover:text-white transition-colors"
             >
-              <X size={24} />
+              <X size={20} strokeWidth={1.5} />
             </button>
-          </div>
-          
-          {/* Quick Info */}
-          <div className="bg-white/5 border border-white/5 p-3">
-            <p className="text-white/60 text-xs leading-relaxed">
-              Typical response time: <span className="text-white font-medium">Under 2 hours</span>
-            </p>
           </div>
         </div>
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-4" style={{ 
-          backgroundImage: 'radial-gradient(circle at 20% 50%, rgba(14, 165, 233, 0.03) 0%, transparent 50%)'
-        }}>
+        <div className="flex-1 overflow-y-auto p-6 space-y-6">
           {messages.map((message) => (
             <div
               key={message.id}
-              className={`flex gap-3 ${message.sender === 'user' ? 'flex-row-reverse' : 'flex-row'} animate-fadeIn`}
+              className={`flex gap-3 ${message.sender === 'user' ? 'justify-end' : 'justify-start'} animate-fadeIn`}
             >
-              {/* Avatar */}
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-                message.sender === 'user' ? 'bg-sky-500/20' : 'bg-white/10'
-              }`}>
-                {message.sender === 'user' ? (
-                  <User size={16} className="text-sky-500" />
-                ) : (
-                  <Bot size={16} className="text-white/60" />
-                )}
-              </div>
-
-              {/* Message Bubble */}
-              <div className={`max-w-[75%] ${message.sender === 'user' ? 'items-end' : 'items-start'} flex flex-col gap-1`}>
-                <div className={`px-4 py-3 rounded-lg ${
-                  message.sender === 'user'
-                    ? 'bg-sky-500 text-white'
-                    : 'bg-white/10 text-white/90 border border-white/5'
-                }`}>
-                  <p className="text-sm leading-relaxed">{message.text}</p>
+              <div className={`max-w-[85%] flex flex-col ${message.sender === 'user' ? 'items-end' : 'items-start'}`}>
+                {/* Sender Label */}
+                <div className="text-[10px] text-white/40 uppercase tracking-[0.15em] mb-1 px-1">
+                  {message.sender === 'user' ? 'You' : 'Flora Support'}
                 </div>
-                <span className="text-xs text-white/40 px-2">
+                
+                {/* Message */}
+                <div className={`px-4 py-3 ${
+                  message.sender === 'user'
+                    ? 'bg-white/5 border border-white/10'
+                    : 'bg-black border border-white/5'
+                }`}>
+                  <p className="text-sm text-white/90 leading-relaxed">{message.text}</p>
+                </div>
+                
+                {/* Timestamp */}
+                <span className="text-[10px] text-white/30 mt-1 px-1 uppercase tracking-wider">
                   {new Date(message.timestamp).toLocaleTimeString('en-US', { 
                     hour: 'numeric', 
                     minute: '2-digit' 
@@ -167,15 +149,17 @@ export default function VendorSupportChat({ isOpen, onClose }: VendorSupportChat
 
           {/* Typing Indicator */}
           {typing && (
-            <div className="flex gap-3 animate-fadeIn">
-              <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 bg-white/10">
-                <Bot size={16} className="text-white/60" />
-              </div>
-              <div className="bg-white/10 border border-white/5 px-4 py-3 rounded-lg">
-                <div className="flex gap-1">
-                  <div className="w-2 h-2 bg-white/60 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                  <div className="w-2 h-2 bg-white/60 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                  <div className="w-2 h-2 bg-white/60 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+            <div className="flex justify-start animate-fadeIn">
+              <div className="flex flex-col items-start">
+                <div className="text-[10px] text-white/40 uppercase tracking-[0.15em] mb-1 px-1">
+                  Flora Support
+                </div>
+                <div className="bg-black border border-white/5 px-4 py-3">
+                  <div className="flex gap-1.5">
+                    <div className="w-1.5 h-1.5 bg-white/60 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                    <div className="w-1.5 h-1.5 bg-white/60 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                    <div className="w-1.5 h-1.5 bg-white/60 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -185,51 +169,35 @@ export default function VendorSupportChat({ isOpen, onClose }: VendorSupportChat
         </div>
 
         {/* Quick Actions */}
-        <div className="border-t border-white/5 px-6 py-3 bg-[#0a0a0a]">
+        <div className="border-t border-white/5 px-6 py-3 bg-black">
           <div className="flex gap-2 overflow-x-auto scrollbar-hide">
-            <button className="flex-shrink-0 px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-white/80 hover:text-white text-xs transition-all duration-300">
-              COA Question
+            <button className="flex-shrink-0 px-3 py-2 bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/10 text-white/60 hover:text-white text-[10px] uppercase tracking-[0.15em] transition-all duration-300">
+              COA
             </button>
-            <button className="flex-shrink-0 px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-white/80 hover:text-white text-xs transition-all duration-300">
-              Product Approval
+            <button className="flex-shrink-0 px-3 py-2 bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/10 text-white/60 hover:text-white text-[10px] uppercase tracking-[0.15em] transition-all duration-300">
+              Approval
             </button>
-            <button className="flex-shrink-0 px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-white/80 hover:text-white text-xs transition-all duration-300">
-              Payout Question
+            <button className="flex-shrink-0 px-3 py-2 bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/10 text-white/60 hover:text-white text-[10px] uppercase tracking-[0.15em] transition-all duration-300">
+              Payout
             </button>
-            <button className="flex-shrink-0 px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-white/80 hover:text-white text-xs transition-all duration-300">
-              Technical Issue
+            <button className="flex-shrink-0 px-3 py-2 bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/10 text-white/60 hover:text-white text-[10px] uppercase tracking-[0.15em] transition-all duration-300">
+              Technical
             </button>
           </div>
         </div>
 
         {/* Input Area */}
-        <div className="border-t border-white/5 p-4 bg-[#1a1a1a]">
-          <div className="flex items-end gap-2">
-            {/* Attachment Buttons */}
-            <div className="flex gap-1 pb-2">
-              <button 
-                className="p-2 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all duration-300"
-                title="Attach file"
-              >
-                <Paperclip size={18} className="text-white/60" />
-              </button>
-              <button 
-                className="p-2 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all duration-300"
-                title="Attach image"
-              >
-                <ImageIcon size={18} className="text-white/60" />
-              </button>
-            </div>
-
+        <div className="border-t border-white/5 p-6 bg-black">
+          <div className="flex items-center gap-3">
             {/* Input */}
             <div className="flex-1 relative">
               <textarea
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder="Type your message..."
+                placeholder="Message..."
                 rows={1}
-                className="w-full bg-[#0a0a0a] border border-white/10 text-white placeholder-white/40 px-4 py-3 pr-12 focus:outline-none focus:border-white/20 transition-colors resize-none max-h-32"
+                className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-4 py-3 text-sm focus:outline-none focus:border-white/10 transition-colors resize-none"
                 style={{ minHeight: '44px' }}
               />
             </div>
@@ -238,16 +206,12 @@ export default function VendorSupportChat({ isOpen, onClose }: VendorSupportChat
             <button
               onClick={sendMessage}
               disabled={!inputText.trim()}
-              className="p-3 bg-sky-500 hover:bg-sky-400 text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 flex-shrink-0"
-              title="Send message"
+              className="p-3 bg-white text-black border border-white hover:bg-black hover:text-white hover:border-white/20 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-300 flex-shrink-0"
+              title="Send"
             >
-              <Send size={20} />
+              <Send size={18} strokeWidth={1.5} />
             </button>
           </div>
-
-          <p className="text-white/40 text-xs mt-3 text-center">
-            Press Enter to send • Shift + Enter for new line
-          </p>
         </div>
       </div>
 
