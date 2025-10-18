@@ -1,7 +1,9 @@
 "use client";
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { Home, Package, BarChart3, Settings, LogOut, Palette, ShoppingBag, FileText, DollarSign, Star } from 'lucide-react';
+import VendorSupportChat from '@/components/VendorSupportChat';
 
 export default function VendorLayout({
   children,
@@ -10,6 +12,7 @@ export default function VendorLayout({
 }) {
   // TODO: Add actual auth check when backend is ready
   // For now, allow all logged-in users for testing
+  const [isChatOpen, setIsChatOpen] = useState(false);
   
   return (
     <div className="min-h-screen bg-[#1a1a1a]">
@@ -137,7 +140,10 @@ export default function VendorLayout({
               <p className="text-white/50 text-xs mb-3 leading-relaxed">
                 Contact our vendor support team
               </p>
-              <button className="text-xs text-white bg-black border border-white/20 hover:bg-white hover:text-black hover:border-white px-3 py-2 transition-all duration-300 w-full uppercase tracking-wider">
+              <button 
+                onClick={() => setIsChatOpen(true)}
+                className="text-xs text-white bg-black border border-white/20 hover:bg-white hover:text-black hover:border-white px-3 py-2 transition-all duration-300 w-full uppercase tracking-wider"
+              >
                 Contact Support
               </button>
             </div>
@@ -149,6 +155,9 @@ export default function VendorLayout({
           {children}
         </main>
       </div>
+
+      {/* Support Chat */}
+      <VendorSupportChat isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
     </div>
   );
 }
