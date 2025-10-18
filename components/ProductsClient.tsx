@@ -164,6 +164,49 @@ export default function ProductsClient({
             </span>
           </div>
           
+          {/* Vendor Filter - MAIN FEATURE - Always Visible */}
+          <div className="mb-6 pb-6 border-b border-white/10">
+            <h3 className="text-xs uppercase tracking-[0.2em] text-white/60 mb-4">Shop By Vendor</h3>
+            <div className="flex items-center gap-3 overflow-x-auto scrollbar-hide -mx-4 px-4 sm:-mx-6 sm:px-6 md:-mx-8 md:px-8">
+              <button
+                onClick={() => setSelectedVendor(null)}
+                className={`px-4 py-2.5 text-xs uppercase tracking-[0.15em] transition-all whitespace-nowrap flex-shrink-0 ${
+                  !selectedVendor
+                    ? 'bg-white text-black border border-white'
+                    : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white border border-white/10'
+                }`}
+              >
+                All Products
+              </button>
+              <button
+                onClick={() => setSelectedVendor('flora')}
+                className={`flex items-center gap-2 px-4 py-2.5 text-xs uppercase tracking-[0.15em] transition-all whitespace-nowrap flex-shrink-0 ${
+                  selectedVendor === 'flora'
+                    ? 'bg-white text-black border border-white'
+                    : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white border border-white/10'
+                }`}
+              >
+                <img src="/logoprint.png" alt="Flora" className="w-5 h-5 object-contain opacity-80" />
+                Flora Distro
+              </button>
+              {vendors.map((vendor: any) => (
+                <button
+                  key={vendor.slug}
+                  onClick={() => setSelectedVendor(vendor.slug)}
+                  className={`flex items-center gap-2 px-4 py-2.5 text-xs uppercase tracking-[0.15em] transition-all whitespace-nowrap flex-shrink-0 ${
+                    selectedVendor === vendor.slug
+                      ? 'bg-white text-black border border-white'
+                      : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white border border-white/10'
+                  }`}
+                  style={selectedVendor === vendor.slug ? { fontFamily: 'Lobster' } : {}}
+                >
+                  <img src={vendor.logo} alt={vendor.name} className="w-5 h-5 object-contain" />
+                  {vendor.name}
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* Category Tabs - Edge to Edge on Mobile */}
           <nav className="flex items-center gap-6 sm:gap-8 md:gap-10 text-[11px] sm:text-xs overflow-x-auto scrollbar-hide -mx-4 px-4 sm:-mx-6 sm:px-6 md:-mx-8 md:px-8">
             <button 
@@ -228,44 +271,6 @@ export default function ProductsClient({
             {/* Filter Pills Row - Compact Mobile Layout */}
             {showFilters && (
               <div className="space-y-2.5 pb-2 animate-fadeIn">
-                {/* Vendor Filter - Primary Feature */}
-                <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0 pb-1">
-                  <button
-                    onClick={() => setSelectedVendor(null)}
-                    className={`px-2.5 sm:px-3 py-1.5 text-[11px] uppercase tracking-wide transition-all whitespace-nowrap flex-shrink-0 rounded ${
-                      !selectedVendor
-                        ? 'bg-white text-black'
-                        : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white border border-white/10'
-                    }`}
-                  >
-                    All Products
-                  </button>
-                  <button
-                    onClick={() => setSelectedVendor('flora')}
-                    className={`px-2.5 sm:px-3 py-1.5 text-[11px] uppercase tracking-wide transition-all whitespace-nowrap flex-shrink-0 rounded ${
-                      selectedVendor === 'flora'
-                        ? 'bg-white text-black'
-                        : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white border border-white/10'
-                    }`}
-                  >
-                    Flora Distro
-                  </button>
-                  {vendors.map((vendor: any) => (
-                    <button
-                      key={vendor.slug}
-                      onClick={() => setSelectedVendor(vendor.slug)}
-                      className={`px-2.5 sm:px-3 py-1.5 text-[11px] uppercase tracking-wide transition-all whitespace-nowrap flex-shrink-0 rounded flex items-center gap-1.5 ${
-                        selectedVendor === vendor.slug
-                          ? 'bg-white text-black'
-                          : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white border border-white/10'
-                      }`}
-                    >
-                      <img src={vendor.logo} alt={vendor.name} className="w-4 h-4 object-contain" />
-                      {vendor.name}
-                    </button>
-                  ))}
-                </div>
-
                 {/* Strain Type - Horizontal Scroll on Mobile */}
                 <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0 pb-1">
                   {strainTypes.map((type) => (
