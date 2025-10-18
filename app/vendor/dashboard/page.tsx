@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Package, Plus, AlertCircle, CheckCircle, XCircle, TrendingUp, DollarSign, AlertTriangle, Bell, Calendar } from 'lucide-react';
+import { Package, Plus, AlertCircle, CheckCircle, XCircle, TrendingUp, DollarSign, AlertTriangle, Bell, Calendar, ArrowUpRight, ArrowDownRight, FileText, MessageSquare } from 'lucide-react';
 
 interface RecentProduct {
   id: number;
@@ -26,6 +26,25 @@ interface Notice {
   date: string;
 }
 
+interface SalesData {
+  date: string;
+  revenue: number;
+}
+
+interface TopProduct {
+  id: number;
+  name: string;
+  unitsSold: number;
+  revenue: number;
+}
+
+interface ActionItem {
+  id: number;
+  title: string;
+  type: 'warning' | 'info';
+  link: string;
+}
+
 export default function VendorDashboard() {
   const [stats, setStats] = useState({
     totalProducts: 0,
@@ -39,6 +58,14 @@ export default function VendorDashboard() {
   const [recentProducts, setRecentProducts] = useState<RecentProduct[]>([]);
   const [lowStockItems, setLowStockItems] = useState<LowStockItem[]>([]);
   const [notices, setNotices] = useState<Notice[]>([]);
+  const [salesData, setSalesData] = useState<SalesData[]>([]);
+  const [topProducts, setTopProducts] = useState<TopProduct[]>([]);
+  const [actionItems, setActionItems] = useState<ActionItem[]>([]);
+  const [payout, setPayout] = useState({
+    pendingEarnings: 0,
+    nextPayoutDate: '',
+    lastPayoutAmount: 0,
+  });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -157,6 +184,49 @@ export default function VendorDashboard() {
           type: "success",
           date: "4 days ago"
         },
+      ]);
+
+      // Sales data for last 30 days
+      setSalesData([
+        { date: '2025-10-01', revenue: 127.50 },
+        { date: '2025-10-02', revenue: 89.25 },
+        { date: '2025-10-03', revenue: 245.80 },
+        { date: '2025-10-04', revenue: 312.45 },
+        { date: '2025-10-05', revenue: 198.60 },
+        { date: '2025-10-06', revenue: 276.30 },
+        { date: '2025-10-07', revenue: 423.75 },
+        { date: '2025-10-08', revenue: 356.20 },
+        { date: '2025-10-09', revenue: 289.90 },
+        { date: '2025-10-10', revenue: 412.35 },
+        { date: '2025-10-11', revenue: 478.60 },
+        { date: '2025-10-12', revenue: 521.85 },
+        { date: '2025-10-13', revenue: 398.40 },
+        { date: '2025-10-14', revenue: 445.75 },
+        { date: '2025-10-15', revenue: 502.20 },
+        { date: '2025-10-16', revenue: 567.90 },
+        { date: '2025-10-17', revenue: 612.45 },
+        { date: '2025-10-18', revenue: 654.80 },
+      ]);
+
+      setTopProducts([
+        { id: 41735, name: 'Lemon Cherry Diesel', unitsSold: 24, revenue: 1847.52 },
+        { id: 41587, name: 'Space Runtz', unitsSold: 19, revenue: 1523.81 },
+        { id: 41734, name: 'Blue Zushi', unitsSold: 17, revenue: 1289.43 },
+        { id: 41731, name: 'Pink Lemonade', unitsSold: 12, revenue: 1048.88 },
+        { id: 41584, name: 'Zkittlez', unitsSold: 11, revenue: 967.89 },
+      ]);
+
+      setPayout({
+        pendingEarnings: 7010.36,
+        nextPayoutDate: '2025-11-05',
+        lastPayoutAmount: 6234.52,
+      });
+
+      setActionItems([
+        { id: 1, title: '1 COA expiring soon (Black Jack)', type: 'warning', link: '/vendor/lab-results' },
+        { id: 2, title: '3 products low on stock', type: 'warning', link: '/vendor/inventory' },
+        { id: 3, title: '1 product pending approval (Detroit Runts)', type: 'info', link: '/vendor/products' },
+        { id: 4, title: 'New customer review to respond to', type: 'info', link: '/vendor/reviews' },
       ]);
 
       setLoading(false);
@@ -318,10 +388,99 @@ export default function VendorDashboard() {
         </Link>
       </div>
 
+      {/* Action Items */}
+      <div className="mb-6" style={{ animation: 'fadeInUp 0.6s ease-out 0.3s both' }}>
+        <div className="bg-[#1a1a1a] border border-white/5">
+          <div className="border-b border-white/5 p-4">
+            <h2 className="text-white/90 text-sm uppercase tracking-wider font-light">Action Items</h2>
+          </div>
+          <div className="divide-y divide-white/5">
+            {actionItems.map((item) => (
+              <Link
+                key={item.id}
+                href={item.link}
+                className="flex items-center justify-between p-4 hover:bg-[#303030] transition-all group"
+              >
+                <div className="flex items-center gap-3">
+                  {item.type === 'warning' ? (
+                    <AlertTriangle size={16} className="text-yellow-500/80" />
+                  ) : (
+                    <Bell size={16} className="text-blue-500/80" />
+                  )}
+                  <span className="text-white/80 text-sm group-hover:text-white transition-colors">{item.title}</span>
+                </div>
+                <ArrowUpRight size={14} className="text-white/40 group-hover:text-white/60 transition-colors" />
+              </Link>
+            ))}
+          </div>
+        </div>
+      </div>
+
       {/* 2-Column Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8" style={{ animation: 'fadeInUp 0.6s ease-out 0.3s both' }}>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8" style={{ animation: 'fadeInUp 0.6s ease-out 0.4s both' }}>
         {/* Left Column - 2/3 width */}
         <div className="lg:col-span-2 space-y-6">
+          {/* Sales Chart */}
+          <div className="bg-[#1a1a1a] border border-white/5">
+            <div className="border-b border-white/5 p-6 flex justify-between items-center">
+              <div>
+                <h2 className="text-white/90 text-sm uppercase tracking-wider font-light">Sales Trend</h2>
+                <p className="text-white/50 text-xs mt-1">Last 18 days</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <TrendingUp size={16} className="text-green-500" />
+                <span className="text-green-500 text-sm font-medium">+24%</span>
+              </div>
+            </div>
+            <div className="p-6">
+              {/* Simple Bar Chart */}
+              <div className="flex items-end justify-between gap-1 h-32">
+                {salesData.map((data, index) => {
+                  const maxRevenue = Math.max(...salesData.map(d => d.revenue));
+                  const height = (data.revenue / maxRevenue) * 100;
+                  return (
+                    <div
+                      key={index}
+                      className="flex-1 bg-gradient-to-t from-sky-500/40 to-sky-500/20 hover:from-sky-500/60 hover:to-sky-500/40 transition-all duration-300 cursor-pointer border-t border-sky-500/30 relative group"
+                      style={{ height: `${height}%` }}
+                      title={`${new Date(data.date).toLocaleDateString()}: $${data.revenue.toFixed(2)}`}
+                    >
+                      <div className="absolute -top-6 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black border border-white/20 px-2 py-1 text-xs text-white whitespace-nowrap">
+                        ${data.revenue.toFixed(0)}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="mt-4 flex justify-between text-xs text-white/40">
+                <span>{salesData[0]?.date ? new Date(salesData[0].date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : ''}</span>
+                <span>Today</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Top Products */}
+          <div className="bg-[#1a1a1a] border border-white/5">
+            <div className="border-b border-white/5 p-6">
+              <h2 className="text-white/90 text-sm uppercase tracking-wider font-light">Top Performing Products</h2>
+            </div>
+            <div className="divide-y divide-white/5">
+              {topProducts.map((product, index) => (
+                <div key={product.id} className="p-4 hover:bg-[#303030] transition-all flex items-center gap-4">
+                  <div className="w-8 h-8 bg-white/5 flex items-center justify-center text-white/40 text-sm font-medium">
+                    #{index + 1}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <Link href={`/vendor/products/${product.id}/edit`} className="text-white text-sm hover:text-white/80 transition-colors">
+                      {product.name}
+                    </Link>
+                    <div className="text-white/50 text-xs mt-0.5">{product.unitsSold} units sold</div>
+                  </div>
+                  <div className="text-white font-medium">${product.revenue.toFixed(2)}</div>
+                </div>
+              ))}
+            </div>
+          </div>
           {/* Recent Product Submissions */}
           <div className="bg-[#1a1a1a] border border-white/5">
             <div className="border-b border-white/5 p-6 flex justify-between items-center">
@@ -400,6 +559,41 @@ export default function VendorDashboard() {
 
         {/* Right Column - 1/3 width */}
         <div className="space-y-6">
+          {/* Payout Summary */}
+          <div className="bg-[#1a1a1a] border border-white/5">
+            <div className="border-b border-white/5 p-6">
+              <h2 className="text-white/90 text-sm uppercase tracking-wider font-light">Payout Summary</h2>
+            </div>
+            <div className="p-6 space-y-4">
+              {/* Pending Earnings */}
+              <div>
+                <div className="text-white/60 text-xs mb-2">Pending Earnings</div>
+                <div className="text-3xl font-light text-white mb-1">${payout.pendingEarnings.toLocaleString()}</div>
+                <div className="text-white/40 text-xs">After commission</div>
+              </div>
+
+              {/* Next Payout */}
+              <div className="pt-4 border-t border-white/5">
+                <div className="text-white/60 text-xs mb-2">Next Payout</div>
+                <div className="text-white text-sm mb-1">{new Date(payout.nextPayoutDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</div>
+                <div className="text-white/40 text-xs">Direct deposit to bank account</div>
+              </div>
+
+              {/* Last Payout */}
+              <div className="pt-4 border-t border-white/5">
+                <div className="text-white/60 text-xs mb-2">Last Payout</div>
+                <div className="text-green-500 font-medium">${payout.lastPayoutAmount.toLocaleString()}</div>
+              </div>
+
+              <Link
+                href="/vendor/payouts"
+                className="block w-full text-center px-4 py-2.5 bg-black text-white border border-white/20 hover:bg-white hover:text-black hover:border-white text-xs uppercase tracking-wider transition-all duration-300 mt-4"
+              >
+                View Payout History
+              </Link>
+            </div>
+          </div>
+
           {/* Vendor Notices */}
           <div className="bg-[#1a1a1a] border border-white/5">
             <div className="border-b border-white/5 p-6">
