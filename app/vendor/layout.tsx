@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import { Home, Package, BarChart3, Settings, LogOut } from 'lucide-react';
+import { Home, Package, BarChart3, Settings, LogOut, Palette } from 'lucide-react';
 
 export default function VendorLayout({
   children,
@@ -72,6 +72,14 @@ export default function VendorLayout({
               <span className="text-sm font-medium">Inventory</span>
             </Link>
             
+            <Link
+              href="/vendor/branding"
+              className="flex items-center gap-3 px-4 py-3 text-white/80 hover:text-white hover:bg-white/5 rounded transition-colors"
+            >
+              <Palette size={20} />
+              <span className="text-sm font-medium">Branding</span>
+            </Link>
+
             <Link
               href="/vendor/settings"
               className="flex items-center gap-3 px-4 py-3 text-white/80 hover:text-white hover:bg-white/5 rounded transition-colors"
