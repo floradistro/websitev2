@@ -1,7 +1,7 @@
+"use client";
+
 import Link from 'next/link';
 import { Star, MapPin, Package, ArrowRight } from 'lucide-react';
-
-export const dynamic = 'force-dynamic';
 
 // Mock vendor data - will be from API later
 const vendors = [

@@ -1,10 +1,9 @@
-import { getProducts, getLocations, getAllInventory } from "@/lib/wordpress";
+"use client";
+
+import { useEffect, useState } from 'react';
 import ProductCard from "@/components/ProductCard";
 import Link from "next/link";
 import { ArrowLeft, Star, MapPin, Calendar, CheckCircle } from "lucide-react";
-
-export const dynamic = 'force-dynamic';
-export const revalidate = 60;
 
 // Mock vendor data - will be from API later
 const vendors: any = {
@@ -28,53 +27,44 @@ const vendors: any = {
   }
 };
 
-export default async function VendorStorefront({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
-  const { slug } = await params;
-  const vendor = vendors[slug];
+export default function VendorStorefront() {
+  const [vendor, setVendor] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-  if (!vendor) {
+  useEffect(() => {
+    // Mock vendor for demo - normally would get from params
+    const yachtClub = vendors['yacht-club'];
+    setVendor(yachtClub);
+    setLoading(false);
+  }, []);
+
+  if (loading || !vendor) {
     return (
       <div className="min-h-screen bg-[#1a1a1a] flex items-center justify-center">
-        <div className="text-white/60 text-center">
-          <p className="text-xl mb-4">Vendor not found</p>
-          <Link href="/vendors" className="text-white underline">Back to vendors</Link>
-        </div>
+        <div className="text-white/60">Loading...</div>
       </div>
     );
   }
 
-  // Fetch products and filter to vendor's products
-  const [allProducts, locations, allInventory] = await Promise.all([
-    getProducts({ per_page: 100 }),
-    getLocations(),
-    getAllInventory(),
-  ]);
+  // Mock product data matching Yacht Club products
+  const vendorProducts = [
+    { id: 50001, name: 'OG Kush', price: '15.99', images: [], categories: [{ name: 'Flower' }], meta_data: [] },
+    { id: 50002, name: 'Blue Dream', price: '14.99', images: [], categories: [{ name: 'Flower' }], meta_data: [] },
+    { id: 50003, name: 'Sour Diesel', price: '16.99', images: [], categories: [{ name: 'Flower' }], meta_data: [] },
+    { id: 50004, name: 'Girl Scout Cookies', price: '17.99', images: [], categories: [{ name: 'Flower' }], meta_data: [] },
+    { id: 50005, name: 'Gelato', price: '18.99', images: [], categories: [{ name: 'Flower' }], meta_data: [] },
+    { id: 50006, name: 'Sunset Sherbet', price: '17.99', images: [], categories: [{ name: 'Flower' }], meta_data: [] },
+    { id: 50007, name: 'Purple Punch', price: '16.99', images: [], categories: [{ name: 'Flower' }], meta_data: [] },
+    { id: 50008, name: 'Zkittlez', price: '15.99', images: [], categories: [{ name: 'Flower' }], meta_data: [] },
+    { id: 50009, name: 'Wedding Cake', price: '18.99', images: [], categories: [{ name: 'Flower' }], meta_data: [] },
+  ];
 
-  const vendorProducts = allProducts.filter((p: any) => 
-    vendor.productIds.includes(p.id)
-  );
-
-  // Create inventory map
+  const locations: any[] = [];
   const inventoryMap: { [key: number]: any[] } = {};
-  allInventory.forEach((inv: any) => {
-    const productId = parseInt(inv.product_id);
-    if (!inventoryMap[productId]) {
-      inventoryMap[productId] = [];
-    }
-    inventoryMap[productId].push(inv);
-  });
-
-  // Extract pricing tiers from products
   const productFieldsMap: { [key: number]: any } = {};
+  
   vendorProducts.forEach((product: any) => {
-    const metaData = product.meta_data || [];
-    const pricingTiersMeta = metaData.find((m: any) => m.key === '_product_price_tiers');
-    const pricingTiers = pricingTiersMeta?.value || [];
-    productFieldsMap[product.id] = { fields: {}, pricingTiers };
+    productFieldsMap[product.id] = { fields: {}, pricingTiers: [] };
   });
 
   return (
