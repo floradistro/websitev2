@@ -83,104 +83,104 @@ export default function VendorDashboard() {
 
       setRecentProducts([
         {
-          id: 41735,
-          name: "Lemon Cherry Diesel",
+          id: 50009,
+          name: "Wedding Cake",
+          image: "/placeholder.jpg",
+          status: "approved",
+          submittedDate: "2025-10-17"
+        },
+        {
+          id: 50010,
+          name: "Durban Poison",
+          image: "/placeholder.jpg",
+          status: "pending",
+          submittedDate: "2025-10-18"
+        },
+        {
+          id: 50005,
+          name: "Gelato",
           image: "/placeholder.jpg",
           status: "approved",
           submittedDate: "2025-10-16"
         },
         {
-          id: 41733,
-          name: "Detroit Runts",
-          image: "/placeholder.jpg",
-          status: "pending",
-          submittedDate: "2025-10-17"
-        },
-        {
-          id: 41588,
-          name: "Black Jack",
-          image: "/placeholder.jpg",
-          status: "approved",
-          submittedDate: "2025-10-14"
-        },
-        {
-          id: 41587,
-          name: "Space Runtz",
+          id: 50006,
+          name: "Sunset Sherbet",
           image: "/placeholder.jpg",
           status: "approved",
           submittedDate: "2025-10-15"
         },
         {
-          id: 41586,
-          name: "Black Ice Runtz",
-          image: "/placeholder.jpg",
-          status: "rejected",
-          submittedDate: "2025-10-13"
-        },
-        {
-          id: 41734,
-          name: "Blue Zushi",
+          id: 50001,
+          name: "OG Kush",
           image: "/placeholder.jpg",
           status: "approved",
-          submittedDate: "2025-10-12"
+          submittedDate: "2025-10-14"
+        },
+        {
+          id: 50002,
+          name: "Blue Dream",
+          image: "/placeholder.jpg",
+          status: "approved",
+          submittedDate: "2025-10-13"
         },
       ]);
 
       setLowStockItems([
         {
-          id: 41733,
-          name: "Detroit Runts",
+          id: 50006,
+          name: "Sunset Sherbet",
           currentStock: 8.5,
           threshold: 20
         },
         {
-          id: 41585,
-          name: "Mango Gusher",
+          id: 50008,
+          name: "Zkittlez",
           currentStock: 12.25,
           threshold: 20
         },
         {
-          id: 41732,
-          name: "Dirty Sprite",
-          currentStock: 4.0,
-          threshold: 15
+          id: 50007,
+          name: "Purple Punch",
+          currentStock: 15.0,
+          threshold: 20
         },
       ]);
 
       setNotices([
         {
           id: 1,
-          message: "Your product 'Lemon Cherry Diesel' was approved and is now live!",
+          message: "Your product 'Wedding Cake' was approved and is now live!",
           type: "success",
           date: "2 hours ago"
         },
         {
           id: 2,
-          message: "New order from Zachariah Kryger - $50.75 (Order #41778)",
+          message: "New order from Zachariah Kryger - $71.96 (Order #41778)",
           type: "success",
           date: "3 hours ago"
         },
         {
           id: 3,
-          message: "Product 'Black Ice Runtz' needs better photos and COA. Please resubmit.",
-          type: "warning",
+          message: "Product 'Durban Poison' is pending admin review",
+          type: "info",
           date: "1 day ago"
         },
         {
           id: 4,
-          message: "Low stock alert: 'Detroit Runts' has only 8.5g remaining",
+          message: "Low stock alert: 'Sunset Sherbet' has only 8.5g remaining",
           type: "warning",
           date: "2 days ago"
         },
         {
           id: 5,
-          message: "Commission payout for October ($3,482.35) is scheduled for Nov 5th.",
+          message: "Commission payout for October ($7,010.36) is scheduled for Nov 5th.",
           type: "info",
           date: "3 days ago"
         },
         {
           id: 6,
-          message: "Your product 'Blue Zushi' received a 5-star review from Jordan Cooper",
+          message: "Your product 'Blue Dream' received a 5-star review from Jordan Cooper",
           type: "success",
           date: "4 days ago"
         },
@@ -209,11 +209,11 @@ export default function VendorDashboard() {
       ]);
 
       setTopProducts([
-        { id: 41735, name: 'Lemon Cherry Diesel', unitsSold: 24, revenue: 1847.52 },
-        { id: 41587, name: 'Space Runtz', unitsSold: 19, revenue: 1523.81 },
-        { id: 41734, name: 'Blue Zushi', unitsSold: 17, revenue: 1289.43 },
-        { id: 41731, name: 'Pink Lemonade', unitsSold: 12, revenue: 1048.88 },
-        { id: 41584, name: 'Zkittlez', unitsSold: 11, revenue: 967.89 },
+        { id: 50001, name: 'OG Kush', unitsSold: 28, revenue: 2247.52 },
+        { id: 50005, name: 'Gelato', unitsSold: 22, revenue: 2093.78 },
+        { id: 50002, name: 'Blue Dream', unitsSold: 19, revenue: 1423.81 },
+        { id: 50009, name: 'Wedding Cake', unitsSold: 16, revenue: 1519.84 },
+        { id: 50004, name: 'Girl Scout Cookies', unitsSold: 14, revenue: 1259.86 },
       ]);
 
       setPayout({
@@ -223,9 +223,9 @@ export default function VendorDashboard() {
       });
 
       setActionItems([
-        { id: 1, title: '1 COA expiring soon (Black Jack)', type: 'warning', link: '/vendor/lab-results' },
+        { id: 1, title: '1 COA expiring soon (OG Kush)', type: 'warning', link: '/vendor/lab-results' },
         { id: 2, title: '3 products low on stock', type: 'warning', link: '/vendor/inventory' },
-        { id: 3, title: '1 product pending approval (Detroit Runts)', type: 'info', link: '/vendor/products' },
+        { id: 3, title: '1 product pending approval (Durban Poison)', type: 'info', link: '/vendor/products' },
         { id: 4, title: 'New customer review to respond to', type: 'info', link: '/vendor/reviews' },
       ]);
 

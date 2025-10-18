@@ -42,12 +42,12 @@ export default function VendorOrders() {
           customerName: 'Zachariah Kryger',
           status: 'completed',
           items: [
-            { productId: 41735, productName: 'Lemon Cherry Diesel', quantity: 1, price: 39.99, total: 39.99 },
-            { productId: 41734, productName: 'Blue Zushi', quantity: 1, price: 14.99, total: 14.99 },
+            { productId: 50001, productName: 'OG Kush', quantity: 1, price: 39.99, total: 39.99 },
+            { productId: 50009, productName: 'Wedding Cake', quantity: 1, price: 39.99, total: 39.99 },
           ],
-          total: 54.98,
-          vendorTotal: 54.98,
-          commission: 8.25, // 15% commission
+          total: 79.98,
+          vendorTotal: 79.98,
+          commission: 12.00,
         },
         {
           id: 41776,
@@ -56,7 +56,7 @@ export default function VendorOrders() {
           customerName: 'Alasia Dayhana Chestnut',
           status: 'completed',
           items: [
-            { productId: 41588, productName: 'Black Jack', quantity: 1, price: 39.99, total: 39.99 },
+            { productId: 50002, productName: 'Blue Dream', quantity: 1, price: 39.99, total: 39.99 },
           ],
           total: 39.99,
           vendorTotal: 39.99,
@@ -69,11 +69,11 @@ export default function VendorOrders() {
           customerName: 'Brendon Balzano',
           status: 'completed',
           items: [
-            { productId: 41732, productName: 'Dirty Sprite', quantity: 1, price: 34.99, total: 34.99 },
+            { productId: 50005, productName: 'Gelato', quantity: 1, price: 69.99, total: 69.99 },
           ],
-          total: 34.99,
-          vendorTotal: 34.99,
-          commission: 5.25,
+          total: 69.99,
+          vendorTotal: 69.99,
+          commission: 10.50,
         },
         {
           id: 41769,
@@ -82,12 +82,12 @@ export default function VendorOrders() {
           customerName: 'Jordan Nicole Cooper',
           status: 'processing',
           items: [
-            { productId: 41587, productName: 'Space Runtz', quantity: 1, price: 69.99, total: 69.99 },
-            { productId: 41731, productName: 'Pink Lemonade', quantity: 1, price: 34.99, total: 34.99 },
+            { productId: 50003, productName: 'Sour Diesel', quantity: 1, price: 69.99, total: 69.99 },
+            { productId: 50007, productName: 'Purple Punch', quantity: 1, price: 39.99, total: 39.99 },
           ],
-          total: 104.98,
-          vendorTotal: 104.98,
-          commission: 15.75,
+          total: 109.98,
+          vendorTotal: 109.98,
+          commission: 16.50,
         },
         {
           id: 41765,
@@ -96,11 +96,11 @@ export default function VendorOrders() {
           customerName: 'Marcus Thompson',
           status: 'completed',
           items: [
-            { productId: 41584, productName: 'Zkittlez', quantity: 1, price: 14.99, total: 14.99 },
+            { productId: 50004, productName: 'Girl Scout Cookies', quantity: 1, price: 39.99, total: 39.99 },
           ],
-          total: 14.99,
-          vendorTotal: 14.99,
-          commission: 2.25,
+          total: 39.99,
+          vendorTotal: 39.99,
+          commission: 6.00,
         },
       ]);
       setLoading(false);

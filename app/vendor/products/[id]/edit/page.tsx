@@ -35,63 +35,113 @@ export default function EditProduct() {
     // Mock data based on product ID
     setTimeout(() => {
       const mockProducts: any = {
-        '41735': {
-          name: 'Lemon Cherry Diesel',
-          description: 'Lemon Cherry Diesel combines bright citrus notes with sweet cherry and diesel undertones. This hybrid delivers uplifting cerebral effects paired with relaxing body sensations.',
+        '50001': {
+          name: 'OG Kush',
+          description: 'The legendary OG Kush from the California coast. This classic strain delivers heavy relaxation with its signature pine and lemon aroma.',
           category: 'flower',
-          price: '14.99',
-          thc_percentage: '24.5',
-          cbd_percentage: '0.8',
+          price: '15.99',
+          thc_percentage: '22.8',
+          cbd_percentage: '0.3',
           strain_type: 'hybrid',
-          lineage: 'Lemon Tree × Cherry Pie × Sour Diesel',
-          terpenes: 'Limonene, β-Caryophyllene, Myrcene',
-          effects: 'Energetic, Creative, Uplifted, Focused',
-          quantity: '127.5',
+          lineage: 'Chemdawg × Lemon Thai × Pakistani Kush',
+          terpenes: 'β-Caryophyllene, Limonene, Myrcene',
+          effects: 'Relaxed, Happy, Euphoric, Uplifted',
+          quantity: '156.75',
           status: 'approved' as const,
         },
-        '41733': {
-          name: 'Detroit Runts',
-          description: 'Detroit Runts brings a candy-sweet flavor profile with gas undertones. Known for its potent effects and vibrant purple hues.',
+        '50002': {
+          name: 'Blue Dream',
+          description: 'West Coast staple Blue Dream balances full-body relaxation with gentle cerebral invigoration. Sweet berry aroma with smooth smoke.',
           category: 'flower',
           price: '14.99',
-          thc_percentage: '28.2',
-          cbd_percentage: '0.5',
+          thc_percentage: '19.2',
+          cbd_percentage: '0.8',
           strain_type: 'hybrid',
-          lineage: 'Runtz × Detroit Gelato',
-          terpenes: 'Caryophyllene, Limonene, Humulene',
-          effects: 'Relaxed, Happy, Euphoric',
-          quantity: '8.5',
-          status: 'pending' as const,
+          lineage: 'Blueberry × Haze',
+          terpenes: 'Myrcene, Pinene, Caryophyllene',
+          effects: 'Creative, Uplifted, Relaxed, Focused',
+          quantity: '203.5',
+          status: 'approved' as const,
         },
-        '41586': {
-          name: 'Black Ice Runtz',
-          description: 'A frosty phenotype of the classic Runtz lineage with darker purple tones.',
+        '50003': {
+          name: 'Sour Diesel',
+          description: 'Iconic East Coast Sour Diesel with pungent diesel aroma and energizing sativa effects. Perfect for daytime use.',
           category: 'flower',
-          price: '14.99',
-          thc_percentage: '26.8',
-          cbd_percentage: '0.6',
+          price: '16.99',
+          thc_percentage: '23.4',
+          cbd_percentage: '0.2',
+          strain_type: 'sativa',
+          lineage: 'Chemdawg 91 × Super Skunk',
+          terpenes: 'Caryophyllene, Limonene, Myrcene',
+          effects: 'Energetic, Uplifted, Creative, Focused',
+          quantity: '127.25',
+          status: 'approved' as const,
+        },
+        '50004': {
+          name: 'Girl Scout Cookies',
+          description: 'The famous GSC (formerly Girl Scout Cookies) offers a sweet and earthy aroma with powerful euphoric effects.',
+          category: 'flower',
+          price: '17.99',
+          thc_percentage: '25.1',
+          cbd_percentage: '0.4',
           strain_type: 'hybrid',
-          lineage: 'Runtz × Black Cherry',
-          terpenes: 'Myrcene, Caryophyllene',
-          effects: 'Calming, Sleepy',
+          lineage: 'OG Kush × Durban Poison',
+          terpenes: 'Caryophyllene, Limonene, Humulene',
+          effects: 'Euphoric, Happy, Relaxed, Creative',
+          quantity: '145.0',
+          status: 'approved' as const,
+        },
+        '50005': {
+          name: 'Gelato',
+          description: 'Premium Gelato with its signature sweet and fruity flavor profile. Dense, frosty buds with vibrant purple hues.',
+          category: 'flower',
+          price: '18.99',
+          thc_percentage: '21.6',
+          cbd_percentage: '0.4',
+          strain_type: 'hybrid',
+          lineage: 'Sunset Sherbet × Thin Mint Cookies',
+          terpenes: 'Limonene, Caryophyllene, Humulene',
+          effects: 'Relaxed, Happy, Euphoric, Uplifted',
+          quantity: '98.5',
+          status: 'approved' as const,
+        },
+        '50010': {
+          name: 'Durban Poison',
+          description: 'Pure South African sativa with sweet, piney aroma. Energizing and clear-headed effects perfect for productivity.',
+          category: 'flower',
+          price: '16.99',
+          thc_percentage: '24.5',
+          cbd_percentage: '0.2',
+          strain_type: 'sativa',
+          lineage: 'South African Landrace',
+          terpenes: 'Terpinolene, Myrcene, Ocimene',
+          effects: 'Energetic, Uplifted, Focused, Creative',
           quantity: '0',
-          status: 'rejected' as const,
+          status: 'pending' as const,
         },
       };
 
-      const data = mockProducts[productId as string] || mockProducts['41735'];
+      const data = mockProducts[productId as string] || mockProducts['50001'];
       setProduct(data);
       
       // Mock existing COA for approved products
-      if (data.status === 'approved' && productId === '41735') {
-        setExistingCOA({
-          coaNumber: 'COA-2025-001547',
-          testDate: '2025-10-15',
-          status: 'approved',
-          thc: '24.5%',
-          cbd: '0.8%',
-          lab: 'Quantix Analytics'
-        });
+      if (data.status === 'approved') {
+        const coaData: any = {
+          '50001': { coaNumber: 'COA-2025-001547', thc: '22.8%', cbd: '0.3%' },
+          '50002': { coaNumber: 'COA-2025-001548', thc: '19.2%', cbd: '0.8%' },
+          '50003': { coaNumber: 'COA-2025-001549', thc: '23.4%', cbd: '0.2%' },
+          '50004': { coaNumber: 'COA-2025-001550', thc: '25.1%', cbd: '0.4%' },
+          '50005': { coaNumber: 'COA-2025-001551', thc: '21.6%', cbd: '0.4%' },
+        };
+        
+        if (coaData[productId as string]) {
+          setExistingCOA({
+            ...coaData[productId as string],
+            testDate: '2025-10-15',
+            status: 'approved',
+            lab: 'Quantix Analytics'
+          });
+        }
       }
       
       setLoading(false);
