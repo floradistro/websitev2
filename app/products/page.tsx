@@ -1,4 +1,4 @@
-import { getCategories } from "@/lib/wordpress";
+import { getCategories, getProductPricingV3 } from "@/lib/wordpress";
 import { getCachedBulkProducts, getCachedLocations } from "@/lib/api-cache";
 import ProductsClient from "@/components/ProductsClient";
 import type { Metadata } from "next";
@@ -73,6 +73,19 @@ export default async function ProductsPage({
     inventoryMap[product.id] = product.inventory || [];
   });
 
+  // Fetch pricing tiers for all products in parallel (bulk API doesn't include them)
+  const pricingPromises = inStockProducts.map((product: any) => 
+    getProductPricingV3(product.id)
+      .then(pricing => ({ productId: product.id, tiers: pricing?.quantity_tiers || [] }))
+      .catch(() => ({ productId: product.id, tiers: [] }))
+  );
+  
+  const pricingResults = await Promise.all(pricingPromises);
+  const pricingMap: { [key: number]: any[] } = {};
+  pricingResults.forEach(result => {
+    pricingMap[result.productId] = result.tiers;
+  });
+
   // Extract fields from product metadata (already included in bulk response)
   const productFieldsMap: { [key: number]: any } = {};
   
@@ -96,8 +109,8 @@ export default async function ProductsPage({
       fields[field.field_name] = field.field_value || '';
     });
     
-    // Extract pricing tiers from bulk response
-    const pricingTiers = product.pricing_tiers || product.quantity_tiers || [];
+    // Get pricing tiers from pricing map
+    const pricingTiers = pricingMap[product.id] || [];
     
     productFieldsMap[product.id] = { fields, pricingTiers };
   });
