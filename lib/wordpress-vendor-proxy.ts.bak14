@@ -94,43 +94,14 @@ export async function getVendorSettingsProxy() {
   return response.data;
 }
 
-// Helper to auto-create inventory if needed
-// Helper to auto-create inventory if needed
-async function ensureInventoryExists(productId: number) {
-  try {
-    await vendorProxyRequest(
-      `flora-vendors/v1/vendors/me/inventory/${productId}/set?_t=${Date.now()}`,
-      'POST',
-      { quantity: 0, reason: 'Auto-initialize inventory record' }
-    );
-  } catch (e) {
-    // Ignore - record might exist
-  }
-}
-
 export async function adjustVendorInventoryProxy(productId: number, operation: 'add' | 'subtract', amount: number, reason?: string) {
   const cacheBuster = `_t=${Date.now()}`;
-  try {
-    const response = await vendorProxyRequest(
-      `flora-vendors/v1/vendors/me/inventory/${productId}/adjust?${cacheBuster}`,
-      'POST',
-      { operation, amount, reason }
-    );
-    return response.data;
-  } catch (error: any) {
-    // If no inventory record exists, create one and retry
-    if (error.response?.data?.code === 'no_inventory' || error.response?.data?.details?.code === 'no_inventory') {
-      await ensureInventoryExists(productId);
-      // Retry the adjustment
-      const retryResponse = await vendorProxyRequest(
-        `flora-vendors/v1/vendors/me/inventory/${productId}/adjust?${cacheBuster}`,
-        'POST',
-        { operation, amount, reason }
-      );
-      return retryResponse.data;
-    }
-    throw error;
-  }
+  const response = await vendorProxyRequest(
+    `flora-vendors/v1/vendors/me/inventory/${productId}/adjust?${cacheBuster}`,
+    'POST',
+    { operation, amount, reason }
+  );
+  return response.data;
 }
 
 export async function setVendorInventoryProxy(productId: number, quantity: number, reason?: string) {

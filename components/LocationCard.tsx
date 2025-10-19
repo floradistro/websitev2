@@ -42,22 +42,25 @@ export default function LocationCard({ location, address, googleMapsUrl, hours }
   }, [location.name, address, location.type]);
 
   const CardContent = (
-    <div className="group bg-[#3a3a3a] hover:bg-[#404040] transition-all duration-500 border border-white/5 hover:border-white/10 h-full flex flex-col">
+    <div className="group bg-[#404040] hover:bg-[#4a4a4a] transition-all duration-500 border border-white/10 hover:border-white/30 h-full flex flex-col hover:shadow-2xl hover:shadow-white/5 hover:scale-[1.02] hover:-translate-y-1">
       <div className="aspect-[4/5] flex items-center justify-center border-b border-white/5 bg-[#2a2a2a] p-12 relative overflow-hidden">
         {/* Subtle gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+        <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-100 group-hover:opacity-100 transition-opacity duration-500" />
+        
+        {/* Enhanced gradient on hover */}
+        <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
         
         {/* Logo */}
         <img 
           src="/logoprint.png" 
           alt={location.name}
-          className="w-full h-full object-contain opacity-20 group-hover:opacity-40 transition-all duration-700 grayscale group-hover:grayscale-0 group-hover:brightness-110 relative z-10"
+          className="w-full h-full object-contain opacity-40 group-hover:opacity-60 transition-all duration-700 brightness-110 group-hover:brightness-125 group-hover:scale-110 relative z-10"
         />
         
         {/* Map pin icon overlay */}
-        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-          <div className="w-8 h-8 border border-white/30 rounded-full flex items-center justify-center">
-            <div className="w-2 h-2 bg-white/50 rounded-full" />
+        <div className="absolute inset-0 flex items-center justify-center opacity-100 group-hover:scale-125 transition-all duration-500">
+          <div className="w-8 h-8 border border-white/30 group-hover:border-white/50 rounded-full flex items-center justify-center transition-all duration-500">
+            <div className="w-2 h-2 bg-white/50 group-hover:bg-white/80 rounded-full transition-all duration-500" />
           </div>
         </div>
       </div>

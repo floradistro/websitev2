@@ -31,6 +31,18 @@ const LocationsCarousel = dynamic(() => import("@/components/LocationsCarousel")
   loading: () => <div className="w-full h-[200px] bg-[#2a2a2a] animate-pulse" />,
 });
 
+const FireAnimation = dynamic(() => import("@/components/FireAnimation"), {
+  ssr: false,
+});
+
+const ShippingAnimation = dynamic(() => import("@/components/ShippingAnimation"), {
+  ssr: false,
+});
+
+const GrowthChart = dynamic(() => import("@/components/GrowthChart"), {
+  ssr: false,
+});
+
 interface HomeClientProps {
   products: any[];
   categories: any[];
@@ -60,22 +72,22 @@ export default function HomeClient({
       {/* Marketplace Mission Statement */}
       <section className="bg-[#1a1a1a] py-20 sm:py-28 md:py-32 px-4 sm:px-6 relative overflow-hidden w-full">
         <div className="absolute inset-0 opacity-30">
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-white/5 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-white/5 rounded-full blur-3xl"></div>
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-rose-500/10 rounded-full blur-3xl"></div>
         </div>
 
         <div className="max-w-4xl mx-auto text-center relative z-10">
-          <div className="h-[1px] w-16 bg-gradient-to-r from-transparent via-white/30 to-transparent mx-auto mb-8"></div>
+          <div className="h-[1px] w-16 bg-gradient-to-r from-transparent via-purple-500/40 to-transparent mx-auto mb-8"></div>
           <h2 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-light text-white mb-6 leading-tight tracking-tight">
-            The Premier<br/>Cannabis Marketplace
+            Where Quality<br/>Meets Street
           </h2>
-          <div className="h-[1px] w-24 bg-gradient-to-r from-transparent via-white/20 to-transparent mx-auto mb-12"></div>
-          <p className="text-base sm:text-lg md:text-xl font-light text-white/50 leading-relaxed max-w-2xl mx-auto mb-12">
-            Connecting trusted vendors with customers nationwide. One platform, curated vendors, unified experience.
+          <div className="h-[1px] w-24 bg-gradient-to-r from-transparent via-rose-500/30 to-transparent mx-auto mb-12"></div>
+          <p className="text-base sm:text-lg md:text-xl font-light text-white/60 leading-relaxed max-w-2xl mx-auto mb-12">
+            Direct from the source. No middleman. No BS. Just premium flower and trusted vendors under one roof.
           </p>
           <Link 
             href="/vendors"
-            className="group inline-flex items-center gap-3 bg-white text-black px-10 py-4 text-xs uppercase tracking-[0.25em] hover:bg-white/90 transition-all duration-300 font-medium"
+            className="group inline-flex items-center gap-3 bg-gradient-to-r from-purple-600 to-violet-700 text-white px-10 py-4 text-xs uppercase tracking-[0.25em] hover:from-purple-500 hover:to-violet-600 transition-all duration-300 font-medium shadow-lg shadow-purple-900/30"
           >
             <Store size={16} />
             <span>Browse Vendors</span>
@@ -88,41 +100,41 @@ export default function HomeClient({
       <section className="bg-[#3a3a3a] py-16 overflow-x-hidden w-full">
         <div className="px-4 sm:px-6 mb-12">
           <h2 className="text-2xl md:text-3xl font-light uppercase tracking-wider text-white mb-3">
-            Why Shop Our Marketplace
+            The Flora Difference
           </h2>
-          <div className="h-[1px] w-16 bg-white/20"></div>
+          <div className="h-[1px] w-16 bg-gradient-to-r from-purple-500/60 to-transparent"></div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-px">
-          <div className="bg-[#3a3a3a] hover:bg-[#404040] transition-all duration-500 p-8 lg:p-10 border border-white/5 hover:border-white/10">
-            <Store className="w-8 h-8 mb-6 text-white/60" />
-            <h3 className="text-sm uppercase tracking-[0.2em] text-white mb-4 font-normal">Curated Vendors</h3>
+          <div className="bg-[#3a3a3a] hover:bg-[#404040] transition-all duration-500 p-8 lg:p-10 border border-white/5 hover:border-purple-500/20 group">
+            <Store className="w-8 h-8 mb-6 text-purple-400/70 group-hover:text-purple-300 transition-colors" />
+            <h3 className="text-sm uppercase tracking-[0.2em] text-white mb-4 font-normal">Only The Real</h3>
             <p className="text-xs text-white/50 font-light leading-relaxed">
-              Every vendor is verified and meets our rigorous quality standards. Shop with confidence.
+              Hand-picked vendors. Every brand verified. No trash, no mids, no excuses.
             </p>
           </div>
           
-          <div className="bg-[#3a3a3a] hover:bg-[#404040] transition-all duration-500 p-8 lg:p-10 border border-white/5 hover:border-white/10">
-            <Users className="w-8 h-8 mb-6 text-white/60" />
-            <h3 className="text-sm uppercase tracking-[0.2em] text-white mb-4 font-normal">Multi-Vendor Cart</h3>
+          <div className="bg-[#3a3a3a] hover:bg-[#404040] transition-all duration-500 p-8 lg:p-10 border border-white/5 hover:border-rose-500/20 group">
+            <Users className="w-8 h-8 mb-6 text-rose-400/70 group-hover:text-rose-300 transition-colors" />
+            <h3 className="text-sm uppercase tracking-[0.2em] text-white mb-4 font-normal">One Cart. All Brands.</h3>
             <p className="text-xs text-white/50 font-light leading-relaxed">
-              Shop from multiple vendors in one order. We coordinate everything seamlessly.
+              Mix and match from any vendor. One checkout. One delivery. Zero hassle.
             </p>
           </div>
           
-          <div className="bg-[#3a3a3a] hover:bg-[#404040] transition-all duration-500 p-8 lg:p-10 border border-white/5 hover:border-white/10">
-            <Truck className="w-8 h-8 mb-6 text-white/60" />
-            <h3 className="text-sm uppercase tracking-[0.2em] text-white mb-4 font-normal">Unified Fulfillment</h3>
+          <div className="bg-[#3a3a3a] hover:bg-[#404040] transition-all duration-500 p-8 lg:p-10 border border-white/5 hover:border-purple-500/20 group">
+            <Truck className="w-8 h-8 mb-6 text-purple-400/70 group-hover:text-purple-300 transition-colors" />
+            <h3 className="text-sm uppercase tracking-[0.2em] text-white mb-4 font-normal">Fast & Tracked</h3>
             <p className="text-xs text-white/50 font-light leading-relaxed">
-              Single checkout, coordinated delivery. Daily shipping at 2PM EST from multiple locations.
+              Order by 2PM, ships same day. Next-day for locals. Tracked door to door.
             </p>
           </div>
           
-          <div className="bg-[#3a3a3a] hover:bg-[#404040] transition-all duration-500 p-8 lg:p-10 border border-white/5 hover:border-white/10">
-            <Shield className="w-8 h-8 mb-6 text-white/60" />
-            <h3 className="text-sm uppercase tracking-[0.2em] text-white mb-4 font-normal">Trust & Safety</h3>
+          <div className="bg-[#3a3a3a] hover:bg-[#404040] transition-all duration-500 p-8 lg:p-10 border border-white/5 hover:border-rose-500/20 group">
+            <Shield className="w-8 h-8 mb-6 text-rose-400/70 group-hover:text-rose-300 transition-colors" />
+            <h3 className="text-sm uppercase tracking-[0.2em] text-white mb-4 font-normal">Lab Verified</h3>
             <p className="text-xs text-white/50 font-light leading-relaxed">
-              Secure transactions, verified products, lab tested quality on every order.
+              COAs on everything. Third-party tested. Quality you can trust, every time.
             </p>
           </div>
         </div>
@@ -175,67 +187,72 @@ export default function HomeClient({
       {/* Value Proposition */}
       <section className="bg-[#1a1a1a] py-16 sm:py-24 md:py-32 px-4 sm:px-6 relative overflow-hidden w-full">
         <div className="absolute inset-0 opacity-30">
-          <div className="absolute top-0 left-1/4 w-64 h-64 sm:w-96 sm:h-96 bg-white/5 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-0 right-1/4 w-64 h-64 sm:w-96 sm:h-96 bg-white/5 rounded-full blur-3xl"></div>
+          <div className="absolute top-0 left-1/4 w-64 h-64 sm:w-96 sm:h-96 bg-purple-500/10 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-0 right-1/4 w-64 h-64 sm:w-96 sm:h-96 bg-rose-500/10 rounded-full blur-3xl"></div>
+        </div>
+
+        {/* Fire Animation Background */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <FireAnimation />
         </div>
 
         <div className="max-w-6xl mx-auto text-center relative z-10">
           <div className="flex items-center justify-center mb-6 sm:mb-8">
-            <div className="h-[1px] w-12 sm:w-16 bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
+            <div className="h-[1px] w-12 sm:w-16 bg-gradient-to-r from-transparent via-purple-500/40 to-transparent"></div>
           </div>
 
           <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-light text-white mb-4 sm:mb-6 leading-tight tracking-tight">
-            Real game.<br/>Real prices.
+            Straight Fire.<br/>Straight Price.
           </h2>
           
-          <div className="h-[1px] w-16 sm:w-24 bg-gradient-to-r from-transparent via-white/20 to-transparent mx-auto mb-8 sm:mb-12"></div>
+          <div className="h-[1px] w-16 sm:w-24 bg-gradient-to-r from-transparent via-rose-500/30 to-transparent mx-auto mb-8 sm:mb-12"></div>
           
-          <p className="text-sm sm:text-base md:text-lg lg:text-xl font-light text-white/50 mb-12 sm:mb-16 md:mb-20 leading-relaxed max-w-2xl mx-auto">
-            From our own facilities and trusted partner vendors. Premium quality, transparent pricing.
+          <p className="text-sm sm:text-base md:text-lg lg:text-xl font-light text-white/60 mb-12 sm:mb-16 md:mb-20 leading-relaxed max-w-2xl mx-auto">
+            Grown in-house and curated from the best. No games with the pricing, no mystery on quality.
           </p>
 
           <div className="grid md:grid-cols-3 gap-4 sm:gap-6">
-            <div className="group bg-white/5 backdrop-blur-sm border border-white/10 p-6 sm:p-8 hover:bg-white/10 hover:border-white/20 transition-all duration-500 relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            <div className="group bg-white/5 backdrop-blur-sm border border-purple-500/20 p-6 sm:p-8 hover:bg-purple-500/5 hover:border-purple-500/40 transition-all duration-500 relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
               <div className="relative z-10">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 mb-4 sm:mb-6 mx-auto border border-white/20 rounded-full flex items-center justify-center group-hover:border-white/40 transition-colors duration-500">
-                  <div className="text-lg sm:text-xl text-white/80">1</div>
+                <div className="w-10 h-10 sm:w-12 sm:h-12 mb-4 sm:mb-6 mx-auto border border-purple-500/30 rounded-full flex items-center justify-center group-hover:border-purple-400/60 transition-colors duration-500 bg-purple-500/5">
+                  <div className="text-lg sm:text-xl text-purple-400">1</div>
                 </div>
                 <h3 className="text-xs sm:text-sm font-normal mb-3 sm:mb-4 text-white uppercase tracking-[0.2em] sm:tracking-[0.25em]">
-                  Volume Pricing
+                  Buy More, Save More
                 </h3>
-                <p className="text-[11px] sm:text-xs font-light text-white/50 leading-relaxed">
-                  The more you buy, the better the price. Bulk discounts across all vendors.
+                <p className="text-[11px] sm:text-xs font-light text-white/60 leading-relaxed">
+                  Volume discounts on everything. The more you cop, the more you save.
                 </p>
               </div>
             </div>
             
-            <div className="group bg-white/5 backdrop-blur-sm border border-white/10 p-6 sm:p-8 hover:bg-white/10 hover:border-white/20 transition-all duration-500 relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            <div className="group bg-white/5 backdrop-blur-sm border border-rose-500/20 p-6 sm:p-8 hover:bg-rose-500/5 hover:border-rose-500/40 transition-all duration-500 relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-rose-500/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
               <div className="relative z-10">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 mb-4 sm:mb-6 mx-auto border border-white/20 rounded-full flex items-center justify-center group-hover:border-white/40 transition-colors duration-500">
-                  <div className="text-lg sm:text-xl text-white/80">2</div>
+                <div className="w-10 h-10 sm:w-12 sm:h-12 mb-4 sm:mb-6 mx-auto border border-rose-500/30 rounded-full flex items-center justify-center group-hover:border-rose-400/60 transition-colors duration-500 bg-rose-500/5">
+                  <div className="text-lg sm:text-xl text-rose-400">2</div>
                 </div>
                 <h3 className="text-xs sm:text-sm font-normal mb-3 sm:mb-4 text-white uppercase tracking-[0.2em] sm:tracking-[0.25em]">
-                  Direct Source
+                  Direct From Growers
                 </h3>
-                <p className="text-[11px] sm:text-xs font-light text-white/50 leading-relaxed">
-                  No middleman. Direct from verified cultivators and manufacturers.
+                <p className="text-[11px] sm:text-xs font-light text-white/60 leading-relaxed">
+                  Cut out the middleman. Straight from verified cultivators to you.
                 </p>
               </div>
             </div>
 
-            <div className="group bg-white/5 backdrop-blur-sm border border-white/10 p-6 sm:p-8 hover:bg-white/10 hover:border-white/20 transition-all duration-500 relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            <div className="group bg-white/5 backdrop-blur-sm border border-purple-500/20 p-6 sm:p-8 hover:bg-purple-500/5 hover:border-purple-500/40 transition-all duration-500 relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
               <div className="relative z-10">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 mb-4 sm:mb-6 mx-auto border border-white/20 rounded-full flex items-center justify-center group-hover:border-white/40 transition-colors duration-500">
-                  <div className="text-lg sm:text-xl text-white/80">3</div>
+                <div className="w-10 h-10 sm:w-12 sm:h-12 mb-4 sm:mb-6 mx-auto border border-purple-500/30 rounded-full flex items-center justify-center group-hover:border-purple-400/60 transition-colors duration-500 bg-purple-500/5">
+                  <div className="text-lg sm:text-xl text-purple-400">3</div>
                 </div>
                 <h3 className="text-xs sm:text-sm font-normal mb-3 sm:mb-4 text-white uppercase tracking-[0.2em] sm:tracking-[0.25em]">
                   Always Fresh
                 </h3>
-                <p className="text-[11px] sm:text-xs font-light text-white/50 leading-relaxed">
-                  No dry product, no old stock. Quality guaranteed, every time.
+                <p className="text-[11px] sm:text-xs font-light text-white/60 leading-relaxed">
+                  Never dry. Never old. Just sticky, loud, premium flower every time.
                 </p>
               </div>
             </div>
@@ -390,6 +407,11 @@ export default function HomeClient({
               <div className="absolute bottom-1/4 right-1/4 w-48 h-48 bg-white/5 rounded-full blur-2xl animate-float-delayed"></div>
             </div>
 
+            {/* Shipping Network Animation */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <ShippingAnimation />
+            </div>
+
             <div className="relative z-10 text-center">
               <div className="relative w-40 h-40 mx-auto mb-8">
                 <div className="absolute inset-0 border border-white/10 rounded-full animate-ping" style={{ animationDuration: "3s" }}></div>
@@ -421,6 +443,11 @@ export default function HomeClient({
       <section className="bg-[#2a2a2a] py-20 sm:py-28 px-4 sm:px-6 relative overflow-hidden w-full">
         <div className="absolute inset-0 opacity-20">
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-white/5 rounded-full blur-3xl"></div>
+        </div>
+
+        {/* Growth Chart Background */}
+        <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1/2 pointer-events-none hidden md:block">
+          <GrowthChart />
         </div>
 
         <div className="max-w-4xl mx-auto relative z-10">

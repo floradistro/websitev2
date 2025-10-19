@@ -1,0 +1,26 @@
+Replace adjustVendorInventoryProxy with:
+
+export async function adjustVendorInventoryProxy(productId: number, operation: 'add' | 'subtract', amount: number, reason?: string) {
+  const cacheBuster = `_t=${Date.now()}`;
+  try {
+    const response = await vendorProxyRequest(
+      `flora-vendors/v1/vendors/me/inventory/${productId}/adjust?${cacheBuster}`,
+      'POST',
+      { operation, amount, reason }
+    );
+    return response.data;
+  } catch (error: any) {
+    if (error.response?.data?.code === 'no_inventory' || error.response?.data?.details?.code === 'no_inventory') {
+      await ensureInventoryExists(productId);
+      const retryResponse = await vendorProxyRequest(
+        `flora-vendors/v1/vendors/me/inventory/${productId}/adjust?${cacheBuster}`,
+        'POST',
+        { operation, amount, reason }
+      );
+      return retryResponse.data;
+    }
+    throw error;
+  }
+}
+
+And setVendorInventoryProxy remains the same (it's the one that creates the record).

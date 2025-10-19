@@ -95,6 +95,18 @@ export async function getVendorSettingsProxy() {
 }
 
 // Helper to auto-create inventory if needed
+async function ensureInventoryExists(productId: number) {
+  try {
+    await vendorProxyRequest(
+      `flora-vendors/v1/vendors/me/inventory/${productId}/set?_t=${Date.now()}`,
+      'POST',
+      { quantity: 0, reason: 'Auto-initialize inventory record' }
+    );
+  } catch (e) {
+    // Ignore - record might exist
+  }
+}
+
 // Helper to auto-create inventory if needed
 async function ensureInventoryExists(productId: number) {
   try {
