@@ -123,3 +123,22 @@ export async function createVendorChangeRequestProxy(productId: number, changes:
   );
   return response.data;
 }
+
+export async function getVendorOrdersProxy(page = 1, per_page = 20) {
+  const cacheBuster = `_t=${Date.now()}`;
+  const response = await vendorProxyRequest(
+    `flora-vendors/v1/vendors/me/orders?page=${page}&per_page=${per_page}&${cacheBuster}`
+  );
+  return response.data;
+}
+
+export async function getVendorOrderProxy(orderId: number) {
+  const response = await vendorProxyRequest(`flora-vendors/v1/vendors/me/orders/${orderId}`);
+  return response.data;
+}
+
+export async function getVendorPayoutsProxy() {
+  const cacheBuster = `_t=${Date.now()}`;
+  const response = await vendorProxyRequest(`flora-vendors/v1/vendors/me/payouts?${cacheBuster}`);
+  return response.data;
+}

@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { Search, Package, DollarSign, Calendar, User, ChevronRight } from 'lucide-react';
-import { getVendorOrders } from '@/lib/wordpress';
+import { getVendorOrdersProxy as getVendorOrders } from '@/lib/wordpress-vendor-proxy';
+import { useVendorAuth } from '@/context/VendorAuthContext';
 
 interface Order {
   id: number;
@@ -25,6 +26,7 @@ interface OrderItem {
 }
 
 export default function VendorOrders() {
+  const { isAuthenticated, isLoading: authLoading } = useVendorAuth();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -33,6 +35,10 @@ export default function VendorOrders() {
 
   useEffect(() => {
     async function loadOrders() {
+      if (authLoading || !isAuthenticated) {
+        setLoading(false);
+        return;
+      }
       try {
         setLoading(true);
         const response = await getVendorOrders(1, 100);
@@ -60,7 +66,7 @@ export default function VendorOrders() {
     }
     
     loadOrders();
-  }, []);
+  }, [authLoading, isAuthenticated]);
 
   const getStatusBadge = (status: string) => {
     const styles = {
