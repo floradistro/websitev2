@@ -326,7 +326,11 @@ export async function getVendorProducts(slug: string, params?: any) {
   }
 }
 
-// Helper to get vendor auth headers
+/**
+ * ⚠️ CLIENT-SIDE ONLY - Uses localStorage
+ * DO NOT call from Server Actions ("use server")
+ * See: SERVER-ACTIONS-GUIDE.md
+ */
 function getVendorAuthHeaders() {
   if (typeof window === 'undefined') return {};
   
@@ -527,6 +531,11 @@ export async function getVendorBranding() {
   return response.data;
 }
 
+/**
+ * ⚠️ CLIENT-SIDE ONLY - Uses localStorage
+ * DO NOT call from Server Actions ("use server")
+ * See: SERVER-ACTIONS-GUIDE.md
+ */
 export async function updateVendorBranding(brandingData: any) {
   // Get vendor user_id from stored vendor data
   const vendorData = localStorage.getItem('vendor_data');

@@ -1,5 +1,19 @@
 "use server";
 
+/**
+ * ⚠️ SERVER ACTION WARNING ⚠️
+ * 
+ * This file runs on the SERVER (Vercel/Node.js), NOT in the browser.
+ * 
+ * NEVER use:
+ * - localStorage / sessionStorage
+ * - window / document
+ * - Browser APIs
+ * 
+ * ALWAYS receive data as FormData parameters from the client.
+ * See: SERVER-ACTIONS-GUIDE.md for full documentation.
+ */
+
 import axios from 'axios';
 
 const baseUrl = "https://api.floradistro.com";
