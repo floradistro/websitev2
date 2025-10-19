@@ -47,11 +47,40 @@ export default function FAQ() {
         </div>
       </section>
 
-      {/* Product Info */}
+      {/* Marketplace */}
       <section className="bg-[#2a2a2a] py-16 px-4">
         <div className="max-w-3xl mx-auto">
-          <h2 className="text-lg uppercase tracking-[0.2em] text-white mb-8 font-normal">Product</h2>
+          <h2 className="text-lg uppercase tracking-[0.2em] text-white mb-8 font-normal">Marketplace</h2>
           <div className="bg-[#3a3a3a] border border-white/10 p-6">
+            <FAQItem
+              id="marketplace-what"
+              question="What is Flora Distro?"
+              answer="Flora Distro is a curated cannabis marketplace. We connect verified vendors with customers, offering products from our own facilities and trusted partner vendors—all in one place."
+            />
+            <FAQItem
+              id="multiple-vendors"
+              question="Can I buy from multiple vendors?"
+              answer="Yes. Add products from any vendor to your cart. We coordinate fulfillment across vendors to provide a seamless delivery experience."
+            />
+            <FAQItem
+              id="vendor-verified"
+              question="How are vendors verified?"
+              answer="Every vendor goes through our vetting process. We verify product quality, lab testing, business licensing, and commitment to our sustainability and service standards."
+            />
+            <FAQItem
+              id="become-vendor"
+              question="How do I become a vendor?"
+              answer="Email vendors@floradistro.com with information about your business and products. We'll review your application and reach out if you're a good fit for our marketplace."
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* Product Info */}
+      <section className="bg-[#3a3a3a] py-16 px-4">
+        <div className="max-w-3xl mx-auto">
+          <h2 className="text-lg uppercase tracking-[0.2em] text-white mb-8 font-normal">Product</h2>
+          <div className="bg-[#2a2a2a] border border-white/10 p-6">
             <FAQItem
               id="thca-what"
               question="What is THCa?"
@@ -60,7 +89,7 @@ export default function FAQ() {
             <FAQItem
               id="lab-tested"
               question="Are products lab tested?"
-              answer="Yes. Every batch is third-party tested for potency and purity. Lab results available on request."
+              answer="Yes. Every batch from every vendor is third-party tested for potency and purity. Lab results available on request."
             />
             <FAQItem
               id="drug-test"
@@ -72,14 +101,14 @@ export default function FAQ() {
       </section>
 
       {/* Ordering */}
-      <section className="bg-[#3a3a3a] py-16 px-4">
+      <section className="bg-[#2a2a2a] py-16 px-4">
         <div className="max-w-3xl mx-auto">
           <h2 className="text-lg uppercase tracking-[0.2em] text-white mb-8 font-normal">Ordering</h2>
-          <div className="bg-[#2a2a2a] border border-white/10 p-6">
+          <div className="bg-[#3a3a3a] border border-white/10 p-6">
             <FAQItem
               id="payment"
               question="What payment methods?"
-              answer="Credit/debit cards and alternative payment methods. All transactions are secure."
+              answer="Credit/debit cards and alternative payment methods. All transactions are secure and processed through our platform."
             />
             <FAQItem
               id="wholesale"
@@ -91,29 +120,39 @@ export default function FAQ() {
               question="Can I change my order?"
               answer="You have 1 hour after placing your order to modify or cancel. After that, it's processing. Email support@floradistro.com immediately if you need changes."
             />
+            <FAQItem
+              id="vendor-fulfillment"
+              question="Who fulfills my order?"
+              answer="Depending on your cart, orders may ship from Flora Distro facilities or directly from vendor locations. We coordinate to ensure fast, reliable delivery."
+            />
           </div>
         </div>
       </section>
 
       {/* Shipping */}
-      <section className="bg-[#2a2a2a] py-16 px-4">
+      <section className="bg-[#3a3a3a] py-16 px-4">
         <div className="max-w-3xl mx-auto">
           <h2 className="text-lg uppercase tracking-[0.2em] text-white mb-8 font-normal">Shipping</h2>
-          <div className="bg-[#3a3a3a] border border-white/10 p-6">
+          <div className="bg-[#2a2a2a] border border-white/10 p-6">
             <FAQItem
               id="ship-time"
               question="How long does shipping take?"
-              answer="We ship daily at 2PM EST. Regional orders (NC, East TN) arrive next day. Other states 2-4 days."
+              answer="Most orders ship daily at 2PM EST. Regional orders (NC, East TN) typically arrive next day. Other states 2-4 days. Timing may vary slightly by vendor."
             />
             <FAQItem
               id="tracking"
               question="Do I get tracking?"
-              answer="Yes. Every order is tracked and insured. You'll receive tracking info via email once shipped."
+              answer="Yes. Every order is tracked and insured. You'll receive tracking info via email once shipped, even if fulfilled by a vendor partner."
             />
             <FAQItem
               id="discreet"
               question="Is packaging discreet?"
-              answer="100%. Plain boxes, no branding, no indication of contents. Just our business name as sender."
+              answer="100%. All vendors on our marketplace follow our discreet packaging standards. Plain boxes, no branding, no indication of contents."
+            />
+            <FAQItem
+              id="multi-vendor-shipping"
+              question="What if I order from multiple vendors?"
+              answer="If your cart includes products from multiple vendors, you may receive separate shipments. We optimize for speed and freshness."
             />
           </div>
         </div>

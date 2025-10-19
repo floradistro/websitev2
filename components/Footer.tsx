@@ -48,7 +48,7 @@ export default function Footer() {
   return (
     <footer className="border-t border-white/10 bg-[#1a1a1a] text-white mt-auto">
       <div className="container mx-auto px-4 sm:px-6 py-10 sm:py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 sm:gap-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 sm:gap-10">
           {/* Company */}
           <div>
             <h3 className="text-xs sm:text-sm uppercase tracking-wider font-semibold mb-4 text-white">Company</h3>
@@ -98,6 +98,28 @@ export default function Footer() {
               <li>
                 <Link href="/track" className="hover:text-white transition-colors">
                   Track Order
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* For Vendors */}
+          <div>
+            <h3 className="text-xs sm:text-sm uppercase tracking-wider font-semibold mb-4 text-white">For Vendors</h3>
+            <ul className="space-y-2.5 text-sm sm:text-base text-white/60">
+              <li>
+                <Link href="/vendors" className="hover:text-white transition-colors">
+                  Browse Vendors
+                </Link>
+              </li>
+              <li>
+                <Link href="/vendor/login" className="hover:text-white transition-colors">
+                  Vendor Portal
+                </Link>
+              </li>
+              <li>
+                <Link href="/contact" className="hover:text-white transition-colors">
+                  Become a Vendor
                 </Link>
               </li>
             </ul>

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Search, ChevronRight, Package, CheckCircle, AlertTriangle, X, Save, Plus, Minus, Edit2, FileText, Send } from 'lucide-react';
-import { getVendorInventory, adjustVendorInventory, setVendorInventory, createVendorChangeRequest } from '@/lib/wordpress';
+import { getVendorInventory, adjustVendorInventory, setVendorInventory, createVendorChangeRequest, getVendorMyProducts } from '@/lib/wordpress';
 import { useVendorAuth } from '@/context/VendorAuthContext';
 
 interface FloraFields {
@@ -61,16 +61,56 @@ export default function VendorInventory() {
     
       try {
         setLoading(true);
-        const data = await getVendorInventory();
         
-      if (Array.isArray(data)) {
-        const mappedData = data.map((item: any) => ({
-          ...item,
-            quantity: parseFloat(item.quantity) || 0,
-          price: item.price ? parseFloat(item.price) : 0
-          }));
+        // Fetch both products and inventory data in parallel
+        const [productsResponse, inventoryData] = await Promise.all([
+          getVendorMyProducts(1, 100),
+          getVendorInventory().catch(() => []) // If inventory fetch fails, use empty array
+        ]);
+        
+        // Get only approved products
+        const approvedProducts = productsResponse?.products?.filter((p: any) => p.status === 'approved') || [];
+        
+        // Create inventory map for quick lookup
+        const inventoryMap = new Map(
+          Array.isArray(inventoryData) 
+            ? inventoryData.map((inv: any) => [inv.product_id, inv])
+            : []
+        );
+        
+        // Merge products with inventory data
+        const mappedData = approvedProducts.map((product: any) => {
+          const inventoryRecord = inventoryMap.get(product.product_id);
+          
+          // If inventory record exists, use it
+          if (inventoryRecord) {
+            return {
+              ...inventoryRecord,
+              quantity: parseFloat(inventoryRecord.quantity) || 0,
+              price: inventoryRecord.price ? parseFloat(inventoryRecord.price) : parseFloat(product.price || 0)
+            };
+          }
+          
+          // Otherwise, create a new inventory item from product data with 0 stock
+          return {
+            id: product.product_id || product.id,
+            product_id: product.product_id || product.id,
+            product_name: product.name || 'Unnamed Product',
+            sku: product.sku || '',
+            quantity: 0,
+            category_name: product.category || 'Product',
+            image: product.image || null,
+            price: parseFloat(product.price || 0),
+            description: product.description || '',
+            stock_status: 'out_of_stock' as const,
+            stock_status_label: 'Out of Stock',
+            location_name: product.location_name || 'Not Set',
+            location_id: product.location_id || 0,
+            flora_fields: product.flora_fields || {}
+          };
+        });
+        
         setInventory(mappedData);
-        }
         setLoading(false);
       } catch (error) {
         console.error('Error loading inventory:', error);

@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Star, ArrowRight, CheckCircle, ArrowLeft, Search, Package, Users, Award, MapPin } from 'lucide-react';
+import { getAllVendors } from '@/lib/wordpress';
 
 // Vendor Card Component
 function VendorCard({ vendor, index }: { vendor: any; index: number }) {
@@ -70,76 +71,56 @@ function VendorCard({ vendor, index }: { vendor: any; index: number }) {
   );
 }
 
-// Mock vendor data with regions
-const vendors = [
-  {
-    id: 1,
-    name: 'Yacht Club',
-    slug: 'yacht-club',
-    logo: '/yachtclub.png',
-    tagline: 'Premium Cannabis from the Coast',
-    location: 'Newport Beach',
-    state: 'California',
-    region: 'Southern California',
-    rating: 4.9,
-    totalReviews: 47,
-    totalProducts: 9,
-    verified: true,
-    featured: true,
-  },
-  {
-    id: 2,
-    name: 'CannaBoyz',
-    slug: 'cannaboyz',
-    logo: '/CannaBoyz.png',
-    tagline: 'Street Certified, Lab Tested',
-    location: 'Los Angeles',
-    state: 'California',
-    region: 'Southern California',
-    rating: 4.8,
-    totalReviews: 38,
-    totalProducts: 6,
-    verified: true,
-    featured: false,
-  },
-  {
-    id: 3,
-    name: 'Moonwater',
-    slug: 'moonwater',
-    logo: '/moonwater.png',
-    tagline: 'Premium THC Beverages',
-    location: 'San Diego',
-    state: 'California',
-    region: 'Southern California',
-    rating: 4.9,
-    totalReviews: 52,
-    totalProducts: 4,
-    verified: true,
-    featured: false,
-  },
-  {
-    id: 4,
-    name: 'Zarati',
-    slug: 'zarati',
-    logo: '/zarati.png',
-    tagline: 'Exotic Genetics, Premium Quality',
-    location: 'Oakland',
-    state: 'California',
-    region: 'Northern California',
-    rating: 4.7,
-    totalReviews: 29,
-    totalProducts: 5,
-    verified: true,
-    featured: false,
-  }
-];
-
-// Get unique regions
-const regions = [...new Set(vendors.map(v => v.region))].sort();
-
 export default function VendorsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedRegion, setSelectedRegion] = useState('all');
+  const [vendors, setVendors] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadVendors() {
+      try {
+        setLoading(true);
+        const data = await getAllVendors();
+        
+        // Ensure data is an array
+        if (!Array.isArray(data)) {
+          console.error('API returned non-array:', data);
+          setVendors([]);
+          setLoading(false);
+          return;
+        }
+        
+        // Map API data to component format
+        const mappedVendors = data.map((v: any) => ({
+          id: parseInt(v.id),
+          name: v.store_name,
+          slug: v.slug,
+          logo: v.logo_url || '/logoprint.png',
+          tagline: v.tagline || 'Quality cannabis products',
+          location: v.region || 'California',
+          state: v.state || 'California',
+          region: v.region || 'California',
+          rating: parseFloat(v.rating) || 0,
+          totalReviews: parseInt(v.review_count) || 0,
+          totalProducts: parseInt(v.product_count) || 0,
+          verified: parseInt(v.verified) === 1,
+          featured: parseInt(v.featured) === 1,
+        }));
+        
+        setVendors(mappedVendors);
+      } catch (error) {
+        console.error('Error loading vendors:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    
+    loadVendors();
+  }, []);
+
+  // Get unique regions
+  const regions = [...new Set(vendors.map(v => v.region))].sort();
 
   const filteredVendors = vendors.filter(vendor => {
     const matchesSearch = vendor.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
@@ -149,7 +130,18 @@ export default function VendorsPage() {
     return matchesSearch && matchesRegion;
   });
 
-  const featuredVendor = vendors.find(v => v.featured) || vendors[0];
+  const featuredVendor = vendors.find(v => v.featured) || vendors[0] || {
+    name: 'Flora Distro',
+    slug: 'flora-distro',
+    logo: '/logoprint.png',
+    tagline: 'Premium Cannabis Marketplace',
+    rating: 5.0,
+    totalReviews: 0,
+    totalProducts: 0,
+    location: 'California',
+    verified: true,
+    featured: false
+  };
 
   // Group vendors by region for organized display
   const vendorsByRegion = regions.reduce((acc, region) => {
@@ -369,7 +361,12 @@ export default function VendorsPage() {
 
       {/* Vendors by Region */}
       <div className="max-w-[2000px] mx-auto px-4 sm:px-6 md:px-8 py-12">
-        {filteredVendors.length === 0 ? (
+        {loading ? (
+          <div className="text-center py-16">
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-white/60 mb-4"></div>
+            <p className="text-white/60">Loading vendors...</p>
+          </div>
+        ) : filteredVendors.length === 0 ? (
           <div className="text-center py-16 bg-[#1a1a1a] border border-white/10">
             <Search size={48} className="text-white/20 mx-auto mb-4" />
             <p className="text-white/60 mb-2">No vendors found in {selectedRegion === 'all' ? 'your search' : selectedRegion}</p>
@@ -410,7 +407,7 @@ export default function VendorsPage() {
                   
                   {/* Region Vendors */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-px bg-white/5">
-                    {regionVendors.map((vendor, index) => (
+                    {regionVendors.map((vendor: any, index: number) => (
                       <VendorCard key={vendor.id} vendor={vendor} index={index} />
                     ))}
                   </div>

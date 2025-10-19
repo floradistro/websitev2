@@ -235,6 +235,21 @@ export default function ProductCard({ product, index, locations, pricingTiers = 
 
   // Get locations where product is in stock
   const getStockLocations = () => {
+    // Simple check first - if product has total_stock from bulk API
+    if (product.total_stock && product.total_stock > 0) {
+      return { inStock: true, locations: [], count: 1 };
+    }
+    
+    // Check direct stock fields
+    if (product.stock > 0 || product.stock_quantity > 0) {
+      return { inStock: true, locations: [], count: 1 };
+    }
+    
+    // Check stock status
+    if (product.stock_status === 'instock') {
+      return { inStock: true, locations: [], count: 1 };
+    }
+    
     if (!inventory || inventory.length === 0) {
       return { inStock: false, locations: [], count: 0 };
     }
@@ -425,6 +440,14 @@ export default function ProductCard({ product, index, locations, pricingTiers = 
       {/* Product Info */}
       <div className="flex flex-col flex-1 px-3 py-4">
         <div className="space-y-3">
+          {/* Vendor Badge */}
+          {product.vendor && (
+            <div className="flex items-center gap-1.5 text-[9px] text-white/50 uppercase tracking-wider">
+              <Store size={9} />
+              <span>{product.vendor.name}</span>
+            </div>
+          )}
+          
           <h3 className="text-xs uppercase tracking-[0.12em] font-normal text-white line-clamp-2 leading-relaxed transition-all duration-300">
             {product.name}
           </h3>

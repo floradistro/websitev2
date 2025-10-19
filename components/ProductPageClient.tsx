@@ -6,6 +6,7 @@ import Image from "next/image";
 import { ChevronLeft, Heart, Share2, Check } from "lucide-react";
 // import { useRecentlyViewedContext } from "@/context/RecentlyViewedContext";
 import DeliveryAvailability from "@/components/DeliveryAvailability";
+import FulfillmentInfo from "@/components/FulfillmentInfo";
 import PricingTiers from "@/components/PricingTiers";
 import FloraFields from "@/components/FloraFields";
 import ProductInfo from "@/components/ProductInfo";

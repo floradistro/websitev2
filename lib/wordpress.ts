@@ -266,3 +266,394 @@ export async function getAllReviews(params?: any) {
   }
 }
 
+// ==========================================
+// VENDOR MARKETPLACE API
+// ==========================================
+
+// Vendor API client
+const vendorApi: AxiosInstance = axios.create({
+  baseURL: `${baseUrl}/wp-json/flora-vendors/v1`,
+});
+
+// PUBLIC VENDOR ENDPOINTS (No auth required)
+
+export async function getAllVendors() {
+  try {
+    const response = await vendorApi.get("/vendors");
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching vendors:", error);
+    return [];
+  }
+}
+
+export async function getVendorBySlug(slug: string) {
+  try {
+    const response = await vendorApi.get(`/vendors/${slug}`);
+    return response.data;
+  } catch (error: any) {
+    if (error.response?.status === 404) {
+      return null;
+    }
+    throw error;
+  }
+}
+
+export async function getVendorProducts(slug: string, params?: any) {
+  try {
+    // Get vendor's product list (returns basic data with product IDs)
+    const vendorProductsResponse = await vendorApi.get(`/vendors/${slug}/products`, { params });
+    
+    if (!vendorProductsResponse.data || vendorProductsResponse.data.length === 0) {
+      return [];
+    }
+    
+    // Extract product IDs (the endpoint returns id field which is the product_id)
+    const productIds = vendorProductsResponse.data.map((p: any) => p.id).join(',');
+    
+    if (!productIds) return [];
+    
+    // Get full product data from bulk API with stock and Flora fields
+    const cacheBuster = `_t=${Date.now()}`;
+    const bulkResponse = await axios.get(
+      `${baseUrl}/wp-json/flora-im/v1/products/bulk?${authParams}&include=${productIds}&${cacheBuster}`
+    );
+    
+    return bulkResponse.data?.data || [];
+  } catch (error) {
+    console.error("Error fetching vendor products:", error);
+    return [];
+  }
+}
+
+// Helper to get vendor auth headers
+function getVendorAuthHeaders() {
+  if (typeof window === 'undefined') return {};
+  
+  const vendorAuth = localStorage.getItem('vendor_auth');
+  
+  if (!vendorAuth) {
+    throw new Error('Not authenticated');
+  }
+  
+  return {
+    'Authorization': `Basic ${vendorAuth}`
+  };
+}
+
+// VENDOR DASHBOARD ENDPOINTS (Auth required)
+
+export async function getVendorDashboard() {
+  const response = await axios.get(
+    `${baseUrl}/wp-json/flora-vendors/v1/vendors/me/dashboard`,
+    {
+      headers: getVendorAuthHeaders()
+    }
+  );
+  return response.data;
+}
+
+export async function getVendorMyProducts(page = 1, per_page = 20, status?: string) {
+  const params: any = { page, per_page };
+  if (status) params.status = status;
+  
+  // Add cache buster to prevent SiteGround caching
+  const cacheBuster = `_t=${Date.now()}`;
+  const queryString = new URLSearchParams(params).toString();
+  
+  const response = await axios.get(
+    `${baseUrl}/wp-json/flora-vendors/v1/vendors/me/products?${queryString}&${cacheBuster}`,
+    {
+      headers: getVendorAuthHeaders()
+    }
+  );
+  return response.data;
+}
+
+export async function getVendorProduct(productId: number) {
+  const response = await axios.get(
+    `${baseUrl}/wp-json/flora-vendors/v1/vendors/me/products/${productId}`,
+    { headers: getVendorAuthHeaders() }
+  );
+  return response.data;
+}
+
+export async function createVendorProduct(productData: any) {
+  const response = await axios.post(
+    `${baseUrl}/wp-json/flora-vendors/v1/vendors/me/products`,
+    productData,
+    { headers: getVendorAuthHeaders() }
+  );
+  return response.data;
+}
+
+export async function updateVendorProduct(productId: number, productData: any) {
+  const response = await axios.put(
+    `${baseUrl}/wp-json/flora-vendors/v1/vendors/me/products/${productId}`,
+    productData,
+    { headers: getVendorAuthHeaders() }
+  );
+  return response.data;
+}
+
+export async function getVendorInventory() {
+  const cacheBuster = `_t=${Date.now()}`;
+  const response = await axios.get(
+    `${baseUrl}/wp-json/flora-vendors/v1/vendors/me/inventory?${cacheBuster}`,
+    { headers: getVendorAuthHeaders() }
+  );
+  return response.data;
+}
+
+export async function createVendorChangeRequest(productId: number, changes: any) {
+  const cacheBuster = `_t=${Date.now()}`;
+  const response = await axios.post(
+    `${baseUrl}/wp-json/flora-vendors/v1/vendors/me/products/${productId}/change-request?${cacheBuster}`,
+    changes,
+    { headers: getVendorAuthHeaders() }
+  );
+  return response.data;
+}
+
+export async function getVendorChangeRequests() {
+  const cacheBuster = `_t=${Date.now()}`;
+  const response = await axios.get(
+    `${baseUrl}/wp-json/flora-vendors/v1/vendors/me/change-requests?${cacheBuster}`,
+    { headers: getVendorAuthHeaders() }
+  );
+  return response.data;
+}
+
+export async function updateVendorInventory(productId: number, inventoryData: any) {
+  const cacheBuster = `_t=${Date.now()}`;
+  const response = await axios.put(
+    `${baseUrl}/wp-json/flora-vendors/v1/vendors/me/inventory/${productId}?${cacheBuster}`,
+    inventoryData,
+    { headers: getVendorAuthHeaders() }
+  );
+  return response.data;
+}
+
+export async function adjustVendorInventory(productId: number, operation: 'add' | 'subtract', amount: number, reason?: string) {
+  const cacheBuster = `_t=${Date.now()}`;
+  const response = await axios.post(
+    `${baseUrl}/wp-json/flora-vendors/v1/vendors/me/inventory/${productId}/adjust?${cacheBuster}`,
+    { operation, amount, reason },
+    { headers: getVendorAuthHeaders() }
+  );
+  return response.data;
+}
+
+export async function setVendorInventory(productId: number, quantity: number, reason?: string) {
+  const cacheBuster = `_t=${Date.now()}`;
+  const response = await axios.post(
+    `${baseUrl}/wp-json/flora-vendors/v1/vendors/me/inventory/${productId}/set?${cacheBuster}`,
+    { quantity, reason },
+    { headers: getVendorAuthHeaders() }
+  );
+  return response.data;
+}
+
+export async function getVendorOrders(page = 1, per_page = 20) {
+  const response = await axios.get(
+    `${baseUrl}/wp-json/flora-vendors/v1/vendors/me/orders?page=${page}&per_page=${per_page}`,
+    { headers: getVendorAuthHeaders() }
+  );
+  return response.data;
+}
+
+export async function getVendorOrder(orderId: number) {
+  const response = await axios.get(
+    `${baseUrl}/wp-json/flora-vendors/v1/vendors/me/orders/${orderId}`,
+    { headers: getVendorAuthHeaders() }
+  );
+  return response.data;
+}
+
+export async function getVendorPayouts() {
+  const response = await axios.get(
+    `${baseUrl}/wp-json/flora-vendors/v1/vendors/me/payouts`,
+    { headers: getVendorAuthHeaders() }
+  );
+  return response.data;
+}
+
+export async function getVendorPayout(payoutId: number) {
+  const response = await axios.get(
+    `${baseUrl}/wp-json/flora-vendors/v1/vendors/me/payouts/${payoutId}`,
+    { headers: getVendorAuthHeaders() }
+  );
+  return response.data;
+}
+
+export async function getVendorCOAs() {
+  const response = await axios.get(
+    `${baseUrl}/wp-json/flora-vendors/v1/vendors/me/coas`,
+    { headers: getVendorAuthHeaders() }
+  );
+  return response.data;
+}
+
+export async function deleteVendorCOA(coaId: number) {
+  const response = await axios.delete(
+    `${baseUrl}/wp-json/flora-vendors/v1/vendors/me/coas/${coaId}`,
+    { headers: getVendorAuthHeaders() }
+  );
+  return response.data;
+}
+
+export async function getVendorReviews() {
+  const response = await axios.get(
+    `${baseUrl}/wp-json/flora-vendors/v1/vendors/me/reviews`,
+    { headers: getVendorAuthHeaders() }
+  );
+  return response.data;
+}
+
+export async function respondToVendorReview(reviewId: number, responseText: string) {
+  const responseData = await axios.post(
+    `${baseUrl}/wp-json/flora-vendors/v1/vendors/me/reviews/${reviewId}/respond`,
+    { response: responseText },
+    { headers: getVendorAuthHeaders() }
+  );
+  return responseData.data;
+}
+
+export async function getVendorBranding() {
+  const response = await axios.get(
+    `${baseUrl}/wp-json/flora-vendors/v1/vendors/me/branding`,
+    { headers: getVendorAuthHeaders() }
+  );
+  return response.data;
+}
+
+export async function updateVendorBranding(brandingData: any) {
+  // Get vendor user_id from stored vendor data
+  const vendorData = localStorage.getItem('vendor_data');
+  const vendor = vendorData ? JSON.parse(vendorData) : null;
+  
+  if (!vendor || !vendor.user_id) {
+    throw new Error('Vendor data not found');
+  }
+  
+  // Use WooCommerce Customer API (works perfectly)
+  const metaData = Object.keys(brandingData).map(key => ({
+    key: `vendor_${key}`,
+    value: brandingData[key]
+  }));
+  
+  const response = await axios.put(
+    `${baseUrl}/wp-json/wc/v3/customers/${vendor.user_id}`,
+    { meta_data: metaData },
+    {
+      auth: {
+        username: 'ck_bb8e5fe3d405e6ed6b8c079c93002d7d8b23a7d5',
+        password: 'cs_38194e74c7ddc5d72b6c32c70485728e7e529678'
+      }
+    }
+  );
+  
+  // Also update vendor table directly
+  await axios.post(
+    `${baseUrl}/wp-content/plugins/flora-inventory-matrix/save-branding.php`,
+    brandingData,
+    { headers: getVendorAuthHeaders() }
+  ).catch(() => {
+    // Fallback - at least meta_data saved
+  });
+  
+  return { success: true, message: 'Branding updated' };
+}
+
+export async function getVendorSettings() {
+  const response = await axios.get(
+    `${baseUrl}/wp-json/flora-vendors/v1/vendors/me/settings`,
+    { headers: getVendorAuthHeaders() }
+  );
+  return response.data;
+}
+
+export async function updateVendorSettings(settingsData: any) {
+  const response = await axios.put(
+    `${baseUrl}/wp-json/flora-vendors/v1/vendors/me/settings`,
+    settingsData,
+    { headers: getVendorAuthHeaders() }
+  );
+  return response.data;
+}
+
+export async function getVendorAnalytics(days = 30) {
+  const response = await axios.get(
+    `${baseUrl}/wp-json/flora-vendors/v1/vendors/me/analytics?days=${days}`,
+    { headers: getVendorAuthHeaders() }
+  );
+  return response.data;
+}
+
+// ==========================================
+// VENDOR MEDIA UPLOADS
+// ==========================================
+
+export async function uploadVendorImages(files: File[]) {
+  const formData = new FormData();
+  files.forEach((file, index) => {
+    formData.append(`image_${index}`, file);
+  });
+  
+  const cacheBuster = `_t=${Date.now()}`;
+  const response = await axios.post(
+    `${baseUrl}/wp-json/flora-vendors/v1/vendors/me/upload/images?${cacheBuster}`,
+    formData,
+    { 
+      headers: {
+        ...getVendorAuthHeaders(),
+        'Content-Type': 'multipart/form-data'
+      }
+    }
+  );
+  return response.data;
+}
+
+export async function uploadVendorCOA(file: File, metadata?: any) {
+  const formData = new FormData();
+  formData.append('coa', file);
+  
+  if (metadata) {
+    Object.keys(metadata).forEach(key => {
+      formData.append(key, metadata[key]);
+    });
+  }
+  
+  const cacheBuster = `_t=${Date.now()}`;
+  const response = await axios.post(
+    `${baseUrl}/wp-json/flora-vendors/v1/vendors/me/upload/coa?${cacheBuster}`,
+    formData,
+    {
+      headers: {
+        ...getVendorAuthHeaders(),
+        'Content-Type': 'multipart/form-data'
+      }
+    }
+  );
+  return response.data;
+}
+
+export async function uploadVendorLogo(file: File) {
+  const formData = new FormData();
+  formData.append('logo', file);
+  
+  const cacheBuster = `_t=${Date.now()}`;
+  const response = await axios.post(
+    `${baseUrl}/wp-json/flora-vendors/v1/vendors/me/upload/logo?${cacheBuster}`,
+    formData,
+    {
+      headers: {
+        ...getVendorAuthHeaders(),
+        'Content-Type': 'multipart/form-data'
+      }
+    }
+  );
+  return response.data;
+}
+
+

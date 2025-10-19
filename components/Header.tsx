@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Search, ShoppingBag, User, Menu, X, RotateCcw } from "lucide-react";
+import { Search, ShoppingBag, User, Menu, X, RotateCcw, Store, ChevronDown, LayoutDashboard, Users } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
@@ -14,6 +14,7 @@ export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [vendorDropdownOpen, setVendorDropdownOpen] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const { itemCount } = useCart();
@@ -106,6 +107,69 @@ export default function Header() {
             >
               Products
             </Link>
+            
+            {/* Vendors Dropdown */}
+            <div 
+              className="relative group"
+              onMouseEnter={() => setVendorDropdownOpen(true)}
+              onMouseLeave={() => setVendorDropdownOpen(false)}
+            >
+              <Link
+                href="/vendors"
+                className="nav-link text-white/80 hover:text-white active:text-white click-feedback flex items-center gap-1.5"
+              >
+                <Store size={14} />
+                <span>Vendors</span>
+                <ChevronDown size={12} className={`transition-transform duration-200 ${vendorDropdownOpen ? 'rotate-180' : ''}`} />
+              </Link>
+              
+              {/* Dropdown Menu */}
+              {vendorDropdownOpen && (
+                <div 
+                  className="absolute top-full left-0 pt-2 w-60 z-[120]"
+                  onMouseEnter={() => setVendorDropdownOpen(true)}
+                  onMouseLeave={() => setVendorDropdownOpen(false)}
+                >
+                  <div className="bg-[#1a1a1a] border border-white/10 backdrop-blur-sm animate-fadeIn">
+                    <div className="py-1">
+                      <Link
+                        href="/vendors"
+                        className="flex items-center gap-3 px-4 py-3 text-white/80 hover:text-white hover:bg-white/5 transition-all group border-b border-white/5"
+                      >
+                        <Users size={14} className="text-white/40 group-hover:text-white transition-colors" />
+                        <div>
+                          <div className="text-xs uppercase tracking-wider">Browse Vendors</div>
+                          <div className="text-[10px] text-white/40 tracking-wide mt-0.5">View all verified sellers</div>
+                        </div>
+                      </Link>
+                      <Link
+                        href="/vendor/login"
+                        className="flex items-center gap-3 px-4 py-3 text-white/80 hover:text-white hover:bg-white/5 transition-all group border-b border-white/5"
+                      >
+                        <LayoutDashboard size={14} className="text-white/40 group-hover:text-white transition-colors" />
+                        <div>
+                          <div className="text-xs uppercase tracking-wider">Vendor Portal</div>
+                          <div className="text-[10px] text-white/40 tracking-wide mt-0.5">Manage your store</div>
+                        </div>
+                      </Link>
+                      <Link
+                        href="/contact"
+                        className="flex items-center gap-3 px-4 py-3 text-white/80 hover:text-white hover:bg-white/5 transition-all group"
+                      >
+                        <div className="w-6 h-6 bg-white/10 group-hover:bg-white group-hover:text-black text-white/60 flex items-center justify-center text-[9px] font-bold transition-all">
+                          +
+                        </div>
+                        <div>
+                          <div className="text-xs uppercase tracking-wider">Become a Vendor</div>
+                          <div className="text-[10px] text-white/40 tracking-wide mt-0.5">Start selling with us</div>
+                        </div>
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+            
             <Link
               href="/about"
               className="nav-link text-white/80 hover:text-white active:text-white click-feedback"
@@ -193,6 +257,33 @@ export default function Header() {
             >
               Products
             </Link>
+            
+            {/* Vendors Section */}
+            <div className="border-b border-white/5">
+              <div className="text-white/60 text-xs mb-2 flex items-center gap-2">
+                <Store size={12} />
+                <span>Vendors</span>
+              </div>
+              <div className="flex flex-col space-y-2 pb-3 pl-4">
+                <Link
+                  href="/vendors"
+                  className="text-white/70 hover:text-white transition-smooth py-1.5 text-xs flex items-center gap-2 click-feedback"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <Users size={12} />
+                  Browse Vendors
+                </Link>
+                <Link
+                  href="/vendor/login"
+                  className="text-white/70 hover:text-white transition-smooth py-1.5 text-xs flex items-center gap-2 click-feedback"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <LayoutDashboard size={12} />
+                  Vendor Portal
+                </Link>
+              </div>
+            </div>
+            
             <Link
               href="/about"
               className="text-white/80 hover:text-white transition-smooth py-2 border-b border-white/5 hover:pl-2 click-feedback"

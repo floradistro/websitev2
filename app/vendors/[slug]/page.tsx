@@ -4,90 +4,11 @@ import { useEffect, useState } from 'react';
 import ProductCard from "@/components/ProductCard";
 import Link from "next/link";
 import { ArrowLeft, Star, MapPin, Calendar, CheckCircle, ArrowRight, Award, Package, Search, SlidersHorizontal, Grid3x3, List } from "lucide-react";
-
-// Mock vendor data - will be from API later
-const vendors: any = {
-  'yacht-club': {
-    id: 1,
-    name: 'Yacht Club',
-    slug: 'yacht-club',
-    logo: '/yachtclub.png',
-    banner: '',
-    tagline: 'Premium Cannabis from the Coast',
-    about: 'Yacht Club brings you premium coastal cannabis cultivated with the same attention to detail as a luxury yacht. Every product is carefully crafted, lab tested by Quantix Analytics, and delivered with the highest standards of quality and service.',
-    primaryColor: '#0EA5E9',
-    location: 'Newport Beach, CA',
-    joinedDate: '2025-08-01',
-    rating: 4.9,
-    totalReviews: 47,
-    verified: true,
-    website: 'https://yachtclubcannabis.com',
-    instagram: '@yachtclubcannabis',
-    productIds: [50001, 50002, 50003, 50004, 50005, 50006, 50007, 50008, 50009],
-    fontFamily: 'Lobster'
-  },
-  'cannaboyz': {
-    id: 2,
-    name: 'CannaBoyz',
-    slug: 'cannaboyz',
-    logo: '/CannaBoyz.png',
-    banner: '',
-    tagline: 'Street Certified, Lab Tested',
-    about: 'CannaBoyz is bringing authentic street culture to the legal cannabis market. Based in LA, we source the realest cuts and provide lab-tested quality without the boutique price tag. Every product is grown with passion and tested by Quantix Analytics for your safety.',
-    primaryColor: '#10B981',
-    location: 'Los Angeles, CA',
-    joinedDate: '2025-09-15',
-    rating: 4.8,
-    totalReviews: 38,
-    verified: true,
-    website: 'https://cannaboyz.com',
-    instagram: '@cannaboyz',
-    productIds: [60001, 60002, 60003, 60004, 60005, 60006],
-    fontFamily: 'Monkey Act'
-  },
-  'moonwater': {
-    id: 3,
-    name: 'Moonwater',
-    slug: 'moonwater',
-    logo: '/moonwater.png',
-    banner: '',
-    tagline: 'Premium THC Beverages',
-    about: 'Moonwater crafts premium THC-infused beverages for the modern cannabis consumer. Our drinks feature precise 10mg dosing, zero calories, and fast-acting nano-emulsion technology. Based in San Diego, we\'re redefining cannabis consumption with clean ingredients and sophisticated flavors.',
-    primaryColor: '#1e40af',
-    location: 'San Diego, CA',
-    joinedDate: '2025-07-20',
-    rating: 4.9,
-    totalReviews: 52,
-    verified: true,
-    website: 'https://trymoonwater.com',
-    instagram: '@moonwater',
-    productIds: [70001, 70002, 70003, 70004],
-    fontFamily: 'monospace',
-    useBrackets: true
-  },
-  'zarati': {
-    id: 4,
-    name: 'Zarati',
-    slug: 'zarati',
-    logo: '/zarati.png',
-    banner: '',
-    tagline: 'Exotic Genetics, Premium Quality',
-    about: 'Zarati specializes in rare exotic genetics and premium indoor cultivation. Based in Oakland, we hunt the latest hype strains and bring them to market with meticulous care. Every batch is small-batch, hand-trimmed, and lab tested by Quantix Analytics for maximum potency and purity.',
-    primaryColor: '#8b5cf6',
-    location: 'Oakland, CA',
-    joinedDate: '2025-09-01',
-    rating: 4.7,
-    totalReviews: 29,
-    verified: true,
-    website: 'https://zarati.com',
-    instagram: '@zaraticannabis',
-    productIds: [80001, 80002, 80003, 80004, 80005],
-    fontFamily: 'inherit'
-  }
-};
+import { getVendorBySlug, getVendorProducts } from '@/lib/wordpress';
 
 export default function VendorStorefront() {
   const [vendor, setVendor] = useState<any>(null);
+  const [vendorProducts, setVendorProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -95,11 +16,56 @@ export default function VendorStorefront() {
   const [stockFilter, setStockFilter] = useState('all');
 
   useEffect(() => {
-    // Get slug from URL
-    const slug = window.location.pathname.split('/').pop();
-    const vendorData = vendors[slug || 'yacht-club'];
-    setVendor(vendorData);
-    setLoading(false);
+    async function loadVendor() {
+      try {
+        setLoading(true);
+        // Get slug from URL
+        const slug = window.location.pathname.split('/').pop();
+        
+        if (!slug) {
+          setLoading(false);
+          return;
+        }
+
+        // Fetch vendor data from API
+        const vendorData = await getVendorBySlug(slug);
+        
+        if (vendorData) {
+          // Map API data to component format
+          setVendor({
+            id: parseInt(vendorData.id),
+            name: vendorData.store_name,
+            slug: vendorData.slug,
+            logo: vendorData.logo_url || '/logoprint.png',
+            banner: vendorData.banner_url || '',
+            tagline: vendorData.tagline || '',
+            about: vendorData.about || `${vendorData.store_name} is a verified vendor on Flora Distro marketplace.`,
+            primaryColor: vendorData.primary_color || '#0EA5E9',
+            location: vendorData.region || 'California',
+            joinedDate: vendorData.joined_date,
+            rating: parseFloat(vendorData.rating) || 0,
+            totalReviews: parseInt(vendorData.review_count) || 0,
+            verified: parseInt(vendorData.verified) === 1,
+            website: vendorData.website,
+            instagram: vendorData.instagram,
+            productCount: parseInt(vendorData.product_count) || 0,
+            fontFamily: vendorData.custom_font || 'inherit',
+            useBrackets: false
+          });
+
+          // Fetch vendor's products from API
+          const products = await getVendorProducts(slug);
+          setVendorProducts(products || []);
+        }
+        
+        setLoading(false);
+      } catch (error) {
+        console.error('Error loading vendor:', error);
+        setLoading(false);
+      }
+    }
+    
+    loadVendor();
   }, []);
 
   if (loading || !vendor) {
@@ -109,44 +75,6 @@ export default function VendorStorefront() {
       </div>
     );
   }
-
-  // Mock product data based on vendor - using vendor logo as placeholder
-  const productsByVendor: any = {
-    'yacht-club': [
-      { id: 50001, name: 'OG Kush', price: '15.99', images: [{ src: vendor.logo }], categories: [{ name: 'Flower' }], meta_data: [], stock_status: 'instock', rating: 4.9 },
-      { id: 50002, name: 'Blue Dream', price: '14.99', images: [{ src: vendor.logo }], categories: [{ name: 'Flower' }], meta_data: [], stock_status: 'instock', rating: 4.8 },
-      { id: 50003, name: 'Sour Diesel', price: '16.99', images: [{ src: vendor.logo }], categories: [{ name: 'Flower' }], meta_data: [], stock_status: 'instock', rating: 5.0 },
-      { id: 50004, name: 'Girl Scout Cookies', price: '17.99', images: [{ src: vendor.logo }], categories: [{ name: 'Flower' }], meta_data: [], stock_status: 'instock', rating: 4.9 },
-      { id: 50005, name: 'Gelato', price: '18.99', images: [{ src: vendor.logo }], categories: [{ name: 'Flower' }], meta_data: [], stock_status: 'instock', rating: 4.7 },
-      { id: 50006, name: 'Sunset Sherbet', price: '17.99', images: [{ src: vendor.logo }], categories: [{ name: 'Flower' }], meta_data: [], stock_status: 'lowstock', rating: 4.8 },
-      { id: 50007, name: 'Purple Punch', price: '16.99', images: [{ src: vendor.logo }], categories: [{ name: 'Flower' }], meta_data: [], stock_status: 'instock', rating: 4.9 },
-      { id: 50008, name: 'Zkittlez', price: '15.99', images: [{ src: vendor.logo }], categories: [{ name: 'Flower' }], meta_data: [], stock_status: 'lowstock', rating: 4.6 },
-      { id: 50009, name: 'Wedding Cake', price: '18.99', images: [{ src: vendor.logo }], categories: [{ name: 'Flower' }], meta_data: [], stock_status: 'instock', rating: 5.0 },
-    ],
-    'cannaboyz': [
-      { id: 60001, name: 'Gorilla Glue #4', price: '16.99', images: [{ src: vendor.logo }], categories: [{ name: 'Flower' }], meta_data: [], stock_status: 'instock', rating: 4.8 },
-      { id: 60002, name: 'White Widow', price: '15.99', images: [{ src: vendor.logo }], categories: [{ name: 'Flower' }], meta_data: [], stock_status: 'instock', rating: 4.7 },
-      { id: 60003, name: 'Northern Lights', price: '14.99', images: [{ src: vendor.logo }], categories: [{ name: 'Flower' }], meta_data: [], stock_status: 'instock', rating: 4.9 },
-      { id: 60004, name: 'AK-47', price: '16.99', images: [{ src: vendor.logo }], categories: [{ name: 'Flower' }], meta_data: [], stock_status: 'outofstock', rating: 4.6 },
-      { id: 60005, name: 'Granddaddy Purple', price: '17.99', images: [{ src: vendor.logo }], categories: [{ name: 'Flower' }], meta_data: [], stock_status: 'instock', rating: 4.8 },
-      { id: 60006, name: 'Jack Herer', price: '16.99', images: [{ src: vendor.logo }], categories: [{ name: 'Flower' }], meta_data: [], stock_status: 'instock', rating: 4.9 },
-    ],
-    'moonwater': [
-      { id: 70001, name: '[CITRUS BLEND]', price: '8.99', images: [{ src: vendor.logo }], categories: [{ name: 'Beverages' }], meta_data: [], stock_status: 'instock', rating: 5.0 },
-      { id: 70002, name: '[BERRY FUSION]', price: '8.99', images: [{ src: vendor.logo }], categories: [{ name: 'Beverages' }], meta_data: [], stock_status: 'instock', rating: 4.9 },
-      { id: 70003, name: '[TROPICAL WAVE]', price: '8.99', images: [{ src: vendor.logo }], categories: [{ name: 'Beverages' }], meta_data: [], stock_status: 'instock', rating: 4.8 },
-      { id: 70004, name: '[MINT REFRESH]', price: '8.99', images: [{ src: vendor.logo }], categories: [{ name: 'Beverages' }], meta_data: [], stock_status: 'instock', rating: 4.9 },
-    ],
-    'zarati': [
-      { id: 80001, name: 'Runtz', price: '19.99', images: [{ src: vendor.logo }], categories: [{ name: 'Flower' }], meta_data: [], stock_status: 'instock', rating: 4.7 },
-      { id: 80002, name: 'Biscotti', price: '18.99', images: [{ src: vendor.logo }], categories: [{ name: 'Flower' }], meta_data: [], stock_status: 'instock', rating: 4.8 },
-      { id: 80003, name: 'Jealousy', price: '20.99', images: [{ src: vendor.logo }], categories: [{ name: 'Flower' }], meta_data: [], stock_status: 'lowstock', rating: 5.0 },
-      { id: 80004, name: 'Cereal Milk', price: '19.99', images: [{ src: vendor.logo }], categories: [{ name: 'Flower' }], meta_data: [], stock_status: 'instock', rating: 4.6 },
-      { id: 80005, name: 'Ice Cream Cake', price: '18.99', images: [{ src: vendor.logo }], categories: [{ name: 'Flower' }], meta_data: [], stock_status: 'instock', rating: 4.9 },
-    ]
-  };
-
-  let vendorProducts = productsByVendor[vendor.slug] || [];
 
   // Get unique categories from products
   const categories = [...new Set(vendorProducts.map((p: any) => p.categories[0]?.name))].filter(Boolean) as string[];
@@ -179,12 +107,27 @@ export default function VendorStorefront() {
     }
   });
 
+  // Build inventory and fields maps from bulk API data
   const locations: any[] = [];
   const inventoryMap: { [key: number]: any[] } = {};
   const productFieldsMap: { [key: number]: any } = {};
   
   filteredProducts.forEach((product: any) => {
-    productFieldsMap[product.id] = { fields: {}, pricingTiers: [] };
+    // Map inventory from bulk API
+    inventoryMap[product.id] = product.inventory || [];
+    
+    // Map fields from bulk API
+    const fieldsObj: any = {};
+    if (product.fields && Array.isArray(product.fields)) {
+      product.fields.forEach((field: any) => {
+        fieldsObj[field.name] = field.value;
+      });
+    }
+    
+    productFieldsMap[product.id] = { 
+      fields: fieldsObj,
+      pricingTiers: product.pricing_tiers || []
+    };
   });
 
   return (

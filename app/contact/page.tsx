@@ -1,6 +1,6 @@
 "use client";
 
-import { Mail, Phone, MapPin, ArrowRight } from "lucide-react";
+import { Mail, Phone, MapPin, ArrowRight, Store, Users } from "lucide-react";
 import { useState } from "react";
 
 export default function ContactPage() {
@@ -9,6 +9,7 @@ export default function ContactPage() {
     email: "",
     phone: "",
     subject: "",
+    inquiryType: "customer",
     message: "",
   });
 
@@ -17,7 +18,7 @@ export default function ContactPage() {
     console.log("Contact form submitted:", formData);
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
@@ -35,17 +36,68 @@ export default function ContactPage() {
           </h1>
           <div className="h-[1px] w-24 bg-gradient-to-r from-transparent via-white/20 to-transparent mx-auto mb-12"></div>
           <p className="text-lg md:text-xl font-light text-white/50 leading-relaxed">
-            Questions? Wholesale inquiry? We're here.
+            Customer questions. Vendor inquiries. Partnerships. We're here.
           </p>
         </div>
       </section>
 
+      {/* Quick Links */}
+      <section className="bg-[#2a2a2a] py-16">
+        <div className="grid md:grid-cols-3 gap-px">
+          <div className="bg-[#3a3a3a] hover:bg-[#404040] transition-all duration-500 p-10 border border-white/5">
+            <Users className="w-10 h-10 mb-6 text-white/60" />
+            <h3 className="text-sm uppercase tracking-[0.2em] text-white mb-3 font-normal">Customer Support</h3>
+            <p className="text-xs text-white/50 font-light mb-4">Questions about orders, products, or your account?</p>
+            <a href="mailto:support@floradistro.com" className="text-xs text-white underline hover:no-underline">
+              support@floradistro.com
+            </a>
+          </div>
+
+          <div className="bg-[#3a3a3a] hover:bg-[#404040] transition-all duration-500 p-10 border border-white/5">
+            <Store className="w-10 h-10 mb-6 text-white/60" />
+            <h3 className="text-sm uppercase tracking-[0.2em] text-white mb-3 font-normal">Vendor Inquiries</h3>
+            <p className="text-xs text-white/50 font-light mb-4">Interested in selling on our marketplace?</p>
+            <a href="mailto:vendors@floradistro.com" className="text-xs text-white underline hover:no-underline">
+              vendors@floradistro.com
+            </a>
+          </div>
+
+          <div className="bg-[#3a3a3a] hover:bg-[#404040] transition-all duration-500 p-10 border border-white/5">
+            <Mail className="w-10 h-10 mb-6 text-white/60" />
+            <h3 className="text-sm uppercase tracking-[0.2em] text-white mb-3 font-normal">General Inquiries</h3>
+            <p className="text-xs text-white/50 font-light mb-4">Business partnerships or media requests?</p>
+            <a href="mailto:info@floradistro.com" className="text-xs text-white underline hover:no-underline">
+              info@floradistro.com
+            </a>
+          </div>
+        </div>
+      </section>
+
       {/* Contact Grid */}
-      <section className="bg-[#2a2a2a] py-0">
+      <section className="bg-[#1a1a1a] py-0">
         <div className="grid md:grid-cols-2">
           {/* Form */}
-          <div className="px-8 md:px-12 py-16 bg-[#2a2a2a]">
+          <div className="px-8 md:px-12 py-16 bg-[#1a1a1a]">
             <form onSubmit={handleSubmit} className="space-y-6 max-w-xl">
+              <div>
+                <label htmlFor="inquiryType" className="block text-xs uppercase tracking-[0.2em] mb-3 text-white/60">
+                  I am a
+                </label>
+                <select
+                  id="inquiryType"
+                  name="inquiryType"
+                  value={formData.inquiryType}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none transition-smooth"
+                >
+                  <option value="customer" className="bg-[#1a1a1a]">Customer</option>
+                  <option value="vendor" className="bg-[#1a1a1a]">Prospective Vendor</option>
+                  <option value="partner" className="bg-[#1a1a1a]">Business Partner</option>
+                  <option value="other" className="bg-[#1a1a1a]">Other</option>
+                </select>
+              </div>
+
               <div>
                 <label htmlFor="name" className="block text-xs uppercase tracking-[0.2em] mb-3 text-white/60">
                   Name
@@ -133,7 +185,7 @@ export default function ContactPage() {
           </div>
 
           {/* Contact Info */}
-          <div className="bg-[#3a3a3a] px-8 md:px-12 py-16 flex items-center">
+          <div className="bg-[#2a2a2a] px-8 md:px-12 py-16 flex items-center">
             <div className="space-y-8">
               <div>
                 <h2 className="text-2xl font-light text-white mb-8 uppercase tracking-wider">
@@ -147,14 +199,24 @@ export default function ContactPage() {
                     <Mail size={18} className="text-white/60 group-hover:scale-110 transition-smooth" />
                   </div>
                   <div>
-                    <h3 className="text-xs uppercase tracking-[0.15em] text-white mb-1">Email</h3>
+                    <h3 className="text-xs uppercase tracking-[0.15em] text-white mb-1">General</h3>
                     <a href="mailto:info@floradistro.com" className="text-sm text-white/50 hover:text-white transition-smooth click-feedback">
                       info@floradistro.com
                     </a>
                   </div>
                 </div>
 
-                {/* Phone number removed - contact via email instead */}
+                <div className="flex items-start gap-4 group">
+                  <div className="w-10 h-10 flex-shrink-0 border border-white/20 flex items-center justify-center group-hover:border-white/40 transition-smooth">
+                    <Store size={18} className="text-white/60 group-hover:scale-110 transition-smooth" />
+                  </div>
+                  <div>
+                    <h3 className="text-xs uppercase tracking-[0.15em] text-white mb-1">Vendors</h3>
+                    <a href="mailto:vendors@floradistro.com" className="text-sm text-white/50 hover:text-white transition-smooth click-feedback">
+                      vendors@floradistro.com
+                    </a>
+                  </div>
+                </div>
 
                 <div className="flex items-start gap-4 group">
                   <div className="w-10 h-10 flex-shrink-0 border border-white/20 flex items-center justify-center group-hover:border-white/40 transition-smooth">
@@ -175,10 +237,10 @@ export default function ContactPage() {
       <section className="bg-[#1a1a1a] py-32 px-4">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-4xl md:text-6xl font-light text-white mb-12 leading-tight">
-            Our mission is simple.
+            Building the cannabis marketplace of the future.
           </h2>
           <p className="text-lg md:text-xl font-light text-white/50 leading-relaxed max-w-2xl mx-auto">
-            Connect quality cannabis from our facilities and trusted partner farms to stores and consumers. Fresh product, fair pricing, fast delivery.
+            Whether you're a customer, vendor, or partner—we're here to support you every step of the way.
           </p>
         </div>
       </section>

@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Store, Users, Truck, Shield, Leaf, Package, CheckCircle, Star } from "lucide-react";
 
 // Client-side dynamic imports with ssr: false
 const LuxuryHero = dynamic(() => import("@/components/LuxuryHero"), {
@@ -53,8 +53,80 @@ export default function HomeClient({
         <div className="absolute top-1/4 right-1/4 w-[500px] h-[500px] bg-white/5 rounded-full blur-3xl animate-float"></div>
         <div className="absolute bottom-1/4 left-1/4 w-[400px] h-[400px] bg-white/5 rounded-full blur-3xl animate-float-delayed"></div>
       </div>
+      
       {/* Hero Section - Animated Luxury */}
       <LuxuryHero />
+
+      {/* Marketplace Mission Statement */}
+      <section className="bg-[#1a1a1a] py-20 sm:py-28 md:py-32 px-4 sm:px-6 relative overflow-hidden w-full">
+        <div className="absolute inset-0 opacity-30">
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-white/5 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-white/5 rounded-full blur-3xl"></div>
+        </div>
+
+        <div className="max-w-4xl mx-auto text-center relative z-10">
+          <div className="h-[1px] w-16 bg-gradient-to-r from-transparent via-white/30 to-transparent mx-auto mb-8"></div>
+          <h2 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-light text-white mb-6 leading-tight tracking-tight">
+            The Premier<br/>Cannabis Marketplace
+          </h2>
+          <div className="h-[1px] w-24 bg-gradient-to-r from-transparent via-white/20 to-transparent mx-auto mb-12"></div>
+          <p className="text-base sm:text-lg md:text-xl font-light text-white/50 leading-relaxed max-w-2xl mx-auto mb-12">
+            Connecting trusted vendors with customers nationwide. One platform, curated vendors, unified experience.
+          </p>
+          <Link 
+            href="/vendors"
+            className="group inline-flex items-center gap-3 bg-white text-black px-10 py-4 text-xs uppercase tracking-[0.25em] hover:bg-white/90 transition-all duration-300 font-medium"
+          >
+            <Store size={16} />
+            <span>Browse Vendors</span>
+            <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform duration-300" />
+          </Link>
+        </div>
+      </section>
+
+      {/* Marketplace Features Grid */}
+      <section className="bg-[#3a3a3a] py-16 overflow-x-hidden w-full">
+        <div className="px-4 sm:px-6 mb-12">
+          <h2 className="text-2xl md:text-3xl font-light uppercase tracking-wider text-white mb-3">
+            Why Shop Our Marketplace
+          </h2>
+          <div className="h-[1px] w-16 bg-white/20"></div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-px">
+          <div className="bg-[#3a3a3a] hover:bg-[#404040] transition-all duration-500 p-8 lg:p-10 border border-white/5 hover:border-white/10">
+            <Store className="w-8 h-8 mb-6 text-white/60" />
+            <h3 className="text-sm uppercase tracking-[0.2em] text-white mb-4 font-normal">Curated Vendors</h3>
+            <p className="text-xs text-white/50 font-light leading-relaxed">
+              Every vendor is verified and meets our rigorous quality standards. Shop with confidence.
+            </p>
+          </div>
+          
+          <div className="bg-[#3a3a3a] hover:bg-[#404040] transition-all duration-500 p-8 lg:p-10 border border-white/5 hover:border-white/10">
+            <Users className="w-8 h-8 mb-6 text-white/60" />
+            <h3 className="text-sm uppercase tracking-[0.2em] text-white mb-4 font-normal">Multi-Vendor Cart</h3>
+            <p className="text-xs text-white/50 font-light leading-relaxed">
+              Shop from multiple vendors in one order. We coordinate everything seamlessly.
+            </p>
+          </div>
+          
+          <div className="bg-[#3a3a3a] hover:bg-[#404040] transition-all duration-500 p-8 lg:p-10 border border-white/5 hover:border-white/10">
+            <Truck className="w-8 h-8 mb-6 text-white/60" />
+            <h3 className="text-sm uppercase tracking-[0.2em] text-white mb-4 font-normal">Unified Fulfillment</h3>
+            <p className="text-xs text-white/50 font-light leading-relaxed">
+              Single checkout, coordinated delivery. Daily shipping at 2PM EST from multiple locations.
+            </p>
+          </div>
+          
+          <div className="bg-[#3a3a3a] hover:bg-[#404040] transition-all duration-500 p-8 lg:p-10 border border-white/5 hover:border-white/10">
+            <Shield className="w-8 h-8 mb-6 text-white/60" />
+            <h3 className="text-sm uppercase tracking-[0.2em] text-white mb-4 font-normal">Trust & Safety</h3>
+            <p className="text-xs text-white/50 font-light leading-relaxed">
+              Secure transactions, verified products, lab tested quality on every order.
+            </p>
+          </div>
+        </div>
+      </section>
 
       {/* Featured Products - Carousel */}
       <section className="bg-[#2a2a2a] py-12 sm:py-16 overflow-x-hidden w-full">
@@ -100,16 +172,14 @@ export default function HomeClient({
         <CategoriesCarousel categories={categories} />
       </section>
 
-      {/* Philosophy - Clean Statement */}
+      {/* Value Proposition */}
       <section className="bg-[#1a1a1a] py-16 sm:py-24 md:py-32 px-4 sm:px-6 relative overflow-hidden w-full">
-        {/* Subtle background gradient */}
         <div className="absolute inset-0 opacity-30">
           <div className="absolute top-0 left-1/4 w-64 h-64 sm:w-96 sm:h-96 bg-white/5 rounded-full blur-3xl"></div>
           <div className="absolute bottom-0 right-1/4 w-64 h-64 sm:w-96 sm:h-96 bg-white/5 rounded-full blur-3xl"></div>
         </div>
 
         <div className="max-w-6xl mx-auto text-center relative z-10">
-          {/* Accent line */}
           <div className="flex items-center justify-center mb-6 sm:mb-8">
             <div className="h-[1px] w-12 sm:w-16 bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
           </div>
@@ -121,11 +191,10 @@ export default function HomeClient({
           <div className="h-[1px] w-16 sm:w-24 bg-gradient-to-r from-transparent via-white/20 to-transparent mx-auto mb-8 sm:mb-12"></div>
           
           <p className="text-sm sm:text-base md:text-lg lg:text-xl font-light text-white/50 mb-12 sm:mb-16 md:mb-20 leading-relaxed max-w-2xl mx-auto">
-            Straight from our facilities and partner farmers we trust. Fresh every time.
+            From our own facilities and trusted partner vendors. Premium quality, transparent pricing.
           </p>
 
           <div className="grid md:grid-cols-3 gap-4 sm:gap-6">
-            {/* Volume Pricing Card */}
             <div className="group bg-white/5 backdrop-blur-sm border border-white/10 p-6 sm:p-8 hover:bg-white/10 hover:border-white/20 transition-all duration-500 relative overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
               <div className="relative z-10">
@@ -136,12 +205,11 @@ export default function HomeClient({
                   Volume Pricing
                 </h3>
                 <p className="text-[11px] sm:text-xs font-light text-white/50 leading-relaxed">
-                  The more you buy, the better the price.
+                  The more you buy, the better the price. Bulk discounts across all vendors.
                 </p>
               </div>
             </div>
             
-            {/* Direct Source Card */}
             <div className="group bg-white/5 backdrop-blur-sm border border-white/10 p-6 sm:p-8 hover:bg-white/10 hover:border-white/20 transition-all duration-500 relative overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
               <div className="relative z-10">
@@ -152,12 +220,11 @@ export default function HomeClient({
                   Direct Source
                 </h3>
                 <p className="text-[11px] sm:text-xs font-light text-white/50 leading-relaxed">
-                  No middleman. Just clean business.
+                  No middleman. Direct from verified cultivators and manufacturers.
                 </p>
               </div>
             </div>
 
-            {/* Always Fresh Card */}
             <div className="group bg-white/5 backdrop-blur-sm border border-white/10 p-6 sm:p-8 hover:bg-white/10 hover:border-white/20 transition-all duration-500 relative overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
               <div className="relative z-10">
@@ -168,7 +235,7 @@ export default function HomeClient({
                   Always Fresh
                 </h3>
                 <p className="text-[11px] sm:text-xs font-light text-white/50 leading-relaxed">
-                  No dry product, no old stock.
+                  No dry product, no old stock. Quality guaranteed, every time.
                 </p>
               </div>
             </div>
@@ -176,13 +243,61 @@ export default function HomeClient({
         </div>
       </section>
 
+      {/* Sustainability Commitment */}
+      <section className="bg-[#2a2a2a] py-16 overflow-x-hidden w-full">
+        <div className="px-4 sm:px-6 mb-12">
+          <h2 className="text-2xl md:text-3xl font-light uppercase tracking-wider text-white mb-3">
+            Marketplace Standards
+          </h2>
+          <div className="h-[1px] w-16 bg-white/20"></div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-px">
+          <div className="bg-[#2a2a2a] hover:bg-[#303030] transition-all duration-500 p-10 lg:p-12 border border-white/5 hover:border-white/10">
+            <Leaf className="w-8 h-8 mb-6 text-white/60" />
+            <h3 className="text-lg uppercase tracking-[0.2em] text-white mb-6 font-normal">Sustainable Practices</h3>
+            <div className="space-y-3">
+              <p className="text-xs text-white/50 font-light">• Organic cultivation methods required</p>
+              <p className="text-xs text-white/50 font-light">• Minimal packaging, maximum impact</p>
+              <p className="text-xs text-white/50 font-light">• Renewable energy priority</p>
+              <p className="text-xs text-white/50 font-light">• Waste reduction at every step</p>
+            </div>
+            <Link 
+              href="/sustainability"
+              className="inline-flex items-center gap-2 text-white/60 hover:text-white text-[10px] uppercase tracking-wider mt-6 transition-colors"
+            >
+              <span>Learn More</span>
+              <ArrowRight size={12} />
+            </Link>
+          </div>
+
+          <div className="bg-[#2a2a2a] hover:bg-[#303030] transition-all duration-500 p-10 lg:p-12 border border-white/5 hover:border-white/10">
+            <Package className="w-8 h-8 mb-6 text-white/60" />
+            <h3 className="text-lg uppercase tracking-[0.2em] text-white mb-6 font-normal">Quality Assurance</h3>
+            <div className="space-y-3">
+              <p className="text-xs text-white/50 font-light">• Lab tested products only</p>
+              <p className="text-xs text-white/50 font-light">• Vendor verification process</p>
+              <p className="text-xs text-white/50 font-light">• Regular quality audits</p>
+              <p className="text-xs text-white/50 font-light">• Transparent sourcing</p>
+            </div>
+            <Link 
+              href="/about"
+              className="inline-flex items-center gap-2 text-white/60 hover:text-white text-[10px] uppercase tracking-wider mt-6 transition-colors"
+            >
+              <span>Our Standards</span>
+              <ArrowRight size={12} />
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* Locations - Carousel */}
-      <section className="bg-[#2a2a2a] py-12 sm:py-16 overflow-x-hidden w-full">
+      <section className="bg-[#3a3a3a] py-12 sm:py-16 overflow-x-hidden w-full">
         <div className="px-4 sm:px-6 mb-8 sm:mb-12">
           <div className="flex justify-between items-center sm:items-end gap-4">
             <div className="min-w-0">
               <h2 className="text-xl sm:text-2xl md:text-3xl font-light uppercase tracking-wider text-white mb-2 sm:mb-3">
-                Our Locations
+                Fulfillment Locations
               </h2>
               <div className="h-[1px] w-12 sm:w-16 bg-white/20"></div>
             </div>
@@ -200,7 +315,7 @@ export default function HomeClient({
       </section>
 
       {/* Shipping - Split Layout */}
-      <section className="bg-[#3a3a3a] py-0 overflow-x-hidden w-full">
+      <section className="bg-[#1a1a1a] py-0 overflow-x-hidden w-full">
         <div className="grid md:grid-cols-2">
           {/* Left - Content */}
           <div className="flex items-center px-4 sm:px-6 md:px-12 py-16 sm:py-20 md:py-32 relative overflow-hidden">
@@ -216,7 +331,7 @@ export default function HomeClient({
                   Fast. Reliable.<br/>Every day.
                 </h2>
                 <p className="text-sm sm:text-base font-light text-white/50 mb-8 sm:mb-12 leading-relaxed">
-                  We ship daily at 2PM. Regional orders arrive next day.
+                  Daily shipping at 2PM EST. Multi-vendor orders coordinated for seamless delivery.
                 </p>
               </div>
 
@@ -228,7 +343,7 @@ export default function HomeClient({
                     </svg>
                   </div>
                   <div>
-                    <h3 className="text-xs sm:text-sm font-normal text-white uppercase tracking-[0.15em] mb-1">2PM Cutoff</h3>
+                    <h3 className="text-xs sm:text-sm font-normal text-white uppercase tracking-[0.15em] mb-1">2PM Daily Cutoff</h3>
                     <p className="text-[11px] sm:text-xs text-white/50 font-light">Order by 2PM EST, ships same day</p>
                   </div>
                 </div>
@@ -241,7 +356,7 @@ export default function HomeClient({
                   </div>
                   <div>
                     <h3 className="text-xs sm:text-sm font-normal text-white uppercase tracking-[0.15em] mb-1">Next-Day Delivery</h3>
-                    <p className="text-[11px] sm:text-xs text-white/50 font-light">NC and East Tennessee</p>
+                    <p className="text-[11px] sm:text-xs text-white/50 font-light">NC and East Tennessee regional coverage</p>
                   </div>
                 </div>
 
@@ -290,11 +405,73 @@ export default function HomeClient({
               </div>
 
               <div className="space-y-2">
-                <p className="text-xs uppercase tracking-[0.3em] text-white/40 font-light">Daily shipping from North Carolina</p>
+                <p className="text-xs uppercase tracking-[0.3em] text-white/40 font-light">Coordinated fulfillment</p>
                 <div className="flex items-center justify-center gap-2">
                   <div className="h-[1px] w-8 bg-gradient-to-r from-transparent to-white/20"></div>
                   <p className="text-sm tracking-[0.25em] text-white/60 font-medium">2PM EST</p>
                   <div className="h-[1px] w-8 bg-gradient-to-l from-transparent to-white/20"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Vendor Partnership CTA */}
+      <section className="bg-[#2a2a2a] py-20 sm:py-28 px-4 sm:px-6 relative overflow-hidden w-full">
+        <div className="absolute inset-0 opacity-20">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-white/5 rounded-full blur-3xl"></div>
+        </div>
+
+        <div className="max-w-4xl mx-auto relative z-10">
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            <div>
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 mb-6">
+                <Users size={14} className="text-white/60" />
+                <span className="text-[10px] uppercase tracking-[0.2em] text-white/60">For Vendors</span>
+              </div>
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-light text-white mb-6 leading-tight">
+                Grow your business<br/>with Flora Distro
+              </h2>
+              <p className="text-sm sm:text-base font-light text-white/50 leading-relaxed mb-8">
+                Join our curated marketplace and reach customers across the region. We provide the platform, tools, and support to help you succeed.
+              </p>
+              <Link 
+                href="/vendor/dashboard"
+                className="group inline-flex items-center gap-3 bg-white text-black px-8 py-4 text-xs uppercase tracking-[0.2em] hover:bg-white/90 transition-all duration-300 font-medium"
+              >
+                <span>Become a Vendor</span>
+                <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform duration-300" />
+              </Link>
+            </div>
+            
+            <div className="space-y-4">
+              <div className="flex items-start gap-4 group">
+                <CheckCircle size={20} className="text-white/60 flex-shrink-0 mt-0.5" />
+                <div>
+                  <h4 className="text-sm uppercase tracking-wider text-white mb-1 font-normal">Reach More Customers</h4>
+                  <p className="text-xs text-white/50 font-light">Access our established customer base across NC and TN</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-4 group">
+                <CheckCircle size={20} className="text-white/60 flex-shrink-0 mt-0.5" />
+                <div>
+                  <h4 className="text-sm uppercase tracking-wider text-white mb-1 font-normal">Unified Platform</h4>
+                  <p className="text-xs text-white/50 font-light">Manage inventory, orders, and fulfillment in one place</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-4 group">
+                <CheckCircle size={20} className="text-white/60 flex-shrink-0 mt-0.5" />
+                <div>
+                  <h4 className="text-sm uppercase tracking-wider text-white mb-1 font-normal">Coordinated Fulfillment</h4>
+                  <p className="text-xs text-white/50 font-light">We handle logistics while you focus on your products</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-4 group">
+                <CheckCircle size={20} className="text-white/60 flex-shrink-0 mt-0.5" />
+                <div>
+                  <h4 className="text-sm uppercase tracking-wider text-white mb-1 font-normal">Trusted Brand</h4>
+                  <p className="text-xs text-white/50 font-light">Leverage our reputation and customer trust</p>
                 </div>
               </div>
             </div>
@@ -308,7 +485,7 @@ export default function HomeClient({
           <div className="flex items-center justify-center">
             <img 
               src="/logoprint.png" 
-              alt="Flora Distro" 
+              alt="Flora Distro Marketplace" 
               className="h-16 sm:h-20 md:h-24 w-auto opacity-30 grayscale"
             />
           </div>
@@ -328,7 +505,7 @@ export default function HomeClient({
               Get started
             </h2>
             <p className="text-base sm:text-lg md:text-xl lg:text-2xl font-light text-white/40 max-w-2xl mx-auto leading-relaxed">
-              Unlock volume pricing and exclusive access
+              Unlock volume pricing and shop from multiple trusted vendors
             </p>
           </div>
 

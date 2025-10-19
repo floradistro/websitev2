@@ -18,7 +18,7 @@ export default function Cookies() {
           </h1>
           <div className="h-[1px] w-24 bg-gradient-to-r from-transparent via-white/20 to-transparent mx-auto mb-12"></div>
           <p className="text-sm text-white/40 uppercase tracking-wider">
-            Last Updated: October 14, 2025
+            Last Updated: October 19, 2025
           </p>
         </div>
       </section>
@@ -28,8 +28,11 @@ export default function Cookies() {
         <div className="max-w-4xl mx-auto">
           <div className="bg-[#3a3a3a] border border-white/10 p-8 mb-12">
             <h2 className="text-lg uppercase tracking-[0.2em] text-white mb-4 font-normal">What Are Cookies?</h2>
-            <p className="text-sm text-white/50 font-light leading-relaxed">
+            <p className="text-sm text-white/50 font-light leading-relaxed mb-4">
               Cookies are small text files placed on your device when you visit a website. They help websites work efficiently and provide information to site owners.
+            </p>
+            <p className="text-xs text-white/40 font-light">
+              On our marketplace, cookies help us provide a seamless shopping experience across multiple vendors.
             </p>
           </div>
 
@@ -56,19 +59,19 @@ export default function Cookies() {
             <div className="space-y-6">
               <div>
                 <h3 className="text-sm text-white mb-2 uppercase tracking-wider">Essential</h3>
-                <p className="text-xs text-white/50 font-light">Required for site to function. Cannot be disabled.</p>
+                <p className="text-xs text-white/50 font-light">Required for the marketplace to function. Includes shopping cart, checkout, and vendor session management. Cannot be disabled.</p>
               </div>
               <div>
                 <h3 className="text-sm text-white mb-2 uppercase tracking-wider">Performance</h3>
-                <p className="text-xs text-white/50 font-light">Analytics and site improvement. Can be opted out.</p>
+                <p className="text-xs text-white/50 font-light">Analytics and site improvement. Helps us understand marketplace usage patterns. Can be opted out.</p>
               </div>
               <div>
                 <h3 className="text-sm text-white mb-2 uppercase tracking-wider">Functionality</h3>
-                <p className="text-xs text-white/50 font-light">Remember preferences. Can be disabled but limits features.</p>
+                <p className="text-xs text-white/50 font-light">Remember your preferences, recently viewed products, and vendor filters. Can be disabled but limits features.</p>
               </div>
               <div>
                 <h3 className="text-sm text-white mb-2 uppercase tracking-wider">Advertising</h3>
-                <p className="text-xs text-white/50 font-light">Relevant ads and retargeting. Can be opted out.</p>
+                <p className="text-xs text-white/50 font-light">Show relevant products and ads from our marketplace vendors. Can be opted out.</p>
               </div>
             </div>
           </div>
