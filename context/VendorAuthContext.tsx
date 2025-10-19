@@ -103,6 +103,7 @@ export function VendorAuthProvider({ children }: { children: React.ReactNode }) 
         localStorage.setItem('vendor_email', email);
         localStorage.setItem('vendor_auth', btoa(`${email}:${password}`));
         localStorage.setItem('vendor_token', data.token);
+        localStorage.setItem('vendor_id', data.vendor.id.toString()); // Store vendor ID
         
         // Set vendor state
         setVendor({

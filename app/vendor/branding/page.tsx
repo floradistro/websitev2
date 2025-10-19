@@ -34,32 +34,31 @@ export default function VendorBranding() {
   async function fetchBranding() {
     try {
       setFetching(true);
-      const authToken = localStorage.getItem('vendor_auth');
+      const vendorId = localStorage.getItem('vendor_id') || vendor?.id;
       
-      // Use AJAX endpoint (bypasses REST API app password issues)
-      const response = await fetch('https://api.floradistro.com/wp-admin/admin-ajax.php?action=vendor_get_branding', {
-        headers: {
-          'Authorization': `Basic ${authToken}`
-        }
-      });
+      if (!vendorId) {
+        console.error('No vendor ID found');
+        setFetching(false);
+        return;
+      }
+      
+      // Use public branding endpoint (no auth needed)
+      const response = await fetch(`https://api.floradistro.com/wp-json/vendor-branding/v1/${vendorId}`);
 
       if (response.ok) {
-        const result = await response.json();
-        if (result.success && result.data) {
-          const data = result.data;
-          setBranding({
-            tagline: data.tagline || '',
-            about: data.about || '',
-            primaryColor: data.primary_color || '#0EA5E9',
-            accentColor: data.accent_color || '#06B6D4',
-            website: data.website || '',
-            instagram: data.instagram || '',
-            facebook: data.facebook || '',
-            customFont: data.custom_font || ''
-          });
-          setLogo(data.logo_url || '');
-          setBanner(data.banner_url || '');
-        }
+        const data = await response.json();
+        setBranding({
+          tagline: data.tagline || '',
+          about: data.about || '',
+          primaryColor: data.primary_color || '#0EA5E9',
+          accentColor: data.accent_color || '#06B6D4',
+          website: data.website || '',
+          instagram: data.instagram || '',
+          facebook: data.facebook || '',
+          customFont: data.custom_font || ''
+        });
+        setLogo(data.logo_url || '');
+        setBanner(data.banner_url || '');
       }
     } catch (err) {
       console.error('Failed to fetch branding:', err);
@@ -168,28 +167,33 @@ export default function VendorBranding() {
         }
       }
 
-      // Use AJAX endpoint (bypasses REST API issues)
-      const response = await fetch('https://api.floradistro.com/wp-admin/admin-ajax.php?action=vendor_save_branding', {
+      // Use public branding endpoint with vendor ID (no auth issues)
+      const vendorId = localStorage.getItem('vendor_id') || vendor?.id;
+      
+      console.log('🚀 Saving to vendor-branding/v1/' + vendorId);
+      
+      const response = await fetch(`https://api.floradistro.com/wp-json/vendor-branding/v1/${vendorId}`, {
         method: 'POST',
         headers: {
-          'Authorization': `Basic ${authToken}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify(updateData)
       });
 
+      console.log('📡 Response status:', response.status, response.statusText);
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        console.error('Branding save failed:', {
+        console.error('❌ Branding save failed:', {
           status: response.status,
           statusText: response.statusText,
           error: errorData
         });
-        throw new Error(errorData.message || errorData.code || `Failed (${response.status})`);
+        throw new Error(errorData.message || errorData.code || `Server returned ${response.status}`);
       }
 
       const result = await response.json();
-      console.log('Branding save response:', result);
+      console.log('✅ Branding save response:', result);
       
       if (result.success) {
         setSuccess('✅ Branding updated successfully!');
