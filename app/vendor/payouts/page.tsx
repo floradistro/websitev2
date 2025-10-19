@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { DollarSign, Calendar, CheckCircle, Clock, Download, TrendingUp } from 'lucide-react';
+import { getVendorPayouts } from '@/lib/wordpress';
 
 interface Payout {
   id: number;
@@ -20,56 +21,34 @@ export default function VendorPayouts() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // TODO: Fetch from API: /vendor-marketplace/v1/payouts
-    setTimeout(() => {
-      setPayouts([
-        {
-          id: 1,
-          payoutNumber: 'PAY-2025-10-001',
-          period: 'October 1-18, 2025',
-          grossRevenue: 8247.68,
-          commission: 1237.15,
-          netEarnings: 7010.53,
-          status: 'pending',
-          payoutDate: '2025-11-05',
-          transactionId: 'TXN-PENDING'
-        },
-        {
-          id: 2,
-          payoutNumber: 'PAY-2025-09-001',
-          period: 'September 2025',
-          grossRevenue: 7334.72,
-          commission: 1100.21,
-          netEarnings: 6234.51,
-          status: 'completed',
-          payoutDate: '2025-10-05',
-          transactionId: 'TXN-092547831'
-        },
-        {
-          id: 3,
-          payoutNumber: 'PAY-2025-08-001',
-          period: 'August 2025',
-          grossRevenue: 6891.24,
-          commission: 1033.69,
-          netEarnings: 5857.55,
-          status: 'completed',
-          payoutDate: '2025-09-05',
-          transactionId: 'TXN-082441762'
-        },
-        {
-          id: 4,
-          payoutNumber: 'PAY-2025-07-001',
-          period: 'July 2025',
-          grossRevenue: 5623.48,
-          commission: 843.52,
-          netEarnings: 4779.96,
-          status: 'completed',
-          payoutDate: '2025-08-05',
-          transactionId: 'TXN-072338904'
-        },
-      ]);
-      setLoading(false);
-    }, 1000);
+    async function loadPayouts() {
+      try {
+        setLoading(true);
+        const data = await getVendorPayouts();
+        
+        if (data) {
+          const mappedPayouts = data.map((p: any) => ({
+            id: p.id,
+            payoutNumber: p.payout_number,
+            period: `${p.period_start} to ${p.period_end}`,
+            grossRevenue: parseFloat(p.gross_revenue),
+            commission: parseFloat(p.commission_total),
+            netEarnings: parseFloat(p.net_earnings),
+            status: p.status,
+            payoutDate: p.scheduled_date,
+            transactionId: p.transaction_id || 'Pending'
+          }));
+          setPayouts(mappedPayouts);
+        }
+        setLoading(false);
+      } catch (error) {
+        console.error('Error loading payouts:', error);
+        setPayouts([]);
+        setLoading(false);
+      }
+    }
+    
+    loadPayouts();
   }, []);
 
   const getStatusBadge = (status: string) => {

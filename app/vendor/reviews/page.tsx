@@ -35,7 +35,7 @@ export default function VendorReviews() {
           customerName: 'Jordan Cooper',
           rating: 5,
           date: '2025-10-17',
-          comment: 'Classic Blue Dream done right! Perfect balance of effects. Yacht Club\'s quality is unmatched.',
+          comment: 'Classic Blue Dream done right! Perfect balance of effects. Quality is unmatched.',
           verified: true,
         },
         {
@@ -47,7 +47,7 @@ export default function VendorReviews() {
           date: '2025-10-16',
           comment: 'Best OG Kush I\'ve had in years. That classic piney kush smell and flavor. Super fresh, great cure.',
           verified: true,
-          response: 'Thank you for the amazing review! We take pride in our cultivation process. Looking forward to serving you again! - Yacht Club Team',
+          response: 'Thank you for the amazing review! We take pride in our cultivation process. Looking forward to serving you again!',
           responseDate: '2025-10-16'
         },
         {
@@ -57,7 +57,7 @@ export default function VendorReviews() {
           customerName: 'Alasia Chestnut',
           rating: 5,
           date: '2025-10-15',
-          comment: 'This Gelato is incredible. Sweet, creamy, and potent. Yacht Club delivers every time!',
+          comment: 'This Gelato is incredible. Sweet, creamy, and potent. Always delivers!',
           verified: true,
         },
         {
@@ -69,7 +69,7 @@ export default function VendorReviews() {
           date: '2025-10-14',
           comment: 'Legendary GSC cut. Minty, sweet, and strong. Exactly what I wanted.',
           verified: true,
-          response: 'We appreciate your support! Our GSC is a customer favorite. - Yacht Club',
+          response: 'We appreciate your support! Our GSC is a customer favorite.',
           responseDate: '2025-10-14'
         },
         {

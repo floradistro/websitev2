@@ -1,19 +1,51 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { Home, Package, BarChart3, Settings, LogOut, Palette, ShoppingBag, FileText, DollarSign, Star, ChevronLeft, Menu, X } from 'lucide-react';
 import VendorSupportChat from '@/components/VendorSupportChat';
+import VendorApprovalPanel from '@/components/VendorApprovalPanel';
+import { VendorAuthProvider, useVendorAuth } from '@/context/VendorAuthContext';
 
-export default function VendorLayout({
+function VendorLayoutContent({
   children,
 }: {
   children: React.ReactNode;
 }) {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [vendorLogo, setVendorLogo] = useState<string>('/logoprint.png');
   const pathname = usePathname();
+  const router = useRouter();
+  const { vendor, isAuthenticated, isLoading, logout } = useVendorAuth();
+
+  // Protect vendor routes - redirect to login if not authenticated
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated && pathname !== '/vendor/login') {
+      router.push('/vendor/login');
+    }
+  }, [isLoading, isAuthenticated, pathname, router]);
+
+  // Fetch vendor logo
+  useEffect(() => {
+    if (isAuthenticated) {
+      const authToken = localStorage.getItem('vendor_auth');
+      
+      fetch('https://api.floradistro.com/wp-json/flora-vendors/v1/vendors/me/branding', {
+        headers: {
+          'Authorization': `Basic ${authToken}`
+        }
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.logo_url) {
+          setVendorLogo(data.logo_url);
+        }
+      })
+      .catch(err => console.error('Failed to fetch logo:', err));
+    }
+  }, [isAuthenticated]);
 
   const navItems = [
     { href: '/vendor/dashboard', icon: Home, label: 'Dashboard' },
@@ -29,6 +61,34 @@ export default function VendorLayout({
 
   const currentPage = navItems.find(item => pathname?.startsWith(item.href))?.label || 'Portal';
   const isActive = (href: string) => pathname?.startsWith(href);
+
+  const vendorName = vendor?.store_name || 'Vendor';
+
+  // Show loading while checking auth
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[#1a1a1a] flex items-center justify-center">
+        <div className="text-white/60">Loading...</div>
+      </div>
+    );
+  }
+
+  // Allow login page without auth
+  if (pathname === '/vendor/login') {
+    return <>{children}</>;
+  }
+
+  // If not authenticated, don't render (will redirect)
+  if (!isAuthenticated) {
+    return null;
+  }
+
+  function handleLogout() {
+    if (confirm('Are you sure you want to log out?')) {
+      logout();
+      router.push('/vendor/login');
+    }
+  }
 
     return (
     <div className="min-h-screen bg-[#1a1a1a] pb-[env(safe-area-inset-bottom)] overflow-x-hidden">
@@ -94,7 +154,7 @@ export default function VendorLayout({
 
           {/* Logo */}
           <Link href="/vendor/dashboard" className="w-8 h-8 bg-white/5 rounded flex items-center justify-center overflow-hidden">
-            <img src="/yachtclub.png" alt="Yacht Club" className="w-full h-full object-contain p-0.5" />
+            <img src={vendorLogo} alt={vendorName} className="w-full h-full object-contain p-0.5" />
           </Link>
         </div>
       </nav>
@@ -110,10 +170,10 @@ export default function VendorLayout({
             <div className="flex items-center justify-between p-4 border-b border-white/5">
               <Link href="/vendor/dashboard" className="flex items-center gap-3" onClick={() => setMobileMenuOpen(false)}>
                 <div className="w-10 h-10 bg-white/5 rounded flex items-center justify-center overflow-hidden">
-                  <img src="/yachtclub.png" alt="Yacht Club" className="w-full h-full object-contain p-0.5" />
+                  <img src={vendorLogo} alt={vendorName} className="w-full h-full object-contain p-0.5" />
                 </div>
                 <div>
-                  <div className="text-white text-sm tracking-wide" style={{ fontFamily: 'Lobster' }}>Yacht Club</div>
+                  <div className="text-white text-sm tracking-wide" style={{ fontFamily: 'Lobster' }}>{vendorName}</div>
                   <div className="text-white/40 text-xs tracking-wide">Vendor Portal</div>
                 </div>
               </Link>
@@ -179,10 +239,10 @@ export default function VendorLayout({
           <div className="flex justify-between items-center h-16">
             <Link href="/vendor/dashboard" className="flex items-center gap-3">
               <div className="w-10 h-10 bg-white/5 rounded flex items-center justify-center overflow-hidden">
-                <img src="/yachtclub.png" alt="Yacht Club" className="w-full h-full object-contain p-0.5" />
+                <img src={vendorLogo} alt={vendorName} className="w-full h-full object-contain p-0.5" />
               </div>
               <div>
-                <div className="text-white text-base tracking-wide" style={{ fontFamily: 'Lobster' }}>Yacht Club</div>
+                <div className="text-white text-base tracking-wide" style={{ fontFamily: 'Lobster' }}>{vendorName}</div>
                 <div className="text-white/40 text-xs tracking-wide">Vendor Portal</div>
               </div>
             </Link>
@@ -194,7 +254,10 @@ export default function VendorLayout({
               >
                 Back to Store
               </Link>
-              <button className="group text-white/60 hover:text-white text-xs uppercase tracking-wider transition-all duration-300 flex items-center gap-2">
+              <button 
+                onClick={handleLogout}
+                className="group text-white/60 hover:text-white text-xs uppercase tracking-wider transition-all duration-300 flex items-center gap-2"
+              >
                 <LogOut size={16} className="group-hover:-translate-x-0.5 transition-transform duration-300" />
                 Logout
               </button>
@@ -278,7 +341,20 @@ export default function VendorLayout({
       </nav>
 
       <VendorSupportChat isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
+      <VendorApprovalPanel />
     </div>
+  );
+}
+
+export default function VendorLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <VendorAuthProvider>
+      <VendorLayoutContent>{children}</VendorLayoutContent>
+    </VendorAuthProvider>
   );
 }
 

@@ -6,16 +6,21 @@ import { Save } from 'lucide-react';
 export default function VendorSettings() {
   const [loading, setLoading] = useState(false);
   const [settings, setSettings] = useState({
-    companyName: 'Yacht Club LLC',
-    contactName: 'Captain James Harbor',
-    email: 'info@yachtclubcannabis.com',
-    phone: '(555) YACHT-01',
-    address: '1 Marina Boulevard',
-    city: 'Newport Beach',
-    state: 'CA',
-    zip: '92663',
-    taxId: '98-7654321',
+    companyName: '',
+    contactName: '',
+    email: '',
+    phone: '',
+    address: '',
+    city: '',
+    state: '',
+    zip: '',
+    taxId: '',
   });
+
+  // TODO: Fetch real vendor settings from API on mount
+  // useEffect(() => {
+  //   fetchVendorSettings();
+  // }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

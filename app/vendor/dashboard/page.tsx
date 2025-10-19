@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Package, Plus, AlertCircle, CheckCircle, XCircle, TrendingUp, DollarSign, AlertTriangle, Bell, Calendar, ArrowUpRight, ArrowDownRight, FileText, MessageSquare } from 'lucide-react';
+import { getVendorDashboard } from '@/lib/wordpress';
+import { useVendorAuth } from '@/context/VendorAuthContext';
 
 interface RecentProduct {
   id: number;
@@ -46,6 +48,7 @@ interface ActionItem {
 }
 
 export default function VendorDashboard() {
+  const { vendor, isAuthenticated, isLoading: authLoading } = useVendorAuth();
   const [stats, setStats] = useState({
     totalProducts: 0,
     approved: 0,
@@ -69,179 +72,133 @@ export default function VendorDashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // TODO: Fetch actual data from API: /vendor-marketplace/v1/dashboard
-    // For now, mock data
-    setTimeout(() => {
-      setStats({
-        totalProducts: 12,
-        approved: 10,
-        pending: 1,
-        rejected: 1,
-        totalSales30d: 8247.68,
-        lowStock: 3,
-      });
+    async function loadDashboard() {
+      // Don't load if auth is still loading or not authenticated
+      if (authLoading || !isAuthenticated) {
+        setLoading(false);
+        return;
+      }
+      
+      try {
+        setLoading(true);
+        const data = await getVendorDashboard();
+        
+        // Update stats
+        setStats({
+          totalProducts: data.stats.total_products + data.stats.pending_products,
+          approved: data.stats.total_products,
+          pending: data.stats.pending_products,
+          rejected: 0,
+          totalSales30d: data.stats.total_sales_30d,
+          lowStock: data.low_stock?.length || 0,
+        });
 
-      setRecentProducts([
-        {
-          id: 50009,
-          name: "Wedding Cake",
-          image: "/placeholder.jpg",
-          status: "approved",
-          submittedDate: "2025-10-17"
-        },
-        {
-          id: 50010,
-          name: "Durban Poison",
-          image: "/placeholder.jpg",
-          status: "pending",
-          submittedDate: "2025-10-18"
-        },
-        {
-          id: 50005,
-          name: "Gelato",
-          image: "/placeholder.jpg",
-          status: "approved",
-          submittedDate: "2025-10-16"
-        },
-        {
-          id: 50006,
-          name: "Sunset Sherbet",
-          image: "/placeholder.jpg",
-          status: "approved",
-          submittedDate: "2025-10-15"
-        },
-        {
-          id: 50001,
-          name: "OG Kush",
-          image: "/placeholder.jpg",
-          status: "approved",
-          submittedDate: "2025-10-14"
-        },
-        {
-          id: 50002,
-          name: "Blue Dream",
-          image: "/placeholder.jpg",
-          status: "approved",
-          submittedDate: "2025-10-13"
-        },
-      ]);
+        // Map recent products
+        const mappedProducts = data.recent_products.map((p: any) => ({
+          id: p.product_id,
+          name: p.name,
+          image: p.image || "/logoprint.png",
+          status: p.status,
+          submittedDate: new Date(p.submitted_date).toLocaleDateString()
+        }));
+        setRecentProducts(mappedProducts);
 
-      setLowStockItems([
-        {
-          id: 50006,
-          name: "Sunset Sherbet",
-          currentStock: 8.5,
-          threshold: 20
-        },
-        {
-          id: 50008,
-          name: "Zkittlez",
-          currentStock: 12.25,
-          threshold: 20
-        },
-        {
-          id: 50007,
-          name: "Purple Punch",
-          currentStock: 15.0,
-          threshold: 20
-        },
-      ]);
+        // Map low stock items
+        const mappedLowStock = (data.low_stock || []).map((item: any) => ({
+          id: item.product_id,
+          name: item.product_name,
+          currentStock: parseFloat(item.quantity),
+          threshold: parseFloat(item.threshold) || 20
+        }));
+        setLowStockItems(mappedLowStock);
 
-      setNotices([
-        {
-          id: 1,
-          message: "Your product 'Wedding Cake' was approved and is now live!",
-          type: "success",
-          date: "2 hours ago"
-        },
-        {
-          id: 2,
-          message: "New order from Zachariah Kryger - $71.96 (Order #41778)",
-          type: "success",
-          date: "3 hours ago"
-        },
-        {
-          id: 3,
-          message: "Product 'Durban Poison' is pending admin review",
-          type: "info",
-          date: "1 day ago"
-        },
-        {
-          id: 4,
-          message: "Low stock alert: 'Sunset Sherbet' has only 8.5g remaining",
-          type: "warning",
-          date: "2 days ago"
-        },
-        {
-          id: 5,
-          message: "Commission payout for October ($7,010.36) is scheduled for Nov 5th.",
-          type: "info",
-          date: "3 days ago"
-        },
-        {
-          id: 6,
-          message: "Your product 'Blue Dream' received a 5-star review from Jordan Cooper",
-          type: "success",
-          date: "4 days ago"
-        },
-      ]);
+        // Map notifications
+        const mappedNotices = (data.notifications || []).map((n: any) => ({
+          id: n.id,
+          message: n.message,
+          type: n.type.includes('success') || n.type.includes('approved') ? 'success' : 
+                 n.type.includes('warning') || n.type.includes('low') ? 'warning' : 'info',
+          date: getRelativeTime(n.created_at)
+        }));
+        setNotices(mappedNotices);
 
-      // Sales data for last 30 days
-      setSalesData([
-        { date: '2025-10-01', revenue: 127.50 },
-        { date: '2025-10-02', revenue: 89.25 },
-        { date: '2025-10-03', revenue: 245.80 },
-        { date: '2025-10-04', revenue: 312.45 },
-        { date: '2025-10-05', revenue: 198.60 },
-        { date: '2025-10-06', revenue: 276.30 },
-        { date: '2025-10-07', revenue: 423.75 },
-        { date: '2025-10-08', revenue: 356.20 },
-        { date: '2025-10-09', revenue: 289.90 },
-        { date: '2025-10-10', revenue: 412.35 },
-        { date: '2025-10-11', revenue: 478.60 },
-        { date: '2025-10-12', revenue: 521.85 },
-        { date: '2025-10-13', revenue: 398.40 },
-        { date: '2025-10-14', revenue: 445.75 },
-        { date: '2025-10-15', revenue: 502.20 },
-        { date: '2025-10-16', revenue: 567.90 },
-        { date: '2025-10-17', revenue: 612.45 },
-        { date: '2025-10-18', revenue: 654.80 },
-      ]);
+        // Map recent orders for sales data (mock for now - can enhance later)
+        const mappedSalesData = (data.recent_orders || []).map((order: any) => ({
+          date: order.order_date,
+          revenue: parseFloat(order.net_earnings)
+        }));
+        if (mappedSalesData.length > 0) {
+          setSalesData(mappedSalesData);
+        }
 
-      setTopProducts([
-        { id: 50001, name: 'OG Kush', unitsSold: 28, revenue: 2247.52 },
-        { id: 50005, name: 'Gelato', unitsSold: 22, revenue: 2093.78 },
-        { id: 50002, name: 'Blue Dream', unitsSold: 19, revenue: 1423.81 },
-        { id: 50009, name: 'Wedding Cake', unitsSold: 16, revenue: 1519.84 },
-        { id: 50004, name: 'Girl Scout Cookies', unitsSold: 14, revenue: 1259.86 },
-      ]);
+        // Calculate payout info from stats
+        setPayout({
+          pendingEarnings: data.stats.total_sales_30d * 0.85, // After 15% commission
+          nextPayoutDate: getNextPayoutDate(),
+          lastPayoutAmount: 0, // TODO: Get from payouts endpoint
+        });
 
-      setPayout({
-        pendingEarnings: 7010.36,
-        nextPayoutDate: '2025-11-05',
-        lastPayoutAmount: 6234.52,
-      });
+        // Generate action items from data
+        const actions: ActionItem[] = [];
+        if (data.stats.pending_products > 0) {
+          actions.push({
+            id: 1,
+            title: `${data.stats.pending_products} product${data.stats.pending_products > 1 ? 's' : ''} pending approval`,
+            type: 'info',
+            link: '/vendor/products'
+          });
+        }
+        if (data.low_stock && data.low_stock.length > 0) {
+          actions.push({
+            id: 2,
+            title: `${data.low_stock.length} products low on stock`,
+            type: 'warning',
+            link: '/vendor/inventory'
+          });
+        }
+        setActionItems(actions);
 
-      setActionItems([
-        { id: 1, title: '1 COA expiring soon (OG Kush)', type: 'warning', link: '/vendor/lab-results' },
-        { id: 2, title: '3 products low on stock', type: 'warning', link: '/vendor/inventory' },
-        { id: 3, title: '1 product pending approval (Durban Poison)', type: 'info', link: '/vendor/products' },
-        { id: 4, title: 'New customer review to respond to', type: 'info', link: '/vendor/reviews' },
-      ]);
+        setLoading(false);
+      } catch (error) {
+        console.error('Error loading dashboard:', error);
+        setLoading(false);
+      }
+    }
 
-      setLoading(false);
-    }, 1000);
-  }, []);
+    loadDashboard();
+  }, [authLoading, isAuthenticated]);
+
+  // Helper function to get relative time
+  function getRelativeTime(dateString: string) {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 60) return `${diffMins} minute${diffMins !== 1 ? 's' : ''} ago`;
+    if (diffHours < 24) return `${diffHours} hour${diffHours !== 1 ? 's' : ''} ago`;
+    return `${diffDays} day${diffDays !== 1 ? 's' : ''} ago`;
+  }
+
+  // Helper function to get next payout date
+  function getNextPayoutDate() {
+    const now = new Date();
+    const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 5);
+    return nextMonth.toISOString().split('T')[0];
+  }
 
   const getStatusBadge = (status: string) => {
     const styles = {
       approved: "bg-white/5 text-white/60 border-white/10",
       pending: "bg-white/5 text-white/60 border-white/10",
       rejected: "bg-red-500/10 text-red-500 border-red-500/20",
+      draft: "bg-white/5 text-white/60 border-white/10",
     };
 
     return (
-      <span className={`px-2 py-1 text-xs font-medium uppercase tracking-wider border rounded ${styles[status as keyof typeof styles]}`}>
+      <span className={`px-2 py-1 text-xs font-medium uppercase tracking-wider border rounded ${styles[status as keyof typeof styles] || styles.draft}`}>
         {status}
       </span>
     );
@@ -263,7 +220,7 @@ export default function VendorDashboard() {
       {/* Welcome Header */}
       <div className="px-4 lg:px-0 py-6 lg:py-0 lg:mb-8" style={{ animation: 'fadeInUp 0.5s ease-out' }}>
         <h1 className="text-3xl lg:text-4xl text-white mb-2" style={{ fontFamily: 'Lobster' }}>
-          Welcome Back, Yacht Club
+          Welcome Back, {vendor?.store_name || 'Vendor'}
         </h1>
         <p className="text-white/60 text-sm">
           Here's what's happening with your store today

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Search, Package, DollarSign, Calendar, User, ChevronRight } from 'lucide-react';
+import { getVendorOrders } from '@/lib/wordpress';
 
 interface Order {
   id: number;
@@ -31,80 +32,34 @@ export default function VendorOrders() {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
   useEffect(() => {
-    // TODO: Fetch actual orders from API: /vendor-marketplace/v1/orders
-    // For now, mock data with real customer names
-    setTimeout(() => {
-      setOrders([
-        {
-          id: 41778,
-          orderNumber: '#41778',
-          date: '2025-10-18',
-          customerName: 'Zachariah Kryger',
-          status: 'completed',
-          items: [
-            { productId: 50001, productName: 'OG Kush', quantity: 1, price: 39.99, total: 39.99 },
-            { productId: 50009, productName: 'Wedding Cake', quantity: 1, price: 39.99, total: 39.99 },
-          ],
-          total: 79.98,
-          vendorTotal: 79.98,
-          commission: 12.00,
-        },
-        {
-          id: 41776,
-          orderNumber: '#41776',
-          date: '2025-10-18',
-          customerName: 'Alasia Dayhana Chestnut',
-          status: 'completed',
-          items: [
-            { productId: 50002, productName: 'Blue Dream', quantity: 1, price: 39.99, total: 39.99 },
-          ],
-          total: 39.99,
-          vendorTotal: 39.99,
-          commission: 6.00,
-        },
-        {
-          id: 41770,
-          orderNumber: '#41770',
-          date: '2025-10-17',
-          customerName: 'Brendon Balzano',
-          status: 'completed',
-          items: [
-            { productId: 50005, productName: 'Gelato', quantity: 1, price: 69.99, total: 69.99 },
-          ],
-          total: 69.99,
-          vendorTotal: 69.99,
-          commission: 10.50,
-        },
-        {
-          id: 41769,
-          orderNumber: '#41769',
-          date: '2025-10-17',
-          customerName: 'Jordan Nicole Cooper',
-          status: 'processing',
-          items: [
-            { productId: 50003, productName: 'Sour Diesel', quantity: 1, price: 69.99, total: 69.99 },
-            { productId: 50007, productName: 'Purple Punch', quantity: 1, price: 39.99, total: 39.99 },
-          ],
-          total: 109.98,
-          vendorTotal: 109.98,
-          commission: 16.50,
-        },
-        {
-          id: 41765,
-          orderNumber: '#41765',
-          date: '2025-10-16',
-          customerName: 'Marcus Thompson',
-          status: 'completed',
-          items: [
-            { productId: 50004, productName: 'Girl Scout Cookies', quantity: 1, price: 39.99, total: 39.99 },
-          ],
-          total: 39.99,
-          vendorTotal: 39.99,
-          commission: 6.00,
-        },
-      ]);
-      setLoading(false);
-    }, 1000);
+    async function loadOrders() {
+      try {
+        setLoading(true);
+        const response = await getVendorOrders(1, 100);
+        
+        if (response && response.orders) {
+          const mappedOrders = response.orders.map((o: any) => ({
+            id: o.order_id,
+            orderNumber: `#${o.order_id}`,
+            date: o.order_date || o.created_at,
+            customerName: o.customer_name || 'Customer',
+            status: o.order_status || 'processing',
+            items: o.items || [],
+            total: parseFloat(o.gross_revenue) || 0,
+            vendorTotal: parseFloat(o.net_earnings) || 0,
+            commission: parseFloat(o.commission_amount) || 0,
+          }));
+          setOrders(mappedOrders);
+        }
+        setLoading(false);
+      } catch (error) {
+        console.error('Error loading orders:', error);
+        setOrders([]);
+        setLoading(false);
+      }
+    }
+    
+    loadOrders();
   }, []);
 
   const getStatusBadge = (status: string) => {

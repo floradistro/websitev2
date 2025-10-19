@@ -16,29 +16,30 @@ export default function LocationCard({ location, address, googleMapsUrl, hours }
 
   useEffect(() => {
     async function fetchReviews() {
+      // Skip review fetching for vendor warehouses or locations without addresses
+      if (!address || address.trim() === '' || location.type === 'vendor') {
+        setLoading(false);
+        return;
+      }
+
       try {
-        console.log(`Fetching reviews for ${location.name}`);
         const response = await fetch(
           `/api/google-reviews?location=${encodeURIComponent(location.name)}&address=${encodeURIComponent(address)}`
         );
         
         if (response.ok) {
           const data = await response.json();
-          console.log(`Reviews for ${location.name}:`, data);
           setReviews(data);
-        } else {
-          const errorData = await response.json();
-          console.error(`Error fetching reviews for ${location.name}:`, errorData);
         }
       } catch (error) {
-        console.error(`Error fetching reviews for ${location.name}:`, error);
+        // Silently handle errors
       } finally {
         setLoading(false);
       }
     }
 
     fetchReviews();
-  }, [location.name, address]);
+  }, [location.name, address, location.type]);
 
   const CardContent = (
     <div className="group bg-[#3a3a3a] hover:bg-[#404040] transition-all duration-500 border border-white/5 hover:border-white/10 h-full flex flex-col">

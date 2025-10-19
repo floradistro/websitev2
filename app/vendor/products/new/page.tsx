@@ -2,14 +2,22 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Upload, X, Plus, FileText } from 'lucide-react';
+import { ArrowLeft, Upload, X, Plus, FileText, CheckCircle, AlertCircle, Loader } from 'lucide-react';
 import Link from 'next/link';
+import { createVendorProduct, uploadVendorImages, uploadVendorCOA } from '@/lib/wordpress';
 
 export default function NewProduct() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [images, setImages] = useState<string[]>([]);
+  const [uploadingImages, setUploadingImages] = useState(false);
+  const [uploadingCOA, setUploadingCOA] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [uploadedImageUrls, setUploadedImageUrls] = useState<string[]>([]);
   const [coaFile, setCoAFile] = useState<File | null>(null);
+  const [uploadedCoaUrl, setUploadedCoaUrl] = useState<string | null>(null);
   
   const [formData, setFormData] = useState({
     name: '',
@@ -25,42 +33,111 @@ export default function NewProduct() {
     initial_quantity: '',
   });
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
-    if (files) {
-      // Convert files to data URLs for preview
-      Array.from(files).forEach(file => {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          setImages(prev => [...prev, reader.result as string]);
-        };
-        reader.readAsDataURL(file);
-      });
+    if (!files || files.length === 0) return;
+    
+    const fileArray = Array.from(files);
+    
+    // Add to file list
+    setImageFiles(prev => [...prev, ...fileArray]);
+    
+    // Generate previews
+    fileArray.forEach(file => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreviews(prev => [...prev, reader.result as string]);
+      };
+      reader.readAsDataURL(file);
+    });
+    
+    // Upload immediately for faster submission
+    try {
+      setUploadingImages(true);
+      const response = await uploadVendorImages(fileArray);
+      
+      if (response.success && response.images) {
+        const urls = response.images.map((img: any) => img.url);
+        setUploadedImageUrls(prev => [...prev, ...urls]);
+      }
+      
+      if (response.errors && response.errors.length > 0) {
+        console.error('Image upload errors:', response.errors);
+      }
+    } catch (err) {
+      console.error('Failed to upload images:', err);
+    } finally {
+      setUploadingImages(false);
     }
   };
 
   const removeImage = (index: number) => {
-    setImages(prev => prev.filter((_, i) => i !== index));
+    setImageFiles(prev => prev.filter((_, i) => i !== index));
+    setImagePreviews(prev => prev.filter((_, i) => i !== index));
+    setUploadedImageUrls(prev => prev.filter((_, i) => i !== index));
   };
 
-  const handleCOAUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleCOAUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      setCoAFile(file);
+    if (!file) return;
+    
+    setCoAFile(file);
+    
+    // Upload immediately
+    try {
+      setUploadingCOA(true);
+      const response = await uploadVendorCOA(file);
+      
+      if (response.success && response.url) {
+        setUploadedCoaUrl(response.url);
+      }
+    } catch (err) {
+      console.error('Failed to upload COA:', err);
+    } finally {
+      setUploadingCOA(false);
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setError('');
+    setSuccess(false);
 
-    // TODO: Submit to API
-    console.log('Submitting product:', formData, images, coaFile);
-    
-    setTimeout(() => {
+    try {
+      // Submit product to API with uploaded image URLs
+      const response = await createVendorProduct({
+        name: formData.name,
+        description: formData.description,
+        price: formData.price,
+        category: formData.category,
+        thc_percentage: formData.thc_percentage,
+        cbd_percentage: formData.cbd_percentage,
+        strain_type: formData.strain_type,
+        lineage: formData.lineage,
+        terpenes: formData.terpenes,
+        effects: formData.effects,
+        initial_quantity: formData.initial_quantity,
+        image_urls: uploadedImageUrls, // Include uploaded images
+        coa_url: uploadedCoaUrl // Include uploaded COA
+      });
+
+      if (response && response.success) {
+        setSuccess(true);
+        
+        // Show success message
+        setTimeout(() => {
+          router.push('/vendor/products');
+        }, 2000);
+      } else {
+        setError('Failed to create product. Please try again.');
+        setLoading(false);
+      }
+    } catch (err: any) {
+      console.error('Error submitting product:', err);
+      setError(err.response?.data?.message || 'Failed to create product. Please try again.');
       setLoading(false);
-      router.push('/vendor/products');
-    }, 2000);
+    }
   };
 
   return (
@@ -83,6 +160,28 @@ export default function NewProduct() {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-0 lg:space-y-6">
+        {/* Success Message */}
+        {success && (
+          <div className="bg-green-500/10 border border-green-500/20 p-4 flex items-start gap-3 -mx-4 lg:mx-0">
+            <CheckCircle size={20} className="text-green-500 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-green-500 font-medium mb-1">Product Submitted Successfully!</p>
+              <p className="text-green-500/80 text-sm">Your product has been submitted for admin approval. Redirecting...</p>
+            </div>
+          </div>
+        )}
+
+        {/* Error Message */}
+        {error && (
+          <div className="bg-red-500/10 border border-red-500/20 p-4 flex items-start gap-3 -mx-4 lg:mx-0">
+            <AlertCircle size={20} className="text-red-500 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-red-500 font-medium mb-1">Submission Failed</p>
+              <p className="text-red-500/80 text-sm">{error}</p>
+            </div>
+          </div>
+        )}
+
         {/* Basic Information */}
         <div className="bg-[#1a1a1a] lg:border border-t border-white/5 p-4 lg:p-6 -mx-4 lg:mx-0">
           <h2 className="text-white font-medium mb-6">Basic Information</h2>
@@ -165,11 +264,22 @@ export default function NewProduct() {
           
           <div className="space-y-4">
             {/* Image Grid */}
-            {images.length > 0 && (
+            {imagePreviews.length > 0 && (
               <div className="grid grid-cols-3 gap-4 mb-4">
-                {images.map((image, index) => (
+                {imagePreviews.map((preview, index) => (
                   <div key={index} className="relative aspect-square bg-white/5 rounded overflow-hidden group">
-                    <img src={image} alt={`Product ${index + 1}`} className="w-full h-full object-cover" />
+                    <img src={preview} alt={`Product ${index + 1}`} className="w-full h-full object-cover" />
+                    {uploadedImageUrls[index] ? (
+                      <div className="absolute top-2 left-2 bg-green-500 text-white px-2 py-1 text-xs flex items-center gap-1">
+                        <CheckCircle size={12} />
+                        Uploaded
+                      </div>
+                    ) : uploadingImages ? (
+                      <div className="absolute top-2 left-2 bg-blue-500 text-white px-2 py-1 text-xs flex items-center gap-1">
+                        <Loader size={12} className="animate-spin" />
+                        Uploading...
+                      </div>
+                    ) : null}
                     <button
                       type="button"
                       onClick={() => removeImage(index)}
@@ -212,13 +322,30 @@ export default function NewProduct() {
               <div className="flex items-center gap-3">
                 <FileText size={20} className="text-white/60" />
                 <div>
-                  <div className="text-white text-sm">{coaFile.name}</div>
+                  <div className="text-white text-sm flex items-center gap-2">
+                    {coaFile.name}
+                    {uploadedCoaUrl && (
+                      <span className="text-green-500 text-xs flex items-center gap-1">
+                        <CheckCircle size={12} />
+                        Uploaded
+                      </span>
+                    )}
+                    {uploadingCOA && (
+                      <span className="text-blue-500 text-xs flex items-center gap-1">
+                        <Loader size={12} className="animate-spin" />
+                        Uploading...
+                      </span>
+                    )}
+                  </div>
                   <div className="text-white/60 text-xs">{(coaFile.size / 1024).toFixed(1)} KB</div>
                 </div>
               </div>
               <button
                 type="button"
-                onClick={() => setCoAFile(null)}
+                onClick={() => {
+                  setCoAFile(null);
+                  setUploadedCoaUrl(null);
+                }}
                 className="text-red-500 hover:text-red-400 transition-colors"
               >
                 <X size={20} />

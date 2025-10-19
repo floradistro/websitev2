@@ -1,28 +1,73 @@
 "use client";
 
-import { useState } from 'react';
-import { Upload, X, Save } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Upload, X, Save, AlertCircle, CheckCircle } from 'lucide-react';
+import { useVendorAuth } from '@/context/VendorAuthContext';
 
 export default function VendorBranding() {
+  const { vendor } = useVendorAuth();
   const [loading, setLoading] = useState(false);
-  const [logo, setLogo] = useState<string>('/yachtclub.png');
+  const [fetching, setFetching] = useState(true);
+  const [logo, setLogo] = useState<string>('');
   const [banner, setBanner] = useState<string>('');
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [bannerFile, setBannerFile] = useState<File | null>(null);
   
   const [branding, setBranding] = useState({
-    companyName: 'Yacht Club',
-    storeName: 'Yacht Club',
-    tagline: 'Premium Cannabis from the Coast',
-    about: 'Yacht Club brings you premium coastal cannabis cultivated with the same attention to detail as a luxury yacht. Every product is carefully crafted, lab tested, and delivered with the highest standards of quality and service.',
+    tagline: '',
+    about: '',
     primaryColor: '#0EA5E9',
     accentColor: '#06B6D4',
-    website: 'https://yachtclubcannabis.com',
-    instagram: '@yachtclubcannabis',
-    customPolicies: 'All Yacht Club products are lab tested by Quantix Analytics and come with certificates of analysis. We guarantee quality and freshness with every order.',
+    website: '',
+    instagram: '',
+    facebook: '',
+    customFont: ''
   });
 
-  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Fetch branding data on mount
+  useEffect(() => {
+    fetchBranding();
+  }, []);
+
+  async function fetchBranding() {
+    try {
+      setFetching(true);
+      const authToken = localStorage.getItem('vendor_auth');
+      
+      const response = await fetch('https://api.floradistro.com/wp-json/flora-vendors/v1/vendors/me/branding', {
+        headers: {
+          'Authorization': `Basic ${authToken}`
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setBranding({
+          tagline: data.tagline || '',
+          about: data.about || '',
+          primaryColor: data.primary_color || '#0EA5E9',
+          accentColor: data.accent_color || '#06B6D4',
+          website: data.website || '',
+          instagram: data.instagram || '',
+          facebook: data.facebook || '',
+          customFont: data.custom_font || ''
+        });
+        setLogo(data.logo_url || '');
+        setBanner(data.banner_url || '');
+      }
+    } catch (err) {
+      console.error('Failed to fetch branding:', err);
+    } finally {
+      setFetching(false);
+    }
+  }
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      setLogoFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
         setLogo(reader.result as string);
@@ -31,9 +76,10 @@ export default function VendorBranding() {
     }
   };
 
-  const handleBannerUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleBannerUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      setBannerFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
         setBanner(reader.result as string);
@@ -42,17 +88,124 @@ export default function VendorBranding() {
     }
   };
 
+  const uploadImage = async (file: File, type: 'logo' | 'banner'): Promise<string> => {
+    const authToken = localStorage.getItem('vendor_auth');
+    const formData = new FormData();
+    
+    // Use the appropriate field name for each endpoint
+    const fieldName = type === 'logo' ? 'logo' : 'banner';
+    formData.append(fieldName, file);
+
+    // Use existing endpoints (already deployed on server)
+    const endpoint = type === 'logo' 
+      ? 'https://api.floradistro.com/wp-json/flora-vendors/v1/vendors/me/upload/logo'
+      : 'https://api.floradistro.com/wp-json/flora-vendors/v1/vendors/me/upload/banner';
+
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Basic ${authToken}`
+      },
+      body: formData
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || `Failed to upload ${type}`);
+    }
+
+    const data = await response.json();
+    return data.url;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
+    setSuccess('');
     setLoading(true);
 
-    // TODO: Submit to API
-    console.log('Saving branding:', branding, logo, banner);
-    
-    setTimeout(() => {
+    try {
+      const authToken = localStorage.getItem('vendor_auth');
+      
+      // Upload images first if changed
+      const updateData: any = {
+        tagline: branding.tagline,
+        about: branding.about,
+        primary_color: branding.primaryColor,
+        accent_color: branding.accentColor,
+        website: branding.website,
+        instagram: branding.instagram,
+        facebook: branding.facebook,
+        custom_font: branding.customFont
+      };
+
+      // Upload logo
+      if (logoFile) {
+        try {
+          const logoUrl = await uploadImage(logoFile, 'logo');
+          updateData.logo_url = logoUrl;
+          setLogoFile(null);
+        } catch (logoErr: any) {
+          console.error('Logo upload failed:', logoErr);
+          throw new Error('Logo upload failed: ' + logoErr.message);
+        }
+      }
+
+      // Upload banner (may fail if endpoint doesn't exist yet)
+      if (bannerFile) {
+        try {
+          const bannerUrl = await uploadImage(bannerFile, 'banner');
+          updateData.banner_url = bannerUrl;
+          setBannerFile(null);
+        } catch (bannerErr: any) {
+          console.error('Banner upload failed:', bannerErr);
+          // Don't fail the whole save if banner upload fails
+          setError('Note: Banner upload is not yet available. Other changes saved.');
+        }
+      }
+
+      // Update branding
+      const response = await fetch('https://api.floradistro.com/wp-json/flora-vendors/v1/vendors/me/branding', {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Basic ${authToken}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(updateData)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to update branding');
+      }
+
+      const result = await response.json();
+      setSuccess('Branding updated successfully!');
+      
+      // Refresh data
+      await fetchBranding();
+      
+      // Clear success message after 3 seconds
+      setTimeout(() => setSuccess(''), 3000);
+    } catch (err: any) {
+      setError(err.message || 'Failed to update branding. Please try again.');
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   };
+
+  if (fetching) {
+    return (
+      <div className="lg:max-w-6xl lg:mx-auto animate-fadeIn px-4 lg:px-0 py-6 lg:py-0">
+        <div className="flex items-center justify-center py-20">
+          <div className="text-center">
+            <div className="w-12 h-12 border-2 border-white/20 border-t-white rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-white/60 text-sm">Loading branding settings...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="lg:max-w-6xl lg:mx-auto animate-fadeIn px-4 lg:px-0 py-6 lg:py-0 overflow-x-hidden">
@@ -69,6 +222,22 @@ export default function VendorBranding() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Form - 2/3 width */}
         <div className="lg:col-span-2 space-y-6">
+          {/* Success Message */}
+          {success && (
+            <div className="bg-green-500/10 border border-green-500/20 p-4 flex items-start gap-3">
+              <CheckCircle size={20} className="text-green-500 flex-shrink-0 mt-0.5" />
+              <p className="text-green-500 text-sm">{success}</p>
+            </div>
+          )}
+
+          {/* Error Message */}
+          {error && (
+            <div className="bg-red-500/10 border border-red-500/20 p-4 flex items-start gap-3">
+              <AlertCircle size={20} className="text-red-500 flex-shrink-0 mt-0.5" />
+              <p className="text-red-500 text-sm">{error}</p>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Visual Assets */}
             <div className="bg-[#1a1a1a] lg:border border-t border-b border-white/5 p-4 lg:p-6 -mx-4 lg:mx-0">
@@ -146,30 +315,14 @@ export default function VendorBranding() {
               <h2 className="text-white font-medium mb-6">Store Information</h2>
               
               <div className="space-y-4">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-white/80 text-sm mb-2">
-                      Company Name
-                    </label>
-                    <input
-                      type="text"
-                      value={branding.companyName}
-                      onChange={(e) => setBranding({...branding, companyName: e.target.value})}
-                      className="w-full bg-[#1a1a1a] border border-white/5 text-white px-4 py-3 text-base focus:outline-none focus:border-white/10 transition-colors"
-                    />
+                <div>
+                  <label className="block text-white/80 text-sm mb-2">
+                    Store Name
+                  </label>
+                  <div className="w-full bg-[#0a0a0a] border border-white/5 text-white/60 px-4 py-3 text-base">
+                    {vendor?.store_name || 'Loading...'}
                   </div>
-
-                  <div>
-                    <label className="block text-white/80 text-sm mb-2">
-                      Store Display Name
-                    </label>
-                    <input
-                      type="text"
-                      value={branding.storeName}
-                      onChange={(e) => setBranding({...branding, storeName: e.target.value})}
-                      className="w-full bg-[#1a1a1a] border border-white/5 text-white px-4 py-3 text-base focus:outline-none focus:border-white/10 transition-colors"
-                    />
-                  </div>
+                  <p className="text-white/40 text-xs mt-1">Contact support to change your store name</p>
                 </div>
 
                 <div>
@@ -181,7 +334,8 @@ export default function VendorBranding() {
                     value={branding.tagline}
                     onChange={(e) => setBranding({...branding, tagline: e.target.value})}
                     placeholder="Short description of your brand"
-                    className="w-full bg-white/5 border border-white/10 text-white placeholder-white/40 px-4 py-3 rounded focus:outline-none focus:border-white/20 text-base"
+                    maxLength={255}
+                    className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors text-base"
                   />
                 </div>
 
@@ -268,7 +422,7 @@ export default function VendorBranding() {
                     value={branding.website}
                     onChange={(e) => setBranding({...branding, website: e.target.value})}
                     placeholder="https://yourwebsite.com"
-                    className="w-full bg-white/5 border border-white/10 text-white placeholder-white/40 px-4 py-3 rounded focus:outline-none focus:border-white/20 text-base break-all"
+                    className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors text-base"
                   />
                 </div>
 
@@ -281,27 +435,22 @@ export default function VendorBranding() {
                     value={branding.instagram}
                     onChange={(e) => setBranding({...branding, instagram: e.target.value})}
                     placeholder="@yourbrand"
-                    className="w-full bg-white/5 border border-white/10 text-white placeholder-white/40 px-4 py-3 rounded focus:outline-none focus:border-white/20 text-base"
+                    className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors text-base"
                   />
                 </div>
-              </div>
-            </div>
 
-            {/* Store Policies */}
-            <div className="bg-[#1a1a1a] lg:border border-t border-b border-white/5 p-4 lg:p-6 -mx-4 lg:mx-0">
-              <h2 className="text-white font-medium mb-6">Store Policies</h2>
-              
-              <div>
-                <label className="block text-white/80 text-sm mb-2">
-                  Custom Shipping & Return Policy
-                </label>
-                <textarea
-                  rows={4}
-                  value={branding.customPolicies}
-                  onChange={(e) => setBranding({...branding, customPolicies: e.target.value})}
-                  placeholder="Enter your store's policies..."
-                  className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors resize-none text-base"
-                />
+                <div>
+                  <label className="block text-white/80 text-sm mb-2">
+                    Facebook
+                  </label>
+                  <input
+                    type="text"
+                    value={branding.facebook}
+                    onChange={(e) => setBranding({...branding, facebook: e.target.value})}
+                    placeholder="@yourbrand"
+                    className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors text-base"
+                  />
+                </div>
               </div>
             </div>
 
@@ -344,11 +493,15 @@ export default function VendorBranding() {
               <div className="p-6 border-b border-white/5">
                 <div className="flex items-center gap-4 mb-4">
                   <div className="w-16 h-16 bg-[#0a0a0a] overflow-hidden border border-white/10 flex items-center justify-center">
-                    <img src={logo} alt="Logo" className="w-full h-full object-contain p-2" />
+                    {logo ? (
+                      <img src={logo} alt="Logo" className="w-full h-full object-contain p-2" />
+                    ) : (
+                      <div className="text-white/30 text-xs text-center p-2">No logo</div>
+                    )}
                   </div>
                   <div>
-                    <h2 className="text-white text-xl tracking-wide" style={{ fontFamily: 'Lobster' }}>{branding.storeName}</h2>
-                    <p className="text-white/50 text-xs tracking-wide">{branding.tagline}</p>
+                    <h2 className="text-white text-xl tracking-wide" style={{ fontFamily: 'Lobster' }}>{vendor?.store_name || 'Your Store'}</h2>
+                    <p className="text-white/50 text-xs tracking-wide">{branding.tagline || 'Add a tagline'}</p>
                   </div>
                 </div>
                 

@@ -3,9 +3,12 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Plus, Search, Filter, Package, FileText, CheckCircle, AlertCircle, XCircle } from 'lucide-react';
+import { getVendorMyProducts } from '@/lib/wordpress';
+import { useVendorAuth } from '@/context/VendorAuthContext';
 
 interface Product {
   id: number;
+  submissionId?: number;
   name: string;
   image: string;
   status: 'approved' | 'pending' | 'rejected';
@@ -13,134 +16,82 @@ interface Product {
   price: string;
   category: string;
   coaStatus?: 'approved' | 'pending' | 'missing' | 'expired';
+  submittedDate?: string;
+  rejectionReason?: string;
 }
 
 export default function VendorProducts() {
+  const { isAuthenticated, isLoading: authLoading } = useVendorAuth();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<string>('all');
   const [search, setSearch] = useState('');
 
   useEffect(() => {
-    // TODO: Fetch actual products from API
-    // Mock data for testing
-    setTimeout(() => {
-      setProducts([
-        {
-          id: 50001,
-          name: "OG Kush",
-          image: "/placeholder.jpg",
-          status: "approved",
-          quantity: 156.75,
-          price: "$15.99",
-          category: "Flower",
-          coaStatus: "approved"
-        },
-        {
-          id: 50002,
-          name: "Blue Dream",
-          image: "/placeholder.jpg",
-          status: "approved",
-          quantity: 203.5,
-          price: "$14.99",
-          category: "Flower",
-          coaStatus: "approved"
-        },
-        {
-          id: 50003,
-          name: "Sour Diesel",
-          image: "/placeholder.jpg",
-          status: "approved",
-          quantity: 127.25,
-          price: "$16.99",
-          category: "Flower",
-          coaStatus: "approved"
-        },
-        {
-          id: 50004,
-          name: "Girl Scout Cookies",
-          image: "/placeholder.jpg",
-          status: "approved",
-          quantity: 145.0,
-          price: "$17.99",
-          category: "Flower",
-          coaStatus: "approved"
-        },
-        {
-          id: 50005,
-          name: "Gelato",
-          image: "/placeholder.jpg",
-          status: "approved",
-          quantity: 98.5,
-          price: "$18.99",
-          category: "Flower",
-          coaStatus: "approved"
-        },
-        {
-          id: 50006,
-          name: "Sunset Sherbet",
-          image: "/placeholder.jpg",
-          status: "approved",
-          quantity: 76.25,
-          price: "$17.99",
-          category: "Flower",
-          coaStatus: "approved"
-        },
-        {
-          id: 50007,
-          name: "Purple Punch",
-          image: "/placeholder.jpg",
-          status: "approved",
-          quantity: 112.0,
-          price: "$16.99",
-          category: "Flower",
-          coaStatus: "approved"
-        },
-        {
-          id: 50008,
-          name: "Zkittlez",
-          image: "/placeholder.jpg",
-          status: "approved",
-          quantity: 89.75,
-          price: "$15.99",
-          category: "Flower",
-          coaStatus: "approved"
-        },
-        {
-          id: 50009,
-          name: "Wedding Cake",
-          image: "/placeholder.jpg",
-          status: "approved",
-          quantity: 134.5,
-          price: "$18.99",
-          category: "Flower",
-          coaStatus: "approved"
-        },
-        {
-          id: 50010,
-          name: "Durban Poison",
-          image: "/placeholder.jpg",
-          status: "pending",
-          quantity: 0,
-          price: "$16.99",
-          category: "Flower",
-          coaStatus: "pending"
-        },
-      ]);
-      setLoading(false);
-    }, 1000);
-  }, []);
+    async function loadProducts() {
+      // Wait for auth to complete
+      if (authLoading || !isAuthenticated) {
+        setLoading(false);
+        return;
+      }
+      
+      try {
+        setLoading(true);
+        const response = await getVendorMyProducts(1, 100);
+        
+        if (response && response.products) {
+          const mappedProducts = response.products.map((p: any) => ({
+            // Use submission id for pending/rejected, product_id for approved
+            id: p.product_id > 0 ? p.product_id : p.id,
+            submissionId: p.id, // Keep track of submission ID
+            name: p.name || 'Unnamed Product',
+            image: p.image || '/logoprint.png',
+            status: p.status,
+            quantity: p.stock ? parseFloat(p.stock) : 0,
+            price: `$${parseFloat(p.price || 0).toFixed(2)}`,
+            category: p.category || 'Product',
+            coaStatus: p.coas && p.coas.length > 0 ? 'approved' : (p.status === 'pending' ? 'pending' : 'missing'),
+            submittedDate: p.submitted_date,
+            rejectionReason: p.rejection_reason
+          }));
+          setProducts(mappedProducts);
+        }
+        setLoading(false);
+      } catch (error) {
+        console.error('Error loading products:', error);
+        setProducts([]);
+        setLoading(false);
+      }
+    }
+    
+    loadProducts();
+  }, [authLoading, isAuthenticated]);
 
   const getStatusBadge = (status: string) => {
-    const styles = {
-      approved: "bg-white/5 text-white/60 border-white/10",
-      pending: "bg-white/5 text-white/60 border-white/10",
-      rejected: "bg-red-500/10 text-red-500 border-red-500/20",
+    const config = {
+      approved: {
+        className: "border-green-500 text-green-500",
+        icon: CheckCircle,
+        text: "Approved"
+      },
+      pending: {
+        className: "border-yellow-500 text-yellow-500",
+        icon: AlertCircle,
+        text: "Pending Review"
+      },
+      rejected: {
+        className: "border-red-500 text-red-500",
+        icon: XCircle,
+        text: "Rejected"
+      },
     };
 
+    const { className, icon: Icon, text } = config[status as keyof typeof config] || config.pending;
+
     return (
-      <span className={`px-2 py-1 text-xs font-medium uppercase tracking-wider border rounded ${styles[status as keyof typeof styles]}`}>
-        {status}
+      <span className={`inline-flex items-center gap-1.5 px-2 py-1 text-xs font-medium uppercase tracking-wider border ${className}`}>
+        <Icon size={12} />
+        {text}
       </span>
     );
   };
@@ -223,33 +174,36 @@ export default function VendorProducts() {
             </button>
             <button
               onClick={() => setFilter('approved')}
-              className={`px-4 py-2 text-xs uppercase tracking-wider transition-all whitespace-nowrap ${
+              className={`flex items-center gap-1.5 px-4 py-2 text-xs uppercase tracking-wider transition-all whitespace-nowrap border ${
                 filter === 'approved'
-                  ? 'bg-white/10 text-white border border-white/20'
-                  : 'bg-[#1a1a1a] text-white/60 hover:text-white border border-white/5 hover:border-white/10'
+                  ? 'border-green-500 text-green-500'
+                  : 'border-white/10 text-white/60 hover:text-white hover:border-white/20'
               }`}
             >
-              Approved
+              <CheckCircle size={14} />
+              Approved ({products.filter(p => p.status === 'approved').length})
             </button>
             <button
               onClick={() => setFilter('pending')}
-              className={`px-4 py-2 text-xs uppercase tracking-wider transition-all whitespace-nowrap ${
+              className={`flex items-center gap-1.5 px-4 py-2 text-xs uppercase tracking-wider transition-all whitespace-nowrap border ${
                 filter === 'pending'
-                  ? 'bg-white/10 text-white border border-white/20'
-                  : 'bg-[#1a1a1a] text-white/60 hover:text-white border border-white/5 hover:border-white/10'
+                  ? 'border-yellow-500 text-yellow-500'
+                  : 'border-white/10 text-white/60 hover:text-white hover:border-white/20'
               }`}
             >
-              Pending
+              <AlertCircle size={14} />
+              Pending ({products.filter(p => p.status === 'pending').length})
             </button>
             <button
               onClick={() => setFilter('rejected')}
-              className={`px-4 py-2 text-xs uppercase tracking-wider transition-all whitespace-nowrap ${
+              className={`flex items-center gap-1.5 px-4 py-2 text-xs uppercase tracking-wider transition-all whitespace-nowrap border ${
                 filter === 'rejected'
-                  ? 'bg-red-500/10 text-red-500 border border-red-500/20'
-                  : 'bg-[#1a1a1a] text-white/60 hover:text-white border border-white/5 hover:border-white/10'
+                  ? 'border-red-500 text-red-500'
+                  : 'border-white/10 text-white/60 hover:text-white hover:border-white/20'
               }`}
             >
-              Rejected
+              <XCircle size={14} />
+              Rejected ({products.filter(p => p.status === 'rejected').length})
             </button>
           </div>
         </div>
@@ -281,7 +235,7 @@ export default function VendorProducts() {
             {filteredProducts.map((product) => (
               <Link
                 key={product.id}
-                href={`/vendor/products/${product.id}/edit`}
+                href={product.status === 'approved' ? `/vendor/inventory?expand=${product.id}` : '#'}
                 className="flex items-center gap-3 px-4 py-3 active:bg-white/5 transition-all bg-[#1a1a1a]"
               >
                 <div className="w-12 h-12 bg-white/5 rounded flex items-center justify-center flex-shrink-0">
@@ -293,15 +247,31 @@ export default function VendorProducts() {
                     <span>{product.category}</span>
                     <span>•</span>
                     <span>{product.price}</span>
-                    <span>•</span>
-                    <span className={product.quantity > 0 ? 'text-white/60' : 'text-red-500'}>
-                      {product.quantity > 0 ? `${product.quantity}g` : 'Out of stock'}
-                    </span>
+                    {product.status === 'approved' && (
+                      <>
+                        <span>•</span>
+                        <span className={product.quantity > 0 ? 'text-white/60' : 'text-red-500'}>
+                          {product.quantity > 0 ? `${product.quantity}g` : 'Out of stock'}
+                        </span>
+                      </>
+                    )}
+                    {product.status === 'pending' && (
+                      <>
+                        <span>•</span>
+                        <span className="text-yellow-500">Awaiting approval</span>
+                      </>
+                    )}
+                    {product.status === 'rejected' && product.rejectionReason && (
+                      <>
+                        <span>•</span>
+                        <span className="text-red-500">{product.rejectionReason}</span>
+                      </>
+                    )}
                   </div>
                 </div>
                 <div className="flex flex-col items-end gap-2">
                   {getStatusBadge(product.status)}
-                  {getCOABadge(product.coaStatus)}
+                  {product.status === 'approved' && getCOABadge(product.coaStatus)}
                 </div>
               </Link>
             ))}
@@ -342,23 +312,42 @@ export default function VendorProducts() {
                     <span className="text-white text-sm">{product.price}</span>
                   </td>
                   <td className="p-4">
-                    <span className={`text-sm ${product.quantity > 0 ? 'text-white' : 'text-red-500'}`}>
-                      {product.quantity > 0 ? `${product.quantity}g` : 'Out of stock'}
-                    </span>
+                    {product.status === 'approved' ? (
+                      <span className={`text-sm ${product.quantity > 0 ? 'text-white' : 'text-red-500'}`}>
+                        {product.quantity > 0 ? `${product.quantity}g` : 'Out of stock'}
+                      </span>
+                    ) : (
+                      <span className="text-white/40 text-sm">—</span>
+                    )}
                   </td>
                   <td className="p-4">
-                    {getCOABadge(product.coaStatus)}
+                    {product.status === 'approved' ? getCOABadge(product.coaStatus) : (
+                      <span className="text-white/40 text-sm">—</span>
+                    )}
                   </td>
                   <td className="p-4">
-                    {getStatusBadge(product.status)}
+                    <div className="flex flex-col gap-1">
+                      {getStatusBadge(product.status)}
+                      {product.status === 'rejected' && product.rejectionReason && (
+                        <span className="text-xs text-red-500/80 max-w-xs truncate" title={product.rejectionReason}>
+                          {product.rejectionReason}
+                        </span>
+                      )}
+                    </div>
                   </td>
                   <td className="p-4">
-                    <Link
-                      href={`/vendor/products/${product.id}/edit`}
-                      className="text-white/60 hover:text-white text-sm transition-colors"
-                    >
-                      Edit
-                    </Link>
+                    {product.status === 'approved' ? (
+                      <Link
+                        href={`/vendor/inventory?expand=${product.id}`}
+                        className="text-white/60 hover:text-white text-sm transition-colors"
+                      >
+                        Manage
+                      </Link>
+                    ) : product.status === 'pending' ? (
+                      <span className="text-yellow-500/60 text-sm">In Review</span>
+                    ) : (
+                      <span className="text-red-500/60 text-sm">Rejected</span>
+                    )}
                   </td>
                 </tr>
               ))}
