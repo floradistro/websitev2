@@ -32,7 +32,7 @@ function VendorLayoutContent({
     if (isAuthenticated) {
       const authToken = localStorage.getItem('vendor_auth');
       
-      fetch('https://api.floradistro.com/wp-json/flora-vendors/v1/vendors/me/branding', {
+      fetch('/api/vendor-proxy?endpoint=flora-vendors/v1/vendors/me/branding', {
         headers: {
           'Authorization': `Basic ${authToken}`
         }

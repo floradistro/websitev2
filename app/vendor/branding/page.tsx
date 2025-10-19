@@ -33,7 +33,7 @@ export default function VendorBranding() {
       const authToken = localStorage.getItem('vendor_auth');
       if (!authToken) return;
 
-      const response = await fetch('https://api.floradistro.com/wp-json/flora-vendors/v1/vendors/me/branding', {
+      const response = await fetch('/api/vendor-proxy?endpoint=flora-vendors/v1/vendors/me/branding', {
         headers: { 'Authorization': `Basic ${authToken}` }
       });
 
@@ -102,7 +102,7 @@ export default function VendorBranding() {
         formData.append('logo', logoFile);
 
         const uploadResponse = await fetch(
-          'https://api.floradistro.com/wp-json/flora-vendors/v1/vendors/me/upload/logo',
+          '/api/vendor-proxy?endpoint=flora-vendors/v1/vendors/me/upload/logo',
           {
             method: 'POST',
             headers: { 'Authorization': `Basic ${authToken}` },
