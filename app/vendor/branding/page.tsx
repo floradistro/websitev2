@@ -102,7 +102,7 @@ export default function VendorBranding() {
         formData.append('logo', logoFile);
 
         const uploadResponse = await fetch(
-          '/api/vendor-proxy?endpoint=flora-vendors/v1/vendors/me/upload/logo',
+          '/api/vendor/upload?type=logo',
           {
             method: 'POST',
             headers: { 'Authorization': `Basic ${authToken}` },
