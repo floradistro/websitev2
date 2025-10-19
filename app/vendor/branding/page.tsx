@@ -176,19 +176,31 @@ export default function VendorBranding() {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || 'Failed to update branding');
+        console.error('Branding save failed:', {
+          status: response.status,
+          statusText: response.statusText,
+          error: errorData
+        });
+        throw new Error(errorData.message || errorData.code || `Failed (${response.status})`);
       }
 
       const result = await response.json();
-      setSuccess('Branding updated successfully!');
+      console.log('Branding save response:', result);
       
-      // Refresh data
-      await fetchBranding();
-      
-      // Clear success message after 3 seconds
-      setTimeout(() => setSuccess(''), 3000);
+      if (result.success) {
+        setSuccess('✅ Branding updated successfully!');
+        
+        // Refresh data
+        await fetchBranding();
+        
+        // Clear success message after 3 seconds
+        setTimeout(() => setSuccess(''), 3000);
+      } else {
+        throw new Error(result.message || 'Update failed');
+      }
     } catch (err: any) {
-      setError(err.message || 'Failed to update branding. Please try again.');
+      console.error('Branding save error:', err);
+      setError('❌ ' + (err.message || 'Failed to update branding. Please try again.'));
     } finally {
       setLoading(false);
     }
