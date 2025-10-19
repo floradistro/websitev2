@@ -218,11 +218,11 @@ export default function VendorDashboard() {
   return (
     <div className="lg:max-w-7xl lg:mx-auto animate-fadeIn overflow-x-hidden">
       {/* Welcome Header */}
-      <div className="px-4 lg:px-0 py-6 lg:py-0 lg:mb-8" style={{ animation: 'fadeInUp 0.5s ease-out' }}>
-        <h1 className="text-3xl lg:text-4xl text-white mb-2" style={{ fontFamily: 'Lobster' }}>
+      <div className="px-4 lg:px-0 py-6 lg:py-0 lg:mb-8 border-b lg:border-b-0 border-white/5" style={{ animation: 'fadeInUp 0.5s ease-out' }}>
+        <h1 className="text-2xl lg:text-4xl text-white mb-1.5 lg:mb-2 leading-tight" style={{ fontFamily: 'Lobster' }}>
           Welcome Back, {vendor?.store_name || 'Vendor'}
         </h1>
-        <p className="text-white/60 text-sm">
+        <p className="text-white/60 text-xs lg:text-sm">
           Here's what's happening with your store today
         </p>
       </div>
@@ -230,62 +230,70 @@ export default function VendorDashboard() {
       {/* Stats Grid - Enhanced */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-0 lg:gap-4 mb-0 lg:mb-8 border-b lg:border-b-0 border-white/5" style={{ animation: 'fadeInUp 0.6s ease-out 0.1s both' }}>
         {/* Total Products */}
-        <div className="bg-[#1a1a1a] border-r lg:border border-white/5 p-4 lg:p-6 active:bg-white/5 lg:hover:border-white/10 lg:hover:-translate-y-0.5 transition-all duration-300 cursor-pointer relative overflow-hidden group">
+        <div className="bg-[#1a1a1a] border-r lg:border border-white/5 p-4 lg:p-6 active:bg-white/5 lg:hover:border-white/10 lg:hover:-translate-y-0.5 transition-all duration-300 cursor-pointer relative overflow-hidden group min-h-[120px] lg:min-h-0">
           <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-          <div className="relative">
+          <div className="relative h-full flex flex-col justify-between">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-2 lg:mb-4">
             <div className="text-white/60 text-[10px] lg:text-xs uppercase tracking-wider">Live Products</div>
             <Package size={18} className="hidden lg:block text-white/40" />
           </div>
-          <div className="text-2xl lg:text-3xl font-light text-white mb-0.5 lg:mb-1">
-            {loading ? '—' : stats.approved}
+          <div>
+            <div className="text-2xl lg:text-3xl font-light text-white mb-0.5 lg:mb-1">
+              {loading ? '—' : stats.approved}
+            </div>
+            <div className="text-white/40 text-[10px] lg:text-xs">Currently selling</div>
           </div>
-          <div className="text-white/40 text-[10px] lg:text-xs">Currently selling</div>
           </div>
         </div>
 
         {/* Pending Review */}
-        <div className="bg-[#1a1a1a] border-b lg:border border-white/5 p-4 lg:p-6 active:bg-white/5 lg:hover:border-white/10 lg:hover:-translate-y-0.5 transition-all duration-300 cursor-pointer relative overflow-hidden group">
+        <div className="bg-[#1a1a1a] border-b lg:border border-white/5 p-4 lg:p-6 active:bg-white/5 lg:hover:border-white/10 lg:hover:-translate-y-0.5 transition-all duration-300 cursor-pointer relative overflow-hidden group min-h-[120px] lg:min-h-0">
           <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-          <div className="relative">
+          <div className="relative h-full flex flex-col justify-between">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-2 lg:mb-4">
             <div className="text-white/60 text-[10px] lg:text-xs uppercase tracking-wider">Pending Review</div>
             <AlertCircle size={18} className="hidden lg:block text-white/40" />
           </div>
-          <div className="text-2xl lg:text-3xl font-light text-white mb-0.5 lg:mb-1">
-            {loading ? '—' : stats.pending}
+          <div>
+            <div className="text-2xl lg:text-3xl font-light text-white mb-0.5 lg:mb-1">
+              {loading ? '—' : stats.pending}
+            </div>
+            <div className="text-white/40 text-[10px] lg:text-xs">Awaiting approval</div>
           </div>
-          <div className="text-white/40 text-[10px] lg:text-xs">Awaiting approval</div>
           </div>
         </div>
 
         {/* Total Sales (30 Days) */}
-        <div className="bg-[#1a1a1a] border-r lg:border border-white/5 p-4 lg:p-6 active:bg-white/5 lg:hover:border-white/10 lg:hover:-translate-y-0.5 transition-all duration-300 cursor-pointer relative overflow-hidden group">
+        <div className="bg-[#1a1a1a] border-r lg:border border-white/5 p-4 lg:p-6 active:bg-white/5 lg:hover:border-white/10 lg:hover:-translate-y-0.5 transition-all duration-300 cursor-pointer relative overflow-hidden group min-h-[120px] lg:min-h-0">
           <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-          <div className="relative">
+          <div className="relative h-full flex flex-col justify-between">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-2 lg:mb-4">
             <div className="text-white/60 text-[10px] lg:text-xs uppercase tracking-wider">Sales (30 Days)</div>
             <DollarSign size={18} className="hidden lg:block text-white/40" />
           </div>
-          <div className="text-2xl lg:text-3xl font-light text-white mb-0.5 lg:mb-1">
-            {loading ? '—' : `$${stats.totalSales30d.toLocaleString()}`}
+          <div>
+            <div className="text-2xl lg:text-3xl font-light text-white mb-0.5 lg:mb-1">
+              {loading ? '—' : `$${stats.totalSales30d.toLocaleString()}`}
+            </div>
+            <div className="text-white/40 text-[10px] lg:text-xs">Revenue this month</div>
           </div>
-          <div className="text-white/40 text-[10px] lg:text-xs">Revenue this month</div>
           </div>
         </div>
 
         {/* Low Stock Alerts */}
-        <div className="bg-[#1a1a1a] border-b lg:border border-white/5 p-4 lg:p-6 active:bg-white/5 lg:hover:border-white/10 lg:hover:-translate-y-0.5 transition-all duration-300 cursor-pointer relative overflow-hidden group">
+        <div className="bg-[#1a1a1a] border-b lg:border border-white/5 p-4 lg:p-6 active:bg-white/5 lg:hover:border-white/10 lg:hover:-translate-y-0.5 transition-all duration-300 cursor-pointer relative overflow-hidden group min-h-[120px] lg:min-h-0">
           <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-          <div className="relative">
+          <div className="relative h-full flex flex-col justify-between">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-2 lg:mb-4">
             <div className="text-white/60 text-[10px] lg:text-xs uppercase tracking-wider">Low Stock</div>
             <AlertTriangle size={18} className="hidden lg:block text-red-500" />
           </div>
-          <div className="text-2xl lg:text-3xl font-light text-white mb-0.5 lg:mb-1">
-            {loading ? '—' : stats.lowStock}
+          <div>
+            <div className="text-2xl lg:text-3xl font-light text-white mb-0.5 lg:mb-1">
+              {loading ? '—' : stats.lowStock}
+            </div>
+            <div className="text-red-500 text-[10px] lg:text-xs">Items need restocking</div>
           </div>
-          <div className="text-red-500 text-[10px] lg:text-xs">Items need restocking</div>
           </div>
         </div>
       </div>
@@ -294,12 +302,12 @@ export default function VendorDashboard() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-0 lg:gap-4 mb-0 lg:mb-8 border-b lg:border-b-0 border-white/5" style={{ animation: 'fadeInUp 0.6s ease-out 0.2s both' }}>
         <Link
           href="/vendor/products/new"
-          className="group bg-transparent active:bg-white/5 lg:hover:bg-black border-r border-b lg:border border-white/10 lg:hover:border-white/20 p-4 lg:p-6 transition-all duration-300 relative overflow-hidden"
+          className="group bg-transparent active:bg-white/5 lg:hover:bg-black border-r border-b lg:border border-white/10 lg:hover:border-white/20 p-5 lg:p-6 transition-all duration-300 relative overflow-hidden min-h-[100px] lg:min-h-0"
         >
           <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-          <div className="relative flex flex-col lg:flex-row items-center gap-2 lg:gap-4">
-            <div className="w-10 h-10 lg:w-12 lg:h-12 bg-black group-hover:bg-white/10 flex items-center justify-center transition-all duration-300">
-              <Plus size={20} className="lg:hidden text-white/60 group-hover:text-white transition-colors duration-300" />
+          <div className="relative flex flex-col lg:flex-row items-center justify-center lg:justify-start gap-2 lg:gap-4 h-full">
+            <div className="w-10 h-10 lg:w-12 lg:h-12 bg-black group-hover:bg-white/10 flex items-center justify-center transition-all duration-300 flex-shrink-0">
+              <Plus size={18} className="lg:hidden text-white/60 group-hover:text-white transition-colors duration-300" />
               <Plus size={24} className="hidden lg:block text-white/60 group-hover:text-white transition-colors duration-300" />
             </div>
             <div className="text-white/80 group-hover:text-white text-xs lg:text-base font-medium transition-colors duration-300 text-center lg:text-left">Add Product</div>
@@ -308,12 +316,12 @@ export default function VendorDashboard() {
 
         <Link
           href="/vendor/products"
-          className="group bg-transparent active:bg-white/5 lg:hover:bg-black border-b lg:border border-white/10 lg:hover:border-white/20 p-4 lg:p-6 transition-all duration-300 relative overflow-hidden"
+          className="group bg-transparent active:bg-white/5 lg:hover:bg-black border-b lg:border border-white/10 lg:hover:border-white/20 p-5 lg:p-6 transition-all duration-300 relative overflow-hidden min-h-[100px] lg:min-h-0"
         >
           <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-          <div className="relative flex flex-col lg:flex-row items-center gap-2 lg:gap-4">
-            <div className="w-10 h-10 lg:w-12 lg:h-12 bg-black group-hover:bg-white/10 flex items-center justify-center transition-all duration-300">
-              <Package size={20} className="lg:hidden text-white/60 group-hover:text-white transition-colors duration-300" />
+          <div className="relative flex flex-col lg:flex-row items-center justify-center lg:justify-start gap-2 lg:gap-4 h-full">
+            <div className="w-10 h-10 lg:w-12 lg:h-12 bg-black group-hover:bg-white/10 flex items-center justify-center transition-all duration-300 flex-shrink-0">
+              <Package size={18} className="lg:hidden text-white/60 group-hover:text-white transition-colors duration-300" />
               <Package size={24} className="hidden lg:block text-white/60 group-hover:text-white transition-colors duration-300" />
             </div>
             <div className="text-white/80 group-hover:text-white text-xs lg:text-base font-medium transition-colors duration-300 text-center lg:text-left">My Products</div>
@@ -322,12 +330,12 @@ export default function VendorDashboard() {
 
         <Link
           href="/vendor/inventory"
-          className="group bg-transparent active:bg-white/5 lg:hover:bg-black border-r border-b lg:border border-white/10 lg:hover:border-white/20 p-4 lg:p-6 transition-all duration-300 relative overflow-hidden"
+          className="group bg-transparent active:bg-white/5 lg:hover:bg-black border-r border-b lg:border border-white/10 lg:hover:border-white/20 p-5 lg:p-6 transition-all duration-300 relative overflow-hidden min-h-[100px] lg:min-h-0"
         >
           <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-          <div className="relative flex flex-col lg:flex-row items-center gap-2 lg:gap-4">
-            <div className="w-10 h-10 lg:w-12 lg:h-12 bg-black group-hover:bg-white/10 flex items-center justify-center transition-all duration-300">
-              <TrendingUp size={20} className="lg:hidden text-white/60 group-hover:text-white transition-colors duration-300" />
+          <div className="relative flex flex-col lg:flex-row items-center justify-center lg:justify-start gap-2 lg:gap-4 h-full">
+            <div className="w-10 h-10 lg:w-12 lg:h-12 bg-black group-hover:bg-white/10 flex items-center justify-center transition-all duration-300 flex-shrink-0">
+              <TrendingUp size={18} className="lg:hidden text-white/60 group-hover:text-white transition-colors duration-300" />
               <TrendingUp size={24} className="hidden lg:block text-white/60 group-hover:text-white transition-colors duration-300" />
             </div>
             <div className="text-white/80 group-hover:text-white text-xs lg:text-base font-medium transition-colors duration-300 text-center lg:text-left">Inventory</div>
@@ -336,12 +344,12 @@ export default function VendorDashboard() {
 
         <Link
           href="/vendor/branding"
-          className="group bg-transparent active:bg-white/5 lg:hover:bg-black border-b lg:border border-white/10 lg:hover:border-white/20 p-4 lg:p-6 transition-all duration-300 relative overflow-hidden"
+          className="group bg-transparent active:bg-white/5 lg:hover:bg-black border-b lg:border border-white/10 lg:hover:border-white/20 p-5 lg:p-6 transition-all duration-300 relative overflow-hidden min-h-[100px] lg:min-h-0"
         >
           <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-          <div className="relative flex flex-col lg:flex-row items-center gap-2 lg:gap-4">
-            <div className="w-10 h-10 lg:w-12 lg:h-12 bg-black group-hover:bg-white/10 flex items-center justify-center transition-all duration-300">
-              <Package size={20} className="lg:hidden text-white/60 group-hover:text-white transition-colors duration-300" />
+          <div className="relative flex flex-col lg:flex-row items-center justify-center lg:justify-start gap-2 lg:gap-4 h-full">
+            <div className="w-10 h-10 lg:w-12 lg:h-12 bg-black group-hover:bg-white/10 flex items-center justify-center transition-all duration-300 flex-shrink-0">
+              <Package size={18} className="lg:hidden text-white/60 group-hover:text-white transition-colors duration-300" />
               <Package size={24} className="hidden lg:block text-white/60 group-hover:text-white transition-colors duration-300" />
             </div>
             <div className="text-white/80 group-hover:text-white text-xs lg:text-base font-medium transition-colors duration-300 text-center lg:text-left">Branding</div>
@@ -388,35 +396,67 @@ export default function VendorDashboard() {
                 <h2 className="text-white/90 text-sm uppercase tracking-wider font-light">Sales Trend</h2>
                 <p className="text-white/50 text-xs mt-1">Last 18 days</p>
               </div>
-              <div className="flex items-center gap-2">
-                <TrendingUp size={16} className="text-white/60" />
-                <span className="text-white/60 text-sm font-medium">+24%</span>
-              </div>
+              {salesData.length > 0 && (
+                <div className="flex items-center gap-2">
+                  <TrendingUp size={16} className="text-white/60" />
+                  <span className="text-white/60 text-sm font-medium">+24%</span>
+                </div>
+              )}
             </div>
             <div className="px-4 lg:p-6 py-4">
               {/* Simple Bar Chart */}
               <div className="flex items-end justify-between gap-1 h-32">
-                {salesData.map((data, index) => {
-                  const maxRevenue = Math.max(...salesData.map(d => d.revenue));
-                  const height = (data.revenue / maxRevenue) * 100;
-                  return (
-                    <div
-                      key={index}
-                      className="flex-1 bg-gradient-to-t from-white/20 to-white/10 hover:from-white/30 hover:to-white/20 transition-all duration-300 cursor-pointer border-t border-white/20 relative group"
-                      style={{ height: `${height}%` }}
-                      title={`${new Date(data.date).toLocaleDateString()}: $${data.revenue.toFixed(2)}`}
-                    >
-                      <div className="absolute -top-6 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black border border-white/20 px-2 py-1 text-xs text-white whitespace-nowrap">
-                        ${data.revenue.toFixed(0)}
+                {salesData.length > 0 ? (
+                  salesData.map((data, index) => {
+                    const maxRevenue = Math.max(...salesData.map(d => d.revenue));
+                    const height = (data.revenue / maxRevenue) * 100;
+                    return (
+                      <div
+                        key={index}
+                        className="flex-1 bg-gradient-to-t from-white/20 to-white/10 hover:from-white/30 hover:to-white/20 transition-all duration-300 cursor-pointer border-t border-white/20 relative group"
+                        style={{ height: `${height}%` }}
+                        title={`${new Date(data.date).toLocaleDateString()}: $${data.revenue.toFixed(2)}`}
+                      >
+                        <div className="absolute -top-6 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black border border-white/20 px-2 py-1 text-xs text-white whitespace-nowrap">
+                          ${data.revenue.toFixed(0)}
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })
+                ) : (
+                  // Empty state with placeholder bars
+                  Array.from({ length: 18 }).map((_, index) => {
+                    const heights = [15, 25, 20, 30, 18, 35, 22, 40, 28, 32, 20, 38, 25, 42, 30, 35, 28, 45];
+                    return (
+                      <div
+                        key={index}
+                        className="flex-1 bg-gradient-to-t from-white/5 to-white/[0.02] border-t border-white/5 relative"
+                        style={{ height: `${heights[index]}%` }}
+                        title="No sales data yet"
+                      >
+                      </div>
+                    );
+                  })
+                )}
               </div>
               <div className="mt-4 flex justify-between text-xs text-white/40">
-                <span>{salesData[0]?.date ? new Date(salesData[0].date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : ''}</span>
-                <span>Today</span>
+                {salesData.length > 0 ? (
+                  <>
+                    <span>{new Date(salesData[0].date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                    <span>Today</span>
+                  </>
+                ) : (
+                  <>
+                    <span>{new Date(Date.now() - 17 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                    <span>Today</span>
+                  </>
+                )}
               </div>
+              {salesData.length === 0 && (
+                <div className="mt-4 text-center">
+                  <p className="text-white/40 text-xs">No sales data yet. Start selling to see your trends!</p>
+                </div>
+              )}
             </div>
           </div>
 

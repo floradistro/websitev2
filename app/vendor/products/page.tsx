@@ -89,9 +89,10 @@ export default function VendorProducts() {
     const { className, icon: Icon, text } = config[status as keyof typeof config] || config.pending;
 
     return (
-      <span className={`inline-flex items-center gap-1.5 px-2 py-1 text-xs font-medium uppercase tracking-wider border ${className}`}>
-        <Icon size={12} />
-        {text}
+      <span className={`inline-flex items-center gap-1 lg:gap-1.5 px-1.5 lg:px-2 py-0.5 lg:py-1 text-[10px] lg:text-xs font-medium uppercase tracking-wider border ${className}`}>
+        <Icon size={10} className="lg:w-3 lg:h-3" />
+        <span className="hidden sm:inline">{text}</span>
+        <span className="sm:hidden">{text.split(' ')[0]}</span>
       </span>
     );
   };
@@ -110,8 +111,8 @@ export default function VendorProducts() {
 
     return (
       <div className={`flex items-center gap-1 ${className}`} title={`COA Status: ${coaStatus}`}>
-        <Icon size={14} />
-        <span className="text-xs">{text}</span>
+        <Icon size={12} className="lg:w-3.5 lg:h-3.5" />
+        <span className="text-[10px] lg:text-xs">{text}</span>
       </div>
     );
   };
@@ -125,8 +126,8 @@ export default function VendorProducts() {
   return (
     <div className="lg:max-w-7xl lg:mx-auto animate-fadeIn overflow-x-hidden">
       {/* Header */}
-      <div className="flex justify-between items-center px-4 lg:px-0 py-6 lg:py-0 lg:mb-8 border-b lg:border-b-0 border-white/5" style={{ animation: 'fadeInUp 0.5s ease-out' }}>
-        <div>
+      <div className="flex justify-between items-center gap-4 px-4 lg:px-0 py-6 lg:py-0 lg:mb-8 border-b lg:border-b-0 border-white/5" style={{ animation: 'fadeInUp 0.5s ease-out' }}>
+        <div className="flex-1 min-w-0">
           <h1 className="text-2xl lg:text-3xl font-light text-white mb-1 lg:mb-2 tracking-tight">
             My Products
           </h1>
@@ -136,27 +137,27 @@ export default function VendorProducts() {
         </div>
         <Link
           href="/vendor/products/new"
-          className="group flex items-center gap-2 bg-black border border-white/20 text-white px-4 lg:px-6 py-2.5 lg:py-3 text-[10px] lg:text-xs font-medium uppercase tracking-[0.2em] active:bg-white active:text-black lg:hover:bg-white lg:hover:text-black lg:hover:border-white transition-all duration-300"
+          className="group flex items-center gap-1.5 lg:gap-2 bg-black border border-white/20 text-white px-3 lg:px-6 py-3 lg:py-3 text-[10px] lg:text-xs font-medium uppercase tracking-[0.15em] lg:tracking-[0.2em] active:bg-white active:text-black lg:hover:bg-white lg:hover:text-black lg:hover:border-white transition-all duration-300 whitespace-nowrap min-h-[44px] lg:min-h-0"
         >
-          <Plus size={16} className="lg:hidden" />
-          <Plus size={18} className="hidden lg:block group-hover:rotate-90 transition-transform duration-300" />
+          <Plus size={16} className="lg:hidden flex-shrink-0" />
+          <Plus size={18} className="hidden lg:block group-hover:rotate-90 transition-transform duration-300 flex-shrink-0" />
           <span className="hidden sm:inline">Add Product</span>
           <span className="sm:hidden">Add</span>
         </Link>
       </div>
 
       {/* Filters */}
-      <div className="bg-[#1a1a1a] lg:border border-t border-b border-white/5 px-4 lg:p-4 py-3 mb-0 lg:mb-6" style={{ animation: 'fadeInUp 0.6s ease-out 0.1s both' }}>
+      <div className="bg-[#1a1a1a] lg:border border-t border-b border-white/5 px-4 lg:p-4 py-3 lg:py-4 mb-0 lg:mb-6" style={{ animation: 'fadeInUp 0.6s ease-out 0.1s both' }}>
         <div className="flex flex-col lg:flex-row gap-3 lg:gap-4">
           {/* Search */}
           <div className="flex-1 relative">
-            <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" />
+            <Search size={16} className="lg:w-[18px] lg:h-[18px] absolute left-3 top-1/2 -translate-y-1/2 text-white/40 pointer-events-none" />
             <input
               type="text"
               placeholder="Search products..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 pl-10 pr-4 py-3 focus:outline-none focus:border-white/10 transition-colors text-base"
+              className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 pl-9 lg:pl-10 pr-4 py-2.5 lg:py-3 focus:outline-none focus:border-white/10 transition-colors text-sm lg:text-base"
             />
           </div>
 
@@ -164,46 +165,52 @@ export default function VendorProducts() {
           <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 lg:mx-0 lg:px-0 lg:pb-0 scrollbar-hide">
             <button
               onClick={() => setFilter('all')}
-              className={`px-4 py-2 text-xs uppercase tracking-wider transition-all whitespace-nowrap ${
+              className={`flex-shrink-0 px-3 lg:px-4 py-2.5 lg:py-2 text-[10px] lg:text-xs uppercase tracking-wider transition-all whitespace-nowrap min-h-[44px] lg:min-h-0 ${
                 filter === 'all'
                   ? 'bg-white text-black border border-white'
-                  : 'bg-[#1a1a1a] text-white/60 hover:text-white border border-white/5 hover:border-white/10'
+                  : 'bg-[#1a1a1a] text-white/60 active:text-white lg:hover:text-white border border-white/5 active:border-white/10 lg:hover:border-white/10'
               }`}
             >
               All
             </button>
             <button
               onClick={() => setFilter('approved')}
-              className={`flex items-center gap-1.5 px-4 py-2 text-xs uppercase tracking-wider transition-all whitespace-nowrap border ${
+              className={`flex items-center gap-1 lg:gap-1.5 flex-shrink-0 px-2.5 lg:px-4 py-2.5 lg:py-2 text-[10px] lg:text-xs uppercase tracking-wider transition-all whitespace-nowrap border min-h-[44px] lg:min-h-0 ${
                 filter === 'approved'
                   ? 'border-green-500 text-green-500'
-                  : 'border-white/10 text-white/60 hover:text-white hover:border-white/20'
+                  : 'border-white/10 text-white/60 active:text-white active:border-white/20 lg:hover:text-white lg:hover:border-white/20'
               }`}
             >
-              <CheckCircle size={14} />
-              Approved ({products.filter(p => p.status === 'approved').length})
+              <CheckCircle size={12} className="lg:w-3.5 lg:h-3.5" />
+              <span className="hidden sm:inline">Approved</span>
+              <span className="sm:hidden">App.</span>
+              <span className="hidden lg:inline">({products.filter(p => p.status === 'approved').length})</span>
             </button>
             <button
               onClick={() => setFilter('pending')}
-              className={`flex items-center gap-1.5 px-4 py-2 text-xs uppercase tracking-wider transition-all whitespace-nowrap border ${
+              className={`flex items-center gap-1 lg:gap-1.5 flex-shrink-0 px-2.5 lg:px-4 py-2.5 lg:py-2 text-[10px] lg:text-xs uppercase tracking-wider transition-all whitespace-nowrap border min-h-[44px] lg:min-h-0 ${
                 filter === 'pending'
                   ? 'border-yellow-500 text-yellow-500'
-                  : 'border-white/10 text-white/60 hover:text-white hover:border-white/20'
+                  : 'border-white/10 text-white/60 active:text-white active:border-white/20 lg:hover:text-white lg:hover:border-white/20'
               }`}
             >
-              <AlertCircle size={14} />
-              Pending ({products.filter(p => p.status === 'pending').length})
+              <AlertCircle size={12} className="lg:w-3.5 lg:h-3.5" />
+              <span className="hidden sm:inline">Pending</span>
+              <span className="sm:hidden">Pend.</span>
+              <span className="hidden lg:inline">({products.filter(p => p.status === 'pending').length})</span>
             </button>
             <button
               onClick={() => setFilter('rejected')}
-              className={`flex items-center gap-1.5 px-4 py-2 text-xs uppercase tracking-wider transition-all whitespace-nowrap border ${
+              className={`flex items-center gap-1 lg:gap-1.5 flex-shrink-0 px-2.5 lg:px-4 py-2.5 lg:py-2 text-[10px] lg:text-xs uppercase tracking-wider transition-all whitespace-nowrap border min-h-[44px] lg:min-h-0 ${
                 filter === 'rejected'
                   ? 'border-red-500 text-red-500'
-                  : 'border-white/10 text-white/60 hover:text-white hover:border-white/20'
+                  : 'border-white/10 text-white/60 active:text-white active:border-white/20 lg:hover:text-white lg:hover:border-white/20'
               }`}
             >
-              <XCircle size={14} />
-              Rejected ({products.filter(p => p.status === 'rejected').length})
+              <XCircle size={12} className="lg:w-3.5 lg:h-3.5" />
+              <span className="hidden sm:inline">Rejected</span>
+              <span className="sm:hidden">Rej.</span>
+              <span className="hidden lg:inline">({products.filter(p => p.status === 'rejected').length})</span>
             </button>
           </div>
         </div>
@@ -236,17 +243,17 @@ export default function VendorProducts() {
               <Link
                 key={product.id}
                 href={product.status === 'approved' ? `/vendor/inventory?expand=${product.id}` : '#'}
-                className="flex items-center gap-3 px-4 py-3 active:bg-white/5 transition-all bg-[#1a1a1a]"
+                className="flex items-start gap-3 px-4 py-4 active:bg-white/5 transition-all bg-[#1a1a1a]"
               >
-                <div className="w-12 h-12 bg-white/5 rounded flex items-center justify-center flex-shrink-0">
-                  <Package size={20} className="text-white/40" />
+                <div className="w-14 h-14 bg-white/5 rounded flex items-center justify-center flex-shrink-0">
+                  <Package size={22} className="text-white/40" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-white text-sm font-medium mb-0.5">{product.name}</div>
-                  <div className="flex items-center gap-2 text-xs text-white/40">
+                  <div className="text-white text-sm font-medium mb-1.5 leading-tight">{product.name}</div>
+                  <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-white/40 mb-2">
                     <span>{product.category}</span>
                     <span>•</span>
-                    <span>{product.price}</span>
+                    <span className="text-white/60 font-medium">{product.price}</span>
                     {product.status === 'approved' && (
                       <>
                         <span>•</span>
@@ -255,23 +262,17 @@ export default function VendorProducts() {
                         </span>
                       </>
                     )}
-                    {product.status === 'pending' && (
-                      <>
-                        <span>•</span>
-                        <span className="text-yellow-500">Awaiting approval</span>
-                      </>
-                    )}
-                    {product.status === 'rejected' && product.rejectionReason && (
-                      <>
-                        <span>•</span>
-                        <span className="text-red-500">{product.rejectionReason}</span>
-                      </>
-                    )}
                   </div>
-                </div>
-                <div className="flex flex-col items-end gap-2">
-                  {getStatusBadge(product.status)}
-                  {product.status === 'approved' && getCOABadge(product.coaStatus)}
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {getStatusBadge(product.status)}
+                    {product.status === 'approved' && getCOABadge(product.coaStatus)}
+                  </div>
+                  {product.status === 'pending' && (
+                    <div className="text-xs text-yellow-500/80 mt-2">Awaiting approval</div>
+                  )}
+                  {product.status === 'rejected' && product.rejectionReason && (
+                    <div className="text-xs text-red-500/80 mt-2 line-clamp-2">{product.rejectionReason}</div>
+                  )}
                 </div>
               </Link>
             ))}
