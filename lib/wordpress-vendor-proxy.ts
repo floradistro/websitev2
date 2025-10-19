@@ -142,3 +142,87 @@ export async function getVendorPayoutsProxy() {
   const response = await vendorProxyRequest(`flora-vendors/v1/vendors/me/payouts?${cacheBuster}`);
   return response.data;
 }
+
+export async function createVendorProductProxy(productData: any) {
+  const cacheBuster = `_t=${Date.now()}`;
+  const response = await vendorProxyRequest(
+    `flora-vendors/v1/vendors/me/products?${cacheBuster}`,
+    'POST',
+    productData
+  );
+  return response.data;
+}
+
+export async function updateVendorProductProxy(productId: number, productData: any) {
+  const cacheBuster = `_t=${Date.now()}`;
+  const response = await vendorProxyRequest(
+    `flora-vendors/v1/vendors/me/products/${productId}?${cacheBuster}`,
+    'PUT',
+    productData
+  );
+  return response.data;
+}
+
+export async function uploadVendorImagesProxy(files: File[]) {
+  const formData = new FormData();
+  files.forEach((file, index) => {
+    formData.append(`image_${index}`, file);
+  });
+  
+  const authToken = typeof window !== 'undefined' ? localStorage.getItem('vendor_auth') : null;
+  if (!authToken) {
+    throw new Error('Not authenticated');
+  }
+  
+  const cacheBuster = `_t=${Date.now()}`;
+  const response = await fetch(
+    `/api/vendor/upload?type=images&${cacheBuster}`,
+    {
+      method: 'POST',
+      headers: {
+        'Authorization': `Basic ${authToken}`
+      },
+      body: formData
+    }
+  );
+  
+  if (!response.ok) {
+    throw new Error('Image upload failed');
+  }
+  
+  return response.json();
+}
+
+export async function uploadVendorCOAProxy(file: File, metadata?: any) {
+  const formData = new FormData();
+  formData.append('coa', file);
+  
+  if (metadata) {
+    Object.keys(metadata).forEach(key => {
+      formData.append(key, metadata[key]);
+    });
+  }
+  
+  const authToken = typeof window !== 'undefined' ? localStorage.getItem('vendor_auth') : null;
+  if (!authToken) {
+    throw new Error('Not authenticated');
+  }
+  
+  const cacheBuster = `_t=${Date.now()}`;
+  const response = await fetch(
+    `/api/vendor/upload?type=coa&${cacheBuster}`,
+    {
+      method: 'POST',
+      headers: {
+        'Authorization': `Basic ${authToken}`
+      },
+      body: formData
+    }
+  );
+  
+  if (!response.ok) {
+    throw new Error('COA upload failed');
+  }
+  
+  return response.json();
+}

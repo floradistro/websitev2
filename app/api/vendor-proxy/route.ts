@@ -28,6 +28,9 @@ async function handleRequest(request: NextRequest, method: string) {
       return NextResponse.json({ error: 'Endpoint parameter required' }, { status: 400 });
     }
 
+    // Decode endpoint (it comes URL-encoded from the client)
+    const decodedEndpoint = decodeURIComponent(endpoint);
+
     // Get auth header
     const authHeader = request.headers.get('authorization');
     
@@ -56,7 +59,9 @@ async function handleRequest(request: NextRequest, method: string) {
     }
 
     // Make request to WordPress
-    const url = `${baseUrl}/wp-json/${endpoint}`;
+    const url = `${baseUrl}/wp-json/${decodedEndpoint}`;
+    
+    console.log('Proxying to:', url);
     
     const response = await axios({
       method: method.toLowerCase(),

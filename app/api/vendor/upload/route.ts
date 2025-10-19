@@ -17,23 +17,58 @@ export async function POST(request: NextRequest) {
     
     // Get the form data from the request
     const formData = await request.formData();
-    const file = formData.get('logo') || formData.get('file') || formData.get('image');
     
-    if (!file || !(file instanceof File)) {
-      return NextResponse.json({ error: 'No file provided' }, { status: 400 });
+    // Determine endpoint based on upload type
+    let uploadEndpoint = 'flora-vendors/v1/vendors/me/upload/logo';
+    let fileFieldName = 'logo';
+    
+    if (type === 'images') {
+      uploadEndpoint = 'flora-vendors/v1/vendors/me/upload/images';
+    } else if (type === 'coa') {
+      uploadEndpoint = 'flora-vendors/v1/vendors/me/upload/coa';
+      fileFieldName = 'coa';
     }
-    
-    // Convert File to Buffer for axios
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
     
     // Create new FormData for WordPress upload
     const uploadFormData = new FormData();
-    uploadFormData.append('logo', new Blob([buffer], { type: file.type }), file.name);
+    
+    // Handle single or multiple files
+    if (type === 'images') {
+      // Multiple images
+      let index = 0;
+      for (const [key, value] of formData.entries()) {
+        if (key.startsWith('image_') && value instanceof File) {
+          const bytes = await value.arrayBuffer();
+          const buffer = Buffer.from(bytes);
+          uploadFormData.append(`image_${index}`, new Blob([buffer], { type: value.type }), value.name);
+          index++;
+        }
+      }
+    } else {
+      // Single file (logo or COA)
+      const file = formData.get(fileFieldName) || formData.get('logo') || formData.get('file');
+      
+      if (!file || !(file instanceof File)) {
+        return NextResponse.json({ error: 'No file provided' }, { status: 400 });
+      }
+      
+      const bytes = await file.arrayBuffer();
+      const buffer = Buffer.from(bytes);
+      uploadFormData.append(fileFieldName, new Blob([buffer], { type: file.type }), file.name);
+      
+      // Add metadata for COA uploads
+      if (type === 'coa') {
+        for (const [key, value] of formData.entries()) {
+          if (key !== 'coa' && typeof value === 'string') {
+            uploadFormData.append(key, value);
+          }
+        }
+      }
+    }
     
     // Upload to WordPress
     const response = await axios.post(
-      `${baseUrl}/wp-json/flora-vendors/v1/vendors/me/upload/logo`,
+      `${baseUrl}/wp-json/${uploadEndpoint}`,
       uploadFormData,
       {
         headers: {

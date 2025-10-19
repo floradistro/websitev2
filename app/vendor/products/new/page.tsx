@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Upload, X, Plus, FileText, CheckCircle, AlertCircle, Loader } from 'lucide-react';
 import Link from 'next/link';
-import { createVendorProduct, uploadVendorImages, uploadVendorCOA } from '@/lib/wordpress';
+import { createVendorProductProxy as createVendorProduct, uploadVendorImagesProxy as uploadVendorImages, uploadVendorCOAProxy as uploadVendorCOA } from '@/lib/wordpress-vendor-proxy';
 
 export default function NewProduct() {
   const router = useRouter();
