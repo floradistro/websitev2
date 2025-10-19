@@ -123,6 +123,8 @@ export default function VendorBranding() {
       // Update branding using Server Action (bypasses CORS)
       const formData = new FormData();
       formData.append('authToken', authToken);
+      formData.append('vendorUserId', vendor?.user_id?.toString() || '');
+      formData.append('vendorId', vendor?.id?.toString() || '');
       Object.keys(updateData).forEach(key => {
         formData.append(key, updateData[key]);
       });
