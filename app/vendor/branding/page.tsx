@@ -164,8 +164,8 @@ export default function VendorBranding() {
         }
       }
 
-      // Update branding
-      const response = await fetch('https://api.floradistro.com/wp-json/flora-vendors/v1/vendors/me/branding', {
+      // Update branding via settings endpoint (which should work)
+      const response = await fetch('https://api.floradistro.com/wp-json/flora-vendors/v1/vendors/me/settings', {
         method: 'PUT',
         headers: {
           'Authorization': `Basic ${authToken}`,
