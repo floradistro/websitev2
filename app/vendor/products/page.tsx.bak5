@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Plus, Search, Filter, Package, FileText, CheckCircle, AlertCircle, XCircle } from 'lucide-react';
-import { getVendorMyProductsProxy as getVendorMyProducts } from '@/lib/wordpress-vendor-proxy';
+import { getVendorMyProducts } from '@/lib/wordpress';
 import { useVendorAuth } from '@/context/VendorAuthContext';
 
 interface Product {

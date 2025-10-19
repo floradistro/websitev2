@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Star, ArrowRight, CheckCircle, ArrowLeft, Search, Package, Users, Award, MapPin } from 'lucide-react';
-import { getAllVendorsProxy as getAllVendors } from '@/lib/wordpress-vendor-proxy';
+import { getAllVendors } from '@/lib/wordpress';
 
 // Vendor Card Component
 function VendorCard({ vendor, index }: { vendor: any; index: number }) {

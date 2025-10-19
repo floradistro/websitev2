@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { getVendorDashboardProxy as getVendorDashboard, getVendorSettingsProxy as getVendorSettings } from '@/lib/wordpress-vendor-proxy';
+import { getVendorDashboard, getVendorSettings } from '@/lib/wordpress';
 
 interface VendorUser {
   id: number;

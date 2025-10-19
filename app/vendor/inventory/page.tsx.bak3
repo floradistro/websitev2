@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Search, ChevronRight, Package, CheckCircle, AlertTriangle, X, Save, Plus, Minus, Edit2, FileText, Send } from 'lucide-react';
-import { getVendorInventoryProxy as getVendorInventory, adjustVendorInventoryProxy as adjustVendorInventory, setVendorInventoryProxy as setVendorInventory, createVendorChangeRequestProxy as createVendorChangeRequest, getVendorMyProductsProxy as getVendorMyProducts } from '@/lib/wordpress-vendor-proxy';
+import { getVendorInventory, adjustVendorInventory, setVendorInventory, createVendorChangeRequest, getVendorMyProducts } from '@/lib/wordpress';
 import { useVendorAuth } from '@/context/VendorAuthContext';
 
 interface FloraFields {

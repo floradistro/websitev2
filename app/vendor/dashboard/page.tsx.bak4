@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Package, Plus, AlertCircle, CheckCircle, XCircle, TrendingUp, DollarSign, AlertTriangle, Bell, Calendar, ArrowUpRight, ArrowDownRight, FileText, MessageSquare } from 'lucide-react';
-import { getVendorDashboardProxy as getVendorDashboard } from '@/lib/wordpress-vendor-proxy';
+import { getVendorDashboard } from '@/lib/wordpress';
 import { useVendorAuth } from '@/context/VendorAuthContext';
 
 interface RecentProduct {
