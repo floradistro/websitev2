@@ -61,10 +61,10 @@ export default function HomeClient({
         <div className="absolute inset-0 bg-gradient-to-b from-[#1a1a1a]/40 via-[#1a1a1a]/35 to-[#1a1a1a]/30 backdrop-blur-sm"></div>
         <div className="max-w-4xl mx-auto text-center relative z-10">
           <h2 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-light text-white mb-8 leading-none tracking-tight">
-            Built Different.
+            Shop Smarter.
           </h2>
           <p className="text-base sm:text-lg md:text-xl font-light text-white/50 leading-relaxed max-w-2xl mx-auto mb-12">
-            One platform. Multiple vendors. Unified commerce.
+            Compare vendors. Mix and match. Save on bulk. All in one cart.
           </p>
           <Link 
             href="/vendors"
@@ -243,46 +243,32 @@ export default function HomeClient({
         <div className="absolute inset-0 bg-gradient-to-b from-[#2a2a2a]/40 to-[#2a2a2a]/35 backdrop-blur-sm"></div>
         <div className="px-4 sm:px-6 mb-12 relative z-10">
           <h2 className="text-2xl md:text-3xl font-light uppercase tracking-wider text-white mb-3">
-            Marketplace Standards
+            How We Protect You
           </h2>
           <div className="h-[1px] w-16 bg-white/20"></div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-px relative z-10">
           <div className="bg-[#2a2a2a]/30 backdrop-blur-md hover:bg-[#303030]/40 transition-all duration-500 p-10 lg:p-12 border border-white/10 hover:border-white/20">
-            <Leaf className="w-8 h-8 mb-6 text-white/60" />
-            <h3 className="text-lg uppercase tracking-[0.2em] text-white mb-6 font-normal">Sustainable Practices</h3>
+            <Shield className="w-8 h-8 mb-6 text-white/60" />
+            <h3 className="text-lg uppercase tracking-[0.2em] text-white mb-6 font-normal">Verified Vendors Only</h3>
             <div className="space-y-3">
-              <p className="text-xs text-white/50 font-light">• Organic cultivation methods required</p>
-              <p className="text-xs text-white/50 font-light">• Minimal packaging, maximum impact</p>
-              <p className="text-xs text-white/50 font-light">• Renewable energy priority</p>
-              <p className="text-xs text-white/50 font-light">• Waste reduction at every step</p>
+              <p className="text-xs text-white/50 font-light">✓ Background checks on all vendors</p>
+              <p className="text-xs text-white/50 font-light">✓ License verification required</p>
+              <p className="text-xs text-white/50 font-light">✓ Product quality standards enforced</p>
+              <p className="text-xs text-white/50 font-light">✓ Customer reviews monitored</p>
             </div>
-            <Link 
-              href="/sustainability"
-              className="inline-flex items-center gap-2 text-white/60 hover:text-white text-[10px] uppercase tracking-wider mt-6 transition-colors"
-            >
-              <span>Learn More</span>
-              <ArrowRight size={12} />
-            </Link>
           </div>
 
           <div className="bg-[#2a2a2a]/30 backdrop-blur-md hover:bg-[#303030]/40 transition-all duration-500 p-10 lg:p-12 border border-white/10 hover:border-white/20">
             <Package className="w-8 h-8 mb-6 text-white/60" />
-            <h3 className="text-lg uppercase tracking-[0.2em] text-white mb-6 font-normal">Quality Assurance</h3>
+            <h3 className="text-lg uppercase tracking-[0.2em] text-white mb-6 font-normal">Your Order Guaranteed</h3>
             <div className="space-y-3">
-              <p className="text-xs text-white/50 font-light">• Lab tested products only</p>
-              <p className="text-xs text-white/50 font-light">• Vendor verification process</p>
-              <p className="text-xs text-white/50 font-light">• Regular quality audits</p>
-              <p className="text-xs text-white/50 font-light">• Transparent sourcing</p>
+              <p className="text-xs text-white/50 font-light">✓ Secure encrypted payment processing</p>
+              <p className="text-xs text-white/50 font-light">✓ Money-back guarantee on quality issues</p>
+              <p className="text-xs text-white/50 font-light">✓ Package tracking from warehouse to door</p>
+              <p className="text-xs text-white/50 font-light">✓ Customer support 7 days a week</p>
             </div>
-            <Link 
-              href="/about"
-              className="inline-flex items-center gap-2 text-white/60 hover:text-white text-[10px] uppercase tracking-wider mt-6 transition-colors"
-            >
-              <span>Our Standards</span>
-              <ArrowRight size={12} />
-            </Link>
           </div>
         </div>
       </section>
@@ -328,10 +314,10 @@ export default function HomeClient({
                   Shipping
                 </div>
                 <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-light text-white mb-4 sm:mb-6 leading-tight">
-                  Fast. Reliable.<br/>Every day.
+                  Get It Fast.
                 </h2>
                 <p className="text-sm sm:text-base font-light text-white/50 mb-8 sm:mb-12 leading-relaxed">
-                  Daily shipping at 2PM EST. Multi-vendor orders coordinated for seamless delivery.
+                  Order by 2PM, ships today. Free shipping over $45. Track your package in real-time.
                 </p>
               </div>
 
@@ -343,8 +329,8 @@ export default function HomeClient({
                     </svg>
                   </div>
                   <div>
-                    <h3 className="text-xs sm:text-sm font-normal text-white uppercase tracking-[0.15em] mb-1">2PM Daily Cutoff</h3>
-                    <p className="text-[11px] sm:text-xs text-white/50 font-light">Order by 2PM EST, ships same day</p>
+                    <h3 className="text-xs sm:text-sm font-normal text-white uppercase tracking-[0.15em] mb-1">Same-Day Shipping</h3>
+                    <p className="text-[11px] sm:text-xs text-white/50 font-light">Order by 2PM EST, ships today from nearest location</p>
                   </div>
                 </div>
 
@@ -355,8 +341,8 @@ export default function HomeClient({
                     </svg>
                   </div>
                   <div>
-                    <h3 className="text-xs sm:text-sm font-normal text-white uppercase tracking-[0.15em] mb-1">Next-Day Delivery</h3>
-                    <p className="text-[11px] sm:text-xs text-white/50 font-light">NC and East Tennessee regional coverage</p>
+                    <h3 className="text-xs sm:text-sm font-normal text-white uppercase tracking-[0.15em] mb-1">Free Shipping $45+</h3>
+                    <p className="text-[11px] sm:text-xs text-white/50 font-light">No minimum hassles. Just spend $45, shipping's on us.</p>
                   </div>
                 </div>
 
@@ -367,8 +353,8 @@ export default function HomeClient({
                     </svg>
                   </div>
                   <div>
-                    <h3 className="text-xs sm:text-sm font-normal text-white uppercase tracking-[0.15em] mb-1">Fully Tracked</h3>
-                    <p className="text-[11px] sm:text-xs text-white/50 font-light">Track every order in real-time</p>
+                    <h3 className="text-xs sm:text-sm font-normal text-white uppercase tracking-[0.15em] mb-1">Track Your Order</h3>
+                    <p className="text-[11px] sm:text-xs text-white/50 font-light">Real-time updates from warehouse to your door</p>
                   </div>
                 </div>
               </div>
@@ -423,10 +409,10 @@ export default function HomeClient({
                 <span className="text-[10px] uppercase tracking-[0.2em] text-white/60">For Vendors</span>
               </div>
               <h2 className="text-3xl sm:text-4xl md:text-5xl font-light text-white mb-6 leading-tight">
-                Grow your business<br/>with Flora Distro
+                Sell on Flora
               </h2>
               <p className="text-sm sm:text-base font-light text-white/50 leading-relaxed mb-8">
-                Join our curated marketplace and reach customers across the region. We provide the platform, tools, and support to help you succeed.
+                Reach thousands of customers. We handle the platform, payments, and logistics. You focus on quality.
               </p>
               <Link 
                 href="/vendor/dashboard"
@@ -441,29 +427,29 @@ export default function HomeClient({
               <div className="flex items-start gap-4 group">
                 <CheckCircle size={20} className="text-white/60 flex-shrink-0 mt-0.5" />
                 <div>
-                  <h4 className="text-sm uppercase tracking-wider text-white mb-1 font-normal">Reach More Customers</h4>
-                  <p className="text-xs text-white/50 font-light">Access our established customer base across NC and TN</p>
+                  <h4 className="text-sm uppercase tracking-wider text-white mb-1 font-normal">Instant Reach</h4>
+                  <p className="text-xs text-white/50 font-light">List your products, reach customers immediately</p>
                 </div>
               </div>
               <div className="flex items-start gap-4 group">
                 <CheckCircle size={20} className="text-white/60 flex-shrink-0 mt-0.5" />
                 <div>
-                  <h4 className="text-sm uppercase tracking-wider text-white mb-1 font-normal">Unified Platform</h4>
-                  <p className="text-xs text-white/50 font-light">Manage inventory, orders, and fulfillment in one place</p>
+                  <h4 className="text-sm uppercase tracking-wider text-white mb-1 font-normal">Get Paid Fast</h4>
+                  <p className="text-xs text-white/50 font-light">Weekly payouts. No waiting 30+ days for your money</p>
                 </div>
               </div>
               <div className="flex items-start gap-4 group">
                 <CheckCircle size={20} className="text-white/60 flex-shrink-0 mt-0.5" />
                 <div>
-                  <h4 className="text-sm uppercase tracking-wider text-white mb-1 font-normal">Coordinated Fulfillment</h4>
-                  <p className="text-xs text-white/50 font-light">We handle logistics while you focus on your products</p>
+                  <h4 className="text-sm uppercase tracking-wider text-white mb-1 font-normal">We Handle Shipping</h4>
+                  <p className="text-xs text-white/50 font-light">No dealing with carriers. We coordinate all deliveries</p>
                 </div>
               </div>
               <div className="flex items-start gap-4 group">
                 <CheckCircle size={20} className="text-white/60 flex-shrink-0 mt-0.5" />
                 <div>
-                  <h4 className="text-sm uppercase tracking-wider text-white mb-1 font-normal">Trusted Brand</h4>
-                  <p className="text-xs text-white/50 font-light">Leverage our reputation and customer trust</p>
+                  <h4 className="text-sm uppercase tracking-wider text-white mb-1 font-normal">Zero Upfront Costs</h4>
+                  <p className="text-xs text-white/50 font-light">No listing fees. No monthly fees. Just a small cut when you sell</p>
                 </div>
               </div>
             </div>
@@ -491,10 +477,10 @@ export default function HomeClient({
         <div className="max-w-5xl mx-auto relative z-10">
           <div className="text-center mb-12 sm:mb-16">
             <h2 className="text-3xl sm:text-4xl md:text-6xl lg:text-8xl font-light text-white mb-6 sm:mb-8 leading-none tracking-tight">
-              Get started
+              Start Shopping
             </h2>
             <p className="text-base sm:text-lg md:text-xl lg:text-2xl font-light text-white/40 max-w-2xl mx-auto leading-relaxed">
-              Unlock volume pricing and shop from multiple trusted vendors
+              Browse products. Compare vendors. Save on volume. Free shipping over $45.
             </p>
           </div>
 
