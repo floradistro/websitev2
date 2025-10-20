@@ -126,19 +126,48 @@ export default async function ProductsPage({
     productFieldsMap[product.id] = { fields, pricingTiers };
   });
 
-  // Inventory map already populated from bulk API response
-  // All vendor products come from real database via bulk API
+  // Separate vendor products from Flora products
+  const vendorProductsList = inStockProducts.filter((p: any) => {
+    const productId = parseInt(p.id);
+    // Vendor products typically have IDs >= 41790
+    return productId >= 41790;
+  });
+  
+  const floraProducts = inStockProducts.filter((p: any) => {
+    const productId = parseInt(p.id);
+    return productId < 41790;
+  });
+  
+  // Get unique vendors from products
+  const uniqueVendors = new Map();
+  vendorProductsList.forEach((p: any) => {
+    const vendorMeta = p.meta_data?.find((m: any) => m.key === '_vendor_id');
+    if (vendorMeta) {
+      const vendorId = vendorMeta.value;
+      if (!uniqueVendors.has(vendorId)) {
+        // Create vendor object from product metadata
+        uniqueVendors.set(vendorId, {
+          id: vendorId,
+          name: vendorId === '2' ? 'Yacht Club' : `Vendor ${vendorId}`,
+          slug: vendorId === '2' ? 'yacht-club' : `vendor-${vendorId}`,
+          logo: '/logoprint.png'
+        });
+      }
+    }
+  });
+  
+  const vendorsList = Array.from(uniqueVendors.values());
 
   return (
     <ProductsClient 
       categories={categories}
       locations={locations}
-      initialProducts={inStockProducts}
+      initialProducts={floraProducts}
       inventoryMap={inventoryMap}
       initialCategory={categorySlug}
       productFieldsMap={productFieldsMap}
-      vendorProducts={[]}
-      vendors={[]}
+      vendorProducts={vendorProductsList}
+      vendors={vendorsList}
     />
   );
 }
