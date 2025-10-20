@@ -1,4 +1,5 @@
 import { getCategories, getProductPricingV3, getBulkProducts, getLocations } from "@/lib/wordpress";
+import { getAllVendorsProxy } from "@/lib/wordpress-vendor-proxy";
 import ProductsClient from "@/components/ProductsClient";
 import type { Metadata } from "next";
 
@@ -25,10 +26,11 @@ export default async function ProductsPage({
   
   // OPTIMIZED: Use BULK endpoint - returns products with inventory & fields in ONE call!
   // NO CACHING - Always fetch fresh data for real-time vendor inventory updates
-  const [categories, locations, bulkData] = await Promise.all([
+  const [categories, locations, bulkData, allVendors] = await Promise.all([
     getCategories({ per_page: 100 }),
     getLocations(), // No cache - always fresh
     getBulkProducts({ per_page: 1000 }), // No cache - always fresh
+    getAllVendorsProxy().catch(() => []), // Get all vendors
   ]);
 
   // Extract products from bulk response - inventory already included!
@@ -138,25 +140,13 @@ export default async function ProductsPage({
     return productId < 41790;
   });
   
-  // Get unique vendors from products
-  const uniqueVendors = new Map();
-  vendorProductsList.forEach((p: any) => {
-    const vendorMeta = p.meta_data?.find((m: any) => m.key === '_vendor_id');
-    if (vendorMeta) {
-      const vendorId = vendorMeta.value;
-      if (!uniqueVendors.has(vendorId)) {
-        // Create vendor object from product metadata
-        uniqueVendors.set(vendorId, {
-          id: vendorId,
-          name: vendorId === '2' ? 'Yacht Club' : `Vendor ${vendorId}`,
-          slug: vendorId === '2' ? 'yacht-club' : `vendor-${vendorId}`,
-          logo: '/logoprint.png'
-        });
-      }
-    }
-  });
-  
-  const vendorsList = Array.from(uniqueVendors.values());
+  // Map vendors from API to correct format
+  const vendorsList = allVendors.map((v: any) => ({
+    id: v.id,
+    name: v.store_name,
+    slug: v.slug,
+    logo: v.logo_url || '/logoprint.png'
+  }));
 
   return (
     <ProductsClient 
