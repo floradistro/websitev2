@@ -78,13 +78,13 @@ export default function Header() {
         }}
       >
         {/* Top announcement bar */}
-        <div className="bg-black text-white text-center py-1.5 px-4 text-[10px] uppercase tracking-wider relative z-[111]">
+        <div className="bg-black text-white text-center py-1.5 text-[10px] uppercase tracking-wider relative z-[111]">
           Free shipping on orders over $45
         </div>
 
       {/* Main header */}
-      <div className="px-4 sm:px-6 lg:container lg:mx-auto relative z-[111] bg-[#1a1a1a]">
-        <div className="flex items-center justify-between h-16">
+      <div className="relative z-[111] bg-[#1a1a1a]">
+        <div className="flex items-center justify-between h-16 px-4 sm:px-6 max-w-[1920px] mx-auto">
           {/* Mobile menu button */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}

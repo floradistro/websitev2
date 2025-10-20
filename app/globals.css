@@ -44,7 +44,7 @@ body {
   letter-spacing: -0.01em;
   /* Allow normal touch interactions */
   touch-action: manipulation;
-  padding-bottom: env(safe-area-inset-bottom);
+  /* No padding here - let individual components handle safe areas */
 }
 
 /* PWA Mode - Ensure dark background in safe areas */
@@ -815,14 +815,7 @@ a {
 }
 
 /* Mobile Safe Area Support - Apple-style */
-@supports (padding: env(safe-area-inset-top)) {
-  body {
-    padding-top: env(safe-area-inset-top);
-    padding-bottom: env(safe-area-inset-bottom);
-    padding-left: env(safe-area-inset-left);
-    padding-right: env(safe-area-inset-right);
-  }
-}
+/* Components handle their own safe areas for better control */
 
 /* Smooth momentum scrolling for iOS */
 * {
@@ -871,6 +864,18 @@ textarea {
   /* Ensure smooth drawer animations on mobile */
   .animate-slideInRight {
     animation: slideInRight 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}
+
+/* iOS PWA - Ensure full viewport height */
+@supports (-webkit-touch-callout: none) {
+  body {
+    min-height: -webkit-fill-available;
+  }
+  
+  /* Fix for iOS PWA viewport */
+  html {
+    height: -webkit-fill-available;
   }
 }
 

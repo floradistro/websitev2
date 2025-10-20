@@ -3,8 +3,9 @@ import { getCachedBulkProducts, getCachedLocations } from "@/lib/api-cache";
 import ProductsClient from "@/components/ProductsClient";
 import type { Metadata } from "next";
 
-// Enable ISR - Revalidate every 3 minutes for instant updates
-export const revalidate = 180;
+// Force dynamic - always fetch fresh data for vendor inventory
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export const metadata: Metadata = {
   title: "Shop All Products | Flora Distro",
