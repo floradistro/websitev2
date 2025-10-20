@@ -19,6 +19,18 @@ export default function NewProduct() {
   const [coaFile, setCoAFile] = useState<File | null>(null);
   const [uploadedCoaUrl, setUploadedCoaUrl] = useState<string | null>(null);
   
+  const [productType, setProductType] = useState<'simple' | 'variable'>('simple');
+  const [attributes, setAttributes] = useState<{name: string, values: string[]}[]>([]);
+  const [newAttributeName, setNewAttributeName] = useState('');
+  const [newAttributeValue, setNewAttributeValue] = useState('');
+  const [variants, setVariants] = useState<{
+    name: string;
+    attributes: Record<string, string>;
+    price: string;
+    sku: string;
+    stock: string;
+  }[]>([]);
+  
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -98,6 +110,93 @@ export default function NewProduct() {
     }
   };
 
+  // Attribute & Variant Management
+  const addAttribute = () => {
+    if (!newAttributeName.trim()) return;
+    
+    const existingAttr = attributes.find(a => a.name.toLowerCase() === newAttributeName.toLowerCase());
+    if (existingAttr) {
+      setError('Attribute already exists');
+      return;
+    }
+    
+    setAttributes([...attributes, { name: newAttributeName, values: [] }]);
+    setNewAttributeName('');
+  };
+
+  const removeAttribute = (attrName: string) => {
+    setAttributes(attributes.filter(a => a.name !== attrName));
+    // Remove variants that use this attribute
+    setVariants(variants.filter(v => !v.attributes[attrName]));
+  };
+
+  const addAttributeValue = (attrName: string) => {
+    if (!newAttributeValue.trim()) return;
+    
+    setAttributes(attributes.map(attr => {
+      if (attr.name === attrName) {
+        if (!attr.values.includes(newAttributeValue)) {
+          return { ...attr, values: [...attr.values, newAttributeValue] };
+        }
+      }
+      return attr;
+    }));
+    setNewAttributeValue('');
+  };
+
+  const removeAttributeValue = (attrName: string, value: string) => {
+    setAttributes(attributes.map(attr => {
+      if (attr.name === attrName) {
+        return { ...attr, values: attr.values.filter(v => v !== value) };
+      }
+      return attr;
+    }));
+    // Remove variants that use this value
+    setVariants(variants.filter(v => v.attributes[attrName] !== value));
+  };
+
+  const generateVariants = () => {
+    if (attributes.length === 0) return;
+    
+    // Generate all combinations of attribute values
+    const generateCombinations = (attrs: {name: string, values: string[]}[]): Record<string, string>[] => {
+      if (attrs.length === 0) return [{}];
+      
+      const [first, ...rest] = attrs;
+      const restCombinations = generateCombinations(rest);
+      
+      const combinations: Record<string, string>[] = [];
+      for (const value of first.values) {
+        for (const combo of restCombinations) {
+          combinations.push({ [first.name]: value, ...combo });
+        }
+      }
+      return combinations;
+    };
+    
+    const combinations = generateCombinations(attributes);
+    const newVariants = combinations.map(attrs => {
+      const variantName = Object.values(attrs).join(' - ');
+      return {
+        name: variantName,
+        attributes: attrs,
+        price: '',
+        sku: '',
+        stock: ''
+      };
+    });
+    
+    setVariants(newVariants);
+  };
+
+  const updateVariant = (index: number, field: string, value: string) => {
+    setVariants(variants.map((v, i) => i === index ? { ...v, [field]: value } : v));
+  };
+
+  const removeVariant = (index: number) => {
+    setVariants(variants.filter((_, i) => i !== index));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -105,11 +204,9 @@ export default function NewProduct() {
     setSuccess(false);
 
     try {
-      // Submit product to API with uploaded image URLs
-      const response = await createVendorProduct({
+      const productData: any = {
         name: formData.name,
         description: formData.description,
-        price: formData.price,
         category: formData.category,
         thc_percentage: formData.thc_percentage,
         cbd_percentage: formData.cbd_percentage,
@@ -117,15 +214,30 @@ export default function NewProduct() {
         lineage: formData.lineage,
         terpenes: formData.terpenes,
         effects: formData.effects,
-        initial_quantity: formData.initial_quantity,
-        image_urls: uploadedImageUrls, // Include uploaded images
-        coa_url: uploadedCoaUrl // Include uploaded COA
-      });
+        image_urls: uploadedImageUrls,
+        coa_url: uploadedCoaUrl,
+        product_type: productType
+      };
+
+      if (productType === 'simple') {
+        productData.price = formData.price;
+        productData.initial_quantity = formData.initial_quantity;
+      } else {
+        // Variable product
+        if (variants.length === 0) {
+          setError('Please add at least one variant for variable products');
+          setLoading(false);
+          return;
+        }
+        
+        productData.attributes = attributes;
+        productData.variants = variants;
+      }
+
+      const response = await createVendorProduct(productData);
 
       if (response && response.success) {
         setSuccess(true);
-        
-        // Show success message
         setTimeout(() => {
           router.push('/vendor/products');
         }, 2000);
@@ -237,26 +349,246 @@ export default function NewProduct() {
               </select>
             </div>
 
-            {/* Base Price */}
+            {/* Product Type */}
             <div>
               <label className="block text-white/80 text-sm mb-2">
-                Base Price (per gram) <span className="text-red-500">*</span>
+                Product Type <span className="text-red-500">*</span>
               </label>
-              <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/60">$</span>
-                <input
-                  type="number"
-                  step="0.01"
-                  required
-                  value={formData.price}
-                  onChange={(e) => setFormData({...formData, price: e.target.value})}
-                  placeholder="14.99"
-                  className="w-full bg-white/5 border border-white/10 text-white placeholder-white/40 pl-8 pr-4 py-3 rounded focus:outline-none focus:border-white/20 text-base"
-                />
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => setProductType('simple')}
+                  className={`px-4 py-3 border transition-colors ${
+                    productType === 'simple'
+                      ? 'bg-white/10 border-white/20 text-white'
+                      : 'bg-[#1a1a1a] border-white/5 text-white/60 hover:border-white/10'
+                  }`}
+                >
+                  Simple Product
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setProductType('variable')}
+                  className={`px-4 py-3 border transition-colors ${
+                    productType === 'variable'
+                      ? 'bg-white/10 border-white/20 text-white'
+                      : 'bg-[#1a1a1a] border-white/5 text-white/60 hover:border-white/10'
+                  }`}
+                >
+                  Variable Product
+                </button>
               </div>
+              <p className="text-white/40 text-xs mt-2">
+                {productType === 'simple' 
+                  ? 'A single product with one price' 
+                  : 'A product with variations (e.g., different flavors, sizes, or strengths)'}
+              </p>
             </div>
+
+            {/* Base Price - Only for Simple Products */}
+            {productType === 'simple' && (
+              <div>
+                <label className="block text-white/80 text-sm mb-2">
+                  Price {productType === 'simple' && <span className="text-red-500">*</span>}
+                </label>
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/60">$</span>
+                  <input
+                    type="number"
+                    step="0.01"
+                    required={productType === 'simple'}
+                    value={formData.price}
+                    onChange={(e) => setFormData({...formData, price: e.target.value})}
+                    placeholder="14.99"
+                    className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 pl-8 pr-4 py-3 focus:outline-none focus:border-white/10 transition-colors text-base"
+                  />
+                </div>
+              </div>
+            )}
           </div>
         </div>
+
+        {/* Attributes & Variants - Only for Variable Products */}
+        {productType === 'variable' && (
+          <div className="bg-[#1a1a1a] lg:border border-t border-white/5 p-4 lg:p-6 -mx-4 lg:mx-0">
+            <h2 className="text-white font-medium mb-2">Product Attributes & Variations</h2>
+            <p className="text-white/60 text-sm mb-6">
+              Define attributes (like Flavor, Size, Strength) and their values to create product variations.
+            </p>
+
+            {/* Add Attribute */}
+            <div className="mb-6">
+              <label className="block text-white/80 text-sm mb-2">Add Attribute</label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={newAttributeName}
+                  onChange={(e) => setNewAttributeName(e.target.value)}
+                  placeholder="e.g., Flavor, Size, Strength"
+                  className="flex-1 bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors text-base"
+                  onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addAttribute())}
+                />
+                <button
+                  type="button"
+                  onClick={addAttribute}
+                  className="px-4 py-3 bg-white/10 border border-white/20 text-white hover:bg-white hover:text-black transition-colors flex items-center gap-2"
+                >
+                  <Plus size={16} />
+                  Add
+                </button>
+              </div>
+            </div>
+
+            {/* Attributes List */}
+            {attributes.length > 0 && (
+              <div className="space-y-4 mb-6">
+                {attributes.map((attr) => (
+                  <div key={attr.name} className="bg-white/5 border border-white/10 p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="text-white font-medium">{attr.name}</h3>
+                      <button
+                        type="button"
+                        onClick={() => removeAttribute(attr.name)}
+                        className="text-red-500 hover:text-red-400"
+                      >
+                        <X size={16} />
+                      </button>
+                    </div>
+
+                    {/* Add Value */}
+                    <div className="flex gap-2 mb-3">
+                      <input
+                        type="text"
+                        value={newAttributeValue}
+                        onChange={(e) => setNewAttributeValue(e.target.value)}
+                        placeholder={`Add ${attr.name} value...`}
+                        className="flex-1 bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-3 py-2 focus:outline-none focus:border-white/10 transition-colors text-sm"
+                        onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addAttributeValue(attr.name))}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => addAttributeValue(attr.name)}
+                        className="px-3 py-2 bg-white/5 border border-white/10 text-white hover:bg-white/10 transition-colors text-sm"
+                      >
+                        <Plus size={14} />
+                      </button>
+                    </div>
+
+                    {/* Values */}
+                    {attr.values.length > 0 && (
+                      <div className="flex flex-wrap gap-2">
+                        {attr.values.map((value) => (
+                          <div
+                            key={value}
+                            className="bg-[#1a1a1a] border border-white/10 px-3 py-1 flex items-center gap-2 text-sm text-white"
+                          >
+                            {value}
+                            <button
+                              type="button"
+                              onClick={() => removeAttributeValue(attr.name, value)}
+                              className="text-white/60 hover:text-red-500"
+                            >
+                              <X size={12} />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Generate Variants Button */}
+            {attributes.length > 0 && attributes.every(a => a.values.length > 0) && (
+              <button
+                type="button"
+                onClick={generateVariants}
+                className="w-full px-4 py-3 bg-white/10 border border-white/20 text-white hover:bg-white hover:text-black transition-colors font-medium flex items-center justify-center gap-2"
+              >
+                <Plus size={16} />
+                Generate Variants ({attributes.reduce((acc, a) => acc * a.values.length, 1)} combinations)
+              </button>
+            )}
+
+            {/* Variants Table */}
+            {variants.length > 0 && (
+              <div className="mt-6">
+                <h3 className="text-white font-medium mb-4">Manage Variants ({variants.length})</h3>
+                <div className="overflow-x-auto -mx-4 lg:mx-0">
+                  <div className="inline-block min-w-full align-middle">
+                    <table className="min-w-full">
+                      <thead>
+                        <tr className="border-b border-white/10">
+                          <th className="px-4 py-3 text-left text-xs font-medium text-white/60 uppercase tracking-wider">
+                            Variant
+                          </th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-white/60 uppercase tracking-wider">
+                            Price ($)
+                          </th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-white/60 uppercase tracking-wider">
+                            SKU
+                          </th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-white/60 uppercase tracking-wider">
+                            Stock
+                          </th>
+                          <th className="px-4 py-3"></th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-white/5">
+                        {variants.map((variant, index) => (
+                          <tr key={index}>
+                            <td className="px-4 py-3 text-sm text-white whitespace-nowrap">
+                              {variant.name}
+                            </td>
+                            <td className="px-4 py-3">
+                              <input
+                                type="number"
+                                step="0.01"
+                                required
+                                value={variant.price}
+                                onChange={(e) => updateVariant(index, 'price', e.target.value)}
+                                placeholder="0.00"
+                                className="w-24 bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-2 py-1 text-sm focus:outline-none focus:border-white/10"
+                              />
+                            </td>
+                            <td className="px-4 py-3">
+                              <input
+                                type="text"
+                                value={variant.sku}
+                                onChange={(e) => updateVariant(index, 'sku', e.target.value)}
+                                placeholder="SKU-001"
+                                className="w-32 bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-2 py-1 text-sm focus:outline-none focus:border-white/10"
+                              />
+                            </td>
+                            <td className="px-4 py-3">
+                              <input
+                                type="number"
+                                value={variant.stock}
+                                onChange={(e) => updateVariant(index, 'stock', e.target.value)}
+                                placeholder="0"
+                                className="w-20 bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-2 py-1 text-sm focus:outline-none focus:border-white/10"
+                              />
+                            </td>
+                            <td className="px-4 py-3">
+                              <button
+                                type="button"
+                                onClick={() => removeVariant(index)}
+                                className="text-red-500 hover:text-red-400"
+                              >
+                                <X size={16} />
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Product Images */}
         <div className="bg-[#1a1a1a] lg:border border-t border-white/5 p-4 lg:p-6 -mx-4 lg:mx-0">
@@ -435,20 +767,22 @@ export default function NewProduct() {
               </select>
             </div>
 
-            {/* Initial Quantity */}
-            <div>
-              <label className="block text-white/80 text-sm mb-2">
-                Initial Quantity (grams)
-              </label>
-              <input
-                type="number"
-                step="0.1"
-                value={formData.initial_quantity}
-                onChange={(e) => setFormData({...formData, initial_quantity: e.target.value})}
-                placeholder="100"
-                className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors text-base"
-              />
-            </div>
+            {/* Initial Quantity - Only for Simple Products */}
+            {productType === 'simple' && (
+              <div>
+                <label className="block text-white/80 text-sm mb-2">
+                  Initial Quantity (grams)
+                </label>
+                <input
+                  type="number"
+                  step="0.1"
+                  value={formData.initial_quantity}
+                  onChange={(e) => setFormData({...formData, initial_quantity: e.target.value})}
+                  placeholder="100"
+                  className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors text-base"
+                />
+              </div>
+            )}
 
             {/* Lineage */}
             <div className="lg:col-span-2">
