@@ -112,9 +112,18 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
           overflowY: 'hidden'
         }}
       >
+        {/* Safe Area Top Fill - extends into iOS notch area */}
+        <div 
+          className="absolute top-0 left-0 right-0 bg-[#2a2a2a] pointer-events-none"
+          style={{ 
+            height: 'env(safe-area-inset-top, 0px)', 
+            marginTop: 'calc(-1 * env(safe-area-inset-top, 0px))'
+          }}
+        />
+        
         {/* Header - Fixed with safe area */}
         <div 
-          className="px-5 border-b border-white/10 bg-[#2a2a2a] flex-shrink-0"
+          className="px-5 border-b border-white/10 bg-[#2a2a2a] flex-shrink-0 relative z-10"
           style={{ 
             paddingTop: 'calc(env(safe-area-inset-top, 0px) + 1rem)',
             paddingBottom: '1rem'
@@ -137,14 +146,13 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
 
         {/* Items - Scrollable with momentum */}
         <div 
-          className="flex-1 overflow-y-auto overflow-x-hidden bg-[#2a2a2a]"
+          className="flex-1 overflow-y-auto overflow-x-hidden bg-[#2a2a2a] relative z-10"
           style={{
             WebkitOverflowScrolling: 'touch',
             overscrollBehavior: 'contain',
             minHeight: 0,
             flex: '1 1 0',
-            touchAction: 'pan-y',
-            position: 'relative'
+            touchAction: 'pan-y'
           }}
         >
           {items.length === 0 ? (
@@ -263,7 +271,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
         {/* Footer - Fixed with safe area */}
         {items.length > 0 && (
           <div 
-            className="px-5 border-t border-white/10 bg-[#1a1a1a] flex-shrink-0" 
+            className="px-5 border-t border-white/10 bg-[#1a1a1a] flex-shrink-0 relative z-10" 
             style={{ 
               paddingTop: '1.25rem',
               paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 1.25rem)'
