@@ -71,7 +71,23 @@ async function handleRequest(request: NextRequest, method: string) {
       timeout: 15000,
     });
 
-    return NextResponse.json(response.data);
+    // WordPress sometimes returns HTML errors before JSON
+    // Extract JSON from response if it's mixed with HTML
+    let responseData = response.data;
+    
+    if (typeof responseData === 'string') {
+      // Try to extract JSON from string (in case of HTML+JSON mix)
+      const jsonMatch = responseData.match(/\{.*\}$/s);
+      if (jsonMatch) {
+        try {
+          responseData = JSON.parse(jsonMatch[0]);
+        } catch (e) {
+          // If parsing fails, return as-is
+        }
+      }
+    }
+
+    return NextResponse.json(responseData);
   } catch (error: any) {
     console.error('Vendor proxy error:', error.response?.data || error.message);
     
