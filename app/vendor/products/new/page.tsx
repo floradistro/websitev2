@@ -31,6 +31,17 @@ export default function NewProduct() {
     stock: string;
   }[]>([]);
   
+  // Pricing Tiers state
+  const [pricingMode, setPricingMode] = useState<'single' | 'tiered'>('single');
+  const [pricingTiers, setPricingTiers] = useState<{
+    weight?: string;
+    qty: number;
+    price: string;
+  }[]>([]);
+  const [newTierWeight, setNewTierWeight] = useState('');
+  const [newTierQty, setNewTierQty] = useState('');
+  const [newTierPrice, setNewTierPrice] = useState('');
+  
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -197,6 +208,42 @@ export default function NewProduct() {
     setVariants(variants.filter((_, i) => i !== index));
   };
 
+  // Pricing Tier Management
+  const addPricingTier = () => {
+    if (!newTierPrice || !newTierQty) {
+      setError('Please enter quantity and price for the tier');
+      return;
+    }
+
+    const tier = {
+      weight: newTierWeight || undefined,
+      qty: parseInt(newTierQty),
+      price: newTierPrice
+    };
+
+    setPricingTiers([...pricingTiers, tier]);
+    setNewTierWeight('');
+    setNewTierQty('');
+    setNewTierPrice('');
+    setError('');
+  };
+
+  const removePricingTier = (index: number) => {
+    setPricingTiers(pricingTiers.filter((_, i) => i !== index));
+  };
+
+  const updatePricingTier = (index: number, field: string, value: string) => {
+    setPricingTiers(pricingTiers.map((tier, i) => {
+      if (i === index) {
+        if (field === 'qty') {
+          return { ...tier, qty: parseInt(value) || 0 };
+        }
+        return { ...tier, [field]: value };
+      }
+      return tier;
+    }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -220,7 +267,19 @@ export default function NewProduct() {
       };
 
       if (productType === 'simple') {
-        productData.price = formData.price;
+        // Check pricing mode
+        if (pricingMode === 'tiered') {
+          if (pricingTiers.length === 0) {
+            setError('Please add at least one pricing tier');
+            setLoading(false);
+            return;
+          }
+          productData.pricing_tiers = pricingTiers;
+          productData.pricing_mode = 'tiered';
+        } else {
+          productData.price = formData.price;
+          productData.pricing_mode = 'single';
+        }
         productData.initial_quantity = formData.initial_quantity;
       } else {
         // Variable product
@@ -385,18 +444,56 @@ export default function NewProduct() {
               </p>
             </div>
 
-            {/* Base Price - Only for Simple Products */}
+            {/* Pricing Mode - Only for Simple Products */}
             {productType === 'simple' && (
               <div>
                 <label className="block text-white/80 text-sm mb-2">
-                  Price {productType === 'simple' && <span className="text-red-500">*</span>}
+                  Pricing Mode <span className="text-red-500">*</span>
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setPricingMode('single')}
+                    className={`px-4 py-3 border transition-colors ${
+                      pricingMode === 'single'
+                        ? 'bg-white/10 border-white/20 text-white'
+                        : 'bg-[#1a1a1a] border-white/5 text-white/60 hover:border-white/10'
+                    }`}
+                  >
+                    Single Price
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPricingMode('tiered')}
+                    className={`px-4 py-3 border transition-colors ${
+                      pricingMode === 'tiered'
+                        ? 'bg-white/10 border-white/20 text-white'
+                        : 'bg-[#1a1a1a] border-white/5 text-white/60 hover:border-white/10'
+                    }`}
+                  >
+                    Tier Pricing
+                  </button>
+                </div>
+                <p className="text-white/40 text-xs mt-2">
+                  {pricingMode === 'single' 
+                    ? 'One price for all quantities' 
+                    : 'Different prices for different quantities (e.g., 1g, 3.5g, 7g)'}
+                </p>
+              </div>
+            )}
+
+            {/* Single Price - Only for Simple Products with Single Pricing */}
+            {productType === 'simple' && pricingMode === 'single' && (
+              <div>
+                <label className="block text-white/80 text-sm mb-2">
+                  Price <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
                   <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/60">$</span>
                   <input
                     type="number"
                     step="0.01"
-                    required={productType === 'simple'}
+                    required={productType === 'simple' && pricingMode === 'single'}
                     value={formData.price}
                     onChange={(e) => setFormData({...formData, price: e.target.value})}
                     placeholder="14.99"
@@ -407,6 +504,123 @@ export default function NewProduct() {
             )}
           </div>
         </div>
+
+        {/* Pricing Tiers - Only for Simple Products with Tiered Pricing */}
+        {productType === 'simple' && pricingMode === 'tiered' && (
+          <div className="bg-[#1a1a1a] lg:border border-t border-white/5 p-4 lg:p-6 -mx-4 lg:mx-0">
+            <h2 className="text-white font-medium mb-2">Pricing Tiers</h2>
+            <p className="text-white/60 text-sm mb-6">
+              Offer different prices for different quantities (e.g., 1g at $15, 3.5g at $45, 7g at $80).
+            </p>
+
+            {/* Add Pricing Tier */}
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-3 mb-6">
+              <div>
+                <label className="block text-white/80 text-xs mb-2">Weight/Size (Optional)</label>
+                <input
+                  type="text"
+                  value={newTierWeight}
+                  onChange={(e) => setNewTierWeight(e.target.value)}
+                  placeholder="e.g., 1g, 3.5g"
+                  className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-3 py-2 text-sm focus:outline-none focus:border-white/10 transition-colors"
+                />
+              </div>
+              <div>
+                <label className="block text-white/80 text-xs mb-2">Quantity <span className="text-red-500">*</span></label>
+                <input
+                  type="number"
+                  value={newTierQty}
+                  onChange={(e) => setNewTierQty(e.target.value)}
+                  placeholder="1"
+                  className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-3 py-2 text-sm focus:outline-none focus:border-white/10 transition-colors"
+                />
+              </div>
+              <div>
+                <label className="block text-white/80 text-xs mb-2">Price ($) <span className="text-red-500">*</span></label>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={newTierPrice}
+                  onChange={(e) => setNewTierPrice(e.target.value)}
+                  placeholder="14.99"
+                  className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-3 py-2 text-sm focus:outline-none focus:border-white/10 transition-colors"
+                />
+              </div>
+              <div className="flex items-end">
+                <button
+                  type="button"
+                  onClick={addPricingTier}
+                  className="w-full px-4 py-2 bg-white/10 border border-white/20 text-white hover:bg-white hover:text-black transition-colors flex items-center justify-center gap-2 text-sm"
+                >
+                  <Plus size={16} />
+                  Add Tier
+                </button>
+              </div>
+            </div>
+
+            {/* Pricing Tiers List */}
+            {pricingTiers.length > 0 && (
+              <div className="space-y-3">
+                <h3 className="text-white text-sm font-medium">Current Pricing Tiers ({pricingTiers.length})</h3>
+                <div className="space-y-2">
+                  {pricingTiers.map((tier, index) => (
+                    <div key={index} className="bg-white/5 border border-white/10 p-3 flex items-center gap-3">
+                      <div className="flex-1 grid grid-cols-3 gap-3">
+                        <div>
+                          <input
+                            type="text"
+                            value={tier.weight || ''}
+                            onChange={(e) => updatePricingTier(index, 'weight', e.target.value)}
+                            placeholder="Weight"
+                            className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-2 py-1 text-sm focus:outline-none focus:border-white/10"
+                          />
+                        </div>
+                        <div>
+                          <input
+                            type="number"
+                            value={tier.qty}
+                            onChange={(e) => updatePricingTier(index, 'qty', e.target.value)}
+                            placeholder="Qty"
+                            className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-2 py-1 text-sm focus:outline-none focus:border-white/10"
+                          />
+                        </div>
+                        <div className="relative">
+                          <span className="absolute left-2 top-1/2 -translate-y-1/2 text-white/60 text-xs">$</span>
+                          <input
+                            type="number"
+                            step="0.01"
+                            value={tier.price}
+                            onChange={(e) => updatePricingTier(index, 'price', e.target.value)}
+                            placeholder="Price"
+                            className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 pl-5 pr-2 py-1 text-sm focus:outline-none focus:border-white/10"
+                          />
+                        </div>
+                      </div>
+                      <div className="text-white/60 text-sm min-w-[100px]">
+                        {tier.weight || `${tier.qty} units`} - ${parseFloat(tier.price.toString()).toFixed(2)}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removePricingTier(index)}
+                        className="text-red-500 hover:text-red-400 p-1"
+                      >
+                        <X size={16} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {pricingTiers.length === 0 && (
+              <div className="bg-blue-500/5 border border-blue-500/10 p-4 text-center">
+                <p className="text-blue-500/80 text-sm">
+                  No pricing tiers added yet. Add at least one pricing tier to continue.
+                </p>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Attributes & Variants - Only for Variable Products */}
         {productType === 'variable' && (
