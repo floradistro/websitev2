@@ -22,7 +22,7 @@
   --font-mono: var(--font-geist-mono);
 }
 
-html, body {
+html {
   overflow-x: hidden;
   max-width: 100vw;
   position: relative;
@@ -30,27 +30,28 @@ html, body {
   -webkit-text-size-adjust: 100%;
   -ms-text-size-adjust: 100%;
   text-size-adjust: 100%;
-}
-
-/* PWA Mode - Safe areas for iOS notch/status bar */
-@supports (padding-top: env(safe-area-inset-top)) {
-  html {
-    background-color: #000000;
-  }
-  
-  body {
-    padding-bottom: env(safe-area-inset-bottom);
-    background-color: #1a1a1a;
-  }
+  /* Dark background for pull-to-refresh */
+  background-color: #0a0a0a;
 }
 
 body {
-  background: #b5b5b2;
+  overflow-x: hidden;
+  max-width: 100vw;
+  position: relative;
+  background: #1a1a1a;
   color: var(--foreground);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
   letter-spacing: -0.01em;
   /* Allow normal touch interactions */
   touch-action: manipulation;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* PWA Mode - Ensure dark background in safe areas */
+@supports (padding-top: env(safe-area-inset-top)) {
+  html {
+    background-color: #000000;
+  }
 }
 
 h1, h2, h3, h4, h5, h6 {

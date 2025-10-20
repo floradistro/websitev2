@@ -84,7 +84,8 @@ export default function RootLayout({
         <link rel="apple-touch-startup-image" href="/logoprint.png" />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen overflow-x-hidden`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col overflow-x-hidden`}
+        style={{ minHeight: '100vh', backgroundColor: '#1a1a1a' }}
         suppressHydrationWarning
       >
         <AuthProvider>
