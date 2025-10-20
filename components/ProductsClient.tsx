@@ -282,10 +282,10 @@ export default function ProductsClient({
       {/* Filter Bar - Compact Single Row */}
       <div className="border-b border-white/10 relative">
         <div className="absolute inset-0 bg-[#2a2a2a]/30 backdrop-blur-sm"></div>
-        <div className="px-4 sm:px-6 md:px-8 py-3 sm:py-4 max-w-[2000px] mx-auto relative z-10">
+        <div className="px-4 sm:px-6 md:px-8 py-3 sm:py-4 max-w-[2000px] mx-auto relative z-50">
           <div className="flex flex-col gap-3 sm:gap-4">
             {/* Single Row - All Controls */}
-            <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center justify-between gap-2 relative z-50">
               {/* Location Dropdown */}
               <LocationDropdown
                 locations={locations}
