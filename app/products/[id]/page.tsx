@@ -8,12 +8,18 @@ export const revalidate = 60;
 // Generate static paths for top products at build time
 export async function generateStaticParams() {
   try {
-    const products = await getProducts({ per_page: 50, orderby: 'popularity' });
-    return products.map((product: any) => ({
+    // Limit to 10 most popular products for static generation (faster Vercel builds)
+    // Other products will be generated on-demand
+    const products = await Promise.race([
+      getProducts({ per_page: 10, orderby: 'popularity' }),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 10000))
+    ]);
+    return (products as any[]).map((product: any) => ({
       id: product.id.toString(),
     }));
   } catch (error) {
     console.error('Error generating static params:', error);
+    // Return empty array to make all pages dynamic (prevents Vercel build hangs)
     return [];
   }
 }

@@ -1,0 +1,17 @@
+{
+  "framework": "nextjs",
+  "buildCommand": "next build",
+  "regions": ["iad1"],
+  "functions": {
+    "app/api/**/*.ts": {
+      "maxDuration": 30
+    }
+  },
+  "build": {
+    "env": {
+      "NEXT_PUBLIC_WORDPRESS_API_URL": "https://api.floradistro.com",
+      "NODE_OPTIONS": "--max-old-space-size=4096"
+    }
+  }
+}
+
