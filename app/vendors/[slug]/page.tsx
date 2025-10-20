@@ -75,7 +75,7 @@ export default function VendorStorefront() {
 
   if (loading || !vendor) {
     return (
-      <div className="min-h-screen bg-[#1a1a1a] flex items-center justify-center">
+      <div className="min-h-screen bg-[#1a1a1a] flex items-center justify-center pt-20">
         <div className="text-white/60">Loading...</div>
       </div>
     );
@@ -142,7 +142,7 @@ export default function VendorStorefront() {
 
   return (
     <div 
-      className="bg-[#2a2a2a] relative overflow-x-hidden overflow-y-auto max-w-full"
+      className="bg-[#2a2a2a] relative overflow-x-hidden overflow-y-auto max-w-full pt-20"
       style={{ minHeight: 'calc(100vh - env(safe-area-inset-top, 0px))' }}
     >
       {/* Vendor Whale Animation Background (Bubbles) */}
