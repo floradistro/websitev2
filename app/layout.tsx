@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import ConditionalLayout from "@/components/ConditionalLayout";
 import NotificationToast from "@/components/NotificationToast";
+import PullToRefresh from "@/components/PullToRefresh";
 import { CartProvider } from "@/context/CartContext";
 import { AuthProvider } from "@/context/AuthContext";
 import { WishlistProvider } from "@/context/WishlistContext";
@@ -93,6 +94,7 @@ export default function RootLayout({
             <WishlistProvider>
               <CartProvider>
                 {/* <RecentlyViewedProvider> */}
+                  <PullToRefresh />
                   <ConditionalLayout>
                     {children}
                   </ConditionalLayout>
