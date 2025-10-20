@@ -32,6 +32,18 @@ html, body {
   text-size-adjust: 100%;
 }
 
+/* PWA Mode - Safe areas for iOS notch/status bar */
+@supports (padding-top: env(safe-area-inset-top)) {
+  html {
+    padding-top: 0;
+    background-color: #1a1a1a;
+  }
+  
+  body {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
 body {
   background: #b5b5b2;
   color: var(--foreground);

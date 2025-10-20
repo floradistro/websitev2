@@ -64,6 +64,10 @@ export default function Header() {
       className={`sticky top-0 bg-[#1a1a1a] text-white z-[110] border-b border-white/10 transition-transform duration-300 relative ${
         isVisible ? 'translate-y-0' : '-translate-y-full'
       }`}
+      style={{ 
+        paddingTop: 'env(safe-area-inset-top)',
+        backgroundColor: '#1a1a1a'
+      }}
     >
       {/* Top announcement bar */}
       <div className="bg-black text-white text-center py-1.5 px-4 text-[10px] uppercase tracking-wider relative z-[111]">
