@@ -91,10 +91,7 @@ function VendorLayoutContent({
   }
 
     return (
-    <div 
-      className="bg-[#1a1a1a] pb-[env(safe-area-inset-bottom)] overflow-x-hidden"
-      style={{ minHeight: '100vh' }}
-    >
+    <>
       <style jsx global>{`
         @font-face {
           font-family: 'Lobster';
@@ -139,21 +136,20 @@ function VendorLayoutContent({
         }
       `}</style>
 
-      {/* PWA Safe Area Spacer */}
-      <div 
-        className="fixed top-0 left-0 right-0 bg-[#1a1a1a] z-[120] pointer-events-none lg:hidden"
-        style={{ height: 'env(safe-area-inset-top, 0px)' }}
-      />
+      <div className="bg-[#1a1a1a] pb-[env(safe-area-inset-bottom)] overflow-x-hidden min-h-screen">
+        {/* PWA Safe Area Spacer - Fixed at very top */}
+        <div 
+          className="fixed top-0 left-0 right-0 bg-[#1a1a1a] z-[120] pointer-events-none"
+          style={{ height: 'env(safe-area-inset-top, 0px)' }}
+        />
 
-      {/* Mobile Top Bar */}
-      <nav 
-        className="lg:hidden sticky bg-[#1a1a1a] z-[110] border-b border-white/5"
-        style={{ 
-          top: 'env(safe-area-inset-top, 0px)',
-          marginTop: 0,
-          paddingTop: 0
-        }}
-      >
+        {/* Mobile Top Bar */}
+        <nav 
+          className="lg:hidden sticky bg-[#1a1a1a] z-[110] border-b border-white/5"
+          style={{ 
+            top: 'env(safe-area-inset-top, 0px)'
+          }}
+        >
         <div className="flex items-center justify-between h-14 px-4">
           {/* Menu Button */}
           <button 
@@ -364,7 +360,8 @@ function VendorLayoutContent({
 
       <VendorSupportChat isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
       <VendorApprovalPanel />
-    </div>
+      </div>
+    </>
   );
 }
 
