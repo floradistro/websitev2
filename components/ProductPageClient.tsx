@@ -225,7 +225,7 @@ export default function ProductPageClient({
 
   return (
     <div 
-      className="bg-[#1a1a1a] relative overflow-x-hidden overflow-y-auto max-w-full pt-20"
+      className="bg-[#1a1a1a] relative overflow-x-hidden overflow-y-auto max-w-full"
       style={{ minHeight: 'calc(100vh - env(safe-area-inset-top, 0px))' }}
     >
       {/* Product Grid Animation Background */}
@@ -235,10 +235,10 @@ export default function ProductPageClient({
       {/* <ProductSchema product={product} />
       <BreadcrumbSchema items={breadcrumbItems} /> */}
       
-      {/* Breadcrumb Navigation */}
-      <div className="border-b border-white/10 relative">
-        <div className="max-w-[2000px] mx-auto px-4 sm:px-6 py-3 sm:py-4 relative z-10">
-          <nav className="flex items-center flex-wrap gap-x-2 gap-y-1 text-xs sm:text-sm uppercase tracking-wider">
+      {/* Breadcrumb Navigation - Mobile Optimized */}
+      <div className="sticky top-0 z-20 border-b border-white/10 bg-[#1a1a1a]/95 backdrop-blur-lg">
+        <div className="max-w-[2000px] mx-auto px-4 sm:px-6 py-2.5 sm:py-3 relative">
+          <nav className="flex items-center gap-x-1.5 sm:gap-x-2 text-[10px] sm:text-xs uppercase tracking-wider overflow-x-auto scrollbar-hide">
             <Link
               href="/"
               className="text-white/40 hover:text-white transition-colors whitespace-nowrap"

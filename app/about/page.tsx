@@ -15,11 +15,11 @@ export const metadata: Metadata = {
 export default async function AboutPage() {
   return (
     <div 
-      className="bg-[#1a1a1a] relative overflow-x-hidden w-full max-w-full pt-20"
+      className="bg-[#1a1a1a] relative overflow-x-hidden w-full max-w-full"
       style={{ minHeight: 'calc(100vh - env(safe-area-inset-top, 0px))' }}
     >
       {/* Hero */}
-      <section className="relative min-h-[70vh] flex items-center justify-center bg-[#1a1a1a] text-white px-4 overflow-hidden">
+      <section className="relative min-h-[70vh] flex items-center justify-center bg-[#1a1a1a] text-white px-4 overflow-hidden pt-20">
         <div className="absolute inset-0 opacity-20">
           <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-white/5 rounded-full blur-3xl"></div>
           <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-white/5 rounded-full blur-3xl"></div>

@@ -305,11 +305,11 @@ export default function DashboardPage() {
 
   return (
     <div 
-      className="bg-[#1a1a1a] relative overflow-x-hidden w-full max-w-full pt-20"
+      className="bg-[#1a1a1a] relative overflow-x-hidden w-full max-w-full"
       style={{ minHeight: 'calc(100vh - env(safe-area-inset-top, 0px))' }}
     >
       {/* Hero Header */}
-      <section className="relative bg-gradient-to-b from-[#1a1a1a] to-[#2a2a2a] border-b border-white/10 px-4 py-16">
+      <section className="relative bg-gradient-to-b from-[#1a1a1a] to-[#2a2a2a] border-b border-white/10 px-4 pt-20 pb-16">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-start justify-between">
             <div>

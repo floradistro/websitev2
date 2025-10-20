@@ -317,21 +317,21 @@ export default function CheckoutPage() {
         strategy="lazyOnload"
       />
       <div 
-        className="bg-[#1a1a1a] relative overflow-x-hidden w-full max-w-full pt-20"
+        className="bg-[#1a1a1a] relative overflow-x-hidden w-full max-w-full"
         style={{
           minHeight: 'calc(100vh - env(safe-area-inset-top, 0px))',
           paddingBottom: 'env(safe-area-inset-bottom)'
         }}
       >
         {/* Breadcrumb - Mobile Optimized */}
-        <div className="border-b border-white/10 bg-[#1a1a1a] sticky top-0 z-10 backdrop-blur-lg">
-          <div className="px-5 py-4">
+        <div className="border-b border-white/10 bg-[#1a1a1a]/95 backdrop-blur-lg sticky top-0 z-20">
+          <div className="px-4 sm:px-5 py-3 sm:py-4">
             <Link
               href="/products"
-              className="inline-flex items-center space-x-2 text-sm text-white/60 hover:text-white active:text-white transition-colors uppercase tracking-wider min-h-[44px]"
+              className="inline-flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-sm text-white/60 hover:text-white active:text-white transition-colors uppercase tracking-wider min-h-[44px]"
             >
-              <ChevronLeft size={18} />
-              <span>Back</span>
+              <ChevronLeft size={16} className="sm:w-[18px] sm:h-[18px]" />
+              <span>Back to Products</span>
             </Link>
           </div>
         </div>

@@ -142,7 +142,7 @@ export default function VendorStorefront() {
 
   return (
     <div 
-      className="bg-[#2a2a2a] relative overflow-x-hidden overflow-y-auto max-w-full pt-20"
+      className="bg-[#2a2a2a] relative overflow-x-hidden overflow-y-auto max-w-full"
       style={{ minHeight: 'calc(100vh - env(safe-area-inset-top, 0px))' }}
     >
       {/* Vendor Whale Animation Background (Bubbles) */}
@@ -151,7 +151,7 @@ export default function VendorStorefront() {
       {/* Back Navigation */}
       <div className="border-b border-white/10 relative">
         <div className="absolute inset-0 bg-[#2a2a2a]/30 backdrop-blur-sm"></div>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between relative z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-20 pb-4 flex items-center justify-between relative z-10">
           <Link 
             href="/vendors"
             className="inline-flex items-center gap-2 text-white/60 hover:text-white text-sm transition-colors"

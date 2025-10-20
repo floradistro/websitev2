@@ -154,14 +154,14 @@ export default function VendorsPage() {
 
   return (
     <div 
-      className="bg-[#2a2a2a] relative overflow-x-hidden overflow-y-auto max-w-full pt-20"
+      className="bg-[#2a2a2a] relative overflow-x-hidden overflow-y-auto max-w-full"
       style={{ minHeight: 'calc(100vh - env(safe-area-inset-top, 0px))' }}
     >
       {/* Vendor Whale Animation Background */}
       <VendorWhaleAnimation />
 
       {/* Hero */}
-      <div className="border-b border-white/10 relative">
+      <div className="border-b border-white/10 relative pt-20">
         <div className="absolute inset-0 bg-gradient-to-b from-[#2a2a2a]/40 via-[#2a2a2a]/35 to-[#2a2a2a]/30 backdrop-blur-sm"></div>
         {/* Flora Distro Logo - Hero */}
         <div className="absolute top-8 right-8 md:top-16 md:right-16 lg:top-20 lg:right-20 z-10" style={{ animation: 'logoEntrance 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s forwards', opacity: 0 }}>

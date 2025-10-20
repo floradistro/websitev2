@@ -9,11 +9,11 @@ export const metadata: Metadata = {
 export default function Privacy() {
   return (
     <div 
-      className="bg-[#1a1a1a] relative overflow-x-hidden w-full max-w-full pt-20"
+      className="bg-[#1a1a1a] relative overflow-x-hidden w-full max-w-full"
       style={{ minHeight: 'calc(100vh - env(safe-area-inset-top, 0px))' }}
     >
       {/* Hero */}
-      <section className="relative min-h-[60vh] flex items-center justify-center bg-[#1a1a1a] text-white px-4">
+      <section className="relative min-h-[60vh] flex items-center justify-center bg-[#1a1a1a] text-white px-4 pt-20">
         <div className="max-w-4xl mx-auto text-center">
           <div className="h-[1px] w-16 bg-gradient-to-r from-transparent via-white/30 to-transparent mx-auto mb-8"></div>
           <h1 className="text-5xl md:text-7xl font-light text-white mb-6 leading-tight tracking-tight">
