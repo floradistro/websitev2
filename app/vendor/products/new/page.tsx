@@ -302,6 +302,8 @@ export default function NewProduct() {
       }
 
       const response = await createVendorProduct(productData);
+      
+      console.log('Product creation response:', response);
 
       if (response && response.success) {
         setSuccess(true);
@@ -309,7 +311,8 @@ export default function NewProduct() {
           router.push('/vendor/products');
         }, 2000);
       } else {
-        setError('Failed to create product. Please try again.');
+        console.error('Response missing success flag:', response);
+        setError(response?.message || 'Failed to create product. Please try again.');
         setLoading(false);
       }
     } catch (err: any) {
