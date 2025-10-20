@@ -13,8 +13,19 @@ interface Package {
 
 export default function DeliveryAnimation() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const animationIdRef = useRef<number | null>(null);
+  const isMountedRef = useRef(true);
+  const isVisibleRef = useRef(true);
 
   useEffect(() => {
+    isMountedRef.current = true;
+    
+    // Pause animation when tab is hidden (prevents memory leak)
+    const handleVisibilityChange = () => {
+      isVisibleRef.current = !document.hidden;
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -45,6 +56,14 @@ export default function DeliveryAnimation() {
     let frame = 0;
 
     const animate = () => {
+      // Don't animate if tab is hidden or component unmounted
+      if (!isMountedRef.current || !isVisibleRef.current) {
+        if (isMountedRef.current) {
+          animationIdRef.current = requestAnimationFrame(animate);
+        }
+        return;
+      }
+
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       packages.forEach((pkg) => {
@@ -106,13 +125,22 @@ export default function DeliveryAnimation() {
       });
 
       frame++;
-      requestAnimationFrame(animate);
+      
+      // Only continue animation if component is still mounted
+      if (isMountedRef.current) {
+        animationIdRef.current = requestAnimationFrame(animate);
+      }
     };
 
-    animate();
+    animationIdRef.current = requestAnimationFrame(animate);
 
     return () => {
+      isMountedRef.current = false;
       window.removeEventListener("resize", updateSize);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      if (animationIdRef.current !== null) {
+        cancelAnimationFrame(animationIdRef.current);
+      }
     };
   }, []);
 

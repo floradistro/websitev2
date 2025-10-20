@@ -101,10 +101,10 @@ export default function VendorApprovalPanel() {
       // Load immediately when opened
       loadPendingProducts(false);
       
-      // Poll every 15 seconds (not 10 to reduce load)
+      // Poll every 30 seconds (reduced from 15 to prevent memory issues)
       pollingIntervalRef.current = setInterval(() => {
         loadPendingProducts(true); // Silent refresh
-      }, 15000);
+      }, 30000);
     } else {
       // Clear polling when closed
       if (pollingIntervalRef.current) {
@@ -116,9 +116,10 @@ export default function VendorApprovalPanel() {
     return () => {
       if (pollingIntervalRef.current) {
         clearInterval(pollingIntervalRef.current);
+        pollingIntervalRef.current = null;
       }
     };
-  }, [isOpen, loadPendingProducts]);
+  }, [isOpen]); // Removed loadPendingProducts from deps to prevent re-creating interval
 
   const approveProduct = async (submissionId: number) => {
     if (processing.has(submissionId)) return;

@@ -145,8 +145,8 @@ export default function VendorStorefront() {
       className="bg-[#2a2a2a] relative overflow-x-hidden overflow-y-auto max-w-full"
       style={{ minHeight: 'calc(100vh - env(safe-area-inset-top, 0px))' }}
     >
-      {/* Vendor Whale Animation Background (Bubbles) */}
-      <VendorWhaleAnimation />
+      {/* Vendor Whale Animation Background - DISABLED to prevent memory leaks */}
+      {/* <VendorWhaleAnimation /> */}
 
       {/* Back Navigation */}
       <div className="border-b border-white/10 relative">

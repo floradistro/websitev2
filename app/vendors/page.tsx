@@ -157,8 +157,8 @@ export default function VendorsPage() {
       className="bg-[#2a2a2a] relative overflow-x-hidden overflow-y-auto max-w-full"
       style={{ minHeight: 'calc(100vh - env(safe-area-inset-top, 0px))' }}
     >
-      {/* Vendor Whale Animation Background */}
-      <VendorWhaleAnimation />
+      {/* Vendor Whale Animation Background - DISABLED to prevent memory leaks */}
+      {/* <VendorWhaleAnimation /> */}
 
       {/* Hero */}
       <div className="border-b border-white/10 relative pt-20">
