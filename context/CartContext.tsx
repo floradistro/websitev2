@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, ReactNode, useCallback, useRef } from "react";
+import { createContext, useContext, useState, useEffect, ReactNode, useCallback, useRef, useMemo } from "react";
 // import { analytics } from "@/lib/analytics";
 
 interface CartItem {
@@ -143,22 +143,27 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setItems([]);
   }, []);
 
-  const itemCount = items.reduce((total, item) => total + item.quantity, 0);
-  const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  // Memoize calculations to prevent re-computation on every render
+  const itemCount = useMemo(() => items.reduce((total, item) => total + item.quantity, 0), [items]);
+  const total = useMemo(() => items.reduce((sum, item) => sum + item.price * item.quantity, 0), [items]);
+
+  // Memoize context value to prevent unnecessary re-renders
+  const contextValue = useMemo(
+    () => ({
+      items,
+      addToCart,
+      removeFromCart,
+      updateQuantity,
+      updateCartItem,
+      clearCart,
+      itemCount,
+      total,
+    }),
+    [items, addToCart, removeFromCart, updateQuantity, updateCartItem, clearCart, itemCount, total]
+  );
 
   return (
-    <CartContext.Provider
-      value={{
-        items,
-        addToCart,
-        removeFromCart,
-        updateQuantity,
-        updateCartItem,
-        clearCart,
-        itemCount,
-        total,
-      }}
-    >
+    <CartContext.Provider value={contextValue}>
       {children}
     </CartContext.Provider>
   );

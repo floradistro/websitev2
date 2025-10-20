@@ -1,10 +1,11 @@
-import { getCategories, getProductPricingV3, getBulkProducts, getLocations, getAllVendors } from "@/lib/wordpress";
+import { getCategories, getLocations, getAllVendors } from "@/lib/wordpress";
+import { getCachedBulkProducts } from "@/lib/api-cache";
 import ProductsClient from "@/components/ProductsClient";
 import type { Metadata } from "next";
+import { Suspense } from "react";
 
-// Force dynamic - always fetch fresh data for vendor inventory (no caching)
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+// Aggressive ISR - Revalidate every 5 minutes for better performance
+export const revalidate = 300;
 
 export const metadata: Metadata = {
   title: "Shop All Products | Flora Distro",
@@ -23,112 +24,75 @@ export default async function ProductsPage({
 }) {
   const { category: categorySlug } = await searchParams;
   
-  // OPTIMIZED: Use BULK endpoint - returns products with inventory & fields in ONE call!
-  // NO CACHING - Always fetch fresh data for real-time vendor inventory updates
+  // OPTIMIZED: Use BULK endpoint with parallel fetching
   const timeout = (ms: number) => new Promise((_, reject) => 
     setTimeout(() => reject(new Error('API Timeout')), ms)
   );
   
+  // Fetch data in parallel - use cached version of bulk products
   const [categories, locations, bulkData, allVendors] = await Promise.all([
-    Promise.race([getCategories({ per_page: 100 }), timeout(10000)]).catch(() => []),
-    Promise.race([getLocations(), timeout(10000)]).catch(() => []),
-    Promise.race([getBulkProducts({ per_page: 1000 }), timeout(15000)]).catch(() => ({ data: [] })),
-    Promise.race([getAllVendors(), timeout(10000)]).catch(() => []),
+    Promise.race([getCategories({ per_page: 100 }), timeout(5000)]).catch(() => []),
+    Promise.race([getLocations(), timeout(5000)]).catch(() => []),
+    Promise.race([getCachedBulkProducts({ per_page: 200 }), timeout(10000)]).catch(() => ({ data: [] })),
+    Promise.race([getAllVendors(), timeout(5000)]).catch(() => []),
   ]);
 
   // Extract products from bulk response - inventory already included!
   const bulkProducts = bulkData?.data || [];
   
-  // Map bulk products to WooCommerce format
-  const allProducts = bulkProducts.map((bp: any) => ({
-    id: parseInt(bp.id),
-    name: bp.name,
-    slug: bp.name?.toLowerCase().replace(/\s+/g, '-'),
-    type: bp.type,
-    status: bp.status,
-    price: bp.regular_price,
-    regular_price: bp.regular_price,
-    sale_price: bp.sale_price,
-    images: bp.image ? [{ src: bp.image, id: 0, name: bp.name }] : [],
-    categories: (bp.categories || []).map((cat: any) => ({
-      id: parseInt(cat.id), // Convert string to number for consistency
-      name: cat.name,
-      slug: cat.slug
-    })),
-    meta_data: bp.meta_data || [],
-    blueprint_fields: bp.blueprint_fields || [],
-    stock_status: bp.total_stock > 0 ? 'instock' : 'outofstock',
-    total_stock: bp.total_stock,
-    inventory: bp.inventory || [],
-  }));
-
-  // Helper function to check if product has stock at ANY location
-  const hasStockAnywhere = (product: any): boolean => {
-    return product.total_stock > 0 || (product.inventory && product.inventory.some((inv: any) => {
-      const qty = parseFloat(inv.stock || inv.quantity || 0);
-      return qty > 0;
-    }));
-  };
-
-  // Filter products to only show those with stock at any location
-  const inStockProducts = allProducts.filter((product: any) => hasStockAnywhere(product));
-  
-  // Debug: Log vendor products
-  const vendorProducts = allProducts.filter((p: any) => parseInt(p.id) >= 41790);
-  console.log('Total products from bulk API:', allProducts.length);
-  console.log('Vendor products in response:', vendorProducts.length);
-  console.log('Products after stock filter:', inStockProducts.length);
-  vendorProducts.forEach((p: any) => {
-    const hasStock = hasStockAnywhere(p);
-    console.log(`  Product ${p.id}: ${p.name} - total_stock: ${p.total_stock}, hasStock: ${hasStock}`);
+  // OPTIMIZED: Map bulk products with minimal processing
+  const allProducts = bulkProducts.map((bp: any) => {
+    const hasStock = bp.total_stock > 0;
+    return {
+      id: parseInt(bp.id),
+      name: bp.name,
+      slug: bp.name?.toLowerCase().replace(/\s+/g, '-'),
+      type: bp.type,
+      status: bp.status,
+      price: bp.regular_price,
+      regular_price: bp.regular_price,
+      sale_price: bp.sale_price,
+      images: bp.image ? [{ src: bp.image, id: 0, name: bp.name }] : [],
+      categories: (bp.categories || []).map((cat: any) => ({
+        id: parseInt(cat.id),
+        name: cat.name,
+        slug: cat.slug
+      })),
+      meta_data: bp.meta_data || [],
+      blueprint_fields: bp.blueprint_fields || [],
+      stock_status: hasStock ? 'instock' : 'outofstock',
+      total_stock: bp.total_stock,
+      inventory: bp.inventory || [],
+    };
   });
 
-  // Create inventory map from products (inventory is already in each product)
-  const inventoryMap: { [key: number]: any[] } = {};
-  allProducts.forEach((product: any) => {
-    inventoryMap[product.id] = product.inventory || [];
-  });
+  // OPTIMIZED: Filter using pre-computed stock status
+  const inStockProducts = allProducts.filter((product: any) => product.total_stock > 0);
 
-  // Fetch pricing tiers for all products in parallel (bulk API doesn't include them)
-  const pricingPromises = inStockProducts.map((product: any) => 
-    getProductPricingV3(product.id)
-      .then(pricing => ({ productId: product.id, tiers: pricing?.quantity_tiers || [] }))
-      .catch(() => ({ productId: product.id, tiers: [] }))
-  );
-  
-  const pricingResults = await Promise.all(pricingPromises);
-  const pricingMap: { [key: number]: any[] } = {};
-  pricingResults.forEach(result => {
-    pricingMap[result.productId] = result.tiers;
-  });
-
-  // Extract fields from product metadata (already included in bulk response)
+  // OPTIMIZED: Process fields, pricing, and inventory in a single pass
   const productFieldsMap: { [key: number]: any } = {};
+  const inventoryMap: { [key: number]: any[] } = {};
   
   bulkProducts.forEach((product: any) => {
+    const productId = parseInt(product.id);
+    
+    // Extract pricing tiers from meta_data
+    const metaData = product.meta_data || [];
+    const pricingTiersMeta = metaData.find((m: any) => m.key === '_product_price_tiers');
+    const pricingTiers = pricingTiersMeta?.value || [];
+    
+    // Process blueprint fields efficiently
     const blueprintFields = product.blueprint_fields || [];
-    
-    // Filter and sort fields to ensure consistent order
-    const sortedFields = blueprintFields
-      .filter((field: any) => 
-        // Skip blueprint-type fields (metadata, not display fields)
-        field.field_type !== 'blueprint' && !field.field_name.includes('blueprint')
-      )
-      .sort((a: any, b: any) => {
-        // Sort by field name for consistent ordering
-        return a.field_name.localeCompare(b.field_name);
-      });
-    
-    // Convert to object with consistent key order
     const fields: { [key: string]: string } = {};
-    sortedFields.forEach((field: any) => {
-      fields[field.field_name] = field.field_value || '';
+    
+    blueprintFields.forEach((field: any) => {
+      if (field.field_type !== 'blueprint' && !field.field_name.includes('blueprint')) {
+        fields[field.field_name] = field.field_value || '';
+      }
     });
     
-    // Get pricing tiers from pricing map
-    const pricingTiers = pricingMap[product.id] || [];
-    
-    productFieldsMap[product.id] = { fields, pricingTiers };
+    productFieldsMap[productId] = { fields, pricingTiers };
+    inventoryMap[productId] = product.inventory || [];
   });
 
   // Separate vendor products from Flora products

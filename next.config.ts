@@ -30,9 +30,9 @@ const nextConfig: NextConfig = {
       },
     ],
     formats: ['image/avif', 'image/webp'],
-    minimumCacheTTL: 60 * 60 * 24 * 30, // 30 days
-    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048],
-    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    minimumCacheTTL: 60 * 60 * 24 * 60, // 60 days - longer cache
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256],
     qualities: [50, 75, 85, 90, 95, 100],
     dangerouslyAllowSVG: false,
     unoptimized: false,
@@ -55,8 +55,12 @@ const nextConfig: NextConfig = {
 
   // Experimental features for better performance
   experimental: {
-    optimizePackageImports: ['lucide-react', 'framer-motion'],
+    optimizePackageImports: ['lucide-react', 'framer-motion', 'axios'],
     scrollRestoration: true,
+    // Optimize CSS
+    optimizeCss: true,
+    // Optimize fonts
+    optimizeServerReact: true,
   },
   
 

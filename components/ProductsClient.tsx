@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo, memo } from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import dynamic from "next/dynamic";
@@ -30,7 +30,7 @@ const priceRanges = [
   { label: "Over $150", min: 150, max: 999999 },
 ];
 
-export default function ProductsClient({
+function ProductsClient({
   categories,
   locations,
   initialProducts,
@@ -453,4 +453,7 @@ export default function ProductsClient({
     </div>
   );
 }
+
+// Memoize to prevent unnecessary re-renders when parent re-renders
+export default memo(ProductsClient);
 

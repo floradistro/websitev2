@@ -1,15 +1,23 @@
 import { NextResponse } from 'next/server';
 
+// Enable ISR caching - reviews don't change frequently
+export const revalidate = 3600; // 1 hour cache
+export const runtime = 'nodejs';
+
 const GOOGLE_API_KEY = 'AIzaSyB29Ebv0A4fYIY-ZB08khDUQ227oTqevaE';
+
+// In-memory cache for reviews (persists during server lifetime)
+const reviewsCache = new Map<string, { data: any; timestamp: number }>();
+const CACHE_DURATION = 3600000; // 1 hour in milliseconds
 
 // Hardcoded Place IDs for each location
 // These are extracted from Google Maps URLs
 const PLACE_IDS: { [key: string]: string } = {
-  'Salisbury': '', // Will search dynamically - Flora Distro 111 W Bank St, Salisbury, NC
-  'Charlotte Monroe': '', // Will search dynamically
-  'Charlotte Central': '', // Will search dynamically
-  'Blowing Rock': '', // Will search dynamically
-  'Elizabethton': '' // Will search dynamically
+  'Salisbury': 'ChIJh0SShyEhVIgRvsoR2i8KtpA', // Pre-cached Place ID
+  'Charlotte Monroe': 'ChIJM3DSD1AbVIgR6mRjzTDD1ds',
+  'Charlotte Central': 'ChIJBRxqkgR_WogR_RbnqYXPpHI',
+  'Blowing Rock': 'ChIJu1ahOwD7UIgRFPpD5T3zWrE',
+  'Elizabethton': '' // Will search dynamically if needed
 };
 
 async function findPlaceId(query: string): Promise<string | null> {
@@ -64,6 +72,13 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Missing location or address' }, { status: 400 });
   }
 
+  // Check in-memory cache first
+  const cacheKey = `${locationName}-${address}`;
+  const cached = reviewsCache.get(cacheKey);
+  if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+    return NextResponse.json(cached.data);
+  }
+
   try {
     // Check if we have a cached Place ID
     let placeId: string | null = PLACE_IDS[locationName];
@@ -113,6 +128,12 @@ export async function GET(request: Request) {
         placeId: placeId 
       }, { status: 500 });
     }
+    
+    // Cache the result
+    reviewsCache.set(cacheKey, {
+      data: details,
+      timestamp: Date.now()
+    });
     
     return NextResponse.json(details);
   } catch (error: any) {

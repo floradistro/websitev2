@@ -15,30 +15,42 @@ export default function LocationCard({ location, address, googleMapsUrl, hours }
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let isMounted = true;
+    
     async function fetchReviews() {
       // Skip review fetching for vendor warehouses or locations without addresses
       if (!address || address.trim() === '' || location.type === 'vendor') {
-        setLoading(false);
+        if (isMounted) setLoading(false);
         return;
       }
 
       try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000); // 5s timeout
+        
         const response = await fetch(
-          `/api/google-reviews?location=${encodeURIComponent(location.name)}&address=${encodeURIComponent(address)}`
+          `/api/google-reviews?location=${encodeURIComponent(location.name)}&address=${encodeURIComponent(address)}`,
+          { signal: controller.signal }
         );
         
-        if (response.ok) {
+        clearTimeout(timeoutId);
+        
+        if (response.ok && isMounted) {
           const data = await response.json();
           setReviews(data);
         }
       } catch (error) {
-        // Silently handle errors
+        // Silently handle errors (including aborts)
       } finally {
-        setLoading(false);
+        if (isMounted) setLoading(false);
       }
     }
 
     fetchReviews();
+    
+    return () => {
+      isMounted = false;
+    };
   }, [location.name, address, location.type]);
 
   const CardContent = (

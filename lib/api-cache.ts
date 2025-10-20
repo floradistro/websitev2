@@ -3,12 +3,12 @@ import * as wordpress from './wordpress';
 
 // Cache durations (in seconds)
 const CACHE_TIMES = {
-  PRODUCTS: 180, // 3 minutes - faster revalidation
-  PRODUCT: 180, // 3 minutes
-  LOCATIONS: 600, // 10 minutes
-  INVENTORY: 180, // 3 minutes
-  PRICING: 600, // 10 minutes
-  BULK: 180, // 3 minutes - for bulk endpoints
+  PRODUCTS: 900, // 15 minutes - balanced between freshness and performance
+  PRODUCT: 900, // 15 minutes
+  LOCATIONS: 1800, // 30 minutes - locations don't change often
+  INVENTORY: 600, // 10 minutes - inventory needs more frequent updates
+  PRICING: 1800, // 30 minutes - pricing is relatively stable
+  BULK: 900, // 15 minutes - for bulk endpoints
 };
 
 // Cached product fetching

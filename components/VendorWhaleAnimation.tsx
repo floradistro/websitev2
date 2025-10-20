@@ -9,6 +9,22 @@ function VendorWhaleAnimation() {
   useEffect(() => {
     if (typeof window === "undefined" || !containerRef.current) return;
 
+    let isVisible = true;
+
+    // Pause animation when tab is hidden to prevent memory leaks
+    const handleVisibilityChange = () => {
+      isVisible = !document.hidden;
+      if (sketchRef.current) {
+        if (isVisible) {
+          sketchRef.current.loop();
+        } else {
+          sketchRef.current.noLoop();
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
     const loadP5 = async () => {
       const p5 = (await import("p5")).default;
 
@@ -19,6 +35,7 @@ function VendorWhaleAnimation() {
         p.setup = () => {
           const canvas = p.createCanvas(p.windowWidth, p.windowHeight);
           canvas.parent(containerRef.current);
+          p.frameRate(30); // Limit to 30fps to reduce CPU usage
 
           // Adjust for mobile - extreme zoom, minimal bubbles
           const isMobile = p.windowWidth < 768;
@@ -143,7 +160,9 @@ function VendorWhaleAnimation() {
     loadP5();
 
     return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
       if (sketchRef.current) {
+        sketchRef.current.noLoop();
         sketchRef.current.remove();
         sketchRef.current = null;
       }

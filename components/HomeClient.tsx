@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { ArrowRight, Store, Users, Truck, Shield, Leaf, Package, CheckCircle, Star } from "lucide-react";
@@ -41,7 +42,7 @@ interface HomeClientProps {
   productFieldsMap: { [key: number]: any };
 }
 
-export default function HomeClient({
+function HomeClient({
   products,
   categories,
   locations,
@@ -514,4 +515,7 @@ export default function HomeClient({
     </div>
   );
 }
+
+// Memoize to prevent unnecessary re-renders
+export default memo(HomeClient);
 

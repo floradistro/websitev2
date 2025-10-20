@@ -1,13 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, memo } from "react";
 import { ShoppingBag, Store, Truck, Heart } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useLinkPrefetch } from "@/hooks/usePrefetch";
 
 interface ProductCardProps {
   product: any;
@@ -25,7 +24,7 @@ interface ProductCardProps {
   };
 }
 
-export default function ProductCard({ product, index, locations, pricingTiers = [], productFields, inventory = [], vendorInfo }: ProductCardProps) {
+function ProductCard({ product, index, locations, pricingTiers = [], productFields, inventory = [], vendorInfo }: ProductCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [selectedTierIndex, setSelectedTierIndex] = useState<number | null>(null);
   const [showAddToCart, setShowAddToCart] = useState(false);
@@ -34,18 +33,6 @@ export default function ProductCard({ product, index, locations, pricingTiers = 
   const router = useRouter();
   
   const inWishlist = isInWishlist(product.id);
-  
-  // Aggressive prefetching for instant loads
-  const prefetchHandlers = useLinkPrefetch(`/products/${product.id}`);
-  
-  // Also prefetch the API data
-  useEffect(() => {
-    // Prefetch API data immediately when card enters viewport
-    const timer = setTimeout(() => {
-      fetch(`/api/product/${product.id}`).catch(() => {});
-    }, 100);
-    return () => clearTimeout(timer);
-  }, [product.id]);
   
   // Get pricing tiers for this product
   const tiers = pricingTiers || [];
@@ -287,13 +274,11 @@ export default function ProductCard({ product, index, locations, pricingTiers = 
       onMouseEnter={(e) => {
         if (window.innerWidth >= 768) {
           setIsHovered(true);
-          prefetchHandlers.onMouseEnter();
         }
       }}
       onMouseLeave={(e) => {
         if (window.innerWidth >= 768) {
           setIsHovered(false);
-          prefetchHandlers.onMouseLeave();
         }
       }}
       onClick={(e) => {
@@ -553,4 +538,15 @@ export default function ProductCard({ product, index, locations, pricingTiers = 
     </div>
   );
 }
+
+// Memoize component to prevent unnecessary re-renders
+export default memo(ProductCard, (prevProps, nextProps) => {
+  // Only re-render if these specific props change
+  return (
+    prevProps.product.id === nextProps.product.id &&
+    prevProps.index === nextProps.index &&
+    prevProps.pricingTiers?.length === nextProps.pricingTiers?.length &&
+    prevProps.inventory?.length === nextProps.inventory?.length
+  );
+});
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
+import { createContext, useContext, useState, useEffect, ReactNode, useCallback, useRef } from "react";
 import { useAuth } from "./AuthContext";
 import axios from "axios";
 
@@ -32,6 +32,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<WishlistItem[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [loadedFromWordPress, setLoadedFromWordPress] = useState(false);
+  const syncTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Load wishlist from localStorage on mount
   useEffect(() => {
@@ -125,9 +126,12 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
       
       const newItems = [...prev, { ...item, dateAdded: new Date().toISOString() }];
       
-      // Sync to WordPress after state update
+      // Sync to WordPress after state update (debounced)
       if (user?.id && loadedFromWordPress) {
-        setTimeout(() => {
+        if (syncTimeoutRef.current) {
+          clearTimeout(syncTimeoutRef.current);
+        }
+        syncTimeoutRef.current = setTimeout(() => {
           axios.put(
             `/api/wp-proxy?path=/wp-json/wc/v3/customers/${user.id}&consumer_key=${consumerKey}&consumer_secret=${consumerSecret}`,
             { meta_data: [{ key: 'flora_wishlist', value: JSON.stringify(newItems) }] }
@@ -143,9 +147,12 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
     setItems((prev) => {
       const newItems = prev.filter((item) => item.productId !== productId);
       
-      // Sync to WordPress after state update
+      // Sync to WordPress after state update (debounced)
       if (user?.id && loadedFromWordPress) {
-        setTimeout(() => {
+        if (syncTimeoutRef.current) {
+          clearTimeout(syncTimeoutRef.current);
+        }
+        syncTimeoutRef.current = setTimeout(() => {
           axios.put(
             `/api/wp-proxy?path=/wp-json/wc/v3/customers/${user.id}&consumer_key=${consumerKey}&consumer_secret=${consumerSecret}`,
             { meta_data: [{ key: 'flora_wishlist', value: JSON.stringify(newItems) }] }
@@ -164,9 +171,12 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
   const clearWishlist = useCallback(() => {
     setItems([]);
     
-    // Sync to WordPress
+    // Sync to WordPress (debounced)
     if (user?.id && loadedFromWordPress) {
-      setTimeout(() => {
+      if (syncTimeoutRef.current) {
+        clearTimeout(syncTimeoutRef.current);
+      }
+      syncTimeoutRef.current = setTimeout(() => {
         axios.put(
           `/api/wp-proxy?path=/wp-json/wc/v3/customers/${user.id}&consumer_key=${consumerKey}&consumer_secret=${consumerSecret}`,
           { meta_data: [{ key: 'flora_wishlist', value: JSON.stringify([]) }] }
@@ -176,6 +186,15 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
   }, [user?.id, loadedFromWordPress]);
 
   const itemCount = items.length;
+
+  // Cleanup timeouts on unmount
+  useEffect(() => {
+    return () => {
+      if (syncTimeoutRef.current) {
+        clearTimeout(syncTimeoutRef.current);
+      }
+    };
+  }, []);
 
   return (
     <WishlistContext.Provider
