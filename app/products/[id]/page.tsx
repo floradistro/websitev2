@@ -5,24 +5,13 @@ import type { Metadata } from "next";
 // Enable aggressive ISR - Revalidate every 60 seconds
 export const revalidate = 60;
 
-// Generate static paths for top products at build time
+// DISABLED for Vercel - Generate all product pages on-demand
+// This prevents build hangs caused by WordPress API calls during static generation
 export async function generateStaticParams() {
-  try {
-    // Limit to 10 most popular products for static generation (faster Vercel builds)
-    // Other products will be generated on-demand
-    const products = await Promise.race([
-      getProducts({ per_page: 10, orderby: 'popularity' }),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 10000))
-    ]);
-    return (products as any[]).map((product: any) => ({
-      id: product.id.toString(),
-    }));
-  } catch (error) {
-    console.error('Error generating static params:', error);
-    // Return empty array to make all pages dynamic (prevents Vercel build hangs)
-    return [];
-  }
+  return []; // Empty = all pages generated on first request
 }
+
+export const dynamicParams = true; // Allow dynamic params at runtime
 
 export async function generateMetadata({
   params,

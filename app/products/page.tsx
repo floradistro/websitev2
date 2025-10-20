@@ -25,11 +25,15 @@ export default async function ProductsPage({
   
   // OPTIMIZED: Use BULK endpoint - returns products with inventory & fields in ONE call!
   // NO CACHING - Always fetch fresh data for real-time vendor inventory updates
+  const timeout = (ms: number) => new Promise((_, reject) => 
+    setTimeout(() => reject(new Error('API Timeout')), ms)
+  );
+  
   const [categories, locations, bulkData, allVendors] = await Promise.all([
-    getCategories({ per_page: 100 }),
-    getLocations(), // No cache - always fresh
-    getBulkProducts({ per_page: 1000 }), // No cache - always fresh
-    getAllVendors().catch(() => []), // Get all vendors (server-side compatible)
+    Promise.race([getCategories({ per_page: 100 }), timeout(10000)]).catch(() => []),
+    Promise.race([getLocations(), timeout(10000)]).catch(() => []),
+    Promise.race([getBulkProducts({ per_page: 1000 }), timeout(15000)]).catch(() => ({ data: [] })),
+    Promise.race([getAllVendors(), timeout(10000)]).catch(() => []),
   ]);
 
   // Extract products from bulk response - inventory already included!

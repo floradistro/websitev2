@@ -6,16 +6,20 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export default async function Home() {
-  // Optimized: Fetch only necessary data in parallel with error handling
+  // Optimized: Fetch only necessary data in parallel with error handling and timeouts
   let products: any[] = [];
   let categories: any[] = [];
   let locations: any[] = [];
   
   try {
+    const timeout = (ms: number) => new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Timeout')), ms)
+    );
+    
     [products, categories, locations] = await Promise.all([
-      getBestSellingProducts({ per_page: 12 }).catch(e => { console.error('Products error:', e); return []; }),
-      getCategories({ per_page: 10, hide_empty: true }).catch(e => { console.error('Categories error:', e); return []; }),
-      getLocations().catch(e => { console.error('Locations error:', e); return []; }),
+      Promise.race([getBestSellingProducts({ per_page: 12 }), timeout(8000)]).catch(e => { console.error('Products error:', e); return []; }),
+      Promise.race([getCategories({ per_page: 10, hide_empty: true }), timeout(8000)]).catch(e => { console.error('Categories error:', e); return []; }),
+      Promise.race([getLocations(), timeout(8000)]).catch(e => { console.error('Locations error:', e); return []; }),
     ]);
   } catch (error) {
     console.error('Data fetching error:', error);
@@ -26,7 +30,10 @@ export default async function Home() {
   let allInventory: any[] = [];
   
   try {
-    allInventory = await getAllInventory();
+    const timeout = (ms: number) => new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Timeout')), ms)
+    );
+    allInventory = await Promise.race([getAllInventory(), timeout(8000)]).catch(() => []);
   } catch (error) {
     console.error('Inventory error:', error);
   }
