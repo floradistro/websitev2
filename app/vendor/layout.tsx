@@ -16,6 +16,8 @@ function VendorLayoutContent({
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [vendorLogo, setVendorLogo] = useState<string>('/logoprint.png');
+  const [isVisible, setIsVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
   const pathname = usePathname();
   const router = useRouter();
   const { vendor, isAuthenticated, isLoading, logout } = useVendorAuth();
@@ -26,6 +28,46 @@ function VendorLayoutContent({
       router.push('/vendor/login');
     }
   }, [isLoading, isAuthenticated, pathname, router]);
+
+  // Auto-hide header on scroll
+  useEffect(() => {
+    let ticking = false;
+    let rafId: number | null = null;
+
+    const controlHeader = () => {
+      const currentScrollY = window.scrollY;
+
+      // Show header when at top
+      if (currentScrollY < 10) {
+        setIsVisible(true);
+      }
+      // Hide when scrolling down, show when scrolling up
+      else if (currentScrollY > lastScrollY && currentScrollY > 100) {
+        setIsVisible(false);
+      } else if (currentScrollY < lastScrollY) {
+        setIsVisible(true);
+      }
+
+      setLastScrollY(currentScrollY);
+      ticking = false;
+    };
+
+    const onScroll = () => {
+      if (!ticking) {
+        rafId = window.requestAnimationFrame(controlHeader);
+        ticking = true;
+      }
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      if (rafId !== null) {
+        window.cancelAnimationFrame(rafId);
+      }
+    };
+  }, [lastScrollY]);
 
   // Fetch vendor logo
   useEffect(() => {
@@ -145,7 +187,9 @@ function VendorLayoutContent({
 
         {/* Mobile Top Bar */}
         <nav 
-          className="lg:hidden sticky bg-[#1a1a1a] z-[110] border-b border-white/5"
+          className={`lg:hidden sticky bg-[#1a1a1a] z-[110] border-b border-white/5 transition-transform duration-300 ${
+            isVisible ? 'translate-y-0' : '-translate-y-full'
+          }`}
           style={{ 
             top: 'env(safe-area-inset-top, 0px)'
           }}
