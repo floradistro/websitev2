@@ -20,14 +20,19 @@ function GlobalAnimation() {
           const canvas = p.createCanvas(p.windowWidth, p.windowHeight);
           canvas.parent(containerRef.current);
 
+          // Adjust for mobile - much fewer, much larger particles
+          const isMobile = p.windowWidth < 768;
+          const particleCount = isMobile ? 5 : 25;
+          const sizeRange = isMobile ? [40, 80] : [4, 10];
+
           // Create floating particles - spread out more
-          for (let i = 0; i < 25; i++) {
+          for (let i = 0; i < particleCount; i++) {
             particles.push({
               x: p.random(p.width),
               y: p.random(p.height),
               vx: p.random(-0.1, 0.1),
               vy: p.random(-0.1, 0.1),
-              size: p.random(4, 10),
+              size: p.random(sizeRange[0], sizeRange[1]),
               offset: p.random(p.TWO_PI),
             });
           }
@@ -36,6 +41,9 @@ function GlobalAnimation() {
         p.draw = () => {
           p.clear();
           time += 0.002;
+          
+          const isMobile = p.windowWidth < 768;
+          const connectionDistance = isMobile ? 600 : 250;
 
           // Update particle positions
           for (let particle of particles) {
@@ -53,22 +61,22 @@ function GlobalAnimation() {
           for (let i = 0; i < particles.length; i++) {
             for (let j = i + 1; j < particles.length; j++) {
               let d = p.dist(particles[i].x, particles[i].y, particles[j].x, particles[j].y);
-              if (d < 250) {
-                let alpha = p.map(d, 0, 250, 20, 0);
+              if (d < connectionDistance) {
+                let alpha = p.map(d, 0, connectionDistance, isMobile ? 12 : 20, 0);
                 
                 // Thick glow line
-                p.stroke(255, 255, 255, alpha * 0.25);
-                p.strokeWeight(4);
+                p.stroke(255, 255, 255, alpha * (isMobile ? 0.15 : 0.25));
+                p.strokeWeight(isMobile ? 6 : 4);
                 p.line(particles[i].x, particles[i].y, particles[j].x, particles[j].y);
                 
                 // Medium glow
-                p.stroke(255, 255, 255, alpha * 0.4);
-                p.strokeWeight(2);
+                p.stroke(255, 255, 255, alpha * (isMobile ? 0.25 : 0.4));
+                p.strokeWeight(isMobile ? 4 : 2);
                 p.line(particles[i].x, particles[i].y, particles[j].x, particles[j].y);
                 
                 // Main line
-                p.stroke(255, 255, 255, alpha);
-                p.strokeWeight(1);
+                p.stroke(255, 255, 255, alpha * (isMobile ? 0.5 : 1));
+                p.strokeWeight(isMobile ? 2 : 1);
                 p.line(particles[i].x, particles[i].y, particles[j].x, particles[j].y);
               }
             }
@@ -85,21 +93,21 @@ function GlobalAnimation() {
             
             p.noFill();
             p.stroke(255, 255, 255, ringAlpha);
-            p.strokeWeight(2);
+            p.strokeWeight(isMobile ? 3 : 2);
             p.circle(particle.x, particle.y, ringSize);
             
-            p.strokeWeight(1);
+            p.strokeWeight(isMobile ? 2 : 1);
             p.stroke(255, 255, 255, ringAlpha * 0.5);
             p.circle(particle.x, particle.y, ringSize * 1.3);
             
             // Hollow center ring
             p.noFill();
             p.stroke(255, 255, 255, 20 + pulse * 15);
-            p.strokeWeight(1.5);
+            p.strokeWeight(isMobile ? 2.5 : 1.5);
             p.circle(particle.x, particle.y, particle.size * 3);
             
             p.stroke(255, 255, 255, 15 + pulse * 10);
-            p.strokeWeight(1);
+            p.strokeWeight(isMobile ? 2 : 1);
             p.circle(particle.x, particle.y, particle.size * 5);
             
             // Core glow
