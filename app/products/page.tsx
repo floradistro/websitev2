@@ -1,5 +1,4 @@
-import { getCategories, getProductPricingV3, getBulkProducts, getLocations } from "@/lib/wordpress";
-import { getAllVendorsProxy } from "@/lib/wordpress-vendor-proxy";
+import { getCategories, getProductPricingV3, getBulkProducts, getLocations, getAllVendors } from "@/lib/wordpress";
 import ProductsClient from "@/components/ProductsClient";
 import type { Metadata } from "next";
 
@@ -30,7 +29,7 @@ export default async function ProductsPage({
     getCategories({ per_page: 100 }),
     getLocations(), // No cache - always fresh
     getBulkProducts({ per_page: 1000 }), // No cache - always fresh
-    getAllVendorsProxy().catch(() => []), // Get all vendors
+    getAllVendors().catch(() => []), // Get all vendors (server-side compatible)
   ]);
 
   // Extract products from bulk response - inventory already included!
