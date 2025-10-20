@@ -29,9 +29,9 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
   if (!isOpen) return null;
 
   return (
-    <div className="lg:hidden fixed inset-0 z-[150] bg-black/60 backdrop-blur-sm" onClick={onClose}>
+    <div className="fixed inset-0 z-[150] bg-black/60 backdrop-blur-sm" onClick={onClose}>
       <div 
-        className="absolute right-0 top-0 bottom-0 w-[90vw] sm:w-[420px] bg-[#0a0a0a] border-l border-white/10 flex flex-col"
+        className="absolute right-0 top-0 bottom-0 w-[280px] bg-[#0a0a0a] border-l border-white/10 flex flex-col"
         onClick={(e) => e.stopPropagation()}
         style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
       >
