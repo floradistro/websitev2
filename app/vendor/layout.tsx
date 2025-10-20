@@ -141,14 +141,18 @@ function VendorLayoutContent({
 
       {/* PWA Safe Area Spacer */}
       <div 
-        className="fixed top-0 left-0 right-0 bg-[#0a0a0a] z-[130] pointer-events-none lg:hidden"
+        className="fixed top-0 left-0 right-0 bg-[#1a1a1a] z-[120] pointer-events-none lg:hidden"
         style={{ height: 'env(safe-area-inset-top, 0px)' }}
       />
 
       {/* Mobile Top Bar */}
       <nav 
-        className="lg:hidden sticky bg-[#0a0a0a] z-[120] border-b border-white/5"
-        style={{ top: 'env(safe-area-inset-top, 0px)' }}
+        className="lg:hidden sticky bg-[#1a1a1a] z-[110] border-b border-white/5"
+        style={{ 
+          top: 'env(safe-area-inset-top, 0px)',
+          marginTop: 0,
+          paddingTop: 0
+        }}
       >
         <div className="flex items-center justify-between h-14 px-4">
           {/* Menu Button */}
