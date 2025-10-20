@@ -42,17 +42,18 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
 
       {/* Drawer - With Safe Area Support */}
       <div 
-        className="fixed right-0 top-0 h-full w-full sm:w-[500px] bg-[#2a2a2a]/98 backdrop-blur-xl shadow-2xl z-[121] flex flex-col border-l border-white/10 animate-slideInRight overflow-hidden"
+        className="fixed right-0 top-0 bottom-0 w-full sm:w-[500px] bg-[#2a2a2a] backdrop-blur-xl shadow-2xl z-[121] flex flex-col border-l border-white/10 animate-slideInRight overflow-hidden"
         style={{
-          paddingTop: 'env(safe-area-inset-top)',
-          paddingBottom: 'env(safe-area-inset-bottom)',
-          height: '100dvh'
+          paddingTop: 'env(safe-area-inset-top, 0px)'
         }}
       >
-        {/* Safe Area Top Fill */}
+        {/* Safe Area Top Fill - extends above into status bar area */}
         <div 
-          className="absolute top-0 left-0 right-0 bg-[#2a2a2a] pointer-events-none"
-          style={{ height: 'env(safe-area-inset-top, 0px)', marginTop: 'calc(-1 * env(safe-area-inset-top, 0px))' }}
+          className="absolute top-0 left-0 right-0 bg-[#2a2a2a] pointer-events-none z-0"
+          style={{ 
+            height: 'env(safe-area-inset-top, 0px)', 
+            marginTop: 'calc(-1 * env(safe-area-inset-top, 0px))' 
+          }}
         />
         
         {/* Header - Fixed with safe area */}
@@ -195,7 +196,10 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
 
         {/* Footer - Fixed with safe area */}
         {items.length > 0 && (
-          <div className="px-5 py-5 border-t border-white/10 bg-[#1a1a1a]/95 backdrop-blur-sm flex-shrink-0 relative z-10">
+          <div 
+            className="px-5 py-5 border-t border-white/10 bg-[#1a1a1a]/95 backdrop-blur-sm flex-shrink-0 relative z-10"
+            style={{ paddingBottom: 'calc(1.25rem + env(safe-area-inset-bottom, 0px))' }}
+          >
             <div className="space-y-4">
               <div className="flex justify-between items-center text-xl font-medium text-white">
                 <span>Subtotal</span>
