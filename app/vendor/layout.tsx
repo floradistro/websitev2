@@ -135,12 +135,6 @@ function VendorLayoutContent({
     return (
     <>
       <style jsx global>{`
-        @font-face {
-          font-family: 'Lobster';
-          src: url('/Lobster 1.4.otf') format('opentype');
-          font-weight: normal;
-          font-style: normal;
-        }
         @supports (padding-bottom: env(safe-area-inset-bottom)) {
           .safe-bottom {
             padding-bottom: calc(env(safe-area-inset-bottom) + 4rem);
@@ -235,7 +229,7 @@ function VendorLayoutContent({
                   <img src={vendorLogo} alt={vendorName} className="w-full h-full object-contain p-0.5" />
                 </div>
                 <div>
-                  <div className="text-white text-sm tracking-wide" style={{ fontFamily: 'Lobster' }}>{vendorName}</div>
+                  <div className="text-white text-sm font-medium">{vendorName}</div>
                   <div className="text-white/40 text-xs tracking-wide">Vendor Portal</div>
                 </div>
               </Link>
@@ -307,7 +301,7 @@ function VendorLayoutContent({
                 <img src={vendorLogo} alt={vendorName} className="w-full h-full object-contain p-0.5" />
               </div>
               <div>
-                <div className="text-white text-base tracking-wide" style={{ fontFamily: 'Lobster' }}>{vendorName}</div>
+                <div className="text-white text-base font-medium">{vendorName}</div>
                 <div className="text-white/40 text-xs tracking-wide">Vendor Portal</div>
               </div>
             </Link>

@@ -72,6 +72,15 @@ export function LoyaltyProvider({ children }: { children: ReactNode }) {
       setSettings(response.data);
     } catch (error) {
       console.error("Error loading loyalty settings:", error);
+      // Set default settings if API fails
+      setSettings({
+        points_label: 'Points',
+        earn_ratio: '1:100',
+        redeem_ratio: '100:1',
+        min_redeem_points: 100,
+        max_redeem_discount: '50',
+        points_expiry: '365',
+      });
     }
   };
 

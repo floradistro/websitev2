@@ -78,7 +78,7 @@ export default function VendorLogin() {
           <Link href="/" className="inline-block">
             <img src="/logoprint.png" alt="Flora Distro" className="w-24 h-24 mx-auto mb-4 opacity-80 hover:opacity-100 transition-opacity" />
           </Link>
-          <h1 className="text-3xl text-white mb-2" style={{ fontFamily: 'Lobster' }}>Vendor Portal</h1>
+          <h1 className="text-3xl text-white mb-2 font-medium">Vendor Portal</h1>
           <p className="text-white/60 text-sm">Sign in to manage your store</p>
         </div>
 

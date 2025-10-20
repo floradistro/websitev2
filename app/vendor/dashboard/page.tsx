@@ -219,7 +219,7 @@ export default function VendorDashboard() {
     <div className="w-full max-w-full animate-fadeIn overflow-x-hidden">
       {/* Welcome Header */}
       <div className="px-4 lg:px-0 py-6 lg:py-0 lg:mb-8 border-b lg:border-b-0 border-white/5" style={{ animation: 'fadeInUp 0.5s ease-out' }}>
-        <h1 className="text-2xl lg:text-4xl text-white mb-1.5 lg:mb-2 leading-tight" style={{ fontFamily: 'Lobster' }}>
+        <h1 className="text-2xl lg:text-4xl text-white mb-1.5 lg:mb-2 leading-tight font-light tracking-tight">
           Welcome Back, {vendor?.store_name || 'Vendor'}
         </h1>
         <p className="text-white/60 text-xs lg:text-sm">
