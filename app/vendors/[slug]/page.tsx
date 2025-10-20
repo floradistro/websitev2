@@ -59,6 +59,7 @@ export default function VendorStorefront() {
 
           // Fetch vendor's products from API
           const products = await getVendorProducts(slug);
+          console.log('Vendor products loaded:', products?.length, products);
           setVendorProducts(products || []);
         }
         
@@ -92,6 +93,11 @@ export default function VendorStorefront() {
                         (stockFilter === 'lowstock' && product.stock_status === 'lowstock');
     return matchesSearch && matchesCategory && matchesStock;
   });
+  
+  // Debug logging
+  console.log('Total vendor products:', vendorProducts.length);
+  console.log('After filtering:', filteredProducts.length);
+  console.log('Filters:', { searchQuery, selectedCategory, stockFilter });
 
   // Sort products
   filteredProducts = [...filteredProducts].sort((a: any, b: any) => {
