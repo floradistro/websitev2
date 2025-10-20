@@ -32,15 +32,16 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
     <>
       {/* Backdrop - Full screen overlay */}
       <div 
-        className="fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm" 
+        className="fixed inset-0 z-[999] bg-black/60 backdrop-blur-sm" 
         onClick={onClose}
+        style={{ isolation: 'isolate' }}
       />
       
       {/* Cart Drawer Panel */}
       <div 
-        className="fixed right-0 top-0 bottom-0 w-[280px] bg-[#0a0a0a] border-l border-white/10 flex flex-col z-[201]"
+        className="fixed right-0 top-0 bottom-0 w-[280px] bg-[#0a0a0a] border-l border-white/10 flex flex-col z-[999]"
         onClick={(e) => e.stopPropagation()}
-        style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
+        style={{ paddingTop: 'env(safe-area-inset-top, 0px)', isolation: 'isolate' }}
       >
         {/* Safe Area Top Fill */}
         <div 
