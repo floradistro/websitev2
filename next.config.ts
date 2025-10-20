@@ -1,6 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Disable static generation during build to avoid useSearchParams errors
+  output: 'standalone',
+  
   // Image Optimization
   images: {
     remotePatterns: [
@@ -40,9 +43,6 @@ const nextConfig: NextConfig = {
 
   // Compression
   compress: true,
-
-  // Output optimization
-  output: 'standalone',
   
   // Performance optimizations
   reactStrictMode: true,
@@ -55,12 +55,8 @@ const nextConfig: NextConfig = {
 
   // Experimental features for better performance
   experimental: {
-    optimizePackageImports: ['lucide-react', 'framer-motion', 'axios'],
+    optimizePackageImports: ['lucide-react', 'framer-motion'],
     scrollRestoration: true,
-    // Optimize CSS
-    optimizeCss: true,
-    // Optimize fonts
-    optimizeServerReact: true,
   },
   
 

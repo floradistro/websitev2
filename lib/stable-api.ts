@@ -140,8 +140,8 @@ export class StableVendorAPI {
     this.authHeader = `Basic ${authToken}`;
   }
 
-  private getHeaders() {
-    return this.authHeader ? { 'Authorization': this.authHeader } : {};
+  private getHeaders(): Record<string, string> | undefined {
+    return this.authHeader ? { 'Authorization': this.authHeader } : undefined;
   }
 
   async getSettings() {
@@ -213,7 +213,8 @@ export function validateResponse<T>(
 
   // Check required fields
   for (const field of requiredFields) {
-    if (!(field in response.data)) {
+    const data = response.data as Record<string, any>;
+    if (!(field in data)) {
       return { isValid: false, error: `Missing required field: ${field}` };
     }
   }

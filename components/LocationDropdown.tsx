@@ -45,10 +45,10 @@ export default function LocationDropdown({
   }, []);
 
   return (
-    <div className="relative z-50" ref={dropdownRef}>
+    <div className="relative z-[200]" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1.5 sm:py-2 bg-transparent border border-white/20 hover:border-white/40 transition-all duration-300 text-[10px] sm:text-[11px] font-normal uppercase tracking-[0.1em] group text-white rounded"
+        className="relative z-[200] inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1.5 sm:py-2 bg-transparent border border-white/20 hover:border-white/40 transition-all duration-300 text-[10px] sm:text-[11px] font-normal uppercase tracking-[0.1em] group text-white rounded"
       >
         <MapPin size={12} strokeWidth={2} className="text-white/60 group-hover:text-white transition-colors sm:w-3.5 sm:h-3.5" />
         <span className="whitespace-nowrap max-w-[90px] sm:max-w-none truncate">
@@ -66,7 +66,7 @@ export default function LocationDropdown({
       </button>
 
       {isOpen && (
-        <div className="absolute top-full left-0 mt-2 w-64 bg-[#3a3a3a] shadow-2xl border border-white/20 z-[100] animate-fadeIn">
+        <div className="absolute top-full left-0 mt-2 w-64 bg-[#3a3a3a] shadow-2xl border border-white/20 z-[999] animate-fadeIn">
           <div className="p-1">
             <button
               onClick={() => {

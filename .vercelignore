@@ -1,0 +1,3 @@
+# Exclude admin pages from static generation
+app/admin/**
+

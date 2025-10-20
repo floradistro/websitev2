@@ -11,6 +11,9 @@ import { WishlistProvider } from "@/context/WishlistContext";
 import { LoyaltyProvider } from "@/context/LoyaltyContext";
 // import { RecentlyViewedProvider } from "@/context/RecentlyViewedContext";
 
+// Prevent static generation errors
+export const dynamic = 'force-dynamic';
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
