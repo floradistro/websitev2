@@ -40,20 +40,7 @@ html, body {
   
   body {
     padding-bottom: env(safe-area-inset-bottom);
-    background: linear-gradient(to bottom, #000000 0%, #000000 env(safe-area-inset-top, 0px), #1a1a1a env(safe-area-inset-top, 0px));
-  }
-  
-  /* Fixed safe area bar at top */
-  body::before {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: env(safe-area-inset-top, 0);
-    background-color: #000000;
-    z-index: 9999;
-    pointer-events: none;
+    background-color: #1a1a1a;
   }
 }
 

@@ -60,22 +60,30 @@ export default function Header() {
   }, [lastScrollY]);
 
   return (
-    <header 
-      className={`sticky bg-[#1a1a1a] text-white z-[110] border-b border-white/10 transition-transform duration-300 relative ${
-        isVisible ? 'translate-y-0' : '-translate-y-full'
-      }`}
-      style={{ 
-        top: 'env(safe-area-inset-top, 0)',
-        backgroundColor: '#1a1a1a'
-      }}
-    >
-      {/* Top announcement bar */}
-      <div className="bg-black text-white text-center py-1.5 px-4 text-[10px] uppercase tracking-wider relative z-[111]">
-        Free shipping on orders over $45
-      </div>
+    <>
+      {/* PWA Safe Area Spacer - Fixed at top */}
+      <div 
+        className="fixed top-0 left-0 right-0 bg-black z-[120] pointer-events-none"
+        style={{ height: 'env(safe-area-inset-top, 0px)' }}
+      />
+      
+      <header 
+        className={`sticky bg-black text-white z-[110] border-b border-white/10 transition-transform duration-300 ${
+          isVisible ? 'translate-y-0' : '-translate-y-full'
+        }`}
+        style={{ 
+          top: 'env(safe-area-inset-top, 0px)',
+          marginTop: 0,
+          paddingTop: 0
+        }}
+      >
+        {/* Top announcement bar */}
+        <div className="bg-black text-white text-center py-1.5 px-4 text-[10px] uppercase tracking-wider relative z-[111]">
+          Free shipping on orders over $45
+        </div>
 
       {/* Main header */}
-      <div className="px-4 sm:px-6 lg:container lg:mx-auto relative z-[111]">
+      <div className="px-4 sm:px-6 lg:container lg:mx-auto relative z-[111] bg-[#1a1a1a]">
         <div className="flex items-center justify-between h-16">
           {/* Mobile menu button */}
           <button
