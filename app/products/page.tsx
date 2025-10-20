@@ -67,6 +67,16 @@ export default async function ProductsPage({
 
   // Filter products to only show those with stock at any location
   const inStockProducts = allProducts.filter((product: any) => hasStockAnywhere(product));
+  
+  // Debug: Log vendor products
+  const vendorProducts = allProducts.filter((p: any) => parseInt(p.id) >= 41790);
+  console.log('Total products from bulk API:', allProducts.length);
+  console.log('Vendor products in response:', vendorProducts.length);
+  console.log('Products after stock filter:', inStockProducts.length);
+  vendorProducts.forEach((p: any) => {
+    const hasStock = hasStockAnywhere(p);
+    console.log(`  Product ${p.id}: ${p.name} - total_stock: ${p.total_stock}, hasStock: ${hasStock}`);
+  });
 
   // Create inventory map from products (inventory is already in each product)
   const inventoryMap: { [key: number]: any[] } = {};
