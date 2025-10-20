@@ -5,7 +5,6 @@ import { ArrowRight } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -54,26 +53,17 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="bg-[#1a1a1a] min-h-screen flex items-center justify-center px-4 py-12">
+    <div 
+      className="bg-[#1a1a1a] relative overflow-x-hidden w-full max-w-full flex items-center justify-center px-4 py-12"
+      style={{ minHeight: 'calc(100vh - env(safe-area-inset-top, 0px))' }}
+    >
       <div className="w-full max-w-2xl">
-        {/* Logo */}
-        <Link href="/" className="flex items-center justify-center gap-3 mb-12 group">
-          <Image 
-            src="/logoprint.png" 
-            alt="Flora Distro" 
-            width={40} 
-            height={40}
-            className="object-contain transition-transform duration-300 group-hover:scale-105"
-          />
-          <span className="text-2xl logo-font text-white">Flora Distro</span>
-        </Link>
-
         {/* Card */}
         <div className="bg-[#2a2a2a] border border-white/10 p-8 hover:border-white/20 transition-all duration-300 glow-hover">
           {/* Header */}
           <div className="text-center mb-8">
             <h1 className="text-3xl font-light text-white mb-3 tracking-tight">
-              Create Your Account
+              Create Account
             </h1>
             <div className="h-[1px] w-16 bg-gradient-to-r from-transparent via-white/30 to-transparent mx-auto mb-4"></div>
             <p className="text-[11px] text-white/40 uppercase tracking-[0.15em]">

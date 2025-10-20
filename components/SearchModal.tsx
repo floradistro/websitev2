@@ -18,20 +18,62 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
 
   useEffect(() => {
     if (isOpen) {
+      // Lock body scroll completely for PWA mode
+      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
       document.body.style.overflow = "hidden";
+      document.body.style.position = "fixed";
+      document.body.style.top = "0";
+      document.body.style.left = "0";
+      document.body.style.right = "0";
+      document.body.style.bottom = "0";
+      document.body.style.width = "100%";
+      document.body.style.paddingRight = `${scrollbarWidth}px`;
+      
+      // Prevent iOS overscroll
+      document.documentElement.style.overflow = "hidden";
+      document.documentElement.style.position = "fixed";
+      document.documentElement.style.width = "100%";
+      document.documentElement.style.height = "100%";
+      
       // Focus on search input when modal opens
       setTimeout(() => {
         const input = document.getElementById("search-input");
         if (input) input.focus();
       }, 100);
     } else {
-      document.body.style.overflow = "unset";
+      // Restore scroll
+      document.body.style.overflow = "";
+      document.body.style.position = "";
+      document.body.style.top = "";
+      document.body.style.left = "";
+      document.body.style.right = "";
+      document.body.style.bottom = "";
+      document.body.style.width = "";
+      document.body.style.paddingRight = "";
+      
+      document.documentElement.style.overflow = "";
+      document.documentElement.style.position = "";
+      document.documentElement.style.width = "";
+      document.documentElement.style.height = "";
+      
       setSearchQuery("");
       setSearchResults([]);
     }
 
     return () => {
-      document.body.style.overflow = "unset";
+      document.body.style.overflow = "";
+      document.body.style.position = "";
+      document.body.style.top = "";
+      document.body.style.left = "";
+      document.body.style.right = "";
+      document.body.style.bottom = "";
+      document.body.style.width = "";
+      document.body.style.paddingRight = "";
+      
+      document.documentElement.style.overflow = "";
+      document.documentElement.style.position = "";
+      document.documentElement.style.width = "";
+      document.documentElement.style.height = "";
     };
   }, [isOpen]);
 
@@ -79,14 +121,42 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
   if (!isOpen) return null;
 
   return (
-    <div
-      className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[200] flex items-start justify-center pt-16 sm:pt-20 px-4 animate-fadeIn"
-      onClick={onClose}
+    <div 
+      className="fixed inset-0 z-[200]"
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        width: '100vw',
+        height: '100vh',
+        overflow: 'hidden'
+      }}
     >
+      {/* Backdrop */}
       <div
-        className="bg-[#1a1a1a] border border-white/10 max-w-2xl w-full rounded-none animate-scaleIn"
-        onClick={(e) => e.stopPropagation()}
-      >
+        className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+        onClick={onClose}
+        style={{ 
+          WebkitTapHighlightColor: 'transparent',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          width: '100%',
+          height: '100%',
+          touchAction: 'none'
+        }}
+      />
+      
+      {/* Modal Content */}
+      <div className="absolute inset-0 flex items-start justify-center px-4 overflow-hidden" style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 4rem)' }}>
+        <div
+          className="bg-[#1a1a1a] border border-white/10 max-w-2xl w-full rounded-none animate-scaleIn relative z-10"
+          onClick={(e) => e.stopPropagation()}
+        >
         {/* Search Header */}
         <div className="p-4 sm:p-6 border-b border-white/10">
           <div className="flex items-center gap-3 sm:gap-4">
@@ -110,7 +180,14 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
         </div>
 
         {/* Search Results */}
-        <div className="max-h-[60vh] overflow-y-auto">
+        <div 
+          className="max-h-[60vh] overflow-y-auto"
+          style={{
+            WebkitOverflowScrolling: 'touch',
+            overscrollBehavior: 'contain',
+            touchAction: 'pan-y'
+          }}
+        >
           {isSearching && (
             <div className="p-6 text-center">
               <div className="w-6 h-6 border-2 border-white/20 border-t-white rounded-full animate-spin-smooth mx-auto"></div>
@@ -230,6 +307,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
             </div>
           </div>
         )}
+        </div>
       </div>
     </div>
   );

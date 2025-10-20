@@ -40,7 +40,10 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="bg-[#1a1a1a] min-h-screen flex items-center justify-center px-4 py-12">
+    <div 
+      className="bg-[#1a1a1a] relative overflow-x-hidden w-full max-w-full flex items-center justify-center px-4 py-12"
+      style={{ minHeight: 'calc(100vh - env(safe-area-inset-top, 0px))' }}
+    >
       <div className="w-full max-w-md">
         {/* Logo */}
         <Link href="/" className="flex items-center justify-center gap-3 mb-12 group">

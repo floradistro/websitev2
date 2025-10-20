@@ -49,7 +49,10 @@ function TrackContent() {
 
   if (!orderId || !orderData) {
     return (
-      <div className="bg-[#1a1a1a] min-h-screen">
+      <div 
+        className="bg-[#1a1a1a] relative overflow-x-hidden w-full max-w-full"
+        style={{ minHeight: 'calc(100vh - env(safe-area-inset-top, 0px))' }}
+      >
         <section className="relative min-h-[80vh] flex items-center justify-center text-white px-4">
           <div className="max-w-4xl mx-auto text-center">
             <Package className="w-16 h-16 mx-auto mb-8 text-white/40" />
@@ -96,7 +99,10 @@ function TrackContent() {
 
   if (loading) {
     return (
-      <div className="bg-[#1a1a1a] min-h-screen flex items-center justify-center">
+      <div 
+        className="bg-[#1a1a1a] relative overflow-x-hidden w-full max-w-full flex items-center justify-center"
+        style={{ minHeight: 'calc(100vh - env(safe-area-inset-top, 0px))' }}
+      >
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-white/20 border-t-white rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-sm font-light text-white/60">Loading order details...</p>
@@ -121,7 +127,10 @@ function TrackContent() {
     : null;
 
   return (
-    <div className="bg-[#1a1a1a] min-h-screen">
+    <div 
+      className="bg-[#1a1a1a] relative overflow-x-hidden w-full max-w-full"
+      style={{ minHeight: 'calc(100vh - env(safe-area-inset-top, 0px))' }}
+    >
       {/* Order Header */}
       <section className="relative bg-gradient-to-b from-[#1a1a1a] to-[#2a2a2a] border-b border-white/10 px-4 py-12">
         <div className="max-w-5xl mx-auto">

@@ -8,7 +8,10 @@ export const metadata: Metadata = {
 
 export default function Careers() {
   return (
-    <div className="bg-[#1a1a1a]">
+    <div 
+      className="bg-[#1a1a1a] relative overflow-x-hidden w-full max-w-full"
+      style={{ minHeight: 'calc(100vh - env(safe-area-inset-top, 0px))' }}
+    >
       {/* Hero */}
       <section className="relative min-h-[70vh] flex items-center justify-center bg-[#1a1a1a] text-white px-4">
         <div className="max-w-4xl mx-auto text-center">
