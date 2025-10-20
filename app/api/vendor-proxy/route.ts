@@ -77,7 +77,7 @@ async function handleRequest(request: NextRequest, method: string) {
     
     if (typeof responseData === 'string') {
       // Try to extract JSON from string (in case of HTML+JSON mix)
-      const jsonMatch = responseData.match(/\{.*\}$/s);
+      const jsonMatch = responseData.match(/\{[\s\S]*\}$/);
       if (jsonMatch) {
         try {
           responseData = JSON.parse(jsonMatch[0]);
