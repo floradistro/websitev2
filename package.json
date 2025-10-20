@@ -5,8 +5,9 @@
   "scripts": {
     "dev": "next dev --turbopack -p 3000",
     "dev:https": "concurrently \"next dev --turbopack -p 3000\" \"local-ssl-proxy --source 3443 --target 3000\"",
-    "build": "next build --turbopack",
-    "start": "next start -p 3000"
+    "build": "next build",
+    "start": "next start -p 3000",
+    "postinstall": "echo 'Install complete'"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.67.0",
