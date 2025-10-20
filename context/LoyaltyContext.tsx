@@ -44,8 +44,9 @@ export function LoyaltyProvider({ children }: { children: ReactNode }) {
   const [settings, setSettings] = useState<LoyaltySettings | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Load settings on mount
+  // Load settings on mount (non-blocking - don't break if it fails)
   useEffect(() => {
+    // Silent load - never throw errors
     loadSettings();
   }, []);
 
@@ -67,12 +68,21 @@ export function LoyaltyProvider({ children }: { children: ReactNode }) {
           path: '/wp-json/wc-points-rewards/v1/settings',
           consumer_key: consumerKey,
           consumer_secret: consumerSecret,
-        }
+        },
+        timeout: 3000, // Short timeout - don't block app
+        validateStatus: () => true, // Accept any status code
       });
-      setSettings(response.data);
+      
+      // Only set settings if we got a successful response
+      if (response.status === 200 && response.data) {
+        setSettings(response.data);
+      } else {
+        throw new Error('Invalid response');
+      }
     } catch (error) {
-      console.error("Error loading loyalty settings:", error);
-      // Set default settings if API fails
+      // Silently fail - loyalty is not critical for app functionality
+      console.warn("Loyalty settings unavailable (non-critical):", error instanceof Error ? error.message : 'Unknown error');
+      // Set default settings so app continues working
       setSettings({
         points_label: 'Points',
         earn_ratio: '1:100',
@@ -97,7 +107,9 @@ export function LoyaltyProvider({ children }: { children: ReactNode }) {
             path: `/wp-json/wc-points-rewards/v1/user/${user.id}/balance`,
             consumer_key: consumerKey,
             consumer_secret: consumerSecret,
-          }
+          },
+          timeout: 3000,
+          validateStatus: () => true, // Don't throw on non-2xx
         }),
         axios.get(`/api/wp-proxy`, {
           params: {
@@ -105,14 +117,26 @@ export function LoyaltyProvider({ children }: { children: ReactNode }) {
             consumer_key: consumerKey,
             consumer_secret: consumerSecret,
             per_page: 50,
-          }
+          },
+          timeout: 3000,
+          validateStatus: () => true, // Don't throw on non-2xx
         })
       ]);
 
-      setPoints(balanceRes.data.balance || 0);
-      setHistory(historyRes.data.history || []);
+      // Only update if we got valid responses
+      if (balanceRes.status === 200 && balanceRes.data) {
+        setPoints(balanceRes.data.balance || 0);
+      } else {
+        setPoints(0);
+      }
+      
+      if (historyRes.status === 200 && historyRes.data) {
+        setHistory(historyRes.data.history || []);
+      } else {
+        setHistory([]);
+      }
     } catch (error) {
-      console.error("Error loading loyalty data:", error);
+      console.warn("Loyalty data unavailable (non-critical):", error instanceof Error ? error.message : 'Unknown error');
       setPoints(0);
       setHistory([]);
     } finally {
