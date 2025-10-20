@@ -20,10 +20,10 @@ function GlobalAnimation() {
           const canvas = p.createCanvas(p.windowWidth, p.windowHeight);
           canvas.parent(containerRef.current);
 
-          // Adjust for mobile - much fewer, much larger particles
+          // Adjust for mobile - extreme zoom, minimal particles
           const isMobile = p.windowWidth < 768;
-          const particleCount = isMobile ? 5 : 25;
-          const sizeRange = isMobile ? [40, 80] : [4, 10];
+          const particleCount = isMobile ? 3 : 25;
+          const sizeRange = isMobile ? [80, 150] : [4, 10];
 
           // Create floating particles - spread out more
           for (let i = 0; i < particleCount; i++) {
@@ -43,7 +43,8 @@ function GlobalAnimation() {
           time += 0.002;
           
           const isMobile = p.windowWidth < 768;
-          const connectionDistance = isMobile ? 600 : 250;
+          const connectionDistance = isMobile ? 1000 : 250;
+          const minDistance = isMobile ? 250 : 100; // Minimum distance between particles
 
           // Update particle positions
           for (let particle of particles) {
@@ -57,66 +58,58 @@ function GlobalAnimation() {
             if (particle.y > p.height) particle.y = 0;
           }
 
-          // Draw connections between nearby particles (more visible)
+          // Repel overlapping particles
+          for (let i = 0; i < particles.length; i++) {
+            for (let j = i + 1; j < particles.length; j++) {
+              let dx = particles[j].x - particles[i].x;
+              let dy = particles[j].y - particles[i].y;
+              let distance = p.dist(particles[i].x, particles[i].y, particles[j].x, particles[j].y);
+              
+              if (distance < minDistance && distance > 0) {
+                // Push particles apart
+                let force = (minDistance - distance) * 0.02;
+                let angle = p.atan2(dy, dx);
+                
+                particles[i].x -= p.cos(angle) * force;
+                particles[i].y -= p.sin(angle) * force;
+                particles[j].x += p.cos(angle) * force;
+                particles[j].y += p.sin(angle) * force;
+              }
+            }
+          }
+
+          // Draw connections between nearby particles (simplified)
           for (let i = 0; i < particles.length; i++) {
             for (let j = i + 1; j < particles.length; j++) {
               let d = p.dist(particles[i].x, particles[i].y, particles[j].x, particles[j].y);
               if (d < connectionDistance) {
-                let alpha = p.map(d, 0, connectionDistance, isMobile ? 12 : 20, 0);
+                let alpha = p.map(d, 0, connectionDistance, isMobile ? 8 : 15, 0);
                 
-                // Thick glow line
-                p.stroke(255, 255, 255, alpha * (isMobile ? 0.15 : 0.25));
-                p.strokeWeight(isMobile ? 6 : 4);
-                p.line(particles[i].x, particles[i].y, particles[j].x, particles[j].y);
-                
-                // Medium glow
-                p.stroke(255, 255, 255, alpha * (isMobile ? 0.25 : 0.4));
+                // Single line with glow
+                p.stroke(255, 255, 255, alpha * (isMobile ? 0.15 : 0.3));
                 p.strokeWeight(isMobile ? 4 : 2);
-                p.line(particles[i].x, particles[i].y, particles[j].x, particles[j].y);
-                
-                // Main line
-                p.stroke(255, 255, 255, alpha * (isMobile ? 0.5 : 1));
-                p.strokeWeight(isMobile ? 2 : 1);
                 p.line(particles[i].x, particles[i].y, particles[j].x, particles[j].y);
               }
             }
           }
 
-          // Draw particles with pulsing ring waves
+          // Draw particles - simplified with single halo
           for (let particle of particles) {
             let pulse = p.sin(time * 0.5 + particle.offset) * 0.5 + 0.5;
-            let ringPulse = (time * 0.5 + particle.offset) % (p.TWO_PI);
             
-            // Expanding pulse ring
-            let ringSize = p.map(p.sin(ringPulse), -1, 1, particle.size * 2, particle.size * 10);
-            let ringAlpha = p.map(p.sin(ringPulse), -1, 1, 15, 0);
-            
+            // Single hollow halo ring
             p.noFill();
-            p.stroke(255, 255, 255, ringAlpha);
+            p.stroke(255, 255, 255, (15 + pulse * 10) * (isMobile ? 0.5 : 1));
             p.strokeWeight(isMobile ? 3 : 2);
-            p.circle(particle.x, particle.y, ringSize);
-            
-            p.strokeWeight(isMobile ? 2 : 1);
-            p.stroke(255, 255, 255, ringAlpha * 0.5);
-            p.circle(particle.x, particle.y, ringSize * 1.3);
-            
-            // Hollow center ring
-            p.noFill();
-            p.stroke(255, 255, 255, 20 + pulse * 15);
-            p.strokeWeight(isMobile ? 2.5 : 1.5);
-            p.circle(particle.x, particle.y, particle.size * 3);
-            
-            p.stroke(255, 255, 255, 15 + pulse * 10);
-            p.strokeWeight(isMobile ? 2 : 1);
-            p.circle(particle.x, particle.y, particle.size * 5);
+            p.circle(particle.x, particle.y, particle.size * 4);
             
             // Core glow
             p.noStroke();
-            p.fill(255, 255, 255, 8 + pulse * 8);
+            p.fill(255, 255, 255, (6 + pulse * 6) * (isMobile ? 0.5 : 1));
             p.circle(particle.x, particle.y, particle.size * 2);
             
             // Core dot
-            p.fill(255, 255, 255, 40 + pulse * 30);
+            p.fill(255, 255, 255, (30 + pulse * 20) * (isMobile ? 0.5 : 1));
             p.circle(particle.x, particle.y, particle.size);
           }
         };

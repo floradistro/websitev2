@@ -20,11 +20,11 @@ function ProductGridAnimation() {
           const canvas = p.createCanvas(p.windowWidth, p.windowHeight);
           canvas.parent(containerRef.current);
 
-          // Adjust for mobile - much fewer, much larger cards
+          // Adjust for mobile - extreme zoom, minimal cards
           const isMobile = p.windowWidth < 768;
-          const itemCount = isMobile ? 4 : 20;
+          const itemCount = isMobile ? 2 : 20;
           const sizeRange = isMobile 
-            ? { w: [180, 280], h: [240, 360] }
+            ? { w: [280, 400], h: [360, 500] }
             : { w: [60, 120], h: [80, 140] };
 
           // Create floating grid rectangles (like product cards)
@@ -48,7 +48,7 @@ function ProductGridAnimation() {
           time += 0.002;
           
           const isMobile = p.windowWidth < 768;
-          const connectionDistance = isMobile ? 500 : 200;
+          const connectionDistance = isMobile ? 0 : 200;
 
           // Update positions and rotation
           for (let item of gridItems) {
@@ -88,18 +88,18 @@ function ProductGridAnimation() {
 
             // Outer glow
             p.noStroke();
-            p.fill(255, 255, 255, (3 + pulse * 3) * (isMobile ? 0.5 : 1));
+            p.fill(255, 255, 255, (3 + pulse * 3) * (isMobile ? 0.3 : 1));
             p.rect(-item.w/2 - 4, -item.h/2 - 4, item.w + 8, item.h + 8, 4);
             
             // Main rectangle (hollow)
             p.noFill();
-            p.stroke(255, 255, 255, (15 + pulse * 10) * (isMobile ? 0.6 : 1));
-            p.strokeWeight(isMobile ? 3 : 1.5);
+            p.stroke(255, 255, 255, (15 + pulse * 10) * (isMobile ? 0.4 : 1));
+            p.strokeWeight(isMobile ? 4 : 1.5);
             p.rect(-item.w/2, -item.h/2, item.w, item.h, 2);
             
             // Inner border
-            p.stroke(255, 255, 255, (8 + pulse * 5) * (isMobile ? 0.5 : 1));
-            p.strokeWeight(isMobile ? 2.5 : 1);
+            p.stroke(255, 255, 255, (8 + pulse * 5) * (isMobile ? 0.3 : 1));
+            p.strokeWeight(isMobile ? 3 : 1);
             p.rect(-item.w/2 + 3, -item.h/2 + 3, item.w - 6, item.h - 6, 1);
 
             p.pop();

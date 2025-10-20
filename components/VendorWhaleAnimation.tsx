@@ -20,10 +20,10 @@ function VendorWhaleAnimation() {
           const canvas = p.createCanvas(p.windowWidth, p.windowHeight);
           canvas.parent(containerRef.current);
 
-          // Adjust for mobile - much fewer, much larger bubbles
+          // Adjust for mobile - extreme zoom, minimal bubbles
           const isMobile = p.windowWidth < 768;
-          const bubbleCount = isMobile ? 8 : 40;
-          const sizeRange = isMobile ? [60, 120] : [10, 50];
+          const bubbleCount = isMobile ? 4 : 40;
+          const sizeRange = isMobile ? [100, 180] : [10, 50];
 
           // Create floating bubbles
           for (let i = 0; i < bubbleCount; i++) {
@@ -45,7 +45,7 @@ function VendorWhaleAnimation() {
           time += 0.003;
           
           const isMobile = p.windowWidth < 768;
-          const connectionDistance = isMobile ? 500 : 200;
+          const connectionDistance = isMobile ? 800 : 200;
 
           // Update bubble positions
           for (let bubble of bubbles) {
@@ -70,25 +70,25 @@ function VendorWhaleAnimation() {
             
             // Outer glow layers
             p.noStroke();
-            p.fill(255, 255, 255, (2 + pulse * 2) * (isMobile ? 0.5 : 1));
+            p.fill(255, 255, 255, (2 + pulse * 2) * (isMobile ? 0.3 : 1));
             p.circle(bubble.x, bubble.y, bubble.size * 2.5);
             
-            p.fill(255, 255, 255, (4 + pulse * 4) * (isMobile ? 0.5 : 1));
+            p.fill(255, 255, 255, (4 + pulse * 4) * (isMobile ? 0.3 : 1));
             p.circle(bubble.x, bubble.y, bubble.size * 1.8);
 
             // Main bubble
-            p.fill(255, 255, 255, (8 + pulse * 6) * (isMobile ? 0.5 : 1));
+            p.fill(255, 255, 255, (8 + pulse * 6) * (isMobile ? 0.3 : 1));
             p.circle(bubble.x, bubble.y, bubble.size);
 
             // Bubble outline
             p.noFill();
-            p.stroke(255, 255, 255, (20 + pulse * 15) * (isMobile ? 0.5 : 1));
-            p.strokeWeight(isMobile ? 3 : 1.5);
+            p.stroke(255, 255, 255, (20 + pulse * 15) * (isMobile ? 0.3 : 1));
+            p.strokeWeight(isMobile ? 4 : 1.5);
             p.circle(bubble.x, bubble.y, bubble.size);
 
             // Inner highlight (makes it look like glass)
-            p.stroke(255, 255, 255, (25 + pulse * 20) * (isMobile ? 0.5 : 1));
-            p.strokeWeight(isMobile ? 2.5 : 1);
+            p.stroke(255, 255, 255, (25 + pulse * 20) * (isMobile ? 0.3 : 1));
+            p.strokeWeight(isMobile ? 3 : 1);
             p.arc(
               bubble.x - bubble.size * 0.15, 
               bubble.y - bubble.size * 0.15, 
@@ -109,9 +109,9 @@ function VendorWhaleAnimation() {
             for (let j = i + 1; j < bubbles.length; j++) {
               let d = p.dist(bubbles[i].x, bubbles[i].y, bubbles[j].x, bubbles[j].y);
               if (d < connectionDistance) {
-                let alpha = p.map(d, 0, connectionDistance, isMobile ? 4 : 6, 0);
-                p.stroke(255, 255, 255, alpha * (isMobile ? 0.4 : 1));
-                p.strokeWeight(isMobile ? 2 : 0.5);
+                let alpha = p.map(d, 0, connectionDistance, isMobile ? 3 : 6, 0);
+                p.stroke(255, 255, 255, alpha * (isMobile ? 0.2 : 1));
+                p.strokeWeight(isMobile ? 3 : 0.5);
                 p.noFill();
                 
                 // Gentle wavy line
