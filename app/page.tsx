@@ -1,9 +1,9 @@
 import { getBestSellingProducts, getCategories, getLocations, getAllInventory } from "@/lib/wordpress";
 import HomeClient from "@/components/HomeClient";
 
-// Force dynamic rendering
+// Force dynamic - always fetch fresh data (no caching for vendor inventory)
 export const dynamic = 'force-dynamic';
-export const revalidate = 60;
+export const revalidate = 0;
 
 export default async function Home() {
   // Optimized: Fetch only necessary data in parallel with error handling

@@ -1,9 +1,8 @@
-import { getCategories, getProductPricingV3 } from "@/lib/wordpress";
-import { getCachedBulkProducts, getCachedLocations } from "@/lib/api-cache";
+import { getCategories, getProductPricingV3, getBulkProducts, getLocations } from "@/lib/wordpress";
 import ProductsClient from "@/components/ProductsClient";
 import type { Metadata } from "next";
 
-// Force dynamic - always fetch fresh data for vendor inventory
+// Force dynamic - always fetch fresh data for vendor inventory (no caching)
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
@@ -25,10 +24,11 @@ export default async function ProductsPage({
   const { category: categorySlug } = await searchParams;
   
   // OPTIMIZED: Use BULK endpoint - returns products with inventory & fields in ONE call!
+  // NO CACHING - Always fetch fresh data for real-time vendor inventory updates
   const [categories, locations, bulkData] = await Promise.all([
     getCategories({ per_page: 100 }),
-    getCachedLocations(),
-    getCachedBulkProducts({ per_page: 1000 }), // Bulk endpoint is FAST
+    getLocations(), // No cache - always fresh
+    getBulkProducts({ per_page: 1000 }), // No cache - always fresh
   ]);
 
   // Extract products from bulk response - inventory already included!
