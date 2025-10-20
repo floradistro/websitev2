@@ -61,11 +61,11 @@ export default function Header() {
 
   return (
     <header 
-      className={`sticky top-0 bg-[#1a1a1a] text-white z-[110] border-b border-white/10 transition-transform duration-300 relative ${
+      className={`sticky bg-[#1a1a1a] text-white z-[110] border-b border-white/10 transition-transform duration-300 relative ${
         isVisible ? 'translate-y-0' : '-translate-y-full'
       }`}
       style={{ 
-        paddingTop: 'env(safe-area-inset-top)',
+        top: 'env(safe-area-inset-top, 0)',
         backgroundColor: '#1a1a1a'
       }}
     >
