@@ -17,50 +17,109 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
 
   useEffect(() => {
     if (isOpen) {
+      // Lock body scroll completely for PWA mode
+      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
       document.body.style.overflow = "hidden";
+      document.body.style.position = "fixed";
+      document.body.style.top = "0";
+      document.body.style.left = "0";
+      document.body.style.right = "0";
+      document.body.style.bottom = "0";
+      document.body.style.width = "100%";
+      document.body.style.paddingRight = `${scrollbarWidth}px`;
+      
+      // Prevent iOS overscroll
+      document.documentElement.style.overflow = "hidden";
+      document.documentElement.style.position = "fixed";
+      document.documentElement.style.width = "100%";
+      document.documentElement.style.height = "100%";
     } else {
-      document.body.style.overflow = "unset";
+      // Restore scroll
+      document.body.style.overflow = "";
+      document.body.style.position = "";
+      document.body.style.top = "";
+      document.body.style.left = "";
+      document.body.style.right = "";
+      document.body.style.bottom = "";
+      document.body.style.width = "";
+      document.body.style.paddingRight = "";
+      
+      document.documentElement.style.overflow = "";
+      document.documentElement.style.position = "";
+      document.documentElement.style.width = "";
+      document.documentElement.style.height = "";
     }
     
     return () => {
-      document.body.style.overflow = "unset";
+      document.body.style.overflow = "";
+      document.body.style.position = "";
+      document.body.style.top = "";
+      document.body.style.left = "";
+      document.body.style.right = "";
+      document.body.style.bottom = "";
+      document.body.style.width = "";
+      document.body.style.paddingRight = "";
+      
+      document.documentElement.style.overflow = "";
+      document.documentElement.style.position = "";
+      document.documentElement.style.width = "";
+      document.documentElement.style.height = "";
     };
   }, [isOpen]);
 
   if (!isOpen) return null;
 
   return (
-    <>
+    <div 
+      className="fixed inset-0 z-[9999]"
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        width: '100vw',
+        height: '100vh',
+        overflow: 'hidden'
+      }}
+    >
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/60 backdrop-blur-md z-[120]"
+        className="absolute inset-0 bg-black/60 backdrop-blur-md"
         onClick={onClose}
         style={{ 
           WebkitTapHighlightColor: 'transparent',
+          position: 'absolute',
           top: 0,
           left: 0,
           right: 0,
           bottom: 0,
-          width: '100vw',
-          height: '100vh'
+          width: '100%',
+          height: '100%',
+          touchAction: 'none'
         }}
       />
 
       {/* Drawer - With Safe Area Support */}
       <div 
-        className="fixed right-0 w-full sm:w-[500px] bg-[#2a2a2a]/98 backdrop-blur-xl shadow-2xl z-[121] flex flex-col border-l border-white/10 animate-slideInRight overflow-hidden"
+        className="absolute right-0 w-full sm:w-[500px] bg-[#2a2a2a] shadow-2xl flex flex-col border-l border-white/10 animate-slideInRight"
         style={{
+          position: 'absolute',
           top: 0,
           bottom: 0,
-          height: '100vh',
-          paddingTop: 'max(env(safe-area-inset-top), 0px)',
-          paddingBottom: 'max(env(safe-area-inset-bottom), 0px)',
-          paddingLeft: 'env(safe-area-inset-left, 0px)',
-          paddingRight: 'env(safe-area-inset-right, 0px)'
+          height: '100%',
+          maxHeight: '100vh',
+          overflowY: 'hidden'
         }}
       >
         {/* Header - Fixed with safe area */}
-        <div className="px-5 py-4 border-b border-white/10 bg-[#2a2a2a] flex-shrink-0" style={{ paddingTop: 'max(1rem, env(safe-area-inset-top))' }}>
+        <div 
+          className="px-5 border-b border-white/10 bg-[#2a2a2a] flex-shrink-0"
+          style={{ 
+            paddingTop: 'calc(env(safe-area-inset-top, 0px) + 1rem)',
+            paddingBottom: '1rem'
+          }}
+        >
           <div className="flex items-center justify-between">
             <h2 className="text-base font-light uppercase tracking-[0.2em] text-white">
               Cart ({itemCount})
@@ -78,12 +137,14 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
 
         {/* Items - Scrollable with momentum */}
         <div 
-          className="flex-1 overflow-y-auto overflow-x-hidden bg-transparent"
+          className="flex-1 overflow-y-auto overflow-x-hidden bg-[#2a2a2a]"
           style={{
             WebkitOverflowScrolling: 'touch',
             overscrollBehavior: 'contain',
             minHeight: 0,
-            touchAction: 'pan-y'
+            flex: '1 1 0',
+            touchAction: 'pan-y',
+            position: 'relative'
           }}
         >
           {items.length === 0 ? (
@@ -201,7 +262,13 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
 
         {/* Footer - Fixed with safe area */}
         {items.length > 0 && (
-          <div className="px-5 py-5 border-t border-white/10 bg-[#1a1a1a]/95 backdrop-blur-sm flex-shrink-0" style={{ paddingBottom: 'max(1.25rem, env(safe-area-inset-bottom))' }}>
+          <div 
+            className="px-5 border-t border-white/10 bg-[#1a1a1a] flex-shrink-0" 
+            style={{ 
+              paddingTop: '1.25rem',
+              paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 1.25rem)'
+            }}
+          >
             <div className="space-y-4">
               <div className="flex justify-between items-center text-xl font-medium text-white">
                 <span>Subtotal</span>
@@ -232,6 +299,6 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
           </div>
         )}
       </div>
-    </>
+    </div>
   );
 }
