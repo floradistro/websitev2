@@ -118,12 +118,22 @@ export async function adjustVendorInventoryProxy(productId: number, operation: '
     );
     return response.data;
   } catch (error: any) {
+    // Check if it's a no_inventory error
+    const errorCode = error.response?.data?.details?.code || error.response?.data?.code;
+    const errorMsg = error.response?.data?.error || error.response?.data?.message || '';
+    
     // If no inventory record exists, create one and retry
-    if (error.response?.data?.code === 'no_inventory' || error.response?.data?.details?.code === 'no_inventory') {
+    if (errorCode === 'no_inventory' || errorMsg.includes('No inventory record')) {
+      console.log('No inventory found, creating initial record and retrying...');
       await ensureInventoryExists(productId);
-      // Retry the adjustment
+      
+      // Wait a moment for the record to be created
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Retry the adjustment with fresh cache buster
+      const newCacheBuster = `_t=${Date.now()}`;
       const retryResponse = await vendorProxyRequest(
-        `flora-vendors/v1/vendors/me/inventory/${productId}/adjust?${cacheBuster}`,
+        `flora-vendors/v1/vendors/me/inventory/${productId}/adjust?${newCacheBuster}`,
         'POST',
         { operation, amount, reason }
       );
