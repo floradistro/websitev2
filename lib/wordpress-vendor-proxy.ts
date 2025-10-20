@@ -90,13 +90,15 @@ export async function getVendorBrandingProxy() {
 }
 
 export async function getVendorSettingsProxy() {
-  const response = await vendorProxyRequest('flora-vendors/v1/vendors/me/settings');
+  const cacheBuster = `_t=${Date.now()}`;
+  const response = await vendorProxyRequest(`flora-vendors/v1/vendors/me/settings?${cacheBuster}`);
   return response.data;
 }
 
 export async function updateVendorSettingsProxy(settingsData: any) {
+  const cacheBuster = `_t=${Date.now()}`;
   const response = await vendorProxyRequest(
-    'flora-vendors/v1/vendors/me/settings',
+    `flora-vendors/v1/vendors/me/settings?${cacheBuster}`,
     'PUT',
     settingsData
   );

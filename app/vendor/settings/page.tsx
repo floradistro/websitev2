@@ -22,34 +22,34 @@ export default function VendorSettings() {
   });
 
   // Fetch real vendor settings from database
-  useEffect(() => {
-    const fetchSettings = async () => {
-      try {
-        setFetching(true);
-        const data = await getVendorSettingsProxy();
-        
-        if (data && data.vendor) {
-          const vendor = data.vendor;
-          setSettings({
-            companyName: vendor.company_name || '',
-            contactName: vendor.contact_name || '',
-            email: vendor.email || '',
-            phone: vendor.phone || '',
-            address: vendor.address_line_1 || '',
-            city: vendor.city || '',
-            state: vendor.state || '',
-            zip: vendor.zip || '',
-            taxId: vendor.tax_id || '',
-          });
-        }
-      } catch (err) {
-        console.error('Failed to fetch vendor settings:', err);
-        setError('Failed to load settings. Please refresh the page.');
-      } finally {
-        setFetching(false);
+  const fetchSettings = async () => {
+    try {
+      setFetching(true);
+      const data = await getVendorSettingsProxy();
+      
+      if (data && data.vendor) {
+        const vendor = data.vendor;
+        setSettings({
+          companyName: vendor.company_name || '',
+          contactName: vendor.contact_name || '',
+          email: vendor.email || '',
+          phone: vendor.phone || '',
+          address: vendor.address_line_1 || '',
+          city: vendor.city || '',
+          state: vendor.state || '',
+          zip: vendor.zip || '',
+          taxId: vendor.tax_id || '',
+        });
       }
-    };
+    } catch (err) {
+      console.error('Failed to fetch vendor settings:', err);
+      setError('Failed to load settings. Please refresh the page.');
+    } finally {
+      setFetching(false);
+    }
+  };
 
+  useEffect(() => {
     fetchSettings();
   }, []);
 
@@ -73,7 +73,25 @@ export default function VendorSettings() {
       });
 
       if (response && response.success) {
+        // Update local state with fresh data from server
+        if (response.vendor) {
+          const vendor = response.vendor;
+          setSettings({
+            companyName: vendor.company_name || '',
+            contactName: vendor.contact_name || '',
+            email: vendor.email || '',
+            phone: vendor.phone || '',
+            address: vendor.address_line_1 || '',
+            city: vendor.city || '',
+            state: vendor.state || '',
+            zip: vendor.zip || '',
+            taxId: vendor.tax_id || '',
+          });
+        }
+        
         setSuccess(true);
+        console.log('Settings saved successfully:', response);
+        
         setTimeout(() => setSuccess(false), 3000);
       } else {
         setError('Failed to save settings. Please try again.');
