@@ -50,7 +50,7 @@ function TrackContent() {
   if (!orderId || !orderData) {
     return (
       <div 
-        className="bg-[#1a1a1a] relative overflow-x-hidden w-full max-w-full"
+        className="bg-[#1a1a1a] relative overflow-x-hidden w-full max-w-full pt-20"
         style={{ minHeight: 'calc(100vh - env(safe-area-inset-top, 0px))' }}
       >
         <section className="relative min-h-[80vh] flex items-center justify-center text-white px-4">
@@ -100,7 +100,7 @@ function TrackContent() {
   if (loading) {
     return (
       <div 
-        className="bg-[#1a1a1a] relative overflow-x-hidden w-full max-w-full flex items-center justify-center"
+        className="bg-[#1a1a1a] relative overflow-x-hidden w-full max-w-full flex items-center justify-center pt-20"
         style={{ minHeight: 'calc(100vh - env(safe-area-inset-top, 0px))' }}
       >
         <div className="text-center">
@@ -128,7 +128,7 @@ function TrackContent() {
 
   return (
     <div 
-      className="bg-[#1a1a1a] relative overflow-x-hidden w-full max-w-full"
+      className="bg-[#1a1a1a] relative overflow-x-hidden w-full max-w-full pt-20"
       style={{ minHeight: 'calc(100vh - env(safe-area-inset-top, 0px))' }}
     >
       {/* Order Header */}

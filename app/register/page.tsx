@@ -54,7 +54,7 @@ export default function RegisterPage() {
 
   return (
     <div 
-      className="bg-[#1a1a1a] relative overflow-x-hidden w-full max-w-full flex items-center justify-center px-4 py-12"
+      className="bg-[#1a1a1a] relative overflow-x-hidden w-full max-w-full flex items-center justify-center px-4 py-12 pt-32"
       style={{ minHeight: 'calc(100vh - env(safe-area-inset-top, 0px))' }}
     >
       <div className="w-full max-w-2xl">

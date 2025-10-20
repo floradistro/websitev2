@@ -33,7 +33,7 @@ export default function FAQ() {
 
   return (
     <div 
-      className="bg-[#1a1a1a] relative overflow-x-hidden w-full max-w-full"
+      className="bg-[#1a1a1a] relative overflow-x-hidden w-full max-w-full pt-20"
       style={{ minHeight: 'calc(100vh - env(safe-area-inset-top, 0px))' }}
     >
       {/* Hero */}

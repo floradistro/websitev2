@@ -320,7 +320,6 @@ export default function CheckoutPage() {
         className="bg-[#1a1a1a] relative overflow-x-hidden w-full max-w-full"
         style={{
           minHeight: 'calc(100vh - env(safe-area-inset-top, 0px))',
-          paddingTop: 'env(safe-area-inset-top)',
           paddingBottom: 'env(safe-area-inset-bottom)'
         }}
       >
