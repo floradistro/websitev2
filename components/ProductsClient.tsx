@@ -3,8 +3,11 @@
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import dynamic from "next/dynamic";
 import LocationDropdown from "./LocationDropdown";
 import ProductCard from "./ProductCard";
+
+const ProductGridAnimation = dynamic(() => import("@/components/ProductGridAnimation"), { ssr: false });
 
 interface ProductsClientProps {
   categories: any[];
@@ -154,11 +157,8 @@ export default function ProductsClient({
 
   return (
     <div className="min-h-screen bg-[#2a2a2a] relative overflow-hidden">
-      {/* Floating gradient orbs background */}
-      <div className="absolute inset-0 opacity-20 pointer-events-none">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-white/5 rounded-full blur-3xl animate-float"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-white/5 rounded-full blur-3xl animate-float-delayed"></div>
-      </div>
+      {/* Product Grid Animation Background */}
+      <ProductGridAnimation />
       
       {/* Inject Fonts */}
       <style jsx global>{`
@@ -177,7 +177,7 @@ export default function ProductsClient({
       `}</style>
       {/* Header Section */}
       <div className="border-b border-white/10 relative">
-        <div className="px-4 sm:px-6 md:px-8 py-6 sm:py-8 md:py-12 max-w-[2000px] mx-auto relative">
+        <div className="px-4 sm:px-6 md:px-8 py-6 sm:py-8 md:py-12 max-w-[2000px] mx-auto relative z-10">
           {/* Title with Item Count */}
           <div className="flex items-baseline gap-2.5 mb-4">
             <h1 className="text-xl sm:text-2xl md:text-3xl font-normal uppercase tracking-[0.15em] sm:tracking-[0.25em] text-white">
@@ -277,8 +277,9 @@ export default function ProductsClient({
       </div>
 
       {/* Filter Bar - Compact Single Row */}
-      <div className="border-b border-white/10">
-        <div className="px-4 sm:px-6 md:px-8 py-3 sm:py-4 max-w-[2000px] mx-auto">
+      <div className="border-b border-white/10 relative">
+        <div className="absolute inset-0 bg-[#2a2a2a]/30 backdrop-blur-sm"></div>
+        <div className="px-4 sm:px-6 md:px-8 py-3 sm:py-4 max-w-[2000px] mx-auto relative z-10">
           <div className="flex flex-col gap-3 sm:gap-4">
             {/* Single Row - All Controls */}
             <div className="flex items-center justify-between gap-2">
@@ -407,9 +408,9 @@ export default function ProductsClient({
       </div>
 
       {/* Products Grid */}
-      <div className="max-w-[2000px] mx-auto">
+      <div className="max-w-[2000px] mx-auto relative">
         {products.length === 0 ? (
-          <div className="text-center py-32 animate-fadeIn px-6">
+          <div className="text-center py-32 animate-fadeIn px-6 relative z-10">
             <p className="text-sm font-light text-white/40 tracking-wide uppercase">
               No products available at this location
             </p>
@@ -421,7 +422,7 @@ export default function ProductsClient({
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-px">
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-px relative z-10">
             {products.map((product: any, index: number) => {
               // Get vendor info if product is from a vendor
               const vendorInfo = product.vendorId ? vendors.find((v: any) => v.id === product.vendorId) : null;

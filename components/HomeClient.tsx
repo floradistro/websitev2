@@ -31,17 +31,7 @@ const LocationsCarousel = dynamic(() => import("@/components/LocationsCarousel")
   loading: () => <div className="w-full h-[200px] bg-[#2a2a2a] animate-pulse" />,
 });
 
-const FireAnimation = dynamic(() => import("@/components/FireAnimation"), {
-  ssr: false,
-});
-
-const ShippingAnimation = dynamic(() => import("@/components/ShippingAnimation"), {
-  ssr: false,
-});
-
-const GrowthChart = dynamic(() => import("@/components/GrowthChart"), {
-  ssr: false,
-});
+const GlobalAnimation = dynamic(() => import("@/components/GlobalAnimation"), { ssr: false });
 
 interface HomeClientProps {
   products: any[];
@@ -60,53 +50,45 @@ export default function HomeClient({
 }: HomeClientProps) {
   return (
     <div className="bg-[#2a2a2a] overflow-x-hidden w-full relative">
-      {/* Floating gradient orbs throughout page */}
-      <div className="absolute inset-0 opacity-20 pointer-events-none">
-        <div className="absolute top-1/4 right-1/4 w-[500px] h-[500px] bg-white/5 rounded-full blur-3xl animate-float"></div>
-        <div className="absolute bottom-1/4 left-1/4 w-[400px] h-[400px] bg-white/5 rounded-full blur-3xl animate-float-delayed"></div>
-      </div>
+      {/* Global Floating Animation Background */}
+      <GlobalAnimation />
       
       {/* Hero Section - Animated Luxury */}
       <LuxuryHero />
 
       {/* Marketplace Mission Statement */}
-      <section className="bg-[#1a1a1a] py-20 sm:py-28 md:py-32 px-4 sm:px-6 relative overflow-hidden w-full">
-        <div className="absolute inset-0 opacity-30">
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-rose-500/10 rounded-full blur-3xl"></div>
-        </div>
-
+      <section className="relative py-20 sm:py-28 md:py-32 px-4 sm:px-6 overflow-hidden w-full border-b border-white/5">
+        <div className="absolute inset-0 bg-gradient-to-b from-[#1a1a1a]/40 via-[#1a1a1a]/35 to-[#1a1a1a]/30 backdrop-blur-sm"></div>
         <div className="max-w-4xl mx-auto text-center relative z-10">
-          <div className="h-[1px] w-16 bg-gradient-to-r from-transparent via-purple-500/40 to-transparent mx-auto mb-8"></div>
-          <h2 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-light text-white mb-6 leading-tight tracking-tight">
-            Where Quality<br/>Meets Street
+          <h2 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-light text-white mb-8 leading-none tracking-tight">
+            Built Different.
           </h2>
-          <div className="h-[1px] w-24 bg-gradient-to-r from-transparent via-rose-500/30 to-transparent mx-auto mb-12"></div>
-          <p className="text-base sm:text-lg md:text-xl font-light text-white/60 leading-relaxed max-w-2xl mx-auto mb-12">
-            Direct from the source. No middleman. No BS. Just premium flower and trusted vendors under one roof.
+          <p className="text-base sm:text-lg md:text-xl font-light text-white/50 leading-relaxed max-w-2xl mx-auto mb-12">
+            One platform. Multiple vendors. Unified commerce.
           </p>
           <Link 
             href="/vendors"
-            className="group inline-flex items-center gap-3 bg-gradient-to-r from-purple-600 to-violet-700 text-white px-10 py-4 text-xs uppercase tracking-[0.25em] hover:from-purple-500 hover:to-violet-600 transition-all duration-300 font-medium shadow-lg shadow-purple-900/30"
+            className="group inline-flex items-center gap-3 bg-white/10 backdrop-blur-sm border border-white/20 text-white px-10 py-4 text-xs uppercase tracking-[0.25em] hover:bg-white/15 hover:border-white/30 transition-all duration-300 font-medium"
           >
             <Store size={16} />
-            <span>Browse Vendors</span>
+            <span>Explore Network</span>
             <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform duration-300" />
           </Link>
         </div>
       </section>
 
       {/* Marketplace Features Grid */}
-      <section className="bg-[#3a3a3a] py-16 overflow-x-hidden w-full">
-        <div className="px-4 sm:px-6 mb-12">
+      <section className="relative py-16 overflow-x-hidden w-full border-b border-white/5">
+        <div className="absolute inset-0 bg-gradient-to-b from-[#3a3a3a]/35 to-[#3a3a3a]/30 backdrop-blur-md"></div>
+        <div className="px-4 sm:px-6 mb-12 relative z-10">
           <h2 className="text-2xl md:text-3xl font-light uppercase tracking-wider text-white mb-3">
             The Flora Difference
           </h2>
           <div className="h-[1px] w-16 bg-gradient-to-r from-purple-500/60 to-transparent"></div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-px">
-          <div className="bg-[#3a3a3a] hover:bg-[#404040] transition-all duration-500 p-8 lg:p-10 border border-white/5 hover:border-purple-500/20 group">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-px relative z-10">
+          <div className="bg-[#3a3a3a]/30 backdrop-blur-md hover:bg-[#404040]/40 transition-all duration-500 p-8 lg:p-10 border border-white/10 hover:border-purple-500/30 group">
             <Store className="w-8 h-8 mb-6 text-purple-400/70 group-hover:text-purple-300 transition-colors" />
             <h3 className="text-sm uppercase tracking-[0.2em] text-white mb-4 font-normal">Only The Real</h3>
             <p className="text-xs text-white/50 font-light leading-relaxed">
@@ -114,7 +96,7 @@ export default function HomeClient({
             </p>
           </div>
           
-          <div className="bg-[#3a3a3a] hover:bg-[#404040] transition-all duration-500 p-8 lg:p-10 border border-white/5 hover:border-rose-500/20 group">
+          <div className="bg-[#3a3a3a]/50 backdrop-blur-lg hover:bg-[#404040]/60 transition-all duration-500 p-8 lg:p-10 border border-white/10 hover:border-rose-500/30 group">
             <Users className="w-8 h-8 mb-6 text-rose-400/70 group-hover:text-rose-300 transition-colors" />
             <h3 className="text-sm uppercase tracking-[0.2em] text-white mb-4 font-normal">One Cart. All Brands.</h3>
             <p className="text-xs text-white/50 font-light leading-relaxed">
@@ -122,7 +104,7 @@ export default function HomeClient({
             </p>
           </div>
           
-          <div className="bg-[#3a3a3a] hover:bg-[#404040] transition-all duration-500 p-8 lg:p-10 border border-white/5 hover:border-purple-500/20 group">
+          <div className="bg-[#3a3a3a]/30 backdrop-blur-md hover:bg-[#404040]/40 transition-all duration-500 p-8 lg:p-10 border border-white/10 hover:border-purple-500/30 group">
             <Truck className="w-8 h-8 mb-6 text-purple-400/70 group-hover:text-purple-300 transition-colors" />
             <h3 className="text-sm uppercase tracking-[0.2em] text-white mb-4 font-normal">Fast & Tracked</h3>
             <p className="text-xs text-white/50 font-light leading-relaxed">
@@ -130,7 +112,7 @@ export default function HomeClient({
             </p>
           </div>
           
-          <div className="bg-[#3a3a3a] hover:bg-[#404040] transition-all duration-500 p-8 lg:p-10 border border-white/5 hover:border-rose-500/20 group">
+          <div className="bg-[#3a3a3a]/30 backdrop-blur-md hover:bg-[#404040]/40 transition-all duration-500 p-8 lg:p-10 border border-white/10 hover:border-rose-500/30 group">
             <Shield className="w-8 h-8 mb-6 text-rose-400/70 group-hover:text-rose-300 transition-colors" />
             <h3 className="text-sm uppercase tracking-[0.2em] text-white mb-4 font-normal">Lab Verified</h3>
             <p className="text-xs text-white/50 font-light leading-relaxed">
@@ -141,8 +123,9 @@ export default function HomeClient({
       </section>
 
       {/* Featured Products - Carousel */}
-      <section className="bg-[#2a2a2a] py-12 sm:py-16 overflow-x-hidden w-full">
-        <div className="px-4 sm:px-6 mb-8 sm:mb-12">
+      <section className="relative py-12 sm:py-16 overflow-x-hidden w-full border-b border-white/5">
+        <div className="absolute inset-0 bg-gradient-to-b from-[#2a2a2a]/40 to-[#2a2a2a]/35 backdrop-blur-sm"></div>
+        <div className="px-4 sm:px-6 mb-8 sm:mb-12 relative z-10">
           <div className="flex justify-between items-center sm:items-end gap-4">
             <div className="min-w-0">
               <h2 className="text-xl sm:text-2xl md:text-3xl font-light uppercase tracking-wider text-white mb-2 sm:mb-3">
@@ -160,17 +143,20 @@ export default function HomeClient({
           </div>
         </div>
 
-        <ProductsCarousel 
+        <div className="relative z-10">
+          <ProductsCarousel 
           products={products}
           locations={locations}
           productFieldsMap={productFieldsMap}
           inventoryMap={inventoryMap}
-        />
+          />
+        </div>
       </section>
 
       {/* Categories - Carousel */}
-      <section className="bg-[#3a3a3a] py-12 sm:py-16 overflow-x-hidden w-full">
-        <div className="px-4 sm:px-6 mb-8 sm:mb-12">
+      <section className="relative py-12 sm:py-16 overflow-x-hidden w-full border-b border-white/5">
+        <div className="absolute inset-0 bg-gradient-to-b from-[#3a3a3a]/35 to-[#3a3a3a]/30 backdrop-blur-md"></div>
+        <div className="px-4 sm:px-6 mb-8 sm:mb-12 relative z-10">
           <div className="flex justify-between items-center sm:items-end gap-4">
             <div className="min-w-0">
               <h2 className="text-xl sm:text-2xl md:text-3xl font-light uppercase tracking-wider text-white mb-2 sm:mb-3">
@@ -181,34 +167,26 @@ export default function HomeClient({
           </div>
         </div>
 
-        <CategoriesCarousel categories={categories} />
+        <div className="relative z-10">
+          <CategoriesCarousel categories={categories} />
+        </div>
       </section>
 
       {/* Value Proposition */}
-      <section className="bg-[#1a1a1a] py-16 sm:py-24 md:py-32 px-4 sm:px-6 relative overflow-hidden w-full">
-        <div className="absolute inset-0 opacity-30">
-          <div className="absolute top-0 left-1/4 w-64 h-64 sm:w-96 sm:h-96 bg-purple-500/10 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-0 right-1/4 w-64 h-64 sm:w-96 sm:h-96 bg-rose-500/10 rounded-full blur-3xl"></div>
-        </div>
-
-        {/* Fire Animation Background */}
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <FireAnimation />
-        </div>
-
+      <section className="relative py-16 sm:py-24 md:py-32 px-4 sm:px-6 overflow-hidden w-full border-b border-white/5">
         <div className="max-w-6xl mx-auto text-center relative z-10">
           <div className="flex items-center justify-center mb-6 sm:mb-8">
             <div className="h-[1px] w-12 sm:w-16 bg-gradient-to-r from-transparent via-purple-500/40 to-transparent"></div>
           </div>
 
           <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-light text-white mb-4 sm:mb-6 leading-tight tracking-tight">
-            Straight Fire.<br/>Straight Price.
+            Built for Scale.
           </h2>
           
-          <div className="h-[1px] w-16 sm:w-24 bg-gradient-to-r from-transparent via-rose-500/30 to-transparent mx-auto mb-8 sm:mb-12"></div>
+          <div className="h-[1px] w-16 sm:w-24 bg-gradient-to-r from-transparent via-white/20 to-transparent mx-auto mb-8 sm:mb-12"></div>
           
           <p className="text-sm sm:text-base md:text-lg lg:text-xl font-light text-white/60 mb-12 sm:mb-16 md:mb-20 leading-relaxed max-w-2xl mx-auto">
-            Grown in-house and curated from the best. No games with the pricing, no mystery on quality.
+            Smart pricing that adapts. Real-time sync across vendors. Quality you can count on.
           </p>
 
           <div className="grid md:grid-cols-3 gap-4 sm:gap-6">
@@ -219,30 +197,30 @@ export default function HomeClient({
                   <div className="text-lg sm:text-xl text-purple-400">1</div>
                 </div>
                 <h3 className="text-xs sm:text-sm font-normal mb-3 sm:mb-4 text-white uppercase tracking-[0.2em] sm:tracking-[0.25em]">
-                  Buy More, Save More
+                  Smarter Pricing
                 </h3>
                 <p className="text-[11px] sm:text-xs font-light text-white/60 leading-relaxed">
-                  Volume discounts on everything. The more you cop, the more you save.
+                  Buy more, pay less. Volume discounts kick in automatically.
                 </p>
               </div>
             </div>
             
-            <div className="group bg-white/5 backdrop-blur-sm border border-rose-500/20 p-6 sm:p-8 hover:bg-rose-500/5 hover:border-rose-500/40 transition-all duration-500 relative overflow-hidden">
+            <div className="group bg-white/5 backdrop-blur-md border border-rose-500/30 p-6 sm:p-8 hover:bg-rose-500/10 hover:border-rose-500/50 transition-all duration-500 relative overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-br from-rose-500/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
               <div className="relative z-10">
                 <div className="w-10 h-10 sm:w-12 sm:h-12 mb-4 sm:mb-6 mx-auto border border-rose-500/30 rounded-full flex items-center justify-center group-hover:border-rose-400/60 transition-colors duration-500 bg-rose-500/5">
                   <div className="text-lg sm:text-xl text-rose-400">2</div>
                 </div>
                 <h3 className="text-xs sm:text-sm font-normal mb-3 sm:mb-4 text-white uppercase tracking-[0.2em] sm:tracking-[0.25em]">
-                  Direct From Growers
+                  Real-Time Sync
                 </h3>
                 <p className="text-[11px] sm:text-xs font-light text-white/60 leading-relaxed">
-                  Cut out the middleman. Straight from verified cultivators to you.
+                  Live inventory across all vendors. What you see is what you get.
                 </p>
               </div>
             </div>
 
-            <div className="group bg-white/5 backdrop-blur-sm border border-purple-500/20 p-6 sm:p-8 hover:bg-purple-500/5 hover:border-purple-500/40 transition-all duration-500 relative overflow-hidden">
+            <div className="group bg-white/5 backdrop-blur-md border border-purple-500/30 p-6 sm:p-8 hover:bg-purple-500/10 hover:border-purple-500/50 transition-all duration-500 relative overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
               <div className="relative z-10">
                 <div className="w-10 h-10 sm:w-12 sm:h-12 mb-4 sm:mb-6 mx-auto border border-purple-500/30 rounded-full flex items-center justify-center group-hover:border-purple-400/60 transition-colors duration-500 bg-purple-500/5">
@@ -252,7 +230,7 @@ export default function HomeClient({
                   Always Fresh
                 </h3>
                 <p className="text-[11px] sm:text-xs font-light text-white/60 leading-relaxed">
-                  Never dry. Never old. Just sticky, loud, premium flower every time.
+                  Lab tested. Quality verified. Fresh product, every time.
                 </p>
               </div>
             </div>
@@ -261,16 +239,17 @@ export default function HomeClient({
       </section>
 
       {/* Sustainability Commitment */}
-      <section className="bg-[#2a2a2a] py-16 overflow-x-hidden w-full">
-        <div className="px-4 sm:px-6 mb-12">
+      <section className="relative py-16 overflow-x-hidden w-full border-b border-white/5">
+        <div className="absolute inset-0 bg-gradient-to-b from-[#2a2a2a]/40 to-[#2a2a2a]/35 backdrop-blur-sm"></div>
+        <div className="px-4 sm:px-6 mb-12 relative z-10">
           <h2 className="text-2xl md:text-3xl font-light uppercase tracking-wider text-white mb-3">
             Marketplace Standards
           </h2>
           <div className="h-[1px] w-16 bg-white/20"></div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-px">
-          <div className="bg-[#2a2a2a] hover:bg-[#303030] transition-all duration-500 p-10 lg:p-12 border border-white/5 hover:border-white/10">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-px relative z-10">
+          <div className="bg-[#2a2a2a]/30 backdrop-blur-md hover:bg-[#303030]/40 transition-all duration-500 p-10 lg:p-12 border border-white/10 hover:border-white/20">
             <Leaf className="w-8 h-8 mb-6 text-white/60" />
             <h3 className="text-lg uppercase tracking-[0.2em] text-white mb-6 font-normal">Sustainable Practices</h3>
             <div className="space-y-3">
@@ -288,7 +267,7 @@ export default function HomeClient({
             </Link>
           </div>
 
-          <div className="bg-[#2a2a2a] hover:bg-[#303030] transition-all duration-500 p-10 lg:p-12 border border-white/5 hover:border-white/10">
+          <div className="bg-[#2a2a2a]/30 backdrop-blur-md hover:bg-[#303030]/40 transition-all duration-500 p-10 lg:p-12 border border-white/10 hover:border-white/20">
             <Package className="w-8 h-8 mb-6 text-white/60" />
             <h3 className="text-lg uppercase tracking-[0.2em] text-white mb-6 font-normal">Quality Assurance</h3>
             <div className="space-y-3">
@@ -309,8 +288,9 @@ export default function HomeClient({
       </section>
 
       {/* Locations - Carousel */}
-      <section className="bg-[#3a3a3a] py-12 sm:py-16 overflow-x-hidden w-full">
-        <div className="px-4 sm:px-6 mb-8 sm:mb-12">
+      <section className="relative py-12 sm:py-16 overflow-x-hidden w-full border-b border-white/5">
+        <div className="absolute inset-0 bg-gradient-to-b from-[#3a3a3a]/35 to-[#3a3a3a]/30 backdrop-blur-md"></div>
+        <div className="px-4 sm:px-6 mb-8 sm:mb-12 relative z-10">
           <div className="flex justify-between items-center sm:items-end gap-4">
             <div className="min-w-0">
               <h2 className="text-xl sm:text-2xl md:text-3xl font-light uppercase tracking-wider text-white mb-2 sm:mb-3">
@@ -328,12 +308,15 @@ export default function HomeClient({
           </div>
         </div>
 
-        <LocationsCarousel locations={locations} />
+        <div className="relative z-10">
+          <LocationsCarousel locations={locations} />
+        </div>
       </section>
 
       {/* Shipping - Split Layout */}
-      <section className="bg-[#1a1a1a] py-0 overflow-x-hidden w-full">
-        <div className="grid md:grid-cols-2">
+      <section className="relative py-0 overflow-x-hidden w-full border-b border-white/5">
+        <div className="absolute inset-0 bg-gradient-to-b from-[#1a1a1a]/40 to-[#1a1a1a]/35 backdrop-blur-sm"></div>
+        <div className="grid md:grid-cols-2 relative z-10">
           {/* Left - Content */}
           <div className="flex items-center px-4 sm:px-6 md:px-12 py-16 sm:py-20 md:py-32 relative overflow-hidden">
             <div className="absolute inset-0 opacity-10">
@@ -402,16 +385,6 @@ export default function HomeClient({
 
           {/* Right - Visual */}
           <div className="relative bg-gradient-to-br from-[#2a2a2a] via-[#252525] to-[#1f1f1f] min-h-[400px] md:min-h-[600px] flex items-center justify-center overflow-hidden">
-            <div className="absolute inset-0">
-              <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-white/5 rounded-full blur-3xl animate-float"></div>
-              <div className="absolute bottom-1/4 right-1/4 w-48 h-48 bg-white/5 rounded-full blur-2xl animate-float-delayed"></div>
-            </div>
-
-            {/* Shipping Network Animation */}
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <ShippingAnimation />
-            </div>
-
             <div className="relative z-10 text-center">
               <div className="relative w-40 h-40 mx-auto mb-8">
                 <div className="absolute inset-0 border border-white/10 rounded-full animate-ping" style={{ animationDuration: "3s" }}></div>
@@ -440,16 +413,8 @@ export default function HomeClient({
       </section>
 
       {/* Vendor Partnership CTA */}
-      <section className="bg-[#2a2a2a] py-20 sm:py-28 px-4 sm:px-6 relative overflow-hidden w-full">
-        <div className="absolute inset-0 opacity-20">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-white/5 rounded-full blur-3xl"></div>
-        </div>
-
-        {/* Growth Chart Background */}
-        <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1/2 pointer-events-none hidden md:block">
-          <GrowthChart />
-        </div>
-
+      <section className="relative py-20 sm:py-28 px-4 sm:px-6 overflow-hidden w-full border-b border-white/5">
+        <div className="absolute inset-0 bg-gradient-to-b from-[#2a2a2a]/40 to-[#2a2a2a]/35 backdrop-blur-sm"></div>
         <div className="max-w-4xl mx-auto relative z-10">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div>
@@ -507,8 +472,9 @@ export default function HomeClient({
       </section>
 
       {/* Logo Mark */}
-      <section className="bg-[#1a1a1a] py-12 sm:py-16 md:py-20 px-4 overflow-x-hidden w-full">
-        <div className="max-w-7xl mx-auto">
+      <section className="relative py-12 sm:py-16 md:py-20 px-4 overflow-x-hidden w-full border-b border-white/5">
+        <div className="absolute inset-0 bg-gradient-to-b from-[#1a1a1a]/40 to-[#1a1a1a]/35 backdrop-blur-sm"></div>
+        <div className="max-w-7xl mx-auto relative z-10">
           <div className="flex items-center justify-center">
             <img 
               src="/logoprint.png" 
@@ -520,12 +486,8 @@ export default function HomeClient({
       </section>
 
       {/* Final CTA - Dramatic */}
-      <section className="bg-gradient-to-br from-[#2a2a2a] via-[#1f1f1f] to-[#2a2a2a] py-20 sm:py-28 md:py-40 px-4 sm:px-6 relative overflow-hidden w-full">
-        <div className="absolute inset-0">
-          <div className="absolute top-1/4 left-1/4 w-[300px] h-[300px] sm:w-[500px] sm:h-[500px] lg:w-[600px] lg:h-[600px] bg-white/5 rounded-full blur-3xl animate-float"></div>
-          <div className="absolute bottom-1/4 right-1/4 w-[250px] h-[250px] sm:w-[400px] sm:h-[400px] lg:w-[500px] lg:h-[500px] bg-white/5 rounded-full blur-3xl animate-float-delayed"></div>
-        </div>
-
+      <section className="relative py-20 sm:py-28 md:py-40 px-4 sm:px-6 overflow-hidden w-full">
+        <div className="absolute inset-0 bg-gradient-to-br from-[#2a2a2a]/40 via-[#1f1f1f]/45 to-[#2a2a2a]/40 backdrop-blur-sm"></div>
         <div className="max-w-5xl mx-auto relative z-10">
           <div className="text-center mb-12 sm:mb-16">
             <h2 className="text-3xl sm:text-4xl md:text-6xl lg:text-8xl font-light text-white mb-6 sm:mb-8 leading-none tracking-tight">

@@ -2,8 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import { Star, ArrowRight, CheckCircle, ArrowLeft, Search, Package, Users, Award, MapPin } from 'lucide-react';
 import { getAllVendorsProxy as getAllVendors } from '@/lib/wordpress-vendor-proxy';
+
+const VendorWhaleAnimation = dynamic(() => import("@/components/VendorWhaleAnimation"), { ssr: false });
 
 // Vendor Card Component
 function VendorCard({ vendor, index }: { vendor: any; index: number }) {
@@ -151,19 +154,12 @@ export default function VendorsPage() {
 
   return (
     <div className="min-h-screen bg-[#2a2a2a] relative overflow-hidden">
-      {/* Floating gradient orbs background */}
-      <div className="absolute inset-0 opacity-20 pointer-events-none">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-white/5 rounded-full blur-3xl animate-float"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-white/5 rounded-full blur-3xl" style={{ animation: 'float 8s ease-in-out 2s infinite' }}></div>
-      </div>
+      {/* Vendor Whale Animation Background */}
+      <VendorWhaleAnimation />
 
       {/* Hero */}
       <div className="border-b border-white/10 relative">
-        {/* Subtle animated gradient */}
-        <div className="absolute inset-0 opacity-30">
-          <div className="absolute top-0 right-1/4 w-96 h-96 bg-white/5 rounded-full blur-3xl animate-float"></div>
-        </div>
-
+        <div className="absolute inset-0 bg-gradient-to-b from-[#2a2a2a]/40 via-[#2a2a2a]/35 to-[#2a2a2a]/30 backdrop-blur-sm"></div>
         {/* Flora Distro Logo - Hero */}
         <div className="absolute top-8 right-8 md:top-16 md:right-16 lg:top-20 lg:right-20 z-10" style={{ animation: 'logoEntrance 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s forwards', opacity: 0 }}>
           <Link href="/" className="group block">
@@ -190,7 +186,7 @@ export default function VendorsPage() {
           </Link>
         </div>
         
-        <div className="max-w-[2000px] mx-auto px-4 sm:px-6 md:px-8 py-12 md:py-24 relative">
+        <div className="max-w-[2000px] mx-auto px-4 sm:px-6 md:px-8 py-12 md:py-24 relative z-10">
           <div className="flex items-center gap-4 mb-6">
             <Link 
               href="/products"
@@ -248,7 +244,8 @@ export default function VendorsPage() {
 
       {/* Featured Vendor */}
       <div className="border-b border-white/10 relative">
-        <div className="max-w-[2000px] mx-auto px-4 sm:px-6 md:px-8 py-12">
+        <div className="absolute inset-0 bg-[#2a2a2a]/35 backdrop-blur-sm"></div>
+        <div className="max-w-[2000px] mx-auto px-4 sm:px-6 md:px-8 py-12 relative z-10">
           <div className="flex items-center gap-2 mb-6">
             <Award size={18} className="text-white/60" />
             <h2 className="text-sm uppercase tracking-[0.2em] text-white/60">Featured Vendor</h2>
@@ -308,7 +305,8 @@ export default function VendorsPage() {
 
       {/* Search & Filter Bar */}
       <div className="border-b border-white/10 relative">
-        <div className="max-w-[2000px] mx-auto px-4 sm:px-6 md:px-8 py-6">
+        <div className="absolute inset-0 bg-[#2a2a2a]/30 backdrop-blur-sm"></div>
+        <div className="max-w-[2000px] mx-auto px-4 sm:px-6 md:px-8 py-6 relative z-10">
           <div className="flex flex-col lg:flex-row gap-4">
             {/* Search */}
             <div className="flex-1 relative">
@@ -360,7 +358,7 @@ export default function VendorsPage() {
       </div>
 
       {/* Vendors by Region */}
-      <div className="max-w-[2000px] mx-auto px-4 sm:px-6 md:px-8 py-12">
+      <div className="max-w-[2000px] mx-auto px-4 sm:px-6 md:px-8 py-12 relative z-10">
         {loading ? (
           <div className="text-center py-16">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-white/60 mb-4"></div>

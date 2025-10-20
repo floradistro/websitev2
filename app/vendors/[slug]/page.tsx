@@ -1,11 +1,14 @@
 "use client";
 
 import { useEffect, useState } from 'react';
+import dynamic from 'next/dynamic';
 import ProductCard from "@/components/ProductCard";
 import Link from "next/link";
 import { ArrowLeft, Star, MapPin, Calendar, CheckCircle, ArrowRight, Award, Package, Search, SlidersHorizontal, Grid3x3, List } from "lucide-react";
 import { getVendorBySlugProxy as getVendorBySlug } from '@/lib/wordpress-vendor-proxy';
 import { getVendorProducts } from '@/lib/wordpress';
+
+const VendorWhaleAnimation = dynamic(() => import("@/components/VendorWhaleAnimation"), { ssr: false });
 
 export default function VendorStorefront() {
   const [vendor, setVendor] = useState<any>(null);
@@ -133,15 +136,13 @@ export default function VendorStorefront() {
 
   return (
     <div className="min-h-screen bg-[#2a2a2a] relative overflow-hidden">
-      {/* Floating gradient orbs background - Matching Main Products Page */}
-      <div className="absolute inset-0 opacity-20 pointer-events-none">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-white/5 rounded-full blur-3xl animate-float"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-white/5 rounded-full blur-3xl" style={{ animation: 'float 8s ease-in-out 2s infinite' }}></div>
-      </div>
+      {/* Vendor Whale Animation Background (Bubbles) */}
+      <VendorWhaleAnimation />
 
       {/* Back Navigation */}
-      <div className="border-b border-white/10 bg-[#2a2a2a] relative">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
+      <div className="border-b border-white/10 relative">
+        <div className="absolute inset-0 bg-[#2a2a2a]/30 backdrop-blur-sm"></div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between relative z-10">
           <Link 
             href="/vendors"
             className="inline-flex items-center gap-2 text-white/60 hover:text-white text-sm transition-colors"
@@ -160,8 +161,9 @@ export default function VendorStorefront() {
       </div>
 
       {/* Vendor Header */}
-      <div className="border-b border-white/10 bg-[#2a2a2a] relative">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 lg:py-12">
+      <div className="border-b border-white/10 relative">
+        <div className="absolute inset-0 bg-gradient-to-b from-[#2a2a2a]/40 via-[#2a2a2a]/35 to-[#2a2a2a]/30 backdrop-blur-sm"></div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 lg:py-12 relative z-10">
           <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 items-start">
             {/* Logo */}
             <div className="w-20 h-20 lg:w-24 lg:h-24 bg-black border border-white/10 flex items-center justify-center overflow-hidden flex-shrink-0">
@@ -206,7 +208,7 @@ export default function VendorStorefront() {
               </div>
 
               {/* About */}
-              <div className="bg-white/5 border border-white/10 p-4 mb-6">
+              <div className="bg-white/5 backdrop-blur-md border border-white/10 p-4 mb-6">
                 <p className="text-white/70 text-sm leading-relaxed break-words">
                   {vendor.about}
                 </p>
@@ -250,7 +252,7 @@ export default function VendorStorefront() {
       </div>
 
       {/* Products Section */}
-      <div className="max-w-[2000px] mx-auto px-4 sm:px-6 md:px-8 py-8 lg:py-12 relative">
+      <div className="max-w-[2000px] mx-auto px-4 sm:px-6 md:px-8 py-8 lg:py-12 relative z-10">
         {/* Section Header */}
         <div className="flex items-baseline gap-2.5 mb-6 pb-6 border-b border-white/10">
           <h2 className="text-xl sm:text-2xl md:text-3xl font-normal uppercase tracking-[0.15em] sm:tracking-[0.25em] text-white">

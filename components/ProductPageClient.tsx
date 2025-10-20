@@ -3,7 +3,10 @@
 import { useState, useCallback, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import dynamic from "next/dynamic";
 import { ChevronLeft, Heart, Share2, Check } from "lucide-react";
+
+const ProductGridAnimation = dynamic(() => import("@/components/ProductGridAnimation"), { ssr: false });
 // import { useRecentlyViewedContext } from "@/context/RecentlyViewedContext";
 import DeliveryAvailability from "@/components/DeliveryAvailability";
 import FulfillmentInfo from "@/components/FulfillmentInfo";
@@ -222,19 +225,16 @@ export default function ProductPageClient({
 
   return (
     <div className="bg-[#1a1a1a] relative overflow-hidden">
-      {/* Floating gradient orbs background */}
-      <div className="absolute inset-0 opacity-20 pointer-events-none">
-        <div className="absolute top-1/4 right-1/4 w-96 h-96 bg-white/5 rounded-full blur-3xl animate-float"></div>
-        <div className="absolute bottom-1/3 left-1/4 w-64 h-64 bg-white/5 rounded-full blur-3xl animate-float-delayed"></div>
-      </div>
+      {/* Product Grid Animation Background */}
+      <ProductGridAnimation />
       
       {/* Structured Data for SEO */}
       {/* <ProductSchema product={product} />
       <BreadcrumbSchema items={breadcrumbItems} /> */}
       
       {/* Breadcrumb Navigation */}
-      <div className="border-b border-white/10 bg-[#1a1a1a] relative">
-        <div className="max-w-[2000px] mx-auto px-4 sm:px-6 py-3 sm:py-4">
+      <div className="border-b border-white/10 relative">
+        <div className="max-w-[2000px] mx-auto px-4 sm:px-6 py-3 sm:py-4 relative z-10">
           <nav className="flex items-center flex-wrap gap-x-2 gap-y-1 text-xs sm:text-sm uppercase tracking-wider">
             <Link
               href="/"
@@ -267,12 +267,12 @@ export default function ProductPageClient({
       </div>
 
       {/* Product Content */}
-      <div className="bg-[#1a1a1a] relative">
+      <div className="relative">
         {/* Mobile Layout */}
-        <div className="lg:hidden">
+        <div className="lg:hidden relative">
           <ProductGallery images={product.images} productName={product.name} />
           
-          <div className="px-4 py-6 space-y-6">
+          <div className="px-4 py-6 space-y-6 relative z-10">
             <ProductInfo
               product={product}
               pricingTiers={pricingTiers}
@@ -357,12 +357,14 @@ export default function ProductPageClient({
         <div className="hidden lg:block">
           <div className="max-w-[2000px] mx-auto flex">
             {/* Sticky Images - Left Side */}
-            <div className="w-1/2 sticky top-0 h-screen overflow-y-auto scrollbar-hide bg-black">
+            <div className="w-1/2 sticky top-0 h-screen overflow-y-auto scrollbar-hide bg-black relative z-10">
               <ProductGallery images={product.images} productName={product.name} />
             </div>
 
             {/* Flowing Content - Right Side */}
-            <div className="w-1/2 px-12 py-12 bg-[#1a1a1a]">
+            <div className="w-1/2 px-12 py-12 relative">
+              <div className="absolute inset-0 bg-[#1a1a1a]/40 backdrop-blur-sm"></div>
+              <div className="relative z-10">
               {/* Product Info Block */}
               <div className="mb-6 animate-fadeIn">
                 <ProductInfo
@@ -472,6 +474,7 @@ export default function ProductPageClient({
               <div className="animate-fadeIn" style={{animationDelay: '700ms'}}>
                 <CategorySection categories={product.categories || []} />
               </div>
+              </div>
             </div>
           </div>
         </div>
@@ -479,8 +482,9 @@ export default function ProductPageClient({
 
       {/* AI Recommendations */}
       {aiRecommendations.length > 0 && (
-        <section className="border-t border-white/10 bg-[#2a2a2a] py-12">
-          <div className="px-4 mb-8">
+        <section className="border-t border-white/10 relative py-12">
+          <div className="absolute inset-0 bg-[#2a2a2a]/40 backdrop-blur-sm"></div>
+          <div className="px-4 mb-8 relative z-10">
             <div className="flex items-center gap-3">
               <div className="text-amber-400">✨</div>
               <h2 className="text-xl font-light uppercase tracking-[0.2em] text-white">
@@ -489,7 +493,7 @@ export default function ProductPageClient({
             </div>
             <p className="text-xs text-white/40 mt-2 uppercase tracking-wider">Flora Budtender's Picks</p>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 px-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 px-4 relative z-10">
             {aiRecommendations.map((rec: any, idx: number) => (
               <Link
                 key={rec.id}
@@ -528,13 +532,14 @@ export default function ProductPageClient({
 
       {/* Related Products */}
       {relatedProducts.length > 0 && (
-        <section className="border-t border-white/10 bg-[#2a2a2a] py-8">
-          <div className="px-4 mb-6">
+        <section className="border-t border-white/10 relative py-8">
+          <div className="absolute inset-0 bg-[#2a2a2a]/40 backdrop-blur-sm"></div>
+          <div className="px-4 mb-6 relative z-10">
             <h2 className="text-xs uppercase tracking-[0.2em] text-white/60 font-medium">
               You May Also Like
             </h2>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-px">
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-px relative z-10">
             {relatedProducts.map((item: any, idx: number) => {
               // Extract fields from product metadata for each related product
               const metaData = item.meta_data || [];
