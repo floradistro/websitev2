@@ -195,7 +195,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
 
         {/* Footer - Fixed with safe area */}
         {items.length > 0 && (
-          <div className="px-5 py-5 border-t border-white/10 bg-[#1a1a1a]/95 backdrop-blur-sm flex-shrink-0">
+          <div className="px-5 py-5 border-t border-white/10 bg-[#1a1a1a]/95 backdrop-blur-sm flex-shrink-0 relative z-10">
             <div className="space-y-4">
               <div className="flex justify-between items-center text-xl font-medium text-white">
                 <span>Subtotal</span>
