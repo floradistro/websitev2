@@ -49,7 +49,10 @@ export default function HomeClient({
   productFieldsMap,
 }: HomeClientProps) {
   return (
-    <div className="bg-[#2a2a2a] overflow-x-hidden w-full max-w-full relative">
+    <div 
+      className="bg-[#2a2a2a] overflow-x-hidden w-full max-w-full relative"
+      style={{ minHeight: 'calc(100vh - env(safe-area-inset-top, 0px))' }}
+    >
       {/* Global Floating Animation Background */}
       <GlobalAnimation />
       

@@ -135,7 +135,10 @@ export default function VendorStorefront() {
   });
 
   return (
-    <div className="min-h-screen bg-[#2a2a2a] relative overflow-x-hidden overflow-y-auto max-w-full">
+    <div 
+      className="bg-[#2a2a2a] relative overflow-x-hidden overflow-y-auto max-w-full"
+      style={{ minHeight: 'calc(100vh - env(safe-area-inset-top, 0px))' }}
+    >
       {/* Vendor Whale Animation Background (Bubbles) */}
       <VendorWhaleAnimation />
 

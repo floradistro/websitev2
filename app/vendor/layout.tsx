@@ -136,8 +136,17 @@ function VendorLayoutContent({
         }
       `}</style>
 
+      {/* PWA Safe Area Spacer */}
+      <div 
+        className="fixed top-0 left-0 right-0 bg-black z-[130] pointer-events-none lg:hidden"
+        style={{ height: 'env(safe-area-inset-top, 0px)' }}
+      />
+
       {/* Mobile Top Bar */}
-      <nav className="lg:hidden sticky top-0 z-[120] bg-[#1a1a1a] border-b border-white/5">
+      <nav 
+        className="lg:hidden sticky bg-[#1a1a1a] z-[120] border-b border-white/5"
+        style={{ top: 'env(safe-area-inset-top, 0px)' }}
+      >
         <div className="flex items-center justify-between h-14 px-4">
           {/* Menu Button */}
           <button 
@@ -234,7 +243,10 @@ function VendorLayoutContent({
       )}
 
       {/* Desktop Header */}
-      <nav className="hidden lg:block bg-[#1a1a1a] border-b border-white/5">
+      <nav 
+        className="hidden lg:block bg-[#1a1a1a] border-b border-white/5"
+        style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
+      >
         <div className="w-full px-6 xl:px-8">
           <div className="flex justify-between items-center h-16">
             <Link href="/vendor/dashboard" className="flex items-center gap-3">
@@ -268,7 +280,10 @@ function VendorLayoutContent({
 
       <div className="flex">
         {/* Desktop Sidebar */}
-        <aside className="hidden lg:block w-64 bg-[#1a1a1a] border-r border-white/5 min-h-[calc(100vh-64px)]">
+        <aside 
+          className="hidden lg:block w-64 bg-[#1a1a1a] border-r border-white/5"
+          style={{ minHeight: 'calc(100vh - 64px - env(safe-area-inset-top, 0px))' }}
+        >
           <nav className="p-4 space-y-1">
             {navItems.map((item) => {
               const Icon = item.icon;

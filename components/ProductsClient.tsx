@@ -156,7 +156,10 @@ export default function ProductsClient({
   }, [selectedLocation, categorySlug, selectedStrainType, selectedEffect, priceRange, selectedVendor, sortBy, initialProducts, vendorProducts, categories, inventoryMap, productFieldsMap]);
 
   return (
-    <div className="min-h-screen bg-[#2a2a2a] relative overflow-x-hidden overflow-y-auto max-w-full">
+    <div 
+      className="bg-[#2a2a2a] relative overflow-x-hidden overflow-y-auto max-w-full"
+      style={{ minHeight: 'calc(100vh - env(safe-area-inset-top, 0px))' }}
+    >
       {/* Product Grid Animation Background */}
       <ProductGridAnimation />
       

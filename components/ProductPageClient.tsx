@@ -224,7 +224,10 @@ export default function ProductPageClient({
   });
 
   return (
-    <div className="bg-[#1a1a1a] relative overflow-x-hidden overflow-y-auto max-w-full">
+    <div 
+      className="bg-[#1a1a1a] relative overflow-x-hidden overflow-y-auto max-w-full"
+      style={{ minHeight: 'calc(100vh - env(safe-area-inset-top, 0px))' }}
+    >
       {/* Product Grid Animation Background */}
       <ProductGridAnimation />
       
