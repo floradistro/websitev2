@@ -220,9 +220,16 @@ function VendorLayoutContent({
           <div 
             className="absolute left-0 top-0 bottom-0 w-[280px] bg-[#0a0a0a] border-r border-white/10 flex flex-col"
             onClick={(e) => e.stopPropagation()}
+            style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
           >
+            {/* Safe Area Top Fill */}
+            <div 
+              className="absolute top-0 left-0 right-0 bg-[#0a0a0a] pointer-events-none"
+              style={{ height: 'env(safe-area-inset-top, 0px)', marginTop: 'calc(-1 * env(safe-area-inset-top, 0px))' }}
+            />
+            
             {/* Header with Close Button */}
-            <div className="flex items-center justify-between p-4 border-b border-white/5">
+            <div className="flex items-center justify-between p-4 border-b border-white/5 relative z-10">
               <Link href="/vendor/dashboard" className="flex items-center gap-3" onClick={() => setMobileMenuOpen(false)}>
                 <div className="w-10 h-10 bg-white/5 rounded flex items-center justify-center overflow-hidden">
                   <img src={vendorLogo} alt={vendorName} className="w-full h-full object-contain p-0.5" />
@@ -241,7 +248,7 @@ function VendorLayoutContent({
             </div>
 
             {/* Navigation - Scrollable */}
-            <nav className="flex-1 overflow-y-auto p-2">
+            <nav className="flex-1 overflow-y-auto p-2 relative z-10">
               {navItems.map((item) => {
                 const Icon = item.icon;
                 const active = isActive(item.href);
@@ -267,7 +274,7 @@ function VendorLayoutContent({
             </nav>
 
             {/* Bottom Actions - Fixed */}
-            <div className="p-4 border-t border-white/5" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 1rem)' }}>
+            <div className="p-4 border-t border-white/5 relative z-10" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 1rem)' }}>
               <button 
                 onClick={() => {
                   setMobileMenuOpen(false);
