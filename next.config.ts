@@ -82,7 +82,9 @@ const nextConfig: NextConfig = {
                 return module.size() > 160000 && /node_modules/.test(module.identifier());
               },
               name(module: any) {
-                const packageName = module.context.match(/[\\/]node_modules[\\/](.*?)([\\/]|$)/)[1];
+                const match = module.context.match(/[\\/]node_modules[\\/](.*?)([\\/]|$)/);
+                if (!match) return 'lib.misc';
+                const packageName = match[1];
                 return `lib.${packageName.replace('@', '')}`;
               },
               priority: 30,
