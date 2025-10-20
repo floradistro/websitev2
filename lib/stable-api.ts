@@ -141,7 +141,10 @@ export class StableVendorAPI {
   }
 
   private getHeaders(): Record<string, string> | undefined {
-    return this.authHeader ? { 'Authorization': this.authHeader } : undefined;
+    if (!this.authHeader) {
+      return undefined;
+    }
+    return { 'Authorization': this.authHeader };
   }
 
   async getSettings() {
