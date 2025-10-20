@@ -49,8 +49,14 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
           height: '100dvh'
         }}
       >
+        {/* Safe Area Top Fill */}
+        <div 
+          className="absolute top-0 left-0 right-0 bg-[#2a2a2a] pointer-events-none"
+          style={{ height: 'env(safe-area-inset-top, 0px)', marginTop: 'calc(-1 * env(safe-area-inset-top, 0px))' }}
+        />
+        
         {/* Header - Fixed with safe area */}
-        <div className="px-5 py-4 border-b border-white/10 bg-[#2a2a2a] flex-shrink-0">
+        <div className="px-5 py-4 border-b border-white/10 bg-[#2a2a2a] flex-shrink-0 relative z-10">
           <div className="flex items-center justify-between">
             <h2 className="text-base font-light uppercase tracking-[0.2em] text-white">
               Cart ({itemCount})
@@ -68,7 +74,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
 
         {/* Items - Scrollable with momentum */}
         <div 
-          className="flex-1 overflow-y-auto overflow-x-hidden bg-transparent"
+          className="flex-1 overflow-y-auto overflow-x-hidden bg-transparent relative z-10"
           style={{
             WebkitOverflowScrolling: 'touch',
             overscrollBehavior: 'contain'
