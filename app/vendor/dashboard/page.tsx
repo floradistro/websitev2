@@ -83,14 +83,21 @@ export default function VendorDashboard() {
         setLoading(true);
         const data = await getVendorDashboard();
         
-        // Update stats
+        // Update stats with safe fallbacks
         setStats({
-          totalProducts: data.stats.total_products + data.stats.pending_products,
-          approved: data.stats.total_products,
-          pending: data.stats.pending_products,
-          rejected: 0,
-          totalSales30d: data.stats.total_sales_30d,
+          totalProducts: (data.stats?.total_products || 0) + (data.stats?.pending_products || 0),
+          approved: data.stats?.total_products || 0,
+          pending: data.stats?.pending_products || 0,
+          rejected: data.stats?.rejected_products || 0,
+          totalSales30d: data.stats?.total_sales_30d || 0,
           lowStock: data.low_stock?.length || 0,
+        });
+        
+        console.log('Dashboard stats loaded:', {
+          total: data.stats?.total_products,
+          pending: data.stats?.pending_products,
+          rejected: data.stats?.rejected_products,
+          sales: data.stats?.total_sales_30d
         });
 
         // Map recent products
