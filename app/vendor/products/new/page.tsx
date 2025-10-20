@@ -289,6 +289,14 @@ export default function NewProduct() {
           return;
         }
         
+        // Validate all variants have prices
+        const emptyPriceVariants = variants.filter(v => !v.price || v.price === '');
+        if (emptyPriceVariants.length > 0) {
+          setError(`Please set prices for all variants. ${emptyPriceVariants.length} variant(s) missing prices.`);
+          setLoading(false);
+          return;
+        }
+        
         productData.attributes = attributes;
         productData.variants = variants;
       }
@@ -626,9 +634,14 @@ export default function NewProduct() {
         {productType === 'variable' && (
           <div className="bg-[#1a1a1a] lg:border border-t border-white/5 p-4 lg:p-6 -mx-4 lg:mx-0">
             <h2 className="text-white font-medium mb-2">Product Attributes & Variations</h2>
-            <p className="text-white/60 text-sm mb-6">
+            <p className="text-white/60 text-sm mb-2">
               Define attributes (like Flavor, Size, Strength) and their values to create product variations.
             </p>
+            <div className="bg-blue-500/10 border border-blue-500/20 p-3 mb-6">
+              <p className="text-blue-500/90 text-xs">
+                <strong>How it works:</strong> 1) Add attribute (e.g., "Strength"), 2) Add values (e.g., "5MG", "10MG", "30MG"), 3) Click "Generate Variants", 4) Fill prices for each variant
+              </p>
+            </div>
 
             {/* Add Attribute */}
             <div className="mb-6">
@@ -714,15 +727,23 @@ export default function NewProduct() {
             )}
 
             {/* Generate Variants Button */}
-            {attributes.length > 0 && attributes.every(a => a.values.length > 0) && (
-              <button
-                type="button"
-                onClick={generateVariants}
-                className="w-full px-4 py-3 bg-white/10 border border-white/20 text-white hover:bg-white hover:text-black transition-colors font-medium flex items-center justify-center gap-2"
-              >
-                <Plus size={16} />
-                Generate Variants ({attributes.reduce((acc, a) => acc * a.values.length, 1)} combinations)
-              </button>
+            {attributes.length > 0 && (
+              <div className="mt-4">
+                {attributes.every(a => a.values.length > 0) ? (
+                  <button
+                    type="button"
+                    onClick={generateVariants}
+                    className="w-full px-4 py-3 bg-white/10 border border-white/20 text-white hover:bg-white hover:text-black transition-colors font-medium flex items-center justify-center gap-2"
+                  >
+                    <Plus size={16} />
+                    Generate Variants ({attributes.reduce((acc, a) => acc * a.values.length, 1)} combinations)
+                  </button>
+                ) : (
+                  <div className="w-full px-4 py-3 bg-blue-500/10 border border-blue-500/20 text-blue-500 text-center text-sm">
+                    Add values to all attributes above, then generate variants
+                  </div>
+                )}
+              </div>
             )}
 
             {/* Variants Table */}
@@ -759,11 +780,12 @@ export default function NewProduct() {
                               <input
                                 type="number"
                                 step="0.01"
-                                required
                                 value={variant.price}
                                 onChange={(e) => updateVariant(index, 'price', e.target.value)}
-                                placeholder="0.00"
-                                className="w-24 bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-2 py-1 text-sm focus:outline-none focus:border-white/10"
+                                placeholder="Required"
+                                className={`w-24 bg-[#1a1a1a] border text-white placeholder-white/40 px-2 py-1 text-sm focus:outline-none focus:border-white/10 ${
+                                  !variant.price ? 'border-red-500/50' : 'border-white/5'
+                                }`}
                               />
                             </td>
                             <td className="px-4 py-3">
