@@ -124,7 +124,7 @@ export default function VendorProducts() {
   });
 
   return (
-    <div className="lg:max-w-7xl lg:mx-auto animate-fadeIn overflow-x-hidden">
+    <div className="w-full max-w-full animate-fadeIn overflow-x-hidden">
       {/* Header */}
       <div className="flex justify-between items-center gap-4 px-4 lg:px-0 py-6 lg:py-0 lg:mb-8 border-b lg:border-b-0 border-white/5" style={{ animation: 'fadeInUp 0.5s ease-out' }}>
         <div className="flex-1 min-w-0">
@@ -216,9 +216,9 @@ export default function VendorProducts() {
         </div>
       </div>
 
-      {/* Products Table - Mobile: List View, Desktop: Table */}
+      {/* Products Grid - Better Width Usage */}
       {loading ? (
-        <div className="bg-[#1a1a1a] lg:border border-white/5 p-12">
+        <div className="bg-[#1a1a1a] lg:border border-white/5 p-12 lg:p-16">
           <div className="text-center text-white/60">Loading products...</div>
         </div>
       ) : filteredProducts.length === 0 ? (

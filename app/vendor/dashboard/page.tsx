@@ -216,7 +216,7 @@ export default function VendorDashboard() {
   };
 
   return (
-    <div className="lg:max-w-7xl lg:mx-auto animate-fadeIn overflow-x-hidden">
+    <div className="w-full max-w-full animate-fadeIn overflow-x-hidden">
       {/* Welcome Header */}
       <div className="px-4 lg:px-0 py-6 lg:py-0 lg:mb-8 border-b lg:border-b-0 border-white/5" style={{ animation: 'fadeInUp 0.5s ease-out' }}>
         <h1 className="text-2xl lg:text-4xl text-white mb-1.5 lg:mb-2 leading-tight" style={{ fontFamily: 'Lobster' }}>
@@ -228,7 +228,7 @@ export default function VendorDashboard() {
       </div>
 
       {/* Stats Grid - Enhanced */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-0 lg:gap-4 mb-0 lg:mb-8 border-b lg:border-b-0 border-white/5" style={{ animation: 'fadeInUp 0.6s ease-out 0.1s both' }}>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-0 lg:gap-6 mb-0 lg:mb-8 border-b lg:border-b-0 border-white/5" style={{ animation: 'fadeInUp 0.6s ease-out 0.1s both' }}>
         {/* Total Products */}
         <div className="bg-[#1a1a1a] border-r lg:border border-white/5 p-4 lg:p-6 active:bg-white/5 lg:hover:border-white/10 lg:hover:-translate-y-0.5 transition-all duration-300 cursor-pointer relative overflow-hidden group min-h-[120px] lg:min-h-0">
           <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
@@ -299,7 +299,7 @@ export default function VendorDashboard() {
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-0 lg:gap-4 mb-0 lg:mb-8 border-b lg:border-b-0 border-white/5" style={{ animation: 'fadeInUp 0.6s ease-out 0.2s both' }}>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-0 lg:gap-6 mb-0 lg:mb-8 border-b lg:border-b-0 border-white/5" style={{ animation: 'fadeInUp 0.6s ease-out 0.2s both' }}>
         <Link
           href="/vendor/products/new"
           className="group bg-transparent active:bg-white/5 lg:hover:bg-black border-r border-b lg:border border-white/10 lg:hover:border-white/20 p-5 lg:p-6 transition-all duration-300 relative overflow-hidden min-h-[100px] lg:min-h-0"
@@ -386,12 +386,12 @@ export default function VendorDashboard() {
       </div>
 
       {/* 2-Column Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-0 lg:gap-6 mb-0 lg:mb-8" style={{ animation: 'fadeInUp 0.6s ease-out 0.4s both' }}>
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-0 xl:gap-8 mb-0 lg:mb-8" style={{ animation: 'fadeInUp 0.6s ease-out 0.4s both' }}>
         {/* Left Column - 2/3 width */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="xl:col-span-2 space-y-0 lg:space-y-6">
           {/* Sales Chart */}
           <div className="bg-[#1a1a1a] lg:border border-t border-white/5">
-            <div className="border-b border-white/5 px-4 lg:p-6 py-4 flex justify-between items-center">
+            <div className="border-b border-white/5 px-4 lg:px-8 py-4 lg:py-6 flex justify-between items-center">
               <div>
                 <h2 className="text-white/90 text-sm uppercase tracking-wider font-light">Sales Trend</h2>
                 <p className="text-white/50 text-xs mt-1">Last 18 days</p>
@@ -403,9 +403,9 @@ export default function VendorDashboard() {
                 </div>
               )}
             </div>
-            <div className="px-4 lg:p-6 py-4">
+            <div className="px-4 lg:px-8 py-4 lg:py-6">
               {/* Simple Bar Chart */}
-              <div className="flex items-end justify-between gap-1 h-32">
+              <div className="flex items-end justify-between gap-1 lg:gap-2 h-32 lg:h-48">
                 {salesData.length > 0 ? (
                   salesData.map((data, index) => {
                     const maxRevenue = Math.max(...salesData.map(d => d.revenue));
@@ -462,7 +462,7 @@ export default function VendorDashboard() {
 
           {/* Top Products */}
           <div className="bg-[#1a1a1a] lg:border border-t lg:border-t-0 border-white/5">
-            <div className="border-b border-white/5 px-4 lg:p-6 py-4">
+            <div className="border-b border-white/5 px-4 lg:px-8 py-4 lg:py-6">
               <h2 className="text-white/90 text-sm uppercase tracking-wider font-light">Top Performing Products</h2>
             </div>
             <div className="divide-y divide-white/5">
@@ -484,7 +484,7 @@ export default function VendorDashboard() {
           </div>
           {/* Recent Product Submissions */}
           <div className="bg-[#1a1a1a] lg:border border-t lg:border-t-0 border-white/5">
-            <div className="border-b border-white/5 px-4 lg:p-6 py-4 flex justify-between items-center">
+            <div className="border-b border-white/5 px-4 lg:px-8 py-4 lg:py-6 flex justify-between items-center">
               <h2 className="text-white/90 text-sm uppercase tracking-wider font-light">Recent Product Submissions</h2>
               <Link href="/vendor/products" className="text-white/60 hover:text-white text-xs uppercase tracking-wider transition-colors">
                 View All
@@ -499,7 +499,7 @@ export default function VendorDashboard() {
                 </div>
               ) : (
                 recentProducts.map((product) => (
-                  <div key={product.id} className="px-4 lg:p-4 py-3 active:bg-white/5 lg:hover:bg-white/5 transition-colors">
+                  <div key={product.id} className="px-4 lg:px-8 py-3 lg:py-4 active:bg-white/5 lg:hover:bg-white/5 transition-colors">
                     <div className="flex items-center gap-4">
                       <div className="w-16 h-16 bg-white/5 rounded flex items-center justify-center flex-shrink-0">
                         <Package size={24} className="text-white/40" />
@@ -530,7 +530,7 @@ export default function VendorDashboard() {
           {/* Low Inventory Warnings */}
           {lowStockItems.length > 0 && (
             <div className="bg-[#1a1a1a] lg:border border-t lg:border-t-0 border-red-500/10">
-              <div className="border-b border-white/5 px-4 lg:p-6 py-4 flex items-center gap-3">
+              <div className="border-b border-white/5 px-4 lg:px-8 py-4 lg:py-6 flex items-center gap-3">
                 <AlertTriangle size={18} className="text-red-500" strokeWidth={1.5} />
                 <h2 className="text-white/90 text-sm uppercase tracking-wider font-light">Low Inventory Warnings</h2>
               </div>

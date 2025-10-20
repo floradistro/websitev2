@@ -235,7 +235,7 @@ function VendorLayoutContent({
 
       {/* Desktop Header */}
       <nav className="hidden lg:block bg-[#1a1a1a] border-b border-white/5">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="w-full px-6 xl:px-8">
           <div className="flex justify-between items-center h-16">
             <Link href="/vendor/dashboard" className="flex items-center gap-3">
               <div className="w-10 h-10 bg-white/5 rounded flex items-center justify-center overflow-hidden">
@@ -306,8 +306,8 @@ function VendorLayoutContent({
           </div>
         </aside>
 
-        {/* Main Content - Edge to Edge on Mobile */}
-        <main className="flex-1 lg:p-6 lg:px-8 bg-[#1a1a1a] safe-bottom overflow-x-hidden">
+        {/* Main Content - Edge to Edge on Mobile, Full Width on Desktop */}
+        <main className="flex-1 lg:py-8 lg:px-8 xl:px-12 bg-[#1a1a1a] safe-bottom overflow-x-hidden w-full max-w-full">
           {children}
         </main>
       </div>

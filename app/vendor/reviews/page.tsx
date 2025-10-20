@@ -108,7 +108,7 @@ export default function VendorReviews() {
   const needsResponse = reviews.filter(r => !r.response).length;
 
   return (
-    <div className="lg:max-w-7xl lg:mx-auto animate-fadeIn px-4 lg:px-0 py-6 lg:py-0 overflow-x-hidden">
+    <div className="w-full max-w-full animate-fadeIn px-4 lg:px-0 py-6 lg:py-0 overflow-x-hidden">
       {/* Header */}
       <div className="mb-6 lg:mb-8" style={{ animation: 'fadeInUp 0.5s ease-out' }}>
         <h1 className="text-2xl lg:text-3xl font-light text-white mb-2 tracking-tight">
