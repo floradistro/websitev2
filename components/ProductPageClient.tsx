@@ -224,7 +224,7 @@ export default function ProductPageClient({
   });
 
   return (
-    <div className="bg-[#1a1a1a] relative overflow-hidden">
+    <div className="bg-[#1a1a1a] relative overflow-x-hidden overflow-y-auto max-w-full">
       {/* Product Grid Animation Background */}
       <ProductGridAnimation />
       

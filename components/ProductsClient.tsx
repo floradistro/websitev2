@@ -156,7 +156,7 @@ export default function ProductsClient({
   }, [selectedLocation, categorySlug, selectedStrainType, selectedEffect, priceRange, selectedVendor, sortBy, initialProducts, vendorProducts, categories, inventoryMap, productFieldsMap]);
 
   return (
-    <div className="min-h-screen bg-[#2a2a2a] relative overflow-hidden">
+    <div className="min-h-screen bg-[#2a2a2a] relative overflow-x-hidden overflow-y-auto max-w-full">
       {/* Product Grid Animation Background */}
       <ProductGridAnimation />
       

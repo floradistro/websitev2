@@ -127,8 +127,8 @@ function ProductGridAnimation() {
   return (
     <div 
       ref={containerRef} 
-      className="fixed inset-0 pointer-events-none"
-      style={{ zIndex: 0 }}
+      className="fixed inset-0 pointer-events-none overflow-hidden"
+      style={{ zIndex: 0, width: '100vw', height: '100vh' }}
     />
   );
 }

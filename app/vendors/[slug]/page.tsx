@@ -135,7 +135,7 @@ export default function VendorStorefront() {
   });
 
   return (
-    <div className="min-h-screen bg-[#2a2a2a] relative overflow-hidden">
+    <div className="min-h-screen bg-[#2a2a2a] relative overflow-x-hidden overflow-y-auto max-w-full">
       {/* Vendor Whale Animation Background (Bubbles) */}
       <VendorWhaleAnimation />
 
