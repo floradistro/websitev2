@@ -178,22 +178,21 @@ function VendorLayoutContent({
         }
       `}</style>
 
-      <div className="bg-[#1a1a1a] pb-[env(safe-area-inset-bottom)] overflow-x-hidden min-h-screen">
-        {/* PWA Safe Area Spacer - Fixed at very top */}
-        <div 
-          className="fixed top-0 left-0 right-0 bg-[#1a1a1a] z-[120] pointer-events-none"
-          style={{ height: 'env(safe-area-inset-top, 0px)' }}
-        />
+      {/* PWA Safe Area Spacer - Fixed at very top */}
+      <div 
+        className="fixed top-0 left-0 right-0 bg-[#1a1a1a] z-[120] pointer-events-none"
+        style={{ height: 'env(safe-area-inset-top, 0px)' }}
+      />
 
-        {/* Mobile Top Bar */}
-        <nav 
-          className={`lg:hidden sticky bg-[#1a1a1a] z-[110] border-b border-white/5 transition-transform duration-300 ${
-            isVisible ? 'translate-y-0' : '-translate-y-full'
-          }`}
-          style={{ 
-            top: 'env(safe-area-inset-top, 0px)'
-          }}
-        >
+      {/* Mobile Top Bar */}
+      <nav 
+        className={`lg:hidden sticky bg-[#1a1a1a] z-[110] border-b border-white/5 transition-transform duration-300 ${
+          isVisible ? 'translate-y-0' : '-translate-y-full'
+        }`}
+        style={{ 
+          top: 'env(safe-area-inset-top, 0px)'
+        }}
+      >
         <div className="flex items-center justify-between h-14 px-4">
           {/* Menu Button */}
           <button 
@@ -291,7 +290,7 @@ function VendorLayoutContent({
 
       {/* Desktop Header */}
       <nav 
-        className="hidden lg:block bg-[#1a1a1a] border-b border-white/5"
+        className="hidden lg:block bg-[#1a1a1a] border-b border-white/5 sticky top-0 z-[110]"
         style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
       >
         <div className="w-full px-6 xl:px-8">
@@ -325,7 +324,7 @@ function VendorLayoutContent({
         </div>
       </nav>
 
-      <div className="flex">
+      <div className="flex bg-[#1a1a1a] min-h-screen pb-[env(safe-area-inset-bottom)]">
         {/* Desktop Sidebar */}
         <aside 
           className="hidden lg:block w-64 bg-[#1a1a1a] border-r border-white/5"
@@ -404,7 +403,6 @@ function VendorLayoutContent({
 
       <VendorSupportChat isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
       <VendorApprovalPanel />
-      </div>
     </>
   );
 }
