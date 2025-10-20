@@ -140,12 +140,12 @@ export default async function ProductsPage({
   });
   
   // Map vendors from API to correct format
-  const vendorsList = allVendors.map((v: any) => ({
+  const vendorsList = Array.isArray(allVendors) ? allVendors.map((v: any) => ({
     id: v.id,
     name: v.store_name,
     slug: v.slug,
     logo: v.logo_url || '/logoprint.png'
-  }));
+  })) : [];
 
   return (
     <ProductsClient 
