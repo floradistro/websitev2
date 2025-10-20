@@ -182,6 +182,38 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
           )}
         </div>
       </div>
+              </div>
+            )}
+          </div>
+
+          {/* Footer - Bottom Actions */}
+          {items.length > 0 && (
+            <div className="p-4 border-t border-white/5 relative z-10" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 1rem)' }}>
+              <div className="space-y-3">
+                <div className="flex justify-between items-center text-lg text-white mb-4">
+                  <span>Total</span>
+                  <span className="font-medium">${total.toFixed(0)}</span>
+                </div>
+                
+                <Link
+                  href="/checkout"
+                  onClick={onClose}
+                  className="w-full px-4 py-3 bg-white text-black text-sm text-center font-medium hover:bg-white/90 transition-all block"
+                >
+                  Checkout
+                </Link>
+                
+                <button
+                  onClick={onClose}
+                  className="w-full px-4 py-3 text-white/60 hover:text-white text-sm border border-white/10 transition-all"
+                >
+                  Continue Shopping
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
     </>
   );
 }
