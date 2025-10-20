@@ -115,7 +115,11 @@ function GlobalAnimation() {
         };
 
         p.windowResized = () => {
-          p.resizeCanvas(p.windowWidth, p.windowHeight);
+          const newWidth = p.windowWidth;
+          const newHeight = p.windowHeight;
+          if (newWidth !== p.width || newHeight !== p.height) {
+            p.resizeCanvas(newWidth, newHeight);
+          }
         };
       };
 
@@ -136,7 +140,13 @@ function GlobalAnimation() {
     <div 
       ref={containerRef} 
       className="fixed inset-0 pointer-events-none overflow-hidden"
-      style={{ zIndex: 0, width: '100vw', height: '100vh' }}
+      style={{ 
+        zIndex: 0, 
+        width: '100vw', 
+        height: '100vh',
+        willChange: 'transform',
+        transform: 'translateZ(0)'
+      }}
     />
   );
 }
