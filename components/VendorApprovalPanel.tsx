@@ -19,6 +19,19 @@ interface PendingProduct {
   price?: string;
   category?: string;
   description?: string;
+  product_type?: string;
+  pricing_mode?: string;
+  pricing_tiers?: any[];
+  attributes?: any[];
+  variants?: any[];
+  thc_percentage?: string;
+  cbd_percentage?: string;
+  strain_type?: string;
+  lineage?: string;
+  terpenes?: string;
+  effects?: string;
+  image_urls?: string[];
+  coa_url?: string;
 }
 
 export default function VendorApprovalPanel() {
@@ -27,6 +40,8 @@ export default function VendorApprovalPanel() {
   const [loading, setLoading] = useState(false);
   const [processing, setProcessing] = useState<Set<number>>(new Set());
   const [error, setError] = useState<string>('');
+  const [selected, setSelected] = useState<Set<number>>(new Set());
+  const [expandedProduct, setExpandedProduct] = useState<number | null>(null);
   
   // Prevent duplicate requests
   const loadingRef = useRef(false);
@@ -125,6 +140,11 @@ export default function VendorApprovalPanel() {
       if (response.data.success) {
         // Remove from local state immediately for instant UI update
         setPending(prev => prev.filter(p => p.id !== submissionId));
+        setSelected(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(submissionId);
+          return newSet;
+        });
         
         // Refresh immediately to get fresh data (no delay)
         setTimeout(() => {
@@ -145,6 +165,40 @@ export default function VendorApprovalPanel() {
         newSet.delete(submissionId);
         return newSet;
       });
+    }
+  };
+
+  const approveBulk = async () => {
+    if (selected.size === 0) return;
+    
+    const selectedIds = Array.from(selected);
+    
+    try {
+      // Process all approvals in parallel
+      await Promise.all(selectedIds.map(id => approveProduct(id)));
+      setSelected(new Set());
+    } catch (err) {
+      console.error('Bulk approve error:', err);
+    }
+  };
+
+  const toggleSelect = (id: number) => {
+    setSelected(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(id)) {
+        newSet.delete(id);
+      } else {
+        newSet.add(id);
+      }
+      return newSet;
+    });
+  };
+
+  const selectAll = () => {
+    if (selected.size === pending.length) {
+      setSelected(new Set());
+    } else {
+      setSelected(new Set(pending.map(p => p.id)));
     }
   };
 
@@ -216,35 +270,64 @@ export default function VendorApprovalPanel() {
 
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[200] flex items-center justify-center p-4 animate-fadeIn">
-      <div className="bg-[#0a0a0a] border border-white/20 max-w-5xl w-full max-h-[90vh] flex flex-col shadow-2xl">
+      <div className="bg-[#0a0a0a] border border-white/20 max-w-7xl w-full max-h-[95vh] flex flex-col shadow-2xl">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-white/10 p-6 bg-gradient-to-r from-white/5 to-transparent">
-          <div>
-            <h2 className="text-2xl text-white mb-1 tracking-tight" style={{ fontFamily: 'Lobster' }}>
+        <div className="flex items-center justify-between border-b border-white/10 p-4 lg:p-6 bg-gradient-to-r from-white/5 to-transparent flex-shrink-0">
+          <div className="flex-1 min-w-0">
+            <h2 className="text-xl lg:text-2xl text-white mb-1 tracking-tight font-medium">
               Product Approvals
             </h2>
-            <p className="text-white/60 text-sm">
+            <p className="text-white/60 text-xs lg:text-sm">
               Review and approve vendor product submissions
             </p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 lg:gap-3">
+            {selected.size > 0 && (
+              <button
+                onClick={approveBulk}
+                className="bg-green-600 hover:bg-green-700 text-white px-3 lg:px-4 py-2 text-xs font-medium uppercase tracking-wider transition-all flex items-center gap-1.5"
+              >
+                <CheckCircle size={14} />
+                Approve {selected.size}
+              </button>
+            )}
             <button
               onClick={() => loadPendingProducts(false)}
               disabled={loading}
-              className="p-2.5 text-white/60 hover:text-white hover:bg-white/10 transition-all disabled:opacity-50 border border-white/10 hover:border-white/20"
+              className="p-2 lg:p-2.5 text-white/60 hover:text-white hover:bg-white/10 transition-all disabled:opacity-50 border border-white/10 hover:border-white/20"
               title="Refresh"
             >
-              <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
+              <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
             </button>
             <button
               onClick={() => setIsOpen(false)}
-              className="p-2.5 text-white/60 hover:text-white hover:bg-white/10 transition-all border border-white/10 hover:border-white/20"
+              className="p-2 lg:p-2.5 text-white/60 hover:text-white hover:bg-white/10 transition-all border border-white/10 hover:border-white/20"
               title="Close"
             >
-              <X size={20} />
+              <X size={18} />
             </button>
           </div>
         </div>
+
+        {/* Bulk Actions Bar */}
+        {pending.length > 0 && (
+          <div className="border-b border-white/10 px-4 lg:px-6 py-3 bg-white/5 flex items-center justify-between flex-shrink-0">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={selected.size === pending.length && pending.length > 0}
+                onChange={selectAll}
+                className="w-4 h-4 cursor-pointer"
+              />
+              <span className="text-white/60 text-sm">
+                {selected.size === pending.length ? 'Deselect All' : 'Select All'} ({pending.length})
+              </span>
+            </label>
+            <p className="text-white/40 text-xs">
+              {selected.size > 0 ? `${selected.size} selected` : 'Select products to bulk approve'}
+            </p>
+          </div>
+        )}
 
         {/* Error Banner */}
         {error && (
@@ -262,8 +345,8 @@ export default function VendorApprovalPanel() {
           </div>
         )}
 
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto p-6 bg-[#0a0a0a]">
+        {/* Content - Scrollable */}
+        <div className="flex-1 overflow-y-auto p-4 lg:p-6 bg-[#0a0a0a]" style={{ maxHeight: 'calc(95vh - 200px)' }}>
           {loading && pending.length === 0 ? (
             <div className="text-center py-20 text-white/60">
               <div className="inline-block w-10 h-10 border-2 border-white/20 border-t-white rounded-full animate-spin mb-4"></div>
@@ -278,7 +361,7 @@ export default function VendorApprovalPanel() {
               <p className="text-white/40 text-sm">All caught up! 🎉</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div className="space-y-4">
               {pending.map((product) => (
                 <div
                   key={product.id}
