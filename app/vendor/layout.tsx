@@ -375,7 +375,7 @@ function VendorLayoutContent({
         </aside>
 
         {/* Main Content - Edge to Edge on Mobile, Full Width on Desktop */}
-        <main className="flex-1 lg:py-8 lg:px-8 xl:px-12 bg-[#1a1a1a] safe-bottom overflow-x-hidden w-full max-w-full">
+        <main className="flex-1 lg:py-8 lg:px-8 xl:px-12 bg-[#1a1a1a] safe-bottom overflow-x-hidden w-full max-w-full pt-16 lg:pt-8">
           {children}
         </main>
       </div>

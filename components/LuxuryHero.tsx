@@ -20,7 +20,7 @@ export default function LuxuryHero() {
   }, []);
 
   return (
-    <section className="relative h-auto sm:min-h-[100svh] flex items-center justify-center bg-[#1a1a1a] text-white px-4 sm:px-6 overflow-hidden py-20 sm:py-0 w-full max-w-full">
+    <section className="relative h-auto sm:min-h-[100svh] flex items-center justify-center bg-[#1a1a1a] text-white px-4 sm:px-6 overflow-hidden pt-32 pb-20 sm:py-0 w-full max-w-full">
       {/* Animated gradient orbs - Responsive sizes */}
       <div className="absolute inset-0 overflow-hidden">
         {/* Main gradient orb 1 */}
