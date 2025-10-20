@@ -237,42 +237,44 @@ export default function VendorProducts() {
         </div>
       ) : (
         <>
-          {/* Mobile List View */}
-          <div className="lg:hidden divide-y divide-white/5">
+          {/* Mobile List View - Full Width */}
+          <div className="lg:hidden">
             {filteredProducts.map((product) => (
               <Link
                 key={product.id}
                 href={product.status === 'approved' ? `/vendor/inventory?expand=${product.id}` : '#'}
-                className="flex items-start gap-3 px-4 py-4 active:bg-white/5 transition-all bg-[#1a1a1a]"
+                className="block active:bg-white/5 transition-all bg-[#1a1a1a] border-b border-white/5"
               >
-                <div className="w-14 h-14 bg-white/5 rounded flex items-center justify-center flex-shrink-0">
-                  <Package size={22} className="text-white/40" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="text-white text-sm font-medium mb-1.5 leading-tight">{product.name}</div>
-                  <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-white/40 mb-2">
-                    <span>{product.category}</span>
-                    <span>•</span>
-                    <span className="text-white/60 font-medium">{product.price}</span>
-                    {product.status === 'approved' && (
-                      <>
-                        <span>•</span>
-                        <span className={product.quantity > 0 ? 'text-white/60' : 'text-red-500'}>
-                          {product.quantity > 0 ? `${product.quantity}g` : 'Out of stock'}
-                        </span>
-                      </>
+                <div className="flex gap-4 p-4">
+                  <div className="w-20 h-20 bg-white/5 rounded flex items-center justify-center flex-shrink-0">
+                    <Package size={28} className="text-white/40" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-white text-base font-medium mb-2 leading-tight">{product.name}</div>
+                    <div className="space-y-1.5 mb-3">
+                      <div className="flex items-center gap-2 text-sm">
+                        <span className="text-white/60">{product.category}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-white font-medium text-base">{product.price}</span>
+                        {product.status === 'approved' && (
+                          <span className={`text-sm ${product.quantity > 0 ? 'text-white/60' : 'text-red-500'}`}>
+                            {product.quantity > 0 ? `${product.quantity}g in stock` : 'Out of stock'}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {getStatusBadge(product.status)}
+                      {product.status === 'approved' && getCOABadge(product.coaStatus)}
+                    </div>
+                    {product.status === 'pending' && (
+                      <div className="text-xs text-yellow-500/80 mt-2">Awaiting admin approval</div>
+                    )}
+                    {product.status === 'rejected' && product.rejectionReason && (
+                      <div className="text-xs text-red-500/80 mt-2 leading-relaxed">{product.rejectionReason}</div>
                     )}
                   </div>
-                  <div className="flex items-center gap-2 flex-wrap">
-                    {getStatusBadge(product.status)}
-                    {product.status === 'approved' && getCOABadge(product.coaStatus)}
-                  </div>
-                  {product.status === 'pending' && (
-                    <div className="text-xs text-yellow-500/80 mt-2">Awaiting approval</div>
-                  )}
-                  {product.status === 'rejected' && product.rejectionReason && (
-                    <div className="text-xs text-red-500/80 mt-2 line-clamp-2">{product.rejectionReason}</div>
-                  )}
                 </div>
               </Link>
             ))}
