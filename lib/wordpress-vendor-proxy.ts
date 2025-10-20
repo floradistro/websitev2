@@ -94,6 +94,15 @@ export async function getVendorSettingsProxy() {
   return response.data;
 }
 
+export async function updateVendorSettingsProxy(settingsData: any) {
+  const response = await vendorProxyRequest(
+    'flora-vendors/v1/vendors/me/settings',
+    'PUT',
+    settingsData
+  );
+  return response.data;
+}
+
 // Helper to auto-create inventory if needed
 // Helper to auto-create inventory if needed
 async function ensureInventoryExists(productId: number) {

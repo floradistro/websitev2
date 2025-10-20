@@ -1,10 +1,14 @@
 "use client";
 
-import { useState } from 'react';
-import { Save } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Save, CheckCircle, AlertCircle, Loader } from 'lucide-react';
+import { getVendorSettingsProxy, updateVendorSettingsProxy } from '@/lib/wordpress-vendor-proxy';
 
 export default function VendorSettings() {
   const [loading, setLoading] = useState(false);
+  const [fetching, setFetching] = useState(true);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
   const [settings, setSettings] = useState({
     companyName: '',
     contactName: '',
@@ -17,22 +21,81 @@ export default function VendorSettings() {
     taxId: '',
   });
 
-  // TODO: Fetch real vendor settings from API on mount
-  // useEffect(() => {
-  //   fetchVendorSettings();
-  // }, []);
+  // Fetch real vendor settings from database
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        setFetching(true);
+        const data = await getVendorSettingsProxy();
+        
+        if (data && data.vendor) {
+          const vendor = data.vendor;
+          setSettings({
+            companyName: vendor.company_name || '',
+            contactName: vendor.contact_name || '',
+            email: vendor.email || '',
+            phone: vendor.phone || '',
+            address: vendor.address_line_1 || '',
+            city: vendor.city || '',
+            state: vendor.state || '',
+            zip: vendor.zip || '',
+            taxId: vendor.tax_id || '',
+          });
+        }
+      } catch (err) {
+        console.error('Failed to fetch vendor settings:', err);
+        setError('Failed to load settings. Please refresh the page.');
+      } finally {
+        setFetching(false);
+      }
+    };
+
+    fetchSettings();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setError('');
+    setSuccess(false);
 
-    // TODO: Submit to API
-    console.log('Saving settings:', settings);
-    
-    setTimeout(() => {
+    try {
+      const response = await updateVendorSettingsProxy({
+        company_name: settings.companyName,
+        contact_name: settings.contactName,
+        email: settings.email,
+        phone: settings.phone,
+        address_line_1: settings.address,
+        city: settings.city,
+        state: settings.state,
+        zip: settings.zip,
+        tax_id: settings.taxId,
+      });
+
+      if (response && response.success) {
+        setSuccess(true);
+        setTimeout(() => setSuccess(false), 3000);
+      } else {
+        setError('Failed to save settings. Please try again.');
+      }
+    } catch (err: any) {
+      console.error('Error saving settings:', err);
+      setError(err.response?.data?.message || 'Failed to save settings. Please try again.');
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   };
+
+  if (fetching) {
+    return (
+      <div className="w-full max-w-5xl xl:max-w-6xl mx-auto animate-fadeIn flex items-center justify-center py-20">
+        <div className="flex items-center gap-3 text-white/60">
+          <Loader size={20} className="animate-spin" />
+          Loading settings...
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full max-w-5xl xl:max-w-6xl mx-auto animate-fadeIn overflow-x-hidden">
@@ -45,6 +108,28 @@ export default function VendorSettings() {
           Manage your vendor profile and contact information
         </p>
       </div>
+
+      {/* Success Message */}
+      {success && (
+        <div className="bg-green-500/10 border border-green-500/20 p-4 flex items-start gap-3 mx-4 lg:mx-0 mb-6">
+          <CheckCircle size={20} className="text-green-500 flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="text-green-500 font-medium mb-1">Settings Saved Successfully!</p>
+            <p className="text-green-500/80 text-sm">Your changes have been saved to the database.</p>
+          </div>
+        </div>
+      )}
+
+      {/* Error Message */}
+      {error && (
+        <div className="bg-red-500/10 border border-red-500/20 p-4 flex items-start gap-3 mx-4 lg:mx-0 mb-6">
+          <AlertCircle size={20} className="text-red-500 flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="text-red-500 font-medium mb-1">Failed to Save</p>
+            <p className="text-red-500/80 text-sm">{error}</p>
+          </div>
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-0 lg:space-y-6">
         {/* Company Information */}
