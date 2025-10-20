@@ -180,13 +180,13 @@ export default function HomeClient({
           </div>
 
           <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-light text-white mb-4 sm:mb-6 leading-tight tracking-tight">
-            Built for Scale.
+            Transparent.<br/>Every Step.
           </h2>
           
           <div className="h-[1px] w-16 sm:w-24 bg-gradient-to-r from-transparent via-white/20 to-transparent mx-auto mb-8 sm:mb-12"></div>
           
           <p className="text-sm sm:text-base md:text-lg lg:text-xl font-light text-white/60 mb-12 sm:mb-16 md:mb-20 leading-relaxed max-w-2xl mx-auto">
-            Smart pricing that adapts. Real-time sync across vendors. Quality you can count on.
+            Every vendor vetted. Every product verified. Every detail visible.
           </p>
 
           <div className="grid md:grid-cols-3 gap-4 sm:gap-6">
@@ -197,10 +197,10 @@ export default function HomeClient({
                   <div className="text-lg sm:text-xl text-purple-400">1</div>
                 </div>
                 <h3 className="text-xs sm:text-sm font-normal mb-3 sm:mb-4 text-white uppercase tracking-[0.2em] sm:tracking-[0.25em]">
-                  Smarter Pricing
+                  Rigorous Vetting
                 </h3>
                 <p className="text-[11px] sm:text-xs font-light text-white/60 leading-relaxed">
-                  Buy more, pay less. Volume discounts kick in automatically.
+                  Every vendor is thoroughly verified. Quality standards. No exceptions.
                 </p>
               </div>
             </div>
@@ -212,10 +212,10 @@ export default function HomeClient({
                   <div className="text-lg sm:text-xl text-rose-400">2</div>
                 </div>
                 <h3 className="text-xs sm:text-sm font-normal mb-3 sm:mb-4 text-white uppercase tracking-[0.2em] sm:tracking-[0.25em]">
-                  Real-Time Sync
+                  Full Transparency
                 </h3>
                 <p className="text-[11px] sm:text-xs font-light text-white/60 leading-relaxed">
-                  Live inventory across all vendors. What you see is what you get.
+                  See everything. Source, stock, tests. No hidden fees, no surprises.
                 </p>
               </div>
             </div>
@@ -227,10 +227,10 @@ export default function HomeClient({
                   <div className="text-lg sm:text-xl text-purple-400">3</div>
                 </div>
                 <h3 className="text-xs sm:text-sm font-normal mb-3 sm:mb-4 text-white uppercase tracking-[0.2em] sm:tracking-[0.25em]">
-                  Always Fresh
+                  Quality Assured
                 </h3>
                 <p className="text-[11px] sm:text-xs font-light text-white/60 leading-relaxed">
-                  Lab tested. Quality verified. Fresh product, every time.
+                  Third-party lab tested. COAs on demand. Quality you can verify.
                 </p>
               </div>
             </div>
