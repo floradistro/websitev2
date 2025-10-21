@@ -133,7 +133,7 @@ export default async function ProductsPage({
   
   console.log('✅ House products:', houseProducts.length);
   console.log('✅ Vendor products:', vendorProductsList.length);
-  console.log('🔵 Vendor products with slugs:', vendorProductsList.map(p => ({ 
+  console.log('🔵 Vendor products with slugs:', vendorProductsList.map((p: any) => ({ 
     name: p.name, 
     vendorSlug: p.vendorSlug,
     vendorId: p.vendorId,
