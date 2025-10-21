@@ -84,8 +84,8 @@ function ProductsClient({
       filtered = filtered.filter((product: any) => {
         const productInventory = inventoryMap[product.id] || [];
         
-        // If no inventory data, show product anyway (vendor products manage stock differently)
-        if (productInventory.length === 0 && product.vendorId) {
+        // If no inventory data, show product anyway (most products don't have inventory records yet)
+        if (productInventory.length === 0) {
           return true;
         }
         
