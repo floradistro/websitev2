@@ -1,35 +1,27 @@
 "use client";
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Shield } from 'lucide-react';
+import { Shield, AlertCircle } from 'lucide-react';
+import { useAdminAuth } from '@/context/AdminAuthContext';
 
 export default function AdminLogin() {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
+  const { signIn } = useAdminAuth();
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
+    setError('');
+    setLoading(true);
     
-    // Super admin accounts
-    const superAdmins = [
-      { username: 'admin', password: 'admin' },
-      { username: 'clistacc2167@gmail.com', password: 'admin' }
-    ];
-    
-    const isValid = superAdmins.some(admin => 
-      (username === admin.username || username.toLowerCase() === admin.username.toLowerCase()) && 
-      password === admin.password
-    );
-    
-    if (isValid) {
-      localStorage.setItem('admin_auth', 'true');
-      localStorage.setItem('admin_email', username);
-      router.push('/admin/dashboard');
-    } else {
-      alert('Invalid credentials. Please contact system administrator.');
+    try {
+      await signIn(email, password);
+    } catch (err: any) {
+      setError(err.message || 'Invalid credentials. Please contact system administrator.');
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -45,16 +37,23 @@ export default function AdminLogin() {
         </div>
 
         <form onSubmit={handleLogin} className="bg-[#1a1a1a] border border-white/10 p-8">
+          {error && (
+            <div className="mb-6 bg-red-500/10 border border-red-500/20 p-4 flex items-start gap-3">
+              <AlertCircle size={20} className="text-red-500 flex-shrink-0 mt-0.5" />
+              <p className="text-red-400 text-sm">{error}</p>
+            </div>
+          )}
+
           <div className="space-y-6">
             <div>
               <label className="block text-white/60 text-xs uppercase tracking-wider mb-2">
-                Email / Username
+                Email
               </label>
               <input
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="clistacc2167@gmail.com"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="admin@floradistro.com"
                 className="w-full bg-[#0a0a0a] border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
                 required
               />
@@ -90,4 +89,3 @@ export default function AdminLogin() {
     </div>
   );
 }
-

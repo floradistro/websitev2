@@ -8,6 +8,8 @@ import {
   FileText, DollarSign, BarChart3, Menu, X, MapPin, Globe, FolderTree 
 } from 'lucide-react';
 import { showConfirm } from '@/components/NotificationToast';
+import { AdminAuthProvider } from '@/context/AdminAuthContext';
+import AdminProtectedRoute from '@/components/AdminProtectedRoute';
 
 export default function AdminLayout({
   children,
@@ -82,18 +84,26 @@ export default function AdminLayout({
       confirmText: 'Logout',
       cancelText: 'Stay',
       type: 'danger',
-      onConfirm: () => {
+      onConfirm: async () => {
+        // Clear localStorage for backward compatibility
+        localStorage.removeItem('admin_auth');
+        localStorage.removeItem('admin_email');
         router.push('/admin/login');
       },
     });
   }
 
   if (pathname === '/admin/login') {
-    return <>{children}</>;
+    return (
+      <AdminAuthProvider>
+        {children}
+      </AdminAuthProvider>
+    );
   }
 
   return (
-    <>
+    <AdminAuthProvider>
+      <AdminProtectedRoute>
       <style jsx global>{`
         @supports (padding-bottom: env(safe-area-inset-bottom)) {
           .safe-bottom {
@@ -335,6 +345,7 @@ export default function AdminLayout({
           })}
         </div>
       </nav>
-    </>
+      </AdminProtectedRoute>
+    </AdminAuthProvider>
   );
 }

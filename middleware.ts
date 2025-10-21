@@ -1,11 +1,21 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { createClient } from '@supabase/supabase-js';
 
-export function middleware(request: NextRequest) {
-  const response = NextResponse.next();
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://uaednwpxursknmwdeejn.supabase.co';
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 
-  // Add aggressive caching headers for static content
+export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
+
+  // Admin route protection - handled client-side with AdminProtectedRoute
+  // Middleware just adds cache headers for admin routes
+  if (pathname.startsWith('/admin')) {
+    // Skip middleware auth check - using client-side protection instead
+    // This prevents issues with cookie reading and speeds up initial load
+  }
+
+  const response = NextResponse.next();
 
   // API routes - short cache with stale-while-revalidate
   if (pathname.startsWith('/api/')) {
