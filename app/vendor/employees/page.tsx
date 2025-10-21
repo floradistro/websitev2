@@ -156,7 +156,7 @@ export default function VendorEmployees() {
         last_name: editingEmployee.last_name,
         phone: editingEmployee.phone,
         role: editingEmployee.role,
-        employee_id: editingEmployee.employee_id,
+        emp_id: editingEmployee.employee_id,
       }, {
         headers: { 'x-vendor-id': vendorId }
       });

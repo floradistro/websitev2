@@ -128,7 +128,7 @@ export async function POST(request: NextRequest) {
     }
     
     if (action === 'update') {
-      const { employee_id, first_name, last_name, phone, role, employee_id: empId } = data;
+      const { employee_id, first_name, last_name, phone, role, emp_id } = data;
       
       if (!employee_id) {
         return NextResponse.json({
@@ -156,7 +156,7 @@ export async function POST(request: NextRequest) {
       if (last_name !== undefined) updatePayload.last_name = last_name;
       if (phone !== undefined) updatePayload.phone = phone;
       if (role !== undefined) updatePayload.role = role;
-      if (empId !== undefined) updatePayload.employee_id = empId;
+      if (emp_id !== undefined) updatePayload.employee_id = emp_id;
       
       const { error } = await supabase
         .from('users')
