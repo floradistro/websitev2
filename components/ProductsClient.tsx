@@ -240,20 +240,11 @@ function ProductsClient({
               >
                 All Products
               </button>
-              <button
-                onClick={() => setSelectedVendor('flora-distro')}
-                className={`flex items-center gap-2 px-4 py-2.5 text-xs uppercase tracking-[0.15em] transition-all whitespace-nowrap flex-shrink-0 ${
-                  selectedVendor === 'flora-distro'
-                    ? 'bg-white text-black border border-white'
-                    : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white border border-white/10'
-                }`}
-              >
-                <img src="/yacht-club-logo.png" alt="Flora Distro" className="w-5 h-5 object-contain opacity-80" />
-                Flora Distro
-              </button>
-              {vendors.filter((v: any) => v.slug !== 'flora-distro').map((vendor: any) => {
-                // Skip Flora Distro since we show it as "Yacht Club" above
+              {vendors.map((vendor: any) => {
                 if (!vendor.slug || !vendor.name) return null;
+                
+                // Use vendor's logo or default to yacht club logo
+                const logoUrl = vendor.logo || '/yacht-club-logo.png';
                 
                 return (
                   <button
@@ -265,9 +256,7 @@ function ProductsClient({
                         : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white border border-white/10'
                     }`}
                   >
-                    {vendor.logo && (
-                      <img src={vendor.logo} alt={vendor.name} className="w-5 h-5 object-contain" />
-                    )}
+                    <img src={logoUrl} alt={vendor.name} className="w-5 h-5 object-contain opacity-80" />
                     {vendor.name}
                   </button>
                 );
