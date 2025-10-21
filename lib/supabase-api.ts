@@ -3,8 +3,22 @@
  * Replaces all WordPress/WooCommerce API calls
  */
 
-// Use relative URLs for API calls - works in both browser and server-side
-const BASE_URL = '';
+// Determine base URL for API calls
+function getBaseUrl() {
+  // Browser
+  if (typeof window !== 'undefined') return '';
+  
+  // Vercel production
+  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
+  
+  // Vercel preview
+  if (process.env.NEXT_PUBLIC_VERCEL_URL) return `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`;
+  
+  // Local development
+  return 'http://localhost:3000';
+}
+
+const BASE_URL = getBaseUrl();
 
 // ============================================================================
 // PRODUCTS
