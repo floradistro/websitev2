@@ -7,7 +7,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 // For server-side operations
 export function getServiceSupabase() {
-  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'placeholder-service-key';
   return createClient(supabaseUrl, supabaseServiceKey, {
     auth: {
       autoRefreshToken: false,
