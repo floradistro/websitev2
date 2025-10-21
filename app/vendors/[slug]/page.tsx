@@ -209,7 +209,7 @@ export default function VendorStorefront() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 lg:py-12 relative z-10">
           <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 items-start">
             {/* Logo */}
-            <div className="w-20 h-20 lg:w-24 lg:h-24 bg-black border border-white/10 flex items-center justify-center overflow-hidden flex-shrink-0">
+            <div className="w-20 h-20 lg:w-24 lg:h-24 border border-white/10 flex items-center justify-center overflow-hidden flex-shrink-0">
               <img src={vendor.logo} alt={vendor.name} className="w-full h-full object-contain p-2" />
             </div>
 
