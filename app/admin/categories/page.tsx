@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus, Edit2, Trash2, Save, X, Eye, EyeOff, Star, Image as ImageIcon, ChevronRight } from 'lucide-react';
 import { showSuccess, showError } from '@/components/NotificationToast';
 
@@ -586,9 +586,9 @@ export default function CategoriesPage() {
                 </thead>
                 <tbody>
                   {topLevelCategories.map((category) => (
-                    <>
+                    <React.Fragment key={category.id}>
                       {/* Parent Category */}
-                      <tr key={category.id} className="border-b border-white/5 hover:bg-white/5">
+                      <tr className="border-b border-white/5 hover:bg-white/5">
                         <td className="p-4">
                           <div className="flex items-center gap-3">
                             {category.image_url ? (
@@ -748,7 +748,7 @@ export default function CategoriesPage() {
                           </td>
                         </tr>
                       ))}
-                    </>
+                    </React.Fragment>
                   ))}
                 </tbody>
               </table>
