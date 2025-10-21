@@ -74,10 +74,12 @@ export default async function ProductsPage({
     stock_quantity: p.stock_quantity
   })));
 
-  // OPTIMIZED: Filter using pre-computed stock status
-  const inStockProducts = allProducts.filter((product: any) => product.total_stock > 0);
+  // Show ALL products - stock status will be displayed on cards
+  const inStockProducts = allProducts;
   
-  console.log('✅ In-stock products:', inStockProducts.length);
+  console.log('✅ Total products to display:', inStockProducts.length);
+  console.log('✅ Products in stock:', allProducts.filter((p: any) => p.total_stock > 0).length);
+  console.log('✅ Products out of stock:', allProducts.filter((p: any) => p.total_stock === 0).length);
 
   // OPTIMIZED: Process fields, pricing, and inventory in a single pass
   const productFieldsMap: { [key: number]: any } = {};
