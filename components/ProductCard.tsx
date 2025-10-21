@@ -343,7 +343,7 @@ function ProductCard({ product, index, locations, pricingTiers = [], productFiel
         {/* Wishlist Heart - Top Right */}
         <button
           onClick={handleWishlistToggle}
-          className="absolute top-2 right-2 z-10 w-9 h-9 rounded-full flex items-center justify-center transition-all duration-300 ${
+          className={`absolute top-2 right-2 z-10 w-9 h-9 rounded-full flex items-center justify-center transition-all duration-300 ${
             inWishlist 
               ? "bg-white text-black" 
               : "bg-black/40 backdrop-blur-sm text-white hover:bg-black/60"
