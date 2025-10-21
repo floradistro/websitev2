@@ -1,44 +1,40 @@
-import { getCategories, getLocations, getProducts, getVendors } from "@/lib/supabase-api";
+"use client";
+
+import { useEffect, useState } from "react";
 import ProductsClient from "@/components/ProductsClient";
-import type { Metadata } from "next";
-import { Suspense } from "react";
+import axios from "axios";
 
-// CRITICAL: Use dynamic rendering for instant vendor suspension
-export const dynamic = 'force-dynamic';
-export const revalidate = 0; // No caching - always fresh data
+// Client-side only to bypass SSR cache issues
 
-export const metadata: Metadata = {
-  title: "Shop All Products | Yacht Club",
-  description: "Browse our full selection of premium cannabis products. Shop flower, concentrates, edibles, vapes, and beverages. 120+ products with volume pricing and fast shipping.",
-  openGraph: {
-    title: "Shop All Products | Yacht Club",
-    description: "120+ premium cannabis products. Volume pricing, fast shipping, always fresh.",
-    type: "website",
-  },
-};
+export default function ProductsPage() {
+  const [loading, setLoading] = useState(true);
+  const [allProducts, setAllProducts] = useState<any[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
+  const [locations, setLocations] = useState<any[]>([]);
+  const [vendors, setVendors] = useState<any[]>([]);
+  const [productFieldsMap, setProductFieldsMap] = useState<any>({});
+  const [inventoryMap, setInventoryMap] = useState<any>({});
 
-export default async function ProductsPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ category?: string }>;
-}) {
-  const { category: categorySlug } = await searchParams;
-  
-  // OPTIMIZED: Use BULK endpoint with parallel fetching
-  const timeout = (ms: number) => new Promise((_, reject) => 
-    setTimeout(() => reject(new Error('API Timeout')), ms)
-  );
-  
-  // Fetch data in parallel from Supabase
-  const [categories, locations, productsData, allVendors] = await Promise.all([
-    Promise.race([getCategories(), timeout(5000)]).catch(() => []),
-    Promise.race([getLocations(), timeout(5000)]).catch(() => []),
-    Promise.race([getProducts({ per_page: 200 }), timeout(10000)]).catch(() => ({ products: [] })),
-    Promise.race([getVendors(), timeout(5000)]).catch(() => []),
-  ]);
-
-  // Extract products from Supabase response
-  const bulkProducts = productsData?.products || [];
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        
+        // Fetch all data in parallel
+        const [categoriesRes, locationsRes, productsRes, vendorsRes] = await Promise.all([
+          axios.get('/api/supabase/categories').catch(() => ({ data: { categories: [] } })),
+          axios.get('/api/supabase/locations').catch(() => ({ data: { locations: [] } })),
+          axios.get('/api/supabase/products?per_page=200').catch(() => ({ data: { products: [] } })),
+          axios.get('/api/admin/vendors').catch(() => ({ data: { vendors: [] } }))
+        ]);
+        
+        setCategories(categoriesRes.data.categories || []);
+        setLocations(locationsRes.data.locations || []);
+        setVendors(vendorsRes.data.vendors || []);
+        
+        const bulkProducts = productsRes.data.products || [];
+        
+        console.log('🔵 Client fetched products:', bulkProducts.length);
   
   // Map Supabase products - ONLY Supabase Storage images
   const allProducts = bulkProducts.map((p: any) => {
@@ -77,83 +73,89 @@ export default async function ProductsPage({
   // Show ALL products - stock status will be displayed on cards
   const inStockProducts = allProducts;
   
-  console.log('✅ Total products to display:', inStockProducts.length);
-  console.log('✅ Products in stock:', allProducts.filter((p: any) => p.total_stock > 0).length);
-  console.log('✅ Products out of stock:', allProducts.filter((p: any) => p.total_stock === 0).length);
+        console.log('✅ Total products to display:', inStockProducts.length);
+        console.log('✅ Products in stock:', allProducts.filter((p: any) => p.total_stock > 0).length);
+        console.log('✅ Products out of stock:', allProducts.filter((p: any) => p.total_stock === 0).length);
 
-  // OPTIMIZED: Process fields, pricing, and inventory in a single pass
-  const productFieldsMap: { [key: number]: any } = {};
-  const inventoryMap: { [key: number]: any[] } = {};
-  
-  bulkProducts.forEach((product: any) => {
-    const productId = product.wordpress_id || product.id;
-    
-    // Extract pricing tiers from meta_data (JSONB object in Supabase)
-    const metaData = product.meta_data || {};
-    const pricingTiers = metaData.pricing_tiers || metaData._product_price_tiers || [];
-    
-    // Process blueprint fields efficiently (JSONB array in Supabase)
-    const blueprintFields = product.blueprint_fields || [];
-    const fields: { [key: string]: string } = {};
-    
-    blueprintFields.forEach((field: any) => {
-      if (field && field.field_name && field.field_type !== 'blueprint' && !field.field_name.includes('blueprint')) {
-        fields[field.field_name] = field.field_value || '';
+        // OPTIMIZED: Process fields, pricing, and inventory in a single pass
+        const fieldsMap: { [key: number]: any } = {};
+        const invMap: { [key: number]: any[] } = {};
+        
+        bulkProducts.forEach((product: any) => {
+          const productId = product.wordpress_id || product.id;
+          
+          // Extract pricing tiers from meta_data (JSONB object in Supabase)
+          const metaData = product.meta_data || {};
+          const pricingTiers = metaData.pricing_tiers || metaData._product_price_tiers || [];
+          
+          // Process blueprint fields efficiently (JSONB array in Supabase)
+          const blueprintFields = product.blueprint_fields || [];
+          const fields: { [key: string]: string } = {};
+          
+          blueprintFields.forEach((field: any) => {
+            if (field && field.field_name && field.field_type !== 'blueprint' && !field.field_name.includes('blueprint')) {
+              fields[field.field_name] = field.field_value || '';
+            }
+          });
+          
+          fieldsMap[productId] = { fields, pricingTiers };
+          invMap[productId] = product.inventory || [];
+        });
+
+        // ALL products are vendor products now
+        const vendorProductsList = inStockProducts.map((p: any) => {
+          const fullProduct = bulkProducts.find((bp: any) => (bp.wordpress_id || bp.id) === p.id);
+          const vendor = vendorsRes.data.vendors?.find((v: any) => v.id === fullProduct?.vendor_id);
+          
+          return {
+            ...p,
+            vendorId: fullProduct?.vendor_id,
+            vendorSlug: vendor?.slug || ''
+          };
+        });
+        
+        const vendorsList = vendorsRes.data.vendors
+          ?.filter((v: any) => v.status === 'active')
+          .map((v: any) => ({
+            id: v.id,
+            name: v.store_name,
+            slug: v.slug,
+            logo: v.logo_url || '/yacht-club-logo.png'
+          })) || [];
+        
+        setAllProducts(vendorProductsList);
+        setProductFieldsMap(fieldsMap);
+        setInventoryMap(invMap);
+        setLoading(false);
+        
+        console.log('✅ Products loaded on client:', vendorProductsList.length);
+        
+      } catch (error) {
+        console.error('❌ Error fetching products:', error);
+        setLoading(false);
       }
-    });
-    
-    productFieldsMap[productId] = { fields, pricingTiers };
-    inventoryMap[productId] = product.inventory || [];
-  });
-
-  // ALL products are vendor products now (no more house products concept)
-  const vendorProductsList = inStockProducts.map((p: any) => {
-    const fullProduct = bulkProducts.find((bp: any) => (bp.wordpress_id || bp.id) === p.id);
-    const vendor = allVendors?.find((v: any) => v.id === fullProduct?.vendor_id);
-    
-    return {
-      ...p,
-      vendorId: fullProduct?.vendor_id,
-      vendorSlug: vendor?.slug || ''
     };
-  });
-  
-  // No house products - all belong to vendors
-  const houseProducts: any[] = [];
-  
-  console.log('✅ House products:', houseProducts.length);
-  console.log('✅ Vendor products:', vendorProductsList.length);
-  console.log('🔵 Vendor products with slugs:', vendorProductsList.map((p: any) => ({ 
-    name: p.name, 
-    vendorSlug: p.vendorSlug,
-    vendorId: p.vendorId,
-    stock: p.total_stock 
-  })));
-  
-  // Map vendors from API to correct format and filter out suspended vendors
-  const vendorsList = Array.isArray(allVendors) 
-    ? allVendors
-        .filter((v: any) => v.status === 'active') // Only active vendors
-        .map((v: any) => ({
-          id: v.id,
-          name: v.store_name,
-          slug: v.slug,
-          logo: v.logo_url || '/yacht-club-logo.png'
-        })) 
-    : [];
-  
-  console.log('✅ Active vendors for filter:', vendorsList.length);
+    
+    fetchData();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-white">Loading products...</div>
+      </div>
+    );
+  }
 
   return (
     <ProductsClient 
       categories={categories}
       locations={locations}
-      initialProducts={houseProducts}
+      initialProducts={[]}
       inventoryMap={inventoryMap}
-      initialCategory={categorySlug}
       productFieldsMap={productFieldsMap}
-      vendorProducts={vendorProductsList}
-      vendors={vendorsList}
+      vendorProducts={allProducts}
+      vendors={vendors}
     />
   );
 }
