@@ -324,12 +324,12 @@ function ProductCard({ product, index, locations, pricingTiers = [], productFiel
           </>
         )}
 
-        {/* Vendor Badge - Top Right */}
+        {/* Vendor Badge - Bottom Right */}
         {vendorInfo && (
           <Link
             href={`/vendors/${vendorInfo.slug}`}
             onClick={(e) => e.stopPropagation()}
-            className="absolute top-2 right-2 z-10 block w-10 h-10 transition-all duration-300 group"
+            className="absolute bottom-2 right-2 z-10 block w-10 h-10 transition-all duration-300 group"
             title={`Sold by ${vendorInfo.name}`}
           >
             <img 
@@ -340,10 +340,10 @@ function ProductCard({ product, index, locations, pricingTiers = [], productFiel
           </Link>
         )}
 
-        {/* Wishlist Heart - Top Right (moved if vendor badge exists) */}
+        {/* Wishlist Heart - Top Right */}
         <button
           onClick={handleWishlistToggle}
-          className={`absolute ${vendorInfo ? 'top-14 right-2' : 'top-2 right-2'} z-10 w-9 h-9 rounded-full flex items-center justify-center transition-all duration-300 ${
+          className="absolute top-2 right-2 z-10 w-9 h-9 rounded-full flex items-center justify-center transition-all duration-300 ${
             inWishlist 
               ? "bg-white text-black" 
               : "bg-black/40 backdrop-blur-sm text-white hover:bg-black/60"
