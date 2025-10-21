@@ -329,13 +329,13 @@ function ProductCard({ product, index, locations, pricingTiers = [], productFiel
           <Link
             href={`/vendors/${vendorInfo.slug}`}
             onClick={(e) => e.stopPropagation()}
-            className="absolute bottom-2 right-2 z-10 block w-10 h-10 bg-white/5 backdrop-blur-md border border-white/10 rounded transition-all duration-300 overflow-hidden group hover:bg-white/10 hover:border-white/20"
+            className="absolute bottom-2 right-2 z-10 block w-8 h-8 transition-all duration-300 group"
             title={`Sold by ${vendorInfo.name}`}
           >
             <img 
               src={vendorInfo.logo} 
               alt={vendorInfo.name} 
-              className="w-full h-full object-contain p-1.5 opacity-70 group-hover:opacity-100 group-hover:scale-105 transition-all"
+              className="w-full h-full object-contain opacity-40 group-hover:opacity-80 group-hover:scale-110 transition-all drop-shadow-lg"
             />
           </Link>
         )}
