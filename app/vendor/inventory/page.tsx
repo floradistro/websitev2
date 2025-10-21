@@ -493,7 +493,7 @@ export default function VendorInventory() {
         </div>
       ) : (
         <div className="space-y-2">
-          {filteredInventory.map((item) => {
+          {filteredInventory.map((item, index) => {
             const isExpanded = expandedId === item.product_id;
             const currentView = viewMode[item.product_id] || 'details';
             const currentFields = editedFields[item.product_id] || item.flora_fields || {};
@@ -501,7 +501,7 @@ export default function VendorInventory() {
             
             return (
               <div
-                key={item.id}
+                key={item.id || `inventory-${item.product_id}-${index}`}
                 className="bg-[#1a1a1a] lg:border border-t border-b border-white/[0.04] transition-all -mx-4 lg:mx-0"
               >
                 {/* Main Row */}
