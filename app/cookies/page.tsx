@@ -2,8 +2,8 @@ import { Cookie, Eye, Settings, Lock } from 'lucide-react';
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Cookie Policy | Flora Distro",
-  description: "Learn about how Flora Distro uses cookies and similar technologies to improve your browsing experience and site functionality.",
+  title: "Cookie Policy | Yacht Club",
+  description: "Learn about how Yacht Club uses cookies and similar technologies to improve your browsing experience and site functionality.",
 };
 
 export default function Cookies() {

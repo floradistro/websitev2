@@ -5,8 +5,7 @@ import dynamic from 'next/dynamic';
 import ProductCard from "@/components/ProductCard";
 import Link from "next/link";
 import { ArrowLeft, Star, MapPin, Calendar, CheckCircle, ArrowRight, Award, Package, Search, SlidersHorizontal, Grid3x3, List } from "lucide-react";
-import { getVendorBySlugProxy as getVendorBySlug } from '@/lib/wordpress-vendor-proxy';
-import { getVendorProducts } from '@/lib/wordpress';
+import { getVendorBySlug, getVendorProducts } from '@/lib/supabase-api';
 
 const VendorWhaleAnimation = dynamic(() => import("@/components/VendorWhaleAnimation"), { ssr: false });
 
@@ -31,38 +30,63 @@ export default function VendorStorefront() {
           return;
         }
 
-        // Fetch vendor data from API
-        const vendorData = await getVendorBySlug(slug);
+        console.log('🔵 Loading vendor storefront:', slug);
         
-        if (vendorData) {
-          // Map API data to component format
-          setVendor({
-            id: parseInt(vendorData.id),
-            name: vendorData.store_name,
-            slug: vendorData.slug,
-            logo: vendorData.logo_url || '/logoprint.png',
-            banner: vendorData.banner_url || '',
-            tagline: vendorData.tagline || '',
-            about: vendorData.about || `${vendorData.store_name} is a verified vendor on Flora Distro marketplace.`,
-            primaryColor: vendorData.primary_color || '#0EA5E9',
-            location: vendorData.region || 'California',
-            joinedDate: vendorData.joined_date,
-            rating: parseFloat(vendorData.rating) || 0,
-            totalReviews: parseInt(vendorData.review_count) || 0,
-            verified: parseInt(vendorData.verified) === 1,
-            website: vendorData.website,
-            instagram: vendorData.instagram,
-            productCount: parseInt(vendorData.product_count) || 0,
-            fontFamily: vendorData.custom_font || 'inherit',
-            useBrackets: false
-          });
-
-          // Fetch vendor's products from API
-          const products = await getVendorProducts(slug);
-          console.log('Vendor products loaded:', products?.length, products);
-          setVendorProducts(products || []);
+        // Fetch vendor data from Supabase with inventory
+        const response = await fetch(`/api/vendor-storefront/${slug}`);
+        const vendorData = await response.json();
+        
+        console.log('🔵 Vendor data received:', vendorData);
+        
+        if (!vendorData.success) {
+          console.error('❌ Vendor not found');
+          setLoading(false);
+          return;
         }
         
+        console.log('🔵 Products from API:', vendorData.products.length);
+        console.log('🔵 Products list:', vendorData.products.map((p: any) => `${p.name} (stock: ${p.total_stock || p.stock_quantity})`));
+        
+        // Map vendor data from Supabase
+        setVendor({
+          id: vendorData.vendor.id,
+          name: vendorData.vendor.name,
+          slug: vendorData.vendor.slug,
+          logo: vendorData.vendor.logo_url || '/yacht-club-logo.png',
+          banner: vendorData.vendor.banner_url || '',
+          tagline: vendorData.vendor.store_tagline || '',
+          about: vendorData.vendor.description || `${vendorData.vendor.name} is a verified vendor on Yacht Club marketplace.`,
+          primaryColor: vendorData.vendor.brand_colors?.primary || '#0EA5E9',
+          location: vendorData.vendor.state || 'North Carolina',
+          joinedDate: vendorData.vendor.created_at,
+          rating: 0,
+          totalReviews: 0,
+          verified: true,
+          website: vendorData.vendor.social_links?.website || '',
+          instagram: vendorData.vendor.social_links?.instagram || '',
+          productCount: vendorData.products.length,
+          fontFamily: 'inherit',
+          useBrackets: false
+        });
+
+        // Set products with live inventory (already in vendorData)
+        const productsWithStock = vendorData.products.map((p: any) => ({
+          ...p,
+          images: p.featured_image_storage ? [{ src: p.featured_image_storage }] : 
+                 p.featured_image ? [{ src: p.featured_image }] : [],
+          categories: p.product_categories?.map((pc: any) => pc.category) || [],
+          stock_quantity: p.total_stock || p.stock_quantity || 0,
+          stock_status: p.stock_status
+        }));
+        
+        console.log('✅ Mapped products:', productsWithStock.length);
+        console.log('✅ Product details:', productsWithStock.map(p => ({ 
+          name: p.name, 
+          stock: p.stock_quantity,
+          image: p.images?.[0]?.src 
+        })));
+        
+        setVendorProducts(productsWithStock);
         setLoading(false);
       } catch (error) {
         console.error('Error loading vendor:', error);
@@ -81,8 +105,22 @@ export default function VendorStorefront() {
     );
   }
 
-  // Get unique categories from products
-  const categories = [...new Set(vendorProducts.map((p: any) => p.categories[0]?.name))].filter(Boolean) as string[];
+  // Get unique categories from products (handle Supabase structure)
+  const categories = [...new Set(vendorProducts.map((p: any) => {
+    // Supabase: product_categories[{category: {name}}]
+    if (p.product_categories && p.product_categories[0]?.category?.name) {
+      return p.product_categories[0].category.name;
+    }
+    // WordPress: categories[{name}]
+    if (p.categories && p.categories[0]?.name) {
+      return p.categories[0].name;
+    }
+    // Fallback: primary_category
+    if (p.primary_category?.name) {
+      return p.primary_category.name;
+    }
+    return null;
+  }))].filter(Boolean) as string[];
 
   // Filter products
   let filteredProducts = vendorProducts.filter((product: any) => {
@@ -94,10 +132,6 @@ export default function VendorStorefront() {
     return matchesSearch && matchesCategory && matchesStock;
   });
   
-  // Debug logging
-  console.log('Total vendor products:', vendorProducts.length);
-  console.log('After filtering:', filteredProducts.length);
-  console.log('Filters:', { searchQuery, selectedCategory, stockFilter });
 
   // Sort products
   filteredProducts = [...filteredProducts].sort((a: any, b: any) => {

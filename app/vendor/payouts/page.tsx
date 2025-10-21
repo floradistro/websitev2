@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { DollarSign, Calendar, CheckCircle, Clock, Download, TrendingUp } from 'lucide-react';
-import { getVendorPayouts } from '@/lib/wordpress';
+import { getVendorPayouts } from '@/lib/supabase-api';
 
 interface Payout {
   id: number;

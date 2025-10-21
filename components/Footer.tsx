@@ -194,7 +194,7 @@ export default function Footer() {
         <div className="mt-6 sm:mt-8 pt-6 border-t border-white/10">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-sm text-white/60">
-              © {new Date().getFullYear()} Flora Distro. All rights reserved.
+              © {new Date().getFullYear()} Yacht Club. All rights reserved.
             </p>
             <div className="flex items-center space-x-6">
               <a 

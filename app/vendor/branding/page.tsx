@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { Upload, Save, AlertCircle, CheckCircle, X } from 'lucide-react';
 import { useVendorAuth } from '@/context/VendorAuthContext';
-import { saveBranding } from './save-branding-action';
 
 export default function VendorBranding() {
   const { vendor } = useVendorAuth();
@@ -120,19 +119,18 @@ export default function VendorBranding() {
         setLogoFile(null);
       }
 
-      // Update branding using Server Action (bypasses CORS)
-      const formData = new FormData();
-      formData.append('authToken', authToken);
-      formData.append('vendorUserId', vendor?.user_id?.toString() || '');
-      formData.append('vendorId', vendor?.id?.toString() || '');
-      Object.keys(updateData).forEach(key => {
-        formData.append(key, updateData[key]);
+      // Submit branding via API
+      const response = await fetch('/api/vendor-proxy?endpoint=flora-vendors/v1/vendors/me/branding', {
+        method: 'POST',
+        headers: { 
+          'Authorization': `Basic ${authToken}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(updateData)
       });
-
-      const result = await saveBranding(formData);
       
-      if (!result.success) {
-        throw new Error(result.error || 'Save failed');
+      if (!response.ok) {
+        throw new Error('Save failed');
       }
       
       setSuccess('✅ Branding updated successfully!');

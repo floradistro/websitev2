@@ -76,7 +76,7 @@ export default function VendorLogin() {
         {/* Logo */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-block">
-            <img src="/logoprint.png" alt="Flora Distro" className="w-24 h-24 mx-auto mb-4 opacity-80 hover:opacity-100 transition-opacity" />
+            <img src="/yacht-club-logo.png" alt="Yacht Club" className="w-24 h-24 mx-auto mb-4 opacity-80 hover:opacity-100 transition-opacity" />
           </Link>
           <h1 className="text-3xl text-white mb-2 font-medium">Vendor Portal</h1>
           <p className="text-white/60 text-sm">Sign in to manage your store</p>

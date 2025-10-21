@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { Building2, Store, Headphones, Package, TrendingUp, Users } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Careers | Flora Distro",
-  description: "Join Flora Distro or become a vendor partner. Opportunities in marketplace operations, vendor support, logistics, and business partnerships.",
+  title: "Careers | Yacht Club",
+  description: "Join Yacht Club or become a vendor partner. Opportunities in marketplace operations, vendor support, logistics, and business partnerships.",
 };
 
 export default function Careers() {
@@ -32,7 +32,7 @@ export default function Careers() {
           <div className="bg-[#3a3a3a] hover:bg-[#404040] transition-all duration-500 p-16 border border-white/5">
             <Building2 className="w-12 h-12 mb-8 text-white/60" />
             <h2 className="text-2xl font-light text-white mb-6 uppercase tracking-wider">
-              Join Flora Distro
+              Join Yacht Club
             </h2>
             <p className="text-sm text-white/50 font-light leading-relaxed">
               Work with us to build the platform, support vendors, and create the best marketplace experience in cannabis.
@@ -103,7 +103,7 @@ export default function Careers() {
       <section className="bg-[#2a2a2a] py-32 px-4">
         <div className="max-w-4xl mx-auto">
           <h2 className="text-3xl md:text-5xl font-light text-white mb-12 leading-tight text-center">
-            Ready to sell on Flora Distro?
+            Ready to sell on Yacht Club?
           </h2>
           <div className="grid md:grid-cols-2 gap-8 mb-12">
             <div className="bg-[#3a3a3a] border border-white/10 p-8">
@@ -152,7 +152,7 @@ export default function Careers() {
             Send your resume to <a href="mailto:careers@floradistro.com" className="text-white underline hover:no-underline">careers@floradistro.com</a>
           </p>
           <p className="text-xs text-white/40 font-light">
-            Flora Distro is an equal opportunity employer.
+            Yacht Club is an equal opportunity employer.
           </p>
         </div>
       </section>

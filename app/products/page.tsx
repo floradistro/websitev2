@@ -1,17 +1,17 @@
-import { getCategories, getLocations, getAllVendors } from "@/lib/wordpress";
-import { getCachedBulkProducts } from "@/lib/api-cache";
+import { getCategories, getLocations, getProducts, getVendors } from "@/lib/supabase-api";
 import ProductsClient from "@/components/ProductsClient";
 import type { Metadata } from "next";
 import { Suspense } from "react";
 
-// Aggressive ISR - Revalidate every 5 minutes for better performance
-export const revalidate = 300;
+// CRITICAL: Use dynamic rendering for instant vendor suspension
+export const dynamic = 'force-dynamic';
+export const revalidate = 0; // No caching - always fresh data
 
 export const metadata: Metadata = {
-  title: "Shop All Products | Flora Distro",
+  title: "Shop All Products | Yacht Club",
   description: "Browse our full selection of premium cannabis products. Shop flower, concentrates, edibles, vapes, and beverages. 120+ products with volume pricing and fast shipping.",
   openGraph: {
-    title: "Shop All Products | Flora Distro",
+    title: "Shop All Products | Yacht Club",
     description: "120+ premium cannabis products. Volume pricing, fast shipping, always fresh.",
     type: "website",
   },
@@ -29,64 +29,73 @@ export default async function ProductsPage({
     setTimeout(() => reject(new Error('API Timeout')), ms)
   );
   
-  // Fetch data in parallel - use cached version of bulk products
-  const [categories, locations, bulkData, allVendors] = await Promise.all([
-    Promise.race([getCategories({ per_page: 100 }), timeout(5000)]).catch(() => []),
+  // Fetch data in parallel from Supabase
+  const [categories, locations, productsData, allVendors] = await Promise.all([
+    Promise.race([getCategories(), timeout(5000)]).catch(() => []),
     Promise.race([getLocations(), timeout(5000)]).catch(() => []),
-    Promise.race([getCachedBulkProducts({ per_page: 200 }), timeout(10000)]).catch(() => ({ data: [] })),
-    Promise.race([getAllVendors(), timeout(5000)]).catch(() => []),
+    Promise.race([getProducts({ per_page: 200 }), timeout(10000)]).catch(() => ({ products: [] })),
+    Promise.race([getVendors(), timeout(5000)]).catch(() => []),
   ]);
 
-  // Extract products from bulk response - inventory already included!
-  const bulkProducts = bulkData?.data || [];
+  // Extract products from Supabase response
+  const bulkProducts = productsData?.products || [];
   
-  // OPTIMIZED: Map bulk products with minimal processing
-  const allProducts = bulkProducts.map((bp: any) => {
-    const hasStock = bp.total_stock > 0;
+  // Map Supabase products - ONLY Supabase Storage images
+  const allProducts = bulkProducts.map((p: any) => {
+    // ONLY use Supabase Storage (WordPress URLs removed!)
+    const imageUrl = p.featured_image_storage || 
+                     (p.image_gallery_storage && p.image_gallery_storage[0]);
+    
     return {
-      id: parseInt(bp.id),
-      name: bp.name,
-      slug: bp.name?.toLowerCase().replace(/\s+/g, '-'),
-      type: bp.type,
-      status: bp.status,
-      price: bp.regular_price,
-      regular_price: bp.regular_price,
-      sale_price: bp.sale_price,
-      images: bp.image ? [{ src: bp.image, id: 0, name: bp.name }] : [],
-      categories: (bp.categories || []).map((cat: any) => ({
-        id: parseInt(cat.id),
-        name: cat.name,
-        slug: cat.slug
-      })),
-      meta_data: bp.meta_data || [],
-      blueprint_fields: bp.blueprint_fields || [],
-      stock_status: hasStock ? 'instock' : 'outofstock',
-      total_stock: bp.total_stock,
-      inventory: bp.inventory || [],
+      id: p.wordpress_id || p.id,
+      uuid: p.id,
+      name: p.name,
+      slug: p.slug,
+      type: p.type,
+      status: p.status,
+      price: p.price,
+      regular_price: p.regular_price,
+      sale_price: p.sale_price,
+      images: imageUrl ? [{ src: imageUrl, id: 0, name: p.name }] : [],
+      categories: p.product_categories?.map((pc: any) => pc.category) || [],
+      meta_data: p.meta_data || {},
+      blueprint_fields: p.blueprint_fields || [],
+      stock_status: p.stock_status || 'instock',
+      total_stock: p.stock_quantity || 0,
+      inventory: [],
     };
   });
 
+  console.log('🔵 Total products from API:', bulkProducts.length);
+  console.log('🔵 Products with stock_quantity:', bulkProducts.filter((p: any) => p.stock_quantity > 0).length);
+  console.log('🔵 Vendor products raw:', bulkProducts.filter((p: any) => p.vendor_id).map(p => ({
+    name: p.name,
+    vendor_id: p.vendor_id,
+    stock_quantity: p.stock_quantity
+  })));
+
   // OPTIMIZED: Filter using pre-computed stock status
   const inStockProducts = allProducts.filter((product: any) => product.total_stock > 0);
+  
+  console.log('✅ In-stock products:', inStockProducts.length);
 
   // OPTIMIZED: Process fields, pricing, and inventory in a single pass
   const productFieldsMap: { [key: number]: any } = {};
   const inventoryMap: { [key: number]: any[] } = {};
   
   bulkProducts.forEach((product: any) => {
-    const productId = parseInt(product.id);
+    const productId = product.wordpress_id || product.id;
     
-    // Extract pricing tiers from meta_data
-    const metaData = product.meta_data || [];
-    const pricingTiersMeta = metaData.find((m: any) => m.key === '_product_price_tiers');
-    const pricingTiers = pricingTiersMeta?.value || [];
+    // Extract pricing tiers from meta_data (JSONB object in Supabase)
+    const metaData = product.meta_data || {};
+    const pricingTiers = metaData.pricing_tiers || metaData._product_price_tiers || [];
     
-    // Process blueprint fields efficiently
+    // Process blueprint fields efficiently (JSONB array in Supabase)
     const blueprintFields = product.blueprint_fields || [];
     const fields: { [key: string]: string } = {};
     
     blueprintFields.forEach((field: any) => {
-      if (field.field_type !== 'blueprint' && !field.field_name.includes('blueprint')) {
+      if (field && field.field_name && field.field_type !== 'blueprint' && !field.field_name.includes('blueprint')) {
         fields[field.field_name] = field.field_value || '';
       }
     });
@@ -95,31 +104,61 @@ export default async function ProductsPage({
     inventoryMap[productId] = product.inventory || [];
   });
 
-  // Separate vendor products from Flora products
+  // Separate vendor products from house products by vendor_id and add vendor slug
   const vendorProductsList = inStockProducts.filter((p: any) => {
-    const productId = parseInt(p.id);
-    // Vendor products typically have IDs >= 41790
-    return productId >= 41790;
+    const fullProduct = bulkProducts.find((bp: any) => (bp.wordpress_id || bp.id) === p.id);
+    return fullProduct?.vendor_id !== null && fullProduct?.vendor_id !== undefined;
+  }).map((p: any) => {
+    const fullProduct = bulkProducts.find((bp: any) => (bp.wordpress_id || bp.id) === p.id);
+    const vendor = allVendors?.find((v: any) => v.id === fullProduct?.vendor_id);
+    
+    console.log(`Mapping vendor product ${p.name}:`, {
+      productId: p.id,
+      fullProductVendorId: fullProduct?.vendor_id,
+      foundVendor: vendor?.store_name,
+      vendorSlug: vendor?.slug
+    });
+    
+    return {
+      ...p,
+      vendorId: fullProduct?.vendor_id,
+      vendorSlug: vendor?.slug || ''
+    };
   });
   
-  const floraProducts = inStockProducts.filter((p: any) => {
-    const productId = parseInt(p.id);
-    return productId < 41790;
+  const houseProducts = inStockProducts.filter((p: any) => {
+    const fullProduct = bulkProducts.find((bp: any) => (bp.wordpress_id || bp.id) === p.id);
+    return !fullProduct?.vendor_id;
   });
   
-  // Map vendors from API to correct format
-  const vendorsList = Array.isArray(allVendors) ? allVendors.map((v: any) => ({
-    id: v.id,
-    name: v.store_name,
-    slug: v.slug,
-    logo: v.logo_url || '/logoprint.png'
-  })) : [];
+  console.log('✅ House products:', houseProducts.length);
+  console.log('✅ Vendor products:', vendorProductsList.length);
+  console.log('🔵 Vendor products with slugs:', vendorProductsList.map(p => ({ 
+    name: p.name, 
+    vendorSlug: p.vendorSlug,
+    vendorId: p.vendorId,
+    stock: p.total_stock 
+  })));
+  
+  // Map vendors from API to correct format and filter out suspended vendors
+  const vendorsList = Array.isArray(allVendors) 
+    ? allVendors
+        .filter((v: any) => v.status === 'active') // Only active vendors
+        .map((v: any) => ({
+          id: v.id,
+          name: v.store_name,
+          slug: v.slug,
+          logo: v.logo_url || '/yacht-club-logo.png'
+        })) 
+    : [];
+  
+  console.log('✅ Active vendors for filter:', vendorsList.length);
 
   return (
     <ProductsClient 
       categories={categories}
       locations={locations}
-      initialProducts={floraProducts}
+      initialProducts={houseProducts}
       inventoryMap={inventoryMap}
       initialCategory={categorySlug}
       productFieldsMap={productFieldsMap}

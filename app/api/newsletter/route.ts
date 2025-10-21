@@ -12,9 +12,7 @@ export async function POST(request: NextRequest) {
     }
 
     // TODO: Integrate with your newsletter service (Mailchimp, SendGrid, etc.)
-    // For now, just log it
-    console.log("Newsletter subscription:", email);
-
+    
     // Simulate API call delay
     await new Promise((resolve) => setTimeout(resolve, 500));
 

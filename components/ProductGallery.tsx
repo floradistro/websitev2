@@ -45,8 +45,8 @@ export default function ProductGallery({
             ) : (
               <div className="w-full h-full flex items-center justify-center bg-black">
                 <img
-                  src="/logoprint.png"
-                  alt="Flora Distro"
+                  src="/yacht-club-logo.png"
+                  alt="Yacht Club"
                   className="w-1/2 h-1/2 object-contain opacity-10"
                 />
               </div>

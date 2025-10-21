@@ -3,8 +3,8 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Package, Plus, AlertCircle, CheckCircle, XCircle, TrendingUp, DollarSign, AlertTriangle, Bell, Calendar, ArrowUpRight, ArrowDownRight, FileText, MessageSquare } from 'lucide-react';
-import { getVendorDashboardProxy as getVendorDashboard } from '@/lib/wordpress-vendor-proxy';
 import { useVendorAuth } from '@/context/VendorAuthContext';
+import axios from 'axios';
 
 interface RecentProduct {
   id: number;
@@ -71,8 +71,20 @@ export default function VendorDashboard() {
   });
   const [loading, setLoading] = useState(true);
 
+  // Auto-refresh dashboard every 30 seconds for real-time KPIs
   useEffect(() => {
-    async function loadDashboard() {
+    if (!authLoading && isAuthenticated) {
+      loadDashboard();
+      
+      const interval = setInterval(() => {
+        loadDashboard();
+      }, 30000); // 30 seconds
+      
+      return () => clearInterval(interval);
+    }
+  }, [authLoading, isAuthenticated]);
+
+  async function loadDashboard() {
       // Don't load if auth is still loading or not authenticated
       if (authLoading || !isAuthenticated) {
         setLoading(false);
@@ -81,84 +93,95 @@ export default function VendorDashboard() {
       
       try {
         setLoading(true);
-        const data = await getVendorDashboard();
         
-        // Update stats with safe fallbacks
-        setStats({
-          totalProducts: (data.stats?.total_products || 0) + (data.stats?.pending_products || 0),
-          approved: data.stats?.total_products || 0,
-          pending: data.stats?.pending_products || 0,
-          rejected: data.stats?.rejected_products || 0,
-          totalSales30d: data.stats?.total_sales_30d || 0,
-          lowStock: data.low_stock?.length || 0,
-        });
-        
-        console.log('Dashboard stats loaded:', {
-          total: data.stats?.total_products,
-          pending: data.stats?.pending_products,
-          rejected: data.stats?.rejected_products,
-          sales: data.stats?.total_sales_30d
-        });
-
-        // Map recent products
-        const mappedProducts = data.recent_products.map((p: any) => ({
-          id: p.product_id,
-          name: p.name,
-          image: p.image || "/logoprint.png",
-          status: p.status,
-          submittedDate: new Date(p.submitted_date).toLocaleDateString()
-        }));
-        setRecentProducts(mappedProducts);
-
-        // Map low stock items
-        const mappedLowStock = (data.low_stock || []).map((item: any) => ({
-          id: item.product_id,
-          name: item.product_name,
-          currentStock: parseFloat(item.quantity),
-          threshold: parseFloat(item.threshold) || 20
-        }));
-        setLowStockItems(mappedLowStock);
-
-        // Map notifications
-        const mappedNotices = (data.notifications || []).map((n: any) => ({
-          id: n.id,
-          message: n.message,
-          type: n.type.includes('success') || n.type.includes('approved') ? 'success' : 
-                 n.type.includes('warning') || n.type.includes('low') ? 'warning' : 'info',
-          date: getRelativeTime(n.created_at)
-        }));
-        setNotices(mappedNotices);
-
-        // Map recent orders for sales data (mock for now - can enhance later)
-        const mappedSalesData = (data.recent_orders || []).map((order: any) => ({
-          date: order.order_date,
-          revenue: parseFloat(order.net_earnings)
-        }));
-        if (mappedSalesData.length > 0) {
-          setSalesData(mappedSalesData);
+        // Get vendor ID from localStorage
+        const vendorId = localStorage.getItem('vendor_id');
+        if (!vendorId) {
+          console.error('❌ No vendor ID found');
+          setLoading(false);
+          return;
         }
 
-        // Calculate payout info from stats
-        setPayout({
-          pendingEarnings: data.stats.total_sales_30d * 0.85, // After 15% commission
-          nextPayoutDate: getNextPayoutDate(),
-          lastPayoutAmount: 0, // TODO: Get from payouts endpoint
+        console.log('🔵 Loading dashboard for vendor:', vendorId);
+
+        // Call dashboard API - LIVE data from Supabase
+        const response = await axios.get('/api/vendor/dashboard', {
+          headers: {
+            'x-vendor-id': vendorId
+          }
+        });
+        
+        const data = response.data;
+        
+        console.log('🔵 Dashboard data received:', data);
+        
+        // Update stats - LIVE from Supabase
+        setStats({
+          totalProducts: (data.stats?.live_products || 0) + (data.stats?.pending_review || 0),
+          approved: data.stats?.live_products || 0,
+          pending: data.stats?.pending_review || 0,
+          rejected: 0,
+          totalSales30d: data.stats?.sales_30_days || 0,
+          lowStock: data.stats?.low_stock_items || 0,
         });
 
-        // Generate action items from data
+        // Set live data
+        setRecentProducts(data.recent_products || []);
+        
+        const lowStockMapped = (data.low_stock_details || []).map((item: any) => ({
+          id: item.id,
+          name: `Product #${item.product_id}`,
+          currentStock: item.currentStock,
+          threshold: item.threshold
+        }));
+        setLowStockItems(lowStockMapped);
+
+        // Set sales trend data
+        setSalesData(data.sales_data || []);
+        
+        // Generate notices from stats
+        const newNotices: Notice[] = [];
+        if (data.stats?.pending_review > 0) {
+          newNotices.push({
+            id: 1,
+            type: 'info',
+            message: `${data.stats.pending_review} product(s) awaiting admin approval`,
+            date: new Date().toISOString()
+          });
+        }
+        if (data.stats?.low_stock_items > 0) {
+          newNotices.push({
+            id: 2,
+            type: 'warning',
+            message: `${data.stats.low_stock_items} product(s) running low on stock`,
+            date: new Date().toISOString()
+          });
+        }
+        setNotices(newNotices);
+
+        // Calculate payout info from LIVE stats
+        setPayout({
+          pendingEarnings: (data.stats?.sales_30_days || 0) * 0.85, // After 15% commission
+          nextPayoutDate: getNextPayoutDate(),
+          lastPayoutAmount: 0,
+        });
+        
+        console.log('✅ Dashboard loaded successfully');
+
+        // Generate action items from LIVE data
         const actions: ActionItem[] = [];
-        if (data.stats.pending_products > 0) {
+        if ((data.stats?.pending_review || 0) > 0) {
           actions.push({
             id: 1,
-            title: `${data.stats.pending_products} product${data.stats.pending_products > 1 ? 's' : ''} pending approval`,
+            title: `You have ${data.stats.pending_review} product(s) awaiting approval`,
             type: 'info',
             link: '/vendor/products'
           });
         }
-        if (data.low_stock && data.low_stock.length > 0) {
+        if ((data.stats?.low_stock_items || 0) > 0) {
           actions.push({
             id: 2,
-            title: `${data.low_stock.length} products low on stock`,
+            title: `${data.stats.low_stock_items} product(s) need restocking`,
             type: 'warning',
             link: '/vendor/inventory'
           });
@@ -167,13 +190,10 @@ export default function VendorDashboard() {
 
         setLoading(false);
       } catch (error) {
-        console.error('Error loading dashboard:', error);
+        console.error('❌ Error loading dashboard:', error);
         setLoading(false);
       }
-    }
-
-    loadDashboard();
-  }, [authLoading, isAuthenticated]);
+  }
 
   // Helper function to get relative time
   function getRelativeTime(dateString: string) {
@@ -508,20 +528,24 @@ export default function VendorDashboard() {
                 recentProducts.map((product) => (
                   <div key={product.id} className="px-4 lg:px-8 py-3 lg:py-4 active:bg-white/5 lg:hover:bg-white/5 transition-colors">
                     <div className="flex items-center gap-4">
-                      <div className="w-16 h-16 bg-white/5 rounded flex items-center justify-center flex-shrink-0">
-                        <Package size={24} className="text-white/40" />
+                      <div className="w-16 h-16 bg-[#2a2a2a] border border-white/10 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                        {product.image ? (
+                          <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <Package size={20} className="text-white/30" />
+                        )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="text-white font-medium mb-1">{product.name}</div>
+                        <div className="text-white font-medium mb-1 text-sm">{product.name}</div>
                         <div className="flex items-center gap-2 text-xs text-white/40">
                           <Calendar size={12} />
-                          <span>Submitted {product.submittedDate}</span>
+                          <span>{product.submittedDate}</span>
                         </div>
                       </div>
                       <div className="flex items-center gap-3">
                         {getStatusBadge(product.status)}
                         <Link
-                          href={`/vendor/products/${product.id}/edit`}
+                          href="/vendor/inventory"
                           className="text-white/60 hover:text-white text-xs transition-colors"
                         >
                           View

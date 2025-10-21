@@ -39,8 +39,8 @@ export default function RecentlyViewed() {
                 ) : (
                   <div className="w-full h-full flex items-center justify-center p-8">
                     <img
-                      src="/logoprint.png"
-                      alt="Flora Distro"
+                      src="/yacht-club-logo.png"
+                      alt="Yacht Club"
                       className="w-full h-full object-contain opacity-10"
                     />
                   </div>

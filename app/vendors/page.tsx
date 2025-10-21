@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { Star, ArrowRight, CheckCircle, ArrowLeft, Search, Package, Users, Award, MapPin } from 'lucide-react';
-import { getAllVendorsProxy as getAllVendors } from '@/lib/wordpress-vendor-proxy';
+import { getVendors } from '@/lib/supabase-api';
 
 const VendorWhaleAnimation = dynamic(() => import("@/components/VendorWhaleAnimation"), { ssr: false });
 
@@ -84,7 +84,8 @@ export default function VendorsPage() {
     async function loadVendors() {
       try {
         setLoading(true);
-        const data = await getAllVendors();
+        console.log('🔵 Loading vendors...');
+        const data = await getVendors();
         
         // Ensure data is an array
         if (!Array.isArray(data)) {
@@ -94,22 +95,32 @@ export default function VendorsPage() {
           return;
         }
         
-        // Map API data to component format
-        const mappedVendors = data.map((v: any) => ({
-          id: parseInt(v.id),
-          name: v.store_name,
-          slug: v.slug,
-          logo: v.logo_url || '/logoprint.png',
-          tagline: v.tagline || 'Quality cannabis products',
-          location: v.region || 'California',
-          state: v.state || 'California',
-          region: v.region || 'California',
-          rating: parseFloat(v.rating) || 0,
-          totalReviews: parseInt(v.review_count) || 0,
-          totalProducts: parseInt(v.product_count) || 0,
-          verified: parseInt(v.verified) === 1,
-          featured: parseInt(v.featured) === 1,
-        }));
+        console.log('🔵 Raw vendor data:', data.map((v: any) => ({ name: v.store_name, status: v.status })));
+        
+        // Map API data to component format and filter out suspended vendors
+        const mappedVendors = data
+          .filter((v: any) => {
+            const isActive = v.status === 'active';
+            console.log(`Vendor ${v.store_name}: status=${v.status}, isActive=${isActive}`);
+            return isActive;
+          })
+          .map((v: any) => ({
+            id: parseInt(v.id),
+            name: v.store_name,
+            slug: v.slug,
+            logo: v.logo_url || '/yacht-club-logo.png',
+            tagline: v.tagline || 'Quality cannabis products',
+            location: v.region || 'California',
+            state: v.state || 'California',
+            region: v.region || 'California',
+            rating: parseFloat(v.rating) || 0,
+            totalReviews: parseInt(v.review_count) || 0,
+            totalProducts: parseInt(v.product_count) || 0,
+            verified: parseInt(v.verified) === 1,
+            featured: parseInt(v.featured) === 1,
+          }));
+        
+        console.log('✅ Active vendors loaded:', mappedVendors.length);
         
         setVendors(mappedVendors);
       } catch (error) {
@@ -134,9 +145,9 @@ export default function VendorsPage() {
   });
 
   const featuredVendor = vendors.find(v => v.featured) || vendors[0] || {
-    name: 'Flora Distro',
-    slug: 'flora-distro',
-    logo: '/logoprint.png',
+    name: 'Yacht Club',
+    slug: 'yacht-club',
+    logo: '/yacht-club-logo.png',
     tagline: 'Premium Cannabis Marketplace',
     rating: 5.0,
     totalReviews: 0,
@@ -163,7 +174,7 @@ export default function VendorsPage() {
       {/* Hero */}
       <div className="border-b border-white/10 relative pt-20">
         <div className="absolute inset-0 bg-gradient-to-b from-[#2a2a2a]/40 via-[#2a2a2a]/35 to-[#2a2a2a]/30 backdrop-blur-sm"></div>
-        {/* Flora Distro Logo - Hero */}
+        {/* Yacht Club Logo - Hero */}
         <div className="absolute top-8 right-8 md:top-16 md:right-16 lg:top-20 lg:right-20 z-10" style={{ animation: 'logoEntrance 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s forwards', opacity: 0 }}>
           <Link href="/" className="group block">
             <div className="relative logo-float">
@@ -180,8 +191,8 @@ export default function VendorsPage() {
               
               {/* Logo */}
               <img 
-                src="/logoprint.png" 
-                alt="Flora Distro Marketplace" 
+                src="/yacht-club-logo.png" 
+                alt="Yacht Club Marketplace" 
                 className="relative w-24 h-24 md:w-40 md:h-40 lg:w-56 lg:h-56 object-contain opacity-50 group-hover:opacity-100 transition-all duration-1000 filter group-hover:brightness-110 group-hover:drop-shadow-[0_0_30px_rgba(255,255,255,0.3)]" 
                 style={{ animation: 'gentle-float 6s ease-in-out infinite' }}
               />
@@ -409,7 +420,7 @@ export default function VendorsPage() {
                   {/* Region Vendors */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-px bg-white/5">
                     {regionVendors.map((vendor: any, index: number) => (
-                      <VendorCard key={vendor.id} vendor={vendor} index={index} />
+                      <VendorCard key={vendor.id || vendor.uuid || `vendor-${index}`} vendor={vendor} index={index} />
                     ))}
                   </div>
                 </div>
@@ -427,7 +438,7 @@ export default function VendorsPage() {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-px bg-white/5">
           {filteredVendors.map((vendor, index) => (
-            <VendorCard key={vendor.id} vendor={vendor} index={index} />
+            <VendorCard key={vendor.id || vendor.uuid || index} vendor={vendor} index={index} />
           ))}
         </div>
           </div>
@@ -436,7 +447,7 @@ export default function VendorsPage() {
         {/* Become a Vendor CTA */}
         <div className="mt-16 text-center">
           <div className="inline-block bg-white/5 border border-white/10 px-8 py-6 backdrop-blur-sm">
-            <h3 className="text-white text-xl font-light mb-2">Interested in selling on Flora Distro?</h3>
+            <h3 className="text-white text-xl font-light mb-2">Interested in selling on Yacht Club?</h3>
             <p className="text-white/60 text-sm mb-4 max-w-md mx-auto">
               Join our curated marketplace and reach customers across the region
             </p>

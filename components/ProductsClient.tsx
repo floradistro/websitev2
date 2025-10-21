@@ -56,9 +56,15 @@ function ProductsClient({
 
   // Optimized filter and sort with useMemo to prevent unnecessary recalculations
   const products = useMemo(() => {
-    // Combine Flora products with vendor products
+    // Combine house products with vendor products
     let allProducts = [...initialProducts, ...vendorProducts];
     let filtered = allProducts;
+    
+    console.log('🔵 ProductsClient - Total products:', allProducts.length);
+    console.log('🔵 House products:', initialProducts.length);
+    console.log('🔵 Vendor products:', vendorProducts.length);
+    console.log('🔵 Selected vendor:', selectedVendor);
+    console.log('🔵 Selected location:', selectedLocation);
 
     // Filter by category
     if (categorySlug) {
@@ -73,10 +79,15 @@ function ProductsClient({
       }
     }
 
-    // Filter by location if selected
-    if (selectedLocation) {
+    // Filter by location if selected (skip for vendor products if vendor filter active)
+    if (selectedLocation && !selectedVendor) {
       filtered = filtered.filter((product: any) => {
         const productInventory = inventoryMap[product.id] || [];
+        
+        // If no inventory data, show product anyway (vendor products manage stock differently)
+        if (productInventory.length === 0 && product.vendorId) {
+          return true;
+        }
         
         return productInventory.some((inv: any) => {
           const locationMatch = parseInt(inv.location_id) === parseInt(selectedLocation) || 
@@ -121,11 +132,25 @@ function ProductsClient({
 
     // Filter by vendor
     if (selectedVendor === 'flora') {
-      // Show only Flora products (no vendorId)
+      // Show only house products (no vendorId)
       filtered = filtered.filter((product: any) => !product.vendorId);
+      console.log('🔵 After flora filter:', filtered.length);
     } else if (selectedVendor && selectedVendor !== null) {
       // Show only selected vendor's products
-      filtered = filtered.filter((product: any) => product.vendorSlug === selectedVendor);
+      console.log('🔵 Filtering by vendor slug:', selectedVendor);
+      console.log('🔵 All products with vendor data:', filtered.map(p => ({ 
+        name: p.name, 
+        vendorId: p.vendorId, 
+        vendorSlug: p.vendorSlug 
+      })));
+      filtered = filtered.filter((product: any) => {
+        const matches = product.vendorSlug === selectedVendor;
+        if (product.vendorId) {
+          console.log(`Product ${product.name}: vendorSlug="${product.vendorSlug}", selectedVendor="${selectedVendor}", matches=${matches}`);
+        }
+        return matches;
+      });
+      console.log('🔵 After vendor filter:', filtered.length, 'products');
     }
     // If selectedVendor is null, show ALL products (Flora + all vendors) - no filter needed
 
@@ -223,8 +248,8 @@ function ProductsClient({
                     : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white border border-white/10'
                 }`}
               >
-                <img src="/logoprint.png" alt="Flora" className="w-5 h-5 object-contain opacity-80" />
-                Flora Distro
+                <img src="/yacht-club-logo.png" alt="Yacht Club" className="w-5 h-5 object-contain opacity-80" />
+                Yacht Club
               </button>
               {vendors.map((vendor: any) => {
                 let fontFamily = 'inherit';

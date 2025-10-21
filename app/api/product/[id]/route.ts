@@ -1,76 +1,103 @@
 import { NextRequest, NextResponse } from "next/server";
 import { unstable_cache } from 'next/cache';
-import axios from "axios";
 
-const baseUrl = process.env.WORDPRESS_API_URL || "";
-const consumerKey = process.env.WORDPRESS_CONSUMER_KEY || "";
-const consumerSecret = process.env.WORDPRESS_CONSUMER_SECRET || "";
-const authParams = `consumer_key=${consumerKey}&consumer_secret=${consumerSecret}`;
+// Get base URL for internal API calls
+const getBaseUrl = () => {
+  if (process.env.NEXT_PUBLIC_SITE_URL) {
+    return process.env.NEXT_PUBLIC_SITE_URL;
+  }
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}`;
+  }
+  return 'http://localhost:3000';
+};
 
-// Ultra-fast cached single product fetch with ALL data
+// Ultra-fast cached single product fetch with ALL data from Supabase
 const getCachedProductComplete = unstable_cache(
   async (productId: string) => {
     try {
-      // Fetch ALL data in parallel - single round trip
-      const [productRes, inventoryRes, fieldsRes, locationsRes, pricingRes] = await Promise.all([
-        axios.get(`${baseUrl}/wp-json/wc/v3/products/${productId}?${authParams}`).catch(err => {
-          if (err.response?.status === 404) return null;
-          throw err;
-        }),
-        axios.get(`${baseUrl}/wp-json/flora-im/v1/inventory?product_id=${productId}&${authParams}`).catch(() => ({ data: [] })),
-        axios.get(`${baseUrl}/wp-json/fd/v3/products/${productId}/fields?${authParams}`).catch(() => ({ data: { fields: [] } })),
-        axios.get(`${baseUrl}/wp-json/flora-im/v1/locations?per_page=100&${authParams}`).catch(() => ({ data: [] })),
-        axios.get(`${baseUrl}/wp-json/fd/v3/products/${productId}/pricing?${authParams}`).catch(() => ({ data: { base_price: 0, quantity_tiers: [] } }))
+      const baseUrl = getBaseUrl();
+      
+      // Check if ID is UUID or WordPress numeric ID
+      const isUUID = productId.includes('-');
+      const queryParam = isUUID ? productId : `wordpress_id=${productId}`;
+      const endpoint = isUUID ? `/api/supabase/products/${productId}` : `/api/supabase/products?wordpress_id=${productId}&per_page=1`;
+      
+      // Fetch ALL data in parallel from Supabase
+      const [productRes, inventoryRes, locationsRes, reviewsRes] = await Promise.all([
+        fetch(`${baseUrl}${endpoint}`),
+        fetch(`${baseUrl}/api/supabase/inventory?wordpress_product_id=${productId}`),
+        fetch(`${baseUrl}/api/supabase/locations`),
+        fetch(`${baseUrl}/api/supabase/reviews?product_id=${productId}&status=approved`)
       ]);
 
+      const productData = await productRes.json();
+      const inventoryData = await inventoryRes.json();
+      const locationsData = await locationsRes.json();
+      const reviewsData = await reviewsRes.json();
+
       // If product doesn't exist, return null
-      if (!productRes) {
+      if (!productData.success) {
         return null;
       }
 
+      // Handle both single product response and array response
+      const product = productData.product || productData.products?.[0];
+      if (!product) {
+        return null;
+      }
+      const locations = locationsData.locations || [];
+      const inventory = inventoryData.inventory || [];
+
       // Map location names to inventory
-      const locations = Array.isArray(locationsRes.data) ? locationsRes.data : [];
       const locationMap = locations.reduce((acc: any, loc: any) => {
         acc[loc.id] = loc.name;
         return acc;
       }, {});
 
       // Enrich inventory with location names
-      const inventoryData = Array.isArray(inventoryRes.data) ? inventoryRes.data : [];
-      const enrichedInventory = inventoryData.map((inv: any) => ({
+      const enrichedInventory = inventory.map((inv: any) => ({
         ...inv,
         location_name: locationMap[inv.location_id] || null,
       }));
 
       // Calculate total stock
       const totalStock = enrichedInventory.reduce((sum: number, inv: any) => {
-        return sum + parseFloat(inv.stock_quantity || inv.quantity || inv.stock || 0);
+        return sum + parseFloat(inv.quantity || 0);
       }, 0);
 
-      // Transform V3 fields response to match expected format
-      const fieldsData = fieldsRes.data;
+      // Extract pricing tiers from meta_data
+      const pricingTiers = product.meta_data?._product_price_tiers || [];
+
+      // Extract product fields from meta_data
       const transformedFields: any = {};
-      
-      // Convert V3 array format to V2-style object format
-      if (Array.isArray(fieldsData.fields)) {
-        fieldsData.fields.forEach((field: any) => {
-          transformedFields[field.name] = field.value || '';
+      if (product.meta_data) {
+        Object.entries(product.meta_data).forEach(([key, value]) => {
+          if (key.startsWith('_field_')) {
+            const fieldName = key.replace('_field_', '');
+            transformedFields[fieldName] = value;
+          }
         });
       }
 
       return {
-        product: productRes.data,
+        product: {
+          ...product,
+          images: product.featured_image ? [{ src: product.featured_image, alt: product.name }] : [],
+          gallery: product.image_gallery || [],
+          total_sales: product.sales_count || 0
+        },
         inventory: enrichedInventory,
         locations: locations,
-        pricingTiers: pricingRes.data?.quantity_tiers || [],
+        pricingTiers: pricingTiers,
         productFields: {
           fields: transformedFields
         },
+        reviews: reviewsData.reviews || [],
         total_stock: totalStock,
         meta: {
           cached: true,
           timestamp: new Date().toISOString(),
-          load_time_ms: Date.now(),
         }
       };
     } catch (error) {
@@ -78,7 +105,7 @@ const getCachedProductComplete = unstable_cache(
       return null;
     }
   },
-  ['product-complete'],
+  ['product-complete-supabase'],
   { revalidate: 180, tags: ['product'] } // 3 minutes cache
 );
 
@@ -106,25 +133,12 @@ export async function GET(
       );
     }
 
-    // Check if product has stock (commenting out to allow all products to be viewable)
-    // const hasStock = data.total_stock > 0 || data.inventory.some((inv: any) => 
-    //   (inv.stock || inv.quantity || 0) > 0
-    // );
-
-    // if (!hasStock) {
-    //   return NextResponse.json(
-    //     { success: false, error: "Product out of stock" },
-    //     { status: 404 }
-    //   );
-    // }
-
     return NextResponse.json({
       success: true,
       ...data,
     });
 
   } catch (error: any) {
-    // Don't log 404 errors as they're expected for non-existent products
     if (!error.message?.includes('404')) {
       console.error("Product API error:", error);
     }
@@ -134,4 +148,3 @@ export async function GET(
     );
   }
 }
-

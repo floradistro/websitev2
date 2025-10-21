@@ -40,12 +40,9 @@ async function findPlaceId(query: string): Promise<string | null> {
 async function getPlaceDetails(placeId: string) {
   try {
     const url = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=rating,user_ratings_total,reviews&key=${GOOGLE_API_KEY}`;
-    console.log('Fetching place details from:', url);
     
     const response = await fetch(url);
     const data = await response.json();
-    
-    console.log('Place details response:', data);
     
     if (data.status === 'OK' && data.result) {
       return {
@@ -88,16 +85,12 @@ export async function GET(request: Request) {
       // Try multiple search queries to find the right place
       const cleanAddress = address.replace(/\n/g, ' ');
       const searchQueries = [
-        `Flora Distro ${cleanAddress}`,
-        `Flora ${cleanAddress}`,
+        `Yacht Club ${cleanAddress}`,
         cleanAddress
       ];
       
-      console.log(`Searching for ${locationName} with queries:`, searchQueries);
-      
       for (const query of searchQueries) {
         const foundId = await findPlaceId(query);
-        console.log(`Query "${query}" returned Place ID:`, foundId);
         if (foundId) {
           placeId = foundId;
           break;
@@ -105,7 +98,6 @@ export async function GET(request: Request) {
       }
       
       if (!placeId) {
-        console.log(`Could not find Place ID for ${locationName}`);
         return NextResponse.json({ 
           error: 'Place not found', 
           location: locationName,
@@ -115,7 +107,6 @@ export async function GET(request: Request) {
       
       // Cache it
       PLACE_IDS[locationName] = placeId;
-      console.log(`Found Place ID for ${locationName}: ${placeId}`);
     }
     
     // Get place details

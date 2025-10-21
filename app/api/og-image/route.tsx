@@ -61,7 +61,7 @@ export async function GET(request: NextRequest) {
                 marginBottom: '20px',
               }}
             >
-              FLORA DISTRO
+              YACHT CLUB
             </div>
             
             {/* Divider */}
@@ -83,7 +83,7 @@ export async function GET(request: NextRequest) {
                 textTransform: 'uppercase',
               }}
             >
-              Quality at every scale
+              Premium Marketplace
             </div>
           </div>
 
@@ -99,9 +99,9 @@ export async function GET(request: NextRequest) {
               letterSpacing: '0.15em',
             }}
           >
-            <div>Premium Distribution</div>
+            <div>Premium Marketplace</div>
             <div style={{ color: 'rgba(255,255,255,0.2)' }}>•</div>
-            <div>NC & TN</div>
+            <div>Verified Vendors</div>
             <div style={{ color: 'rgba(255,255,255,0.2)' }}>•</div>
             <div>Fast Shipping</div>
           </div>
@@ -113,7 +113,7 @@ export async function GET(request: NextRequest) {
       },
     );
   } catch (e: any) {
-    console.log(`Error generating OG image: ${e.message}`);
+    console.error(`Error generating OG image: ${e.message}`);
     return new Response(`Failed to generate image`, {
       status: 500,
     });

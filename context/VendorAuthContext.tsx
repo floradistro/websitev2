@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { getVendorDashboardProxy as getVendorDashboard, getVendorSettingsProxy as getVendorSettings } from '@/lib/wordpress-vendor-proxy';
+import { supabase } from '@/lib/supabase/client';
 
 interface VendorUser {
   id: number;
@@ -41,45 +41,53 @@ export function VendorAuthProvider({ children }: { children: React.ReactNode }) 
     try {
       setIsLoading(true);
       
-      // Check if we have stored credentials
-      const storedEmail = localStorage.getItem('vendor_email');
-      const storedAuth = localStorage.getItem('vendor_auth');
+      // Check Supabase session
+      const { data: { session }, error } = await supabase.auth.getSession();
       
-      if (!storedEmail || !storedAuth) {
-        // No stored credentials, not authenticated
+      if (error || !session) {
+        // No valid session
         setIsLoading(false);
         return;
       }
       
-      // Try to fetch vendor data to verify auth
-      try {
-        const data = await getVendorSettings();
-        
-        if (data && data.id) {
-          setVendor({
-            id: parseInt(data.id),
-            store_name: data.store_name,
-            slug: data.slug,
-            email: data.email,
-            user_id: parseInt(data.user_id)
-          });
-          setIsAuthenticated(true);
-        } else {
-          // Auth failed, clear storage
-          localStorage.removeItem('vendor_email');
-          localStorage.removeItem('vendor_auth');
-          localStorage.removeItem('vendor_token');
-        }
-      } catch (error: any) {
-        // If 401, clear bad credentials silently
-        if (error.response?.status === 401) {
-          localStorage.removeItem('vendor_email');
-          localStorage.removeItem('vendor_auth');
-          localStorage.removeItem('vendor_token');
-        }
+      // Get vendor data from Supabase
+      const vendorId = localStorage.getItem('vendor_id');
+      const vendorEmail = localStorage.getItem('vendor_email');
+      
+      if (!vendorId || !vendorEmail) {
+        // Missing vendor data, logout
+        await supabase.auth.signOut();
+        setIsLoading(false);
+        return;
       }
+
+      // Fetch current vendor data
+      const { data: vendorData, error: vendorError } = await supabase
+        .from('vendors')
+        .select('*')
+        .eq('id', vendorId)
+        .single();
+
+      if (vendorError || !vendorData) {
+        // Vendor not found, clear session
+        await supabase.auth.signOut();
+        localStorage.clear();
+        setIsLoading(false);
+        return;
+      }
+
+      // Set vendor state
+      setVendor({
+        id: vendorData.wordpress_user_id || 0,
+        store_name: vendorData.store_name,
+        slug: vendorData.slug,
+        email: vendorData.email,
+        user_id: vendorData.wordpress_user_id || 0
+      });
+      setIsAuthenticated(true);
+      
     } catch (error) {
-      // Silently handle errors
+      console.error('Auth check error:', error);
     } finally {
       setIsLoading(false);
     }
@@ -87,48 +95,67 @@ export function VendorAuthProvider({ children }: { children: React.ReactNode }) 
 
   async function login(email: string, password: string): Promise<boolean> {
     try {
-      // Call WordPress vendor login endpoint
-      const response = await fetch('/api/vendor/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password })
+      // 1. Login to Supabase
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+        email,
+        password
       });
-      
-      const data = await response.json();
-      
-      if (response.ok && data.success && data.vendor) {
-        // Store credentials
-        localStorage.setItem('vendor_email', email);
-        localStorage.setItem('vendor_auth', btoa(`${email}:${password}`));
-        localStorage.setItem('vendor_token', data.token);
-        localStorage.setItem('vendor_id', data.vendor.id.toString()); // Store vendor ID
-        
-        // Set vendor state
-        setVendor({
-          id: data.vendor.id,
-          store_name: data.vendor.store_name,
-          slug: data.vendor.slug,
-          email: data.vendor.email,
-          user_id: data.vendor.user_id
-        });
-        setIsAuthenticated(true);
-        return true;
-      } else {
-        // Login failed
-        console.error('Login failed:', data);
+
+      if (authError || !authData.session) {
+        console.error('Supabase login failed:', authError);
         return false;
       }
+
+      // 2. Get vendor profile from Supabase
+      const { data: vendorData, error: vendorError } = await supabase
+        .from('vendors')
+        .select('*')
+        .eq('email', email)
+        .single();
+
+      if (vendorError || !vendorData) {
+        console.error('Vendor not found in Supabase:', vendorError);
+        await supabase.auth.signOut();
+        return false;
+      }
+
+      // 3. Store auth data (SIMPLIFIED - just Supabase session and vendor data)
+      localStorage.setItem('supabase_session', authData.session.access_token);
+      localStorage.setItem('vendor_id', vendorData.id);
+      localStorage.setItem('vendor_email', vendorData.email);
+      localStorage.setItem('vendor_slug', vendorData.slug || '');
+      localStorage.setItem('vendor_wordpress_id', vendorData.wordpress_user_id?.toString() || '');
+      
+      // 4. Set vendor state
+      setVendor({
+        id: vendorData.wordpress_user_id || 0,
+        store_name: vendorData.store_name,
+        slug: vendorData.slug,
+        email: vendorData.email,
+        user_id: vendorData.wordpress_user_id || 0
+      });
+      setIsAuthenticated(true);
+      
+      console.log('✅ Login successful:', vendorData.store_name);
+      return true;
+
     } catch (error) {
       console.error('Login error:', error);
       return false;
     }
   }
 
-  function logout() {
+  async function logout() {
+    // Logout from Supabase
+    await supabase.auth.signOut();
+    
+    // Clear simplified storage
+    localStorage.removeItem('supabase_session');
+    localStorage.removeItem('vendor_id');
     localStorage.removeItem('vendor_email');
-    localStorage.removeItem('vendor_auth');
+    localStorage.removeItem('vendor_slug');
+    localStorage.removeItem('vendor_wordpress_id');
+    
     setVendor(null);
     setIsAuthenticated(false);
   }

@@ -3,8 +3,8 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Plus, Search, Filter, Package, FileText, CheckCircle, AlertCircle, XCircle } from 'lucide-react';
-import { getVendorMyProductsProxy as getVendorMyProducts } from '@/lib/wordpress-vendor-proxy';
 import { useVendorAuth } from '@/context/VendorAuthContext';
+import axios from 'axios';
 
 interface Product {
   id: number;
@@ -37,23 +37,43 @@ export default function VendorProducts() {
       
       try {
         setLoading(true);
-        const response = await getVendorMyProducts(1, 100);
         
-        if (response && response.products) {
-          const mappedProducts = response.products.map((p: any) => ({
-            // Use submission id for pending/rejected, product_id for approved
-            id: p.product_id > 0 ? p.product_id : p.id,
-            submissionId: p.id, // Keep track of submission ID
-            name: p.name || 'Unnamed Product',
-            image: p.image || '/logoprint.png',
-            status: p.status,
-            quantity: p.stock ? parseFloat(p.stock) : 0,
-            price: `$${parseFloat(p.price || 0).toFixed(2)}`,
-            category: p.category || 'Product',
-            coaStatus: p.coas && p.coas.length > 0 ? 'approved' : (p.status === 'pending' ? 'pending' : 'missing'),
-            submittedDate: p.submitted_date,
-            rejectionReason: p.rejection_reason
-          }));
+        // Get vendor ID from localStorage
+        const vendorId = localStorage.getItem('vendor_id');
+        if (!vendorId) {
+          setLoading(false);
+          return;
+        }
+
+        // Call simplified products API
+        const response = await axios.get('/api/vendor/products', {
+          headers: {
+            'x-vendor-id': vendorId
+          }
+        });
+        
+        if (response.data && response.data.products) {
+          const mappedProducts = response.data.products.map((p: any) => {
+            // Map Supabase status to vendor UI status
+            let status: 'approved' | 'pending' | 'rejected' = 'pending';
+            if (p.status === 'published') status = 'approved';
+            else if (p.status === 'draft' || p.status === 'pending') status = 'pending';
+            else if (p.status === 'archived') status = 'rejected';
+            
+            return {
+              id: p.wordpress_id || p.id,
+              submissionId: p.id, // UUID for Supabase
+              name: p.name || 'Unnamed Product',
+              image: p.featured_image_storage || p.featured_image || '/yacht-club-logo.png',
+              status: status,
+              quantity: p.stock_quantity || 0,
+              price: `$${parseFloat(p.price || 0).toFixed(2)}`,
+              category: p.primary_category?.name || p.categories?.[0]?.name || 'Product',
+              coaStatus: 'missing', // Will add COA check later
+              submittedDate: p.created_at,
+              rejectionReason: null
+            };
+          });
           setProducts(mappedProducts);
         }
         setLoading(false);

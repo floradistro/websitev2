@@ -56,10 +56,10 @@ export default function DashboardPage() {
     try {
       setLoadingRecommendations(true);
       
-      // Get ALL products for AI analysis
-      const productsResponse = await fetch('/api/products-cache');
+      // Get ALL products for AI analysis from Supabase
+      const productsResponse = await fetch('/api/products-supabase');
       const productsData = await productsResponse.json();
-      const allProducts = productsData.products || productsData || [];
+      const allProducts = productsData.products || [];
       
       // Get data for recommendations
       const orderHistory = orders.map(o => ({
@@ -81,7 +81,6 @@ export default function DashboardPage() {
 
       const data = await response.json();
       
-      console.log('Dashboard Flora Budtender:', data);
       
       if (data.success && data.recommendations && data.recommendations.length > 0) {
         setRecommendations(data.recommendations);
@@ -97,7 +96,7 @@ export default function DashboardPage() {
       console.error('Error loading recommendations:', error);
       // Try to show something
       try {
-        const productsResponse = await fetch('/api/products-cache');
+        const productsResponse = await fetch('/api/products-supabase');
         const productsData = await productsResponse.json();
         const allProducts = productsData.products || productsData || [];
         const fallback = allProducts.filter((p: any) => p.stock_status === 'instock').slice(0, 6);
@@ -143,20 +142,14 @@ export default function DashboardPage() {
       const consumerKey = "ck_bb8e5fe3d405e6ed6b8c079c93002d7d8b23a7d5";
       const consumerSecret = "cs_38194e74c7ddc5d72b6c32c70485728e7e529678";
       
-      // Use Next.js proxy to avoid CORS issues
-      const response = await axios.get(`/api/wp-proxy`, {
+      // Use Supabase orders API
+      const response = await axios.get(`/api/customer-orders`, {
         params: {
-          path: '/wp-json/wc/v3/orders',
-          consumer_key: consumerKey,
-          consumer_secret: consumerSecret,
-          customer: user.id,
-          per_page: 10,
-          orderby: 'date',
-          order: 'desc',
+          customer: user.id
         }
       });
       
-      setOrders(response.data);
+      setOrders(response.data.orders || []);
     } catch (error) {
       console.error("Error fetching orders:", error);
     } finally {
@@ -226,7 +219,11 @@ export default function DashboardPage() {
       window.location.reload();
     } catch (error) {
       console.error("Error saving address:", error);
-      alert("Failed to save address. Please try again.");
+      showNotification({
+        type: 'error',
+        title: 'Address Error',
+        message: 'Failed to save address. Please try again.',
+      });
     }
   };
 
@@ -507,8 +504,8 @@ export default function DashboardPage() {
                                 ) : (
                                   <div className="w-16 h-16 flex-shrink-0 bg-[#2a2a2a] flex items-center justify-center">
                                     <Image
-                                      src="/logoprint.png"
-                                      alt="Flora Distro"
+                                      src="/yacht-club-logo.png"
+                                      alt="Yacht Club"
                                       width={24}
                                       height={24}
                                       className="opacity-20"
@@ -921,8 +918,8 @@ export default function DashboardPage() {
                               ) : (
                                 <div className="w-20 h-20 flex-shrink-0 bg-[#2a2a2a] flex items-center justify-center">
                                   <Image
-                                    src="/logoprint.png"
-                                    alt="Flora Distro"
+                                    src="/yacht-club-logo.png"
+                                    alt="Yacht Club"
                                     width={30}
                                     height={30}
                                     className="opacity-20"
@@ -1007,8 +1004,8 @@ export default function DashboardPage() {
                               ) : (
                                 <div className="w-20 h-20 flex-shrink-0 bg-[#2a2a2a] flex items-center justify-center">
                                   <Image
-                                    src="/logoprint.png"
-                                    alt="Flora Distro"
+                                    src="/yacht-club-logo.png"
+                                    alt="Yacht Club"
                                     width={30}
                                     height={30}
                                     className="opacity-20"

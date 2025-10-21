@@ -125,7 +125,7 @@ export async function GET(request: NextRequest) {
       },
     );
   } catch (e: any) {
-    console.log(`Error generating product OG image: ${e.message}`);
+    console.error(`Error generating product OG image: ${e.message}`);
     return new Response(`Failed to generate image`, {
       status: 500,
     });

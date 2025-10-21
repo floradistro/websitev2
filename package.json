@@ -11,8 +11,10 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.67.0",
+    "@modelcontextprotocol/sdk": "^1.20.1",
     "@react-three/drei": "^10.7.6",
     "@react-three/fiber": "^9.4.0",
+    "@supabase/supabase-js": "^2.76.0",
     "@types/p5": "^1.7.6",
     "@types/three": "^0.180.0",
     "@vercel/edge": "^1.2.2",
@@ -33,6 +35,8 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "local-ssl-proxy": "^2.0.5",
+    "node-fetch": "^2.7.0",
+    "pg": "^8.16.3",
     "tailwindcss": "^4",
     "tsx": "^4.20.6",
     "typescript": "^5"

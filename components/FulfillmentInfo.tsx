@@ -137,7 +137,7 @@ export default function FulfillmentInfo({
             <div className="flex items-center gap-2 mb-3">
               <Package size={16} className="text-green-500" />
               <div className="text-white/80 text-sm font-medium">
-                Available at Flora Locations
+                Available at Our Locations
               </div>
               <span className="ml-auto text-xs text-green-500 font-medium">FASTEST</span>
             </div>

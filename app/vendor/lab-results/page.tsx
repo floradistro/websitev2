@@ -436,7 +436,7 @@ export default function VendorLabResults() {
                 <div className="flex items-center gap-3">
                   {getStatusBadge(selectedCOA.status)}
                   {selectedCOA.status === 'approved' && (
-                    <span className="text-white/60 text-xs">Verified by Flora Distro Quality Team</span>
+                    <span className="text-white/60 text-xs">Verified by Yacht Club Quality Team</span>
                   )}
                   {selectedCOA.status === 'expired' && (
                     <span className="text-red-500 text-xs">COA is older than 90 days - renewal required</span>

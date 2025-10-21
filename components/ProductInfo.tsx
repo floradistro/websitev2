@@ -50,7 +50,7 @@ export default function ProductInfo({
     <>
       <div className="animate-fadeIn space-y-3">
         {/* Product Name - Matches ProductCard */}
-        <h1 className="text-xs uppercase tracking-[0.12em] font-normal text-white leading-relaxed">
+        <h1 className="text-2xl sm:text-3xl uppercase tracking-[0.12em] font-normal text-white leading-relaxed">
           {product.name}
         </h1>
 

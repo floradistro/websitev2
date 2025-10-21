@@ -232,8 +232,8 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
                       />
                     ) : (
                       <Image
-                        src="/logoprint.png"
-                        alt="Flora Distro"
+                        src="/yacht-club-logo.png"
+                        alt="Yacht Club"
                         fill
                         className="object-contain opacity-20"
                         loading="lazy"

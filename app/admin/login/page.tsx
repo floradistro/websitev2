@@ -1,12 +1,8 @@
 "use client";
 
-export const dynamic = "force-dynamic";
-
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Shield } from 'lucide-react';
-
-// Prevent static generation for admin login
 
 export default function AdminLogin() {
   const [username, setUsername] = useState('');

@@ -88,9 +88,9 @@ export default function ShippingEstimator({
     setShowResults(false);
 
     try {
-      // Validate productId
-      if (!productId || isNaN(productId)) {
-        console.error('❌ Invalid productId:', productId);
+      // Validate productId (can be UUID or number)
+      if (!productId) {
+        console.error('❌ Missing productId');
         setError("Invalid product ID");
         setLoading(false);
         return;
@@ -101,6 +101,8 @@ export default function ShippingEstimator({
           {
             product_id: parseInt(String(productId)),
             quantity: quantity,
+            price: productPrice, // Add price for shipping calculation
+            productPrice: productPrice // Alternate field name
           },
         ],
         destination: {

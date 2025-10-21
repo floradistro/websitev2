@@ -1,9 +1,15 @@
-import { NextRequest, NextResponse } from 'next/server';
-import axios from 'axios';
+import { NextRequest, NextResponse } from "next/server";
 
-const baseUrl = process.env.NEXT_PUBLIC_WORDPRESS_API_URL || 'https://api.floradistro.com';
-const consumerKey = process.env.NEXT_PUBLIC_WORDPRESS_CONSUMER_KEY || 'ck_bb8e5fe3d405e6ed6b8c079c93002d7d8b23a7d5';
-const consumerSecret = process.env.NEXT_PUBLIC_WORDPRESS_CONSUMER_SECRET || 'cs_38194e74c7ddc5d72b6c32c70485728e7e529678';
+// Get base URL for internal API calls
+const getBaseUrl = () => {
+  if (process.env.NEXT_PUBLIC_SITE_URL) {
+    return process.env.NEXT_PUBLIC_SITE_URL;
+  }
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}`;
+  }
+  return 'http://localhost:3000';
+};
 
 export async function GET(
   request: NextRequest,
@@ -12,23 +18,19 @@ export async function GET(
   try {
     const { id } = await params;
     
-    const response = await axios.get(
-      `${baseUrl}/wp-json/wc/v3/customers/${id}`,
-      {
-        params: {
-          consumer_key: consumerKey,
-          consumer_secret: consumerSecret,
-        }
-      }
-    );
-
-    return NextResponse.json(response.data);
+    // Fetch customer from Supabase
+    const response = await fetch(`${getBaseUrl()}/api/supabase/customers/${id}`);
+    const data = await response.json();
+    
+    if (!data.success || !data.customer) {
+      return NextResponse.json({ error: 'Customer not found' }, { status: 404 });
+    }
+    
+    return NextResponse.json(data.customer);
+    
   } catch (error: any) {
-    console.error('Customer GET error:', error.response?.data || error.message);
-    return NextResponse.json(
-      { error: error.response?.data?.message || 'Failed to fetch customer' },
-      { status: error.response?.status || 500 }
-    );
+    console.error('Customer API error:', error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
 
@@ -40,24 +42,23 @@ export async function PUT(
     const { id } = await params;
     const body = await request.json();
     
-    const response = await axios.put(
-      `${baseUrl}/wp-json/wc/v3/customers/${id}`,
-      body,
-      {
-        params: {
-          consumer_key: consumerKey,
-          consumer_secret: consumerSecret,
-        }
-      }
-    );
-
-    return NextResponse.json(response.data);
+    // Update customer in Supabase
+    const response = await fetch(`${getBaseUrl()}/api/supabase/customers/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    
+    const data = await response.json();
+    
+    if (!data.success) {
+      throw new Error('Failed to update customer');
+    }
+    
+    return NextResponse.json(data.customer);
+    
   } catch (error: any) {
-    console.error('Customer PUT error:', error.response?.data || error.message);
-    return NextResponse.json(
-      { error: error.response?.data?.message || 'Failed to update customer' },
-      { status: error.response?.status || 500 }
-    );
+    console.error('Update customer error:', error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
-

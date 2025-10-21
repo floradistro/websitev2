@@ -177,7 +177,6 @@ export default function EditProduct() {
     setSaving(true);
 
     // TODO: Submit to API as change request
-    console.log('Submitting change request for product:', productId, product, images, coaFile);
     
     setTimeout(() => {
       setSaving(false);

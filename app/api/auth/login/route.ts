@@ -67,7 +67,6 @@ export async function POST(request: NextRequest) {
     } catch (ajaxError) {
       // AJAX endpoint not available, fallback to returning customer data
       // NOTE: This doesn't verify password! For testing only.
-      console.log('AJAX auth not available, returning customer data');
     }
 
     // Return customer data (password not verified - for dev/testing)

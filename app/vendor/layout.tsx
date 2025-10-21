@@ -3,10 +3,11 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Home, Package, BarChart3, Settings, LogOut, Palette, ShoppingBag, FileText, DollarSign, Star, ChevronLeft, Menu, X } from 'lucide-react';
+import { Home, Package, BarChart3, Settings, LogOut, Palette, ShoppingBag, FileText, DollarSign, Star, ChevronLeft, Menu, X, MapPin, Globe } from 'lucide-react';
 import VendorSupportChat from '@/components/VendorSupportChat';
 import VendorApprovalPanel from '@/components/VendorApprovalPanel';
 import { VendorAuthProvider, useVendorAuth } from '@/context/VendorAuthContext';
+import { showConfirm } from '@/components/NotificationToast';
 
 function VendorLayoutContent({
   children,
@@ -15,7 +16,7 @@ function VendorLayoutContent({
 }) {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [vendorLogo, setVendorLogo] = useState<string>('/logoprint.png');
+  const [vendorLogo, setVendorLogo] = useState<string>('/yacht-club-logo.png');
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const pathname = usePathname();
@@ -69,35 +70,26 @@ function VendorLayoutContent({
     };
   }, [lastScrollY]);
 
-  // Fetch vendor logo
+  // Vendor logo - use default for now (can be added to Supabase vendors table later)
   useEffect(() => {
-    if (isAuthenticated) {
-      const authToken = localStorage.getItem('vendor_auth');
-      
-      fetch('/api/vendor-proxy?endpoint=flora-vendors/v1/vendors/me/branding', {
-        headers: {
-          'Authorization': `Basic ${authToken}`
-        }
-      })
-      .then(res => res.json())
-      .then(data => {
-        if (data.logo_url) {
-          setVendorLogo(data.logo_url);
-        }
-      })
-      .catch(err => console.error('Failed to fetch logo:', err));
+    if (isAuthenticated && vendor) {
+      // Could fetch from Supabase vendors table if logo_url field is added
+      // For now, use default logo
+      setVendorLogo('/yacht-club-logo.png');
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, vendor]);
 
   const navItems = [
     { href: '/vendor/dashboard', icon: Home, label: 'Dashboard' },
     { href: '/vendor/products', icon: Package, label: 'Products' },
     { href: '/vendor/inventory', icon: BarChart3, label: 'Inventory' },
+    { href: '/vendor/locations', icon: MapPin, label: 'Locations' },
     { href: '/vendor/orders', icon: ShoppingBag, label: 'Orders' },
     { href: '/vendor/lab-results', icon: FileText, label: 'Lab Results' },
     { href: '/vendor/payouts', icon: DollarSign, label: 'Payouts' },
     { href: '/vendor/reviews', icon: Star, label: 'Reviews' },
     { href: '/vendor/branding', icon: Palette, label: 'Branding' },
+    { href: '/vendor/domains', icon: Globe, label: 'Domains' },
     { href: '/vendor/settings', icon: Settings, label: 'Settings' },
   ];
 
@@ -125,11 +117,18 @@ function VendorLayoutContent({
     return null;
   }
 
-  function handleLogout() {
-    if (confirm('Are you sure you want to log out?')) {
-      logout();
-      router.push('/vendor/login');
-    }
+  async function handleLogout() {
+    await showConfirm({
+      title: 'Logout',
+      message: 'Are you sure you want to log out of your vendor account?',
+      confirmText: 'Logout',
+      cancelText: 'Stay',
+      type: 'warning',
+      onConfirm: () => {
+        logout();
+        router.push('/vendor/login');
+      },
+    });
   }
 
     return (

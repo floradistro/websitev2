@@ -2,7 +2,7 @@ import { Package, Clock, MapPin, Shield, Truck } from 'lucide-react';
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Shipping Policy | Flora Distro",
+  title: "Shipping Policy | Yacht Club",
   description: "Fast, reliable shipping across our marketplace. Daily 2PM cutoff, next-day regional delivery to NC and East Tennessee. Full tracking on every order.",
 };
 
@@ -33,7 +33,7 @@ export default function Shipping() {
             One marketplace. Coordinated delivery.
           </h2>
           <p className="text-base md:text-lg font-light text-white/50 leading-relaxed mb-8">
-            Shop multiple vendors in one cart. We coordinate fulfillment to ensure your products arrive quickly, safely, and discreetly—whether shipped from Flora Distro facilities or vendor locations.
+            Shop multiple vendors in one cart. We coordinate fulfillment to ensure your products arrive quickly, safely, and discreetly—whether shipped from Yacht Club facilities or vendor locations.
           </p>
           <p className="text-base md:text-lg font-light text-white/50 leading-relaxed">
             All vendors meet our strict shipping standards. You get the same quality experience, no matter who fulfills your order.

@@ -88,7 +88,7 @@ export default function LuxuryHero() {
           className="logo-font text-6xl sm:text-7xl md:text-8xl lg:text-9xl xl:text-[14rem] font-normal uppercase tracking-tight mb-4 sm:mb-8 leading-none premium-text animate-fadeInUp"
           style={{ animationDelay: "0.4s", animationFillMode: "forwards", opacity: 0 }}
         >
-          Flora Distro
+          Yacht Club
         </h1>
         
         {/* Divider - Smaller on mobile */}
@@ -102,7 +102,7 @@ export default function LuxuryHero() {
           className="text-base sm:text-base md:text-lg lg:text-xl font-light text-white/50 mb-8 sm:mb-12 tracking-[0.12em] sm:tracking-[0.15em] max-w-2xl mx-auto animate-fadeInUp px-2"
           style={{ animationDelay: "0.8s", animationFillMode: "forwards", opacity: 0 }}
         >
-          Quality at every scale
+          Premium Marketplace
         </p>
 
         {/* CTA Button - Mobile optimized */}

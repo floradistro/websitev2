@@ -193,8 +193,8 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                         />
                       ) : (
                         <Image
-                          src="/logoprint.png"
-                          alt="Flora Distro"
+                          src="/yacht-club-logo.png"
+                          alt="Yacht Club"
                           fill
                           className="object-contain opacity-20 p-2"
                           loading="lazy"

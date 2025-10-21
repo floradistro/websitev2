@@ -1,7 +1,7 @@
 {
-  "name": "Flora Distro",
-  "short_name": "Flora",
-  "description": "Premium Cannabis Marketplace",
+  "name": "Yacht Club",
+  "short_name": "Yacht Club",
+  "description": "Premium Marketplace",
   "start_url": "/",
   "display": "standalone",
   "display_override": ["standalone"],
@@ -11,13 +11,13 @@
   "scope": "/",
   "icons": [
     {
-      "src": "/logoprint.png",
+      "src": "/yacht-club-logo.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/logoprint.png",
+      "src": "/yacht-club-logo.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"

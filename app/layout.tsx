@@ -35,39 +35,39 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'),
-  title: "Flora Distro | Premium Cannabis Distribution",
+  title: "Yacht Club | Premium Marketplace",
   description: "Shop premium cannabis products including flower, concentrates, edibles, vapes, and beverages. Direct from our facilities with next-day regional delivery. Farm Bill compliant.",
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
-    title: 'Flora Distro',
-    startupImage: '/logoprint.png',
+    title: 'Yacht Club',
+    startupImage: '/yacht-club-logo.png',
   },
   openGraph: {
-    title: "Flora Distro | Premium Cannabis Distribution",
+    title: "Yacht Club | Premium Marketplace",
     description: "Premium cannabis products with fast shipping. Direct sourcing, volume pricing, always fresh.",
     type: "website",
-    siteName: "Flora Distro",
+    siteName: "Yacht Club",
     images: [
       {
         url: '/api/og-image',
         width: 1200,
         height: 630,
-        alt: 'Flora Distro',
+        alt: 'Yacht Club',
       }
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Flora Distro | Premium Cannabis Distribution",
+    title: "Yacht Club | Premium Marketplace",
     description: "Premium cannabis products with fast shipping.",
     images: ['/api/og-image'],
   },
   icons: {
     icon: '/favicon.ico',
     shortcut: '/favicon.ico',
-    apple: '/logoprint.png',
+    apple: '/yacht-club-logo.png',
   },
 };
 
@@ -84,9 +84,9 @@ export default function RootLayout({
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <meta name="apple-mobile-web-app-title" content="Flora Distro" />
-        <link rel="apple-touch-icon" href="/logoprint.png" />
-        <link rel="apple-touch-startup-image" href="/logoprint.png" />
+        <meta name="apple-mobile-web-app-title" content="Yacht Club" />
+        <link rel="apple-touch-icon" href="/yacht-club-logo.png" />
+        <link rel="apple-touch-startup-image" href="/yacht-club-logo.png" />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col overflow-x-hidden min-h-screen`}

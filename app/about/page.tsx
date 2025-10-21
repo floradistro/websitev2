@@ -3,10 +3,10 @@ import Link from "next/link";
 import { Store, Users, Truck, Shield } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "About Us | Flora Distro",
-  description: "Flora Distro is the premier cannabis marketplace connecting trusted vendors with customers. Premium products, transparent pricing, and fast delivery across NC and TN.",
+  title: "About Us | Yacht Club",
+  description: "Yacht Club is the premier cannabis marketplace connecting trusted vendors with customers. Premium products, transparent pricing, and fast delivery across NC and TN.",
   openGraph: {
-    title: "About Flora Distro",
+    title: "About Yacht Club",
     description: "The premier cannabis marketplace. Connecting trusted vendors with customers nationwide.",
     type: "website",
   },
@@ -28,7 +28,7 @@ export default async function AboutPage() {
         <div className="max-w-4xl mx-auto text-center relative z-10">
           <div className="h-[1px] w-16 bg-gradient-to-r from-transparent via-white/30 to-transparent mx-auto mb-8"></div>
           <h1 className="text-5xl md:text-7xl font-light text-white mb-6 leading-tight tracking-tight">
-            About Flora Distro
+            About Yacht Club
           </h1>
           <div className="h-[1px] w-24 bg-gradient-to-r from-transparent via-white/20 to-transparent mx-auto mb-12"></div>
           <p className="text-lg md:text-xl font-light text-white/50 leading-relaxed max-w-2xl mx-auto">
@@ -44,7 +44,7 @@ export default async function AboutPage() {
             Built on quality.<br/>Driven by trust.
           </h2>
           <p className="text-base md:text-lg font-light text-white/50 leading-relaxed mb-8">
-            Flora Distro is more than a marketplace. We're a curated ecosystem of verified vendors, each bringing their unique products and expertise to customers who demand quality.
+            Yacht Club is more than a marketplace. We're a curated ecosystem of verified vendors, each bringing their unique products and expertise to customers who demand quality.
           </p>
           <p className="text-base md:text-lg font-light text-white/50 leading-relaxed">
             From our own facilities to carefully vetted partner vendors, every product on our platform meets rigorous standards. We handle the logistics, security, and trust—so vendors can focus on what they do best.
@@ -143,7 +143,7 @@ export default async function AboutPage() {
             One platform. Endless possibilities.
           </h2>
           <p className="text-base md:text-lg font-light text-white/50 leading-relaxed mb-12">
-            Whether you're a vendor looking to expand your reach or a customer seeking the best cannabis products, Flora Distro brings the industry together under one trusted roof.
+            Whether you're a vendor looking to expand your reach or a customer seeking the best cannabis products, Yacht Club brings the industry together under one trusted roof.
           </p>
           <Link 
             href="/vendors"

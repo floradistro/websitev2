@@ -5,22 +5,26 @@ export const dynamic = "force-dynamic";
 import { useState, useEffect } from 'react';
 import { Store, Plus, Search, Filter, CheckCircle, XCircle, AlertCircle, Edit, Trash2 } from 'lucide-react';
 import axios from 'axios';
+import { showNotification, showConfirm } from '@/components/NotificationToast';
+import AdminModal from '@/components/AdminModal';
 
 // Prevent static generation for admin pages
 
-const baseUrl = "https://api.floradistro.com";
-const consumerKey = "ck_bb8e5fe3d405e6ed6b8c079c93002d7d8b23a7d5";
-const consumerSecret = "cs_38194e74c7ddc5d72b6c32c70485728e7e529678";
-const authParams = `consumer_key=${consumerKey}&consumer_secret=${consumerSecret}`;
+// Admin vendors now uses Supabase API
 
 interface Vendor {
-  id: number;
+  id: string | number;
   store_name: string;
   email: string;
   status: 'active' | 'pending' | 'suspended';
   created_date: string;
   total_products: number;
   total_sales: number;
+  phone?: string | null;
+  address?: string | null;
+  city?: string | null;
+  state?: string | null;
+  zip?: string | null;
 }
 
 export default function AdminVendors() {
@@ -29,11 +33,22 @@ export default function AdminVendors() {
   const [filter, setFilter] = useState<string>('all');
   const [search, setSearch] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingVendor, setEditingVendor] = useState<Vendor | null>(null);
   const [newVendor, setNewVendor] = useState({
     store_name: '',
     email: '',
     username: '',
     password: '',
+  });
+  const [editVendorData, setEditVendorData] = useState({
+    store_name: '',
+    email: '',
+    phone: '',
+    address: '',
+    city: '',
+    state: '',
+    zip: '',
   });
 
   useEffect(() => {
@@ -44,95 +59,25 @@ export default function AdminVendors() {
     try {
       setLoading(true);
       
-      let vendorsList: Vendor[] = [];
+      // Fetch vendors from new Supabase hybrid API
+      const response = await axios.get('/api/admin/vendors');
 
-      // Try Flora Matrix vendors endpoint first
-      try {
-        const vendorsResponse = await axios.get(
-          `${baseUrl}/wp-json/flora-vendors/v1/vendors?${authParams}&_t=${Date.now()}`
-        );
+      if (response.data.success && Array.isArray(response.data.vendors)) {
+        const vendorsList: Vendor[] = response.data.vendors.map((vendor: any) => ({
+          id: vendor.id, // UUID from Supabase
+          store_name: vendor.store_name,
+          email: vendor.email,
+          status: vendor.status as 'active' | 'pending' | 'suspended',
+          created_date: vendor.created_date,
+          total_products: vendor.total_products || 0,
+          total_sales: vendor.total_sales || 0,
+        }));
 
-        if (Array.isArray(vendorsResponse.data) && vendorsResponse.data.length > 0) {
-          vendorsList = vendorsResponse.data.map((vendor: any) => {
-            let status: 'active' | 'pending' | 'suspended' = 'pending';
-            if (vendor.status === 'approved' || vendor.status === 'active') {
-              status = 'active';
-            } else if (vendor.status === 'suspended') {
-              status = 'suspended';
-            }
-            
-            return {
-              id: parseInt(vendor.id || vendor.vendor_id),
-              store_name: vendor.store_name || vendor.name || 'Unnamed Vendor',
-              email: vendor.email || 'N/A',
-              status,
-              created_date: vendor.created_date || new Date().toISOString(),
-              total_products: parseInt(vendor.product_count || vendor.total_products || 0),
-              total_sales: vendor.total_sales || 0,
-            };
-          });
-        }
-      } catch (err) {
-        console.log('Flora vendors endpoint returned:', err);
+        setVendors(vendorsList);
+      } else {
+        setVendors([]);
       }
-
-      // Also load WooCommerce customers BUT ONLY THOSE WITH VENDOR METADATA
-      try {
-        const customersResponse = await axios.get(
-          `${baseUrl}/wp-json/wc/v3/customers?${authParams}&per_page=100&orderby=registered_date&order=desc&_t=${Date.now()}`
-        );
-
-        if (customersResponse.data && Array.isArray(customersResponse.data)) {
-          // Get existing vendor IDs to avoid duplicates
-          const existingIds = new Set(vendorsList.map(v => v.id));
-
-          const newVendors: Vendor[] = customersResponse.data
-            .filter((customer: any) => {
-              // ONLY include if not already in list AND has vendor metadata
-              if (existingIds.has(customer.id)) return false;
-              
-              // Check for ANY vendor-related metadata
-              const isVendor = customer.meta_data?.some((meta: any) => 
-                (meta.key === '_wcfm_vendor' && meta.value === 'yes') ||
-                (meta.key === 'wcfm_vendor_active' && meta.value === '1') ||
-                (meta.key === 'store_name' && meta.value)
-              );
-              
-              return isVendor; // FILTER: Only vendors
-            })
-            .map((customer: any) => {
-              const vendorStatus = customer.meta_data?.find((meta: any) => 
-                meta.key === '_wcfm_vendor_status' || meta.key === 'vendor_status'
-              );
-
-              let status: 'active' | 'pending' | 'suspended' = 'active';
-              if (vendorStatus?.value === 'suspended') {
-                status = 'suspended';
-              } else if (vendorStatus?.value === 'pending') {
-                status = 'pending';
-              }
-
-              const storeName = customer.meta_data?.find((meta: any) => meta.key === 'store_name');
-
-              return {
-                id: customer.id,
-                store_name: storeName?.value || customer.first_name || customer.username || customer.email,
-                email: customer.email || 'N/A',
-                status,
-                created_date: customer.date_created || new Date().toISOString(),
-                total_products: 0,
-                total_sales: 0,
-              };
-            });
-
-          vendorsList = [...vendorsList, ...newVendors];
-        }
-      } catch (err) {
-        console.log('WooCommerce customers endpoint error:', err);
-      }
-
-      console.log('Total vendors loaded:', vendorsList.length, vendorsList.map(v => v.store_name));
-      setVendors(vendorsList);
+      
       setLoading(false);
     } catch (error) {
       console.error('Error loading vendors:', error);
@@ -141,17 +86,63 @@ export default function AdminVendors() {
     }
   }
 
+  function openEditModal(vendor: Vendor) {
+    setEditingVendor(vendor);
+    setEditVendorData({
+      store_name: vendor.store_name,
+      email: vendor.email,
+      phone: vendor.phone || '',
+      address: vendor.address || '',
+      city: vendor.city || '',
+      state: vendor.state || '',
+      zip: vendor.zip || '',
+    });
+    setShowEditModal(true);
+  }
+
+  async function updateVendor() {
+    if (!editingVendor) return;
+
+    try {
+      const response = await axios.post('/api/admin/vendors', {
+        action: 'update',
+        vendor_id: editingVendor.id,
+        ...editVendorData,
+      });
+
+      if (response.data.success) {
+        showNotification({
+          type: 'success',
+          title: 'Vendor Updated',
+          message: `${editVendorData.store_name} has been updated successfully`,
+        });
+        setShowEditModal(false);
+        setEditingVendor(null);
+        loadVendors();
+      }
+    } catch (error: any) {
+      showNotification({
+        type: 'error',
+        title: 'Error Updating Vendor',
+        message: error.response?.data?.message || error.message,
+      });
+    }
+  }
+
   async function createVendor() {
     if (!newVendor.store_name || !newVendor.email || !newVendor.username || !newVendor.password) {
-      alert('Please fill in all fields');
+      showNotification({
+        type: 'error',
+        title: 'Missing Fields',
+        message: 'Please fill in all required fields',
+      });
       return;
     }
 
     try {
       const response = await axios.post(
-        `/api/admin/create-vendor`,
+        `/api/admin/create-vendor-supabase`,
         {
-          action: 'create_vendor',
           store_name: newVendor.store_name,
           email: newVendor.email,
           username: newVendor.username,
@@ -160,84 +151,155 @@ export default function AdminVendors() {
       );
 
       if (response.data.success) {
-        alert(`✅ Vendor created successfully!\n\nUser ID: ${response.data.user_id}\nUsername: ${response.data.username}\nEmail: ${response.data.email}\n\nRefreshing vendor list...`);
+        showNotification({
+          type: 'success',
+          title: 'Vendor Created',
+          message: `${response.data.vendor.store_name} has been created successfully`,
+          duration: 7000,
+        });
         setShowAddModal(false);
         setNewVendor({ store_name: '', email: '', username: '', password: '' });
         
-        // Wait a moment for WordPress to update, then reload
         setTimeout(() => {
           loadVendors();
         }, 1000);
       } else {
-        alert(`❌ Failed to create vendor\n\n${response.data.message}\n\nPlease use a different email/username.`);
+        showNotification({
+          type: 'error',
+          title: 'Creation Failed',
+          message: response.data.message || 'Please use a different email/username',
+        });
       }
     } catch (error: any) {
       console.error('Error creating vendor:', error);
       const errorMessage = error.response?.data?.message || error.message;
-      alert(`❌ Error creating vendor\n\n${errorMessage}\n\n${errorMessage.includes('email') ? 'Tip: Use a unique email address' : ''}`);
+      showNotification({
+        type: 'error',
+        title: 'Error Creating Vendor',
+        message: errorMessage.includes('email') ? 'Email already in use. Please use a unique email address' : errorMessage,
+      });
     }
   }
 
-  async function suspendVendor(vendorId: number) {
-    if (!confirm('Are you sure you want to suspend this vendor?')) return;
+  async function suspendVendor(vendorId: string | number) {
+    const confirmed = await showConfirm({
+      title: 'Suspend Vendor',
+      message: 'Are you sure you want to suspend this vendor? They will not be able to access their account.',
+      confirmText: 'Suspend',
+      cancelText: 'Cancel',
+      type: 'warning',
+      onConfirm: () => {},
+    });
+    if (!confirmed) return;
 
     try {
-      const response = await axios.post('/api/admin/create-vendor', {
-        action: 'suspend_vendor',
+      const response = await axios.post('/api/admin/vendors', {
+        action: 'suspend',
         vendor_id: vendorId
       });
 
       if (response.data.success) {
-        alert('Vendor suspended successfully');
+        showNotification({
+          type: 'success',
+          title: 'Vendor Suspended',
+          message: 'Vendor has been suspended successfully',
+        });
         loadVendors();
       } else {
-        alert(`Failed to suspend vendor: ${response.data.message}`);
+        showNotification({
+          type: 'error',
+          title: 'Suspension Failed',
+          message: response.data.message || 'Unable to suspend vendor',
+        });
       }
     } catch (error: any) {
       console.error('Error suspending vendor:', error);
-      alert(`Failed to suspend vendor: ${error.response?.data?.message || error.message}`);
+      showNotification({
+        type: 'error',
+        title: 'Suspension Error',
+        message: error.response?.data?.message || error.message,
+      });
     }
   }
 
-  async function activateVendor(vendorId: number) {
-    if (!confirm('Activate this vendor?')) return;
+  async function activateVendor(vendorId: string | number) {
+    const confirmed = await showConfirm({
+      title: 'Activate Vendor',
+      message: 'Activate this vendor and allow them to access their account?',
+      confirmText: 'Activate',
+      cancelText: 'Cancel',
+      type: 'info',
+      onConfirm: () => {},
+    });
+    if (!confirmed) return;
 
     try {
-      const response = await axios.post('/api/admin/create-vendor', {
-        action: 'activate_vendor',
+      const response = await axios.post('/api/admin/vendors', {
+        action: 'activate',
         vendor_id: vendorId
       });
 
       if (response.data.success) {
-        alert('Vendor activated successfully');
+        showNotification({
+          type: 'success',
+          title: 'Vendor Activated',
+          message: 'Vendor has been activated successfully',
+        });
         loadVendors();
       } else {
-        alert(`Failed to activate vendor: ${response.data.message}`);
+        showNotification({
+          type: 'error',
+          title: 'Activation Failed',
+          message: response.data.message || 'Unable to activate vendor',
+        });
       }
     } catch (error: any) {
       console.error('Error activating vendor:', error);
-      alert(`Failed to activate vendor: ${error.response?.data?.message || error.message}`);
+      showNotification({
+        type: 'error',
+        title: 'Activation Error',
+        message: error.response?.data?.message || error.message,
+      });
     }
   }
 
-  async function deleteVendor(vendorId: number) {
-    if (!confirm('Are you sure you want to delete this vendor? This action cannot be undone.')) return;
+  async function deleteVendor(vendorId: string | number) {
+    const confirmed = await showConfirm({
+      title: 'Delete Vendor',
+      message: 'This will permanently delete the vendor from all systems including Supabase, WordPress, and auth. This action CANNOT be undone.',
+      confirmText: 'Delete Forever',
+      cancelText: 'Cancel',
+      type: 'danger',
+      onConfirm: () => {},
+    });
+    if (!confirmed) return;
 
     try {
-      const response = await axios.post('/api/admin/create-vendor', {
-        action: 'delete_vendor',
+      const response = await axios.post('/api/admin/vendors', {
+        action: 'delete',
         vendor_id: vendorId
       });
 
       if (response.data.success) {
-        alert('Vendor deleted successfully');
+        showNotification({
+          type: 'success',
+          title: 'Vendor Deleted',
+          message: 'Vendor has been removed from all systems',
+        });
         loadVendors();
       } else {
-        alert(`Failed to delete vendor: ${response.data.message}`);
+        showNotification({
+          type: 'error',
+          title: 'Deletion Failed',
+          message: response.data.message || 'Unable to delete vendor',
+        });
       }
     } catch (error: any) {
-      console.error('Error deleting vendor:', error);
-      alert(`Failed to delete vendor: ${error.response?.data?.message || error.message}`);
+      showNotification({
+        type: 'error',
+        title: 'Deletion Error',
+        message: error.response?.data?.message || error.message,
+      });
     }
   }
 
@@ -309,7 +371,7 @@ export default function AdminVendors() {
               placeholder="Search vendors..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 pl-9 lg:pl-10 pr-4 py-2.5 lg:py-3 focus:outline-none focus:border-white/10 transition-colors text-sm lg:text-base"
+              className="w-full bg-[#1a1a1a] border border-white/10 text-white placeholder-white/40 pl-9 lg:pl-10 pr-4 py-2.5 lg:py-3 focus:outline-none focus:border-white/20 transition-colors text-sm lg:text-base"
             />
           </div>
 
@@ -445,6 +507,12 @@ export default function AdminVendors() {
                     </td>
                     <td className="p-4">
                       <div className="flex gap-2">
+                        <button
+                          onClick={() => openEditModal(vendor)}
+                          className="text-white/60 hover:text-white text-sm transition-colors"
+                        >
+                          Edit
+                        </button>
                         {vendor.status === 'pending' || vendor.status === 'suspended' ? (
                           <button
                             onClick={() => activateVendor(vendor.id)}
@@ -477,68 +545,129 @@ export default function AdminVendors() {
       )}
 
       {/* Add Vendor Modal */}
-      {showAddModal && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[200] flex items-center justify-center p-4">
-          <div className="bg-[#0a0a0a] border border-white/20 max-w-md w-full">
-            <div className="border-b border-white/10 p-6">
-              <h2 className="text-xl text-white font-medium">Add New Vendor</h2>
-              <p className="text-white/60 text-sm mt-1">Create a new vendor account</p>
-            </div>
-            <div className="p-6 space-y-4">
-              <div>
-                <label className="block text-white/60 text-xs uppercase tracking-wider mb-2">Store Name</label>
-                <input
-                  type="text"
-                  value={newVendor.store_name}
-                  onChange={(e) => setNewVendor({ ...newVendor, store_name: e.target.value })}
-                  className="w-full bg-[#1a1a1a] border border-white/10 text-white px-4 py-2.5 focus:outline-none focus:border-white/20 transition-colors"
-                />
-              </div>
-              <div>
-                <label className="block text-white/60 text-xs uppercase tracking-wider mb-2">Email</label>
-                <input
-                  type="email"
-                  value={newVendor.email}
-                  onChange={(e) => setNewVendor({ ...newVendor, email: e.target.value })}
-                  className="w-full bg-[#1a1a1a] border border-white/10 text-white px-4 py-2.5 focus:outline-none focus:border-white/20 transition-colors"
-                />
-              </div>
-              <div>
-                <label className="block text-white/60 text-xs uppercase tracking-wider mb-2">Username</label>
-                <input
-                  type="text"
-                  value={newVendor.username}
-                  onChange={(e) => setNewVendor({ ...newVendor, username: e.target.value })}
-                  className="w-full bg-[#1a1a1a] border border-white/10 text-white px-4 py-2.5 focus:outline-none focus:border-white/20 transition-colors"
-                />
-              </div>
-              <div>
-                <label className="block text-white/60 text-xs uppercase tracking-wider mb-2">Password</label>
-                <input
-                  type="password"
-                  value={newVendor.password}
-                  onChange={(e) => setNewVendor({ ...newVendor, password: e.target.value })}
-                  className="w-full bg-[#1a1a1a] border border-white/10 text-white px-4 py-2.5 focus:outline-none focus:border-white/20 transition-colors"
-                />
-              </div>
-            </div>
-            <div className="border-t border-white/10 p-6 flex gap-3">
-              <button
-                onClick={() => setShowAddModal(false)}
-                className="flex-1 px-4 py-2.5 bg-transparent border border-white/20 text-white hover:bg-white/5 transition-all text-sm uppercase tracking-wider"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={createVendor}
-                className="flex-1 px-4 py-2.5 bg-white text-black hover:bg-white/90 transition-all text-sm uppercase tracking-wider font-medium"
-              >
-                Create Vendor
-              </button>
-            </div>
+      <AdminModal
+        isOpen={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        title="Add New Vendor"
+        description="Create a new vendor account"
+        onSubmit={createVendor}
+        submitText="Create Vendor"
+        maxWidth="md"
+      >
+        <div>
+          <label className="block text-white/60 text-xs uppercase tracking-wider mb-2">Store Name</label>
+          <input
+            type="text"
+            value={newVendor.store_name}
+            onChange={(e) => setNewVendor({ ...newVendor, store_name: e.target.value })}
+            className="w-full bg-[#1a1a1a] border border-white/10 text-white px-4 py-2.5 focus:outline-none focus:border-white/20 transition-colors mb-4"
+          />
+        </div>
+        <div>
+          <label className="block text-white/60 text-xs uppercase tracking-wider mb-2">Email</label>
+          <input
+            type="email"
+            value={newVendor.email}
+            onChange={(e) => setNewVendor({ ...newVendor, email: e.target.value })}
+            className="w-full bg-[#1a1a1a] border border-white/10 text-white px-4 py-2.5 focus:outline-none focus:border-white/20 transition-colors mb-4"
+          />
+        </div>
+        <div>
+          <label className="block text-white/60 text-xs uppercase tracking-wider mb-2">Username</label>
+          <input
+            type="text"
+            value={newVendor.username}
+            onChange={(e) => setNewVendor({ ...newVendor, username: e.target.value })}
+            className="w-full bg-[#1a1a1a] border border-white/10 text-white px-4 py-2.5 focus:outline-none focus:border-white/20 transition-colors mb-4"
+          />
+        </div>
+        <div>
+          <label className="block text-white/60 text-xs uppercase tracking-wider mb-2">Password</label>
+          <input
+            type="password"
+            value={newVendor.password}
+            onChange={(e) => setNewVendor({ ...newVendor, password: e.target.value })}
+            className="w-full bg-[#1a1a1a] border border-white/10 text-white px-4 py-2.5 focus:outline-none focus:border-white/20 transition-colors"
+          />
+        </div>
+      </AdminModal>
+
+      {/* Edit Vendor Modal */}
+      <AdminModal
+        isOpen={showEditModal}
+        onClose={() => setShowEditModal(false)}
+        title="Edit Vendor"
+        description={editingVendor ? `Update ${editingVendor.store_name}` : 'Update vendor information'}
+        onSubmit={updateVendor}
+        submitText="Update Vendor"
+        maxWidth="md"
+      >
+        <div>
+          <label className="block text-white/60 text-xs uppercase tracking-wider mb-2">Store Name</label>
+          <input
+            type="text"
+            value={editVendorData.store_name}
+            onChange={(e) => setEditVendorData({ ...editVendorData, store_name: e.target.value })}
+            className="w-full bg-[#1a1a1a] border border-white/10 text-white px-4 py-2.5 focus:outline-none focus:border-white/20 transition-colors mb-4"
+          />
+        </div>
+        <div>
+          <label className="block text-white/60 text-xs uppercase tracking-wider mb-2">Email</label>
+          <input
+            type="email"
+            value={editVendorData.email}
+            onChange={(e) => setEditVendorData({ ...editVendorData, email: e.target.value })}
+            className="w-full bg-[#1a1a1a] border border-white/10 text-white px-4 py-2.5 focus:outline-none focus:border-white/20 transition-colors mb-4"
+          />
+        </div>
+        <div>
+          <label className="block text-white/60 text-xs uppercase tracking-wider mb-2">Phone</label>
+          <input
+            type="text"
+            value={editVendorData.phone}
+            onChange={(e) => setEditVendorData({ ...editVendorData, phone: e.target.value })}
+            className="w-full bg-[#1a1a1a] border border-white/10 text-white px-4 py-2.5 focus:outline-none focus:border-white/20 transition-colors mb-4"
+          />
+        </div>
+        <div>
+          <label className="block text-white/60 text-xs uppercase tracking-wider mb-2">Address</label>
+          <input
+            type="text"
+            value={editVendorData.address}
+            onChange={(e) => setEditVendorData({ ...editVendorData, address: e.target.value })}
+            className="w-full bg-[#1a1a1a] border border-white/10 text-white px-4 py-2.5 focus:outline-none focus:border-white/20 transition-colors mb-4"
+          />
+        </div>
+        <div className="grid grid-cols-3 gap-4">
+          <div>
+            <label className="block text-white/60 text-xs uppercase tracking-wider mb-2">City</label>
+            <input
+              type="text"
+              value={editVendorData.city}
+              onChange={(e) => setEditVendorData({ ...editVendorData, city: e.target.value })}
+              className="w-full bg-[#1a1a1a] border border-white/10 text-white px-4 py-2.5 focus:outline-none focus:border-white/20 transition-colors"
+            />
+          </div>
+          <div>
+            <label className="block text-white/60 text-xs uppercase tracking-wider mb-2">State</label>
+            <input
+              type="text"
+              value={editVendorData.state}
+              onChange={(e) => setEditVendorData({ ...editVendorData, state: e.target.value })}
+              className="w-full bg-[#1a1a1a] border border-white/10 text-white px-4 py-2.5 focus:outline-none focus:border-white/20 transition-colors"
+            />
+          </div>
+          <div>
+            <label className="block text-white/60 text-xs uppercase tracking-wider mb-2">ZIP</label>
+            <input
+              type="text"
+              value={editVendorData.zip}
+              onChange={(e) => setEditVendorData({ ...editVendorData, zip: e.target.value })}
+              className="w-full bg-[#1a1a1a] border border-white/10 text-white px-4 py-2.5 focus:outline-none focus:border-white/20 transition-colors"
+            />
           </div>
         </div>
-      )}
+      </AdminModal>
     </div>
   );
 }

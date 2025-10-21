@@ -64,7 +64,7 @@ export default function LocationCard({ location, address, googleMapsUrl, hours }
         
         {/* Logo */}
         <img 
-          src="/logoprint.png" 
+          src="/yacht-club-logo.png" 
           alt={location.name}
           className="w-full h-full object-contain opacity-40 group-hover:opacity-60 transition-all duration-700 brightness-110 group-hover:brightness-125 group-hover:scale-110 relative z-10"
         />

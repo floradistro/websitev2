@@ -80,95 +80,123 @@ export default function AdminUsers() {
   );
 
   return (
-    <div className="max-w-7xl">
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-3xl text-white mb-2 font-light">User Management</h1>
-          <p className="text-white/60 text-sm">
-            {filteredUsers.length} {filteredUsers.length === 1 ? 'user' : 'users'}
-          </p>
-        </div>
+    <div className="w-full max-w-full animate-fadeIn overflow-x-hidden">
+      {/* Header */}
+      <div className="px-4 lg:px-0 py-6 lg:py-0 lg:mb-8 border-b lg:border-b-0 border-white/5">
+        <h1 className="text-2xl lg:text-3xl font-light text-white mb-1 lg:mb-2 tracking-tight">
+          User Management
+        </h1>
+        <p className="text-white/60 text-xs lg:text-sm">
+          {filteredUsers.length} {filteredUsers.length === 1 ? 'user' : 'users'}
+        </p>
       </div>
 
-      <div className="bg-[#1a1a1a] border border-white/5 px-4 py-3 mb-6">
+      {/* Search */}
+      <div className="bg-[#1a1a1a] lg:border border-t border-b border-white/5 px-4 lg:p-4 py-3 lg:py-4 mb-0 lg:mb-6">
         <div className="relative">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" />
+          <Search size={16} className="lg:w-[18px] lg:h-[18px] absolute left-3 top-1/2 -translate-y-1/2 text-white/40 pointer-events-none" />
           <input
             type="text"
             placeholder="Search users..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 pl-10 pr-4 py-2.5 focus:outline-none focus:border-white/10 transition-colors"
+            className="w-full bg-[#1a1a1a] border border-white/10 text-white placeholder-white/40 pl-9 lg:pl-10 pr-4 py-2.5 lg:py-3 focus:outline-none focus:border-white/20 transition-colors text-sm lg:text-base"
           />
         </div>
       </div>
 
       {loading ? (
-        <div className="bg-[#1a1a1a] border border-white/5 p-16 text-center">
+        <div className="bg-[#1a1a1a] lg:border border-white/5 p-12 lg:p-16 text-center">
           <div className="inline-block w-10 h-10 border-2 border-white/20 border-t-white rounded-full animate-spin mb-4"></div>
           <p className="text-white/60">Loading users...</p>
         </div>
       ) : filteredUsers.length === 0 ? (
-        <div className="bg-[#1a1a1a] border border-white/5 p-12 text-center">
+        <div className="bg-[#1a1a1a] lg:border border-white/5 p-12 text-center">
           <Users size={48} className="text-white/20 mx-auto mb-4" />
           <div className="text-white/60 mb-4">No users found</div>
         </div>
       ) : (
-        <div className="bg-[#1a1a1a] border border-white/5">
-          <table className="w-full">
-            <thead className="border-b border-white/5">
-              <tr>
-                <th className="text-left text-xs font-medium text-white/60 uppercase tracking-wider p-4">User</th>
-                <th className="text-left text-xs font-medium text-white/60 uppercase tracking-wider p-4">Email</th>
-                <th className="text-left text-xs font-medium text-white/60 uppercase tracking-wider p-4">Role</th>
-                <th className="text-left text-xs font-medium text-white/60 uppercase tracking-wider p-4">Orders</th>
-                <th className="text-left text-xs font-medium text-white/60 uppercase tracking-wider p-4">Registered</th>
-                <th className="text-left text-xs font-medium text-white/60 uppercase tracking-wider p-4">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-white/5">
-              {filteredUsers.map((user) => (
-                <tr key={user.id} className="hover:bg-[#303030] transition-all">
-                  <td className="p-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-white/5 rounded flex items-center justify-center">
-                        <User size={18} className="text-white/40" />
-                      </div>
-                      <div>
-                        <div className="text-white font-medium text-sm">{user.name}</div>
-                        <div className="text-white/40 text-xs">ID: {user.id}</div>
-                      </div>
+        <>
+          {/* Mobile List */}
+          <div className="lg:hidden">
+            {filteredUsers.map((user) => (
+              <div key={user.id} className="bg-[#1a1a1a] border-b border-white/5 p-4 active:bg-white/5 transition-all">
+                <div className="flex gap-4">
+                  <div className="w-12 h-12 bg-white/5 flex items-center justify-center flex-shrink-0">
+                    <User size={20} className="text-white/40" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-white text-base font-medium mb-1">{user.name}</div>
+                    <div className="text-white/60 text-sm mb-2">{user.email}</div>
+                    <div className="flex items-center gap-2 text-xs">
+                      <span className="px-2 py-0.5 bg-blue-500/10 border border-blue-500/20 text-blue-500 uppercase">
+                        {user.role}
+                      </span>
+                      <span className="text-white/40">{user.orders} orders</span>
                     </div>
-                  </td>
-                  <td className="p-4">
-                    <span className="text-white/60 text-sm">{user.email}</span>
-                  </td>
-                  <td className="p-4">
-                    <span className="px-2 py-1 bg-blue-500/10 border border-blue-500/20 text-blue-500 text-xs uppercase">
-                      {user.role}
-                    </span>
-                  </td>
-                  <td className="p-4">
-                    <span className="text-white text-sm">{user.orders}</span>
-                  </td>
-                  <td className="p-4">
-                    <span className="text-white/60 text-xs">
-                      {new Date(user.registered).toLocaleDateString()}
-                    </span>
-                  </td>
-                  <td className="p-4">
-                    <button
-                      onClick={() => deleteUser(user.id)}
-                      className="text-red-500/60 hover:text-red-500 text-sm transition-colors"
-                    >
-                      Delete
-                    </button>
-                  </td>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Desktop Table */}
+          <div className="hidden lg:block bg-[#1a1a1a] border border-white/5">
+            <table className="w-full">
+              <thead className="border-b border-white/5 bg-[#1a1a1a]">
+                <tr>
+                  <th className="text-left text-xs font-medium text-white/60 uppercase tracking-wider p-4">User</th>
+                  <th className="text-left text-xs font-medium text-white/60 uppercase tracking-wider p-4">Email</th>
+                  <th className="text-left text-xs font-medium text-white/60 uppercase tracking-wider p-4">Role</th>
+                  <th className="text-left text-xs font-medium text-white/60 uppercase tracking-wider p-4">Orders</th>
+                  <th className="text-left text-xs font-medium text-white/60 uppercase tracking-wider p-4">Registered</th>
+                  <th className="text-left text-xs font-medium text-white/60 uppercase tracking-wider p-4">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody className="divide-y divide-white/5">
+                {filteredUsers.map((user) => (
+                  <tr key={user.id} className="hover:bg-[#303030] transition-all">
+                    <td className="p-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-white/5 flex items-center justify-center">
+                          <User size={18} className="text-white/40" />
+                        </div>
+                        <div>
+                          <div className="text-white font-medium text-sm">{user.name}</div>
+                          <div className="text-white/40 text-xs">ID: {user.id}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="p-4">
+                      <span className="text-white/60 text-sm">{user.email}</span>
+                    </td>
+                    <td className="p-4">
+                      <span className="px-2 py-1 bg-blue-500/10 border border-blue-500/20 text-blue-500 text-xs uppercase">
+                        {user.role}
+                      </span>
+                    </td>
+                    <td className="p-4">
+                      <span className="text-white text-sm">{user.orders}</span>
+                    </td>
+                    <td className="p-4">
+                      <span className="text-white/60 text-xs">
+                        {new Date(user.registered).toLocaleDateString()}
+                      </span>
+                    </td>
+                    <td className="p-4">
+                      <button
+                        onClick={() => deleteUser(user.id)}
+                        className="text-red-500/60 hover:text-red-500 text-sm transition-colors"
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
     </div>
   );

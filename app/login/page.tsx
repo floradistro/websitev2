@@ -48,13 +48,13 @@ export default function LoginPage() {
         {/* Logo */}
         <Link href="/" className="flex items-center justify-center gap-3 mb-12 group">
           <Image 
-            src="/logoprint.png" 
-            alt="Flora Distro" 
+            src="/yacht-club-logo.png" 
+            alt="Yacht Club" 
             width={40} 
             height={40}
             className="object-contain transition-transform duration-300 group-hover:scale-105"
           />
-          <span className="text-2xl logo-font text-white">Flora Distro</span>
+          <span className="text-2xl logo-font text-white">Yacht Club</span>
         </Link>
 
         {/* Card */}
@@ -137,7 +137,7 @@ export default function LoginPage() {
               <div className="w-full border-t border-white/10"></div>
             </div>
             <div className="relative flex justify-center text-[10px] uppercase tracking-[0.2em]">
-              <span className="bg-[#2a2a2a] px-3 text-white/40">New to Flora?</span>
+              <span className="bg-[#2a2a2a] px-3 text-white/40">New here?</span>
             </div>
           </div>
 

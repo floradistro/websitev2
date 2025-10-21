@@ -182,7 +182,8 @@ function ProductCard({ product, index, locations, pricingTiers = [], productFiel
   };
 
   const handleCardClick = () => {
-    router.push(`/products/${product.id}`);
+    // Use UUID for Supabase product detail route
+    router.push(`/products/${product.uuid || product.id}`);
   };
 
   const handleQuickBuy = (e: React.MouseEvent) => {
@@ -312,8 +313,8 @@ function ProductCard({ product, index, locations, pricingTiers = [], productFiel
             {/* Logo Fallback - Use vendor logo if available */}
             <div className="relative w-full h-full flex items-center justify-center p-12">
               <Image
-                src={vendorInfo?.logo || "/logoprint.png"}
-                alt={vendorInfo?.name || "Flora Distro"}
+                src={vendorInfo?.logo || "/yacht-club-logo.png"}
+                alt={vendorInfo?.name || "Yacht Club"}
                 fill
                 sizes="(max-width: 640px) 85vw, (max-width: 768px) 45vw, (max-width: 1024px) 32vw, 23vw"
                 className="object-contain opacity-10 transition-opacity duration-500 group-hover:opacity-15"

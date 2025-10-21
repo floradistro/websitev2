@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { Leaf, Package, Recycle, Users } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Sustainability | Flora Distro",
-  description: "Flora Distro's commitment to sustainable cannabis cultivation. Organic growing, minimal packaging, renewable energy—marketplace-wide standards.",
+  title: "Sustainability | Yacht Club",
+  description: "Yacht Club's commitment to sustainable cannabis cultivation. Organic growing, minimal packaging, renewable energy—marketplace-wide standards.",
 };
 
 export default function Sustainability() {
@@ -36,7 +36,7 @@ export default function Sustainability() {
             As a marketplace, our responsibility extends beyond our own operations. We work with every vendor to uphold sustainable practices throughout the supply chain.
           </p>
           <p className="text-base md:text-lg font-light text-white/50 leading-relaxed">
-            When vendors join Flora Distro, they commit to our environmental standards. It's not optional—it's part of our partnership.
+            When vendors join Yacht Club, they commit to our environmental standards. It's not optional—it's part of our partnership.
           </p>
         </div>
       </section>

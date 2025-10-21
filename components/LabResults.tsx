@@ -11,8 +11,12 @@ export default function LabResults({ metaData, attributes }: LabResultsProps) {
   // Extract COA URL
   let coaUrl = "";
   
-  metaData.forEach((meta: any) => {
-    const key = meta.key.toLowerCase();
+  // Handle both array (WordPress) and object (Supabase) formats
+  const metaArray = Array.isArray(metaData) ? metaData : 
+    Object.entries(metaData || {}).map(([key, value]) => ({ key, value }));
+  
+  metaArray.forEach((meta: any) => {
+    const key = (meta.key || '').toLowerCase();
     if (key.includes("coa") || key.includes("certificate") || key.includes("lab_report")) {
       if (meta.value && (meta.value.startsWith("http") || meta.value.startsWith("www"))) {
         coaUrl = meta.value;

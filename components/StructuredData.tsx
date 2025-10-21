@@ -9,9 +9,9 @@ interface OrganizationSchemaProps {
 }
 
 export function OrganizationSchema({ 
-  name = "Flora Distro",
+  name = "Yacht Club",
   url = "https://floradistro.com",
-  logo = "https://floradistro.com/logoprint.png"
+  logo = "https://floradistro.com/yacht-club-logo.png"
 }: OrganizationSchemaProps) {
   const schema = {
     "@context": "https://schema.org",
@@ -47,7 +47,7 @@ interface ProductSchemaProps {
 
 export function ProductSchema({ product }: ProductSchemaProps) {
   const price = product.price ? parseFloat(product.price) : 0;
-  const image = product.images?.[0]?.src || "https://floradistro.com/logoprint.png";
+  const image = product.images?.[0]?.src || "https://floradistro.com/yacht-club-logo.png";
   const category = product.categories?.[0]?.name || "Products";
 
   const schema: any = {
@@ -61,7 +61,7 @@ export function ProductSchema({ product }: ProductSchemaProps) {
     "sku": product.sku || product.id,
     "brand": {
       "@type": "Brand",
-      "name": "Flora Distro"
+      "name": "Yacht Club"
     },
     "offers": {
       "@type": "Offer",
@@ -102,7 +102,7 @@ export function LocalBusinessSchema({ location }: LocalBusinessSchemaProps) {
   const schema = {
     "@context": "https://schema.org",
     "@type": "Store",
-    "name": `Flora Distro - ${location.name}`,
+    "name": `Yacht Club - ${location.name}`,
     "address": {
       "@type": "PostalAddress",
       "streetAddress": location.address,

@@ -97,12 +97,6 @@ export default function CheckoutPage() {
 
   const processPayment = async (paymentToken: string) => {
     try {
-      console.log('Submitting payment...', {
-        payment_token: paymentToken.substring(0, 50),
-        billing: billingInfo,
-        items: items.length
-      });
-
       const response = await fetch("/api/payment", {
         method: "POST",
         headers: {
@@ -119,12 +113,7 @@ export default function CheckoutPage() {
         }),
       });
 
-      console.log('Payment API response status:', response.status);
-
       const data = await response.json();
-      console.log('Payment API response data:', JSON.stringify(data, null, 2));
-      console.log('Error message:', data.error);
-      console.log('Debug info:', data.debug);
 
       if (!response.ok || !data.success) {
         throw new Error(data.error || "Payment failed");
@@ -184,7 +173,7 @@ export default function CheckoutPage() {
       supportedNetworks: ["visa", "masterCard", "amex", "discover"],
       merchantCapabilities: ["supports3DS"],
       total: {
-        label: "Flora Distro",
+        label: "Yacht Club",
         amount: finalTotal.toFixed(2)
       },
       lineItems: items.map(item => ({
@@ -722,7 +711,7 @@ export default function CheckoutPage() {
                     {item.image ? (
                       <img src={item.image} alt={item.name} className="w-full h-full object-contain rounded" />
                     ) : (
-                      <img src="/logoprint.png" alt="Flora Distro" className="w-full h-full object-contain opacity-20 rounded" />
+                      <img src="/yacht-club-logo.png" alt="Yacht Club" className="w-full h-full object-contain opacity-20 rounded" />
                     )}
                   </div>
                   <div className="flex-1 min-w-0">

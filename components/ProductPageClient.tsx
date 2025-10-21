@@ -125,7 +125,7 @@ export default function ProductPageClient({
 
       const data = await response.json();
       
-      console.log('Flora Budtender response:', data);
+      console.log('Budtender response:', data);
       
       if (data.success && data.recommendations && data.recommendations.length > 0) {
         setAiRecommendations(data.recommendations.filter((p: any) => p.id !== product.id).slice(0, 6));
@@ -291,7 +291,7 @@ export default function ProductPageClient({
             />
 
             <ShippingEstimator
-              productId={typeof product.id === 'string' ? parseInt(product.id) : product.id}
+              productId={product.wordpress_id || parseInt(product.id) || 0}
               quantity={selectedQuantity}
               productPrice={selectedPrice || parseFloat(product.price) || 0}
               locationId={selectedLocationId || undefined}
@@ -391,7 +391,7 @@ export default function ProductPageClient({
               {/* Shipping Estimator Block */}
               <div className="mb-6 animate-fadeIn" style={{animationDelay: '200ms'}}>
                 <ShippingEstimator
-                  productId={typeof product.id === 'string' ? parseInt(product.id) : product.id}
+                  productId={product.wordpress_id || parseInt(product.id) || 0}
                   quantity={selectedQuantity}
                   productPrice={selectedPrice || parseFloat(product.price) || 0}
                   locationId={selectedLocationId || undefined}
@@ -514,8 +514,8 @@ export default function ProductPageClient({
                   ) : (
                     <div className="w-full h-full flex items-center justify-center p-8">
                       <Image
-                        src="/logoprint.png"
-                        alt="Flora Distro"
+                        src="/yacht-club-logo.png"
+                        alt="Yacht Club"
                         width={40}
                         height={40}
                         className="opacity-10"

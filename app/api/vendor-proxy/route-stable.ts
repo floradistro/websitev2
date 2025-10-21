@@ -92,8 +92,6 @@ async function handleRequest(request: NextRequest, method: string) {
     // 6. Make request to WordPress
     const url = `${baseUrl}/wp-json/${decodedEndpoint}`;
     
-    console.log(`Proxying to: ${url}`);
-    
     const response = await axios({
       method: method.toLowerCase() as any,
       url,

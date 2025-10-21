@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { CreditCard, Plus, X, Check } from "lucide-react";
 import axios from "axios";
+import { showNotification } from "@/components/NotificationToast";
 
 interface PaymentMethod {
   id: string;
@@ -89,7 +90,11 @@ export default function SavedPaymentMethods() {
       const tokenData = await tokenizeResponse.json();
       
       if (!tokenData.success) {
-        alert(tokenData.error || 'Failed to save card');
+        showNotification({
+          type: 'error',
+          title: 'Card Save Failed',
+          message: tokenData.error || 'Failed to save card',
+        });
         return;
       }
 
@@ -122,7 +127,11 @@ export default function SavedPaymentMethods() {
       
     } catch (error) {
       console.error("Error saving payment method:", error);
-      alert("Failed to save payment method. Please try again.");
+      showNotification({
+        type: 'error',
+        title: 'Payment Error',
+        message: 'Failed to save payment method. Please try again.',
+      });
     }
   };
 
@@ -145,7 +154,11 @@ export default function SavedPaymentMethods() {
       setMethods(updatedMethods);
     } catch (error) {
       console.error("Error removing payment method:", error);
-      alert("Failed to remove payment method. Please try again.");
+      showNotification({
+        type: 'error',
+        title: 'Removal Error',
+        message: 'Failed to remove payment method. Please try again.',
+      });
     }
   };
 

@@ -1,9 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
-import axios from "axios";
 
-const baseUrl = process.env.WORDPRESS_API_URL;
-const consumerKey = process.env.WORDPRESS_CONSUMER_KEY;
-const consumerSecret = process.env.WORDPRESS_CONSUMER_SECRET;
+// Get base URL for internal API calls
+const getBaseUrl = () => {
+  if (process.env.NEXT_PUBLIC_SITE_URL) {
+    return process.env.NEXT_PUBLIC_SITE_URL;
+  }
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}`;
+  }
+  return 'http://localhost:3000';
+};
 
 export async function GET(request: NextRequest) {
   try {
@@ -11,8 +17,7 @@ export async function GET(request: NextRequest) {
     const customerId = searchParams.get("customer");
     const page = searchParams.get("page") || "1";
     const perPage = searchParams.get("per_page") || "20";
-    const status = searchParams.get("status"); // Filter by status
-    const orderType = searchParams.get("order_type"); // Filter by delivery/pickup
+    const status = searchParams.get("status");
     
     if (!customerId) {
       return NextResponse.json(
@@ -21,112 +26,68 @@ export async function GET(request: NextRequest) {
       );
     }
     
-    const authString = Buffer.from(`${consumerKey}:${consumerSecret}`).toString('base64');
-    
-    const params: any = {
-      customer: customerId,
-      page: page,
-      per_page: perPage,
-      orderby: 'date',
-      order: 'desc',
-    };
-
-    if (status) {
-      params.status = status;
-    }
-    
-    const response = await axios.get(
-      `${baseUrl}/wp-json/wc/v3/orders`,
-      {
-        headers: {
-          'Authorization': `Basic ${authString}`
-        },
-        params
-      }
-    );
-
-    let orders = response.data;
-
-    // Filter by order type if specified
-    if (orderType && (orderType === "delivery" || orderType === "pickup")) {
-      orders = orders.filter((order: any) => {
-        // Check meta_data or line items for order type
-        const hasOrderType = order.line_items.some((item: any) => 
-          item.meta_data?.some((meta: any) => 
-            meta.key === 'order_type' && meta.value === orderType
-          )
-        );
-        return hasOrderType;
-      });
-    }
-
-    // Enhanced order data with tracking info
-    const enhancedOrders = orders.map((order: any) => {
-      // Determine if order has delivery or pickup items
-      const deliveryItems = order.line_items.filter((item: any) =>
-        item.meta_data?.find((m: any) => m.key === 'order_type')?.value === 'delivery'
-      );
-      
-      const pickupItems = order.line_items.filter((item: any) =>
-        item.meta_data?.find((m: any) => m.key === 'order_type')?.value === 'pickup'
-      );
-
-      // Get pickup location from first pickup item
-      const pickupLocation = pickupItems.length > 0
-        ? pickupItems[0].meta_data?.find((m: any) => m.key === 'pickup_location_name')?.value
-        : null;
-
-      return {
-        id: order.id,
-        number: order.number,
-        status: order.status,
-        total: order.total,
-        currency: order.currency,
-        date_created: order.date_created,
-        date_modified: order.date_modified,
-        date_completed: order.date_completed,
-        billing: order.billing,
-        shipping: order.shipping,
-        line_items: order.line_items.map((item: any) => ({
-          id: item.id,
-          name: item.name,
-          product_id: item.product_id,
-          quantity: item.quantity,
-          price: item.price,
-          total: item.total,
-          image: item.image,
-          meta_data: item.meta_data,
-          order_type: item.meta_data?.find((m: any) => m.key === 'order_type')?.value || 'delivery',
-          tier_name: item.meta_data?.find((m: any) => m.key === 'tier_name')?.value,
-          pickup_location: item.meta_data?.find((m: any) => m.key === 'pickup_location_name')?.value,
-        })),
-        shipping_lines: order.shipping_lines,
-        payment_method: order.payment_method,
-        payment_method_title: order.payment_method_title,
-        customer_note: order.customer_note,
-        has_delivery: deliveryItems.length > 0,
-        has_pickup: pickupItems.length > 0,
-        pickup_location: pickupLocation,
-      };
+    // Build query params
+    const params = new URLSearchParams({
+      customer_id: customerId,
+      page,
+      per_page: perPage
     });
-
+    
+    if (status) {
+      params.append('status', status);
+    }
+    
+    // Fetch orders from Supabase
+    const response = await fetch(`${getBaseUrl()}/api/supabase/orders?${params}`);
+    const data = await response.json();
+    
+    if (!data.success) {
+      throw new Error('Failed to fetch orders');
+    }
+    
+    // Map to WooCommerce format for compatibility
+    const orders = data.orders.map((order: any) => ({
+      id: order.id,
+      number: order.order_number,
+      status: order.status,
+      total: order.total_amount.toString(),
+      currency: order.currency || 'USD',
+      date_created: order.order_date,
+      date_modified: order.updated_at,
+      date_completed: order.completed_date,
+      billing: order.billing_address,
+      shipping: order.shipping_address,
+      line_items: order.order_items.map((item: any) => ({
+        id: item.id,
+        name: item.product_name,
+        product_id: item.product_id,
+        quantity: item.quantity,
+        price: item.unit_price,
+        total: item.line_total,
+        image: item.product_image ? { src: item.product_image } : null,
+        meta_data: item.meta_data || {},
+        order_type: item.order_type || 'delivery',
+        tier_name: item.tier_name,
+        pickup_location: item.pickup_location_name
+      })),
+      shipping_lines: [],
+      payment_method: order.payment_method,
+      payment_method_title: order.payment_method_title,
+      customer_note: order.customer_note
+    }));
+    
     return NextResponse.json({
       success: true,
-      orders: enhancedOrders,
-      total: response.headers['x-wp-total'],
-      total_pages: response.headers['x-wp-totalpages'],
+      orders,
+      pagination: data.pagination
     });
-
-  } catch (error: any) {
-    console.error("Error fetching orders:", error);
     
-    return NextResponse.json(
-      {
-        success: false,
-        error: error.response?.data?.message || error.message || "Failed to fetch orders"
-      },
-      { status: error.response?.status || 500 }
-    );
+  } catch (error: any) {
+    console.error('Orders API error:', error);
+    return NextResponse.json({ 
+      success: false,
+      orders: [],
+      error: error.message 
+    }, { status: 500 });
   }
 }
-

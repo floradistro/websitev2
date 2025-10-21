@@ -2,7 +2,7 @@ import { RotateCcw, Check, X, Store } from 'lucide-react';
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Returns & Refunds | Flora Distro",
+  title: "Returns & Refunds | Yacht Club",
   description: "30-day return policy on eligible items across our marketplace. Learn about the return process, refund timeline, and vendor-specific policies.",
 };
 
@@ -33,10 +33,10 @@ export default function Returns() {
             Unified return policy.
           </h2>
           <p className="text-base md:text-lg font-light text-white/50 leading-relaxed mb-8">
-            Whether you purchased from Flora Distro or a vendor partner, the same return standards apply. We coordinate returns across the marketplace to ensure a seamless experience.
+            Whether you purchased from Yacht Club or a vendor partner, the same return standards apply. We coordinate returns across the marketplace to ensure a seamless experience.
           </p>
           <p className="text-base md:text-lg font-light text-white/50 leading-relaxed">
-            All returns are processed through Flora Distro—no need to contact individual vendors.
+            All returns are processed through Yacht Club—no need to contact individual vendors.
           </p>
         </div>
       </section>
@@ -125,7 +125,7 @@ export default function Returns() {
           <div className="mt-12 bg-white/5 border border-white/10 p-8 text-center">
             <Store className="w-8 h-8 mb-4 text-white/60 mx-auto" />
             <p className="text-sm text-white/50 font-light leading-relaxed">
-              All returns are handled through Flora Distro, even for vendor products. We coordinate with vendors to ensure quick processing.
+              All returns are handled through Yacht Club, even for vendor products. We coordinate with vendors to ensure quick processing.
             </p>
           </div>
         </div>
@@ -157,7 +157,7 @@ export default function Returns() {
           <h2 className="text-2xl uppercase tracking-[0.2em] text-white mb-8 font-normal">Vendor Products</h2>
           <div className="bg-[#2a2a2a] border border-white/10 p-8">
             <p className="text-sm text-white/50 font-light leading-relaxed mb-4">
-              Products from marketplace vendors follow the same return policy as Flora Distro products.
+              Products from marketplace vendors follow the same return policy as Yacht Club products.
             </p>
             <p className="text-sm text-white/50 font-light leading-relaxed mb-4">
               Don't contact vendors directly for returns—we handle all return requests through our support team to ensure consistent service.

@@ -2,8 +2,8 @@ import { Scale, AlertTriangle, Store } from 'lucide-react';
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Terms of Service | Flora Distro",
-  description: "Flora Distro marketplace terms of service. Eligibility requirements, vendor responsibilities, health disclaimers, and legal information.",
+  title: "Terms of Service | Yacht Club",
+  description: "Yacht Club marketplace terms of service. Eligibility requirements, vendor responsibilities, health disclaimers, and legal information.",
 };
 
 export default function Terms() {
@@ -32,7 +32,7 @@ export default function Terms() {
           <div className="bg-[#3a3a3a] border border-white/10 p-8">
             <h2 className="text-lg uppercase tracking-[0.2em] text-white mb-4 font-normal">Agreement</h2>
             <p className="text-sm text-white/50 font-light leading-relaxed mb-4">
-              By accessing and using Flora Distro's marketplace, you agree to these Terms of Service. These terms govern your use as a customer and, if applicable, as a vendor on our platform.
+              By accessing and using Yacht Club's marketplace, you agree to these Terms of Service. These terms govern your use as a customer and, if applicable, as a vendor on our platform.
             </p>
             <p className="text-xs text-white/40 font-light">
               If you don't agree, don't use our site or purchase products.
@@ -45,9 +45,9 @@ export default function Terms() {
               <h2 className="text-lg uppercase tracking-[0.2em] text-white font-normal">Marketplace Platform</h2>
             </div>
             <div className="space-y-4 text-sm text-white/50 font-light">
-              <p>Flora Distro operates as a marketplace connecting customers with vendors:</p>
+              <p>Yacht Club operates as a marketplace connecting customers with vendors:</p>
               <p>• We facilitate transactions between buyers and sellers</p>
-              <p>• Some products are sold directly by Flora Distro, others by vendor partners</p>
+              <p>• Some products are sold directly by Yacht Club, others by vendor partners</p>
               <p>• We coordinate fulfillment and customer service across the marketplace</p>
               <p>• All vendors must meet our quality and compliance standards</p>
               <p>• We reserve the right to remove any vendor or product from the platform</p>
@@ -86,7 +86,7 @@ export default function Terms() {
             <div className="space-y-4 text-sm text-white/50 font-light">
               <p>All orders subject to acceptance. We reserve the right to refuse or cancel any order.</p>
               <p>Prices in USD and subject to change. Vendors set their own pricing. We reserve the right to correct pricing errors.</p>
-              <p>Payment due at time of order. All transactions processed through Flora Distro.</p>
+              <p>Payment due at time of order. All transactions processed through Yacht Club.</p>
               <p>When ordering from multiple vendors, you agree that shipments may arrive separately.</p>
             </div>
           </div>
@@ -100,7 +100,7 @@ export default function Terms() {
               <p>• Fulfill orders promptly and professionally</p>
               <p>• Follow our quality, safety, and sustainability standards</p>
               <p>• Handle customer data responsibly per our privacy policy</p>
-              <p>• Coordinate with Flora Distro on returns and customer service</p>
+              <p>• Coordinate with Yacht Club on returns and customer service</p>
             </div>
           </div>
 
@@ -112,7 +112,7 @@ export default function Terms() {
               <p>• Attempt to circumvent marketplace transactions</p>
               <p>• Interfere with platform operations or security</p>
               <p>• Harvest or misuse data from the platform</p>
-              <p>• Impersonate Flora Distro, vendors, or other users</p>
+              <p>• Impersonate Yacht Club, vendors, or other users</p>
               <p>• Post false, misleading, or defamatory content</p>
             </div>
           </div>
@@ -120,7 +120,7 @@ export default function Terms() {
           <div className="bg-[#3a3a3a] border border-white/10 p-8">
             <h2 className="text-lg uppercase tracking-[0.2em] text-white mb-6 font-normal">Intellectual Property</h2>
             <p className="text-sm text-white/50 font-light leading-relaxed mb-4">
-              Flora Distro's platform, branding, and content are protected by intellectual property laws. Vendors retain rights to their product content but grant us license to display and market products on the platform.
+              Yacht Club's platform, branding, and content are protected by intellectual property laws. Vendors retain rights to their product content but grant us license to display and market products on the platform.
             </p>
             <p className="text-xs text-white/40 font-light">
               Unauthorized use of platform content, vendor content, or trademarks is prohibited.
@@ -130,7 +130,7 @@ export default function Terms() {
           <div className="bg-[#1a1a1a] border border-white/10 p-8">
             <h2 className="text-lg uppercase tracking-[0.2em] text-white mb-6 font-normal">Limitation of Liability</h2>
             <p className="text-sm text-white/50 font-light leading-relaxed mb-4">
-              To the maximum extent permitted by law, Flora Distro shall not be liable for any indirect, incidental, special, or consequential damages arising from use of our marketplace or products sold on the platform.
+              To the maximum extent permitted by law, Yacht Club shall not be liable for any indirect, incidental, special, or consequential damages arising from use of our marketplace or products sold on the platform.
             </p>
             <p className="text-sm text-white/50 font-light leading-relaxed mb-4">
               Our total liability shall not exceed the amount you paid for the products in question.
@@ -146,7 +146,7 @@ export default function Terms() {
               Any disputes will be resolved through binding arbitration in accordance with commercial arbitration rules. You waive the right to participate in class actions.
             </p>
             <p className="text-xs text-white/40 font-light">
-              Disputes involving vendor products will be handled through Flora Distro as the platform operator.
+              Disputes involving vendor products will be handled through Yacht Club as the platform operator.
             </p>
           </div>
 

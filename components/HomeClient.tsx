@@ -86,7 +86,7 @@ function HomeClient({
         <div className="absolute inset-0 bg-gradient-to-b from-[#3a3a3a]/35 to-[#3a3a3a]/30 backdrop-blur-md"></div>
         <div className="px-4 sm:px-6 mb-12 relative z-10">
           <h2 className="text-2xl md:text-3xl font-light uppercase tracking-wider text-white mb-3">
-            The Flora Difference
+            The Yacht Club Difference
           </h2>
           <div className="h-[1px] w-16 bg-gradient-to-r from-purple-500/60 to-transparent"></div>
         </div>
@@ -467,8 +467,8 @@ function HomeClient({
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="flex items-center justify-center">
             <img 
-              src="/logoprint.png" 
-              alt="Flora Distro Marketplace" 
+              src="/yacht-club-logo.png" 
+              alt="Yacht Club Marketplace" 
               className="h-16 sm:h-20 md:h-24 w-auto opacity-30 grayscale"
             />
           </div>

@@ -4,11 +4,11 @@ import { useState, useRef, useEffect } from "react";
 import { MapPin, ChevronDown, Check } from "lucide-react";
 
 interface Location {
-  id: number;
+  id: string | number; // Support both UUID and number
   name: string;
   city?: string;
   state?: string;
-  is_active: string;
+  is_active: string | boolean | number; // Support multiple formats
 }
 
 interface LocationDropdownProps {
@@ -25,9 +25,13 @@ export default function LocationDropdown({
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const activeLocations = locations.filter((loc) => loc.is_active === "1");
+  // Filter active locations (handle both "1" string and true boolean)
+  const activeLocations = locations.filter((loc) => 
+    loc.is_active === "1" || loc.is_active === 1 || loc.is_active === true
+  );
+  
   const selectedLocationData = activeLocations.find(
-    (loc) => loc.id.toString() === selectedLocation
+    (loc) => loc.id?.toString() === selectedLocation
   );
 
   useEffect(() => {

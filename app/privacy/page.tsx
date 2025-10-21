@@ -2,8 +2,8 @@ import { Shield, Store } from 'lucide-react';
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy | Flora Distro",
-  description: "Flora Distro privacy policy. Learn how we collect, use, and protect your personal information across our marketplace.",
+  title: "Privacy Policy | Yacht Club",
+  description: "Yacht Club privacy policy. Learn how we collect, use, and protect your personal information across our marketplace.",
 };
 
 export default function Privacy() {
@@ -32,7 +32,7 @@ export default function Privacy() {
           <div className="bg-[#3a3a3a] border border-white/10 p-8">
             <h2 className="text-lg uppercase tracking-[0.2em] text-white mb-4 font-normal">Introduction</h2>
             <p className="text-sm text-white/50 font-light leading-relaxed mb-4">
-              Flora Distro operates a marketplace connecting vendors with customers. We're committed to protecting your privacy across every transaction.
+              Yacht Club operates a marketplace connecting vendors with customers. We're committed to protecting your privacy across every transaction.
             </p>
             <p className="text-xs text-white/40 font-light">
               By using our site, you agree to this privacy policy. This applies to both customers and vendors on our platform.

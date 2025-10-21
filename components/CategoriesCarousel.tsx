@@ -30,8 +30,8 @@ export default function CategoriesCarousel({ categories }: CategoriesCarouselPro
             ) : (
               <div className="w-full h-full flex items-center justify-center p-12">
                 <img
-                  src="/logoprint.png"
-                  alt="Flora Distro"
+                  src="/yacht-club-logo.png"
+                  alt="Yacht Club"
                   className="w-full h-full object-contain opacity-10 transition-opacity duration-500 group-hover:opacity-15"
                 />
               </div>

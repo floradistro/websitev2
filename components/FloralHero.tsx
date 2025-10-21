@@ -141,7 +141,7 @@ export default function FloralHero() {
           canvas.parent(containerRef.current!);
           p.colorMode(p.HSB, 360, 100, 100, 255);
           
-          logo = await p.loadImage('/logoprint.png');
+          logo = await p.loadImage('/yacht-club-logo.png');
           
           for (let i = 0; i < 30; i++) {
             petals.push(new Petal());

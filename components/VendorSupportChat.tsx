@@ -21,7 +21,7 @@ export default function VendorSupportChat({ isOpen, onClose }: VendorSupportChat
     {
       id: 1,
       sender: 'support',
-      text: 'Hi there! Welcome to Flora Distro Vendor Support. How can we help you today?',
+      text: 'Hi there! Welcome to Yacht Club Vendor Support. How can we help you today?',
       timestamp: new Date().toISOString(),
     }
   ]);
@@ -100,7 +100,7 @@ export default function VendorSupportChat({ isOpen, onClose }: VendorSupportChat
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-white/5 flex items-center justify-center overflow-hidden">
-                <img src="/logoprint.png" alt="Flora Distro" className="w-full h-full object-contain p-1.5 opacity-80" />
+                <img src="/yacht-club-logo.png" alt="Yacht Club" className="w-full h-full object-contain p-1.5 opacity-80" />
               </div>
               <div>
                 <h2 className="text-white text-sm uppercase tracking-[0.2em] font-light mb-1">Support</h2>

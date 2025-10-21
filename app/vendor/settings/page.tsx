@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { Save, CheckCircle, AlertCircle, Loader } from 'lucide-react';
-import { getVendorSettingsProxy, updateVendorSettingsProxy } from '@/lib/wordpress-vendor-proxy';
+import { supabase } from '@/lib/supabase/client';
+import { useVendorAuth } from '@/context/VendorAuthContext';
 
 export default function VendorSettings() {
   const [loading, setLoading] = useState(false);
@@ -25,7 +26,12 @@ export default function VendorSettings() {
   const fetchSettings = async () => {
     try {
       setFetching(true);
-      const data = await getVendorSettingsProxy();
+      
+      const authToken = localStorage.getItem('vendor_auth');
+      const response = await fetch('/api/vendor-proxy?endpoint=flora-vendors/v1/vendors/me/settings', {
+        headers: { 'Authorization': `Basic ${authToken}` }
+      });
+      const data = await response.json();
       
       if (data && data.vendor) {
         const vendor = data.vendor;
@@ -60,45 +66,34 @@ export default function VendorSettings() {
     setSuccess(false);
 
     try {
-      const response = await updateVendorSettingsProxy({
-        company_name: settings.companyName,
-        contact_name: settings.contactName,
-        email: settings.email,
-        phone: settings.phone,
-        address_line_1: settings.address,
-        city: settings.city,
-        state: settings.state,
-        zip: settings.zip,
-        tax_id: settings.taxId,
+      const authToken = localStorage.getItem('vendor_auth');
+      const response = await fetch('/api/vendor-proxy?endpoint=flora-vendors/v1/vendors/me/settings', {
+        method: 'POST',
+        headers: { 
+          'Authorization': `Basic ${authToken}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          company_name: settings.companyName,
+          contact_name: settings.contactName,
+          email: settings.email,
+          phone: settings.phone,
+          address_line_1: settings.address,
+          city: settings.city,
+          state: settings.state,
+          zip: settings.zip,
+          tax_id: settings.taxId,
+        })
       });
 
-      if (response && response.success) {
-        // Update local state with fresh data from server
-        if (response.vendor) {
-          const vendor = response.vendor;
-          setSettings({
-            companyName: vendor.company_name || '',
-            contactName: vendor.contact_name || '',
-            email: vendor.email || '',
-            phone: vendor.phone || '',
-            address: vendor.address_line_1 || '',
-            city: vendor.city || '',
-            state: vendor.state || '',
-            zip: vendor.zip || '',
-            taxId: vendor.tax_id || '',
-          });
-        }
-        
+      if (response.ok) {
         setSuccess(true);
-        console.log('Settings saved successfully:', response);
-        
         setTimeout(() => setSuccess(false), 3000);
       } else {
         setError('Failed to save settings. Please try again.');
       }
     } catch (err: any) {
-      console.error('Error saving settings:', err);
-      setError(err.response?.data?.message || 'Failed to save settings. Please try again.');
+      setError(err.message || 'Failed to save settings. Please try again.');
     } finally {
       setLoading(false);
     }

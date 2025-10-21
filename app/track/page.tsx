@@ -246,8 +246,8 @@ function TrackContent() {
                           ) : (
                             <div className="w-full h-full flex items-center justify-center">
                               <Image
-                                src="/logoprint.png"
-                                alt="Flora Distro"
+                                src="/yacht-club-logo.png"
+                                alt="Yacht Club"
                                 width={30}
                                 height={30}
                                 className="opacity-20"
@@ -317,8 +317,8 @@ function TrackContent() {
                           ) : (
                             <div className="w-full h-full flex items-center justify-center">
                               <Image
-                                src="/logoprint.png"
-                                alt="Flora Distro"
+                                src="/yacht-club-logo.png"
+                                alt="Yacht Club"
                                 width={30}
                                 height={30}
                                 className="opacity-20"

@@ -94,7 +94,6 @@ export default function VendorReviews() {
 
   const submitResponse = (reviewId: number) => {
     // TODO: Submit response to API
-    console.log('Responding to review:', reviewId, responseText);
     setRespondingTo(null);
     setResponseText('');
   };

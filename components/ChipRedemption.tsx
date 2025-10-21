@@ -35,12 +35,20 @@ export default function ChipRedemption({ cartTotal, onApplyDiscount }: ChipRedem
 
   const handleApply = async () => {
     if (chipsToUse < minRedeem) {
-      alert(`Minimum ${minRedeem} ${chipLabel.toLowerCase()} required`);
+      showNotification({
+        type: 'warning',
+        title: 'Minimum Required',
+        message: `Minimum ${minRedeem} ${chipLabel.toLowerCase()} required`,
+      });
       return;
     }
 
     if (chipsToUse > points) {
-      alert(`You only have ${points} ${chipLabel.toLowerCase()}`);
+      showNotification({
+        type: 'error',
+        title: 'Insufficient Chips',
+        message: `You only have ${points} ${chipLabel.toLowerCase()}`,
+      });
       return;
     }
 
@@ -73,7 +81,11 @@ export default function ChipRedemption({ cartTotal, onApplyDiscount }: ChipRedem
       onApplyDiscount(discount, chipsToUse);
     } catch (error) {
       console.error("Error applying chips:", error);
-      alert("Failed to apply chips. Please try again.");
+      showNotification({
+        type: 'error',
+        title: 'Redemption Failed',
+        message: 'Failed to apply chips. Please try again.',
+      });
     } finally {
       setLoading(false);
     }

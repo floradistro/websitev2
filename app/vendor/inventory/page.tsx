@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import { Search, ChevronRight, Package, CheckCircle, AlertTriangle, X, Save, Plus, Minus, Edit2, FileText, Send } from 'lucide-react';
-import { getVendorInventoryProxy as getVendorInventory, adjustVendorInventoryProxy as adjustVendorInventory, setVendorInventoryProxy as setVendorInventory, createVendorChangeRequestProxy as createVendorChangeRequest, getVendorMyProductsProxy as getVendorMyProducts } from '@/lib/wordpress-vendor-proxy';
 import { useVendorAuth } from '@/context/VendorAuthContext';
+import axios from 'axios';
+import { showNotification } from '@/components/NotificationToast';
 
 interface FloraFields {
   thc_percentage?: string;
@@ -33,16 +34,19 @@ interface InventoryItem {
   flora_fields?: FloraFields;
 }
 
-type ViewMode = 'details' | 'adjust' | 'fields';
+type ViewMode = 'details' | 'adjust' | 'fields' | 'images';
 
 export default function VendorInventory() {
   const { isAuthenticated, isLoading: authLoading } = useVendorAuth();
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [vendorId, setVendorId] = useState<string | null>(null); // Add vendorId state
   const [search, setSearch] = useState('');
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [viewMode, setViewMode] = useState<Record<number, ViewMode>>({});
   const [quickAdjustInput, setQuickAdjustInput] = useState<string>('');
+  const [adjustmentInput, setAdjustmentInput] = useState<string>(''); // Add adjustmentInput
+  const [adjustmentReason, setAdjustmentReason] = useState<string>(''); // Add adjustment reason
   const [setQuantityInput, setSetQuantityInput] = useState<string>('');
   const [processing, setProcessing] = useState(false);
   const [stockFilter, setStockFilter] = useState<'all' | 'in_stock' | 'low_stock' | 'out_of_stock'>('all');
@@ -62,53 +66,74 @@ export default function VendorInventory() {
       try {
         setLoading(true);
         
+        // Get vendor ID from localStorage
+        const storedVendorId = localStorage.getItem('vendor_id');
+        if (!storedVendorId) {
+          setLoading(false);
+          return;
+        }
+        
+        setVendorId(storedVendorId); // Set vendorId state
+
         // Fetch both products and inventory data in parallel
-        const [productsResponse, inventoryData] = await Promise.all([
-          getVendorMyProducts(1, 100),
-          getVendorInventory().catch(() => []) // If inventory fetch fails, use empty array
+        const [productsResponse, inventoryResponse] = await Promise.all([
+          axios.get('/api/vendor/products', {
+            headers: { 'x-vendor-id': storedVendorId }
+          }).catch(() => ({ data: { products: [] } })),
+          axios.get('/api/vendor/inventory', {
+            headers: { 'x-vendor-id': storedVendorId }
+          }).catch(() => ({ data: { inventory: [] } }))
         ]);
         
-        // Get only approved products
-        const approvedProducts = productsResponse?.products?.filter((p: any) => p.status === 'approved') || [];
+        const inventoryData = inventoryResponse.data.inventory || [];
         
-        // Create inventory map for quick lookup
+        // Get only approved/published products (Supabase uses 'published')
+        const approvedProducts = productsResponse.data.products?.filter((p: any) => 
+          p.status === 'published' || p.status === 'publish'
+        ) || [];
+        
+        console.log('🔵 Approved products:', approvedProducts.length);
+        console.log('🔵 Inventory records:', inventoryData.length);
+        
+        // Create inventory map - key by wordpress_id (integer) since that's what inventory uses
         const inventoryMap = new Map(
           Array.isArray(inventoryData) 
-            ? inventoryData.map((inv: any) => [inv.product_id, inv])
+            ? inventoryData.map((inv: any) => [inv.product_id, inv]) // product_id is wordpress_id (integer)
             : []
         );
         
-        // Merge products with inventory data
+        console.log('🔵 Inventory map keys:', Array.from(inventoryMap.keys()));
+        console.log('🔵 Product wordpress_ids:', approvedProducts.map((p: any) => p.wordpress_id));
+        
+        // Show ALL approved products - with or without inventory
         const mappedData = approvedProducts.map((product: any) => {
-          const inventoryRecord = inventoryMap.get(product.product_id);
+          // Match by wordpress_id (integer), not UUID
+          const inv = inventoryMap.get(product.wordpress_id);
           
-          // If inventory record exists, use it
-          if (inventoryRecord) {
-            return {
-              ...inventoryRecord,
-              quantity: parseFloat(inventoryRecord.quantity) || 0,
-              price: inventoryRecord.price ? parseFloat(inventoryRecord.price) : parseFloat(product.price || 0)
-            };
-          }
+          console.log(`Product ${product.name}: wordpress_id=${product.wordpress_id}, has inventory=${!!inv}, qty=${inv?.quantity || 0}`);
           
-          // Otherwise, create a new inventory item from product data with 0 stock
           return {
-            id: product.product_id || product.id,
-            product_id: product.product_id || product.id,
-            product_name: product.name || 'Unnamed Product',
+            id: inv?.id || `product-${product.id}`,
+            inventory_id: inv?.id || null,
+            product_id: product.id, // UUID for display
+            wordpress_product_id: product.wordpress_id, // Integer for inventory matching
+            product_name: product.name,
             sku: product.sku || '',
-            quantity: 0,
-            category_name: product.category || 'Product',
-            image: product.image || null,
-            price: parseFloat(product.price || 0),
-            description: product.description || '',
-            stock_status: 'out_of_stock' as const,
-            stock_status_label: 'Out of Stock',
-            location_name: product.location_name || 'Not Set',
-            location_id: product.location_id || 0,
-            flora_fields: product.flora_fields || {}
+            quantity: inv ? parseFloat(inv.quantity) || 0 : 0,
+            category_name: product.primary_category?.name || 'Product',
+            image: product.featured_image_storage || product.featured_image || null,
+            price: parseFloat(product.regular_price || 0),
+            description: product.short_description || product.description || '',
+            stock_status: inv?.stock_status || 'out_of_stock',
+            stock_status_label: inv?.stock_status === 'in_stock' ? 'In Stock' : 
+                               inv?.stock_status === 'low_stock' ? 'Low Stock' : 'Not Stocked',
+            location_name: inv?.location_name || 'No Location',
+            location_id: inv?.location_id || 0,
+            flora_fields: product.meta_data || {}
           };
         });
+        
+        console.log('✅ Mapped inventory data:', mappedData.length, 'items');
         
         setInventory(mappedData);
         setLoading(false);
@@ -136,36 +161,92 @@ export default function VendorInventory() {
     }
   }, []);
 
-  const handleQuickAdjust = async (productId: number, operation: 'add' | 'subtract') => {
+  const handleQuickAdjust = async (productId: any, operation: 'add' | 'subtract') => {
     const amount = parseFloat(quickAdjustInput);
     if (isNaN(amount) || amount <= 0) {
-      alert('Enter a valid amount');
+      showNotification({
+        type: 'warning',
+        title: 'Invalid Amount',
+        message: 'Enter a valid amount',
+      });
+      return;
+    }
+    
+    // Find the inventory item
+    const item = inventory.find(inv => inv.product_id === productId);
+    if (!item) {
+      showNotification({
+        type: 'error',
+        title: 'Not Found',
+        message: 'Inventory record not found',
+      });
       return;
     }
 
+    console.log('🔵 Adjusting inventory:', {
+      productId: item.product_id,
+      wordpress_id: item.wordpress_product_id,
+      inventoryId: item.inventory_id,
+      currentQty: item.quantity,
+      adjustment: operation === 'add' ? amount : -amount
+    });
+
     try {
       setProcessing(true);
-      const response = await adjustVendorInventory(productId, operation, amount);
       
-      if (response.success) {
-        setInventory(prev => prev.map(item => {
-          if (item.product_id === productId) {
-            return {
-              ...item,
-              quantity: response.new_quantity,
-              stock_status: response.stock_status,
-              stock_status_label: response.stock_status === 'out_of_stock' ? 'Out of Stock' 
-                : response.stock_status === 'low_stock' ? 'Low Stock' : 'In Stock'
-            };
-          }
-          return item;
-        }));
+      try {
+        // Call Supabase inventory adjustment API
+        const response = await fetch('/api/vendor/inventory/adjust', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-vendor-id': vendorId || ''
+          },
+          body: JSON.stringify({
+            inventoryId: item.inventory_id,
+            productId: item.product_id,
+            adjustment: operation === 'add' ? amount : -amount,
+            reason: adjustmentReason || `${operation === 'add' ? 'Added' : 'Removed'} ${amount} units`,
+            locationId: item.location_id
+          })
+        });
+        
+        const data = await response.json();
+        
+        console.log('🔵 Adjust response:', data);
+        
+        if (!data.success) {
+          throw new Error(data.error || 'Failed to adjust inventory');
+        }
+        
+        showNotification({
+          type: 'success',
+          title: 'Stock Updated',
+          message: `Inventory ${operation === 'add' ? 'increased' : 'decreased'} by ${amount} units`,
+        });
+        
+        // Reload entire inventory to get fresh data
+        await loadInventory();
+        
+        setAdjustmentInput('');
+        setAdjustmentReason('');
         setQuickAdjustInput('');
+        
+      } catch (error: any) {
+        showNotification({
+          type: 'error',
+          title: 'Adjustment Failed',
+          message: error.message || 'Failed to adjust inventory',
+        });
+      } finally {
+        setProcessing(false);
       }
     } catch (error: any) {
-      alert(error.response?.data?.message || 'Failed to adjust');
-    } finally {
-      setProcessing(false);
+      showNotification({
+        type: 'error',
+        title: 'Error',
+        message: error.message || 'Failed to adjust',
+      });
     }
   };
 
@@ -178,27 +259,68 @@ export default function VendorInventory() {
 
     try {
       setProcessing(true);
-      const response = await setVendorInventory(productId, qty);
       
-      if (response.success) {
-    setInventory(prev => prev.map(item => {
-          if (item.product_id === productId) {
-            return {
-              ...item,
-              quantity: response.new_quantity,
-              stock_status: response.stock_status,
-              stock_status_label: response.stock_status === 'out_of_stock' ? 'Out of Stock' 
-                : response.stock_status === 'low_stock' ? 'Low Stock' : 'In Stock'
-            };
+      const item = inventory.find(inv => inv.product_id === productId);
+      if (!item) {
+        alert('Inventory item not found');
+        setProcessing(false);
+        return;
       }
-      return item;
-    }));
+      
+      try {
+        // Calculate adjustment needed to reach target quantity
+        const currentQty = item.quantity || 0;
+        const targetQty = qty;
+        const adjustment = targetQty - currentQty;
+        
+        if (adjustment === 0) {
+          alert('Quantity unchanged');
+          setProcessing(false);
+          return;
+        }
+        
+        // Call Supabase inventory adjustment API
+        const response = await fetch('/api/vendor/inventory/adjust', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-vendor-id': vendorId || ''
+          },
+          body: JSON.stringify({
+            inventoryId: item.id,
+            adjustment: adjustment,
+            reason: `Set quantity to ${targetQty}`
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (!data.success) {
+          throw new Error(data.error || 'Failed to set inventory');
+        }
+        
+        // Update UI
+        setInventory(prev => prev.map(inv => {
+          if (inv.product_id === productId) {
+            return {
+              ...inv,
+              quantity: data.new_quantity,
+              stock_status: data.new_quantity > 0 ? 'in_stock' : 'out_of_stock'
+            };
+          }
+          return inv;
+        }));
+        
         setSetQuantityInput('');
+        alert(`✅ Inventory set to ${targetQty}!`);
+        
+      } catch (error: any) {
+        alert(error.message || 'Failed to set inventory');
+      } finally {
+        setProcessing(false);
       }
     } catch (error: any) {
-      alert(error.response?.data?.message || 'Failed to update');
-    } finally {
-      setProcessing(false);
+      alert(error.message || 'Failed to update');
     }
   };
 
@@ -207,9 +329,6 @@ export default function VendorInventory() {
   const handleSubmitChangeRequest = async (productId: number) => {
     const changes = editedFields[productId];
     
-    console.log('📝 Submitting change request for product:', productId);
-    console.log('📝 Changes to submit:', changes);
-    
     if (!changes || Object.keys(changes).length === 0) {
       alert('No changes to submit');
       return;
@@ -217,42 +336,12 @@ export default function VendorInventory() {
 
     try {
       setSubmittingChange(true);
-      console.log('🚀 Calling API...');
-      
-      const response = await createVendorChangeRequest(productId, changes);
-      
-      console.log('✅ API Response:', response);
-      
-      if (response.success) {
-        console.log('✅ Change request created with ID:', response.change_request_id);
-        
-        // Show success message
-        setSuccessMessage(productId);
-        
-        // Clear after 5 seconds
-        setTimeout(() => {
-          console.log('🔄 Clearing success message');
-          setSuccessMessage(null);
-        }, 5000);
-        
-        // Clear edited fields
-        setEditedFields(prev => {
-          const newFields = { ...prev };
-          delete newFields[productId];
-          console.log('🧹 Cleared edited fields for product:', productId);
-          return newFields;
-        });
-      } else {
-        console.error('❌ Response not successful:', response);
-        alert('Submission failed: ' + (response.message || 'Unknown error'));
-      }
+      // Simplified - change requests coming soon
+      alert('Product change requests feature coming soon with simplified API');
     } catch (error: any) {
-      console.error('❌ Error submitting change request:', error);
-      console.error('❌ Error details:', error.response?.data);
-      alert(error.response?.data?.message || 'Failed to submit change request');
+      alert(error.message || 'Failed to submit changes');
     } finally {
       setSubmittingChange(false);
-      console.log('🏁 Submission complete');
     }
   };
 
@@ -592,6 +681,17 @@ export default function VendorInventory() {
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
+                                setViewMode(prev => ({ ...prev, [item.product_id]: 'images' }));
+                              }}
+                              className="w-full flex items-center justify-center gap-2 bg-white/5 border border-white/10 text-white hover:bg-white/10 hover:border-white/20 px-4 py-3 transition-all"
+                            >
+                              <FileText size={16} />
+                              <span className="text-xs uppercase tracking-wider font-medium">Manage Images</span>
+                            </button>
+                            
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
                                 setViewMode(prev => ({ ...prev, [item.product_id]: 'fields' }));
                                 if (!editedFields[item.product_id]) {
                                   setEditedFields(prev => ({ ...prev, [item.product_id]: { ...item.flora_fields } }));
@@ -712,6 +812,96 @@ export default function VendorInventory() {
                                 Current: {item.quantity.toFixed(2)}g • This will override the stock level
                               </div>
                             </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Manage Images */}
+                      {currentView === 'images' && (
+                        <div>
+                          <div className="mb-4">
+                            <h3 className="text-white text-sm font-medium mb-2">Product Images</h3>
+                            <p className="text-white/60 text-xs">Upload new images and they will be submitted for admin approval</p>
+                          </div>
+                          
+                          {/* Current Image */}
+                          {item.image && (
+                            <div className="mb-4">
+                              <label className="text-white/40 text-xs mb-2 block uppercase tracking-wider">Current Image</label>
+                              <div className="bg-[#1a1a1a] border border-white/5 p-4 rounded">
+                                <img src={item.image} alt={item.product_name} className="w-full max-w-xs mx-auto" />
+                              </div>
+                            </div>
+                          )}
+                          
+                          {/* Upload New Images */}
+                          <div className="bg-white/5 border border-white/10 p-6">
+                            <label className="text-white/60 text-xs mb-3 block font-medium uppercase tracking-wider">Upload New Images</label>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              multiple
+                              onChange={async (e) => {
+                                e.stopPropagation();
+                                const files = e.target.files;
+                                if (!files || files.length === 0) return;
+                                
+                                try {
+                                  setProcessing(true);
+                                  const vendorId = localStorage.getItem('vendor_id');
+                                  
+                                  const uploadPromises = Array.from(files).map(async (file) => {
+                                    const uploadFormData = new FormData();
+                                    uploadFormData.append('file', file);
+                                    uploadFormData.append('type', 'product');
+                                    
+                                    const response = await fetch('/api/supabase/vendor/upload', {
+                                      method: 'POST',
+                                      headers: { 'x-vendor-id': vendorId || '' },
+                                      body: uploadFormData
+                                    });
+                                    
+                                    return await response.json();
+                                  });
+                                  
+                                  const results = await Promise.all(uploadPromises);
+                                  const imageUrls = results.filter(r => r.success).map(r => r.file.url);
+                                  
+                                  if (imageUrls.length > 0) {
+                                    // Update product images and resubmit for approval
+                                    const updateResponse = await axios.put(`/api/vendor/products/${item.product_id}`, {
+                                      featured_image_storage: imageUrls[0],
+                                      image_gallery_storage: imageUrls,
+                                      status: 'pending' // Resubmit for approval
+                                    }, {
+                                      headers: { 'x-vendor-id': vendorId || '' }
+                                    });
+                                    
+                                    if (updateResponse.data.success) {
+                                      showNotification({
+                                        type: 'success',
+                                        title: 'Images Uploaded',
+                                        message: `${imageUrls.length} image(s) uploaded and submitted for approval`,
+                                      });
+                                      await loadInventory();
+                                    }
+                                  }
+                                } catch (err: any) {
+                                  showNotification({
+                                    type: 'error',
+                                    title: 'Upload Failed',
+                                    message: err.message || 'Failed to upload images',
+                                  });
+                                } finally {
+                                  setProcessing(false);
+                                }
+                              }}
+                              className="w-full bg-[#1a1a1a] border border-white/10 text-white px-4 py-3 text-sm cursor-pointer hover:border-white/20 transition-all"
+                              onClick={(e) => e.stopPropagation()}
+                            />
+                            <p className="text-white/40 text-xs mt-2">
+                              Uploading new images will resubmit this product for admin approval
+                            </p>
                           </div>
                         </div>
                       )}

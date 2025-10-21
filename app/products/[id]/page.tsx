@@ -1,12 +1,11 @@
-import { getProduct, getProducts } from "@/lib/wordpress";
+import { getProduct } from "@/lib/supabase-api";
 import ProductPageClientOptimized from "@/components/ProductPageClientOptimized";
 import type { Metadata } from "next";
 
 // Enable aggressive ISR - Revalidate every 60 seconds
 export const revalidate = 60;
 
-// DISABLED for Vercel - Generate all product pages on-demand
-// This prevents build hangs caused by WordPress API calls during static generation
+// Generate all product pages on-demand
 export async function generateStaticParams() {
   return []; // Empty = all pages generated on first request
 }
@@ -19,7 +18,8 @@ export async function generateMetadata({
   params: Promise<{ id: string }>;
 }): Promise<Metadata> {
   const { id } = await params;
-  const product = await getProduct(id);
+  const response = await getProduct(id);
+  const product = response?.product;
 
   if (!product) {
     return {
@@ -27,14 +27,14 @@ export async function generateMetadata({
     };
   }
 
-  const category = product.categories?.[0]?.name || "Products";
+  const category = product.categories?.[0]?.name || product.primary_category?.name || "Products";
   const price = product.price ? `$${parseFloat(product.price).toFixed(0)}` : "";
   const description = product.short_description 
     ? product.short_description.replace(/<[^>]*>/g, '').substring(0, 155)
-    : `Shop ${product.name} ${price ? `starting at ${price}` : ''} at Flora Distro. Premium cannabis products with fast shipping. In stock now.`;
+    : `Shop ${product.name} ${price ? `starting at ${price}` : ''} at Yacht Club. Premium cannabis products with fast shipping. In stock now.`;
 
-  // Use product image if available, otherwise use generated OG image
-  const productImage = product.images?.[0]?.src;
+  // Use product image
+  const productImage = product.featured_image || product.images?.[0]?.src;
   const ogImageUrl = productImage || `/api/og-product?name=${encodeURIComponent(product.name)}&category=${encodeURIComponent(category)}&price=${encodeURIComponent(price)}`;
 
   return {
@@ -52,7 +52,7 @@ export async function generateMetadata({
         },
       ],
       type: "website",
-      siteName: "Flora Distro",
+      siteName: "Yacht Club",
     },
     twitter: {
       card: "summary_large_image",

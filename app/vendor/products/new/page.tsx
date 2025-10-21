@@ -4,7 +4,8 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Upload, X, Plus, FileText, CheckCircle, AlertCircle, Loader } from 'lucide-react';
 import Link from 'next/link';
-import { createVendorProductProxy as createVendorProduct, uploadVendorImagesProxy as uploadVendorImages, uploadVendorCOAProxy as uploadVendorCOA } from '@/lib/wordpress-vendor-proxy';
+import axios from 'axios';
+import { showNotification } from '@/components/NotificationToast';
 
 export default function NewProduct() {
   const router = useRouter();
@@ -74,21 +75,59 @@ export default function NewProduct() {
       reader.readAsDataURL(file);
     });
     
-    // Upload immediately for faster submission
+    // Upload to Supabase Storage immediately
     try {
       setUploadingImages(true);
-      const response = await uploadVendorImages(fileArray);
+      const vendorId = localStorage.getItem('vendor_id');
       
-      if (response.success && response.images) {
-        const urls = response.images.map((img: any) => img.url);
-        setUploadedImageUrls(prev => [...prev, ...urls]);
+      if (!vendorId) {
+        showNotification({
+          type: 'error',
+          title: 'Upload Failed',
+          message: 'Not authenticated. Please login again.',
+        });
+        return;
       }
       
-      if (response.errors && response.errors.length > 0) {
-        console.error('Image upload errors:', response.errors);
-      }
-    } catch (err) {
+      // Upload each file
+      const uploadPromises = fileArray.map(async (file) => {
+        const uploadFormData = new FormData();
+        uploadFormData.append('file', file);
+        uploadFormData.append('type', 'product');
+        
+        const response = await fetch('/api/supabase/vendor/upload', {
+          method: 'POST',
+          headers: {
+            'x-vendor-id': vendorId
+          },
+          body: uploadFormData
+        });
+        
+        const data = await response.json();
+        
+        if (!data.success) {
+          throw new Error(data.error || 'Upload failed');
+        }
+        
+        return data.file.url;
+      });
+      
+      const urls = await Promise.all(uploadPromises);
+      setUploadedImageUrls(prev => [...prev, ...urls]);
+      
+      showNotification({
+        type: 'success',
+        title: 'Images Uploaded',
+        message: `${urls.length} image(s) uploaded successfully`,
+      });
+      
+    } catch (err: any) {
       console.error('Failed to upload images:', err);
+      showNotification({
+        type: 'error',
+        title: 'Upload Failed',
+        message: err.message || 'Failed to upload images',
+      });
     } finally {
       setUploadingImages(false);
     }
@@ -98,6 +137,12 @@ export default function NewProduct() {
     setImageFiles(prev => prev.filter((_, i) => i !== index));
     setImagePreviews(prev => prev.filter((_, i) => i !== index));
     setUploadedImageUrls(prev => prev.filter((_, i) => i !== index));
+    
+    showNotification({
+      type: 'info',
+      title: 'Image Removed',
+      message: 'Image removed from upload queue',
+    });
   };
 
   const handleCOAUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -106,16 +151,53 @@ export default function NewProduct() {
     
     setCoAFile(file);
     
-    // Upload immediately
+    // Upload to Supabase Storage
     try {
       setUploadingCOA(true);
-      const response = await uploadVendorCOA(file);
+      const vendorId = localStorage.getItem('vendor_id');
       
-      if (response.success && response.url) {
-        setUploadedCoaUrl(response.url);
+      if (!vendorId) {
+        showNotification({
+          type: 'error',
+          title: 'Upload Failed',
+          message: 'Not authenticated. Please login again.',
+        });
+        return;
       }
-    } catch (err) {
+      
+      const uploadFormData = new FormData();
+      uploadFormData.append('file', file);
+      uploadFormData.append('type', 'coa');
+      
+      const response = await fetch('/api/supabase/vendor/upload', {
+        method: 'POST',
+        headers: {
+          'x-vendor-id': vendorId
+        },
+        body: uploadFormData
+      });
+      
+      const data = await response.json();
+      
+      if (!data.success) {
+        throw new Error(data.error || 'COA upload failed');
+      }
+      
+      setUploadedCoaUrl(data.file.url);
+      
+      showNotification({
+        type: 'success',
+        title: 'COA Uploaded',
+        message: 'Certificate of Analysis uploaded successfully',
+      });
+      
+    } catch (err: any) {
       console.error('Failed to upload COA:', err);
+      showNotification({
+        type: 'error',
+        title: 'Upload Failed',
+        message: err.message || 'Failed to upload COA',
+      });
     } finally {
       setUploadingCOA(false);
     }
@@ -211,6 +293,11 @@ export default function NewProduct() {
   // Pricing Tier Management
   const addPricingTier = () => {
     if (!newTierPrice || !newTierQty) {
+      showNotification({
+        type: 'warning',
+        title: 'Missing Information',
+        message: 'Please enter quantity and price for the tier',
+      });
       setError('Please enter quantity and price for the tier');
       return;
     }
@@ -270,6 +357,11 @@ export default function NewProduct() {
         // Check pricing mode
         if (pricingMode === 'tiered') {
           if (pricingTiers.length === 0) {
+            showNotification({
+              type: 'warning',
+              title: 'Pricing Required',
+              message: 'Please add at least one pricing tier',
+            });
             setError('Please add at least one pricing tier');
             setLoading(false);
             return;
@@ -284,6 +376,11 @@ export default function NewProduct() {
       } else {
         // Variable product
         if (variants.length === 0) {
+          showNotification({
+            type: 'warning',
+            title: 'Variants Required',
+            message: 'Please add at least one variant for variable products',
+          });
           setError('Please add at least one variant for variable products');
           setLoading(false);
           return;
@@ -292,6 +389,11 @@ export default function NewProduct() {
         // Validate all variants have prices
         const emptyPriceVariants = variants.filter(v => !v.price || v.price === '');
         if (emptyPriceVariants.length > 0) {
+          showNotification({
+            type: 'warning',
+            title: 'Variant Pricing Required',
+            message: `Please set prices for all variants. ${emptyPriceVariants.length} variant(s) missing prices.`,
+          });
           setError(`Please set prices for all variants. ${emptyPriceVariants.length} variant(s) missing prices.`);
           setLoading(false);
           return;
@@ -301,23 +403,42 @@ export default function NewProduct() {
         productData.variants = variants;
       }
 
-      const response = await createVendorProduct(productData);
+      // Create product via simplified API
+      const vendorId = localStorage.getItem('vendor_id');
+      const response = await axios.post('/api/vendor/products', productData, {
+        headers: { 'x-vendor-id': vendorId || '' }
+      }).then(r => r.data);
       
-      console.log('Product creation response:', response);
 
       if (response && response.success) {
+        showNotification({
+          type: 'success',
+          title: 'Product Submitted',
+          message: 'Your product has been submitted for admin approval',
+          duration: 3000,
+        });
         setSuccess(true);
         setTimeout(() => {
           router.push('/vendor/products');
         }, 2000);
       } else {
         console.error('Response missing success flag:', response);
+        showNotification({
+          type: 'error',
+          title: 'Submission Failed',
+          message: response?.message || 'Failed to create product. Please try again.',
+        });
         setError(response?.message || 'Failed to create product. Please try again.');
         setLoading(false);
       }
     } catch (err: any) {
       console.error('Error submitting product:', err);
-      setError(err.response?.data?.message || 'Failed to create product. Please try again.');
+      showNotification({
+        type: 'error',
+        title: 'Submission Error',
+        message: err.response?.data?.error || err.response?.data?.message || 'Failed to create product. Please check all fields.',
+      });
+      setError(err.response?.data?.error || err.response?.data?.message || 'Failed to create product. Please try again.');
       setLoading(false);
     }
   };

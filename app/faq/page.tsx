@@ -57,8 +57,8 @@ export default function FAQ() {
           <div className="bg-[#3a3a3a] border border-white/10 p-6">
             <FAQItem
               id="marketplace-what"
-              question="What is Flora Distro?"
-              answer="Flora Distro is a curated cannabis marketplace. We connect verified vendors with customers, offering products from our own facilities and trusted partner vendors—all in one place."
+              question="What is Yacht Club?"
+              answer="Yacht Club is a curated cannabis marketplace. We connect verified vendors with customers, offering products from our own facilities and trusted partner vendors—all in one place."
             />
             <FAQItem
               id="multiple-vendors"
@@ -73,7 +73,7 @@ export default function FAQ() {
             <FAQItem
               id="become-vendor"
               question="How do I become a vendor?"
-              answer="Email vendors@floradistro.com with information about your business and products. We'll review your application and reach out if you're a good fit for our marketplace."
+              answer="Contact us with information about your business and products. We'll review your application and reach out if you're a good fit for our marketplace."
             />
           </div>
         </div>
@@ -126,7 +126,7 @@ export default function FAQ() {
             <FAQItem
               id="vendor-fulfillment"
               question="Who fulfills my order?"
-              answer="Depending on your cart, orders may ship from Flora Distro facilities or directly from vendor locations. We coordinate to ensure fast, reliable delivery."
+              answer="Depending on your cart, orders may ship from Yacht Club facilities or directly from vendor locations. We coordinate to ensure fast, reliable delivery."
             />
           </div>
         </div>

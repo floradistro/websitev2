@@ -1,5 +1,4 @@
-import { getCategories, getLocations } from "@/lib/wordpress";
-import { getCachedBulkProducts } from "@/lib/api-cache";
+import { getCategories, getLocations, getProducts } from "@/lib/supabase-api";
 import HomeClient from "@/components/HomeClient";
 
 // ISR - Revalidate every 5 minutes for better performance
@@ -11,37 +10,40 @@ export default async function Home() {
     setTimeout(() => reject(new Error('Timeout')), ms)
   );
   
-  const [categories, locations, bulkData] = await Promise.all([
-    Promise.race([getCategories({ per_page: 10, hide_empty: true }), timeout(5000)]).catch(() => []),
+  const [categories, locations, productsData] = await Promise.all([
+    Promise.race([getCategories(), timeout(5000)]).catch(() => []),
     Promise.race([getLocations(), timeout(5000)]).catch(() => []),
-    Promise.race([getCachedBulkProducts({ per_page: 12, orderby: 'popularity' }), timeout(8000)]).catch(() => ({ data: [] })),
+    Promise.race([getProducts({ per_page: 12, orderby: 'date_created', order: 'desc' }), timeout(8000)]).catch(() => ({ products: [] })),
   ]);
 
-  // Extract products from bulk response - inventory already included!
-  const bulkProducts = bulkData?.data || [];
+  // Extract products from response
+  const bulkProducts = productsData?.products || [];
   
-  // Map bulk products to consistent format
-  const allProducts = bulkProducts.map((bp: any) => ({
-    id: parseInt(bp.id),
-    name: bp.name,
-    slug: bp.name?.toLowerCase().replace(/\s+/g, '-'),
-    type: bp.type,
-    status: bp.status,
-    price: bp.regular_price,
-    regular_price: bp.regular_price,
-    sale_price: bp.sale_price,
-    images: bp.image ? [{ src: bp.image, id: 0, name: bp.name }] : [],
-    categories: (bp.categories || []).map((cat: any) => ({
-      id: parseInt(cat.id),
-      name: cat.name,
-      slug: cat.slug
-    })),
-    meta_data: bp.meta_data || [],
-    blueprint_fields: bp.blueprint_fields || [],
-    stock_status: bp.total_stock > 0 ? 'instock' : 'outofstock',
-    total_stock: bp.total_stock,
-    inventory: bp.inventory || [],
-  }));
+  // Products from Supabase - use ONLY Supabase Storage images
+  const allProducts = bulkProducts.map((p: any) => {
+    // ONLY use Supabase Storage URLs (WordPress URLs removed!)
+    const imageUrl = p.featured_image_storage || 
+                     (p.image_gallery_storage && p.image_gallery_storage[0]);
+    
+    return {
+      id: p.wordpress_id || p.id,
+      uuid: p.id,
+      name: p.name,
+      slug: p.slug,
+      type: p.type,
+      status: p.status,
+      price: p.price,
+      regular_price: p.regular_price,
+      sale_price: p.sale_price,
+      images: imageUrl ? [{ src: imageUrl, id: 0, name: p.name }] : [],
+      categories: p.product_categories?.map((pc: any) => pc.category) || [],
+      meta_data: p.meta_data || {},
+      blueprint_fields: p.blueprint_fields || [],
+      stock_status: p.stock_status || 'instock',
+      total_stock: p.stock_quantity || 0,
+      inventory: [],
+    };
+  });
 
   // Helper function to check if product has stock
   const hasStockAnywhere = (product: any): boolean => {
@@ -64,14 +66,15 @@ export default async function Home() {
   const productFieldsMap: { [key: number]: any } = {};
   
   bulkProducts.forEach((product: any) => {
+    const productId = product.wordpress_id || product.id;
     const blueprintFields = product.blueprint_fields || [];
     
-    // Filter and sort fields
+    // Filter and sort fields (handle Supabase JSONB array structure)
     const sortedFields = blueprintFields
       .filter((field: any) => 
-        field.field_type !== 'blueprint' && !field.field_name.includes('blueprint')
+        field && field.field_name && field.field_type !== 'blueprint' && !field.field_name.includes('blueprint')
       )
-      .sort((a: any, b: any) => a.field_name.localeCompare(b.field_name));
+      .sort((a: any, b: any) => a.field_name?.localeCompare(b.field_name || '') || 0);
     
     // Convert to object
     const fields: { [key: string]: string } = {};
@@ -79,12 +82,11 @@ export default async function Home() {
       fields[field.field_name] = field.field_value || '';
     });
     
-    // Extract pricing tiers from meta_data (already in bulk response)
-    const metaData = product.meta_data || [];
-    const pricingTiersMeta = metaData.find((m: any) => m.key === '_product_price_tiers');
-    const pricingTiers = pricingTiersMeta?.value || [];
+    // Extract pricing tiers from meta_data (JSONB object in Supabase)
+    const metaData = product.meta_data || {};
+    const pricingTiers = metaData._product_price_tiers || [];
     
-    productFieldsMap[product.id] = { fields, pricingTiers };
+    productFieldsMap[productId] = { fields, pricingTiers };
   });
 
   return (
