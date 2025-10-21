@@ -106,12 +106,16 @@ export async function GET(request: NextRequest) {
     
     // CRITICAL: Filter out products from suspended vendors
     const activeProducts = data?.filter((p: any) => {
+      // If product has NO vendor_id, it's a house product - always show
+      if (!p.vendor_id) {
+        return true;
+      }
       // If product has vendor, check vendor is active
       if (p.vendor && p.vendor.status) {
         return p.vendor.status === 'active';
       }
-      // House products (no vendor) are always active
-      return true;
+      // If vendor data is missing but vendor_id exists, hide it (data integrity issue)
+      return false;
     }) || [];
     
     console.log(`✅ Products query: ${data?.length || 0} total, ${activeProducts.length} active (filtered out suspended vendors)`);
