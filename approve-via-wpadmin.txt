@@ -13,3 +13,5 @@ cd /home/u2736-pgt6vpiklij1/www/api.floradistro.com
 wp user update 140 --role=wc_product_vendors_admin_vendor
 wp user meta update 140 wc_product_vendors_admin_vendor 1
 
+
+

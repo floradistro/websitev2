@@ -16,9 +16,9 @@ export async function POST(request: NextRequest) {
     
     console.log('🔵 Adjust request:', { inventoryId, productId, adjustment, locationId });
     
-    if ((!inventoryId && !productId) || adjustment === undefined) {
+    if (!productId || adjustment === undefined) {
       return NextResponse.json({ 
-        error: 'Missing required fields: (inventoryId or productId), adjustment' 
+        error: 'Missing required fields: productId, adjustment' 
       }, { status: 400 });
     }
     
@@ -27,9 +27,28 @@ export async function POST(request: NextRequest) {
     let inventory: any = null;
     let isNew = false;
     
-    // If no inventory record exists, find or create one
-    if (!inventoryId && productId) {
-      console.log('🔵 No inventory ID - looking up product:', productId);
+    // Try to get existing inventory by ID first (if provided and valid)
+    if (inventoryId) {
+      console.log('🔵 Looking up inventory by ID:', inventoryId);
+      
+      const { data: existingInventory, error: inventoryError } = await supabase
+        .from('inventory')
+        .select('*')
+        .eq('id', inventoryId)
+        .eq('vendor_id', vendorId)
+        .single();
+      
+      if (existingInventory) {
+        console.log('✅ Found existing inventory by ID');
+        inventory = existingInventory;
+      } else {
+        console.log('⚠️ Inventory ID not found, will try product lookup');
+      }
+    }
+    
+    // If no inventory found, find or create one using productId
+    if (!inventory) {
+      console.log('🔵 Looking up product:', productId);
       
       // Get the product first to verify it exists and get wordpress_id
       const { data: product, error: productError } = await supabase
@@ -109,23 +128,13 @@ export async function POST(request: NextRequest) {
         isNew = true;
         console.log('✅ Created new inventory record:', inventory.id);
       }
-    } else {
-      // Get existing inventory
-      const { data: existingInventory, error: inventoryError } = await supabase
-        .from('inventory')
-        .select('*')
-        .eq('id', inventoryId)
-        .eq('vendor_id', vendorId)
-        .single();
-      
-      if (inventoryError || !existingInventory) {
-        console.error('❌ Inventory not found:', inventoryError);
-        return NextResponse.json({ 
-          error: 'Inventory not found or unauthorized' 
-        }, { status: 404 });
-      }
-      
-      inventory = existingInventory;
+    }
+    
+    // Final check - if still no inventory, return error
+    if (!inventory) {
+      return NextResponse.json({ 
+        error: 'Could not find or create inventory record' 
+      }, { status: 404 });
     }
     
     const currentQty = parseFloat(inventory.quantity || 0);

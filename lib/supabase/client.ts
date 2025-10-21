@@ -1,18 +1,88 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-key';
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://uaednwpxursknmwdeejn.supabase.co';
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Optimized client configuration with connection pooling
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: true,
+    flowType: 'pkce'
+  },
+  db: {
+    schema: 'public'
+  },
+  global: {
+    headers: {
+      'x-application-name': 'floradistro',
+      'x-client-info': 'floradistro-web/1.0.0'
+    },
+    fetch: (url, options = {}) => {
+      // Add timeout to all requests
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000);
 
-// For server-side operations
+      return fetch(url, {
+        ...options,
+        signal: controller.signal,
+      }).finally(() => clearTimeout(timeoutId));
+    }
+  },
+  // Performance settings - reduced realtime to save resources
+  realtime: {
+    params: {
+      eventsPerSecond: 5
+    }
+  }
+});
+
+// Singleton for service role client (server-side only)
+let serviceSupabaseInstance: SupabaseClient | null = null;
+
 export function getServiceSupabase() {
-  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'placeholder-service-key';
-  return createClient(supabaseUrl, supabaseServiceKey, {
+  if (serviceSupabaseInstance) {
+    return serviceSupabaseInstance;
+  }
+
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+  serviceSupabaseInstance = createClient(supabaseUrl, supabaseServiceKey, {
     auth: {
       autoRefreshToken: false,
       persistSession: false
+    },
+    db: {
+      schema: 'public'
+    },
+    global: {
+      headers: {
+        'x-application-name': 'floradistro-service',
+        'x-client-info': 'floradistro-service/1.0.0'
+      },
+      fetch: (url, options = {}) => {
+        // Add timeout to all server requests
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 45000);
+
+        return fetch(url, {
+          ...options,
+          signal: controller.signal,
+        }).finally(() => clearTimeout(timeoutId));
+      }
     }
+  });
+  
+  return serviceSupabaseInstance;
+}
+
+// Cleanup on process termination (server-side)
+if (typeof process !== 'undefined') {
+  process.on('SIGTERM', () => {
+    serviceSupabaseInstance = null;
+  });
+  process.on('SIGINT', () => {
+    serviceSupabaseInstance = null;
   });
 }
 

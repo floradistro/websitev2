@@ -109,11 +109,14 @@ export async function POST(request: NextRequest) {
       const { data: categories } = await supabase
         .from('categories')
         .select('id')
-        .eq('name', productData.category)
+        .ilike('name', productData.category) // Case-insensitive match
         .limit(1);
       
       if (categories && categories.length > 0) {
         newProduct.primary_category_id = categories[0].id;
+        console.log('✅ Category matched:', productData.category, '→', categories[0].id);
+      } else {
+        console.warn('⚠️ Category not found:', productData.category);
       }
     }
 

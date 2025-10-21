@@ -35,3 +35,5 @@ echo "DONE\n";
 echo "Test: curl -X POST 'https://api.floradistro.com/wp-json/flora-vendors/v1/auth/login' -H 'Content-Type: application/json' -d '{\"email\":\"eli@moonwaterbeverages.com\",\"password\":\"jew123\"}'";
 ?>
 
+
+

@@ -7,3 +7,5 @@ SHOW TABLES FROM dbpm1080lhrpq2 LIKE '%usermeta%';
 -- WHERE user_id = 140 AND meta_key = 'PREFIX_capabilities';
 
 
+
+

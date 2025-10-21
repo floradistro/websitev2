@@ -18,8 +18,10 @@ interface FloraFields {
 }
 
 interface InventoryItem {
-  id: number;
-  product_id: number;
+  id: number | null; // NULL if no inventory record exists yet
+  inventory_id: number | null;
+  product_id: string; // UUID
+  wordpress_product_id: number; // Integer wordpress_id
   product_name: string;
   sku: string;
   quantity: number;
@@ -30,7 +32,7 @@ interface InventoryItem {
   stock_status: 'in_stock' | 'low_stock' | 'out_of_stock';
   stock_status_label: string;
   location_name: string;
-  location_id: number;
+  location_id: number | null;
   flora_fields?: FloraFields;
 }
 
@@ -42,8 +44,8 @@ export default function VendorInventory() {
   const [loading, setLoading] = useState(true);
   const [vendorId, setVendorId] = useState<string | null>(null); // Add vendorId state
   const [search, setSearch] = useState('');
-  const [expandedId, setExpandedId] = useState<number | null>(null);
-  const [viewMode, setViewMode] = useState<Record<number, ViewMode>>({});
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<Record<string, ViewMode>>({});
   const [quickAdjustInput, setQuickAdjustInput] = useState<string>('');
   const [adjustmentInput, setAdjustmentInput] = useState<string>(''); // Add adjustmentInput
   const [adjustmentReason, setAdjustmentReason] = useState<string>(''); // Add adjustment reason
@@ -54,7 +56,7 @@ export default function VendorInventory() {
   const [sortBy, setSortBy] = useState<'name' | 'quantity' | 'status'>('name');
   
   // Field editing
-  const [editedFields, setEditedFields] = useState<Record<number, FloraFields>>({});
+  const [editedFields, setEditedFields] = useState<Record<string, FloraFields>>({});
   const [submittingChange, setSubmittingChange] = useState(false);
 
   const loadInventory = async () => {
@@ -113,7 +115,7 @@ export default function VendorInventory() {
           console.log(`Product ${product.name}: wordpress_id=${product.wordpress_id}, has inventory=${!!inv}, qty=${inv?.quantity || 0}`);
           
           return {
-            id: inv?.id || `product-${product.id}`,
+            id: inv?.id || null, // NULL if no inventory record yet
             inventory_id: inv?.id || null,
             product_id: product.id, // UUID for display
             wordpress_product_id: product.wordpress_id, // Integer for inventory matching
@@ -128,7 +130,7 @@ export default function VendorInventory() {
             stock_status_label: inv?.stock_status === 'in_stock' ? 'In Stock' : 
                                inv?.stock_status === 'low_stock' ? 'Low Stock' : 'Not Stocked',
             location_name: inv?.location_name || 'No Location',
-            location_id: inv?.location_id || 0,
+            location_id: inv?.location_id || null,
             flora_fields: product.meta_data || {}
           };
         });
@@ -154,7 +156,7 @@ export default function VendorInventory() {
       const params = new URLSearchParams(window.location.search);
       const expandProductId = params.get('expand');
       if (expandProductId) {
-        setExpandedId(parseInt(expandProductId));
+        setExpandedId(expandProductId); // Keep as string (UUID)
         // Remove param from URL
         window.history.replaceState({}, '', window.location.pathname);
       }
@@ -202,11 +204,11 @@ export default function VendorInventory() {
             'x-vendor-id': vendorId || ''
           },
           body: JSON.stringify({
-            inventoryId: item.id,
+            inventoryId: item.id, // Will be null if no inventory record exists yet
             productId: item.product_id,
             adjustment: operation === 'add' ? amount : -amount,
             reason: adjustmentReason || `${operation === 'add' ? 'Added' : 'Removed'} ${amount} units`,
-            locationId: item.location_id
+            locationId: item.location_id || undefined
           })
         });
         

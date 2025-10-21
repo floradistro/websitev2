@@ -532,11 +532,10 @@ export default function NewProduct() {
                 className="w-full bg-[#1a1a1a] border border-white/5 text-white px-4 py-3 focus:outline-none focus:border-white/10 transition-colors text-base"
               >
                 <option value="">Select category</option>
-                <option value="flower">Flower</option>
-                <option value="concentrates">Concentrates</option>
-                <option value="edibles">Edibles</option>
-                <option value="vapes">Vapes</option>
-                <option value="beverages">Beverages</option>
+                <option value="Flower">Flower</option>
+                <option value="Concentrate">Concentrate</option>
+                <option value="Edibles">Edibles</option>
+                <option value="Vape">Vape</option>
               </select>
             </div>
 

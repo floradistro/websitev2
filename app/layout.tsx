@@ -9,6 +9,7 @@ import { CartProvider } from "@/context/CartContext";
 import { AuthProvider } from "@/context/AuthContext";
 import { WishlistProvider } from "@/context/WishlistContext";
 import { LoyaltyProvider } from "@/context/LoyaltyContext";
+import Providers from "./providers";
 // import { RecentlyViewedProvider } from "@/context/RecentlyViewedContext";
 
 // Prevent static generation errors
@@ -95,22 +96,24 @@ export default function RootLayout({
         }}
         suppressHydrationWarning
       >
-        <LoadingBar />
-        <AuthProvider>
-          <LoyaltyProvider>
-            <WishlistProvider>
-              <CartProvider>
-                {/* <RecentlyViewedProvider> */}
-                  <PullToRefresh />
-                  <ConditionalLayout>
-                    {children}
-                  </ConditionalLayout>
-                  <NotificationToast />
-                {/* </RecentlyViewedProvider> */}
-              </CartProvider>
-            </WishlistProvider>
-          </LoyaltyProvider>
-        </AuthProvider>
+        <Providers>
+          <LoadingBar />
+          <AuthProvider>
+            <LoyaltyProvider>
+              <WishlistProvider>
+                <CartProvider>
+                  {/* <RecentlyViewedProvider> */}
+                    <PullToRefresh />
+                    <ConditionalLayout>
+                      {children}
+                    </ConditionalLayout>
+                    <NotificationToast />
+                  {/* </RecentlyViewedProvider> */}
+                </CartProvider>
+              </WishlistProvider>
+            </LoyaltyProvider>
+          </AuthProvider>
+        </Providers>
       </body>
     </html>
   );

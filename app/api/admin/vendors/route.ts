@@ -23,52 +23,60 @@ export async function GET(request: NextRequest) {
       }, { status: 500 });
     }
 
-    // Get product counts for each vendor (published + in stock only)
-    const enrichedVendors = await Promise.all(vendors.map(async (vendor: any) => {
-      const { count: productCount } = await supabase
-        .from('products')
-        .select('*', { count: 'exact', head: true })
-        .eq('vendor_id', vendor.id)
-        .eq('status', 'published')
-        .gt('stock_quantity', 0);
-      
-      return {
-        id: vendor.id,
-        email: vendor.email,
-        store_name: vendor.store_name,
-        slug: vendor.slug,
-        wordpress_user_id: vendor.wordpress_user_id,
-        status: vendor.status,
-        created_date: vendor.created_at,
-        total_products: productCount || 0,
-        total_orders: 0,
-        total_sales: 0,
-        phone: vendor.phone,
-        address: vendor.address,
-        city: vendor.city,
-        state: vendor.state,
-        zip: vendor.zip,
-        logo_url: vendor.logo_url,
-        banner_url: vendor.banner_url,
-        tagline: vendor.store_tagline,
-        region: vendor.region || vendor.state,
-        brand_colors: vendor.brand_colors,
-        social_links: vendor.social_links,
-        custom_font: vendor.custom_font,
-        custom_css: vendor.custom_css,
-        store_description: vendor.store_description,
-        rating: 0,
-        review_count: 0,
-        product_count: productCount || 0,
-        verified: vendor.status === 'active' ? 1 : 0,
-        featured: 0
-      };
+    // Get product counts in a single query
+    const { data: productCounts } = await supabase
+      .from('products')
+      .select('vendor_id')
+      .eq('status', 'published')
+      .gt('stock_quantity', 0);
+    
+    // Count products per vendor
+    const productCountMap = (productCounts || []).reduce((acc: any, p: any) => {
+      acc[p.vendor_id] = (acc[p.vendor_id] || 0) + 1;
+      return acc;
+    }, {});
+    
+    // Enrich vendors with product counts (no await needed)
+    const enrichedVendors = vendors.map((vendor: any) => ({
+      id: vendor.id,
+      email: vendor.email,
+      store_name: vendor.store_name,
+      slug: vendor.slug,
+      wordpress_user_id: vendor.wordpress_user_id,
+      status: vendor.status,
+      created_date: vendor.created_at,
+      total_products: productCountMap[vendor.id] || 0,
+      total_orders: 0,
+      total_sales: 0,
+      phone: vendor.phone,
+      address: vendor.address,
+      city: vendor.city,
+      state: vendor.state,
+      zip: vendor.zip,
+      logo_url: vendor.logo_url,
+      banner_url: vendor.banner_url,
+      tagline: vendor.store_tagline,
+      region: vendor.region || vendor.state,
+      brand_colors: vendor.brand_colors,
+      social_links: vendor.social_links,
+      custom_font: vendor.custom_font,
+      custom_css: vendor.custom_css,
+      store_description: vendor.store_description,
+      rating: 0,
+      review_count: 0,
+      product_count: productCountMap[vendor.id] || 0,
+      verified: vendor.status === 'active' ? 1 : 0,
+      featured: 0
     }));
 
     return NextResponse.json({
       success: true,
       vendors: enrichedVendors,
       total: enrichedVendors.length
+    }, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=30',
+      }
     });
 
   } catch (error: any) {

@@ -1,125 +1,182 @@
-import { unstable_cache } from 'next/cache';
-import * as wordpress from './wordpress';
+/**
+ * Optimized API Client with caching, deduplication, and retry logic
+ */
 
-// Cache durations (in seconds)
-const CACHE_TIMES = {
-  PRODUCTS: 900, // 15 minutes - balanced between freshness and performance
-  PRODUCT: 900, // 15 minutes
-  LOCATIONS: 1800, // 30 minutes - locations don't change often
-  INVENTORY: 600, // 10 minutes - inventory needs more frequent updates
-  PRICING: 1800, // 30 minutes - pricing is relatively stable
-  BULK: 900, // 15 minutes - for bulk endpoints
-};
+import { requestCache } from './request-cache';
 
-// Cached product fetching
-export const getCachedProducts = unstable_cache(
-  async (params?: any) => {
-    return wordpress.getProducts(params);
-  },
-  ['products'],
-  { revalidate: CACHE_TIMES.PRODUCTS }
-);
-
-export const getCachedAllProducts = unstable_cache(
-  async () => {
-    return wordpress.getAllProducts();
-  },
-  ['all-products'],
-  { revalidate: CACHE_TIMES.PRODUCTS }
-);
-
-export const getCachedProduct = unstable_cache(
-  async (id: string | number) => {
-    return wordpress.getProduct(id);
-  },
-  ['product'],
-  { revalidate: CACHE_TIMES.PRODUCT }
-);
-
-export const getCachedLocations = unstable_cache(
-  async () => {
-    return wordpress.getLocations();
-  },
-  ['locations'],
-  { revalidate: CACHE_TIMES.LOCATIONS }
-);
-
-export const getCachedAllInventory = unstable_cache(
-  async () => {
-    return wordpress.getAllInventory();
-  },
-  ['all-inventory'],
-  { revalidate: CACHE_TIMES.INVENTORY }
-);
-
-export const getCachedProductInventory = unstable_cache(
-  async (productId: string | number) => {
-    return wordpress.getProductInventory(productId);
-  },
-  ['product-inventory'],
-  { revalidate: CACHE_TIMES.INVENTORY }
-);
-
-// V3 Native Fields - no more global pricing rules
-// Pricing is now stored per-product in _product_price_tiers meta
-
-export const getCachedProductFields = unstable_cache(
-  async (productId: string | number) => {
-    return wordpress.getProductFieldsV3(productId);
-  },
-  ['product-fields'],
-  { revalidate: CACHE_TIMES.PRODUCT }
-);
-
-export const getCachedProductReviews = unstable_cache(
-  async (productId: string | number) => {
-    return wordpress.getProductReviews(productId);
-  },
-  ['product-reviews'],
-  { revalidate: CACHE_TIMES.PRODUCT }
-);
-
-// OPTIMIZED: Use bulk endpoint - returns product with inventory and fields in ONE call
-export const getCachedBulkProduct = unstable_cache(
-  async (productId: string | number) => {
-    return wordpress.getBulkProduct(productId);
-  },
-  ['bulk-product'],
-  { revalidate: CACHE_TIMES.BULK }
-);
-
-// OPTIMIZED: Use bulk products endpoint - returns all products with inventory and fields
-export const getCachedBulkProducts = unstable_cache(
-  async (params?: any) => {
-    return wordpress.getBulkProducts(params);
-  },
-  ['bulk-products'],
-  { revalidate: CACHE_TIMES.BULK }
-);
-
-// OPTIMIZED: Hybrid approach - use regular endpoints with caching for single products
-export async function getBulkProductData(productId: string | number) {
-  // Fetch all data in parallel using cached functions
-  const [product, locations, inventory, productFields, reviews] = await Promise.all([
-    getCachedProduct(productId),
-    getCachedLocations(),
-    getCachedProductInventory(productId),
-    getCachedProductFields(productId),
-    getCachedProductReviews(productId),
-  ]);
-
-  return {
-    product,
-    locations,
-    inventory,
-    productFields,
-    reviews,
-  };
+interface FetchOptions extends RequestInit {
+  cache?: boolean;
+  cacheTTL?: number;
+  retries?: number;
+  timeout?: number;
 }
 
-// Client-side cache helper for prefetching
-export function prefetchProductData(productId: string | number) {
-  // This will be called on hover to prefetch data
-  return getBulkProductData(productId);
+class APIClient {
+  private baseURL: string;
+  private abortControllers: Map<string, AbortController>;
+
+  constructor() {
+    this.baseURL = '';
+    this.abortControllers = new Map();
+  }
+
+  /**
+   * Abort any pending requests with the same key
+   */
+  private abortPendingRequest(key: string): void {
+    const controller = this.abortControllers.get(key);
+    if (controller) {
+      controller.abort();
+      this.abortControllers.delete(key);
+    }
+  }
+
+  /**
+   * Create cache key from URL and options
+   */
+  private getCacheKey(url: string, options?: FetchOptions): string {
+    const method = options?.method || 'GET';
+    const body = options?.body ? JSON.stringify(options.body) : '';
+    return `${method}:${url}:${body}`;
+  }
+
+  /**
+   * Enhanced fetch with timeout
+   */
+  private async fetchWithTimeout(
+    url: string,
+    options: FetchOptions & { signal?: AbortSignal },
+    timeout: number = 30000
+  ): Promise<Response> {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+    try {
+      const response = await fetch(url, {
+        ...options,
+        signal: controller.signal,
+      });
+      clearTimeout(timeoutId);
+      return response;
+    } catch (error) {
+      clearTimeout(timeoutId);
+      throw error;
+    }
+  }
+
+  /**
+   * Main fetch method with all optimizations
+   */
+  async fetch<T = any>(
+    url: string,
+    options: FetchOptions = {}
+  ): Promise<T> {
+    const {
+      cache = true,
+      cacheTTL = 60000,
+      retries = 2,
+      timeout = 30000,
+      ...fetchOptions
+    } = options;
+
+    const fullURL = url.startsWith('http') ? url : `${this.baseURL}${url}`;
+    const cacheKey = this.getCacheKey(fullURL, options);
+
+    // Only cache GET requests
+    const shouldCache = cache && (!options.method || options.method === 'GET');
+
+    if (shouldCache) {
+      return requestCache.get(
+        cacheKey,
+        () => this.performFetch<T>(fullURL, fetchOptions, retries, timeout),
+        cacheTTL
+      );
+    }
+
+    return this.performFetch<T>(fullURL, fetchOptions, retries, timeout);
+  }
+
+  /**
+   * Perform actual fetch with retry logic
+   */
+  private async performFetch<T>(
+    url: string,
+    options: RequestInit,
+    retries: number,
+    timeout: number
+  ): Promise<T> {
+    let lastError: Error | null = null;
+
+    for (let attempt = 0; attempt <= retries; attempt++) {
+      try {
+        const response = await this.fetchWithTimeout(url, options, timeout);
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        return data;
+      } catch (error: any) {
+        lastError = error;
+        
+        // Don't retry on client errors (4xx)
+        if (error.message.includes('HTTP 4')) {
+          throw error;
+        }
+
+        // Wait before retry (exponential backoff)
+        if (attempt < retries) {
+          await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 1000));
+        }
+      }
+    }
+
+    throw lastError || new Error('Request failed');
+  }
+
+  /**
+   * Bulk fetch with parallel requests
+   */
+  async fetchBulk<T = any>(
+    urls: string[],
+    options: FetchOptions = {}
+  ): Promise<T[]> {
+    const promises = urls.map(url => this.fetch<T>(url, options));
+    return Promise.all(promises);
+  }
+
+  /**
+   * Cancel all pending requests
+   */
+  cancelAll(): void {
+    for (const controller of this.abortControllers.values()) {
+      controller.abort();
+    }
+    this.abortControllers.clear();
+  }
+
+  /**
+   * Clear cache
+   */
+  clearCache(): void {
+    requestCache.clear();
+  }
+
+  /**
+   * Invalidate cache for specific pattern
+   */
+  invalidateCache(pattern: string): void {
+    requestCache.invalidate(pattern);
+  }
 }
 
+// Global singleton
+export const apiClient = new APIClient();
+
+// Cleanup on page unload
+if (typeof window !== 'undefined') {
+  window.addEventListener('beforeunload', () => {
+    apiClient.cancelAll();
+  });
+}
