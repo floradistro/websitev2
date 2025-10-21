@@ -1,18 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  {
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
+function getSupabaseClient() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!supabaseUrl || !supabaseKey) {
+    throw new Error('Supabase credentials not configured');
+  }
+
+  return createClient(supabaseUrl, supabaseKey, {
     auth: {
       autoRefreshToken: false,
       persistSession: false
     }
-  }
-);
+  });
+}
 
 export async function POST(request: NextRequest) {
+  const supabase = getSupabaseClient();
   try {
     const formData = await request.formData();
     const file = formData.get('file') as File;
@@ -93,6 +103,8 @@ export async function POST(request: NextRequest) {
 
 // DELETE - Remove image from storage
 export async function DELETE(request: NextRequest) {
+  const supabase = getSupabaseClient();
+  
   try {
     const { searchParams } = new URL(request.url);
     const path = searchParams.get('path');
