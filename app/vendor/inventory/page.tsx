@@ -185,7 +185,6 @@ export default function VendorInventory() {
 
     console.log('🔵 Adjusting inventory:', {
       productId: item.product_id,
-      wordpress_id: item.wordpress_product_id,
       inventoryId: item.inventory_id,
       currentQty: item.quantity,
       adjustment: operation === 'add' ? amount : -amount
