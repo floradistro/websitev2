@@ -326,20 +326,18 @@ function ProductCard({ product, index, locations, pricingTiers = [], productFiel
 
         {/* Vendor Badge - Top Right */}
         {vendorInfo && (
-          <div className="absolute top-2 right-2 z-10">
-            <Link
-              href={`/vendors/${vendorInfo.slug}`}
-              onClick={(e) => e.stopPropagation()}
-              className="block w-10 h-10 border border-white/20 hover:border-white/40 transition-all duration-300 overflow-hidden group"
-              title={`Sold by ${vendorInfo.name}`}
-            >
-              <img 
-                src={vendorInfo.logo} 
-                alt={vendorInfo.name} 
-                className="w-full h-full object-contain p-1.5 opacity-90 group-hover:opacity-100 transition-opacity"
-              />
-            </Link>
-          </div>
+          <Link
+            href={`/vendors/${vendorInfo.slug}`}
+            onClick={(e) => e.stopPropagation()}
+            className="absolute top-2 right-2 z-10 block w-10 h-10 transition-all duration-300 group"
+            title={`Sold by ${vendorInfo.name}`}
+          >
+            <img 
+              src={vendorInfo.logo} 
+              alt={vendorInfo.name} 
+              className="w-full h-full object-contain opacity-90 group-hover:opacity-100 group-hover:scale-110 transition-all"
+            />
+          </Link>
         )}
 
         {/* Wishlist Heart - Top Right (moved if vendor badge exists) */}
