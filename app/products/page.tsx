@@ -106,20 +106,10 @@ export default async function ProductsPage({
     inventoryMap[productId] = product.inventory || [];
   });
 
-  // Separate vendor products from house products by vendor_id and add vendor slug
-  const vendorProductsList = inStockProducts.filter((p: any) => {
-    const fullProduct = bulkProducts.find((bp: any) => (bp.wordpress_id || bp.id) === p.id);
-    return fullProduct?.vendor_id !== null && fullProduct?.vendor_id !== undefined;
-  }).map((p: any) => {
+  // ALL products are vendor products now (no more house products concept)
+  const vendorProductsList = inStockProducts.map((p: any) => {
     const fullProduct = bulkProducts.find((bp: any) => (bp.wordpress_id || bp.id) === p.id);
     const vendor = allVendors?.find((v: any) => v.id === fullProduct?.vendor_id);
-    
-    console.log(`Mapping vendor product ${p.name}:`, {
-      productId: p.id,
-      fullProductVendorId: fullProduct?.vendor_id,
-      foundVendor: vendor?.store_name,
-      vendorSlug: vendor?.slug
-    });
     
     return {
       ...p,
@@ -128,10 +118,8 @@ export default async function ProductsPage({
     };
   });
   
-  const houseProducts = inStockProducts.filter((p: any) => {
-    const fullProduct = bulkProducts.find((bp: any) => (bp.wordpress_id || bp.id) === p.id);
-    return !fullProduct?.vendor_id;
-  });
+  // No house products - all belong to vendors
+  const houseProducts: any[] = [];
   
   console.log('✅ House products:', houseProducts.length);
   console.log('✅ Vendor products:', vendorProductsList.length);
