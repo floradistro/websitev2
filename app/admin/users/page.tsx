@@ -53,7 +53,11 @@ export default function AdminUsers() {
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showLocationModal, setShowLocationModal] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [assigningLocationsUser, setAssigningLocationsUser] = useState<User | null>(null);
+  const [selectedLocationIds, setSelectedLocationIds] = useState<string[]>([]);
+  const [primaryLocation, setPrimaryLocation] = useState<string>('');
   const [newUser, setNewUser] = useState({
     email: '',
     first_name: '',
@@ -244,6 +248,64 @@ export default function AdminUsers() {
     }
   }
 
+  async function openLocationAssignment(user: User) {
+    setAssigningLocationsUser(user);
+    
+    // Load current location assignments
+    try {
+      const response = await axios.get(`/api/admin/user-locations?user_id=${user.id}`);
+      if (response.data.success) {
+        const assignedLocations = response.data.locations || [];
+        setSelectedLocationIds(assignedLocations.map((loc: any) => loc.location_id));
+        const primary = assignedLocations.find((loc: any) => loc.is_primary_location);
+        setPrimaryLocation(primary?.location_id || '');
+      }
+    } catch (error) {
+      console.error('Error loading user locations:', error);
+    }
+    
+    setShowLocationModal(true);
+  }
+
+  async function assignLocations() {
+    if (!assigningLocationsUser) return;
+
+    try {
+      const response = await axios.post('/api/admin/user-locations', {
+        user_id: assigningLocationsUser.id,
+        location_ids: selectedLocationIds,
+        is_primary_location: primaryLocation
+      });
+
+      if (response.data.success) {
+        showNotification({
+          type: 'success',
+          title: 'Locations Assigned',
+          message: response.data.message
+        });
+        setShowLocationModal(false);
+        setAssigningLocationsUser(null);
+        setSelectedLocationIds([]);
+        setPrimaryLocation('');
+        loadUsers();
+      }
+    } catch (error: any) {
+      showNotification({
+        type: 'error',
+        title: 'Error',
+        message: error.response?.data?.error || 'Failed to assign locations'
+      });
+    }
+  }
+
+  function toggleLocationSelection(locationId: string) {
+    setSelectedLocationIds(prev => 
+      prev.includes(locationId)
+        ? prev.filter(id => id !== locationId)
+        : [...prev, locationId]
+    );
+  }
+
   const getRoleBadgeColor = (role: string) => {
     switch (role) {
       case 'admin': return 'bg-purple-500/20 text-purple-400 border-purple-500/30';
@@ -341,6 +403,13 @@ export default function AdminUsers() {
                     Edit
                   </button>
                   <button
+                    onClick={() => openLocationAssignment(user)}
+                    className="flex-1 p-2.5 text-white/60 hover:text-white hover:bg-white/10 transition-all border border-white/10 text-xs"
+                  >
+                    <MapPin size={12} className="inline mr-1" />
+                    Locations
+                  </button>
+                  <button
                     onClick={() => toggleStatus(user.id, user.status)}
                     className="flex-1 p-2.5 text-white/60 hover:text-white hover:bg-white/10 transition-all border border-white/10 text-xs"
                   >
@@ -394,18 +463,28 @@ export default function AdminUsers() {
                       setShowEditModal(true);
                     }}
                     className="p-1.5 text-white/40 hover:text-white hover:bg-white/10 transition-all"
+                    title="Edit User"
                   >
                     <Edit2 size={14} />
                   </button>
                   <button
+                    onClick={() => openLocationAssignment(user)}
+                    className="p-1.5 text-white/40 hover:text-white hover:bg-white/10 transition-all"
+                    title="Assign Locations"
+                  >
+                    <MapPin size={14} />
+                  </button>
+                  <button
                     onClick={() => toggleStatus(user.id, user.status)}
                     className="p-1.5 text-white/40 hover:text-white hover:bg-white/10 transition-all"
+                    title={user.status === 'active' ? 'Deactivate' : 'Activate'}
                   >
                     {user.status === 'active' ? <XCircle size={14} /> : <CheckCircle size={14} />}
                   </button>
                   <button
                     onClick={() => deleteUser(user.id, `${user.first_name} ${user.last_name}`)}
                     className="p-1.5 text-white/40 hover:text-red-500 hover:bg-red-500/10 transition-all"
+                    title="Delete User"
                   >
                     <Trash2 size={14} />
                   </button>
@@ -516,6 +595,87 @@ export default function AdminUsers() {
               A temporary password will be generated and sent to the user's email address. They will be required to change it on first login.
             </p>
           </div>
+        </div>
+      </AdminModal>
+
+      {/* Assign Locations Modal */}
+      <AdminModal
+        isOpen={showLocationModal}
+        onClose={() => {
+          setShowLocationModal(false);
+          setAssigningLocationsUser(null);
+          setSelectedLocationIds([]);
+          setPrimaryLocation('');
+        }}
+        title="Assign Locations"
+        description={assigningLocationsUser ? `Assign ${assigningLocationsUser.first_name} ${assigningLocationsUser.last_name} to locations` : ''}
+        onSubmit={assignLocations}
+        submitText="Save Locations"
+        maxWidth="2xl"
+      >
+        <div className="space-y-4">
+          {assigningLocationsUser?.vendor_id ? (
+            <>
+              <div className="text-white/60 text-sm mb-4">
+                Select which locations this employee can access. Choose one as their primary location.
+              </div>
+              
+              {locations.filter(loc => loc.vendor_id === assigningLocationsUser.vendor_id).length === 0 ? (
+                <div className="bg-white/5 border border-white/10 p-8 text-center">
+                  <MapPin size={32} className="text-white/20 mx-auto mb-3" />
+                  <p className="text-white/40 text-sm">No locations found for this vendor</p>
+                </div>
+              ) : (
+                <div className="space-y-2 max-h-96 overflow-y-auto">
+                  {locations
+                    .filter(loc => loc.vendor_id === assigningLocationsUser.vendor_id)
+                    .map(location => (
+                      <div
+                        key={location.id}
+                        className="bg-[#111111] border border-white/10 p-4 hover:bg-white/5 transition-colors"
+                      >
+                        <div className="flex items-start gap-3">
+                          <input
+                            type="checkbox"
+                            checked={selectedLocationIds.includes(location.id)}
+                            onChange={() => toggleLocationSelection(location.id)}
+                            className="mt-1"
+                          />
+                          <div className="flex-1">
+                            <div className="text-white text-sm font-medium mb-1">{location.name}</div>
+                            {selectedLocationIds.includes(location.id) && (
+                              <label className="flex items-center gap-2 text-xs text-white/60 mt-2">
+                                <input
+                                  type="radio"
+                                  name="primary_location"
+                                  checked={primaryLocation === location.id}
+                                  onChange={() => setPrimaryLocation(location.id)}
+                                />
+                                Set as primary location
+                              </label>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              )}
+              
+              {selectedLocationIds.length > 0 && (
+                <div className="bg-green-500/10 border border-green-500/20 p-3">
+                  <p className="text-green-400 text-xs">
+                    {selectedLocationIds.length} location(s) selected
+                    {primaryLocation && ' • Primary location set'}
+                  </p>
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="bg-white/5 border border-white/10 p-8 text-center">
+              <Shield size={32} className="text-white/20 mx-auto mb-3" />
+              <p className="text-white/40 text-sm">Admin users have access to all locations</p>
+            </div>
+          )}
         </div>
       </AdminModal>
 
