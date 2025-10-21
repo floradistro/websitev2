@@ -330,7 +330,7 @@ function ProductCard({ product, index, locations, pricingTiers = [], productFiel
             <Link
               href={`/vendors/${vendorInfo.slug}`}
               onClick={(e) => e.stopPropagation()}
-              className="block w-10 h-10 bg-black/90 backdrop-blur-sm border border-white/20 hover:border-white/40 transition-all duration-300 overflow-hidden group"
+              className="block w-10 h-10 border border-white/20 hover:border-white/40 transition-all duration-300 overflow-hidden group"
               title={`Sold by ${vendorInfo.name}`}
             >
               <img 
