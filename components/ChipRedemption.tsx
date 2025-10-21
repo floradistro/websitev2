@@ -5,6 +5,7 @@ import { useLoyalty } from "@/context/LoyaltyContext";
 import { useAuth } from "@/context/AuthContext";
 import { Coins, Check, X } from "lucide-react";
 import axios from "axios";
+import { showNotification } from "@/components/NotificationToast";
 
 interface ChipRedemptionProps {
   cartTotal: number;

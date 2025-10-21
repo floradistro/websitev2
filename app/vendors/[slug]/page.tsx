@@ -80,7 +80,7 @@ export default function VendorStorefront() {
         }));
         
         console.log('✅ Mapped products:', productsWithStock.length);
-        console.log('✅ Product details:', productsWithStock.map(p => ({ 
+        console.log('✅ Product details:', productsWithStock.map((p: any) => ({ 
           name: p.name, 
           stock: p.stock_quantity,
           image: p.images?.[0]?.src 
