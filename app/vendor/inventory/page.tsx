@@ -202,7 +202,7 @@ export default function VendorInventory() {
             'x-vendor-id': vendorId || ''
           },
           body: JSON.stringify({
-            inventoryId: item.inventory_id,
+            inventoryId: item.id,
             productId: item.product_id,
             adjustment: operation === 'add' ? amount : -amount,
             reason: adjustmentReason || `${operation === 'add' ? 'Added' : 'Removed'} ${amount} units`,
