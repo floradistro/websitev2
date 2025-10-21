@@ -124,11 +124,13 @@ export default function ProductsPage() {
           })) || [];
         
         setAllProducts(vendorProductsList);
+        setVendors(vendorsList);
         setProductFieldsMap(fieldsMap);
         setInventoryMap(invMap);
         setLoading(false);
         
         console.log('✅ Products loaded on client:', vendorProductsList.length);
+        console.log('✅ Vendors loaded:', vendorsList.length, vendorsList);
         
       } catch (error) {
         console.error('❌ Error fetching products:', error);
