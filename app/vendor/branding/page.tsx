@@ -24,38 +24,61 @@ export default function VendorBranding() {
   });
 
   useEffect(() => {
-    loadBranding();
-  }, []);
+    if (vendor) {
+      loadBranding();
+    }
+  }, [vendor]);
 
   const loadBranding = async () => {
     try {
-      const authToken = localStorage.getItem('vendor_auth');
-      if (!authToken) return;
+      const vendorId = localStorage.getItem('vendor_id');
+      if (!vendorId) return;
 
-      const response = await fetch('/api/vendor-proxy?endpoint=flora-vendors/v1/vendors/me/branding', {
-        headers: { 'Authorization': `Basic ${authToken}` }
+      const response = await fetch('/api/supabase/vendor/branding', {
+        headers: { 'x-vendor-id': vendorId }
       });
 
       if (response.ok) {
-        const data = await response.json();
+        const result = await response.json();
+        const data = result.branding;
+        
+        // Parse brand_colors if it's a JSON string
+        let brandColors = { primary: '#0EA5E9', accent: '#06B6D4' };
+        if (data.brand_colors) {
+          try {
+            brandColors = typeof data.brand_colors === 'string' 
+              ? JSON.parse(data.brand_colors) 
+              : data.brand_colors;
+          } catch (e) {
+            console.error('Failed to parse brand_colors:', e);
+          }
+        }
+        
+        // Parse social_links if it's a JSON string
+        let socialLinks = { website: '', instagram: '', facebook: '' };
+        if (data.social_links) {
+          try {
+            socialLinks = typeof data.social_links === 'string' 
+              ? JSON.parse(data.social_links) 
+              : data.social_links;
+          } catch (e) {
+            console.error('Failed to parse social_links:', e);
+          }
+        }
         
         setBranding({
-          tagline: data.tagline || '',
-          about: data.about || '',
-          primaryColor: data.primary_color || '#0EA5E9',
-          accentColor: data.accent_color || '#06B6D4',
-          website: data.website || '',
-          instagram: data.instagram || '',
-          facebook: data.facebook || '',
+          tagline: data.store_tagline || '',
+          about: data.store_description || '',
+          primaryColor: brandColors.primary || '#0EA5E9',
+          accentColor: brandColors.accent || '#06B6D4',
+          website: socialLinks.website || '',
+          instagram: socialLinks.instagram || '',
+          facebook: socialLinks.facebook || '',
           customFont: data.custom_font || ''
         });
         
-        // Use WordPress Media Library sizes (medium for preview)
-        if (data.logo?.sizes?.medium?.url) {
-          setLogoPreview(data.logo.sizes.medium.url);
-        } else if (data.logo?.url) {
-          setLogoPreview(data.logo.url);
-        } else if (data.logo_url) {
+        // Set logo preview
+        if (data.logo_url) {
           setLogoPreview(data.logo_url);
         }
       }
@@ -81,56 +104,70 @@ export default function VendorBranding() {
     setLoading(true);
 
     try {
-      const authToken = localStorage.getItem('vendor_auth');
-      if (!authToken) throw new Error('Not authenticated');
+      const vendorId = localStorage.getItem('vendor_id');
+      if (!vendorId) throw new Error('Not authenticated');
 
-      const updateData: any = {
-        tagline: branding.tagline,
-        about: branding.about,
-        primary_color: branding.primaryColor,
-        accent_color: branding.accentColor,
-        website: branding.website,
-        instagram: branding.instagram,
-        facebook: branding.facebook,
-        custom_font: branding.customFont
-      };
+      let logoUrl = '';
 
       // Upload logo if changed
       if (logoFile) {
         const formData = new FormData();
-        formData.append('logo', logoFile);
+        formData.append('file', logoFile);
+        formData.append('type', 'logo');
 
         const uploadResponse = await fetch(
-          '/api/vendor/upload?type=logo',
+          '/api/supabase/vendor/upload',
           {
             method: 'POST',
-            headers: { 'Authorization': `Basic ${authToken}` },
+            headers: { 'x-vendor-id': vendorId },
             body: formData
           }
         );
 
         if (!uploadResponse.ok) {
           const errorData = await uploadResponse.json().catch(() => ({}));
-          throw new Error(errorData.message || 'Logo upload failed');
+          throw new Error(errorData.error || 'Logo upload failed');
         }
 
         const uploadData = await uploadResponse.json();
-        updateData.logo_url = uploadData.url;
+        logoUrl = uploadData.file.url;
         setLogoFile(null);
       }
 
-      // Submit branding via API
-      const response = await fetch('/api/vendor-proxy?endpoint=flora-vendors/v1/vendors/me/branding', {
-        method: 'POST',
+      // Prepare update data
+      const updateData: any = {
+        store_tagline: branding.tagline,
+        store_description: branding.about,
+        brand_colors: JSON.stringify({
+          primary: branding.primaryColor,
+          accent: branding.accentColor
+        }),
+        social_links: JSON.stringify({
+          website: branding.website,
+          instagram: branding.instagram,
+          facebook: branding.facebook
+        }),
+        custom_font: branding.customFont
+      };
+
+      // Add logo URL if uploaded
+      if (logoUrl) {
+        updateData.logo_url = logoUrl;
+      }
+
+      // Submit branding via Supabase API
+      const response = await fetch('/api/supabase/vendor/branding', {
+        method: 'PUT',
         headers: { 
-          'Authorization': `Basic ${authToken}`,
+          'x-vendor-id': vendorId,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify(updateData)
       });
       
       if (!response.ok) {
-        throw new Error('Save failed');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Save failed');
       }
       
       setSuccess('✅ Branding updated successfully!');

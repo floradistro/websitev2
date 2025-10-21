@@ -2,7 +2,6 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { useAuth } from "./AuthContext";
-import axios from "axios";
 
 interface LoyaltySettings {
   points_label: string;
@@ -34,134 +33,81 @@ interface LoyaltyContextType {
 
 const LoyaltyContext = createContext<LoyaltyContextType | undefined>(undefined);
 
-const consumerKey = "ck_bb8e5fe3d405e6ed6b8c079c93002d7d8b23a7d5";
-const consumerSecret = "cs_38194e74c7ddc5d72b6c32c70485728e7e529678";
+// Default settings - no WordPress needed
+const DEFAULT_SETTINGS: LoyaltySettings = {
+  points_label: 'Chips',
+  earn_ratio: '1:100',
+  redeem_ratio: '100:1',
+  min_redeem_points: 100,
+  max_redeem_discount: '50',
+  points_expiry: '365',
+};
 
 export function LoyaltyProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const [points, setPoints] = useState(0);
   const [history, setHistory] = useState<PointsTransaction[]>([]);
-  const [settings, setSettings] = useState<LoyaltySettings | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [settings] = useState<LoyaltySettings>(DEFAULT_SETTINGS);
+  const [loading, setLoading] = useState(false);
 
-  // Load settings on mount (non-blocking - don't break if it fails)
-  useEffect(() => {
-    // Silent load - never throw errors
-    loadSettings();
-  }, []);
-
-  // Load user points when user changes
+  // Load user points from localStorage when user changes
   useEffect(() => {
     if (user) {
       loadUserData();
     } else {
       setPoints(0);
       setHistory([]);
-      setLoading(false);
     }
   }, [user]);
 
-  const loadSettings = async () => {
-    try {
-      const response = await axios.get(`/api/wp-proxy`, {
-        params: {
-          path: '/wp-json/wc-points-rewards/v1/settings',
-          consumer_key: consumerKey,
-          consumer_secret: consumerSecret,
-        },
-        timeout: 3000, // Short timeout - don't block app
-        validateStatus: () => true, // Accept any status code
-      });
-      
-      // Only set settings if we got a successful response
-      if (response.status === 200 && response.data) {
-        setSettings(response.data);
-      } else {
-        throw new Error('Invalid response');
-      }
-    } catch (error) {
-      // Silently fail - loyalty is not critical for app functionality
-      console.warn("Loyalty settings unavailable (non-critical):", error instanceof Error ? error.message : 'Unknown error');
-      // Set default settings so app continues working
-      setSettings({
-        points_label: 'Points',
-        earn_ratio: '1:100',
-        redeem_ratio: '100:1',
-        min_redeem_points: 100,
-        max_redeem_discount: '50',
-        points_expiry: '365',
-      });
-    }
-  };
-
-  const loadUserData = async () => {
+  const loadUserData = () => {
     if (!user) return;
     
     try {
-      setLoading(true);
+      // Load from localStorage
+      const savedPoints = localStorage.getItem(`loyalty_points_${user.id}`);
+      const savedHistory = localStorage.getItem(`loyalty_history_${user.id}`);
       
-      // Get balance and history in parallel - use proxy to avoid CORS
-      const [balanceRes, historyRes] = await Promise.all([
-        axios.get(`/api/wp-proxy`, {
-          params: {
-            path: `/wp-json/wc-points-rewards/v1/user/${user.id}/balance`,
-            consumer_key: consumerKey,
-            consumer_secret: consumerSecret,
-          },
-          timeout: 3000,
-          validateStatus: () => true, // Don't throw on non-2xx
-        }),
-        axios.get(`/api/wp-proxy`, {
-          params: {
-            path: `/wp-json/wc-points-rewards/v1/user/${user.id}/history`,
-            consumer_key: consumerKey,
-            consumer_secret: consumerSecret,
-            per_page: 50,
-          },
-          timeout: 3000,
-          validateStatus: () => true, // Don't throw on non-2xx
-        })
-      ]);
-
-      // Only update if we got valid responses
-      if (balanceRes.status === 200 && balanceRes.data) {
-        setPoints(balanceRes.data.balance || 0);
-      } else {
-        setPoints(0);
+      if (savedPoints) {
+        setPoints(parseInt(savedPoints) || 0);
       }
       
-      if (historyRes.status === 200 && historyRes.data) {
-        setHistory(historyRes.data.history || []);
-      } else {
-        setHistory([]);
+      if (savedHistory) {
+        setHistory(JSON.parse(savedHistory));
       }
     } catch (error) {
-      console.warn("Loyalty data unavailable (non-critical):", error instanceof Error ? error.message : 'Unknown error');
+      console.error("Error loading loyalty data:", error);
       setPoints(0);
       setHistory([]);
-    } finally {
-      setLoading(false);
     }
   };
 
   const refreshPoints = async () => {
-    await loadUserData();
+    loadUserData();
   };
 
   const addPoints = async (amount: number, description: string) => {
     if (!user) return;
     
     try {
-      await axios.post(
-        `/api/wp-proxy?path=/wp-json/wc-points-rewards/v1/user/${user.id}/adjust&consumer_key=${consumerKey}&consumer_secret=${consumerSecret}`,
-        {
-          points: amount,
-          description: description,
-        }
-      );
+      const newPoints = points + amount;
+      const newTransaction: PointsTransaction = {
+        id: Date.now(),
+        user_id: user.id,
+        points: amount,
+        type: amount > 0 ? 'earn' : 'redeem',
+        description,
+        date: new Date().toISOString(),
+      };
       
-      // Refresh data after adding points
-      await refreshPoints();
+      const newHistory = [newTransaction, ...history];
+      
+      // Save to localStorage
+      localStorage.setItem(`loyalty_points_${user.id}`, newPoints.toString());
+      localStorage.setItem(`loyalty_history_${user.id}`, JSON.stringify(newHistory));
+      
+      setPoints(newPoints);
+      setHistory(newHistory);
     } catch (error) {
       console.error("Error adding points:", error);
       throw error;

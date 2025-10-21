@@ -16,6 +16,7 @@ ALTER TABLE public.vendors ADD COLUMN IF NOT EXISTS store_tagline TEXT;
 ALTER TABLE public.vendors ADD COLUMN IF NOT EXISTS brand_colors JSONB DEFAULT '{"primary": "#000000", "secondary": "#ffffff", "accent": "#4F46E5"}';
 ALTER TABLE public.vendors ADD COLUMN IF NOT EXISTS social_links JSONB DEFAULT '{"facebook": "", "instagram": "", "twitter": "", "website": ""}';
 ALTER TABLE public.vendors ADD COLUMN IF NOT EXISTS custom_css TEXT;
+ALTER TABLE public.vendors ADD COLUMN IF NOT EXISTS custom_font TEXT;
 ALTER TABLE public.vendors ADD COLUMN IF NOT EXISTS business_hours JSONB DEFAULT '{}';
 ALTER TABLE public.vendors ADD COLUMN IF NOT EXISTS return_policy TEXT;
 ALTER TABLE public.vendors ADD COLUMN IF NOT EXISTS shipping_policy TEXT;

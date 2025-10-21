@@ -37,6 +37,39 @@ export function showNotification(notification: Omit<Notification, "id">) {
   notificationCallbacks.forEach((callback) => callback(fullNotification));
 }
 
+// Helper functions
+export function showSuccess(message: string, title: string = "Success") {
+  showNotification({
+    type: "success",
+    title,
+    message,
+  });
+}
+
+export function showError(message: string, title: string = "Error") {
+  showNotification({
+    type: "error",
+    title,
+    message,
+  });
+}
+
+export function showInfo(message: string, title: string = "Info") {
+  showNotification({
+    type: "info",
+    title,
+    message,
+  });
+}
+
+export function showWarning(message: string, title: string = "Warning") {
+  showNotification({
+    type: "warning",
+    title,
+    message,
+  });
+}
+
 export function showConfirm(options: Omit<ConfirmDialog, "id">): Promise<boolean> {
   return new Promise((resolve) => {
     const dialog: ConfirmDialog = {

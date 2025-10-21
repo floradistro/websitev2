@@ -8,14 +8,16 @@ import ScrollToTop from './ScrollToTop';
 export default function ConditionalLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isVendorPortal = pathname?.startsWith('/vendor');
+  const isAdminPortal = pathname?.startsWith('/admin');
+  const hideNavigation = isVendorPortal || isAdminPortal;
 
   return (
     <>
-      {!isVendorPortal && <Header />}
+      {!hideNavigation && <Header />}
       <main className="flex-1">
         {children}
       </main>
-      {!isVendorPortal && (
+      {!hideNavigation && (
         <>
           <Footer />
           <ScrollToTop />

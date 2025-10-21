@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { MapPin, Plus, Edit, Trash2, CheckCircle, XCircle, DollarSign, Building, Star } from 'lucide-react';
+import { MapPin, Plus, Edit2, Trash2, CheckCircle, XCircle, Star } from 'lucide-react';
 import axios from 'axios';
 import { showNotification, showConfirm } from '@/components/NotificationToast';
 import AdminModal from '@/components/AdminModal';
@@ -55,30 +55,9 @@ export default function AdminLocations() {
     name: '',
     type: 'retail' as 'retail' | 'warehouse' | 'vendor' | 'distribution',
     address_line1: '',
-    address_line2: '',
     city: '',
     state: '',
     zip: '',
-    phone: '',
-    email: '',
-    pos_enabled: true,
-    pricing_tier: 'standard',
-    monthly_fee: 49.99,
-  });
-  const [editLocationData, setEditLocationData] = useState({
-    name: '',
-    type: 'retail' as 'retail' | 'warehouse' | 'vendor' | 'distribution',
-    address_line1: '',
-    address_line2: '',
-    city: '',
-    state: '',
-    zip: '',
-    phone: '',
-    email: '',
-    pos_enabled: true,
-    pricing_tier: 'standard',
-    monthly_fee: 49.99,
-    billing_status: 'active',
   });
 
   useEffect(() => {
@@ -86,61 +65,9 @@ export default function AdminLocations() {
     loadLocations();
   }, []);
 
-  function openEditModal(location: Location) {
-    setEditingLocation(location);
-    setEditLocationData({
-      name: location.name,
-      type: location.type,
-      address_line1: location.address_line1 || '',
-      address_line2: location.address_line2 || '',
-      city: location.city || '',
-      state: location.state || '',
-      zip: location.zip || '',
-      phone: location.phone || '',
-      email: location.email || '',
-      pos_enabled: location.pos_enabled,
-      pricing_tier: location.pricing_tier,
-      monthly_fee: location.monthly_fee,
-      billing_status: location.billing_status,
-    });
-    setShowEditModal(true);
-  }
-
-  async function updateLocation() {
-    if (!editingLocation) return;
-
-    try {
-      console.log('🔵 Sending update for location:', editingLocation.id);
-      console.log('🔵 Data being sent:', editLocationData);
-      
-      const response = await axios.post('/api/admin/locations', {
-        action: 'update',
-        location_id: editingLocation.id,
-        ...editLocationData,
-      });
-
-      console.log('🔵 Update response:', response.data);
-
-      if (response.data.success) {
-        showNotification({
-          type: 'success',
-          title: 'Location Updated',
-          message: `${editLocationData.name} has been updated successfully`,
-        });
-        setShowEditModal(false);
-        setEditingLocation(null);
-        loadLocations();
-      }
-    } catch (error: any) {
-      console.error('❌ Update error:', error);
-      console.error('❌ Error response:', error.response?.data);
-      showNotification({
-        type: 'error',
-        title: 'Error Updating Location',
-        message: error.response?.data?.error || error.message,
-      });
-    }
-  }
+  useEffect(() => {
+    loadLocations();
+  }, [selectedVendor]);
 
   async function loadVendors() {
     try {
@@ -165,18 +92,48 @@ export default function AdminLocations() {
       setLoading(false);
     } catch (error: any) {
       console.error('Error loading locations:', error);
-      showNotification({
-        type: 'error',
-        title: 'Error Loading Locations',
-        message: error.response?.data?.error || error.message,
-      });
       setLoading(false);
     }
   }
 
-  useEffect(() => {
-    loadLocations();
-  }, [selectedVendor]);
+  function openEditModal(location: Location) {
+    setEditingLocation(location);
+    setShowEditModal(true);
+  }
+
+  async function updateLocation() {
+    if (!editingLocation) return;
+
+    try {
+      const response = await axios.post('/api/admin/locations', {
+        action: 'update',
+        location_id: editingLocation.id,
+        name: editingLocation.name,
+        type: editingLocation.type,
+        address_line1: editingLocation.address_line1,
+        city: editingLocation.city,
+        state: editingLocation.state,
+        zip: editingLocation.zip,
+      });
+
+      if (response.data.success) {
+        showNotification({
+          type: 'success',
+          title: 'Location Updated',
+          message: `${editingLocation.name} has been updated successfully`,
+        });
+        setShowEditModal(false);
+        setEditingLocation(null);
+        loadLocations();
+      }
+    } catch (error: any) {
+      showNotification({
+        type: 'error',
+        title: 'Error Updating Location',
+        message: error.response?.data?.error || error.message,
+      });
+    }
+  }
 
   async function createLocation() {
     if (!newLocation.vendor_id || !newLocation.name) {
@@ -206,15 +163,9 @@ export default function AdminLocations() {
           name: '',
           type: 'retail',
           address_line1: '',
-          address_line2: '',
           city: '',
           state: '',
           zip: '',
-          phone: '',
-          email: '',
-          pos_enabled: true,
-          pricing_tier: 'standard',
-          monthly_fee: 49.99,
         });
         loadLocations();
         loadVendors();
@@ -256,7 +207,7 @@ export default function AdminLocations() {
   async function deleteLocation(locationId: string, locationName: string) {
     const confirmed = await showConfirm({
       title: 'Delete Location',
-      message: `Are you sure you want to delete ${locationName}? This will also remove all inventory data for this location.`,
+      message: `Are you sure you want to delete ${locationName}?`,
       confirmText: 'Delete',
       cancelText: 'Cancel',
       type: 'danger',
@@ -289,189 +240,116 @@ export default function AdminLocations() {
     }
   }
 
-  const getTypeBadge = (type: string) => {
-    const config = {
-      retail: { className: 'border-blue-500 text-blue-500', text: 'Retail' },
-      vendor: { className: 'border-purple-500 text-purple-500', text: 'Vendor' },
-      warehouse: { className: 'border-orange-500 text-orange-500', text: 'Warehouse' },
-      distribution: { className: 'border-green-500 text-green-500', text: 'Distribution' },
-    };
-
-    const { className, text } = config[type as keyof typeof config] || config.retail;
-
-    return (
-      <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-[10px] lg:text-xs font-medium uppercase tracking-wider border ${className}`}>
-        {text}
-      </span>
-    );
-  };
-
   const filteredLocations = locations.filter(loc => 
     selectedVendor === 'all' || loc.vendor_id === selectedVendor
   );
 
   return (
-    <div className="w-full max-w-full animate-fadeIn overflow-x-hidden">
+    <div className="w-full animate-fadeIn">
       {/* Header */}
-      <div className="flex justify-between items-center gap-4 px-4 lg:px-0 py-6 lg:py-0 lg:mb-8 border-b lg:border-b-0 border-white/5">
-        <div className="flex-1 min-w-0">
-          <h1 className="text-2xl lg:text-3xl font-light text-white mb-1 lg:mb-2 tracking-tight">
-            Vendor Locations
-          </h1>
-          <p className="text-white/60 text-xs lg:text-sm">
-            Manage multi-location access for vendors
-          </p>
+      <div className="flex justify-between items-center gap-4 mb-6">
+        <div>
+          <h1 className="text-3xl text-white font-light tracking-tight mb-2">Locations</h1>
+          <p className="text-white/50 text-sm">{filteredLocations.length} registered</p>
         </div>
         <button
           onClick={() => setShowAddModal(true)}
-          className="group flex items-center gap-1.5 lg:gap-2 bg-black border border-white/20 text-white px-3 lg:px-6 py-3 lg:py-3 text-[10px] lg:text-xs font-medium uppercase tracking-[0.15em] lg:tracking-[0.2em] active:bg-white active:text-black lg:hover:bg-white lg:hover:text-black lg:hover:border-white transition-all duration-300 whitespace-nowrap"
+          className="flex items-center gap-2 bg-white text-black px-5 py-3 text-xs font-medium uppercase tracking-wider hover:bg-white/90 transition-all"
         >
-          <Plus size={16} className="lg:hidden flex-shrink-0" />
-          <Plus size={18} className="hidden lg:block group-hover:rotate-90 transition-transform duration-300 flex-shrink-0" />
-          <span>Add Location</span>
+          <Plus size={16} />
+          Add Location
         </button>
       </div>
 
       {/* Vendor Filter */}
-      <div className="bg-[#1a1a1a] lg:border border-t border-b border-white/5 px-4 lg:p-4 py-3 lg:py-4 mb-0 lg:mb-6">
-        <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-3 lg:gap-4">
-          <label className="text-white/60 text-xs uppercase tracking-wider flex-shrink-0">Filter by Vendor:</label>
-          <select
-            value={selectedVendor}
-            onChange={(e) => setSelectedVendor(e.target.value)}
-            className="flex-1 lg:flex-initial bg-[#1a1a1a] border border-white/10 text-white px-4 py-2.5 focus:outline-none focus:border-white/20 transition-colors text-sm"
-          >
-            <option value="all">All Vendors</option>
-            {vendors.map((vendor) => (
-              <option key={vendor.id} value={vendor.id}>
-                {vendor.store_name} ({vendor.total_locations} locations)
-              </option>
-            ))}
-          </select>
-        </div>
+      <div className="mb-4">
+        <select
+          value={selectedVendor}
+          onChange={(e) => setSelectedVendor(e.target.value)}
+          className="w-full sm:w-auto bg-[#111111] border border-white/10 text-white px-4 py-2.5 focus:outline-none focus:border-white/20 transition-colors text-sm"
+        >
+          <option value="all">All Vendors</option>
+          {vendors.map((vendor) => (
+            <option key={vendor.id} value={vendor.id}>
+              {vendor.store_name} ({vendor.total_locations} locations)
+            </option>
+          ))}
+        </select>
       </div>
 
       {/* Locations List */}
       {loading ? (
-        <div className="bg-[#1a1a1a] lg:border border-white/5 p-12 text-center text-white/60">
-          Loading locations...
+        <div className="bg-[#111111] border border-white/10 p-12 text-center">
+          <div className="text-white/40 text-sm">Loading...</div>
         </div>
       ) : filteredLocations.length === 0 ? (
-        <div className="bg-[#1a1a1a] lg:border border-white/5 p-12 text-center">
-          <Building size={48} className="text-white/20 mx-auto mb-4" />
-          <div className="text-white/60 mb-4">No locations found</div>
+        <div className="bg-[#111111] border border-white/10 p-12 text-center">
+          <MapPin size={32} className="text-white/20 mx-auto mb-3" />
+          <div className="text-white/60 text-sm">No locations found</div>
         </div>
       ) : (
-        <div className="bg-[#1a1a1a] lg:border border-white/5 overflow-hidden">
-          <table className="w-full">
-            <thead className="border-b border-white/5 bg-[#1a1a1a]">
-              <tr>
-                <th className="text-left text-xs font-medium text-white/60 uppercase tracking-wider p-4">Location</th>
-                <th className="text-left text-xs font-medium text-white/60 uppercase tracking-wider p-4">Vendor</th>
-                <th className="text-left text-xs font-medium text-white/60 uppercase tracking-wider p-4">Type</th>
-                <th className="text-left text-xs font-medium text-white/60 uppercase tracking-wider p-4">Address</th>
-                <th className="text-left text-xs font-medium text-white/60 uppercase tracking-wider p-4">POS</th>
-                <th className="text-left text-xs font-medium text-white/60 uppercase tracking-wider p-4">Billing</th>
-                <th className="text-left text-xs font-medium text-white/60 uppercase tracking-wider p-4">Status</th>
-                <th className="text-left text-xs font-medium text-white/60 uppercase tracking-wider p-4">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-white/5">
-              {filteredLocations.map((location) => (
-                <tr key={location.id} className="hover:bg-[#303030] transition-all">
-                  <td className="p-4">
-                    <div className="flex items-center gap-3">
-                      <MapPin size={18} className="text-white/40" />
-                      <div>
-                        <div className="text-white font-medium text-sm flex items-center gap-2">
-                          {location.name}
-                          {location.is_primary && (
-                            <span title="Primary Location">
-                              <Star size={14} className="text-yellow-500 fill-yellow-500" />
-                            </span>
-                          )}
-                        </div>
-                        <div className="text-white/40 text-xs">{location.slug}</div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="p-4">
-                    <div className="text-white text-sm">{location.vendors?.store_name}</div>
-                    <div className="text-white/40 text-xs">{location.vendors?.email}</div>
-                  </td>
-                  <td className="p-4">
-                    {getTypeBadge(location.type)}
-                  </td>
-                  <td className="p-4">
-                    <div className="text-white/60 text-sm">
-                      {location.address_line1 ? (
-                        <>
-                          {location.address_line1}<br />
-                          {location.city}, {location.state} {location.zip}
-                        </>
-                      ) : (
-                        <span className="text-white/40">—</span>
-                      )}
-                    </div>
-                  </td>
-                  <td className="p-4">
-                    {location.pos_enabled ? (
-                      <CheckCircle size={16} className="text-green-500" />
-                    ) : (
-                      <XCircle size={16} className="text-white/20" />
-                    )}
-                  </td>
-                  <td className="p-4">
-                    {location.is_primary ? (
-                      <span className="text-green-500 text-sm">FREE</span>
-                    ) : (
-                      <div className="flex items-center gap-2">
-                        <span className={`text-sm ${
-                          location.billing_status === 'active' ? 'text-green-500' :
-                          location.billing_status === 'trial' ? 'text-yellow-500' :
-                          'text-red-500'
-                        }`}>
-                          {location.billing_status}
-                        </span>
-                        <span className="text-white/40 text-xs">${location.monthly_fee}/mo</span>
-                      </div>
-                    )}
-                  </td>
-                  <td className="p-4">
-                    <span className={`inline-flex items-center gap-1.5 px-2 py-1 text-xs font-medium uppercase tracking-wider border ${
-                      location.is_active ? 'border-green-500 text-green-500' : 'border-white/20 text-white/40'
-                    }`}>
-                      {location.is_active ? 'Active' : 'Inactive'}
-                    </span>
-                  </td>
-                  <td className="p-4">
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => openEditModal(location)}
-                        className="text-white/60 hover:text-white text-sm transition-colors"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => toggleStatus(location.id, location.is_active)}
-                        className="text-white/60 hover:text-white text-sm transition-colors"
-                      >
-                        {location.is_active ? 'Deactivate' : 'Activate'}
-                      </button>
-                      {!location.is_primary && (
-                        <button
-                          onClick={() => deleteLocation(location.id, location.name)}
-                          className="text-red-500/60 hover:text-red-500 text-sm transition-colors"
-                        >
-                          Delete
-                        </button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="bg-[#111111] border border-white/10">
+          {filteredLocations.map((location, index) => (
+            <div
+              key={location.id}
+              className={`flex items-center gap-4 px-4 py-3 hover:bg-white/5 transition-colors ${
+                index !== filteredLocations.length - 1 ? 'border-b border-white/5' : ''
+              }`}
+            >
+              <div className="w-8 h-8 bg-white/5 flex items-center justify-center flex-shrink-0">
+                <MapPin size={16} className="text-white/40" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <div className="text-white text-sm font-medium">{location.name}</div>
+                  {location.is_primary && <Star size={12} className="text-yellow-500 fill-yellow-500" />}
+                </div>
+                <div className="text-white/40 text-xs">{location.vendors?.store_name}</div>
+              </div>
+              <div className="text-white/60 text-xs capitalize">{location.type}</div>
+              <div className="text-white/60 text-xs">
+                {location.city ? `${location.city}, ${location.state}` : '—'}
+              </div>
+              <div className="text-white/60 text-xs">
+                {location.is_primary ? 'FREE' : `$${location.monthly_fee}/mo`}
+              </div>
+              <div className="flex-shrink-0">
+                {location.is_active ? (
+                  <span className="inline-flex items-center gap-1 px-2 py-1 text-xs text-white/60 border border-white/10">
+                    <CheckCircle size={10} />
+                    Active
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 px-2 py-1 text-xs text-white/40 border border-white/10">
+                    <XCircle size={10} />
+                    Inactive
+                  </span>
+                )}
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => openEditModal(location)}
+                  className="p-1.5 text-white/40 hover:text-white hover:bg-white/10 transition-all"
+                >
+                  <Edit2 size={14} />
+                </button>
+                <button
+                  onClick={() => toggleStatus(location.id, location.is_active)}
+                  className="p-1.5 text-white/40 hover:text-white hover:bg-white/10 transition-all"
+                >
+                  {location.is_active ? <XCircle size={14} /> : <CheckCircle size={14} />}
+                </button>
+                {!location.is_primary && (
+                  <button
+                    onClick={() => deleteLocation(location.id, location.name)}
+                    className="p-1.5 text-white/40 hover:text-red-500 hover:bg-red-500/10 transition-all"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                )}
+              </div>
+            </div>
+          ))}
         </div>
       )}
 
@@ -485,333 +363,172 @@ export default function AdminLocations() {
         submitText="Create Location"
         maxWidth="2xl"
       >
-        <div>
-          <label className="block text-white/60 text-xs uppercase tracking-wider mb-2">Vendor *</label>
-          <select
-            value={newLocation.vendor_id}
-            onChange={(e) => setNewLocation({ ...newLocation, vendor_id: e.target.value })}
-            className="w-full bg-[#1a1a1a] border border-white/10 text-white px-4 py-2.5 focus:outline-none focus:border-white/20 transition-colors mb-4"
-          >
-            <option value="">Select a vendor</option>
-            {vendors.map((vendor) => (
-              <option key={vendor.id} value={vendor.id}>
-                {vendor.store_name}
-              </option>
-            ))}
-          </select>
-        </div>
-        
-        <div className="grid grid-cols-2 gap-4 mb-4">
+        <div className="space-y-4">
           <div>
-            <label className="block text-white/60 text-xs uppercase tracking-wider mb-2">Location Name *</label>
-            <input
-              type="text"
-              value={newLocation.name}
-              onChange={(e) => setNewLocation({ ...newLocation, name: e.target.value })}
-              className="w-full bg-[#1a1a1a] border border-white/10 text-white px-4 py-2.5 focus:outline-none focus:border-white/20 transition-colors"
-              placeholder="Downtown Store"
-            />
-          </div>
-          <div>
-            <label className="block text-white/60 text-xs uppercase tracking-wider mb-2">Type</label>
+            <label className="block text-white/60 text-xs uppercase tracking-wider mb-2">Vendor *</label>
             <select
-              value={newLocation.type}
-              onChange={(e) => setNewLocation({ ...newLocation, type: e.target.value as any })}
-              className="w-full bg-[#1a1a1a] border border-white/10 text-white px-4 py-2.5 focus:outline-none focus:border-white/20 transition-colors"
+              value={newLocation.vendor_id}
+              onChange={(e) => setNewLocation({ ...newLocation, vendor_id: e.target.value })}
+              className="w-full bg-[#111111] border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
             >
-              <option value="retail">Retail</option>
-              <option value="warehouse">Warehouse</option>
-              <option value="vendor">Vendor</option>
-              <option value="distribution">Distribution</option>
+              <option value="">Select a vendor</option>
+              {vendors.map((vendor) => (
+                <option key={vendor.id} value={vendor.id}>
+                  {vendor.store_name}
+                </option>
+              ))}
             </select>
           </div>
-        </div>
-        
-        <div className="mb-4">
-          <label className="block text-white/60 text-xs uppercase tracking-wider mb-2">Address Line 1</label>
-          <input
-            type="text"
-            value={newLocation.address_line1}
-            onChange={(e) => setNewLocation({ ...newLocation, address_line1: e.target.value })}
-            className="w-full bg-[#1a1a1a] border border-white/10 text-white px-4 py-2.5 focus:outline-none focus:border-white/20 transition-colors"
-          />
-        </div>
-
-        <div className="mb-4">
-          <label className="block text-white/60 text-xs uppercase tracking-wider mb-2">Address Line 2</label>
-          <input
-            type="text"
-            value={newLocation.address_line2}
-            onChange={(e) => setNewLocation({ ...newLocation, address_line2: e.target.value })}
-            className="w-full bg-[#1a1a1a] border border-white/10 text-white px-4 py-2.5 focus:outline-none focus:border-white/20 transition-colors"
-          />
-        </div>
-        
-        <div className="grid grid-cols-3 gap-4 mb-4">
-          <div>
-            <label className="block text-white/60 text-xs uppercase tracking-wider mb-2">City</label>
-            <input
-              type="text"
-              value={newLocation.city}
-              onChange={(e) => setNewLocation({ ...newLocation, city: e.target.value })}
-              className="w-full bg-[#1a1a1a] border border-white/10 text-white px-4 py-2.5 focus:outline-none focus:border-white/20 transition-colors"
-            />
-          </div>
-          <div>
-            <label className="block text-white/60 text-xs uppercase tracking-wider mb-2">State</label>
-            <input
-              type="text"
-              value={newLocation.state}
-              onChange={(e) => setNewLocation({ ...newLocation, state: e.target.value })}
-              className="w-full bg-[#1a1a1a] border border-white/10 text-white px-4 py-2.5 focus:outline-none focus:border-white/20 transition-colors"
-            />
-          </div>
-          <div>
-            <label className="block text-white/60 text-xs uppercase tracking-wider mb-2">ZIP</label>
-            <input
-              type="text"
-              value={newLocation.zip}
-              onChange={(e) => setNewLocation({ ...newLocation, zip: e.target.value })}
-              className="w-full bg-[#1a1a1a] border border-white/10 text-white px-4 py-2.5 focus:outline-none focus:border-white/20 transition-colors"
-            />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-4 mb-4">
-          <div>
-            <label className="block text-white/60 text-xs uppercase tracking-wider mb-2">Phone</label>
-            <input
-              type="text"
-              value={newLocation.phone}
-              onChange={(e) => setNewLocation({ ...newLocation, phone: e.target.value })}
-              className="w-full bg-[#1a1a1a] border border-white/10 text-white px-4 py-2.5 focus:outline-none focus:border-white/20 transition-colors"
-            />
-          </div>
-          <div>
-            <label className="block text-white/60 text-xs uppercase tracking-wider mb-2">Email</label>
-            <input
-              type="email"
-              value={newLocation.email}
-              onChange={(e) => setNewLocation({ ...newLocation, email: e.target.value })}
-              className="w-full bg-[#1a1a1a] border border-white/10 text-white px-4 py-2.5 focus:outline-none focus:border-white/20 transition-colors"
-            />
-          </div>
-        </div>
-        
-        <div className="grid grid-cols-3 gap-4 mb-4">
-          <div>
-            <label className="block text-white/60 text-xs uppercase tracking-wider mb-2">Pricing Tier</label>
-            <select
-              value={newLocation.pricing_tier}
-              onChange={(e) => setNewLocation({ ...newLocation, pricing_tier: e.target.value })}
-              className="w-full bg-[#1a1a1a] border border-white/10 text-white px-4 py-2.5 focus:outline-none focus:border-white/20 transition-colors"
-            >
-              <option value="standard">Standard</option>
-              <option value="premium">Premium</option>
-              <option value="enterprise">Enterprise</option>
-              <option value="custom">Custom</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-white/60 text-xs uppercase tracking-wider mb-2">Monthly Fee</label>
-            <input
-              type="number"
-              step="0.01"
-              value={newLocation.monthly_fee}
-              onChange={(e) => setNewLocation({ ...newLocation, monthly_fee: parseFloat(e.target.value) })}
-              className="w-full bg-[#1a1a1a] border border-white/10 text-white px-4 py-2.5 focus:outline-none focus:border-white/20 transition-colors"
-            />
-          </div>
-          <div className="flex items-end">
-            <label className="flex items-center gap-2 text-white/60 text-sm cursor-pointer pb-2.5">
+          
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-white/60 text-xs uppercase tracking-wider mb-2">Location Name *</label>
               <input
-                type="checkbox"
-                checked={newLocation.pos_enabled}
-                onChange={(e) => setNewLocation({ ...newLocation, pos_enabled: e.target.checked })}
-                className="w-4 h-4"
+                type="text"
+                value={newLocation.name}
+                onChange={(e) => setNewLocation({ ...newLocation, name: e.target.value })}
+                className="w-full bg-[#111111] border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
               />
-              Enable POS
-            </label>
+            </div>
+            <div>
+              <label className="block text-white/60 text-xs uppercase tracking-wider mb-2">Type</label>
+              <select
+                value={newLocation.type}
+                onChange={(e) => setNewLocation({ ...newLocation, type: e.target.value as any })}
+                className="w-full bg-[#111111] border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
+              >
+                <option value="retail">Retail</option>
+                <option value="warehouse">Warehouse</option>
+                <option value="vendor">Vendor</option>
+                <option value="distribution">Distribution</option>
+              </select>
+            </div>
+          </div>
+          
+          <div>
+            <label className="block text-white/60 text-xs uppercase tracking-wider mb-2">Address</label>
+            <input
+              type="text"
+              value={newLocation.address_line1}
+              onChange={(e) => setNewLocation({ ...newLocation, address_line1: e.target.value })}
+              className="w-full bg-[#111111] border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
+            />
+          </div>
+          
+          <div className="grid grid-cols-3 gap-4">
+            <div>
+              <label className="block text-white/60 text-xs uppercase tracking-wider mb-2">City</label>
+              <input
+                type="text"
+                value={newLocation.city}
+                onChange={(e) => setNewLocation({ ...newLocation, city: e.target.value })}
+                className="w-full bg-[#111111] border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
+              />
+            </div>
+            <div>
+              <label className="block text-white/60 text-xs uppercase tracking-wider mb-2">State</label>
+              <input
+                type="text"
+                value={newLocation.state}
+                onChange={(e) => setNewLocation({ ...newLocation, state: e.target.value })}
+                className="w-full bg-[#111111] border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
+              />
+            </div>
+            <div>
+              <label className="block text-white/60 text-xs uppercase tracking-wider mb-2">ZIP</label>
+              <input
+                type="text"
+                value={newLocation.zip}
+                onChange={(e) => setNewLocation({ ...newLocation, zip: e.target.value })}
+                className="w-full bg-[#111111] border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
+              />
+            </div>
           </div>
         </div>
       </AdminModal>
 
       {/* Edit Location Modal */}
-      <AdminModal
-        isOpen={showEditModal}
-        onClose={() => setShowEditModal(false)}
-        title="Edit Location"
-        description={editingLocation ? `Update ${editingLocation.name}` : 'Update location details'}
-        onSubmit={updateLocation}
-        submitText="Update Location"
-        maxWidth="2xl"
-      >
-        <div>
-          <label className="block text-white/60 text-xs uppercase tracking-wider mb-2">Location Name *</label>
-          <input
-            type="text"
-            value={editLocationData.name}
-            onChange={(e) => setEditLocationData({ ...editLocationData, name: e.target.value })}
-            className="w-full bg-[#1a1a1a] border border-white/10 text-white px-4 py-2.5 focus:outline-none focus:border-white/20 transition-colors mb-4"
-          />
-        </div>
-
-        <div className="grid grid-cols-2 gap-4 mb-4">
-          <div>
-            <label className="block text-white/60 text-xs uppercase tracking-wider mb-2">Type</label>
-            <select
-              value={editLocationData.type}
-              onChange={(e) => setEditLocationData({ ...editLocationData, type: e.target.value as any })}
-              className="w-full bg-[#1a1a1a] border border-white/10 text-white px-4 py-2.5 focus:outline-none focus:border-white/20 transition-colors"
-            >
-              <option value="retail">Retail</option>
-              <option value="warehouse">Warehouse</option>
-              <option value="vendor">Vendor</option>
-              <option value="distribution">Distribution</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-white/60 text-xs uppercase tracking-wider mb-2">Phone</label>
-            <input
-              type="text"
-              value={editLocationData.phone}
-              onChange={(e) => setEditLocationData({ ...editLocationData, phone: e.target.value })}
-              className="w-full bg-[#1a1a1a] border border-white/10 text-white px-4 py-2.5 focus:outline-none focus:border-white/20 transition-colors"
-            />
-          </div>
-        </div>
-
-        <div className="mb-4">
-          <label className="block text-white/60 text-xs uppercase tracking-wider mb-2">Address Line 1</label>
-          <input
-            type="text"
-            value={editLocationData.address_line1}
-            onChange={(e) => setEditLocationData({ ...editLocationData, address_line1: e.target.value })}
-            className="w-full bg-[#1a1a1a] border border-white/10 text-white px-4 py-2.5 focus:outline-none focus:border-white/20 transition-colors"
-          />
-        </div>
-
-        <div className="mb-4">
-          <label className="block text-white/60 text-xs uppercase tracking-wider mb-2">Address Line 2</label>
-          <input
-            type="text"
-            value={editLocationData.address_line2}
-            onChange={(e) => setEditLocationData({ ...editLocationData, address_line2: e.target.value })}
-            className="w-full bg-[#1a1a1a] border border-white/10 text-white px-4 py-2.5 focus:outline-none focus:border-white/20 transition-colors"
-          />
-        </div>
-
-        <div className="grid grid-cols-3 gap-4 mb-4">
-          <div>
-            <label className="block text-white/60 text-xs uppercase tracking-wider mb-2">City</label>
-            <input
-              type="text"
-              value={editLocationData.city}
-              onChange={(e) => setEditLocationData({ ...editLocationData, city: e.target.value })}
-              className="w-full bg-[#1a1a1a] border border-white/10 text-white px-4 py-2.5 focus:outline-none focus:border-white/20 transition-colors"
-            />
-          </div>
-          <div>
-            <label className="block text-white/60 text-xs uppercase tracking-wider mb-2">State</label>
-            <input
-              type="text"
-              value={editLocationData.state}
-              onChange={(e) => setEditLocationData({ ...editLocationData, state: e.target.value })}
-              className="w-full bg-[#1a1a1a] border border-white/10 text-white px-4 py-2.5 focus:outline-none focus:border-white/20 transition-colors"
-            />
-          </div>
-          <div>
-            <label className="block text-white/60 text-xs uppercase tracking-wider mb-2">ZIP</label>
-            <input
-              type="text"
-              value={editLocationData.zip}
-              onChange={(e) => setEditLocationData({ ...editLocationData, zip: e.target.value })}
-              className="w-full bg-[#1a1a1a] border border-white/10 text-white px-4 py-2.5 focus:outline-none focus:border-white/20 transition-colors"
-            />
-          </div>
-        </div>
-
-        <div className="mb-4">
-          <label className="block text-white/60 text-xs uppercase tracking-wider mb-2">Email</label>
-          <input
-            type="email"
-            value={editLocationData.email}
-            onChange={(e) => setEditLocationData({ ...editLocationData, email: e.target.value })}
-            className="w-full bg-[#1a1a1a] border border-white/10 text-white px-4 py-2.5 focus:outline-none focus:border-white/20 transition-colors"
-          />
-        </div>
-
-        {/* Show info for primary locations */}
-        {editingLocation?.is_primary && (
-          <div className="bg-yellow-500/10 border border-yellow-500/20 p-4 mb-4">
-            <div className="flex items-center gap-2 text-yellow-500 text-sm font-medium mb-1">
-              <Star size={16} className="fill-yellow-500" />
-              Primary Location
-            </div>
-            <p className="text-white/60 text-xs">
-              This is the primary location for this vendor. Primary locations are always FREE ($0/month).
-            </p>
-          </div>
-        )}
-
-        {!editingLocation?.is_primary && (
-          <>
-            <div className="grid grid-cols-2 gap-4 mb-4">
+      {editingLocation && (
+        <AdminModal
+          isOpen={showEditModal}
+          onClose={() => {
+            setShowEditModal(false);
+            setEditingLocation(null);
+          }}
+          title="Edit Location"
+          description={`Update ${editingLocation.name}`}
+          onSubmit={updateLocation}
+          submitText="Update Location"
+          maxWidth="2xl"
+        >
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-white/60 text-xs uppercase tracking-wider mb-2">Pricing Tier</label>
-                <select
-                  value={editLocationData.pricing_tier}
-                  onChange={(e) => setEditLocationData({ ...editLocationData, pricing_tier: e.target.value })}
-                  className="w-full bg-[#1a1a1a] border border-white/10 text-white px-4 py-2.5 focus:outline-none focus:border-white/20 transition-colors"
-                >
-                  <option value="standard">Standard</option>
-                  <option value="premium">Premium</option>
-                  <option value="enterprise">Enterprise</option>
-                  <option value="custom">Custom</option>
-                </select>
+                <label className="block text-white/60 text-xs uppercase tracking-wider mb-2">Location Name *</label>
+                <input
+                  type="text"
+                  value={editingLocation.name}
+                  onChange={(e) => setEditingLocation({ ...editingLocation, name: e.target.value })}
+                  className="w-full bg-[#111111] border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
+                />
               </div>
               <div>
-                <label className="block text-white/60 text-xs uppercase tracking-wider mb-2">Billing Status</label>
+                <label className="block text-white/60 text-xs uppercase tracking-wider mb-2">Type</label>
                 <select
-                  value={editLocationData.billing_status}
-                  onChange={(e) => setEditLocationData({ ...editLocationData, billing_status: e.target.value })}
-                  className="w-full bg-[#1a1a1a] border border-white/10 text-white px-4 py-2.5 focus:outline-none focus:border-white/20 transition-colors"
+                  value={editingLocation.type}
+                  onChange={(e) => setEditingLocation({ ...editingLocation, type: e.target.value as any })}
+                  className="w-full bg-[#111111] border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
                 >
-                  <option value="active">Active</option>
-                  <option value="trial">Trial</option>
-                  <option value="suspended">Suspended</option>
-                  <option value="cancelled">Cancelled</option>
+                  <option value="retail">Retail</option>
+                  <option value="warehouse">Warehouse</option>
+                  <option value="vendor">Vendor</option>
+                  <option value="distribution">Distribution</option>
                 </select>
               </div>
             </div>
             
-            <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-white/60 text-xs uppercase tracking-wider mb-2">Address</label>
+              <input
+                type="text"
+                value={editingLocation.address_line1 || ''}
+                onChange={(e) => setEditingLocation({ ...editingLocation, address_line1: e.target.value })}
+                className="w-full bg-[#111111] border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
+              />
+            </div>
+            
+            <div className="grid grid-cols-3 gap-4">
               <div>
-                <label className="block text-white/60 text-xs uppercase tracking-wider mb-2">Monthly Fee ($)</label>
+                <label className="block text-white/60 text-xs uppercase tracking-wider mb-2">City</label>
                 <input
-                  type="number"
-                  step="0.01"
-                  value={editLocationData.monthly_fee}
-                  onChange={(e) => setEditLocationData({ ...editLocationData, monthly_fee: parseFloat(e.target.value) || 0 })}
-                  className="w-full bg-[#1a1a1a] border border-white/10 text-white px-4 py-2.5 focus:outline-none focus:border-white/20 transition-colors"
+                  type="text"
+                  value={editingLocation.city || ''}
+                  onChange={(e) => setEditingLocation({ ...editingLocation, city: e.target.value })}
+                  className="w-full bg-[#111111] border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
                 />
               </div>
-              <div className="flex items-end">
-                <label className="flex items-center gap-2 text-white/60 text-sm cursor-pointer pb-2.5">
-                  <input
-                    type="checkbox"
-                    checked={editLocationData.pos_enabled}
-                    onChange={(e) => setEditLocationData({ ...editLocationData, pos_enabled: e.target.checked })}
-                    className="w-4 h-4"
-                  />
-                  Enable POS
-                </label>
+              <div>
+                <label className="block text-white/60 text-xs uppercase tracking-wider mb-2">State</label>
+                <input
+                  type="text"
+                  value={editingLocation.state || ''}
+                  onChange={(e) => setEditingLocation({ ...editingLocation, state: e.target.value })}
+                  className="w-full bg-[#111111] border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
+                />
+              </div>
+              <div>
+                <label className="block text-white/60 text-xs uppercase tracking-wider mb-2">ZIP</label>
+                <input
+                  type="text"
+                  value={editingLocation.zip || ''}
+                  onChange={(e) => setEditingLocation({ ...editingLocation, zip: e.target.value })}
+                  className="w-full bg-[#111111] border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
+                />
               </div>
             </div>
-          </>
-        )}
-      </AdminModal>
+          </div>
+        </AdminModal>
+      )}
     </div>
   );
 }
-

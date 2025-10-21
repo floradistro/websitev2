@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { 
   Home, Package, Store, Settings, LogOut, Users, CheckSquare, 
-  FileText, DollarSign, BarChart3, Menu, X, Shield, MapPin, Globe 
+  FileText, DollarSign, BarChart3, Menu, X, MapPin, Globe, FolderTree 
 } from 'lucide-react';
 import { showConfirm } from '@/components/NotificationToast';
 
@@ -60,6 +60,7 @@ export default function AdminLayout({
   const navItems = [
     { href: '/admin/dashboard', icon: Home, label: 'Dashboard' },
     { href: '/admin/products', icon: Package, label: 'Products' },
+    { href: '/admin/categories', icon: FolderTree, label: 'Categories' },
     { href: '/admin/vendors', icon: Store, label: 'Vendors' },
     { href: '/admin/locations', icon: MapPin, label: 'Locations' },
     { href: '/admin/domains', icon: Globe, label: 'Domains' },
@@ -153,8 +154,8 @@ export default function AdminLayout({
             <h1 className="text-base font-medium text-white tracking-tight">{currentPage}</h1>
           </div>
 
-          <Link href="/admin/dashboard" className="w-8 h-8 bg-red-500/20 rounded flex items-center justify-center">
-            <Shield size={18} className="text-red-500" />
+          <Link href="/admin/dashboard" className="w-8 h-8 bg-white/5 rounded flex items-center justify-center overflow-hidden">
+            <img src="/yacht-club-logo.png" alt="Yacht Club" className="w-full h-full object-contain p-0.5" />
           </Link>
         </div>
       </nav>
@@ -174,8 +175,8 @@ export default function AdminLayout({
             
             <div className="flex items-center justify-between p-4 border-b border-red-500/20 relative z-10">
               <Link href="/admin/dashboard" className="flex items-center gap-3" onClick={() => setMobileMenuOpen(false)}>
-                <div className="w-10 h-10 bg-red-500/20 rounded flex items-center justify-center">
-                  <Shield size={22} className="text-red-500" />
+                <div className="w-10 h-10 bg-white/5 rounded flex items-center justify-center overflow-hidden">
+                  <img src="/yacht-club-logo.png" alt="Yacht Club" className="w-full h-full object-contain p-0.5" />
                 </div>
                 <div>
                   <div className="text-white text-sm font-medium">Yacht Club Admin</div>
@@ -245,8 +246,8 @@ export default function AdminLayout({
         <div className="w-full px-6 xl:px-8">
           <div className="flex justify-between items-center h-16">
             <Link href="/admin/dashboard" className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-red-500/20 rounded flex items-center justify-center">
-                <Shield size={22} className="text-red-500" />
+              <div className="w-10 h-10 bg-white/5 rounded flex items-center justify-center overflow-hidden">
+                <img src="/yacht-club-logo.png" alt="Yacht Club" className="w-full h-full object-contain p-0.5" />
               </div>
               <div>
                 <div className="text-white text-base font-medium">Yacht Club Admin</div>

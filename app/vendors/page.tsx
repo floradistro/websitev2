@@ -29,13 +29,8 @@ function VendorCard({ vendor, index }: { vendor: any; index: number }) {
       {/* Info */}
       <div className="p-4 lg:p-6">
         <div className="flex items-start justify-between gap-2 mb-2">
-          <h3 
-            className="text-xl lg:text-2xl text-white truncate tracking-wide flex-1"
-            style={{ 
-              fontFamily: vendor.id === 1 ? 'Lobster' : vendor.id === 2 ? 'Monkey Act' : vendor.id === 3 ? 'monospace' : 'inherit' 
-            }}
-          >
-            {vendor.id === 3 ? `[${vendor.name.toUpperCase()}]` : vendor.name}
+          <h3 className="text-xl lg:text-2xl text-white truncate tracking-wide flex-1 font-light">
+            {vendor.name}
           </h3>
           {vendor.featured && (
             <Award size={14} className="text-white/60 flex-shrink-0" />
@@ -283,7 +278,7 @@ export default function VendorsPage() {
               {/* Info Section */}
               <div className="lg:col-span-2 p-8 lg:p-12 flex flex-col justify-center">
                 <div className="flex items-center gap-3 mb-4">
-                  <h3 className="text-3xl lg:text-4xl text-white tracking-wide" style={{ fontFamily: 'Lobster' }}>
+                  <h3 className="text-3xl lg:text-4xl text-white tracking-wide font-light">
                     {featuredVendor.name}
                   </h3>
                   <CheckCircle size={24} className="text-white/60" />

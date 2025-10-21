@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useLoyalty } from "@/context/LoyaltyContext";
 import { useAuth } from "@/context/AuthContext";
 import { Coins, Check, X } from "lucide-react";
-import axios from "axios";
 import { showNotification } from "@/components/NotificationToast";
 
 interface ChipRedemptionProps {
@@ -56,30 +55,18 @@ export default function ChipRedemption({ cartTotal, onApplyDiscount }: ChipRedem
     setLoading(true);
 
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_WORDPRESS_API_URL || "https://api.floradistro.com";
-      const consumerKey = process.env.NEXT_PUBLIC_WORDPRESS_CONSUMER_KEY || "ck_bb8e5fe3d405e6ed6b8c079c93002d7d8b23a7d5";
-      const consumerSecret = process.env.NEXT_PUBLIC_WORDPRESS_CONSUMER_SECRET || "cs_38194e74c7ddc5d72b6c32c70485728e7e529678";
-      
-      // Calculate discount via API
-      const response = await axios.post(
-        `${baseUrl}/wp-json/wc-points-rewards/v1/redeem/calculate`,
-        {
-          user_id: user.id,
-          points: chipsToUse,
-        },
-        {
-          params: {
-            consumer_key: consumerKey,
-            consumer_secret: consumerSecret,
-          }
-        }
-      );
-
-      const discount = response.data.discount || calculateDiscount(chipsToUse);
+      // Calculate discount locally
+      const discount = calculateDiscount(chipsToUse);
       
       setAppliedDiscount(discount);
       setIsApplied(true);
       onApplyDiscount(discount, chipsToUse);
+      
+      showNotification({
+        type: 'success',
+        title: 'Chips Applied',
+        message: `$${discount.toFixed(2)} discount applied!`,
+      });
     } catch (error) {
       console.error("Error applying chips:", error);
       showNotification({

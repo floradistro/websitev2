@@ -49,8 +49,19 @@ export async function GET(request: NextRequest) {
         state: vendor.state,
         zip: vendor.zip,
         logo_url: vendor.logo_url,
+        banner_url: vendor.banner_url,
         tagline: vendor.store_tagline,
-        region: vendor.region || vendor.state
+        region: vendor.region || vendor.state,
+        brand_colors: vendor.brand_colors,
+        social_links: vendor.social_links,
+        custom_font: vendor.custom_font,
+        custom_css: vendor.custom_css,
+        store_description: vendor.store_description,
+        rating: 0,
+        review_count: 0,
+        product_count: productCount || 0,
+        verified: vendor.status === 'active' ? 1 : 0,
+        featured: 0
       };
     }));
 

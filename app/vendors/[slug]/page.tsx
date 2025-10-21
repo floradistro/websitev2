@@ -65,7 +65,7 @@ export default function VendorStorefront() {
           website: vendorData.vendor.social_links?.website || '',
           instagram: vendorData.vendor.social_links?.instagram || '',
           productCount: vendorData.products.length,
-          fontFamily: 'inherit',
+          fontFamily: vendorData.vendor.custom_font || 'inherit',
           useBrackets: false
         });
 

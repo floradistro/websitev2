@@ -27,20 +27,30 @@ export default function VendorSettings() {
     try {
       setFetching(true);
       
-      const authToken = localStorage.getItem('vendor_auth');
-      const response = await fetch('/api/vendor-proxy?endpoint=flora-vendors/v1/vendors/me/settings', {
-        headers: { 'Authorization': `Basic ${authToken}` }
-      });
-      const data = await response.json();
+      const vendorId = localStorage.getItem('vendor_id');
+      if (!vendorId) {
+        setError('Not authenticated');
+        setFetching(false);
+        return;
+      }
+
+      // Get vendor data from Supabase
+      const { data: vendor, error } = await supabase
+        .from('vendors')
+        .select('*')
+        .eq('id', vendorId)
+        .single();
       
-      if (data && data.vendor) {
-        const vendor = data.vendor;
+      if (error) {
+        console.error('Failed to fetch vendor:', error);
+        setError('Failed to load settings. Please refresh the page.');
+      } else if (vendor) {
         setSettings({
-          companyName: vendor.company_name || '',
+          companyName: vendor.store_name || '',
           contactName: vendor.contact_name || '',
           email: vendor.email || '',
           phone: vendor.phone || '',
-          address: vendor.address_line_1 || '',
+          address: vendor.address || '',
           city: vendor.city || '',
           state: vendor.state || '',
           zip: vendor.zip || '',
@@ -66,31 +76,35 @@ export default function VendorSettings() {
     setSuccess(false);
 
     try {
-      const authToken = localStorage.getItem('vendor_auth');
-      const response = await fetch('/api/vendor-proxy?endpoint=flora-vendors/v1/vendors/me/settings', {
-        method: 'POST',
-        headers: { 
-          'Authorization': `Basic ${authToken}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          company_name: settings.companyName,
+      const vendorId = localStorage.getItem('vendor_id');
+      if (!vendorId) {
+        setError('Not authenticated');
+        setLoading(false);
+        return;
+      }
+
+      // Update vendor in Supabase
+      const { error } = await supabase
+        .from('vendors')
+        .update({
+          store_name: settings.companyName,
           contact_name: settings.contactName,
           email: settings.email,
           phone: settings.phone,
-          address_line_1: settings.address,
+          address: settings.address,
           city: settings.city,
           state: settings.state,
           zip: settings.zip,
           tax_id: settings.taxId,
         })
-      });
+        .eq('id', vendorId);
 
-      if (response.ok) {
+      if (error) {
+        console.error('Failed to update vendor:', error);
+        setError('Failed to save settings. Please try again.');
+      } else {
         setSuccess(true);
         setTimeout(() => setSuccess(false), 3000);
-      } else {
-        setError('Failed to save settings. Please try again.');
       }
     } catch (err: any) {
       setError(err.message || 'Failed to save settings. Please try again.');
