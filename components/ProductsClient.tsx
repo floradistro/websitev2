@@ -241,28 +241,19 @@ function ProductsClient({
                 All Products
               </button>
               <button
-                onClick={() => setSelectedVendor('flora')}
+                onClick={() => setSelectedVendor('flora-distro')}
                 className={`flex items-center gap-2 px-4 py-2.5 text-xs uppercase tracking-[0.15em] transition-all whitespace-nowrap flex-shrink-0 ${
-                  selectedVendor === 'flora'
+                  selectedVendor === 'flora-distro'
                     ? 'bg-white text-black border border-white'
                     : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white border border-white/10'
                 }`}
               >
-                <img src="/yacht-club-logo.png" alt="Yacht Club" className="w-5 h-5 object-contain opacity-80" />
-                Yacht Club
+                <img src="/yacht-club-logo.png" alt="Flora Distro" className="w-5 h-5 object-contain opacity-80" />
+                Flora Distro
               </button>
-              {vendors.map((vendor: any) => {
-                let fontFamily = 'inherit';
-                let displayName = vendor.name;
-                
-                if (selectedVendor === vendor.slug) {
-                  if (vendor.id === 1) fontFamily = 'Lobster';
-                  else if (vendor.id === 2) fontFamily = 'Monkey Act';
-                  else if (vendor.id === 3) {
-                    fontFamily = 'monospace';
-                    displayName = `[${vendor.name.toUpperCase()}]`;
-                  }
-                }
+              {vendors.filter((v: any) => v.slug !== 'flora-distro').map((vendor: any) => {
+                // Skip Flora Distro since we show it as "Yacht Club" above
+                if (!vendor.slug || !vendor.name) return null;
                 
                 return (
                   <button
@@ -273,10 +264,11 @@ function ProductsClient({
                         ? 'bg-white text-black border border-white'
                         : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white border border-white/10'
                     }`}
-                    style={{ fontFamily }}
                   >
-                    <img src={vendor.logo} alt={vendor.name} className="w-5 h-5 object-contain" />
-                    {displayName}
+                    {vendor.logo && (
+                      <img src={vendor.logo} alt={vendor.name} className="w-5 h-5 object-contain" />
+                    )}
+                    {vendor.name}
                   </button>
                 );
               })}
