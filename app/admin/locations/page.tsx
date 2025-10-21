@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { MapPin, Plus, Edit2, Trash2, CheckCircle, XCircle, Star } from 'lucide-react';
+import { MapPin, Plus, Edit2, Trash2, CheckCircle, XCircle, Star, ChevronDown, ChevronUp } from 'lucide-react';
 import axios from 'axios';
 import { showNotification, showConfirm } from '@/components/NotificationToast';
 import AdminModal from '@/components/AdminModal';
@@ -42,11 +42,16 @@ interface Vendor {
   total_locations: number;
 }
 
+interface VendorWithLocations {
+  vendor: Vendor;
+  locations: Location[];
+}
+
 export default function AdminLocations() {
   const [locations, setLocations] = useState<Location[]>([]);
   const [vendors, setVendors] = useState<Vendor[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedVendor, setSelectedVendor] = useState<string>('all');
+  const [expandedVendors, setExpandedVendors] = useState<Set<string>>(new Set());
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingLocation, setEditingLocation] = useState<Location | null>(null);
@@ -65,10 +70,6 @@ export default function AdminLocations() {
     loadLocations();
   }, []);
 
-  useEffect(() => {
-    loadLocations();
-  }, [selectedVendor]);
-
   async function loadVendors() {
     try {
       const response = await axios.get('/api/admin/vendors');
@@ -83,8 +84,7 @@ export default function AdminLocations() {
   async function loadLocations() {
     try {
       setLoading(true);
-      const params = selectedVendor !== 'all' ? `?vendor_id=${selectedVendor}` : '';
-      const response = await axios.get(`/api/admin/locations${params}`);
+      const response = await axios.get('/api/admin/locations');
       
       if (response.data.success) {
         setLocations(response.data.locations);
@@ -95,6 +95,24 @@ export default function AdminLocations() {
       setLoading(false);
     }
   }
+
+  function toggleVendor(vendorId: string) {
+    setExpandedVendors(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(vendorId)) {
+        newSet.delete(vendorId);
+      } else {
+        newSet.add(vendorId);
+      }
+      return newSet;
+    });
+  }
+
+  // Group locations by vendor
+  const vendorGroups: VendorWithLocations[] = vendors.map(vendor => ({
+    vendor,
+    locations: locations.filter(loc => loc.vendor_id === vendor.id)
+  })).filter(group => group.locations.length > 0);
 
   function openEditModal(location: Location) {
     setEditingLocation(location);
@@ -240,9 +258,7 @@ export default function AdminLocations() {
     }
   }
 
-  const filteredLocations = locations.filter(loc => 
-    selectedVendor === 'all' || loc.vendor_id === selectedVendor
-  );
+  const totalLocations = locations.length;
 
   return (
     <div className="w-full animate-fadeIn px-4 lg:px-0">
@@ -250,7 +266,7 @@ export default function AdminLocations() {
       <div className="flex justify-between items-start gap-4 mb-6">
         <div className="min-w-0">
           <h1 className="text-2xl lg:text-3xl text-white font-light tracking-tight mb-2">Locations</h1>
-          <p className="text-white/50 text-sm">{filteredLocations.length} registered</p>
+          <p className="text-white/50 text-sm">{totalLocations} locations across {vendorGroups.length} vendors</p>
         </div>
         <button
           onClick={() => setShowAddModal(true)}
@@ -262,69 +278,79 @@ export default function AdminLocations() {
         </button>
       </div>
 
-      {/* Vendor Filter */}
-      <div className="mb-4">
-        <select
-          value={selectedVendor}
-          onChange={(e) => setSelectedVendor(e.target.value)}
-          className="w-full sm:w-auto bg-[#111111] border border-white/10 text-white px-4 py-2.5 focus:outline-none focus:border-white/20 transition-colors text-sm"
-        >
-          <option value="all">All Vendors</option>
-          {vendors.map((vendor) => (
-            <option key={vendor.id} value={vendor.id}>
-              {vendor.store_name} ({vendor.total_locations} locations)
-            </option>
-          ))}
-        </select>
-      </div>
-
-      {/* Locations List */}
+      {/* Vendor Groups */}
       {loading ? (
         <div className="bg-[#111111] border border-white/10 p-12 text-center -mx-4 lg:mx-0">
           <div className="text-white/40 text-sm">Loading...</div>
         </div>
-      ) : filteredLocations.length === 0 ? (
+      ) : vendorGroups.length === 0 ? (
         <div className="bg-[#111111] border border-white/10 p-12 text-center -mx-4 lg:mx-0">
           <MapPin size={32} className="text-white/20 mx-auto mb-3" />
           <div className="text-white/60 text-sm">No locations found</div>
         </div>
       ) : (
-        <div className="bg-[#111111] border border-white/10 -mx-4 lg:mx-0">
-          {filteredLocations.map((location, index) => (
-            <div
-              key={location.id}
-              className={`px-4 py-4 hover:bg-white/5 transition-colors ${
-                index !== filteredLocations.length - 1 ? 'border-b border-white/5' : ''
-              }`}
-            >
-              {/* Mobile Layout - Fully Stacked */}
-              <div className="lg:hidden space-y-3">
-                <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 bg-white/5 flex items-center justify-center flex-shrink-0 rounded">
-                    <MapPin size={18} className="text-white/40" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <div className="text-white text-sm font-medium">{location.name}</div>
-                      {location.is_primary && <Star size={12} className="text-yellow-500 fill-yellow-500" />}
+        <div className="space-y-4 -mx-4 lg:mx-0">
+          {vendorGroups.map((group) => {
+            const isExpanded = expandedVendors.has(group.vendor.id);
+            
+            return (
+              <div key={group.vendor.id} className="bg-[#111111] border border-white/10">
+                {/* Vendor Header - Clickable */}
+                <button
+                  onClick={() => toggleVendor(group.vendor.id)}
+                  className="w-full px-4 py-4 flex items-center justify-between hover:bg-white/5 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-white/5 flex items-center justify-center flex-shrink-0">
+                      <MapPin size={18} className="text-white/40" />
                     </div>
-                    <div className="text-white/40 text-xs mb-1">{location.vendors?.store_name}</div>
-                    <div className="flex items-center gap-2 text-xs">
-                      <span className="text-white/60 capitalize px-2 py-0.5 bg-white/5 rounded">{location.type}</span>
-                      {location.is_active ? (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 text-white/60 border border-white/10 rounded">
-                          <CheckCircle size={10} />
-                          Active
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 text-white/40 border border-white/10 rounded">
-                          <XCircle size={10} />
-                          Inactive
-                        </span>
-                      )}
+                    <div className="text-left">
+                      <div className="text-white text-sm font-medium">{group.vendor.store_name}</div>
+                      <div className="text-white/40 text-xs">{group.locations.length} location{group.locations.length !== 1 ? 's' : ''}</div>
                     </div>
                   </div>
-                </div>
+                  <div className="text-white/40">
+                    {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                  </div>
+                </button>
+
+                {/* Locations List - Expandable */}
+                {isExpanded && (
+                  <div className="border-t border-white/10">
+                    {group.locations.map((location, index) => (
+                      <div
+                        key={location.id}
+                        className={`px-4 py-4 hover:bg-white/5 transition-colors ${
+                          index !== group.locations.length - 1 ? 'border-b border-white/5' : ''
+                        }`}
+                      >
+                        {/* Mobile Layout - Fully Stacked */}
+                        <div className="lg:hidden space-y-3">
+                          <div className="flex items-start gap-3">
+                            <div className="w-8 h-8 bg-white/5 flex items-center justify-center flex-shrink-0 rounded">
+                              <MapPin size={16} className="text-white/40" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-1">
+                                <div className="text-white text-sm font-medium">{location.name}</div>
+                                {location.is_primary && <Star size={12} className="text-yellow-500 fill-yellow-500" />}
+                              </div>
+                              <div className="flex items-center gap-2 text-xs">
+                                <span className="text-white/60 capitalize px-2 py-0.5 bg-white/5 rounded">{location.type}</span>
+                                {location.is_active ? (
+                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 text-white/60 border border-white/10 rounded">
+                                    <CheckCircle size={10} />
+                                    Active
+                                  </span>
+                                ) : (
+                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 text-white/40 border border-white/10 rounded">
+                                    <XCircle size={10} />
+                                    Inactive
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
                 
                 <div className="pl-13 space-y-2">
                   <div className="text-xs text-white/60">
@@ -414,8 +440,13 @@ export default function AdminLocations() {
                   )}
                 </div>
               </div>
-            </div>
-          ))}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       )}
 
