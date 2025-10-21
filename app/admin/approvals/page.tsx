@@ -170,7 +170,7 @@ export default function AdminApprovals() {
   }
 
   return (
-    <div className="w-full animate-fadeIn">
+    <div className="w-full animate-fadeIn px-4 lg:px-0">
       {/* Header */}
       <div className="flex justify-between items-center gap-4 mb-6">
         <div>
@@ -207,17 +207,17 @@ export default function AdminApprovals() {
 
       {/* Products List */}
       {loading && pending.length === 0 ? (
-        <div className="bg-[#111111] border border-white/10 p-12 text-center">
+        <div className="bg-[#111111] border border-white/10 p-12 text-center -mx-4 lg:mx-0">
           <div className="text-white/40 text-sm">Loading...</div>
         </div>
       ) : pending.length === 0 ? (
-        <div className="bg-[#111111] border border-white/10 p-12 text-center">
+        <div className="bg-[#111111] border border-white/10 p-12 text-center -mx-4 lg:mx-0">
           <Package size={32} className="text-white/20 mx-auto mb-3" />
           <p className="text-white/60 text-sm mb-1">No pending products</p>
           <p className="text-white/40 text-xs">All caught up!</p>
         </div>
       ) : (
-        <div className="bg-[#111111] border border-white/10">
+        <div className="bg-[#111111] border border-white/10 -mx-4 lg:mx-0">
           {pending.map((product, index) => (
             <div
               key={product.id}
@@ -230,7 +230,65 @@ export default function AdminApprovals() {
                 </div>
               )}
 
-              <div className="flex items-center gap-4 px-4 py-3 hover:bg-white/5 transition-colors">
+              {/* Mobile Layout */}
+              <div className="lg:hidden px-4 py-4 space-y-3">
+                <div className="flex items-start gap-3">
+                  <label className="flex items-center cursor-pointer mt-1">
+                    <input
+                      type="checkbox"
+                      checked={selected.has(product.id)}
+                      onChange={() => toggleSelect(product.id)}
+                      className="w-4 h-4 cursor-pointer"
+                    />
+                  </label>
+                  
+                  <div className="w-12 h-12 bg-white/5 flex items-center justify-center flex-shrink-0 relative overflow-hidden rounded">
+                    {product.featured_image ? (
+                      <img src={product.featured_image} alt={product.product_name} className="w-full h-full object-cover" />
+                    ) : (
+                      <Package size={20} className="text-white/30" />
+                    )}
+                  </div>
+
+                  <div className="flex-1 min-w-0">
+                    <div className="text-white text-sm font-medium mb-1">{product.product_name}</div>
+                    <div className="text-white/40 text-xs mb-2">{product.store_name}</div>
+                    <div className="flex items-center gap-2 text-xs flex-wrap">
+                      <span className="text-white/60 px-2 py-0.5 bg-white/5 rounded">${product.price || '0.00'}</span>
+                      <span className="text-white/60 px-2 py-0.5 bg-white/5 rounded">{product.category || 'Uncategorized'}</span>
+                      {product.is_update && (
+                        <span className="px-2 py-0.5 text-white/40 border border-white/10 rounded">Update</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex gap-2 pl-[60px]">
+                  <button
+                    onClick={() => setExpandedProduct(expandedProduct === product.id ? null : product.id)}
+                    className="flex-1 p-2.5 text-white/60 hover:text-white hover:bg-white/10 transition-all rounded border border-white/10 text-xs"
+                  >
+                    {expandedProduct === product.id ? 'Hide' : 'View Details'}
+                  </button>
+                  <button
+                    onClick={() => approveProduct(product.id)}
+                    disabled={processing.has(product.id)}
+                    className="flex-1 p-2.5 text-green-500 hover:text-green-400 hover:bg-green-500/10 transition-all rounded border border-green-500/20 text-xs disabled:opacity-50"
+                  >
+                    Approve
+                  </button>
+                  <button
+                    onClick={() => rejectProduct(product.id)}
+                    disabled={processing.has(product.id)}
+                    className="flex-1 p-2.5 text-red-500 hover:text-red-400 hover:bg-red-500/10 transition-all rounded border border-red-500/20 text-xs disabled:opacity-50"
+                  >
+                    Reject
+                  </button>
+                </div>
+              </div>
+
+              {/* Desktop Layout */}
+              <div className="hidden lg:flex items-center gap-4 px-4 py-3 hover:bg-white/5 transition-colors">
                 <label className="flex items-center cursor-pointer">
                   <input
                     type="checkbox"

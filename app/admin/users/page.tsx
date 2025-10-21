@@ -80,7 +80,7 @@ export default function AdminUsers() {
   );
 
   return (
-    <div className="w-full animate-fadeIn">
+    <div className="w-full animate-fadeIn px-4 lg:px-0">
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-3xl text-white font-light tracking-tight mb-2">Users</h1>
@@ -101,52 +101,92 @@ export default function AdminUsers() {
         </div>
       </div>
 
-      {/* Users List */}
+      {/* Users List - Edge to edge on mobile */}
       {loading ? (
-        <div className="bg-[#111111] border border-white/10 p-12 text-center">
+        <div className="bg-[#111111] border border-white/10 p-12 text-center -mx-4 lg:mx-0">
           <div className="text-white/40 text-sm">Loading...</div>
         </div>
       ) : filteredUsers.length === 0 ? (
-        <div className="bg-[#111111] border border-white/10 p-12 text-center">
+        <div className="bg-[#111111] border border-white/10 p-12 text-center -mx-4 lg:mx-0">
           <Users size={32} className="text-white/20 mx-auto mb-3" />
           <div className="text-white/60 text-sm">No users found</div>
         </div>
       ) : (
-        <div className="bg-[#111111] border border-white/10">
+        <div className="bg-[#111111] border border-white/10 -mx-4 lg:mx-0">
           {filteredUsers.map((user, index) => (
             <div
               key={user.id}
-              className={`flex items-center gap-4 px-4 py-3 hover:bg-white/5 transition-colors ${
+              className={`px-4 py-4 hover:bg-white/5 transition-colors ${
                 index !== filteredUsers.length - 1 ? 'border-b border-white/5' : ''
               }`}
             >
-              <div className="w-8 h-8 bg-white/5 flex items-center justify-center flex-shrink-0">
-                <User size={16} className="text-white/40" />
+              {/* Mobile Layout */}
+              <div className="lg:hidden">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 bg-white/5 flex items-center justify-center flex-shrink-0 rounded">
+                    <User size={18} className="text-white/40" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-white text-sm font-medium mb-1">{user.name}</div>
+                    <div className="text-white/40 text-xs mb-2 truncate">{user.email}</div>
+                    <div className="flex items-center gap-3 text-xs">
+                      <div className="text-white/60 px-2 py-1 border border-white/10 rounded uppercase">
+                        {user.role}
+                      </div>
+                      <div className="text-white/40">{user.orders} orders</div>
+                      <div className="flex-1"></div>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => {
+                            setEditingUser(user);
+                            setShowEditModal(true);
+                          }}
+                          className="p-2 text-white/40 hover:text-white hover:bg-white/10 transition-all rounded"
+                        >
+                          <Edit2 size={16} />
+                        </button>
+                        <button
+                          onClick={() => deleteUser(user.id)}
+                          className="p-2 text-red-500/60 hover:text-red-500 hover:bg-red-500/10 transition-all rounded"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div className="flex-1 min-w-0">
-                <div className="text-white text-sm font-medium">{user.name}</div>
-                <div className="text-white/40 text-xs">{user.email}</div>
-              </div>
-              <div className="text-white/60 text-xs uppercase px-2 py-1 border border-white/10">
-                {user.role}
-              </div>
-              <div className="text-white/40 text-xs">{user.orders} orders</div>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => {
-                    setEditingUser(user);
-                    setShowEditModal(true);
-                  }}
-                  className="p-1.5 text-white/40 hover:text-white hover:bg-white/10 transition-all"
-                >
-                  <Edit2 size={14} />
-                </button>
-                <button
-                  onClick={() => deleteUser(user.id)}
-                  className="p-1.5 text-white/40 hover:text-red-500 hover:bg-red-500/10 transition-all"
-                >
-                  <Trash2 size={14} />
-                </button>
+
+              {/* Desktop Layout */}
+              <div className="hidden lg:flex items-center gap-4">
+                <div className="w-8 h-8 bg-white/5 flex items-center justify-center flex-shrink-0">
+                  <User size={16} className="text-white/40" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-white text-sm font-medium">{user.name}</div>
+                  <div className="text-white/40 text-xs">{user.email}</div>
+                </div>
+                <div className="text-white/60 text-xs uppercase px-2 py-1 border border-white/10">
+                  {user.role}
+                </div>
+                <div className="text-white/40 text-xs">{user.orders} orders</div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => {
+                      setEditingUser(user);
+                      setShowEditModal(true);
+                    }}
+                    className="p-1.5 text-white/40 hover:text-white hover:bg-white/10 transition-all"
+                  >
+                    <Edit2 size={14} />
+                  </button>
+                  <button
+                    onClick={() => deleteUser(user.id)}
+                    className="p-1.5 text-white/40 hover:text-red-500 hover:bg-red-500/10 transition-all"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
               </div>
             </div>
           ))}

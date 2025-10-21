@@ -49,7 +49,7 @@ export default function AdminReports() {
   });
 
   return (
-    <div className="w-full animate-fadeIn">
+    <div className="w-full animate-fadeIn px-4 lg:px-0">
       {/* Header */}
       <div className="flex justify-between items-center gap-4 mb-6">
         <div>
@@ -67,8 +67,8 @@ export default function AdminReports() {
       </div>
 
       {/* Quick Generate Cards */}
-      <div className="grid lg:grid-cols-3 gap-4 mb-6">
-        <div className="bg-[#111111] border border-white/10 p-6 hover:border-white/20 transition-all cursor-pointer group">
+      <div className="grid lg:grid-cols-3 gap-4 mb-6 -mx-4 lg:mx-0">
+        <div className="bg-[#111111] border-0 lg:border border-white/10 p-6 hover:border-white/20 transition-all cursor-pointer group border-b lg:border-b-0 border-white/5">
           <div className="flex items-center justify-between mb-4">
             <TrendingUp size={24} className="text-white/30 group-hover:text-white/50 transition-colors" />
             <button className="text-white/60 hover:text-white text-xs transition-colors">
@@ -81,7 +81,7 @@ export default function AdminReports() {
           </p>
         </div>
 
-        <div className="bg-[#111111] border border-white/10 p-6 hover:border-white/20 transition-all cursor-pointer group">
+        <div className="bg-[#111111] border-0 lg:border border-white/10 p-6 hover:border-white/20 transition-all cursor-pointer group border-b lg:border-b-0 border-white/5">
           <div className="flex items-center justify-between mb-4">
             <Package size={24} className="text-white/30 group-hover:text-white/50 transition-colors" />
             <button className="text-white/60 hover:text-white text-xs transition-colors">
@@ -94,7 +94,7 @@ export default function AdminReports() {
           </p>
         </div>
 
-        <div className="bg-[#111111] border border-white/10 p-6 hover:border-white/20 transition-all cursor-pointer group">
+        <div className="bg-[#111111] border-0 lg:border border-white/10 p-6 hover:border-white/20 transition-all cursor-pointer group border-b lg:border-b-0 border-white/5">
           <div className="flex items-center justify-between mb-4">
             <Users size={24} className="text-white/30 group-hover:text-white/50 transition-colors" />
             <button className="text-white/60 hover:text-white text-xs transition-colors">

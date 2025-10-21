@@ -103,7 +103,7 @@ export default function AdminDomainsPage() {
   });
 
   return (
-    <div className="w-full animate-fadeIn">
+    <div className="w-full animate-fadeIn px-4 lg:px-0">
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-3xl text-white font-light tracking-tight mb-2">Domains</h1>
@@ -152,68 +152,124 @@ export default function AdminDomainsPage() {
 
       {/* Domains List */}
       {loading ? (
-        <div className="bg-[#111111] border border-white/10 p-12 text-center">
+        <div className="bg-[#111111] border border-white/10 p-12 text-center -mx-4 lg:mx-0">
           <div className="text-white/40 text-sm">Loading...</div>
         </div>
       ) : filteredDomains.length === 0 ? (
-        <div className="bg-[#111111] border border-white/10 p-12 text-center">
+        <div className="bg-[#111111] border border-white/10 p-12 text-center -mx-4 lg:mx-0">
           <Globe className="text-white/20 mx-auto mb-3" size={32} />
           <div className="text-white/60 text-sm">No domains found</div>
         </div>
       ) : (
-        <div className="bg-[#111111] border border-white/10">
+        <div className="bg-[#111111] border border-white/10 -mx-4 lg:mx-0">
           {filteredDomains.map((domain, index) => (
             <div
               key={domain.id}
-              className={`flex items-center gap-4 px-4 py-3 hover:bg-white/5 transition-colors ${
+              className={`px-4 py-4 hover:bg-white/5 transition-colors ${
                 index !== filteredDomains.length - 1 ? 'border-b border-white/5' : ''
               }`}
             >
-              <div className="w-8 h-8 bg-white/5 flex items-center justify-center flex-shrink-0">
-                <Globe size={16} className="text-white/40" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <div className="text-white text-sm font-medium">{domain.domain}</div>
-                  {domain.is_primary && <Star size={12} className="text-yellow-500 fill-yellow-500" />}
+              {/* Mobile Layout */}
+              <div className="lg:hidden space-y-3">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 bg-white/5 flex items-center justify-center flex-shrink-0 rounded">
+                    <Globe size={18} className="text-white/40" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <div className="text-white text-sm font-medium break-all">{domain.domain}</div>
+                      {domain.is_primary && <Star size={12} className="text-yellow-500 fill-yellow-500 flex-shrink-0" />}
+                    </div>
+                    <div className="text-white/40 text-xs mb-2">{domain.vendor.store_name}</div>
+                    <div className="flex items-center gap-2 text-xs">
+                      <span className="text-white/60 uppercase px-2 py-0.5 bg-white/5 rounded">{domain.ssl_status}</span>
+                      {domain.verified ? (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 text-white/60 border border-white/10 rounded">
+                          <Check size={10} />
+                          Verified
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 text-white/40 border border-white/10 rounded">
+                          <AlertCircle size={10} />
+                          Pending
+                        </span>
+                      )}
+                    </div>
+                  </div>
                 </div>
-                <div className="text-white/40 text-xs">{domain.vendor.store_name}</div>
+
+                <div className="flex gap-2 pl-13">
+                  <a 
+                    href={`/vendors/${domain.vendor.slug}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 p-2.5 text-white/60 hover:text-white hover:bg-white/10 transition-all rounded border border-white/10 text-xs text-center"
+                  >
+                    View Store
+                  </a>
+                  <button
+                    onClick={() => handleToggleActive(domain.id, domain.is_active)}
+                    className="flex-1 p-2.5 text-white/60 hover:text-white hover:bg-white/10 transition-all rounded border border-white/10 text-xs"
+                  >
+                    {domain.is_active ? 'Disable' : 'Enable'}
+                  </button>
+                  <button
+                    onClick={() => handleDeleteDomain(domain.id, domain.domain, domain.vendor.store_name)}
+                    className="p-2.5 px-4 text-red-500/60 hover:text-red-500 hover:bg-red-500/10 transition-all rounded border border-red-500/20 text-xs"
+                  >
+                    Delete
+                  </button>
+                </div>
               </div>
-              <div className="text-white/60 text-xs uppercase">{domain.ssl_status}</div>
-              <div className="flex-shrink-0">
-                {domain.verified ? (
-                  <span className="inline-flex items-center gap-1 px-2 py-1 text-xs text-white/60 border border-white/10">
-                    <Check size={10} />
-                    Verified
-                  </span>
-                ) : (
-                  <span className="inline-flex items-center gap-1 px-2 py-1 text-xs text-white/40 border border-white/10">
-                    <AlertCircle size={10} />
-                    Pending
-                  </span>
-                )}
-              </div>
-              <div className="flex gap-2">
-                <a 
-                  href={`/vendors/${domain.vendor.slug}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="p-1.5 text-white/40 hover:text-white hover:bg-white/10 transition-all"
-                >
-                  <ExternalLink size={14} />
-                </a>
-                <button
-                  onClick={() => handleToggleActive(domain.id, domain.is_active)}
-                  className="p-1.5 text-white/40 hover:text-white hover:bg-white/10 transition-all"
-                >
-                  <Power size={14} />
-                </button>
-                <button
-                  onClick={() => handleDeleteDomain(domain.id, domain.domain, domain.vendor.store_name)}
-                  className="p-1.5 text-white/40 hover:text-red-500 hover:bg-red-500/10 transition-all"
-                >
-                  <Trash2 size={14} />
-                </button>
+
+              {/* Desktop Layout */}
+              <div className="hidden lg:flex items-center gap-4">
+                <div className="w-8 h-8 bg-white/5 flex items-center justify-center flex-shrink-0">
+                  <Globe size={16} className="text-white/40" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <div className="text-white text-sm font-medium">{domain.domain}</div>
+                    {domain.is_primary && <Star size={12} className="text-yellow-500 fill-yellow-500" />}
+                  </div>
+                  <div className="text-white/40 text-xs">{domain.vendor.store_name}</div>
+                </div>
+                <div className="text-white/60 text-xs uppercase">{domain.ssl_status}</div>
+                <div className="flex-shrink-0">
+                  {domain.verified ? (
+                    <span className="inline-flex items-center gap-1 px-2 py-1 text-xs text-white/60 border border-white/10">
+                      <Check size={10} />
+                      Verified
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 px-2 py-1 text-xs text-white/40 border border-white/10">
+                      <AlertCircle size={10} />
+                      Pending
+                    </span>
+                  )}
+                </div>
+                <div className="flex gap-2">
+                  <a 
+                    href={`/vendors/${domain.vendor.slug}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-1.5 text-white/40 hover:text-white hover:bg-white/10 transition-all"
+                  >
+                    <ExternalLink size={14} />
+                  </a>
+                  <button
+                    onClick={() => handleToggleActive(domain.id, domain.is_active)}
+                    className="p-1.5 text-white/40 hover:text-white hover:bg-white/10 transition-all"
+                  >
+                    <Power size={14} />
+                  </button>
+                  <button
+                    onClick={() => handleDeleteDomain(domain.id, domain.domain, domain.vendor.store_name)}
+                    className="p-1.5 text-white/40 hover:text-red-500 hover:bg-red-500/10 transition-all"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
               </div>
             </div>
           ))}

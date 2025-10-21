@@ -56,7 +56,7 @@ export default function AdminPayouts() {
   };
 
   return (
-    <div className="w-full animate-fadeIn">
+    <div className="w-full animate-fadeIn px-4 lg:px-0">
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-3xl text-white font-light tracking-tight mb-2">

@@ -230,7 +230,7 @@ export default function CategoriesPage() {
     categories.filter(c => c.parent_id === parentId);
 
   return (
-    <div className="w-full animate-fadeIn">
+    <div className="w-full animate-fadeIn px-4 lg:px-0">
       {/* Header */}
       <div className="mb-8 flex items-center justify-between">
         <div>

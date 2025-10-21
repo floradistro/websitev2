@@ -192,19 +192,20 @@ export default function AdminVendors() {
   });
 
   return (
-    <div className="w-full animate-fadeIn">
+    <div className="w-full animate-fadeIn px-4 lg:px-0">
       {/* Header */}
-      <div className="flex justify-between items-center gap-4 mb-6">
-        <div>
-          <h1 className="text-3xl text-white font-light tracking-tight mb-2">Vendors</h1>
+      <div className="flex justify-between items-start gap-4 mb-6">
+        <div className="min-w-0">
+          <h1 className="text-2xl lg:text-3xl text-white font-light tracking-tight mb-2">Vendors</h1>
           <p className="text-white/50 text-sm">{filteredVendors.length} registered</p>
         </div>
         <button
           onClick={() => setShowAddModal(true)}
-          className="flex items-center gap-2 bg-white text-black px-5 py-3 text-xs font-medium uppercase tracking-wider hover:bg-white/90 transition-all"
+          className="flex items-center gap-2 bg-white text-black px-4 py-2.5 lg:px-5 lg:py-3 text-xs font-medium uppercase tracking-wider hover:bg-white/90 transition-all whitespace-nowrap flex-shrink-0"
         >
           <Plus size={16} />
-          Add Vendor
+          <span className="hidden sm:inline">Add Vendor</span>
+          <span className="sm:hidden">Add</span>
         </button>
       </div>
 
@@ -220,7 +221,7 @@ export default function AdminVendors() {
             className="w-full bg-[#111111] border border-white/10 text-white placeholder-white/40 pl-9 pr-4 py-2.5 focus:outline-none focus:border-white/20 transition-colors text-sm"
           />
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <button
             onClick={() => setFilter('all')}
             className={`px-4 py-2.5 text-xs uppercase tracking-wider transition-all ${
@@ -248,74 +249,140 @@ export default function AdminVendors() {
         </div>
       </div>
 
-      {/* Vendors List */}
+      {/* Vendors List - Edge to edge on mobile */}
       {loading ? (
-        <div className="bg-[#111111] border border-white/10 p-12 text-center">
+        <div className="bg-[#111111] border border-white/10 p-12 text-center -mx-4 lg:mx-0">
           <div className="text-white/40 text-sm">Loading...</div>
         </div>
       ) : filteredVendors.length === 0 ? (
-        <div className="bg-[#111111] border border-white/10 p-12 text-center">
+        <div className="bg-[#111111] border border-white/10 p-12 text-center -mx-4 lg:mx-0">
           <Store size={32} className="text-white/20 mx-auto mb-3" />
           <div className="text-white/60 text-sm">No vendors found</div>
         </div>
       ) : (
-        <div className="bg-[#111111] border border-white/10">
+        <div className="bg-[#111111] border border-white/10 -mx-4 lg:mx-0">
           {filteredVendors.map((vendor, index) => (
             <div
               key={vendor.id}
-              className={`flex items-center gap-4 px-4 py-3 hover:bg-white/5 transition-colors ${
+              className={`px-4 py-4 hover:bg-white/5 transition-colors ${
                 index !== filteredVendors.length - 1 ? 'border-b border-white/5' : ''
               }`}
             >
-              <div className="w-8 h-8 bg-white/5 flex items-center justify-center flex-shrink-0">
-                <Store size={16} className="text-white/40" />
+              {/* Mobile Layout */}
+              <div className="lg:hidden">
+                <div className="flex items-start gap-3 mb-3">
+                  <div className="w-10 h-10 bg-white/5 flex items-center justify-center flex-shrink-0 rounded">
+                    <Store size={18} className="text-white/40" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-white text-sm font-medium mb-1 truncate">{vendor.store_name}</div>
+                    <div className="text-white/40 text-xs truncate">{vendor.email}</div>
+                  </div>
+                  <div className="flex-shrink-0">
+                    {vendor.status === 'active' ? (
+                      <span className="inline-flex items-center gap-1 px-2 py-1 text-xs text-white/60 border border-white/10 rounded">
+                        <CheckCircle size={10} />
+                        <span className="hidden sm:inline">Active</span>
+                      </span>
+                    ) : vendor.status === 'pending' ? (
+                      <span className="inline-flex items-center gap-1 px-2 py-1 text-xs text-white/40 border border-white/10 rounded">
+                        <AlertCircle size={10} />
+                        <span className="hidden sm:inline">Pending</span>
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 px-2 py-1 text-xs text-red-500 border border-red-500/30 rounded">
+                        <XCircle size={10} />
+                        <span className="hidden sm:inline">Suspended</span>
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div className="flex items-center justify-between text-xs pl-13">
+                  <div className="flex gap-4">
+                    <div className="text-white/60">{vendor.total_products} products</div>
+                    <div className="text-white/60">${(vendor.total_sales || 0).toFixed(0)}</div>
+                  </div>
+                  <div className="flex gap-2">
+                    {vendor.status === 'pending' || vendor.status === 'suspended' ? (
+                      <button
+                        onClick={() => activateVendor(vendor.id)}
+                        className="p-2 text-green-500 hover:text-green-400 hover:bg-white/10 transition-all rounded"
+                        title="Activate"
+                      >
+                        <CheckCircle size={16} />
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => suspendVendor(vendor.id)}
+                        className="p-2 text-white/40 hover:text-white hover:bg-white/10 transition-all rounded"
+                        title="Suspend"
+                      >
+                        <XCircle size={16} />
+                      </button>
+                    )}
+                    <button
+                      onClick={() => deleteVendor(vendor.id)}
+                      className="p-2 text-red-500/60 hover:text-red-500 hover:bg-white/10 transition-all rounded"
+                      title="Delete"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                </div>
               </div>
-              <div className="flex-1 min-w-0">
-                <div className="text-white text-sm font-medium">{vendor.store_name}</div>
-                <div className="text-white/40 text-xs">{vendor.email}</div>
-              </div>
-              <div className="text-white/60 text-xs">{vendor.total_products} products</div>
-              <div className="text-white/60 text-xs">${(vendor.total_sales || 0).toFixed(0)}</div>
-              <div className="flex-shrink-0">
-                {vendor.status === 'active' ? (
-                  <span className="inline-flex items-center gap-1 px-2 py-1 text-xs text-white/60 border border-white/10">
-                    <CheckCircle size={10} />
-                    Active
-                  </span>
-                ) : vendor.status === 'pending' ? (
-                  <span className="inline-flex items-center gap-1 px-2 py-1 text-xs text-white/40 border border-white/10">
-                    <AlertCircle size={10} />
-                    Pending
-                  </span>
-                ) : (
-                  <span className="inline-flex items-center gap-1 px-2 py-1 text-xs text-red-500 border border-red-500/30">
-                    <XCircle size={10} />
-                    Suspended
-                  </span>
-                )}
-              </div>
-              <div className="flex gap-2">
-                {vendor.status === 'pending' || vendor.status === 'suspended' ? (
+
+              {/* Desktop Layout */}
+              <div className="hidden lg:flex items-center gap-4">
+                <div className="w-8 h-8 bg-white/5 flex items-center justify-center flex-shrink-0">
+                  <Store size={16} className="text-white/40" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-white text-sm font-medium">{vendor.store_name}</div>
+                  <div className="text-white/40 text-xs">{vendor.email}</div>
+                </div>
+                <div className="text-white/60 text-xs">{vendor.total_products} products</div>
+                <div className="text-white/60 text-xs">${(vendor.total_sales || 0).toFixed(0)}</div>
+                <div className="flex-shrink-0">
+                  {vendor.status === 'active' ? (
+                    <span className="inline-flex items-center gap-1 px-2 py-1 text-xs text-white/60 border border-white/10">
+                      <CheckCircle size={10} />
+                      Active
+                    </span>
+                  ) : vendor.status === 'pending' ? (
+                    <span className="inline-flex items-center gap-1 px-2 py-1 text-xs text-white/40 border border-white/10">
+                      <AlertCircle size={10} />
+                      Pending
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 px-2 py-1 text-xs text-red-500 border border-red-500/30">
+                      <XCircle size={10} />
+                      Suspended
+                    </span>
+                  )}
+                </div>
+                <div className="flex gap-2">
+                  {vendor.status === 'pending' || vendor.status === 'suspended' ? (
+                    <button
+                      onClick={() => activateVendor(vendor.id)}
+                      className="p-1.5 text-white/40 hover:text-white hover:bg-white/10 transition-all"
+                    >
+                      <CheckCircle size={14} />
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => suspendVendor(vendor.id)}
+                      className="p-1.5 text-white/40 hover:text-white hover:bg-white/10 transition-all"
+                    >
+                      <XCircle size={14} />
+                    </button>
+                  )}
                   <button
-                    onClick={() => activateVendor(vendor.id)}
-                    className="p-1.5 text-white/40 hover:text-white hover:bg-white/10 transition-all"
+                    onClick={() => deleteVendor(vendor.id)}
+                    className="p-1.5 text-white/40 hover:text-red-500 hover:bg-red-500/10 transition-all"
                   >
-                    <CheckCircle size={14} />
+                    <Trash2 size={14} />
                   </button>
-                ) : (
-                  <button
-                    onClick={() => suspendVendor(vendor.id)}
-                    className="p-1.5 text-white/40 hover:text-white hover:bg-white/10 transition-all"
-                  >
-                    <XCircle size={14} />
-                  </button>
-                )}
-                <button
-                  onClick={() => deleteVendor(vendor.id)}
-                  className="p-1.5 text-white/40 hover:text-red-500 hover:bg-red-500/10 transition-all"
-                >
-                  <Trash2 size={14} />
-                </button>
+                </div>
               </div>
             </div>
           ))}

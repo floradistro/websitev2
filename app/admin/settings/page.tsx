@@ -23,11 +23,11 @@ export default function AdminSettings() {
   };
 
   return (
-    <div className="w-full animate-fadeIn">
+    <div className="w-full animate-fadeIn px-4 lg:px-0">
       {/* Header */}
-      <div className="flex justify-between items-center gap-4 mb-6">
-        <div>
-          <h1 className="text-3xl text-white font-light tracking-tight mb-2">
+      <div className="flex justify-between items-start gap-4 mb-6">
+        <div className="min-w-0">
+          <h1 className="text-2xl lg:text-3xl text-white font-light tracking-tight mb-2">
             Settings
           </h1>
           <p className="text-white/50 text-sm">
@@ -36,17 +36,18 @@ export default function AdminSettings() {
         </div>
         <button 
           onClick={handleSave}
-          className="flex items-center gap-2 bg-white text-black px-5 py-3 text-xs font-medium uppercase tracking-wider hover:bg-white/90 transition-all"
+          className="flex items-center gap-2 bg-white text-black px-4 py-2.5 lg:px-5 lg:py-3 text-xs font-medium uppercase tracking-wider hover:bg-white/90 transition-all whitespace-nowrap flex-shrink-0"
         >
           <Save size={16} />
-          Save Changes
+          <span className="hidden sm:inline">Save Changes</span>
+          <span className="sm:hidden">Save</span>
         </button>
       </div>
 
       {/* Settings Sections */}
       <div className="grid gap-6">
         {/* General Settings */}
-        <div className="bg-[#111111] border border-white/10 p-6">
+        <div className="bg-[#111111] border border-white/10 p-4 lg:p-6 -mx-4 lg:mx-0">
           <div className="flex items-center gap-3 mb-6">
             <Globe size={20} className="text-white/50" />
             <h2 className="text-white font-medium text-lg">General Settings</h2>
@@ -80,7 +81,7 @@ export default function AdminSettings() {
         </div>
 
         {/* Financial Settings */}
-        <div className="bg-[#111111] border border-white/10 p-6">
+        <div className="bg-[#111111] border border-white/10 p-4 lg:p-6 -mx-4 lg:mx-0">
           <div className="flex items-center gap-3 mb-6">
             <DollarSign size={20} className="text-white/50" />
             <h2 className="text-white font-medium text-lg">Financial Settings</h2>
@@ -142,7 +143,7 @@ export default function AdminSettings() {
         </div>
 
         {/* Product Settings */}
-        <div className="bg-[#111111] border border-white/10 p-6">
+        <div className="bg-[#111111] border border-white/10 p-4 lg:p-6 -mx-4 lg:mx-0">
           <div className="flex items-center gap-3 mb-6">
             <Package size={20} className="text-white/50" />
             <h2 className="text-white font-medium text-lg">Product Settings</h2>
@@ -165,7 +166,7 @@ export default function AdminSettings() {
         </div>
 
         {/* Notification Settings */}
-        <div className="bg-[#111111] border border-white/10 p-6">
+        <div className="bg-[#111111] border border-white/10 p-4 lg:p-6 -mx-4 lg:mx-0">
           <div className="flex items-center gap-3 mb-6">
             <Bell size={20} className="text-white/50" />
             <h2 className="text-white font-medium text-lg">Notification Settings</h2>
@@ -214,7 +215,7 @@ export default function AdminSettings() {
         </div>
 
         {/* Email Settings */}
-        <div className="bg-[#111111] border border-white/10 p-6">
+        <div className="bg-[#111111] border border-white/10 p-4 lg:p-6 -mx-4 lg:mx-0">
           <div className="flex items-center gap-3 mb-6">
             <Mail size={20} className="text-white/50" />
             <h2 className="text-white font-medium text-lg">Email Settings</h2>

@@ -65,6 +65,18 @@ export default function Header() {
     };
   }, [lastScrollY]);
 
+  // Lock body scroll when mobile menu is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [mobileMenuOpen]);
+
   return (
     <>
       {/* PWA Safe Area Spacer - Fixed at top */}
@@ -101,19 +113,19 @@ export default function Header() {
             {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
 
-          {/* Logo - centered on mobile */}
-          <Link href="/" className="absolute left-1/2 -translate-x-1/2 lg:relative lg:left-auto lg:translate-x-0 flex items-center gap-1 sm:gap-2 transition-smooth hover:opacity-80 active:opacity-90 active:scale-95 click-feedback">
-            <div className="relative w-12 h-12 sm:w-16 sm:h-16">
+          {/* Logo - minimal on mobile, full on desktop */}
+          <Link href="/" className="absolute left-1/2 -translate-x-1/2 lg:relative lg:left-auto lg:translate-x-0 flex items-center gap-2 transition-smooth hover:opacity-80 active:opacity-90 active:scale-95 click-feedback">
+            <div className="relative w-10 h-10 lg:w-16 lg:h-16">
               <Image 
                 src="/yacht-club-logo.png" 
                 alt="Yacht Club Marketplace" 
                 fill
                 priority
-                sizes="(max-width: 640px) 48px, 64px"
+                sizes="(max-width: 1024px) 40px, 64px"
                 className="object-contain transition-transform duration-300 hover:scale-105"
               />
             </div>
-            <span className="text-xl sm:text-2xl logo-font text-white">Yacht Club</span>
+            <span className="hidden sm:block text-lg sm:text-2xl logo-font text-white font-light tracking-wide">Yacht Club</span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -566,10 +578,10 @@ export default function Header() {
                 )}
               </button>
 
-              {/* Cart Preview Dropdown */}
+              {/* Cart Preview Dropdown - Desktop Only */}
               {cartDropdownOpen && (
                 <div 
-                  className="absolute top-full right-0 pt-2 w-[380px] z-[120]"
+                  className="hidden lg:block absolute top-full right-0 pt-2 w-[380px] z-[120]"
                   onMouseEnter={() => setCartDropdownOpen(true)}
                   onMouseLeave={() => setCartDropdownOpen(false)}
                 >
@@ -658,161 +670,211 @@ export default function Header() {
         </div>
       </div>
 
-      {/* Mobile menu */}
-      {mobileMenuOpen && (
-        <div className="lg:hidden border-t border-white/10 bg-[#1a1a1a] relative z-[111] animate-fadeInDown">
-          <nav className="px-4 py-6 flex flex-col space-y-3.5 text-sm uppercase tracking-wider">
-            <Link
-              href="/products"
-              className="text-white/80 hover:text-white transition-smooth py-2 border-b border-white/5 hover:pl-2 click-feedback"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Products
-            </Link>
-            
-            {/* Vendors Section */}
-            <div className="border-b border-white/5">
-              <div className="text-white/60 text-xs mb-2">
-                <span>Vendors</span>
-              </div>
-              <div className="flex flex-col space-y-2 pb-3 pl-4">
-                <Link
-                  href="/vendors"
-                  className="text-white/70 hover:text-white transition-smooth py-1.5 text-xs flex items-center gap-2 click-feedback"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  <Store size={12} />
-                  Browse All
-                </Link>
-                <Link
-                  href="/vendors?featured=true"
-                  className="text-white/70 hover:text-white transition-smooth py-1.5 text-xs flex items-center gap-2 click-feedback"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  <Award size={12} />
-                  Featured
-                </Link>
-              </div>
-            </div>
-            
-            {/* About Section */}
-            <div className="border-b border-white/5">
-              <div className="text-white/60 text-xs mb-2">
-                <span>About</span>
-              </div>
-              <div className="flex flex-col space-y-2 pb-3 pl-4">
-                <Link
-                  href="/about"
-                  className="text-white/70 hover:text-white transition-smooth py-1.5 text-xs flex items-center gap-2 click-feedback"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  <Info size={12} />
-                  Our Story
-                </Link>
-                <Link
-                  href="/about#how-it-works"
-                  className="text-white/70 hover:text-white transition-smooth py-1.5 text-xs flex items-center gap-2 click-feedback"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  <BookOpen size={12} />
-                  How It Works
-                </Link>
-                <Link
-                  href="/terms"
-                  className="text-white/70 hover:text-white transition-smooth py-1.5 text-xs flex items-center gap-2 click-feedback"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  <FileText size={12} />
-                  Terms & Conditions
-                </Link>
-                <Link
-                  href="/privacy"
-                  className="text-white/70 hover:text-white transition-smooth py-1.5 text-xs flex items-center gap-2 click-feedback"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  <Shield size={12} />
-                  Privacy Policy
-                </Link>
-              </div>
-            </div>
-            
-            {/* Contact Section */}
-            <div className="border-b border-white/5">
-              <div className="text-white/60 text-xs mb-2">
-                <span>Contact</span>
-              </div>
-              <div className="flex flex-col space-y-2 pb-3 pl-4">
-                <Link
-                  href="/contact"
-                  className="text-white/70 hover:text-white transition-smooth py-1.5 text-xs flex items-center gap-2 click-feedback"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  <Mail size={12} />
-                  Get In Touch
-                </Link>
-                <Link
-                  href="/contact?subject=vendor"
-                  className="text-white/70 hover:text-white transition-smooth py-1.5 text-xs flex items-center gap-2 click-feedback"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  <UserPlus size={12} />
-                  Become a Vendor
-                </Link>
-                <Link
-                  href="/contact?subject=support"
-                  className="text-white/70 hover:text-white transition-smooth py-1.5 text-xs flex items-center gap-2 click-feedback"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  <HelpCircle size={12} />
-                  Support
-                </Link>
-              </div>
-            </div>
-            
-            {/* Account Section */}
-            {isAuthenticated ? (
-              <Link
-                href="/dashboard"
-                className="text-white/80 hover:text-white transition-smooth py-2 sm:hidden hover:pl-2 click-feedback"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                My Dashboard
-              </Link>
-            ) : (
-              <div className="border-t border-white/5 pt-3 sm:hidden">
-                <div className="text-white/60 text-xs mb-2">
-                  <span>Account</span>
-                </div>
-                <div className="flex flex-col space-y-2 pb-3 pl-4">
-                  <Link
-                    href="/login"
-                    className="text-white/70 hover:text-white transition-smooth py-1.5 text-xs flex items-center gap-2 click-feedback"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    <User size={12} />
-                    Customer Login
-                  </Link>
-                  <Link
-                    href="/vendor/login"
-                    className="text-white/70 hover:text-white transition-smooth py-1.5 text-xs flex items-center gap-2 click-feedback"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    <LayoutDashboard size={12} />
-                    Vendor Login
-                  </Link>
-                </div>
-              </div>
-            )}
-          </nav>
-        </div>
-      )}
-
       {/* Cart Drawer */}
       <CartDrawer isOpen={cartOpen} onClose={() => setCartOpen(false)} />
       
       {/* Search Modal */}
       <SearchModal isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
     </header>
+
+      {/* Mobile Menu Overlay - Outside header for proper z-index */}
+      {mobileMenuOpen && (
+        <div className="lg:hidden fixed inset-0 z-[10000] bg-black/80 backdrop-blur-md" onClick={() => setMobileMenuOpen(false)}>
+          <div 
+            className="absolute left-0 top-0 bottom-0 w-[320px] bg-gradient-to-b from-black via-[#0a0a0a] to-black border-r border-white/20 flex flex-col z-[10001] shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+            style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
+          >
+            {/* Safe Area Top Fill */}
+            <div 
+              className="absolute top-0 left-0 right-0 bg-black pointer-events-none"
+              style={{ height: 'env(safe-area-inset-top, 0px)', marginTop: 'calc(-1 * env(safe-area-inset-top, 0px))' }}
+            />
+            
+            {/* Elegant Header */}
+            <div className="p-4 pb-4 relative z-10 border-b border-white/10">
+              <button 
+                onClick={() => setMobileMenuOpen(false)}
+                className="absolute top-4 right-4 p-2 text-white/50 hover:text-white active:bg-white/5 rounded-full transition-all"
+              >
+                <X size={18} strokeWidth={1.5} />
+              </button>
+              
+              <Link href="/" className="block" onClick={() => setMobileMenuOpen(false)}>
+                <div className="flex items-center gap-2.5 mb-2">
+                  <div className="w-10 h-10 bg-gradient-to-br from-white/10 to-white/5 rounded-full flex items-center justify-center overflow-hidden border border-white/10">
+                    <Image src="/yacht-club-logo.png" alt="Yacht Club" width={40} height={40} className="w-full h-full object-contain p-0.5" />
+                  </div>
+                  <div>
+                    <div className="text-white text-base font-light tracking-wide logo-font">Yacht Club</div>
+                    <div className="text-white/30 text-[9px] uppercase tracking-[0.15em] font-light">Premium Marketplace</div>
+                  </div>
+                </div>
+              </Link>
+            </div>
+
+            {/* Navigation - Scrollable */}
+            <nav className="flex-1 overflow-y-auto px-4 py-4 relative z-10">
+              <div className="flex flex-col space-y-4">
+                
+                {/* Primary Navigation */}
+                <div className="space-y-0.5">
+                  <Link
+                    href="/products"
+                    className="group block py-2.5 text-white/90 hover:text-white transition-all relative"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-light tracking-wide">Products</span>
+                      <ArrowRight size={12} className="opacity-0 group-hover:opacity-50 -translate-x-1 group-hover:translate-x-0 transition-all" strokeWidth={1.5} />
+                    </div>
+                  </Link>
+                  
+                  <Link
+                    href="/vendors"
+                    className="group block py-2.5 text-white/90 hover:text-white transition-all relative"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-light tracking-wide">Vendors</span>
+                      <ArrowRight size={12} className="opacity-0 group-hover:opacity-50 -translate-x-1 group-hover:translate-x-0 transition-all" strokeWidth={1.5} />
+                    </div>
+                  </Link>
+                </div>
+
+                {/* Divider */}
+                <div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
+                
+                {/* Secondary Navigation */}
+                <div className="space-y-2">
+                  <div className="text-white/30 text-[9px] uppercase tracking-[0.15em] mb-2 font-light">
+                    Information
+                  </div>
+                  
+                  <Link
+                    href="/about"
+                    className="block py-1.5 text-white/60 hover:text-white/90 transition-all text-sm font-light"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    About Us
+                  </Link>
+                  
+                  <Link
+                    href="/vendors?featured=true"
+                    className="block py-1.5 text-white/60 hover:text-white/90 transition-all text-sm font-light"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Featured Vendors
+                  </Link>
+                  
+                  <Link
+                    href="/about#how-it-works"
+                    className="block py-1.5 text-white/60 hover:text-white/90 transition-all text-sm font-light"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    How It Works
+                  </Link>
+                </div>
+
+                {/* Divider */}
+                <div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
+                
+                {/* Contact */}
+                <div className="space-y-2">
+                  <div className="text-white/30 text-[9px] uppercase tracking-[0.15em] mb-2 font-light">
+                    Get In Touch
+                  </div>
+                  
+                  <Link
+                    href="/contact"
+                    className="block py-1.5 text-white/60 hover:text-white/90 transition-all text-sm font-light"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Contact
+                  </Link>
+                  
+                  <Link
+                    href="/contact?subject=vendor"
+                    className="block py-1.5 text-white/60 hover:text-white/90 transition-all text-sm font-light"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Become a Vendor
+                  </Link>
+                  
+                  <Link
+                    href="/contact?subject=support"
+                    className="block py-1.5 text-white/60 hover:text-white/90 transition-all text-sm font-light"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Support
+                  </Link>
+                </div>
+
+                {/* Divider */}
+                <div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
+                
+                {/* Legal */}
+                <div className="space-y-1.5">
+                  <Link
+                    href="/terms"
+                    className="block py-1.5 text-white/40 hover:text-white/70 transition-all text-xs font-light"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Terms & Conditions
+                  </Link>
+                  
+                  <Link
+                    href="/privacy"
+                    className="block py-1.5 text-white/40 hover:text-white/70 transition-all text-xs font-light"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Privacy Policy
+                  </Link>
+                </div>
+              </div>
+            </nav>
+
+            {/* Elegant Footer */}
+            <div className="p-4 border-t border-white/10 bg-gradient-to-b from-transparent to-black/50">
+              {isAuthenticated ? (
+                <Link
+                  href="/dashboard"
+                  className="block w-full py-3 px-4 text-center bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-white text-sm font-light tracking-wider transition-all"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  My Dashboard
+                </Link>
+              ) : (
+                <div className="space-y-2">
+                  <Link
+                    href="/login"
+                    className="block w-full py-3 px-4 text-center bg-white text-black hover:bg-white/90 text-sm font-light tracking-wider transition-all"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Sign In
+                  </Link>
+                  <Link
+                    href="/vendor/login"
+                    className="block w-full py-2 px-4 text-center text-white/70 hover:text-white text-xs font-light tracking-wider transition-all"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Vendor Login
+                  </Link>
+                </div>
+              )}
+              
+              <div 
+                className="pt-3"
+                style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+              >
+                <div className="text-center text-white/20 text-[9px] tracking-wider font-light">
+                  © 2025 Yacht Club
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

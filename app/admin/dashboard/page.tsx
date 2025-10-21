@@ -89,7 +89,7 @@ export default function AdminDashboard() {
   }, []);
 
   return (
-    <div className="w-full animate-fadeIn">
+    <div className="w-full animate-fadeIn px-4 lg:px-0">
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl text-white mb-2 font-light tracking-tight">
@@ -104,7 +104,7 @@ export default function AdminDashboard() {
       {stats.pendingProducts > 0 && (
         <Link 
           href="/admin/approvals"
-          className="block mb-6 bg-yellow-500/10 border border-yellow-500/20 hover:border-yellow-500/30 p-4 transition-all group"
+          className="block mb-6 bg-yellow-500/10 border border-yellow-500/20 hover:border-yellow-500/30 p-4 transition-all group -mx-4 lg:mx-0"
         >
           <div className="flex items-center gap-3">
             <AlertCircle size={20} className="text-yellow-500 flex-shrink-0" />

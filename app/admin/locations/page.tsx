@@ -245,19 +245,20 @@ export default function AdminLocations() {
   );
 
   return (
-    <div className="w-full animate-fadeIn">
+    <div className="w-full animate-fadeIn px-4 lg:px-0">
       {/* Header */}
-      <div className="flex justify-between items-center gap-4 mb-6">
-        <div>
-          <h1 className="text-3xl text-white font-light tracking-tight mb-2">Locations</h1>
+      <div className="flex justify-between items-start gap-4 mb-6">
+        <div className="min-w-0">
+          <h1 className="text-2xl lg:text-3xl text-white font-light tracking-tight mb-2">Locations</h1>
           <p className="text-white/50 text-sm">{filteredLocations.length} registered</p>
         </div>
         <button
           onClick={() => setShowAddModal(true)}
-          className="flex items-center gap-2 bg-white text-black px-5 py-3 text-xs font-medium uppercase tracking-wider hover:bg-white/90 transition-all"
+          className="flex items-center gap-2 bg-white text-black px-4 py-2.5 lg:px-5 lg:py-3 text-xs font-medium uppercase tracking-wider hover:bg-white/90 transition-all whitespace-nowrap flex-shrink-0"
         >
           <Plus size={16} />
-          Add Location
+          <span className="hidden sm:inline">Add Location</span>
+          <span className="sm:hidden">Add</span>
         </button>
       </div>
 
@@ -279,74 +280,139 @@ export default function AdminLocations() {
 
       {/* Locations List */}
       {loading ? (
-        <div className="bg-[#111111] border border-white/10 p-12 text-center">
+        <div className="bg-[#111111] border border-white/10 p-12 text-center -mx-4 lg:mx-0">
           <div className="text-white/40 text-sm">Loading...</div>
         </div>
       ) : filteredLocations.length === 0 ? (
-        <div className="bg-[#111111] border border-white/10 p-12 text-center">
+        <div className="bg-[#111111] border border-white/10 p-12 text-center -mx-4 lg:mx-0">
           <MapPin size={32} className="text-white/20 mx-auto mb-3" />
           <div className="text-white/60 text-sm">No locations found</div>
         </div>
       ) : (
-        <div className="bg-[#111111] border border-white/10">
+        <div className="bg-[#111111] border border-white/10 -mx-4 lg:mx-0">
           {filteredLocations.map((location, index) => (
             <div
               key={location.id}
-              className={`flex items-center gap-4 px-4 py-3 hover:bg-white/5 transition-colors ${
+              className={`px-4 py-4 hover:bg-white/5 transition-colors ${
                 index !== filteredLocations.length - 1 ? 'border-b border-white/5' : ''
               }`}
             >
-              <div className="w-8 h-8 bg-white/5 flex items-center justify-center flex-shrink-0">
-                <MapPin size={16} className="text-white/40" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <div className="text-white text-sm font-medium">{location.name}</div>
-                  {location.is_primary && <Star size={12} className="text-yellow-500 fill-yellow-500" />}
+              {/* Mobile Layout - Fully Stacked */}
+              <div className="lg:hidden space-y-3">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 bg-white/5 flex items-center justify-center flex-shrink-0 rounded">
+                    <MapPin size={18} className="text-white/40" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <div className="text-white text-sm font-medium">{location.name}</div>
+                      {location.is_primary && <Star size={12} className="text-yellow-500 fill-yellow-500" />}
+                    </div>
+                    <div className="text-white/40 text-xs mb-1">{location.vendors?.store_name}</div>
+                    <div className="flex items-center gap-2 text-xs">
+                      <span className="text-white/60 capitalize px-2 py-0.5 bg-white/5 rounded">{location.type}</span>
+                      {location.is_active ? (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 text-white/60 border border-white/10 rounded">
+                          <CheckCircle size={10} />
+                          Active
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 text-white/40 border border-white/10 rounded">
+                          <XCircle size={10} />
+                          Inactive
+                        </span>
+                      )}
+                    </div>
+                  </div>
                 </div>
-                <div className="text-white/40 text-xs">{location.vendors?.store_name}</div>
-              </div>
-              <div className="text-white/60 text-xs capitalize">{location.type}</div>
-              <div className="text-white/60 text-xs">
-                {location.city ? `${location.city}, ${location.state}` : '—'}
-              </div>
-              <div className="text-white/60 text-xs">
-                {location.is_primary ? 'FREE' : `$${location.monthly_fee}/mo`}
-              </div>
-              <div className="flex-shrink-0">
-                {location.is_active ? (
-                  <span className="inline-flex items-center gap-1 px-2 py-1 text-xs text-white/60 border border-white/10">
-                    <CheckCircle size={10} />
-                    Active
-                  </span>
-                ) : (
-                  <span className="inline-flex items-center gap-1 px-2 py-1 text-xs text-white/40 border border-white/10">
-                    <XCircle size={10} />
-                    Inactive
-                  </span>
-                )}
-              </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => openEditModal(location)}
-                  className="p-1.5 text-white/40 hover:text-white hover:bg-white/10 transition-all"
-                >
-                  <Edit2 size={14} />
-                </button>
-                <button
-                  onClick={() => toggleStatus(location.id, location.is_active)}
-                  className="p-1.5 text-white/40 hover:text-white hover:bg-white/10 transition-all"
-                >
-                  {location.is_active ? <XCircle size={14} /> : <CheckCircle size={14} />}
-                </button>
-                {!location.is_primary && (
+                
+                <div className="pl-13 space-y-2">
+                  <div className="text-xs text-white/60">
+                    📍 {location.city ? `${location.city}, ${location.state}` : 'Location not set'}
+                  </div>
+                  <div className="text-xs text-white/60">
+                    💰 {location.is_primary ? 'FREE (Primary)' : `$${location.monthly_fee}/mo`}
+                  </div>
+                </div>
+
+                <div className="flex gap-2 pl-13">
                   <button
-                    onClick={() => deleteLocation(location.id, location.name)}
-                    className="p-1.5 text-white/40 hover:text-red-500 hover:bg-red-500/10 transition-all"
+                    onClick={() => openEditModal(location)}
+                    className="flex-1 p-2.5 text-white/60 hover:text-white hover:bg-white/10 transition-all rounded border border-white/10 text-xs"
                   >
-                    <Trash2 size={14} />
+                    Edit
                   </button>
-                )}
+                  <button
+                    onClick={() => toggleStatus(location.id, location.is_active)}
+                    className="flex-1 p-2.5 text-white/60 hover:text-white hover:bg-white/10 transition-all rounded border border-white/10 text-xs"
+                  >
+                    {location.is_active ? 'Deactivate' : 'Activate'}
+                  </button>
+                  {!location.is_primary && (
+                    <button
+                      onClick={() => deleteLocation(location.id, location.name)}
+                      className="p-2.5 px-4 text-red-500/60 hover:text-red-500 hover:bg-red-500/10 transition-all rounded border border-red-500/20 text-xs"
+                    >
+                      Delete
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Desktop Layout */}
+              <div className="hidden lg:flex items-center gap-4">
+                <div className="w-8 h-8 bg-white/5 flex items-center justify-center flex-shrink-0">
+                  <MapPin size={16} className="text-white/40" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <div className="text-white text-sm font-medium">{location.name}</div>
+                    {location.is_primary && <Star size={12} className="text-yellow-500 fill-yellow-500" />}
+                  </div>
+                  <div className="text-white/40 text-xs">{location.vendors?.store_name}</div>
+                </div>
+                <div className="text-white/60 text-xs capitalize">{location.type}</div>
+                <div className="text-white/60 text-xs">
+                  {location.city ? `${location.city}, ${location.state}` : '—'}
+                </div>
+                <div className="text-white/60 text-xs">
+                  {location.is_primary ? 'FREE' : `$${location.monthly_fee}/mo`}
+                </div>
+                <div className="flex-shrink-0">
+                  {location.is_active ? (
+                    <span className="inline-flex items-center gap-1 px-2 py-1 text-xs text-white/60 border border-white/10">
+                      <CheckCircle size={10} />
+                      Active
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 px-2 py-1 text-xs text-white/40 border border-white/10">
+                      <XCircle size={10} />
+                      Inactive
+                    </span>
+                  )}
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => openEditModal(location)}
+                    className="p-1.5 text-white/40 hover:text-white hover:bg-white/10 transition-all"
+                  >
+                    <Edit2 size={14} />
+                  </button>
+                  <button
+                    onClick={() => toggleStatus(location.id, location.is_active)}
+                    className="p-1.5 text-white/40 hover:text-white hover:bg-white/10 transition-all"
+                  >
+                    {location.is_active ? <XCircle size={14} /> : <CheckCircle size={14} />}
+                  </button>
+                  {!location.is_primary && (
+                    <button
+                      onClick={() => deleteLocation(location.id, location.name)}
+                      className="p-1.5 text-white/40 hover:text-red-500 hover:bg-red-500/10 transition-all"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           ))}
