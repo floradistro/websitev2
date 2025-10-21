@@ -68,7 +68,7 @@ export default async function ProductsPage({
 
   console.log('🔵 Total products from API:', bulkProducts.length);
   console.log('🔵 Products with stock_quantity:', bulkProducts.filter((p: any) => p.stock_quantity > 0).length);
-  console.log('🔵 Vendor products raw:', bulkProducts.filter((p: any) => p.vendor_id).map(p => ({
+  console.log('🔵 Vendor products raw:', bulkProducts.filter((p: any) => p.vendor_id).map((p: any) => ({
     name: p.name,
     vendor_id: p.vendor_id,
     stock_quantity: p.stock_quantity
