@@ -351,95 +351,91 @@ export default function AdminLocations() {
                               </div>
                             </div>
                           </div>
-                
-                <div className="pl-13 space-y-2">
-                  <div className="text-xs text-white/60">
-                    📍 {location.city ? `${location.city}, ${location.state}` : 'Location not set'}
-                  </div>
-                  <div className="text-xs text-white/60">
-                    💰 {location.is_primary ? 'FREE (Primary)' : `$${location.monthly_fee}/mo`}
-                  </div>
-                </div>
+                          
+                          <div className="pl-10 space-y-2">
+                            <div className="text-xs text-white/60">
+                              📍 {location.city ? `${location.city}, ${location.state}` : 'Location not set'}
+                            </div>
+                            <div className="text-xs text-white/60">
+                              💰 {location.is_primary ? 'FREE (Primary)' : `$${location.monthly_fee}/mo`}
+                            </div>
+                          </div>
 
-                <div className="flex gap-2 pl-13">
-                  <button
-                    onClick={() => openEditModal(location)}
-                    className="flex-1 p-2.5 text-white/60 hover:text-white hover:bg-white/10 transition-all rounded border border-white/10 text-xs"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => toggleStatus(location.id, location.is_active)}
-                    className="flex-1 p-2.5 text-white/60 hover:text-white hover:bg-white/10 transition-all rounded border border-white/10 text-xs"
-                  >
-                    {location.is_active ? 'Deactivate' : 'Activate'}
-                  </button>
-                  {!location.is_primary && (
-                    <button
-                      onClick={() => deleteLocation(location.id, location.name)}
-                      className="p-2.5 px-4 text-red-500/60 hover:text-red-500 hover:bg-red-500/10 transition-all rounded border border-red-500/20 text-xs"
-                    >
-                      Delete
-                    </button>
-                  )}
-                </div>
-              </div>
+                          <div className="flex gap-2 pl-10">
+                            <button
+                              onClick={() => openEditModal(location)}
+                              className="flex-1 p-2.5 text-white/60 hover:text-white hover:bg-white/10 transition-all rounded border border-white/10 text-xs"
+                            >
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => toggleStatus(location.id, location.is_active)}
+                              className="flex-1 p-2.5 text-white/60 hover:text-white hover:bg-white/10 transition-all rounded border border-white/10 text-xs"
+                            >
+                              {location.is_active ? 'Deactivate' : 'Activate'}
+                            </button>
+                            {!location.is_primary && (
+                              <button
+                                onClick={() => deleteLocation(location.id, location.name)}
+                                className="p-2.5 px-4 text-red-500/60 hover:text-red-500 hover:bg-red-500/10 transition-all rounded border border-red-500/20 text-xs"
+                              >
+                                Delete
+                              </button>
+                            )}
+                          </div>
+                        </div>
 
-              {/* Desktop Layout */}
-              <div className="hidden lg:flex items-center gap-4">
-                <div className="w-8 h-8 bg-white/5 flex items-center justify-center flex-shrink-0">
-                  <MapPin size={16} className="text-white/40" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <div className="text-white text-sm font-medium">{location.name}</div>
-                    {location.is_primary && <Star size={12} className="text-yellow-500 fill-yellow-500" />}
-                  </div>
-                  <div className="text-white/40 text-xs">{location.vendors?.store_name}</div>
-                </div>
-                <div className="text-white/60 text-xs capitalize">{location.type}</div>
-                <div className="text-white/60 text-xs">
-                  {location.city ? `${location.city}, ${location.state}` : '—'}
-                </div>
-                <div className="text-white/60 text-xs">
-                  {location.is_primary ? 'FREE' : `$${location.monthly_fee}/mo`}
-                </div>
-                <div className="flex-shrink-0">
-                  {location.is_active ? (
-                    <span className="inline-flex items-center gap-1 px-2 py-1 text-xs text-white/60 border border-white/10">
-                      <CheckCircle size={10} />
-                      Active
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center gap-1 px-2 py-1 text-xs text-white/40 border border-white/10">
-                      <XCircle size={10} />
-                      Inactive
-                    </span>
-                  )}
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => openEditModal(location)}
-                    className="p-1.5 text-white/40 hover:text-white hover:bg-white/10 transition-all"
-                  >
-                    <Edit2 size={14} />
-                  </button>
-                  <button
-                    onClick={() => toggleStatus(location.id, location.is_active)}
-                    className="p-1.5 text-white/40 hover:text-white hover:bg-white/10 transition-all"
-                  >
-                    {location.is_active ? <XCircle size={14} /> : <CheckCircle size={14} />}
-                  </button>
-                  {!location.is_primary && (
-                    <button
-                      onClick={() => deleteLocation(location.id, location.name)}
-                      className="p-1.5 text-white/40 hover:text-red-500 hover:bg-red-500/10 transition-all"
-                    >
-                      <Trash2 size={14} />
-                    </button>
-                  )}
-                </div>
-              </div>
+                        {/* Desktop Layout */}
+                        <div className="hidden lg:flex items-center gap-4">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <div className="text-white text-sm font-medium">{location.name}</div>
+                              {location.is_primary && <Star size={12} className="text-yellow-500 fill-yellow-500" />}
+                            </div>
+                          </div>
+                          <div className="text-white/60 text-xs capitalize w-24">{location.type}</div>
+                          <div className="text-white/60 text-xs w-48">
+                            {location.city ? `${location.city}, ${location.state}` : '—'}
+                          </div>
+                          <div className="text-white/60 text-xs w-24">
+                            {location.is_primary ? 'FREE' : `$${location.monthly_fee}/mo`}
+                          </div>
+                          <div className="flex-shrink-0">
+                            {location.is_active ? (
+                              <span className="inline-flex items-center gap-1 px-2 py-1 text-xs text-white/60 border border-white/10">
+                                <CheckCircle size={10} />
+                                Active
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 px-2 py-1 text-xs text-white/40 border border-white/10">
+                                <XCircle size={10} />
+                                Inactive
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => openEditModal(location)}
+                              className="p-1.5 text-white/40 hover:text-white hover:bg-white/10 transition-all"
+                            >
+                              <Edit2 size={14} />
+                            </button>
+                            <button
+                              onClick={() => toggleStatus(location.id, location.is_active)}
+                              className="p-1.5 text-white/40 hover:text-white hover:bg-white/10 transition-all"
+                            >
+                              {location.is_active ? <XCircle size={14} /> : <CheckCircle size={14} />}
+                            </button>
+                            {!location.is_primary && (
+                              <button
+                                onClick={() => deleteLocation(location.id, location.name)}
+                                className="p-1.5 text-white/40 hover:text-red-500 hover:bg-red-500/10 transition-all"
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                            )}
+                          </div>
+                        </div>
                       </div>
                     ))}
                   </div>
