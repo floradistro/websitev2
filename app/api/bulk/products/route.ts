@@ -81,7 +81,7 @@ export async function POST(request: NextRequest) {
     // Optionally fetch inventory in parallel
     let inventoryMap = new Map();
     if (include_inventory && activeProducts.length > 0) {
-      const productIds = activeProducts.map(p => p.id);
+      const productIds = activeProducts.map((p: any) => p.id);
       const { data: inventory } = await supabase
         .from('inventory')
         .select(`
@@ -102,7 +102,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Enrich products with inventory if requested
-    const enrichedProducts = activeProducts.map(product => ({
+    const enrichedProducts = activeProducts.map((product: any) => ({
       ...product,
       ...(include_inventory && { inventory: inventoryMap.get(product.id) || [] })
     }));

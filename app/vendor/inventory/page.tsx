@@ -251,7 +251,7 @@ export default function VendorInventory() {
     }
   };
 
-  const handleSetQuantity = async (productId: number) => {
+  const handleSetQuantity = async (productId: any) => {
     const qty = parseFloat(setQuantityInput);
     if (isNaN(qty) || qty < 0) {
       alert('Enter a valid quantity');
@@ -325,9 +325,9 @@ export default function VendorInventory() {
     }
   };
 
-  const [successMessage, setSuccessMessage] = useState<number | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   
-  const handleSubmitChangeRequest = async (productId: number) => {
+  const handleSubmitChangeRequest = async (productId: any) => {
     const changes = editedFields[productId];
     
     if (!changes || Object.keys(changes).length === 0) {
