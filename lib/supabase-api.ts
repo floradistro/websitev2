@@ -3,7 +3,8 @@
  * Replaces all WordPress/WooCommerce API calls
  */
 
-const BASE_URL = typeof window !== 'undefined' ? '' : 'http://localhost:3000';
+// Use relative URLs for API calls - works in both browser and server-side
+const BASE_URL = '';
 
 // ============================================================================
 // PRODUCTS
