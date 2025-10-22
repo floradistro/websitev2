@@ -454,37 +454,46 @@ export default function EditProduct() {
           {/* Existing COAs */}
           {coas.length > 0 && (
             <div className="space-y-3 mb-4">
-              {coas.map((coa) => (
-                <div key={coa.id} className="bg-white/5 border border-white/10 p-4">
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                      <FileText size={18} className="text-white/60" />
-                      <div>
-                        <div className="text-white text-sm font-medium">{coa.file_name}</div>
-                        {coa.batch_number && (
-                          <div className="text-white/60 text-xs font-mono">Batch: {coa.batch_number}</div>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className={`px-2 py-1 text-xs font-medium uppercase tracking-wider inline-flex items-center gap-1 ${
-                        coa.is_verified 
-                          ? 'bg-green-500/10 text-green-500 border border-green-500/20'
-                          : 'bg-white/5 text-white/60 border border-white/10'
-                      }`}>
-                        {coa.is_verified ? <CheckCircle size={12} /> : <AlertCircle size={12} />}
-                        {coa.is_verified ? 'Verified' : 'Pending'}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteCOA(coa.id)}
-                        className="text-red-500 hover:text-red-400 p-1"
-                        title="Delete COA"
-                      >
-                        <Trash2 size={16} />
-                      </button>
+            {coas.map((coa) => (
+              <div key={coa.id} className="bg-white/5 border border-white/10 p-4">
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <FileText size={18} className="text-white/60" />
+                    <div>
+                      <div className="text-white text-sm font-medium">{coa.file_name}</div>
+                      {coa.batch_number && (
+                        <div className="text-white/60 text-xs font-mono">Batch: {coa.batch_number}</div>
+                      )}
                     </div>
                   </div>
+                  <div className="flex items-center gap-2">
+                    <span className={`px-2 py-1 text-xs font-medium uppercase tracking-wider inline-flex items-center gap-1 ${
+                      coa.is_verified 
+                        ? 'bg-green-500/10 text-green-500 border border-green-500/20'
+                        : 'bg-white/5 text-white/60 border border-white/10'
+                    }`}>
+                      {coa.is_verified ? <CheckCircle size={12} /> : <AlertCircle size={12} />}
+                      {coa.is_verified ? 'Verified' : 'Pending'}
+                    </span>
+                    <a
+                      href={coa.file_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-white/60 hover:text-white p-1 transition-colors"
+                      title="View COA"
+                    >
+                      <Download size={16} />
+                    </a>
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteCOA(coa.id)}
+                      className="text-red-500 hover:text-red-400 p-1"
+                      title="Delete COA"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                </div>
                   <div className="grid grid-cols-3 gap-3 text-xs">
                     {coa.test_date && (
                       <div>

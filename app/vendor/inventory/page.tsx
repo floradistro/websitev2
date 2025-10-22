@@ -1758,6 +1758,9 @@ export default function VendorInventory() {
                                       <FileText size={16} className="text-white/60 flex-shrink-0" />
                                       <div className="min-w-0">
                                         <div className="text-white text-sm font-medium truncate">{coa.fileName || 'COA'}</div>
+                                        {coa.productNameOnCoa && (
+                                          <div className="text-white/80 text-xs">Product: {coa.productNameOnCoa}</div>
+                                        )}
                                         {coa.batchNumber && (
                                           <div className="text-white/60 text-xs font-mono">Batch: {coa.batchNumber}</div>
                                         )}
@@ -1772,6 +1775,15 @@ export default function VendorInventory() {
                                         {coa.status === 'approved' ? <CheckCircle size={12} /> : <AlertTriangle size={12} />}
                                         {coa.status}
                                       </span>
+                                      <a
+                                        href={coa.fileUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-white/60 hover:text-white p-1 transition-colors"
+                                        title="View COA"
+                                      >
+                                        <Download size={16} />
+                                      </a>
                                       <button
                                         type="button"
                                         onClick={() => handleDeleteCOA(coa.id, item.product_id)}
