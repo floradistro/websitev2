@@ -596,7 +596,7 @@ export default function VendorPurchaseOrders() {
         description="Select products from your catalog to restock"
         onSubmit={createPurchaseOrder}
         submitText="Create PO"
-        maxWidth="5xl"
+        maxWidth="2xl"
       >
         <div className="space-y-6">
           {/* Location & Delivery */}
