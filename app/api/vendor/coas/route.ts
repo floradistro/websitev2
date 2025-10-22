@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
       const product = Array.isArray(coa.products) ? coa.products[0] : coa.products;
       return {
         id: coa.id,
-        productId: product?.wordpress_id || null,
+        productId: product?.id || null,
         productName: product?.name || 'Unknown Product',
         coaNumber: coa.batch_number || `COA-${coa.id.slice(0, 8)}`,
         testDate: coa.test_date,
@@ -65,13 +65,13 @@ export async function GET(request: NextRequest) {
         fileName: coa.file_name,
         fileSize: coa.file_size
       };
-    }));
+    });
 
     // If no COAs found in vendor_coas table, check products meta_data for legacy coa_url
     if (transformedCoas.length === 0) {
       const { data: products, error: productsError } = await supabase
         .from('products')
-        .select('id, wordpress_id, name, meta_data, created_at')
+        .select('id, name, meta_data, created_at')
         .eq('vendor_id', vendorId)
         .eq('status', 'published')
         .not('meta_data->coa_url', 'is', null);
@@ -81,9 +81,9 @@ export async function GET(request: NextRequest) {
           .filter(p => p.meta_data?.coa_url)
           .map(p => ({
             id: `legacy-${p.id}`,
-            productId: p.wordpress_id,
+            productId: p.id,
             productName: p.name,
-            coaNumber: `COA-${p.wordpress_id}`,
+            coaNumber: `COA-${p.id.slice(0, 8)}`,
             testDate: p.created_at,
             uploadDate: p.created_at,
             status: 'approved' as const,
