@@ -67,6 +67,8 @@ export default function AdminUsers() {
     phone: '',
     employee_id: '',
   });
+  const [newUserLocationIds, setNewUserLocationIds] = useState<string[]>([]);
+  const [newUserPrimaryLocation, setNewUserPrimaryLocation] = useState<string>('');
 
   useEffect(() => {
     loadUsers();
@@ -120,6 +122,16 @@ export default function AdminUsers() {
       return;
     }
 
+    // Validate location assignment for non-admin users with vendor
+    if (newUser.vendor_id && newUser.role !== 'admin' && newUserLocationIds.length === 0) {
+      showNotification({
+        type: 'error',
+        title: 'No Locations Assigned',
+        message: 'Please assign at least one location to this user'
+      });
+      return;
+    }
+
     try {
       const response = await axios.post('/api/admin/users', {
         action: 'create',
@@ -127,11 +139,28 @@ export default function AdminUsers() {
       });
 
       if (response.data.success) {
+        const createdUserId = response.data.user?.id;
+        
+        // Assign locations if any were selected
+        if (createdUserId && newUserLocationIds.length > 0) {
+          try {
+            await axios.post('/api/admin/user-locations', {
+              user_id: createdUserId,
+              location_ids: newUserLocationIds,
+              is_primary_location: newUserPrimaryLocation
+            });
+          } catch (locError) {
+            console.error('Error assigning locations:', locError);
+            // Still show success for user creation
+          }
+        }
+
         showNotification({
           type: 'success',
           title: 'User Created',
-          message: `${newUser.first_name} ${newUser.last_name} has been created`
+          message: `${newUser.first_name} ${newUser.last_name} has been created with ${newUserLocationIds.length} location(s)`
         });
+        
         setShowAddModal(false);
         setNewUser({
           email: '',
@@ -142,6 +171,8 @@ export default function AdminUsers() {
           phone: '',
           employee_id: '',
         });
+        setNewUserLocationIds([]);
+        setNewUserPrimaryLocation('');
         loadUsers();
       }
     } catch (error: any) {
@@ -151,6 +182,14 @@ export default function AdminUsers() {
         message: error.response?.data?.error || 'Failed to create user'
       });
     }
+  }
+
+  function toggleNewUserLocation(locationId: string) {
+    setNewUserLocationIds(prev => 
+      prev.includes(locationId)
+        ? prev.filter(id => id !== locationId)
+        : [...prev, locationId]
+    );
   }
 
   async function updateUser() {
@@ -249,6 +288,14 @@ export default function AdminUsers() {
   }
 
   async function openLocationAssignment(user: User) {
+    console.log('Opening location assignment for user:', {
+      id: user.id,
+      email: user.email,
+      role: user.role,
+      vendor_id: user.vendor_id,
+      full_user: user
+    });
+    
     setAssigningLocationsUser(user);
     
     // Load current location assignments
@@ -589,6 +636,70 @@ export default function AdminUsers() {
               </select>
             </div>
           </div>
+
+          {/* Location Assignment Section */}
+          {newUser.vendor_id && newUser.role !== 'admin' && (
+            <div className="border-t border-white/10 pt-6">
+              <div className="mb-4">
+                <label className="block text-white text-sm font-medium mb-3">
+                  Assign Locations
+                </label>
+                <p className="text-white/60 text-xs mb-4">
+                  Select which locations this employee can access. Choose one as their primary location.
+                </p>
+              </div>
+
+              {locations.filter(loc => loc.vendor_id === newUser.vendor_id).length === 0 ? (
+                <div className="bg-white/5 border border-white/10 p-6 text-center">
+                  <MapPin size={24} className="text-white/20 mx-auto mb-2" />
+                  <p className="text-white/40 text-xs">No locations found for this vendor</p>
+                </div>
+              ) : (
+                <div className="space-y-2 max-h-60 overflow-y-auto">
+                  {locations
+                    .filter(loc => loc.vendor_id === newUser.vendor_id)
+                    .map(location => (
+                      <div
+                        key={location.id}
+                        className="bg-[#0a0a0a] border border-white/10 p-3 hover:bg-white/5 transition-colors"
+                      >
+                        <div className="flex items-start gap-3">
+                          <input
+                            type="checkbox"
+                            checked={newUserLocationIds.includes(location.id)}
+                            onChange={() => toggleNewUserLocation(location.id)}
+                            className="mt-0.5"
+                          />
+                          <div className="flex-1">
+                            <div className="text-white text-sm mb-1">{location.name}</div>
+                            {newUserLocationIds.includes(location.id) && (
+                              <label className="flex items-center gap-2 text-xs text-white/60 mt-2">
+                                <input
+                                  type="radio"
+                                  name="new_user_primary_location"
+                                  checked={newUserPrimaryLocation === location.id}
+                                  onChange={() => setNewUserPrimaryLocation(location.id)}
+                                />
+                                Set as primary location
+                              </label>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              )}
+
+              {newUserLocationIds.length > 0 && (
+                <div className="bg-green-500/10 border border-green-500/20 p-3 mt-3">
+                  <p className="text-green-400 text-xs">
+                    ✓ {newUserLocationIds.length} location(s) selected
+                    {newUserPrimaryLocation && ' • Primary location set'}
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
 
           <div className="bg-white/5 border border-white/10 p-4">
             <p className="text-white/60 text-xs">
