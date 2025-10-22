@@ -102,14 +102,31 @@ export async function POST(request: NextRequest) {
     }
 
     // 5. Send password reset email so vendor can set their own password
-    const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
+    console.log('📧 Sending password reset email to:', email);
+    const { data: resetData, error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/reset-password`
     });
 
     if (resetError) {
-      console.warn('Failed to send password reset email:', resetError);
-      // Don't fail - admin can resend manually
+      console.error('❌ Failed to send password reset email:', resetError);
+      return NextResponse.json({
+        success: true,
+        message: 'Vendor created successfully, but email failed to send.',
+        vendor: {
+          id: vendor.id,
+          email: vendor.email,
+          store_name: vendor.store_name,
+          slug: vendor.slug,
+          status: vendor.status
+        },
+        auth_user_id: authUser.user?.id,
+        location_id: location?.id,
+        email_error: resetError.message,
+        note: 'Admin must manually send password reset email from Supabase Dashboard'
+      });
     }
+    
+    console.log('✅ Password reset email sent successfully to:', email);
 
     return NextResponse.json({
       success: true,
