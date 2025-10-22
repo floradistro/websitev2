@@ -123,18 +123,18 @@ export default function VendorProducts() {
     if (!coaStatus) return null;
 
     const config = {
-      approved: { icon: CheckCircle, text: 'COA', className: 'text-white/40' },
-      pending: { icon: AlertCircle, text: 'COA', className: 'text-white/40' },
-      missing: { icon: XCircle, text: 'No COA', className: 'text-red-500' },
-      expired: { icon: AlertCircle, text: 'Expired', className: 'text-red-500' },
+      approved: { icon: CheckCircle, text: 'COA', className: 'text-white/40', showText: true },
+      pending: { icon: AlertCircle, text: 'COA', className: 'text-white/40', showText: true },
+      missing: { icon: XCircle, text: 'No COA', className: 'text-red-500', showText: false },
+      expired: { icon: AlertCircle, text: 'Expired', className: 'text-red-500', showText: true },
     };
 
-    const { icon: Icon, text, className } = config[coaStatus as keyof typeof config] || config.missing;
+    const { icon: Icon, text, className, showText } = config[coaStatus as keyof typeof config] || config.missing;
 
     return (
       <div className={`flex items-center gap-1 ${className}`} title={`COA Status: ${coaStatus}`}>
         <Icon size={12} className="lg:w-3.5 lg:h-3.5" />
-        <span className="text-[10px] lg:text-xs">{text}</span>
+        {showText && <span className="text-[10px] lg:text-xs">{text}</span>}
       </div>
     );
   };
