@@ -70,7 +70,7 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
 
       // Check if user has admin role
       const adminRoles = ['admin', 'super_admin'];
-      const hasAdminRole = data && adminRoles.includes(data.role);
+      const hasAdminRole = !!(data && adminRoles.includes(data.role));
       
       setIsAdmin(hasAdminRole);
 
