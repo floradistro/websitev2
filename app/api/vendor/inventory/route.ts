@@ -144,7 +144,8 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Check if this location belongs to the vendor
-    if (inventory.location?.vendor_id !== vendorId) {
+    const location = Array.isArray(inventory.location) ? inventory.location[0] : inventory.location;
+    if (location?.vendor_id !== vendorId) {
       return NextResponse.json({ 
         error: 'Not authorized to delete this inventory record' 
       }, { status: 403 });
