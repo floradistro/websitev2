@@ -73,6 +73,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Prepare product data for Supabase
+    const stockQty = productData.initial_quantity ? parseInt(productData.initial_quantity) : 0;
+    
     const newProduct: any = {
       name: productData.name,
       slug: slug,
@@ -83,9 +85,9 @@ export async function POST(request: NextRequest) {
       vendor_id: vendorId,
       regular_price: productData.price ? parseFloat(productData.price) : null,
       sku: productData.sku || `YC-${Date.now()}`,
-      manage_stock: true,
-      stock_quantity: productData.initial_quantity ? parseInt(productData.initial_quantity) : 0,
-      stock_status: 'in_stock',
+      manage_stock: false,  // Set to false to avoid constraint issues
+      stock_quantity: stockQty,
+      stock_status: null,  // Let database handle default
       featured_image_storage: productData.image_urls?.[0] || null,
       image_gallery_storage: productData.image_urls || [],
       attributes: {},
