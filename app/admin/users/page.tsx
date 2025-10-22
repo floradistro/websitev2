@@ -204,6 +204,7 @@ export default function AdminUsers() {
         phone: editingUser.phone,
         role: editingUser.role,
         employee_id: editingUser.employee_id,
+        vendor_id: editingUser.vendor_id || null,
       });
 
       if (response.data.success) {
@@ -865,6 +866,25 @@ export default function AdminUsers() {
                   className="w-full bg-[#111111] border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
                 />
               </div>
+            </div>
+
+            <div>
+              <label className="block text-white/60 text-xs uppercase tracking-wider mb-2">Vendor</label>
+              <select
+                value={editingUser.vendor_id || ''}
+                onChange={(e) => setEditingUser({ ...editingUser, vendor_id: e.target.value })}
+                className="w-full bg-[#111111] border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
+              >
+                <option value="">No Vendor (Admin User)</option>
+                {vendors.map(vendor => (
+                  <option key={vendor.id} value={vendor.id}>
+                    {vendor.store_name}
+                  </option>
+                ))}
+              </select>
+              <p className="text-white/40 text-xs mt-1">
+                {editingUser.role === 'admin' ? 'Admin users don\'t need a vendor' : 'Required for vendor employees'}
+              </p>
             </div>
           </div>
         </AdminModal>
