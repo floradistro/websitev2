@@ -282,7 +282,7 @@ export default function VendorLabResults() {
                   {coa.productImage && (
                     <img 
                       src={coa.productImage} 
-                      alt={coa.productName}
+                      alt={coa.productName || ''}
                       className="w-12 h-12 object-cover bg-white/5"
                     />
                   )}

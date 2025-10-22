@@ -23,14 +23,34 @@ export interface FloraLocation {
   longitude?: number;
 }
 
+// In-memory cache to prevent API spam
+let cachedLocation: UserLocation | null | undefined = undefined;
+let cacheTimestamp = 0;
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
 /**
- * Get user's location from IP address
+ * Get user's location from IP address (with aggressive caching)
  */
 export async function getUserLocation(): Promise<UserLocation | null> {
+  // Return cached result if available and fresh
+  if (cachedLocation !== undefined && Date.now() - cacheTimestamp < CACHE_DURATION) {
+    return cachedLocation;
+  }
+
   // Check if already tried and failed in this session
   if (typeof window !== 'undefined') {
-    const cached = sessionStorage.getItem('geolocation_failed');
-    if (cached === 'true') {
+    const cached = sessionStorage.getItem('geolocation_data');
+    const failed = sessionStorage.getItem('geolocation_failed');
+    
+    if (cached) {
+      const parsed = JSON.parse(cached);
+      cachedLocation = parsed;
+      cacheTimestamp = Date.now();
+      return parsed;
+    }
+    
+    if (failed === 'true') {
+      cachedLocation = null;
       return null; // Don't retry if already failed
     }
   }
@@ -38,7 +58,7 @@ export async function getUserLocation(): Promise<UserLocation | null> {
   try {
     // Use our API route which proxies ip-api.com server-side (avoids CORS/403 issues)
     const response = await fetch('/api/geolocation', {
-      cache: 'no-store'
+      cache: 'force-cache' // Use browser cache
     });
     
     if (!response.ok) {
@@ -46,6 +66,7 @@ export async function getUserLocation(): Promise<UserLocation | null> {
       if (typeof window !== 'undefined') {
         sessionStorage.setItem('geolocation_failed', 'true');
       }
+      cachedLocation = null;
       return null;
     }
     
@@ -55,10 +76,11 @@ export async function getUserLocation(): Promise<UserLocation | null> {
       if (typeof window !== 'undefined') {
         sessionStorage.setItem('geolocation_failed', 'true');
       }
+      cachedLocation = null;
       return null;
     }
     
-    return {
+    const location = {
       ip: data.ip,
       city: data.city,
       region: data.region,
@@ -68,11 +90,22 @@ export async function getUserLocation(): Promise<UserLocation | null> {
       latitude: data.latitude,
       longitude: data.longitude,
     };
+    
+    // Cache in memory and sessionStorage
+    cachedLocation = location;
+    cacheTimestamp = Date.now();
+    
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('geolocation_data', JSON.stringify(location));
+    }
+    
+    return location;
   } catch (error) {
     // Silently fail and mark as failed
     if (typeof window !== 'undefined') {
       sessionStorage.setItem('geolocation_failed', 'true');
     }
+    cachedLocation = null;
     return null;
   }
 }

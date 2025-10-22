@@ -41,11 +41,17 @@ export async function GET(request: NextRequest) {
     // Get available blueprints that vendor hasn't configured yet
     const configuredBlueprintIds = (configs || []).map((c: any) => c.blueprint_id);
     
-    const { data: availableBlueprints, error: blueprintsError } = await supabase
+    let blueprintsQuery = supabase
       .from('pricing_tier_blueprints')
       .select('*')
-      .eq('is_active', true)
-      .not('id', 'in', `(${configuredBlueprintIds.length > 0 ? configuredBlueprintIds.join(',') : 'null'})`)
+      .eq('is_active', true);
+    
+    // Only apply the NOT IN filter if there are configured blueprints
+    if (configuredBlueprintIds.length > 0) {
+      blueprintsQuery = blueprintsQuery.not('id', 'in', `(${configuredBlueprintIds.join(',')})`);
+    }
+    
+    const { data: availableBlueprints, error: blueprintsError } = await blueprintsQuery
       .order('display_order', { ascending: true });
 
     if (blueprintsError) throw blueprintsError;

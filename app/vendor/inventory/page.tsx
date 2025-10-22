@@ -6,6 +6,10 @@ import { useVendorAuth } from '@/context/VendorAuthContext';
 import axios from 'axios';
 import { showNotification, showConfirm } from '@/components/NotificationToast';
 import AdminModal from '@/components/AdminModal';
+import { fetchWithRetry } from '@/lib/api-retry';
+import { StableErrorBoundary } from '@/components/StableErrorBoundary';
+import { useDebounce } from '@/hooks/useDebounce';
+import { InventoryLoader, EmptyInventoryState } from '@/components/InventoryLoader';
 
 interface FloraFields {
   thc_percentage?: string;
@@ -57,6 +61,7 @@ export default function VendorInventory() {
   const [loading, setLoading] = useState(true);
   const [vendorId, setVendorId] = useState<string | null>(null);
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebounce(search, 300); // Debounce search to prevent lag
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<Record<string, ViewMode>>({});
   const [quickAdjustInput, setQuickAdjustInput] = useState<string>('');
@@ -114,9 +119,15 @@ export default function VendorInventory() {
   });
   const [locationAdjustInputs, setLocationAdjustInputs] = useState<Record<string, string>>({});
 
-  const loadInventory = async () => {
+  const loadInventory = async (force = false) => {
     if (authLoading || !isAuthenticated) {
       setLoading(false);
+      return;
+    }
+    
+    // Prevent redundant fetches
+    if (!force && inventory.length > 0) {
+      console.log('⚡ Skipping redundant inventory fetch (already loaded)');
       return;
     }
     
@@ -131,22 +142,52 @@ export default function VendorInventory() {
       
       setVendorId(storedVendorId);
 
-      // Fetch products, inventory, and locations in parallel
+      // Fetch products, inventory, and locations in parallel with retry logic
       const [productsResponse, inventoryResponse, locationsResponse] = await Promise.all([
-        axios.get('/api/vendor/products', {
+        fetchWithRetry(() => axios.get('/api/vendor/products', {
           headers: { 'x-vendor-id': storedVendorId }
-        }).catch(() => ({ data: { products: [] } })),
-        axios.get('/api/vendor/inventory', {
+        })).catch((err) => {
+          console.error('Error fetching products after retries:', err);
+          showNotification({
+            type: 'error',
+            title: 'Products Load Failed',
+            message: 'Could not load products. Refresh the page.',
+          });
+          return { data: { products: [] } };
+        }),
+        fetchWithRetry(() => axios.get('/api/vendor/inventory', {
           headers: { 'x-vendor-id': storedVendorId }
-        }).catch(() => ({ data: { inventory: [] } })),
-        axios.get('/api/vendor/locations', {
+        })).catch((err) => {
+          console.error('Error fetching inventory after retries:', err);
+          showNotification({
+            type: 'error',
+            title: 'Inventory Load Failed',
+            message: 'Could not load inventory. Refresh the page.',
+          });
+          return { data: { inventory: [] } };
+        }),
+        fetchWithRetry(() => axios.get('/api/vendor/locations', {
           headers: { 'x-vendor-id': storedVendorId }
-        }).catch(() => ({ data: { locations: [] } }))
+        })).catch((err) => {
+          console.error('Error fetching locations after retries:', err);
+          showNotification({
+            type: 'error',
+            title: 'Locations Load Failed',
+            message: 'Could not load locations. Refresh the page.',
+          });
+          return { data: { locations: [] } };
+        })
       ]);
       
       const inventoryData = inventoryResponse.data.inventory || [];
       const locationsData = locationsResponse.data.locations || [];
       const allProducts = productsResponse.data.products || [];
+      
+      console.log('Frontend loaded:', {
+        products: allProducts.length,
+        inventory: inventoryData.length,
+        locations: locationsData.length
+      });
       
       setLocations(locationsData);
       
@@ -317,7 +358,7 @@ export default function VendorInventory() {
         message: `Inventory ${operation === 'add' ? 'increased' : 'decreased'} by ${amount} units`,
       });
       
-      await loadInventory();
+      await loadInventory(true); // Force reload after changes
       
       setAdjustmentInput('');
       setAdjustmentReason('');
@@ -397,7 +438,7 @@ export default function VendorInventory() {
         message: `Inventory set to ${targetQty}g`,
       });
       
-      await loadInventory();
+      await loadInventory(true); // Force reload after changes
       setSetQuantityInput('');
       
     } catch (error: any) {
@@ -449,7 +490,7 @@ export default function VendorInventory() {
           setShowBulkTransfer(false);
           setSelectedItems(new Set());
           setTransferToLocation('');
-          await loadInventory();
+          await loadInventory(true); // Force reload after changes
           
         } catch (error: any) {
           showNotification({
@@ -496,7 +537,7 @@ export default function VendorInventory() {
         message: `Adjusted by ${adjustment > 0 ? '+' : ''}${adjustment}g`,
       });
       
-      await loadInventory();
+      await loadInventory(true); // Force reload after changes
       setLocationAdjustInputs({});
       
     } catch (error: any) {
@@ -579,7 +620,7 @@ export default function VendorInventory() {
             reason: ''
           });
           
-          await loadInventory();
+          await loadInventory(true); // Force reload after changes
           
         } catch (error: any) {
           showNotification({
@@ -694,7 +735,7 @@ export default function VendorInventory() {
               title: 'Deleted',
               message: 'Inventory record deleted successfully'
             });
-            await loadInventory();
+            await loadInventory(true); // Force reload after changes
           }
         } catch (error: any) {
           showNotification({
@@ -946,9 +987,9 @@ export default function VendorInventory() {
       }
     }
     
-    // Search filter
-    if (search && !item.product_name.toLowerCase().includes(search.toLowerCase()) && 
-        !(item.sku || '').toLowerCase().includes(search.toLowerCase())) return false;
+    // Search filter (using debounced search)
+    if (debouncedSearch && !item.product_name.toLowerCase().includes(debouncedSearch.toLowerCase()) && 
+        !(item.sku || '').toLowerCase().includes(debouncedSearch.toLowerCase())) return false;
     
     return true;
   });
@@ -1007,8 +1048,9 @@ export default function VendorInventory() {
   }).filter(stat => stat.unique_products > 0); // Only show locations with inventory records
 
   return (
-    <div className="w-full max-w-full animate-fadeIn px-4 lg:px-0 py-6 lg:py-0 overflow-x-hidden">
-      {/* Header */}
+    <StableErrorBoundary>
+      <div className="w-full max-w-full animate-fadeIn px-4 lg:px-0 py-6 lg:py-0 overflow-x-hidden">
+        {/* Header */}
       <div className="mb-6 lg:mb-8">
         <div className="flex items-center justify-between mb-4">
           <div>
@@ -1289,9 +1331,9 @@ export default function VendorInventory() {
 
       {/* Product Cards */}
       {loading ? (
-        <div className="bg-[#1a1a1a] lg:border border-white/5 p-12">
-          <div className="text-center text-white/60">Loading inventory...</div>
-        </div>
+        <InventoryLoader />
+      ) : filteredInventory.length === 0 && inventory.length === 0 ? (
+        <EmptyInventoryState />
       ) : filteredInventory.length === 0 ? (
         <div className="bg-[#1a1a1a] lg:border border-white/5 p-12">
           <div className="text-center">
@@ -2563,6 +2605,7 @@ export default function VendorInventory() {
           </div>
         </div>
       </AdminModal>
-    </div>
+      </div>
+    </StableErrorBoundary>
   );
 }

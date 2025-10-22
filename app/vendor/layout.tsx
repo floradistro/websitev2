@@ -83,6 +83,7 @@ function VendorLayoutContent({
     { href: '/vendor/dashboard', icon: Home, label: 'Dashboard' },
     { href: '/vendor/products', icon: Package, label: 'Products' },
     { href: '/vendor/inventory', icon: BarChart3, label: 'Inventory' },
+    { href: '/vendor/pricing', icon: DollarSign, label: 'Pricing Tiers' },
     { href: '/vendor/purchase-orders', icon: FileText, label: 'Purchase Orders' },
     { href: '/vendor/locations', icon: MapPin, label: 'Locations' },
     { href: '/vendor/orders', icon: ShoppingBag, label: 'Orders' },

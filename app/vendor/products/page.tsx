@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Plus, Search, Filter, Package, FileText, CheckCircle, AlertCircle, XCircle, Sparkles, Trash2 } from 'lucide-react';
+import { Plus, Search, Filter, Package, FileText, CheckCircle, AlertCircle, XCircle, Sparkles, Trash2, DollarSign } from 'lucide-react';
 import { useVendorAuth } from '@/context/VendorAuthContext';
 import axios from 'axios';
 import { showNotification, showConfirm } from '@/components/NotificationToast';
@@ -274,15 +274,24 @@ export default function VendorProducts() {
             {filteredProducts.length} {filteredProducts.length === 1 ? 'product' : 'products'}
           </p>
         </div>
-        <Link
-          href="/vendor/products/new"
-          className="group flex items-center gap-1.5 lg:gap-2 bg-black border border-white/20 text-white px-3 lg:px-6 py-3 lg:py-3 text-[10px] lg:text-xs font-medium uppercase tracking-[0.15em] lg:tracking-[0.2em] active:bg-white active:text-black lg:hover:bg-white lg:hover:text-black lg:hover:border-white transition-all duration-300 whitespace-nowrap min-h-[44px] lg:min-h-0"
-        >
-          <Plus size={16} className="lg:hidden flex-shrink-0" />
-          <Plus size={18} className="hidden lg:block group-hover:rotate-90 transition-transform duration-300 flex-shrink-0" />
-          <span className="hidden sm:inline">Add Product</span>
-          <span className="sm:hidden">Add</span>
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/vendor/pricing"
+            className="group flex items-center gap-1.5 lg:gap-2 bg-transparent border border-white/20 text-white/80 px-3 lg:px-4 py-3 lg:py-3 text-[10px] lg:text-xs font-medium uppercase tracking-[0.15em] lg:tracking-[0.2em] active:bg-white/10 lg:hover:bg-white/10 lg:hover:text-white lg:hover:border-white/30 transition-all duration-300 whitespace-nowrap min-h-[44px] lg:min-h-0"
+          >
+            <DollarSign size={16} className="lg:w-4 lg:h-4 flex-shrink-0" />
+            <span className="hidden sm:inline">Pricing</span>
+          </Link>
+          <Link
+            href="/vendor/products/new"
+            className="group flex items-center gap-1.5 lg:gap-2 bg-black border border-white/20 text-white px-3 lg:px-6 py-3 lg:py-3 text-[10px] lg:text-xs font-medium uppercase tracking-[0.15em] lg:tracking-[0.2em] active:bg-white active:text-black lg:hover:bg-white lg:hover:text-black lg:hover:border-white transition-all duration-300 whitespace-nowrap min-h-[44px] lg:min-h-0"
+          >
+            <Plus size={16} className="lg:hidden flex-shrink-0" />
+            <Plus size={18} className="hidden lg:block group-hover:rotate-90 transition-transform duration-300 flex-shrink-0" />
+            <span className="hidden sm:inline">Add Product</span>
+            <span className="sm:hidden">Add</span>
+          </Link>
+        </div>
       </div>
 
       {/* Bulk Actions Toolbar */}
