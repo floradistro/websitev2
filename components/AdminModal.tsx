@@ -10,7 +10,7 @@ interface AdminModalProps {
   title: string;
   description?: string;
   children: ReactNode;
-  onSubmit: () => void;
+  onSubmit?: () => void;
   submitText?: string;
   cancelText?: string;
   maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl';
@@ -91,20 +91,31 @@ export default function AdminModal({
         </div>
 
         {/* Footer - Fixed */}
-        <div className="border-t border-white/10 p-6 flex gap-3 flex-shrink-0 bg-[#0a0a0a]">
-          <button
-            onClick={onClose}
-            className="flex-1 px-4 py-2.5 bg-transparent border border-white/20 text-white hover:bg-white/5 transition-all text-sm uppercase tracking-wider"
-          >
-            {cancelText}
-          </button>
-          <button
-            onClick={onSubmit}
-            className="flex-1 px-4 py-2.5 bg-white text-black hover:bg-white/90 transition-all text-sm uppercase tracking-wider font-medium"
-          >
-            {submitText}
-          </button>
-        </div>
+        {onSubmit ? (
+          <div className="border-t border-white/10 p-6 flex gap-3 flex-shrink-0 bg-[#0a0a0a]">
+            <button
+              onClick={onClose}
+              className="flex-1 px-4 py-2.5 bg-transparent border border-white/20 text-white hover:bg-white/5 transition-all text-sm uppercase tracking-wider"
+            >
+              {cancelText}
+            </button>
+            <button
+              onClick={onSubmit}
+              className="flex-1 px-4 py-2.5 bg-white text-black hover:bg-white/90 transition-all text-sm uppercase tracking-wider font-medium"
+            >
+              {submitText}
+            </button>
+          </div>
+        ) : (
+          <div className="border-t border-white/10 p-6 flex justify-end flex-shrink-0 bg-[#0a0a0a]">
+            <button
+              onClick={onClose}
+              className="px-6 py-2.5 bg-white text-black hover:bg-white/90 transition-all text-sm uppercase tracking-wider font-medium"
+            >
+              Close
+            </button>
+          </div>
+        )}
       </div>
 
       <style jsx global>{`
