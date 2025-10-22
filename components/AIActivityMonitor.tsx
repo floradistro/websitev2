@@ -5,7 +5,7 @@ import { Sparkles, Minimize2, Terminal } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 
 export default function AIActivityMonitor() {
-  const [isMinimized, setIsMinimized] = useState(false);
+  const [isMinimized, setIsMinimized] = useState(true);
   const [content, setContent] = useState<string>('');
   const [isActive, setIsActive] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -49,7 +49,7 @@ export default function AIActivityMonitor() {
     return (
       <button
         onClick={() => setIsMinimized(false)}
-        className="fixed bottom-6 right-6 z-[200] bg-white text-black p-3 shadow-lg hover:shadow-xl transition-all border border-white/20"
+        className="fixed bottom-20 right-4 lg:bottom-6 lg:right-6 z-[200] bg-white text-black p-3 shadow-lg hover:shadow-xl transition-all border border-white/20"
         title="Expand AI Agent"
       >
         <Sparkles className={`w-5 h-5 ${isActive ? 'animate-pulse' : ''}`} />
@@ -58,7 +58,7 @@ export default function AIActivityMonitor() {
   }
 
   return (
-    <div className="fixed bottom-6 right-6 z-[200] w-[400px] bg-black border border-white/20 shadow-2xl flex flex-col h-[480px]">
+    <div className="fixed bottom-20 right-4 left-4 lg:bottom-6 lg:right-6 lg:left-auto z-[200] lg:w-[400px] bg-black border border-white/20 shadow-2xl flex flex-col h-[60vh] lg:h-[480px] max-h-[500px]">
       {/* Header */}
       <div className="px-3 py-2 border-b border-white/10 flex items-center justify-between flex-shrink-0">
         <div className="flex items-center gap-2">
