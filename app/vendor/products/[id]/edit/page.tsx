@@ -28,6 +28,8 @@ export default function EditProduct() {
   const [images, setImages] = useState<string[]>([]);
   const [coas, setCoas] = useState<COA[]>([]);
   const [showCOAForm, setShowCOAForm] = useState(false);
+  const [showCoaLibrary, setShowCoaLibrary] = useState(false);
+  const [coaLibrary, setCoaLibrary] = useState<any[]>([]);
   
   const [coaForm, setCoaForm] = useState({
     file: null as File | null,
@@ -240,6 +242,53 @@ export default function EditProduct() {
     } catch (error) {
       console.error('Delete error:', error);
       alert('Failed to delete COA');
+    }
+  };
+
+  const loadCoaLibrary = async () => {
+    const vendorId = localStorage.getItem('vendor_id');
+    if (!vendorId) return;
+    
+    try {
+      const response = await fetch('/api/vendor/coas', {
+        headers: { 'x-vendor-id': vendorId }
+      });
+      
+      const data = await response.json();
+      if (data.success) {
+        setCoaLibrary(data.coas);
+      }
+    } catch (error) {
+      console.error('Error loading COA library:', error);
+    }
+  };
+
+  const handleAssignExistingCOA = async (coaId: string) => {
+    const vendorId = localStorage.getItem('vendor_id');
+    if (!vendorId) return;
+
+    try {
+      const response = await fetch(`/api/vendor/coas?id=${coaId}`, {
+        method: 'PUT',
+        headers: {
+          'x-vendor-id': vendorId,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ product_id: productId })
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        alert('COA assigned successfully!');
+        setShowCoaLibrary(false);
+        loadProductAndCOAs();
+      } else {
+        alert('Failed to assign COA: ' + data.error);
+      }
+    } catch (error) {
+      console.error('Assignment error:', error);
+      alert('Failed to assign COA');
     }
   };
 
@@ -463,16 +512,29 @@ export default function EditProduct() {
             </div>
           )}
 
-          {/* Upload New COA Button */}
+          {/* Select from Library or Upload New COA */}
           {!showCOAForm && (
-            <button
-              type="button"
-              onClick={() => setShowCOAForm(true)}
-              className="w-full flex items-center justify-center gap-2 bg-white/5 border border-white/10 text-white hover:bg-white/10 hover:border-white/20 px-4 py-3 transition-all"
-            >
-              <Plus size={18} />
-              <span className="text-sm">Upload New COA</span>
-            </button>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowCoaLibrary(true);
+                  loadCoaLibrary();
+                }}
+                className="flex items-center justify-center gap-2 bg-white/5 border border-white/10 text-white hover:bg-white/10 hover:border-white/20 px-4 py-3 transition-all"
+              >
+                <FileText size={18} />
+                <span className="text-sm">Select from Library</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowCOAForm(true)}
+                className="flex items-center justify-center gap-2 bg-white/5 border border-white/10 text-white hover:bg-white/10 hover:border-white/20 px-4 py-3 transition-all"
+              >
+                <Plus size={18} />
+                <span className="text-sm">Upload New COA</span>
+              </button>
+            </div>
           )}
 
           {/* COA Upload Form */}
@@ -821,6 +883,105 @@ export default function EditProduct() {
           </button>
         </div>
       </form>
+
+      {/* COA Library Modal */}
+      {showCoaLibrary && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setShowCoaLibrary(false)}>
+          <div className="bg-[#1a1a1a] border border-white/10 max-w-3xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            {/* Header */}
+            <div className="border-b border-white/5 p-6">
+              <div className="flex justify-between items-start">
+                <div>
+                  <h2 className="text-xl font-light text-white mb-1">Select COA from Library</h2>
+                  <p className="text-white/60 text-sm">Choose an existing Certificate of Analysis to assign to this product</p>
+                </div>
+                <button
+                  onClick={() => setShowCoaLibrary(false)}
+                  className="text-white/60 hover:text-white transition-colors"
+                >
+                  <X size={24} />
+                </button>
+              </div>
+            </div>
+
+            {/* COA List */}
+            <div className="p-6">
+              <div className="space-y-3">
+                {coaLibrary.length === 0 ? (
+                  <div className="text-center py-8 text-white/60">
+                    <FileText size={48} className="mx-auto mb-3 opacity-20" />
+                    <div className="text-sm">No COAs in your library yet</div>
+                    <div className="text-xs mt-1">Upload your first COA to get started</div>
+                  </div>
+                ) : (
+                  coaLibrary.map((coa) => (
+                    <div key={coa.id} className="bg-white/5 border border-white/10 p-4 hover:border-white/20 transition-colors">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex items-center gap-3 flex-1">
+                          <FileText size={16} className="text-white/60 flex-shrink-0" />
+                          <div className="min-w-0 flex-1">
+                            <div className="text-white text-sm font-medium truncate">{coa.fileName || 'COA'}</div>
+                            <div className="text-white/60 text-xs">
+                              {coa.productName && <span>Currently: {coa.productName}</span>}
+                              {!coa.productName && <span>Not assigned</span>}
+                            </div>
+                            {coa.batchNumber && (
+                              <div className="text-white/60 text-xs font-mono">Batch: {coa.batchNumber}</div>
+                            )}
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleAssignExistingCOA(coa.id)}
+                          className="px-3 py-1.5 bg-white text-black hover:bg-white/90 text-xs font-medium uppercase tracking-wider transition-all"
+                        >
+                          Select
+                        </button>
+                      </div>
+                      <div className="grid grid-cols-4 gap-3 text-xs">
+                        {coa.testDate && (
+                          <div>
+                            <div className="text-white/60 mb-1">Test Date</div>
+                            <div className="text-white">{new Date(coa.testDate).toLocaleDateString()}</div>
+                          </div>
+                        )}
+                        {coa.thc && (
+                          <div>
+                            <div className="text-white/60 mb-1">THC</div>
+                            <div className="text-white font-medium">{coa.thc}</div>
+                          </div>
+                        )}
+                        {coa.cbd && (
+                          <div>
+                            <div className="text-white/60 mb-1">CBD</div>
+                            <div className="text-white font-medium">{coa.cbd}</div>
+                          </div>
+                        )}
+                        {coa.testingLab && coa.testingLab !== 'N/A' && (
+                          <div>
+                            <div className="text-white/60 mb-1">Lab</div>
+                            <div className="text-white truncate">{coa.testingLab}</div>
+                          </div>
+                        )}
+                      </div>
+                      <div className="mt-2 flex items-center gap-2">
+                        <span className={`px-2 py-1 text-xs font-medium uppercase tracking-wider inline-flex items-center gap-1 ${
+                          coa.status === 'approved' 
+                            ? 'bg-green-500/10 text-green-500 border border-green-500/20'
+                            : 'bg-white/5 text-white/60 border border-white/10'
+                        }`}>
+                          {coa.status === 'approved' ? <CheckCircle size={12} /> : <AlertCircle size={12} />}
+                          {coa.status}
+                        </span>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

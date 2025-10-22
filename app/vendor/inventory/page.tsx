@@ -86,6 +86,8 @@ export default function VendorInventory() {
   // COA management
   const [productCOAs, setProductCOAs] = useState<Record<string, any[]>>({});
   const [uploadingCOA, setUploadingCOA] = useState(false);
+  const [coaLibrary, setCoaLibrary] = useState<any[]>([]);
+  const [showCoaLibrary, setShowCoaLibrary] = useState(false);
   const [coaForm, setCoaForm] = useState({
     file: null as File | null,
     lab_name: '',
@@ -584,6 +586,51 @@ export default function VendorInventory() {
       }
     } catch (error) {
       console.error('Error loading COAs:', error);
+    }
+  };
+
+  const loadCoaLibrary = async () => {
+    if (!vendorId) return;
+    
+    try {
+      const response = await axios.get('/api/vendor/coas', {
+        headers: { 'x-vendor-id': vendorId }
+      });
+      
+      if (response.data.success) {
+        setCoaLibrary(response.data.coas);
+      }
+    } catch (error) {
+      console.error('Error loading COA library:', error);
+    }
+  };
+
+  const handleAssignExistingCOA = async (coaId: string, productId: string) => {
+    if (!vendorId) return;
+
+    try {
+      // Update the COA to be associated with this product
+      const response = await axios.put(`/api/vendor/coas/${coaId}`, 
+        { product_id: productId },
+        { headers: { 'x-vendor-id': vendorId } }
+      );
+
+      if (response.data.success) {
+        showNotification({
+          type: 'success',
+          title: 'COA Assigned',
+          message: 'Certificate of Analysis assigned to product successfully'
+        });
+        
+        setShowCoaLibrary(false);
+        await loadProductCOAs(productId);
+      }
+    } catch (error: any) {
+      showNotification({
+        type: 'error',
+        title: 'Assignment Failed',
+        message: error.response?.data?.error || 'Failed to assign COA'
+      });
     }
   };
 
@@ -1762,6 +1809,21 @@ export default function VendorInventory() {
                             </div>
                           )}
 
+                          {/* Select from Library or Upload */}
+                          <div className="flex gap-2 mb-4">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setShowCoaLibrary(true);
+                                loadCoaLibrary();
+                              }}
+                              className="flex-1 flex items-center justify-center gap-2 bg-white/5 border border-white/10 text-white hover:bg-white/10 hover:border-white/20 px-4 py-3 transition-all"
+                            >
+                              <FileText size={16} />
+                              <span className="text-xs uppercase tracking-wider font-medium">Select from Library</span>
+                            </button>
+                          </div>
+
                           {/* Upload New COA Form */}
                           <div className="bg-white/5 border border-white/10 p-4 space-y-4">
                             <div className="text-white font-medium text-sm">Upload New COA</div>
@@ -1978,6 +2040,93 @@ export default function VendorInventory() {
           })}
         </div>
       )}
+
+      {/* COA Library Modal */}
+      <AdminModal
+        isOpen={showCoaLibrary}
+        onClose={() => setShowCoaLibrary(false)}
+        title="Select COA from Library"
+        description="Choose an existing Certificate of Analysis to assign to this product"
+        maxWidth="2xl"
+      >
+        <div className="space-y-3 max-h-[60vh] overflow-y-auto">
+          {coaLibrary.length === 0 ? (
+            <div className="text-center py-8 text-white/60">
+              <FileText size={48} className="mx-auto mb-3 opacity-20" />
+              <div className="text-sm">No COAs in your library yet</div>
+              <div className="text-xs mt-1">Upload your first COA to get started</div>
+            </div>
+          ) : (
+            coaLibrary.map((coa) => (
+              <div key={coa.id} className="bg-white/5 border border-white/10 p-4 hover:border-white/20 transition-colors">
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex items-center gap-3 flex-1">
+                    <FileText size={16} className="text-white/60 flex-shrink-0" />
+                    <div className="min-w-0 flex-1">
+                      <div className="text-white text-sm font-medium truncate">{coa.fileName || 'COA'}</div>
+                      <div className="text-white/60 text-xs">
+                        {coa.productName && <span>Currently: {coa.productName}</span>}
+                        {!coa.productName && <span>Not assigned</span>}
+                      </div>
+                      {coa.batchNumber && (
+                        <div className="text-white/60 text-xs font-mono">Batch: {coa.batchNumber}</div>
+                      )}
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const currentProductId = expandedId;
+                      if (currentProductId) {
+                        handleAssignExistingCOA(coa.id, currentProductId);
+                      }
+                    }}
+                    className="px-3 py-1.5 bg-white text-black hover:bg-white/90 text-xs font-medium uppercase tracking-wider transition-all"
+                  >
+                    Select
+                  </button>
+                </div>
+                <div className="grid grid-cols-4 gap-3 text-xs">
+                  {coa.testDate && (
+                    <div>
+                      <div className="text-white/60 mb-1">Test Date</div>
+                      <div className="text-white">{new Date(coa.testDate).toLocaleDateString()}</div>
+                    </div>
+                  )}
+                  {coa.thc && (
+                    <div>
+                      <div className="text-white/60 mb-1">THC</div>
+                      <div className="text-white font-medium">{coa.thc}</div>
+                    </div>
+                  )}
+                  {coa.cbd && (
+                    <div>
+                      <div className="text-white/60 mb-1">CBD</div>
+                      <div className="text-white font-medium">{coa.cbd}</div>
+                    </div>
+                  )}
+                  {coa.testingLab && coa.testingLab !== 'N/A' && (
+                    <div>
+                      <div className="text-white/60 mb-1">Lab</div>
+                      <div className="text-white truncate">{coa.testingLab}</div>
+                    </div>
+                  )}
+                </div>
+                <div className="mt-2 flex items-center gap-2">
+                  <span className={`px-2 py-1 text-xs font-medium uppercase tracking-wider inline-flex items-center gap-1 ${
+                    coa.status === 'approved' 
+                      ? 'bg-green-500/10 text-green-500 border border-green-500/20'
+                      : 'bg-white/5 text-white/60 border border-white/10'
+                  }`}>
+                    {coa.status === 'approved' ? <CheckCircle size={12} /> : <AlertTriangle size={12} />}
+                    {coa.status}
+                  </span>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </AdminModal>
 
       {/* Bulk Transfer Modal */}
       <AdminModal

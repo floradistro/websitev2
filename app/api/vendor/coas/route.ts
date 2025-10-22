@@ -278,6 +278,68 @@ export async function POST(request: NextRequest) {
   }
 }
 
+export async function PUT(request: NextRequest) {
+  try {
+    const vendorId = request.headers.get('x-vendor-id');
+
+    if (!vendorId) {
+      return NextResponse.json({ error: 'Vendor ID required' }, { status: 401 });
+    }
+
+    const { searchParams } = new URL(request.url);
+    const coaId = searchParams.get('id');
+
+    if (!coaId) {
+      return NextResponse.json({ error: 'COA ID required' }, { status: 400 });
+    }
+
+    const body = await request.json();
+    const { product_id } = body;
+
+    if (!product_id) {
+      return NextResponse.json({ error: 'Product ID required' }, { status: 400 });
+    }
+
+    const supabase = getServiceSupabase();
+
+    // Verify COA belongs to vendor
+    const { data: coa, error: fetchError } = await supabase
+      .from('vendor_coas')
+      .select('*')
+      .eq('id', coaId)
+      .eq('vendor_id', vendorId)
+      .single();
+
+    if (fetchError || !coa) {
+      return NextResponse.json({ error: 'COA not found' }, { status: 404 });
+    }
+
+    // Update COA to associate with new product
+    const { error: updateError } = await supabase
+      .from('vendor_coas')
+      .update({ product_id })
+      .eq('id', coaId)
+      .eq('vendor_id', vendorId);
+
+    if (updateError) {
+      console.error('COA update error:', updateError);
+      return NextResponse.json({ error: updateError.message }, { status: 500 });
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: 'COA assigned to product successfully'
+    });
+
+  } catch (error: any) {
+    console.error('COA update error:', error);
+    return NextResponse.json(
+      { error: error.message || 'Failed to update COA' },
+      { status: 500 }
+    );
+  }
+}
+
 export async function DELETE(request: NextRequest) {
   try {
     const vendorId = request.headers.get('x-vendor-id');
