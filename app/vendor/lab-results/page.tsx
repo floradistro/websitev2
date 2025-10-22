@@ -7,7 +7,8 @@ import Link from 'next/link';
 interface COA {
   id: string | number;
   productId: string | null;
-  productName: string;
+  productName: string | null;
+  productNameOnCoa?: string | null;
   productSku?: string | null;
   productImage?: string | null;
   productPrice?: number | null;
@@ -111,13 +112,14 @@ export default function VendorLabResults() {
     if (statusFilter !== 'all' && coa.status !== statusFilter) return false;
     if (search) {
       const searchLower = search.toLowerCase();
-      const matchesName = coa.productName.toLowerCase().includes(searchLower);
+      const matchesName = coa.productName?.toLowerCase().includes(searchLower);
+      const matchesCoaProductName = coa.productNameOnCoa?.toLowerCase().includes(searchLower);
       const matchesCOA = coa.coaNumber.toLowerCase().includes(searchLower);
       const matchesSKU = coa.productSku?.toLowerCase().includes(searchLower);
       const matchesCategory = coa.productCategory?.toLowerCase().includes(searchLower);
       const matchesBatch = coa.batchNumber.toLowerCase().includes(searchLower);
       
-      if (!matchesName && !matchesCOA && !matchesSKU && !matchesCategory && !matchesBatch) return false;
+      if (!matchesName && !matchesCoaProductName && !matchesCOA && !matchesSKU && !matchesCategory && !matchesBatch) return false;
     }
     return true;
   });
@@ -288,7 +290,10 @@ export default function VendorLabResults() {
                   <div className="flex-1">
                     <div className="flex items-start justify-between mb-1">
                       <div>
-                        <div className="text-white text-sm font-medium">{coa.productName}</div>
+                        <div className="text-white text-sm font-medium">{coa.productName || 'Not Assigned'}</div>
+                        {coa.productNameOnCoa && (
+                          <div className="text-white/60 text-xs">COA Product: {coa.productNameOnCoa}</div>
+                        )}
                         {coa.productSku && <div className="text-white/40 text-xs">SKU: {coa.productSku}</div>}
                         {coa.productCategory && <div className="text-white/40 text-xs">{coa.productCategory}</div>}
                       </div>
@@ -346,7 +351,10 @@ export default function VendorLabResults() {
                         </div>
                       )}
                       <div>
-                        <div className="text-white text-sm">{coa.productName}</div>
+                        <div className="text-white text-sm">{coa.productName || 'Not Assigned'}</div>
+                        {coa.productNameOnCoa && (
+                          <div className="text-white/60 text-xs">COA Product: {coa.productNameOnCoa}</div>
+                        )}
                         <div className="text-white/40 text-xs">
                           {coa.productSku && <span>SKU: {coa.productSku}</span>}
                           {coa.productSku && coa.productCategory && <span> • </span>}
@@ -431,15 +439,20 @@ export default function VendorLabResults() {
             {/* COA Content */}
             <div className="p-6">
               {/* Product Info */}
-              {selectedCOA.productImage && (
+              {(selectedCOA.productImage || selectedCOA.productName || selectedCOA.productNameOnCoa) && (
                 <div className="flex gap-4 mb-6 pb-6 border-b border-white/5">
-                  <img 
-                    src={selectedCOA.productImage} 
-                    alt={selectedCOA.productName}
-                    className="w-20 h-20 object-cover bg-white/5"
-                  />
+                  {selectedCOA.productImage && (
+                    <img 
+                      src={selectedCOA.productImage} 
+                      alt={selectedCOA.productName || selectedCOA.productNameOnCoa || 'Product'}
+                      className="w-20 h-20 object-cover bg-white/5"
+                    />
+                  )}
                   <div>
-                    <div className="text-white text-lg font-medium mb-1">{selectedCOA.productName}</div>
+                    <div className="text-white text-lg font-medium mb-1">{selectedCOA.productName || 'Not Assigned'}</div>
+                    {selectedCOA.productNameOnCoa && (
+                      <div className="text-white/80 text-sm mb-1">COA Product: {selectedCOA.productNameOnCoa}</div>
+                    )}
                     {selectedCOA.productSku && (
                       <div className="text-white/60 text-xs mb-1">SKU: {selectedCOA.productSku}</div>
                     )}
