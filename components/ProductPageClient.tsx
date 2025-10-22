@@ -291,7 +291,7 @@ export default function ProductPageClient({
             />
 
             <ShippingEstimator
-              productId={product.wordpress_id || parseInt(product.id) || 0}
+              productId={parseInt(product.id) || 0}
               quantity={selectedQuantity}
               productPrice={selectedPrice || parseFloat(product.price) || 0}
               locationId={selectedLocationId || undefined}
@@ -391,7 +391,7 @@ export default function ProductPageClient({
               {/* Shipping Estimator Block */}
               <div className="mb-6 animate-fadeIn" style={{animationDelay: '200ms'}}>
                 <ShippingEstimator
-                  productId={product.wordpress_id || parseInt(product.id) || 0}
+                  productId={parseInt(product.id) || 0}
                   quantity={selectedQuantity}
                   productPrice={selectedPrice || parseFloat(product.price) || 0}
                   locationId={selectedLocationId || undefined}

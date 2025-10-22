@@ -154,7 +154,6 @@ export async function POST(request: NextRequest) {
     const orderItems = items.map((item: any) => ({
       order_id: order.id,
       product_id: item.product_id,
-      wordpress_product_id: item.wordpress_product_id,
       product_name: item.product_name,
       product_sku: item.product_sku,
       product_image: item.product_image,

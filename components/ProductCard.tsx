@@ -238,7 +238,7 @@ function ProductCard({ product, index, locations, pricingTiers = [], productFiel
     const stockLocations: any[] = [];
 
     inventory.forEach((inv: any) => {
-      const qty = parseFloat(inv.quantity || inv.stock_quantity || 0);
+      const qty = parseFloat(inv.quantity || 0);
       
       // STRICT: Only count as in stock if quantity > 0
       if (qty > 0) {
@@ -265,6 +265,9 @@ function ProductCard({ product, index, locations, pricingTiers = [], productFiel
   };
 
   const stockInfo = getStockLocations();
+  
+  // Calculate total stock for display
+  const totalStock = product.stock_quantity || product.total_stock || 0;
 
   return (
     <div
@@ -373,9 +376,9 @@ function ProductCard({ product, index, locations, pricingTiers = [], productFiel
           )}
           
           {/* Low Stock Badge - When stock is available but low */}
-          {product.stock_status === 'instock' && product.stock_quantity && product.stock_quantity <= 5 && product.stock_quantity > 0 && (
+          {product.stock_status === 'in_stock' && totalStock && totalStock <= 5 && totalStock > 0 && (
             <div className="bg-red-600/90 text-white px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider">
-              Only {product.stock_quantity} Left
+              Only {totalStock} Left
             </div>
           )}
         </div>

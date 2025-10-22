@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
     // Get vendor's products
     const { data: vendorProducts } = await supabase
       .from('products')
-      .select('id, wordpress_id')
+      .select('id')
       .eq('vendor_id', vendorId);
     
     const productIds = vendorProducts?.map(p => p.id) || [];

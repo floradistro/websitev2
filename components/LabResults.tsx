@@ -11,7 +11,7 @@ export default function LabResults({ metaData, attributes }: LabResultsProps) {
   // Extract COA URL
   let coaUrl = "";
   
-  // Handle both array (WordPress) and object (Supabase) formats
+  // Handle both array and object formats
   const metaArray = Array.isArray(metaData) ? metaData : 
     Object.entries(metaData || {}).map(([key, value]) => ({ key, value }));
   

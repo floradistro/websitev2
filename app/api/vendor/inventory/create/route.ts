@@ -21,13 +21,13 @@ export async function POST(request: NextRequest) {
     const supabase = getServiceSupabase();
     
     // Verify vendor owns this product
-    const { data: vendorProduct } = await supabase
-      .from('vendor_products')
-      .select('vendor_id')
-      .eq('wordpress_product_id', productId)
+    const { data: product } = await supabase
+      .from('products')
+      .select('id, vendor_id')
+      .eq('id', productId)
       .single();
     
-    if (!vendorProduct || vendorProduct.vendor_id !== vendorId) {
+    if (!product || product.vendor_id !== vendorId) {
       return NextResponse.json({ 
         error: 'Product not found or unauthorized' 
       }, { status: 403 });
@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
     const { data: inventory, error: createError } = await supabase
       .from('inventory')
       .insert({
-        product_id: parseInt(productId),
+        product_id: productId,
         location_id: locationId,
         vendor_id: vendorId,
         quantity: parseFloat(quantity),

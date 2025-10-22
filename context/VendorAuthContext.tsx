@@ -78,11 +78,11 @@ export function VendorAuthProvider({ children }: { children: React.ReactNode }) 
 
       // Set vendor state
       setVendor({
-        id: vendorData.wordpress_user_id || 0,
+        id: vendorData.id || 0,
         store_name: vendorData.store_name,
         slug: vendorData.slug,
         email: vendorData.email,
-        user_id: vendorData.wordpress_user_id || 0
+        user_id: vendorData.id || 0
       });
       setIsAuthenticated(true);
       
@@ -124,15 +124,14 @@ export function VendorAuthProvider({ children }: { children: React.ReactNode }) 
       localStorage.setItem('vendor_id', vendorData.id);
       localStorage.setItem('vendor_email', vendorData.email);
       localStorage.setItem('vendor_slug', vendorData.slug || '');
-      localStorage.setItem('vendor_wordpress_id', vendorData.wordpress_user_id?.toString() || '');
       
       // 4. Set vendor state
       setVendor({
-        id: vendorData.wordpress_user_id || 0,
+        id: vendorData.id || 0,
         store_name: vendorData.store_name,
         slug: vendorData.slug,
         email: vendorData.email,
-        user_id: vendorData.wordpress_user_id || 0
+        user_id: vendorData.id || 0
       });
       setIsAuthenticated(true);
       
@@ -154,7 +153,6 @@ export function VendorAuthProvider({ children }: { children: React.ReactNode }) 
     localStorage.removeItem('vendor_id');
     localStorage.removeItem('vendor_email');
     localStorage.removeItem('vendor_slug');
-    localStorage.removeItem('vendor_wordpress_id');
     
     setVendor(null);
     setIsAuthenticated(false);

@@ -46,14 +46,14 @@ export async function POST(request: NextRequest) {
       }
     }
     
-    // If no inventory found, find or create one using productId
+    // If no inventory found, find or create one using productId (UUID)
     if (!inventory) {
       console.log('🔵 Looking up product:', productId);
       
-      // Get the product first to verify it exists and get wordpress_id
+      // Verify product exists
       const { data: product, error: productError } = await supabase
         .from('products')
-        .select('id, wordpress_id, name')
+        .select('id, name, vendor_id')
         .eq('id', productId)
         .single();
       
@@ -64,40 +64,34 @@ export async function POST(request: NextRequest) {
         }, { status: 404 });
       }
       
-      // All products should have wordpress_id from creation
-      const wordpressId = product.wordpress_id;
+      console.log('🔵 Product found:', product.name);
       
-      if (!wordpressId) {
-        console.error('❌ Product missing wordpress_id:', productId);
-        return NextResponse.json({ 
-          error: 'Product data incomplete. Please contact support.' 
-        }, { status: 500 });
+      // Get vendor's location (use provided locationId or vendor's primary location)
+      let targetLocationId = locationId;
+      
+      if (!targetLocationId) {
+        const { data: vendorLocation } = await supabase
+          .from('locations')
+          .select('id')
+          .eq('vendor_id', vendorId)
+          .eq('type', 'vendor')
+          .limit(1)
+          .single();
+        
+        if (!vendorLocation) {
+          return NextResponse.json({ 
+            error: 'No vendor location found. Please contact support to set up your warehouse location.' 
+          }, { status: 404 });
+        }
+        
+        targetLocationId = vendorLocation.id;
       }
       
-      console.log('🔵 Using product wordpress_id:', wordpressId);
-      
-      // Get vendor's primary location
-      const { data: vendorLocation } = await supabase
-        .from('locations')
-        .select('id')
-        .eq('vendor_id', vendorId)
-        .eq('type', 'vendor')
-        .limit(1)
-        .single();
-      
-      if (!vendorLocation) {
-        return NextResponse.json({ 
-          error: 'No vendor location found. Please contact support to set up your warehouse location.' 
-        }, { status: 404 });
-      }
-      
-      const targetLocationId = locationId || vendorLocation.id;
-      
-      // Check if inventory already exists
+      // Check if inventory already exists for this product at this location
       const { data: existingInv } = await supabase
         .from('inventory')
         .select('*')
-        .eq('product_id', wordpressId)
+        .eq('product_id', productId)
         .eq('location_id', targetLocationId)
         .single();
       
@@ -105,11 +99,11 @@ export async function POST(request: NextRequest) {
         console.log('✅ Found existing inventory record:', existingInv.id);
         inventory = existingInv;
       } else {
-        // Create new inventory record using wordpress_id (integer)
+        // Create new inventory record
         const { data: newInventory, error: createError } = await supabase
           .from('inventory')
           .insert({
-            product_id: wordpressId, // Use integer wordpress_id
+            product_id: productId,
             location_id: targetLocationId,
             vendor_id: vendorId,
             quantity: 0,
@@ -165,15 +159,15 @@ export async function POST(request: NextRequest) {
     
     console.log(`✅ Updated inventory: ${currentQty} → ${newQty}`);
     
-    // CRITICAL: Sync product's stock_quantity with inventory total
+    // Sync product's stock_quantity with inventory total
     const { data: product, error: productFetchError } = await supabase
       .from('products')
       .select('id, name')
-      .eq('wordpress_id', inventory.product_id)
+      .eq('id', inventory.product_id)
       .single();
     
     if (productFetchError) {
-      console.error('❌ Could not find product with wordpress_id:', inventory.product_id, productFetchError);
+      console.error('❌ Could not find product with ID:', inventory.product_id, productFetchError);
     } else if (product) {
       // Get total stock across all locations for this product
       const { data: allInventory, error: invFetchError } = await supabase
@@ -192,7 +186,7 @@ export async function POST(request: NextRequest) {
           .from('products')
           .update({ 
             stock_quantity: totalStock,
-            stock_status: totalStock > 0 ? 'instock' : 'outofstock',
+            stock_status: totalStock > 0 ? 'in_stock' : 'out_of_stock',
             updated_at: new Date().toISOString()
           })
           .eq('id', product.id);
@@ -200,7 +194,7 @@ export async function POST(request: NextRequest) {
         if (productUpdateError) {
           console.error('❌ Error updating product stock:', productUpdateError);
         } else {
-          console.log(`✅ Product stock_quantity synced: ${totalStock}, status: ${totalStock > 0 ? 'instock' : 'outofstock'}`);
+          console.log(`✅ Product stock_quantity synced: ${totalStock}, status: ${totalStock > 0 ? 'in_stock' : 'out_of_stock'}`);
         }
       }
     }
@@ -212,7 +206,7 @@ export async function POST(request: NextRequest) {
       .from('stock_movements')
       .insert({
         inventory_id: inventory.id,
-        product_id: inventory.product_id, // Integer wordpress_id
+        product_id: inventory.product_id,
         movement_type: movementType,
         quantity: Math.abs(adjustmentAmount),
         quantity_before: currentQty,

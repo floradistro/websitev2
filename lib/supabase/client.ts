@@ -91,7 +91,6 @@ export type Vendor = {
   email: string;
   store_name: string;
   slug: string;
-  wordpress_user_id: number | null;
   status: 'active' | 'suspended' | 'pending';
   phone: string | null;
   address: string | null;

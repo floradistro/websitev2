@@ -1,9 +1,9 @@
 /**
- * Image Helper - Prioritizes Supabase Storage over WordPress
+ * Image Helper - Supabase Storage
  */
 
 export function getProductImage(product: any): string | null {
-  // ONLY Supabase Storage (WordPress removed!)
+  // Supabase Storage
   return product.featured_image_storage || 
          (product.image_gallery_storage && product.image_gallery_storage[0]) ||
          null;

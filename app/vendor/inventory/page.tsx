@@ -48,7 +48,7 @@ interface Location {
   is_active: boolean;
 }
 
-type ViewMode = 'details' | 'adjust' | 'fields' | 'images' | 'coas';
+type ViewMode = 'details' | 'adjust' | 'fields' | 'images' | 'coas' | 'locations';
 
 export default function VendorInventory() {
   const { isAuthenticated, isLoading: authLoading } = useVendorAuth();
@@ -104,6 +104,15 @@ export default function VendorInventory() {
     total_cannabinoids: '',
     total_terpenes: '',
   });
+  
+  // Location inventory management
+  const [transferForm, setTransferForm] = useState({
+    fromLocationId: '',
+    toLocationId: '',
+    quantity: '',
+    reason: ''
+  });
+  const [locationAdjustInputs, setLocationAdjustInputs] = useState<Record<string, string>>({});
 
   const loadInventory = async () => {
     if (authLoading || !isAuthenticated) {
@@ -177,7 +186,7 @@ export default function VendorInventory() {
       
       // Map products to show inventory across all locations
       const mappedData = vendorProducts.map((product: any) => {
-        // Match by UUID, not wordpress_id
+        // Match by UUID
         const productInventory = inventoryByProduct.get(product.id) || [];
         
         // Calculate totals across all locations
@@ -447,6 +456,136 @@ export default function VendorInventory() {
             type: 'error',
             title: 'Transfer Failed',
             message: error.message || 'Failed to transfer items',
+          });
+        } finally {
+          setProcessing(false);
+        }
+      }
+    });
+  };
+
+  const handleLocationAdjust = async (productId: string, locationId: string, adjustment: number) => {
+    if (!vendorId) return;
+    
+    try {
+      setProcessing(true);
+      
+      const response = await fetch('/api/vendor/inventory/adjust', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-vendor-id': vendorId
+        },
+        body: JSON.stringify({
+          productId,
+          locationId,
+          adjustment,
+          reason: `Location adjustment at ${locations.find(l => l.id === locationId)?.name}`
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to adjust inventory');
+      }
+      
+      showNotification({
+        type: 'success',
+        title: 'Stock Updated',
+        message: `Adjusted by ${adjustment > 0 ? '+' : ''}${adjustment}g`,
+      });
+      
+      await loadInventory();
+      setLocationAdjustInputs({});
+      
+    } catch (error: any) {
+      showNotification({
+        type: 'error',
+        title: 'Adjustment Failed',
+        message: error.message || 'Failed to adjust inventory',
+      });
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  const handleTransferStock = async (productId: string, productName: string) => {
+    const { fromLocationId, toLocationId, quantity } = transferForm;
+    
+    if (!fromLocationId || !toLocationId || !quantity) {
+      showNotification({
+        type: 'warning',
+        title: 'Missing Information',
+        message: 'Please fill in all transfer fields',
+      });
+      return;
+    }
+    
+    const transferQty = parseFloat(quantity);
+    if (isNaN(transferQty) || transferQty <= 0) {
+      showNotification({
+        type: 'warning',
+        title: 'Invalid Quantity',
+        message: 'Enter a valid quantity to transfer',
+      });
+      return;
+    }
+    
+    const fromLocation = locations.find(l => l.id === fromLocationId);
+    const toLocation = locations.find(l => l.id === toLocationId);
+    
+    await showConfirm({
+      title: 'Transfer Stock',
+      message: `Transfer ${transferQty}g of ${productName} from ${fromLocation?.name} to ${toLocation?.name}?`,
+      confirmText: 'Transfer',
+      cancelText: 'Cancel',
+      type: 'warning',
+      onConfirm: async () => {
+        try {
+          setProcessing(true);
+          
+          const response = await fetch('/api/vendor/inventory/transfer', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-vendor-id': vendorId || ''
+            },
+            body: JSON.stringify({
+              productId,
+              fromLocationId,
+              toLocationId,
+              quantity: transferQty,
+              reason: transferForm.reason || `Transfer from ${fromLocation?.name} to ${toLocation?.name}`
+            })
+          });
+          
+          const data = await response.json();
+          
+          if (!data.success) {
+            throw new Error(data.error || 'Failed to transfer stock');
+          }
+          
+          showNotification({
+            type: 'success',
+            title: 'Transfer Complete',
+            message: data.message || `Transferred ${transferQty}g successfully`,
+          });
+          
+          setTransferForm({
+            fromLocationId: '',
+            toLocationId: '',
+            quantity: '',
+            reason: ''
+          });
+          
+          await loadInventory();
+          
+        } catch (error: any) {
+          showNotification({
+            type: 'error',
+            title: 'Transfer Failed',
+            message: error.message || 'Failed to transfer stock',
           });
         } finally {
           setProcessing(false);
@@ -1315,6 +1454,15 @@ export default function VendorInventory() {
                         <Shield size={12} />
                         COAs
                       </button>
+                      <button
+                        onClick={() => setViewMode(prev => ({ ...prev, [item.product_id]: 'locations' }))}
+                        className={`flex items-center gap-1.5 px-4 py-2 text-[10px] uppercase tracking-wider border transition-all ${
+                          currentView === 'locations' ? 'border-white text-white' : 'border-white/10 text-white/60 hover:text-white hover:border-white/20'
+                        }`}
+                      >
+                        <MapPin size={12} />
+                        Location Inventory
+                      </button>
                     </div>
 
                     <div className="px-4 lg:px-6 py-6">
@@ -2053,6 +2201,220 @@ export default function VendorInventory() {
                                 <div className="text-white/60 text-xs leading-relaxed">
                                   Products require a valid COA to be approved and sold on the marketplace.
                                 </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Location Inventory View */}
+                      {currentView === 'locations' && (
+                        <div className="space-y-6">
+                          {/* Location Inventory Overview */}
+                          <div className="bg-white/5 border border-white/10 p-4">
+                            <div className="flex items-center justify-between mb-4">
+                              <div className="flex items-center gap-2">
+                                <MapPin size={18} className="text-white/60" />
+                                <h3 className="text-white font-medium">Inventory by Location</h3>
+                              </div>
+                              <div className="text-white/40 text-xs">
+                                Total: {item.quantity.toFixed(2)}g across {item.locations_with_stock || 0} location(s)
+                              </div>
+                            </div>
+
+                            <div className="space-y-3">
+                              {item.inventory_locations && item.inventory_locations.length > 0 ? (
+                                item.inventory_locations.map((inv: any) => {
+                                  const location = locations.find(l => l.id === inv.location_id);
+                                  const locationQty = parseFloat(inv.quantity || 0);
+                                  const locationKey = `${item.product_id}-${inv.location_id}`;
+                                  
+                                  return (
+                                    <div key={inv.id} className="bg-black/20 border border-white/5 p-4">
+                                      <div className="flex items-start justify-between mb-3">
+                                        <div className="flex-1">
+                                          <div className="flex items-center gap-2 mb-1">
+                                            <h4 className="text-white font-medium">{location?.name || 'Unknown Location'}</h4>
+                                            {location?.is_primary && (
+                                              <span className="px-2 py-0.5 text-[9px] bg-yellow-500/10 border border-yellow-500/20 text-yellow-500 uppercase tracking-wider">
+                                                Primary
+                                              </span>
+                                            )}
+                                          </div>
+                                          <div className="text-white/40 text-xs">
+                                            {location?.city}, {location?.state}
+                                          </div>
+                                        </div>
+                                        <div className="text-right">
+                                          <div className={`text-2xl font-light ${
+                                            locationQty === 0 ? 'text-red-500' : 
+                                            locationQty <= 10 ? 'text-yellow-500' : 
+                                            'text-green-500'
+                                          }`}>
+                                            {locationQty.toFixed(2)}g
+                                          </div>
+                                          <div className="text-[10px] text-white/40 uppercase tracking-wider">
+                                            {locationQty === 0 ? 'Out of Stock' : 
+                                             locationQty <= 10 ? 'Low Stock' : 
+                                             'In Stock'}
+                                          </div>
+                                        </div>
+                                      </div>
+
+                                      {/* Quick Adjust */}
+                                      <div className="flex items-end gap-2">
+                                        <div className="flex-1">
+                                          <label className="text-white/60 text-[10px] mb-1.5 block uppercase tracking-wider">
+                                            Adjust Quantity
+                                          </label>
+                                          <input
+                                            type="number"
+                                            step="0.1"
+                                            value={locationAdjustInputs[locationKey] || ''}
+                                            onChange={(e) => setLocationAdjustInputs(prev => ({
+                                              ...prev,
+                                              [locationKey]: e.target.value
+                                            }))}
+                                            placeholder="Enter amount..."
+                                            className="w-full bg-[#1a1a1a] border border-white/10 text-white placeholder-white/40 px-3 py-2 text-sm focus:outline-none focus:border-white/20"
+                                            onClick={(e) => e.stopPropagation()}
+                                          />
+                                        </div>
+                                        <button
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            const amount = parseFloat(locationAdjustInputs[locationKey] || '0');
+                                            if (amount !== 0) {
+                                              handleLocationAdjust(item.product_id, inv.location_id, amount);
+                                            }
+                                          }}
+                                          disabled={processing || !locationAdjustInputs[locationKey]}
+                                          className="px-4 py-2 bg-white hover:bg-white/90 disabled:bg-white/30 text-black text-xs uppercase tracking-wider font-medium transition-all disabled:cursor-not-allowed"
+                                        >
+                                          <Plus size={14} className="inline mr-1" />
+                                          Add
+                                        </button>
+                                        <button
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            const amount = parseFloat(locationAdjustInputs[locationKey] || '0');
+                                            if (amount !== 0) {
+                                              handleLocationAdjust(item.product_id, inv.location_id, -amount);
+                                            }
+                                          }}
+                                          disabled={processing || !locationAdjustInputs[locationKey]}
+                                          className="px-4 py-2 bg-red-600 hover:bg-red-700 disabled:bg-red-600/30 text-white text-xs uppercase tracking-wider font-medium transition-all disabled:cursor-not-allowed"
+                                        >
+                                          <Minus size={14} className="inline mr-1" />
+                                          Remove
+                                        </button>
+                                      </div>
+                                    </div>
+                                  );
+                                })
+                              ) : (
+                                <div className="bg-black/20 border border-white/5 p-6 text-center">
+                                  <MapPin size={32} className="text-white/20 mx-auto mb-2" />
+                                  <div className="text-white/60 text-sm">No inventory locations found</div>
+                                  <div className="text-white/40 text-xs mt-1">Add stock to a location to get started</div>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Transfer Between Locations */}
+                          {locations.length > 1 && item.inventory_locations && item.inventory_locations.length > 0 && (
+                            <div className="bg-white/5 border border-white/10 p-4">
+                              <div className="flex items-center gap-2 mb-4">
+                                <ArrowRightLeft size={18} className="text-blue-500" />
+                                <h3 className="text-white font-medium">Transfer Stock</h3>
+                              </div>
+
+                              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                                <div>
+                                  <label className="text-white/60 text-xs mb-2 block">From Location</label>
+                                  <select
+                                    value={transferForm.fromLocationId}
+                                    onChange={(e) => setTransferForm(prev => ({ ...prev, fromLocationId: e.target.value }))}
+                                    className="w-full bg-[#1a1a1a] border border-white/10 text-white px-3 py-2 text-sm focus:outline-none focus:border-white/20"
+                                    onClick={(e) => e.stopPropagation()}
+                                  >
+                                    <option value="">Select location...</option>
+                                    {item.inventory_locations
+                                      .filter((inv: any) => parseFloat(inv.quantity || 0) > 0)
+                                      .map((inv: any) => {
+                                        const loc = locations.find(l => l.id === inv.location_id);
+                                        return (
+                                          <option key={inv.location_id} value={inv.location_id}>
+                                            {loc?.name} ({parseFloat(inv.quantity || 0).toFixed(2)}g available)
+                                          </option>
+                                        );
+                                      })}
+                                  </select>
+                                </div>
+
+                                <div>
+                                  <label className="text-white/60 text-xs mb-2 block">To Location</label>
+                                  <select
+                                    value={transferForm.toLocationId}
+                                    onChange={(e) => setTransferForm(prev => ({ ...prev, toLocationId: e.target.value }))}
+                                    className="w-full bg-[#1a1a1a] border border-white/10 text-white px-3 py-2 text-sm focus:outline-none focus:border-white/20"
+                                    onClick={(e) => e.stopPropagation()}
+                                  >
+                                    <option value="">Select location...</option>
+                                    {locations
+                                      .filter(loc => loc.id !== transferForm.fromLocationId)
+                                      .map(loc => (
+                                        <option key={loc.id} value={loc.id}>
+                                          {loc.name} - {loc.city}, {loc.state}
+                                        </option>
+                                      ))}
+                                  </select>
+                                </div>
+
+                                <div>
+                                  <label className="text-white/60 text-xs mb-2 block">Quantity (grams)</label>
+                                  <input
+                                    type="number"
+                                    step="0.1"
+                                    min="0"
+                                    value={transferForm.quantity}
+                                    onChange={(e) => setTransferForm(prev => ({ ...prev, quantity: e.target.value }))}
+                                    placeholder="Enter quantity..."
+                                    className="w-full bg-[#1a1a1a] border border-white/10 text-white placeholder-white/40 px-3 py-2 text-sm focus:outline-none focus:border-white/20"
+                                    onClick={(e) => e.stopPropagation()}
+                                  />
+                                </div>
+
+                                <div>
+                                  <label className="text-white/60 text-xs mb-2 block">Reason (Optional)</label>
+                                  <input
+                                    type="text"
+                                    value={transferForm.reason}
+                                    onChange={(e) => setTransferForm(prev => ({ ...prev, reason: e.target.value }))}
+                                    placeholder="Transfer reason..."
+                                    className="w-full bg-[#1a1a1a] border border-white/10 text-white placeholder-white/40 px-3 py-2 text-sm focus:outline-none focus:border-white/20"
+                                    onClick={(e) => e.stopPropagation()}
+                                  />
+                                </div>
+                              </div>
+
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleTransferStock(item.product_id, item.product_name);
+                                }}
+                                disabled={processing || !transferForm.fromLocationId || !transferForm.toLocationId || !transferForm.quantity}
+                                className="w-full mt-4 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-600/30 text-white px-4 py-3 transition-all disabled:cursor-not-allowed"
+                              >
+                                <ArrowRightLeft size={16} />
+                                <span className="text-xs uppercase tracking-wider font-medium">
+                                  {processing ? 'Transferring...' : 'Transfer Stock'}
+                                </span>
+                              </button>
+
+                              <div className="mt-3 text-white/40 text-xs text-center">
+                                Transfer will move stock from one location to another instantly
                               </div>
                             </div>
                           )}

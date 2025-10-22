@@ -73,7 +73,7 @@ export async function GET(
     
     // 6. Add inventory to products and filter to in-stock only
     const productsWithInventory = products?.map(p => {
-      const productInventory = inventoryByProduct.get(p.wordpress_id) || [];
+      const productInventory = inventoryByProduct.get(p.id) || [];
       const totalStock = productInventory.reduce((sum: number, inv: any) => sum + parseFloat(inv.quantity || 0), 0);
       
       // Use stock_quantity from product table (should be synced) or calculated total

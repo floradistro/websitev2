@@ -28,7 +28,7 @@ export async function GET(
     
     const order = data.order;
     
-    // Map to WooCommerce format for compatibility
+    // Format order data
     const formattedOrder = {
       id: order.id,
       number: order.order_number,

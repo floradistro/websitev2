@@ -2,10 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import axios from 'axios';
 import { getServiceSupabase } from '@/lib/supabase/client';
 
-const baseUrl = process.env.NEXT_PUBLIC_WORDPRESS_API_URL || "https://api.floradistro.com";
-const ck = process.env.WORDPRESS_CONSUMER_KEY || "";
-const cs = process.env.WORDPRESS_CONSUMER_SECRET || "";
-
 export async function GET(request: NextRequest) {
   try {
     const vendorId = request.headers.get('x-vendor-id');
@@ -57,8 +53,16 @@ export async function GET(request: NextRequest) {
 
     console.log('🔵 Total inventory records at vendor locations:', inventory?.length || 0);
 
+    // Filter out invalid inventory records (product_id is NULL)
+    const validInventory = inventory?.filter(inv => inv.product_id !== null) || [];
+    const invalidCount = (inventory?.length || 0) - validInventory.length;
+    
+    if (invalidCount > 0) {
+      console.log(`⚠️  Filtered out ${invalidCount} invalid inventory records (null product_id)`);
+    }
+
     // Get product names separately
-    const productIds = [...new Set(inventory?.map(inv => inv.product_id) || [])];
+    const productIds = [...new Set(validInventory.map(inv => inv.product_id))];
     const { data: products } = await supabase
       .from('products')
       .select('id, name, featured_image_storage, featured_image, price')
@@ -66,8 +70,8 @@ export async function GET(request: NextRequest) {
     
     const productMap = new Map(products?.map(p => [p.id, p]) || []);
     
-    // Map to expected format for vendor UI
-    const mappedInventory = (inventory || []).map(inv => {
+    // Map to expected format for vendor UI (only valid inventory)
+    const mappedInventory = validInventory.map(inv => {
       const product = productMap.get(inv.product_id);
       const isVendorOwned = inv.vendor_id === vendorId;
       

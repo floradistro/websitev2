@@ -2,12 +2,6 @@
 
 import { useState } from 'react';
 import { Settings, CheckCircle, XCircle, RefreshCw, Database, ChevronDown, Zap, Trash2 } from 'lucide-react';
-import axios from 'axios';
-
-const baseUrl = "https://api.floradistro.com";
-const consumerKey = "ck_bb8e5fe3d405e6ed6b8c079c93002d7d8b23a7d5";
-const consumerSecret = "cs_38194e74c7ddc5d72b6c32c70485728e7e529678";
-const authParams = `consumer_key=${consumerKey}&consumer_secret=${consumerSecret}`;
 
 interface DevToolsProps {
   onRefresh?: () => void;
@@ -32,21 +26,21 @@ export default function VendorDevTools({ onRefresh }: DevToolsProps) {
       setLoading(true);
       setMessage('');
 
-      // Get all pending vendor products
-      const response = await axios.get(
-        `${baseUrl}/wp-json/flora-im/v1/vendor-dev/pending-products?${authParams}`
-      );
+      // Use internal API instead
+      const response = await fetch('/api/admin/pending-products');
+      const data = await response.json();
 
-      if (response.data && response.data.length > 0) {
-        // Approve each product
-        for (const product of response.data) {
-          await axios.post(
-            `${baseUrl}/wp-json/flora-im/v1/vendor-dev/approve-product?${authParams}`,
-            { product_id: product.product_id }
-          );
+      if (data.success && data.products && data.products.length > 0) {
+        // Approve each product via internal API
+        for (const product of data.products) {
+          await fetch('/api/admin/approve-product', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ productId: product.id })
+          });
         }
 
-        setMessage(`✅ Approved ${response.data.length} products`);
+        setMessage(`✅ Approved ${data.products.length} products`);
         setTimeout(() => {
           if (onRefresh) onRefresh();
           setMessage('');
@@ -57,7 +51,7 @@ export default function VendorDevTools({ onRefresh }: DevToolsProps) {
       }
     } catch (error: any) {
       console.error('Error approving products:', error);
-      setMessage(`❌ Error: ${error.response?.data?.message || error.message}`);
+      setMessage(`❌ Error: ${error.message}`);
       setTimeout(() => setMessage(''), 3000);
     } finally {
       setLoading(false);
@@ -177,14 +171,14 @@ export default function VendorDevTools({ onRefresh }: DevToolsProps) {
               {/* View Database */}
               <button
                 onClick={() => {
-                  window.open('https://api.floradistro.com/wp-admin/', '_blank');
+                  window.open('/admin', '_blank');
                 }}
                 className="w-full flex items-center gap-3 px-4 py-3 text-white/80 hover:text-white hover:bg-white/5 transition-all group"
               >
                 <Database size={16} className="text-purple-500 group-hover:scale-110 transition-transform" />
                 <div className="text-left flex-1">
-                  <div className="text-xs font-medium">WordPress Admin</div>
-                  <div className="text-[10px] text-white/40">Open WP dashboard</div>
+                  <div className="text-xs font-medium">Admin Dashboard</div>
+                  <div className="text-[10px] text-white/40">Open admin panel</div>
                 </div>
               </button>
             </div>
@@ -212,4 +206,3 @@ export default function VendorDevTools({ onRefresh }: DevToolsProps) {
     </div>
   );
 }
-

@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
       throw new Error('Failed to fetch orders');
     }
     
-    // Map to WooCommerce format for compatibility
+    // Format orders data
     const orders = data.orders.map((order: any) => ({
       id: order.id,
       number: order.order_number,

@@ -21,7 +21,7 @@ export default async function Home() {
   
   // Products from Supabase - use ONLY Supabase Storage images
   const allProducts = bulkProducts.map((p: any) => {
-    // ONLY use Supabase Storage URLs (WordPress URLs removed!)
+    // Use Supabase Storage URLs
     const imageUrl = p.featured_image_storage || 
                      (p.image_gallery_storage && p.image_gallery_storage[0]);
     
@@ -39,7 +39,7 @@ export default async function Home() {
       categories: p.product_categories?.map((pc: any) => pc.category) || [],
       meta_data: p.meta_data || {},
       blueprint_fields: p.blueprint_fields || [],
-      stock_status: p.stock_status || 'instock',
+      stock_status: p.stock_status || 'in_stock',
       total_stock: p.stock_quantity || 0,
       inventory: [],
     };

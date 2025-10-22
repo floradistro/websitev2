@@ -41,7 +41,7 @@ export default function VendorOrders() {
       }
       try {
         setLoading(true);
-        // Orders feature - simplified (using WooCommerce orders API)
+        // Orders feature
         const vendorId = localStorage.getItem('vendor_id');
         const response = { orders: [] }; // TODO: Implement orders API
         

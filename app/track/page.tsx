@@ -20,7 +20,7 @@ function TrackContent() {
     if (orderId) {
       setLoading(true);
       setError(null);
-      // Fetch real order from WooCommerce
+      // Fetch order
       fetch(`/api/orders/${orderId}`)
         .then(res => res.json())
         .then(data => {

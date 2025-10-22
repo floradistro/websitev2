@@ -91,7 +91,7 @@ Return ONLY a JSON array of product IDs. Example: [707, 786, 798, 773]`;
         const sameCategory = allProducts.filter((p: any) => 
           p.categories?.some((c: any) => c.id === currentProduct.categories[0].id) &&
           p.id !== currentProduct.id &&
-          p.stock_status === 'instock'
+          p.stock_status === 'in_stock'
         );
         
         if (sameCategory.length >= 4) {
@@ -101,7 +101,7 @@ Return ONLY a JSON array of product IDs. Example: [707, 786, 798, 773]`;
       
       // Get top products by stock
       fallback = fallback
-        .filter((p: any) => p.stock_status === 'instock')
+        .filter((p: any) => p.stock_status === 'in_stock')
         .sort(() => Math.random() - 0.5)
         .slice(0, 6);
       

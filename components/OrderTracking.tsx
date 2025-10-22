@@ -27,7 +27,7 @@ export default function OrderTracking({
   pickupLocation
 }: OrderTrackingProps) {
   
-  // Map WooCommerce statuses to our tracking stages
+  // Map order statuses to tracking stages
   const getTrackingStages = (): OrderStatus[] => {
     const baseStages: OrderStatus[] = [
       {

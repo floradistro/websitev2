@@ -20,19 +20,11 @@ export async function GET(
       );
     }
 
-    // Check if productId is UUID or WordPress ID
-    const isUUID = productId.includes('-');
-    
     // Get product to find vendor_id
     let productQuery = supabase
       .from('products')
-      .select('vendor_id');
-
-    if (isUUID) {
-      productQuery = productQuery.eq('id', productId);
-    } else {
-      productQuery = productQuery.eq('wordpress_id', productId);
-    }
+      .select('vendor_id')
+      .eq('id', productId);
 
     const { data: product, error: productError } = await productQuery.single();
 

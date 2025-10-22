@@ -87,7 +87,7 @@ export default function DashboardPage() {
       } else {
         // Fallback: show popular products
         const fallback = allProducts
-          .filter((p: any) => p.stock_status === 'instock')
+          .filter((p: any) => p.stock_status === 'in_stock')
           .sort((a: any, b: any) => (b.total_sales || 0) - (a.total_sales || 0))
           .slice(0, 6);
         setRecommendations(fallback);
@@ -99,7 +99,7 @@ export default function DashboardPage() {
         const productsResponse = await fetch('/api/products-supabase');
         const productsData = await productsResponse.json();
         const allProducts = productsData.products || productsData || [];
-        const fallback = allProducts.filter((p: any) => p.stock_status === 'instock').slice(0, 6);
+        const fallback = allProducts.filter((p: any) => p.stock_status === 'in_stock').slice(0, 6);
         setRecommendations(fallback);
       } catch {
         setRecommendations([]);
@@ -139,9 +139,6 @@ export default function DashboardPage() {
     if (!user) return;
     
     try {
-      const consumerKey = "ck_bb8e5fe3d405e6ed6b8c079c93002d7d8b23a7d5";
-      const consumerSecret = "cs_38194e74c7ddc5d72b6c32c70485728e7e529678";
-      
       // Use Supabase orders API
       const response = await axios.get(`/api/customer-orders`, {
         params: {
@@ -205,9 +202,6 @@ export default function DashboardPage() {
     if (!editingAddress || !user) return;
     
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_WORDPRESS_API_URL || "https://api.floradistro.com";
-      const consumerKey = process.env.NEXT_PUBLIC_WORDPRESS_CONSUMER_KEY || "ck_bb8e5fe3d405e6ed6b8c079c93002d7d8b23a7d5";
-      const consumerSecret = process.env.NEXT_PUBLIC_WORDPRESS_CONSUMER_SECRET || "cs_38194e74c7ddc5d72b6c32c70485728e7e529678";
       
       const updateData: any = {};
       updateData[editingAddress] = addressForm;
@@ -239,7 +233,7 @@ export default function DashboardPage() {
     }));
   };
 
-  // Test earning chips - saves to WooCommerce Points & Rewards
+  // Test earning chips
   const handleTestPoints = async () => {
     const amount = 100;
     const [singularLabel, pluralLabel] = pointsLabel.split(':');
@@ -251,7 +245,7 @@ export default function DashboardPage() {
       showNotification({
         type: "points",
         title: `${label} Earned!`,
-        message: `You earned ${amount} ${label.toLowerCase()} via WooCommerce Points & Rewards!`,
+        message: `You earned ${amount} ${label.toLowerCase()}!`,
       });
     } catch (error) {
       showNotification({

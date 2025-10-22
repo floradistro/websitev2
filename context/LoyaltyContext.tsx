@@ -33,7 +33,7 @@ interface LoyaltyContextType {
 
 const LoyaltyContext = createContext<LoyaltyContextType | undefined>(undefined);
 
-// Default settings - no WordPress needed
+// Default settings
 const DEFAULT_SETTINGS: LoyaltySettings = {
   points_label: 'Chips',
   earn_ratio: '1:100',

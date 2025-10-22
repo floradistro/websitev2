@@ -1,10 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServiceSupabase } from '@/lib/supabase/client';
-import axios from 'axios';
-
-const baseUrl = process.env.NEXT_PUBLIC_WORDPRESS_API_URL || "https://api.floradistro.com";
-const ck = process.env.WORDPRESS_CONSUMER_KEY || "";
-const cs = process.env.WORDPRESS_CONSUMER_SECRET || "";
 
 export async function GET(request: NextRequest) {
   try {
@@ -42,7 +37,6 @@ export async function GET(request: NextRequest) {
       email: vendor.email,
       store_name: vendor.store_name,
       slug: vendor.slug,
-      wordpress_user_id: vendor.wordpress_user_id,
       status: vendor.status,
       created_date: vendor.created_at,
       total_products: productCountMap[vendor.id] || 0,
@@ -313,14 +307,6 @@ export async function POST(request: NextRequest) {
         }
 
         console.log('✅ Vendor deleted successfully');
-
-        // 9. Optional: Clean up WordPress customer (non-blocking, legacy cleanup)
-        if (vendor.wordpress_user_id) {
-          axios.delete(
-            `${baseUrl}/wp-json/wc/v3/customers/${vendor.wordpress_user_id}?force=true`,
-            { auth: { username: ck, password: cs }, timeout: 3000 }
-          ).catch(() => {}); // Fire and forget
-        }
 
         return NextResponse.json({
           success: true,

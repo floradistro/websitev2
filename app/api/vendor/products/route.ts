@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
       slug = `${baseSlug}-${Date.now()}`;
     }
 
-    // Prepare product data for Supabase - Clean structure, no WordPress legacy
+    // Prepare product data for Supabase
     const newProduct: any = {
       name: productData.name,
       slug: slug,
@@ -85,7 +85,7 @@ export async function POST(request: NextRequest) {
       sku: productData.sku || `YC-${Date.now()}`,
       manage_stock: true,
       stock_quantity: productData.initial_quantity ? parseInt(productData.initial_quantity) : 0,
-      stock_status: 'instock',
+      stock_status: 'in_stock',
       featured_image_storage: productData.image_urls?.[0] || null,
       image_gallery_storage: productData.image_urls || [],
       attributes: {},
@@ -120,19 +120,6 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Assign unique wordpress_id immediately (for inventory compatibility)
-    const { data: maxProduct } = await supabase
-      .from('products')
-      .select('wordpress_id')
-      .not('wordpress_id', 'is', null)
-      .order('wordpress_id', { ascending: false })
-      .limit(1)
-      .single();
-    
-    const nextWordpressId = (maxProduct?.wordpress_id || 49999) + 1;
-    newProduct.wordpress_id = nextWordpressId;
-    
-    console.log('🔵 Assigning wordpress_id:', nextWordpressId);
     console.log('🔵 Inserting product:', JSON.stringify(newProduct, null, 2));
 
     // Insert product into Supabase
@@ -151,7 +138,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log('✅ Product created successfully:', product.id, 'wordpress_id:', product.wordpress_id);
+    console.log('✅ Product created successfully:', product.id);
 
     // Handle variants if provided
     if (productData.product_type === 'variable' && productData.variants && productData.variants.length > 0) {

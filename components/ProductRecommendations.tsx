@@ -69,7 +69,7 @@ export default function ProductRecommendations({
       } else {
         // Fallback: show popular products
         const popular = allProducts
-          .filter(p => p.stock_status === 'instock')
+          .filter(p => p.stock_status === 'in_stock')
           .sort(() => Math.random() - 0.5)
           .slice(0, 6);
         setRecommendations(popular);
@@ -78,7 +78,7 @@ export default function ProductRecommendations({
       console.error('Error loading recommendations:', error);
       // Fallback
       const popular = allProducts
-        .filter(p => p.stock_status === 'instock')
+        .filter(p => p.stock_status === 'in_stock')
         .slice(0, 6);
       setRecommendations(popular);
     } finally {

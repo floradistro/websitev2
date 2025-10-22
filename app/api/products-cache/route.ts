@@ -60,7 +60,7 @@ export async function GET(request: NextRequest) {
       return {
         ...p,
         stock_quantity: totalStock,
-        stock_status: totalStock > 0 ? 'instock' : 'outofstock',
+        stock_status: totalStock > 0 ? 'in_stock' : 'out_of_stock',
         inventory: activeInventory
       };
     });

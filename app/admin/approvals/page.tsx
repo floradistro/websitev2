@@ -25,7 +25,6 @@ interface PendingProduct {
   featured_image?: string;
   image_urls?: string[];
   stock_quantity?: number;
-  wordpress_id?: number;
 }
 
 export default function AdminApprovals() {

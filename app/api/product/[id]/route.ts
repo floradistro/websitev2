@@ -18,15 +18,10 @@ const getCachedProductComplete = unstable_cache(
     try {
       const baseUrl = getBaseUrl();
       
-      // Check if ID is UUID or WordPress numeric ID
-      const isUUID = productId.includes('-');
-      const queryParam = isUUID ? productId : `wordpress_id=${productId}`;
-      const endpoint = isUUID ? `/api/supabase/products/${productId}` : `/api/supabase/products?wordpress_id=${productId}&per_page=1`;
-      
       // Fetch ALL data in parallel from Supabase
       const [productRes, inventoryRes, locationsRes, reviewsRes, pricingRes] = await Promise.all([
-        fetch(`${baseUrl}${endpoint}`),
-        fetch(`${baseUrl}/api/supabase/inventory?wordpress_product_id=${productId}`),
+        fetch(`${baseUrl}/api/supabase/products/${productId}`),
+        fetch(`${baseUrl}/api/supabase/inventory?product_id=${productId}`),
         fetch(`${baseUrl}/api/supabase/locations`),
         fetch(`${baseUrl}/api/supabase/reviews?product_id=${productId}&status=approved`),
         fetch(`${baseUrl}/api/supabase/products/${productId}/pricing`).catch(() => ({ ok: false }))

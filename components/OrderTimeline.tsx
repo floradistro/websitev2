@@ -18,7 +18,7 @@ export default function OrderTimeline({
   estimatedDelivery 
 }: OrderTimelineProps) {
   
-  // Map WooCommerce status to timeline steps
+  // Map order status to timeline steps
   const getTimelineSteps = () => {
     const steps = [
       { id: 'pending', label: 'Order Placed', icon: Package, date: dateCreated },

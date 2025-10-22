@@ -103,7 +103,7 @@ export async function GET(request: NextRequest) {
         featured_image_storage: p.featured_image_storage,
         image_gallery_storage: p.image_gallery_storage,
         stock_quantity: totalStock,
-        stock_status: totalStock > 0 ? 'instock' : 'outofstock',
+        stock_status: totalStock > 0 ? 'in_stock' : 'out_of_stock',
         inventory: activeInventory,
         vendor_id: p.vendor_id,
         primary_category_id: p.primary_category_id,

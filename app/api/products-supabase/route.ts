@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
       categories: p.product_categories?.map((pc: any) => pc.category) || [],
       meta_data: p.meta_data || {},
       blueprint_fields: p.blueprint_fields || [],
-      stock_status: p.stock_status || 'instock',
+      stock_status: p.stock_status || 'in_stock',
       total_stock: p.stock_quantity || 0,
       inventory: [],
       total_sales: p.sales_count || 0

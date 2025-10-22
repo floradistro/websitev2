@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: updateError.message }, { status: 500 });
       }
       
-      console.log('✅ Product approved:', product.id, product.name, 'wordpress_id:', product.wordpress_id);
+      console.log('✅ Product approved:', product.id, product.name);
       
       // Ensure product is ready for public display
       // Stock will be managed via vendor inventory manager

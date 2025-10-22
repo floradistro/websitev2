@@ -90,10 +90,9 @@ export async function GET(request: NextRequest) {
         
         // Stock
         stock_quantity: p.stock_quantity || 0,
-        stock_status: p.stock_status || 'instock',
+        stock_status: p.stock_status || 'in_stock',
         
         // IDs
-        wordpress_id: p.wordpress_id,
         slug: p.slug
       };
     });

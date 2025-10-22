@@ -155,7 +155,7 @@ export default function VendorLogin() {
           {/* Help Links */}
           <div className="mt-6 pt-6 border-t border-white/10 text-center space-y-2">
             <p className="text-white/60 text-xs">
-              <a href="https://api.floradistro.com/wp-login.php?action=lostpassword" className="hover:text-white transition-colors">
+              <a href="/reset-password" className="hover:text-white transition-colors">
                 Forgot your password?
               </a>
             </p>

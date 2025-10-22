@@ -21,7 +21,7 @@ export async function DELETE(request: NextRequest) {
     console.log('🔍 Fetching product details...');
     const { data: products, error: fetchError } = await supabase
       .from('products')
-      .select('id, name, wordpress_id')
+      .select('id, name')
       .eq('id', productId);
 
     if (fetchError) {
@@ -35,13 +35,13 @@ export async function DELETE(request: NextRequest) {
     }
 
     const product = products[0];
-    console.log('✅ Product found:', product.name, 'WordPress ID:', product.wordpress_id);
+    console.log('✅ Product found:', product.name, 'ID:', product.id);
 
     // Check if product has inventory
     const { data: inventory } = await supabase
       .from('inventory')
       .select('id, quantity, location:location_id(name)')
-      .eq('product_id', product.wordpress_id);
+      .eq('product_id', product.id);
 
     if (inventory && inventory.length > 0 && !forceDelete) {
       const totalQty = inventory.reduce((sum, inv) => sum + parseFloat(inv.quantity || '0'), 0);
@@ -76,7 +76,7 @@ export async function DELETE(request: NextRequest) {
           .from('stock_movements')
           .insert({
             inventory_id: inv.id,
-            product_id: product.wordpress_id,
+            product_id: product.id,
             movement_type: 'adjustment',
             quantity: -parseFloat(inv.quantity || '0'),
             quantity_before: parseFloat(inv.quantity || '0'),
@@ -90,7 +90,7 @@ export async function DELETE(request: NextRequest) {
       await supabase
         .from('inventory')
         .delete()
-        .eq('product_id', product.wordpress_id);
+        .eq('product_id', product.id);
       
       console.log('✅ Inventory deleted for product:', product.name);
     }

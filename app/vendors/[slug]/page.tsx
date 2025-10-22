@@ -111,7 +111,7 @@ export default function VendorStorefront() {
     if (p.product_categories && p.product_categories[0]?.category?.name) {
       return p.product_categories[0].category.name;
     }
-    // WordPress: categories[{name}]
+    // Categories
     if (p.categories && p.categories[0]?.name) {
       return p.categories[0].name;
     }
@@ -127,7 +127,7 @@ export default function VendorStorefront() {
     const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = selectedCategory === 'all' || product.categories[0]?.name === selectedCategory;
     const matchesStock = stockFilter === 'all' || 
-                        (stockFilter === 'instock' && product.stock_status === 'instock') ||
+                        (stockFilter === 'in_stock' && product.stock_status === 'in_stock') ||
                         (stockFilter === 'lowstock' && product.stock_status === 'lowstock');
     return matchesSearch && matchesCategory && matchesStock;
   });
@@ -354,7 +354,7 @@ export default function VendorStorefront() {
                   className="flex-1 sm:flex-none px-2 sm:px-2.5 py-1.5 sm:py-2 bg-white/5 border border-white/10 text-[10px] sm:text-[11px] uppercase tracking-wider text-white/60 hover:bg-white/10 hover:text-white transition-all cursor-pointer focus:outline-none focus:border-white/30 rounded"
                 >
                   <option value="all">All Stock</option>
-                  <option value="instock">In Stock</option>
+                  <option value="in_stock">In Stock</option>
                   <option value="lowstock">Low Stock</option>
                 </select>
 
@@ -398,7 +398,7 @@ export default function VendorStorefront() {
                     onClick={() => setStockFilter('all')}
                     className="px-2.5 py-1 bg-white/5 text-white/70 border border-white/10 hover:bg-white/10 transition-all rounded text-[10px] uppercase tracking-wider"
                   >
-                    {stockFilter === 'instock' ? 'In Stock' : 'Low Stock'} ×
+                    {stockFilter === 'in_stock' ? 'In Stock' : 'Low Stock'} ×
                   </button>
                 )}
                 <button

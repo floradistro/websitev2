@@ -68,7 +68,7 @@ export function ProductSchema({ product }: ProductSchemaProps) {
       "url": `https://floradistro.com/products/${product.id}`,
       "priceCurrency": "USD",
       "price": price,
-      "availability": product.stock_status === "instock" 
+      "availability": product.stock_status === "in_stock" 
         ? "https://schema.org/InStock" 
         : "https://schema.org/OutOfStock",
       "itemCondition": "https://schema.org/NewCondition"

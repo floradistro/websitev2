@@ -226,7 +226,7 @@ export default function DeliveryAvailability({
   const currentStore = activeLocations.find(loc => loc.id === selectedStore);
   const currentStoreQuantity = currentStore ? getQuantity(currentStore.id) : 0;
 
-  const isInStock = locationsWithStock.length > 0 || stockStatus === "instock";
+  const isInStock = locationsWithStock.length > 0 || stockStatus === "in_stock";
 
   return (
     <div id="delivery-section" className="space-y-2">

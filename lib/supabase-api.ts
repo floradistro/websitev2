@@ -1,6 +1,5 @@
 /**
  * Supabase API Client
- * Replaces all WordPress/WooCommerce API calls
  */
 
 // Determine base URL for API calls

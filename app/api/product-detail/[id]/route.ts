@@ -31,7 +31,7 @@ export async function GET(
     
     // Get inventory for this product
     const inventoryResponse = await fetch(
-      `${baseUrl}/api/supabase/inventory?product_id=${product.wordpress_id || id}`
+      `${baseUrl}/api/supabase/inventory?product_id=${id}`
     );
     const inventoryData = await inventoryResponse.json();
     
