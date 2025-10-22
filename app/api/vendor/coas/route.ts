@@ -11,29 +11,29 @@ export async function GET(request: NextRequest) {
 
     const supabase = getServiceSupabase();
 
-    // Fetch COAs for vendor
+    // Fetch COAs for vendor with comprehensive product details
     const { data: coas, error: coasError } = await supabase
       .from('vendor_coas')
       .select(`
-        id,
-        vendor_id,
-        product_id,
-        file_name,
-        file_url,
-        file_size,
-        file_type,
-        lab_name,
-        test_date,
-        expiry_date,
-        batch_number,
-        test_results,
-        is_active,
-        is_verified,
-        upload_date,
+        *,
         products:product_id (
           id,
           name,
-          wordpress_id
+          slug,
+          sku,
+          featured_image,
+          regular_price,
+          sale_price,
+          price,
+          type,
+          status,
+          stock_status,
+          primary_category_id,
+          categories:primary_category_id (
+            id,
+            name,
+            slug
+          )
         )
       `)
       .eq('vendor_id', vendorId)
@@ -45,25 +45,61 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: coasError.message }, { status: 500 });
     }
 
-    // Transform data to match frontend interface
+    // Transform data to match frontend interface with comprehensive details
     const transformedCoas = (coas || []).map(coa => {
       const product = Array.isArray(coa.products) ? coa.products[0] : coa.products;
+      const category = product?.categories;
+      const testResults = coa.test_results || {};
+      
+      // Calculate if COA is expired (90 days)
+      const isExpired = coa.expiry_date 
+        ? new Date(coa.expiry_date) < new Date()
+        : coa.test_date && (new Date().getTime() - new Date(coa.test_date).getTime()) > (90 * 24 * 60 * 60 * 1000);
+      
       return {
         id: coa.id,
         productId: product?.id || null,
         productName: product?.name || 'Unknown Product',
+        productSku: product?.sku || null,
+        productImage: product?.featured_image || null,
+        productPrice: product?.price || product?.regular_price || null,
+        productCategory: category?.name || null,
+        productCategorySlug: category?.slug || null,
+        productSlug: product?.slug || null,
+        productStatus: product?.status || null,
+        productStockStatus: product?.stock_status || null,
         coaNumber: coa.batch_number || `COA-${coa.id.slice(0, 8)}`,
         testDate: coa.test_date,
         uploadDate: coa.upload_date,
-        status: coa.is_verified ? 'approved' : 'pending',
+        expiryDate: coa.expiry_date,
+        status: isExpired ? 'expired' : (coa.is_verified ? 'approved' : 'pending'),
         fileUrl: coa.file_url,
-        thc: coa.test_results?.thc ? `${coa.test_results.thc}%` : 'N/A',
-        cbd: coa.test_results?.cbd ? `${coa.test_results.cbd}%` : 'N/A',
+        fileName: coa.file_name,
+        fileSize: coa.file_size,
+        fileType: coa.file_type,
         testingLab: coa.lab_name || 'N/A',
         batchNumber: coa.batch_number || 'N/A',
-        expiryDate: coa.expiry_date,
-        fileName: coa.file_name,
-        fileSize: coa.file_size
+        // Cannabinoids
+        thc: testResults.thc ? `${testResults.thc}%` : 'N/A',
+        cbd: testResults.cbd ? `${testResults.cbd}%` : 'N/A',
+        thca: testResults.thca ? `${testResults.thca}%` : null,
+        cbda: testResults.cbda ? `${testResults.cbda}%` : null,
+        cbg: testResults.cbg ? `${testResults.cbg}%` : null,
+        cbn: testResults.cbn ? `${testResults.cbn}%` : null,
+        totalCannabinoids: testResults.total_cannabinoids ? `${testResults.total_cannabinoids}%` : null,
+        // Terpenes
+        terpenes: testResults.terpenes || null,
+        totalTerpenes: testResults.total_terpenes ? `${testResults.total_terpenes}%` : null,
+        // Safety tests
+        pesticides: testResults.pesticides_passed !== undefined ? testResults.pesticides_passed : null,
+        heavyMetals: testResults.heavy_metals_passed !== undefined ? testResults.heavy_metals_passed : null,
+        microbials: testResults.microbials_passed !== undefined ? testResults.microbials_passed : null,
+        mycotoxins: testResults.mycotoxins_passed !== undefined ? testResults.mycotoxins_passed : null,
+        solvents: testResults.solvents_passed !== undefined ? testResults.solvents_passed : null,
+        // Metadata
+        metadata: coa.metadata || {},
+        // Raw test results for detailed view
+        rawTestResults: testResults
       };
     });
 
@@ -118,4 +154,5 @@ export async function GET(request: NextRequest) {
     );
   }
 }
+
 

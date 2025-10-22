@@ -6,20 +6,47 @@ import Link from 'next/link';
 
 interface COA {
   id: string | number;
-  productId: number | null;
+  productId: string | null;
   productName: string;
+  productSku?: string | null;
+  productImage?: string | null;
+  productPrice?: number | null;
+  productCategory?: string | null;
+  productCategorySlug?: string | null;
+  productSlug?: string | null;
+  productStatus?: string | null;
+  productStockStatus?: string | null;
   coaNumber: string;
   testDate: string;
   uploadDate: string;
+  expiryDate?: string;
   status: 'approved' | 'pending' | 'rejected' | 'expired';
   fileUrl: string;
-  thc: string;
-  cbd: string;
-  testingLab: string;
-  batchNumber: string;
-  expiryDate?: string;
   fileName?: string;
   fileSize?: number;
+  fileType?: string;
+  testingLab: string;
+  batchNumber: string;
+  // Cannabinoids
+  thc: string;
+  cbd: string;
+  thca?: string | null;
+  cbda?: string | null;
+  cbg?: string | null;
+  cbn?: string | null;
+  totalCannabinoids?: string | null;
+  // Terpenes
+  terpenes?: any;
+  totalTerpenes?: string | null;
+  // Safety tests
+  pesticides?: boolean | null;
+  heavyMetals?: boolean | null;
+  microbials?: boolean | null;
+  mycotoxins?: boolean | null;
+  solvents?: boolean | null;
+  // Metadata
+  metadata?: any;
+  rawTestResults?: any;
 }
 
 export default function VendorLabResults() {
@@ -82,7 +109,16 @@ export default function VendorLabResults() {
 
   const filteredCOAs = coas.filter(coa => {
     if (statusFilter !== 'all' && coa.status !== statusFilter) return false;
-    if (search && !coa.productName.toLowerCase().includes(search.toLowerCase()) && !coa.coaNumber.includes(search)) return false;
+    if (search) {
+      const searchLower = search.toLowerCase();
+      const matchesName = coa.productName.toLowerCase().includes(searchLower);
+      const matchesCOA = coa.coaNumber.toLowerCase().includes(searchLower);
+      const matchesSKU = coa.productSku?.toLowerCase().includes(searchLower);
+      const matchesCategory = coa.productCategory?.toLowerCase().includes(searchLower);
+      const matchesBatch = coa.batchNumber.toLowerCase().includes(searchLower);
+      
+      if (!matchesName && !matchesCOA && !matchesSKU && !matchesCategory && !matchesBatch) return false;
+    }
     return true;
   });
 
@@ -241,14 +277,35 @@ export default function VendorLabResults() {
                 onClick={() => setSelectedCOA(coa)}
                 className="px-4 py-3 active:bg-white/5 transition-all bg-[#1a1a1a]"
               >
-                <div className="flex items-center justify-between mb-2">
-                  <div className="text-white text-sm font-medium">{coa.productName}</div>
-                  {getStatusBadge(coa.status)}
+                <div className="flex gap-3 mb-2">
+                  {coa.productImage && (
+                    <img 
+                      src={coa.productImage} 
+                      alt={coa.productName}
+                      className="w-12 h-12 object-cover bg-white/5"
+                    />
+                  )}
+                  <div className="flex-1">
+                    <div className="flex items-start justify-between mb-1">
+                      <div>
+                        <div className="text-white text-sm font-medium">{coa.productName}</div>
+                        {coa.productSku && <div className="text-white/40 text-xs">SKU: {coa.productSku}</div>}
+                        {coa.productCategory && <div className="text-white/40 text-xs">{coa.productCategory}</div>}
+                      </div>
+                      {getStatusBadge(coa.status)}
+                    </div>
+                  </div>
                 </div>
                 <div className="flex items-center gap-3 text-xs text-white/40 mb-2">
                   <span>THC: <span className="text-white/60">{coa.thc}</span></span>
                   <span>•</span>
                   <span>CBD: <span className="text-white/60">{coa.cbd}</span></span>
+                  {coa.totalTerpenes && (
+                    <>
+                      <span>•</span>
+                      <span>Terps: <span className="text-white/60">{coa.totalTerpenes}</span></span>
+                    </>
+                  )}
                 </div>
                 <div className="text-xs text-white/40 font-mono">{coa.coaNumber}</div>
               </div>
@@ -275,19 +332,41 @@ export default function VendorLabResults() {
                   <td className="p-4">
                     <Link 
                       href={`/vendor/products/${coa.productId}/edit`}
-                      className="flex items-center gap-2 hover:text-white transition-colors"
+                      className="flex items-center gap-3 hover:text-white transition-colors"
                     >
-                      <FileText size={16} className="text-white/40" />
-                      <span className="text-white text-sm">{coa.productName}</span>
+                      {coa.productImage ? (
+                        <img 
+                          src={coa.productImage} 
+                          alt={coa.productName}
+                          className="w-10 h-10 object-cover bg-white/5"
+                        />
+                      ) : (
+                        <div className="w-10 h-10 bg-white/5 flex items-center justify-center">
+                          <FileText size={16} className="text-white/40" />
+                        </div>
+                      )}
+                      <div>
+                        <div className="text-white text-sm">{coa.productName}</div>
+                        <div className="text-white/40 text-xs">
+                          {coa.productSku && <span>SKU: {coa.productSku}</span>}
+                          {coa.productSku && coa.productCategory && <span> • </span>}
+                          {coa.productCategory && <span>{coa.productCategory}</span>}
+                        </div>
+                      </div>
                     </Link>
                   </td>
                   <td className="p-4">
                     <span className="text-white/60 font-mono text-xs">{coa.coaNumber}</span>
                   </td>
                   <td className="p-4">
-                    <div className="flex gap-3 text-xs">
-                      <span className="text-white/60">THC: <span className="text-white font-medium">{coa.thc}</span></span>
-                      <span className="text-white/60">CBD: <span className="text-white font-medium">{coa.cbd}</span></span>
+                    <div className="flex flex-col gap-1 text-xs">
+                      <div className="flex gap-3">
+                        <span className="text-white/60">THC: <span className="text-white font-medium">{coa.thc}</span></span>
+                        <span className="text-white/60">CBD: <span className="text-white font-medium">{coa.cbd}</span></span>
+                      </div>
+                      {coa.totalTerpenes && (
+                        <div className="text-white/40">Terpenes: {coa.totalTerpenes}</div>
+                      )}
                     </div>
                   </td>
                   <td className="p-4">
@@ -308,12 +387,15 @@ export default function VendorLabResults() {
                       >
                         <Eye size={14} className="text-white/60" />
                       </button>
-                      <button
+                      <a
+                        href={coa.fileUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
                         className="p-1.5 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all duration-300"
                         title="Download COA"
                       >
                         <Download size={14} className="text-white/60" />
-                      </button>
+                      </a>
                     </div>
                   </td>
                 </tr>
@@ -348,6 +430,29 @@ export default function VendorLabResults() {
 
             {/* COA Content */}
             <div className="p-6">
+              {/* Product Info */}
+              {selectedCOA.productImage && (
+                <div className="flex gap-4 mb-6 pb-6 border-b border-white/5">
+                  <img 
+                    src={selectedCOA.productImage} 
+                    alt={selectedCOA.productName}
+                    className="w-20 h-20 object-cover bg-white/5"
+                  />
+                  <div>
+                    <div className="text-white text-lg font-medium mb-1">{selectedCOA.productName}</div>
+                    {selectedCOA.productSku && (
+                      <div className="text-white/60 text-xs mb-1">SKU: {selectedCOA.productSku}</div>
+                    )}
+                    {selectedCOA.productCategory && (
+                      <div className="text-white/60 text-xs mb-1">Category: {selectedCOA.productCategory}</div>
+                    )}
+                    {selectedCOA.productPrice && (
+                      <div className="text-white/60 text-xs">Price: ${selectedCOA.productPrice}</div>
+                    )}
+                  </div>
+                </div>
+              )}
+
               {/* COA Header */}
               <div className="bg-white/5 border border-white/5 p-4 mb-6">
                 <div className="grid grid-cols-2 gap-4 text-sm">
@@ -367,12 +472,24 @@ export default function VendorLabResults() {
                     <div className="text-white/60 text-xs mb-1">Testing Laboratory</div>
                     <div className="text-white">{selectedCOA.testingLab}</div>
                   </div>
+                  {selectedCOA.expiryDate && (
+                    <div>
+                      <div className="text-white/60 text-xs mb-1">Expiry Date</div>
+                      <div className="text-white">{new Date(selectedCOA.expiryDate).toLocaleDateString()}</div>
+                    </div>
+                  )}
+                  {selectedCOA.fileName && (
+                    <div>
+                      <div className="text-white/60 text-xs mb-1">File</div>
+                      <div className="text-white text-xs truncate">{selectedCOA.fileName}</div>
+                    </div>
+                  )}
                 </div>
               </div>
 
-              {/* Test Results */}
+              {/* Main Cannabinoid Profile */}
               <div className="mb-6">
-                <h3 className="text-xs uppercase tracking-wider text-white/60 mb-3">Cannabinoid Profile</h3>
+                <h3 className="text-xs uppercase tracking-wider text-white/60 mb-3">Primary Cannabinoids</h3>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="bg-white/5 border border-white/5 p-4">
                     <div className="text-white/60 text-xs mb-2">Total THC</div>
@@ -384,6 +501,125 @@ export default function VendorLabResults() {
                   </div>
                 </div>
               </div>
+
+              {/* Additional Cannabinoids */}
+              {(selectedCOA.thca || selectedCOA.cbda || selectedCOA.cbg || selectedCOA.cbn || selectedCOA.totalCannabinoids) && (
+                <div className="mb-6">
+                  <h3 className="text-xs uppercase tracking-wider text-white/60 mb-3">Additional Cannabinoids</h3>
+                  <div className="grid grid-cols-3 gap-3">
+                    {selectedCOA.thca && (
+                      <div className="bg-white/5 border border-white/5 p-3">
+                        <div className="text-white/40 text-xs mb-1">THCa</div>
+                        <div className="text-lg font-light text-white">{selectedCOA.thca}</div>
+                      </div>
+                    )}
+                    {selectedCOA.cbda && (
+                      <div className="bg-white/5 border border-white/5 p-3">
+                        <div className="text-white/40 text-xs mb-1">CBDa</div>
+                        <div className="text-lg font-light text-white">{selectedCOA.cbda}</div>
+                      </div>
+                    )}
+                    {selectedCOA.cbg && (
+                      <div className="bg-white/5 border border-white/5 p-3">
+                        <div className="text-white/40 text-xs mb-1">CBG</div>
+                        <div className="text-lg font-light text-white">{selectedCOA.cbg}</div>
+                      </div>
+                    )}
+                    {selectedCOA.cbn && (
+                      <div className="bg-white/5 border border-white/5 p-3">
+                        <div className="text-white/40 text-xs mb-1">CBN</div>
+                        <div className="text-lg font-light text-white">{selectedCOA.cbn}</div>
+                      </div>
+                    )}
+                    {selectedCOA.totalCannabinoids && (
+                      <div className="bg-white/5 border border-white/5 p-3">
+                        <div className="text-white/40 text-xs mb-1">Total</div>
+                        <div className="text-lg font-light text-white">{selectedCOA.totalCannabinoids}</div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Terpenes */}
+              {selectedCOA.totalTerpenes && (
+                <div className="mb-6">
+                  <h3 className="text-xs uppercase tracking-wider text-white/60 mb-3">Terpene Profile</h3>
+                  <div className="bg-white/5 border border-white/5 p-4 mb-3">
+                    <div className="text-white/60 text-xs mb-2">Total Terpenes</div>
+                    <div className="text-2xl font-light text-white">{selectedCOA.totalTerpenes}</div>
+                  </div>
+                  {selectedCOA.terpenes && typeof selectedCOA.terpenes === 'object' && (
+                    <div className="grid grid-cols-3 gap-2">
+                      {Object.entries(selectedCOA.terpenes).map(([name, value]) => (
+                        <div key={name} className="bg-white/5 border border-white/5 p-2">
+                          <div className="text-white/40 text-xs capitalize">{name}</div>
+                          <div className="text-white text-sm">{value}%</div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Safety Tests */}
+              {(selectedCOA.pesticides !== null || selectedCOA.heavyMetals !== null || selectedCOA.microbials !== null || selectedCOA.mycotoxins !== null || selectedCOA.solvents !== null) && (
+                <div className="mb-6">
+                  <h3 className="text-xs uppercase tracking-wider text-white/60 mb-3">Safety & Compliance Tests</h3>
+                  <div className="grid grid-cols-2 gap-3">
+                    {selectedCOA.pesticides !== null && (
+                      <div className={`border p-3 flex items-center justify-between ${selectedCOA.pesticides ? 'bg-green-500/10 border-green-500/20' : 'bg-red-500/10 border-red-500/20'}`}>
+                        <span className="text-white/80 text-sm">Pesticides</span>
+                        {selectedCOA.pesticides ? (
+                          <CheckCircle size={16} className="text-green-500" />
+                        ) : (
+                          <XCircle size={16} className="text-red-500" />
+                        )}
+                      </div>
+                    )}
+                    {selectedCOA.heavyMetals !== null && (
+                      <div className={`border p-3 flex items-center justify-between ${selectedCOA.heavyMetals ? 'bg-green-500/10 border-green-500/20' : 'bg-red-500/10 border-red-500/20'}`}>
+                        <span className="text-white/80 text-sm">Heavy Metals</span>
+                        {selectedCOA.heavyMetals ? (
+                          <CheckCircle size={16} className="text-green-500" />
+                        ) : (
+                          <XCircle size={16} className="text-red-500" />
+                        )}
+                      </div>
+                    )}
+                    {selectedCOA.microbials !== null && (
+                      <div className={`border p-3 flex items-center justify-between ${selectedCOA.microbials ? 'bg-green-500/10 border-green-500/20' : 'bg-red-500/10 border-red-500/20'}`}>
+                        <span className="text-white/80 text-sm">Microbials</span>
+                        {selectedCOA.microbials ? (
+                          <CheckCircle size={16} className="text-green-500" />
+                        ) : (
+                          <XCircle size={16} className="text-red-500" />
+                        )}
+                      </div>
+                    )}
+                    {selectedCOA.mycotoxins !== null && (
+                      <div className={`border p-3 flex items-center justify-between ${selectedCOA.mycotoxins ? 'bg-green-500/10 border-green-500/20' : 'bg-red-500/10 border-red-500/20'}`}>
+                        <span className="text-white/80 text-sm">Mycotoxins</span>
+                        {selectedCOA.mycotoxins ? (
+                          <CheckCircle size={16} className="text-green-500" />
+                        ) : (
+                          <XCircle size={16} className="text-red-500" />
+                        )}
+                      </div>
+                    )}
+                    {selectedCOA.solvents !== null && (
+                      <div className={`border p-3 flex items-center justify-between ${selectedCOA.solvents ? 'bg-green-500/10 border-green-500/20' : 'bg-red-500/10 border-red-500/20'}`}>
+                        <span className="text-white/80 text-sm">Residual Solvents</span>
+                        {selectedCOA.solvents ? (
+                          <CheckCircle size={16} className="text-green-500" />
+                        ) : (
+                          <XCircle size={16} className="text-red-500" />
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
 
               {/* Status */}
               <div className="mb-6">
@@ -404,10 +640,16 @@ export default function VendorLabResults() {
 
               {/* Actions */}
               <div className="flex gap-3">
-                <button className="flex items-center gap-2 px-6 py-3 bg-black text-white border border-white/20 hover:bg-white hover:text-black hover:border-white text-xs font-medium uppercase tracking-[0.2em] transition-all duration-300">
+                <a
+                  href={selectedCOA.fileUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  download
+                  className="flex items-center gap-2 px-6 py-3 bg-black text-white border border-white/20 hover:bg-white hover:text-black hover:border-white text-xs font-medium uppercase tracking-[0.2em] transition-all duration-300"
+                >
                   <Download size={16} />
                   Download PDF
-                </button>
+                </a>
                 <Link
                   href={`/vendor/products/${selectedCOA.productId}/edit`}
                   className="flex items-center gap-2 px-6 py-3 bg-black text-white border border-white/20 hover:bg-white hover:text-black hover:border-white text-xs font-medium uppercase tracking-[0.2em] transition-all duration-300"
