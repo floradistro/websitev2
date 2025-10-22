@@ -61,10 +61,10 @@ export async function GET(request: NextRequest) {
     const productIds = [...new Set(inventory?.map(inv => inv.product_id) || [])];
     const { data: products } = await supabase
       .from('products')
-      .select('wordpress_id, name, featured_image_storage, featured_image, price')
-      .in('wordpress_id', productIds);
+      .select('id, name, featured_image_storage, featured_image, price')
+      .in('id', productIds);
     
-    const productMap = new Map(products?.map(p => [p.wordpress_id, p]) || []);
+    const productMap = new Map(products?.map(p => [p.id, p]) || []);
     
     // Map to expected format for vendor UI
     const mappedInventory = (inventory || []).map(inv => {
