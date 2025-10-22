@@ -1,10 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServiceSupabase } from '@/lib/supabase/client';
-import axios from 'axios';
-
-const baseUrl = process.env.NEXT_PUBLIC_WORDPRESS_API_URL || "https://api.floradistro.com";
-const ck = process.env.WORDPRESS_CONSUMER_KEY || "";
-const cs = process.env.WORDPRESS_CONSUMER_SECRET || "";
 
 export async function POST(request: NextRequest) {
   try {
@@ -20,44 +15,13 @@ export async function POST(request: NextRequest) {
     const slug = store_name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
     const supabase = getServiceSupabase();
 
-    // 1. Create WordPress customer (for order history, legacy compatibility)
-    let wordpressUserId = null;
-    
-    try {
-      const wpResponse = await axios.post(
-        `${baseUrl}/wp-json/wc/v3/customers`,
-        {
-          email,
-          username,
-          first_name: store_name,
-          last_name: '',
-          billing: {
-            email,
-            first_name: store_name,
-            last_name: ''
-          },
-          meta_data: [
-            { key: 'store_name', value: store_name },
-            { key: 'wcfm_vendor_active', value: '1' },
-            { key: 'wc_product_vendors_admin_vendor', value: '1' }
-          ]
-        },
-        { auth: { username: ck, password: cs } }
-      );
-      wordpressUserId = wpResponse.data.id;
-    } catch (wpError: any) {
-      console.error('   ⚠️ WordPress user creation failed:', wpError.response?.data?.message);
-      // Continue anyway - vendor can still work without WordPress user
-    }
-
-    // 2. Create vendor in Supabase
+    // 1. Create vendor in Supabase
     const { data: vendor, error: vendorError } = await supabase
       .from('vendors')
       .insert({
         email,
         store_name,
         slug,
-        wordpress_user_id: wordpressUserId,
         status: 'active'
       })
       .select()
@@ -71,7 +35,7 @@ export async function POST(request: NextRequest) {
       }, { status: 500 });
     }
 
-    // 3. Create Supabase auth user
+    // 2. Create Supabase auth user
     const { data: authUser, error: authError } = await supabase.auth.admin.createUser({
       email,
       password,
@@ -79,7 +43,7 @@ export async function POST(request: NextRequest) {
       user_metadata: {
         vendor_id: vendor.id,
         store_name,
-        wordpress_user_id: wordpressUserId
+        role: 'vendor_owner'
       }
     });
 
@@ -94,6 +58,25 @@ export async function POST(request: NextRequest) {
       }, { status: 500 });
     }
 
+    // 3. Create user profile with vendor_owner role
+    const { error: userError } = await supabase
+      .from('users')
+      .insert({
+        auth_user_id: authUser.user.id,
+        email,
+        first_name: store_name,
+        last_name: 'Owner',
+        role: 'vendor_owner',
+        vendor_id: vendor.id,
+        status: 'active',
+        login_enabled: true
+      });
+
+    if (userError) {
+      console.warn('User profile creation error:', userError);
+      // Don't fail - auth user exists
+    }
+
     // 4. Create default warehouse location for vendor
     const { data: location, error: locationError } = await supabase
       .from('locations')
@@ -105,32 +88,37 @@ export async function POST(request: NextRequest) {
         city: '',
         state: '',
         is_active: true,
-        is_default: true
+        is_default: true,
+        pos_enabled: true,
+        accepts_online_orders: true,
+        accepts_transfers: true
       })
       .select()
       .single();
     
     if (locationError) {
-      console.error('⚠️ Failed to create vendor location:', locationError);
+      console.warn('⚠️ Failed to create vendor location:', locationError);
       // Don't fail - vendor can create location later
-    } else {
-      console.log('✅ Created default warehouse:', location.name);
     }
 
-    // 5. Clear WordPress cache
-    if (wordpressUserId) {
-      await axios.get(`${baseUrl}/clear-opcache.php`).catch(() => {});
+    // 5. Send password reset email so vendor can set their own password
+    const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/reset-password`
+    });
+
+    if (resetError) {
+      console.warn('Failed to send password reset email:', resetError);
+      // Don't fail - admin can resend manually
     }
 
     return NextResponse.json({
       success: true,
-      message: 'Vendor created successfully!',
+      message: 'Vendor created successfully! Password reset email sent.',
       vendor: {
         id: vendor.id,
         email: vendor.email,
         store_name: vendor.store_name,
         slug: vendor.slug,
-        wordpress_user_id: wordpressUserId,
         status: vendor.status
       },
       auth_user_id: authUser.user?.id,
@@ -147,4 +135,3 @@ export async function POST(request: NextRequest) {
     }, { status: 500 });
   }
 }
-
