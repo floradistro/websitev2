@@ -71,7 +71,7 @@ export async function GET(request: NextRequest) {
       return {
         id: coa.id,
         productId: product?.id || null,
-        productName: product?.name || 'Unknown Product',
+        productName: product?.name || null,
         productSku: product?.sku || null,
         productImage: product?.featured_image || null,
         productPrice: product?.price || product?.regular_price || null,
@@ -130,7 +130,7 @@ export async function GET(request: NextRequest) {
           .map(p => ({
             id: `legacy-${p.id}`,
             productId: p.id,
-            productName: p.name,
+            productName: p.name || null,
             coaNumber: `COA-${p.id.slice(0, 8)}`,
             testDate: p.created_at,
             uploadDate: p.created_at,
