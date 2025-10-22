@@ -75,19 +75,32 @@ export async function POST(request: NextRequest) {
     // Prepare product data for Supabase
     const stockQty = productData.initial_quantity ? parseInt(productData.initial_quantity) : 0;
     
+    // Determine stock management strategy (following enterprise patterns)
+    const shouldManageStock = stockQty > 0 || productData.manage_stock === true;
+    
+    // Derive stock status based on quantity (like Amazon/Apple)
+    const deriveStockStatus = (quantity: number): string => {
+      if (quantity > 0) return 'instock';
+      if (productData.backorders_allowed) return 'onbackorder';
+      return 'outofstock';
+    };
+    
     const newProduct: any = {
       name: productData.name,
       slug: slug,
       description: productData.description || '',
       short_description: productData.short_description || '',
       type: productData.product_type || 'simple',
-      status: 'pending', // Requires admin approval
+      status: 'pending', // Requires admin approval (marketplace pattern)
       vendor_id: vendorId,
       regular_price: productData.price ? parseFloat(productData.price) : null,
       sku: productData.sku || `YC-${Date.now()}`,
-      manage_stock: false,  // Set to false to avoid constraint issues
-      stock_quantity: stockQty,
-      stock_status: null,  // Let database handle default
+      // Stock management follows enterprise patterns
+      manage_stock: shouldManageStock,
+      stock_quantity: shouldManageStock ? stockQty : null,
+      stock_status: shouldManageStock ? deriveStockStatus(stockQty) : 'instock',
+      backorders_allowed: productData.backorders_allowed || false,
+      low_stock_amount: productData.low_stock_amount || 10,
       featured_image_storage: productData.image_urls?.[0] || null,
       image_gallery_storage: productData.image_urls || [],
       attributes: {},
@@ -141,6 +154,63 @@ export async function POST(request: NextRequest) {
     }
 
     console.log('✅ Product created successfully:', product.id);
+
+    // Create inventory record if initial quantity provided (enterprise pattern)
+    if (shouldManageStock && stockQty > 0) {
+      // Get vendor's primary location
+      const { data: vendorLocations } = await supabase
+        .from('locations')
+        .select('id, name, is_primary')
+        .eq('vendor_id', vendorId)
+        .eq('is_primary', true)
+        .limit(1);
+      
+      const primaryLocation = vendorLocations?.[0];
+      
+      if (primaryLocation) {
+        // Create inventory record at primary location
+        const { data: inventoryRecord, error: inventoryError } = await supabase
+          .from('inventory')
+          .insert({
+            product_id: product.id,
+            location_id: primaryLocation.id,
+            vendor_id: vendorId,
+            quantity: stockQty,
+            low_stock_threshold: productData.low_stock_amount || 10,
+            notes: 'Initial inventory from product creation',
+            metadata: {
+              source: 'vendor_product_submission',
+              initial_quantity: stockQty
+            }
+          })
+          .select()
+          .single();
+        
+        if (inventoryError) {
+          console.warn('⚠️ Could not create inventory record:', inventoryError);
+          // Don't fail the product creation, just log the warning
+        } else {
+          console.log('✅ Inventory record created at', primaryLocation.name);
+          
+          // Create stock movement audit trail (compliance requirement)
+          await supabase
+            .from('stock_movements')
+            .insert({
+              inventory_id: inventoryRecord.id,
+              product_id: product.id,
+              location_id: primaryLocation.id,
+              movement_type: 'adjustment',
+              quantity: stockQty,
+              reference_type: 'product_creation',
+              reference_id: product.id,
+              notes: 'Initial stock from product submission',
+              created_by: vendorId
+            });
+        }
+      } else {
+        console.warn('⚠️ No primary location found for vendor, inventory not created');
+      }
+    }
 
     // Handle variants if provided
     if (productData.product_type === 'variable' && productData.variants && productData.variants.length > 0) {
