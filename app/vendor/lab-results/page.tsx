@@ -407,19 +407,23 @@ export default function VendorLabResults() {
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => setSelectedCOA(coa)}
-                        className="p-1.5 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all duration-300"
-                        title="View COA"
+                        className="px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all duration-300 text-white/80 hover:text-white text-xs uppercase tracking-wider"
+                        title="View Details"
                       >
-                        <Eye size={14} className="text-white/60" />
+                        <div className="flex items-center gap-1.5">
+                          <Eye size={14} />
+                          <span>Details</span>
+                        </div>
                       </button>
                       <a
                         href={coa.fileUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="p-1.5 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all duration-300"
-                        title="Download COA"
+                        className="px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all duration-300 text-white/80 hover:text-white text-xs uppercase tracking-wider inline-flex items-center gap-1.5"
+                        title="View PDF"
                       >
-                        <Download size={14} className="text-white/60" />
+                        <Download size={14} />
+                        <span>View PDF</span>
                       </a>
                     </div>
                   </td>
