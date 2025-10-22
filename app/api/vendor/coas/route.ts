@@ -72,6 +72,7 @@ export async function GET(request: NextRequest) {
         id: coa.id,
         productId: product?.id || null,
         productName: product?.name || null,
+        productNameOnCoa: coa.product_name_on_coa || null,
         productSku: product?.sku || null,
         productImage: product?.featured_image || null,
         productPrice: product?.price || product?.regular_price || null,
@@ -182,6 +183,7 @@ export async function POST(request: NextRequest) {
     const testDate = formData.get('test_date') as string;
     const expiryDate = formData.get('expiry_date') as string | null;
     const batchNumber = formData.get('batch_number') as string;
+    const productNameOnCoa = formData.get('product_name_on_coa') as string | null;
     
     // Parse test results JSON
     const testResultsStr = formData.get('test_results') as string;
@@ -249,6 +251,7 @@ export async function POST(request: NextRequest) {
         test_date: testDate || null,
         expiry_date: expiryDate || null,
         batch_number: batchNumber || null,
+        product_name_on_coa: productNameOnCoa || null,
         test_results: testResults,
         is_active: true,
         is_verified: false, // Admin needs to verify

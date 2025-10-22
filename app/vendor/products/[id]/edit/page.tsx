@@ -33,6 +33,7 @@ export default function EditProduct() {
   
   const [coaForm, setCoaForm] = useState({
     file: null as File | null,
+    product_name_on_coa: '',
     lab_name: '',
     test_date: '',
     expiry_date: '',
@@ -159,6 +160,7 @@ export default function EditProduct() {
       const formData = new FormData();
       formData.append('file', coaForm.file);
       formData.append('product_id', productId);
+      formData.append('product_name_on_coa', coaForm.product_name_on_coa);
       formData.append('lab_name', coaForm.lab_name);
       formData.append('test_date', coaForm.test_date);
       formData.append('expiry_date', coaForm.expiry_date);
@@ -192,6 +194,7 @@ export default function EditProduct() {
         setShowCOAForm(false);
         setCoaForm({
           file: null,
+          product_name_on_coa: '',
           lab_name: '',
           test_date: '',
           expiry_date: '',
@@ -586,28 +589,39 @@ export default function EditProduct() {
                 )}
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-white/80 text-sm mb-2">Lab Name</label>
-                  <input
-                    type="text"
-                    value={coaForm.lab_name}
-                    onChange={(e) => setCoaForm(prev => ({ ...prev, lab_name: e.target.value }))}
-                    placeholder="e.g., Quantix Analytics"
-                    className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-3 py-2 text-sm focus:outline-none focus:border-white/10"
-                  />
-                </div>
+              <div className="grid grid-cols-3 gap-3">
+              <div>
+                <label className="block text-white/80 text-sm mb-2">Product Name on COA</label>
+                <input
+                  type="text"
+                  value={coaForm.product_name_on_coa}
+                  onChange={(e) => setCoaForm(prev => ({ ...prev, product_name_on_coa: e.target.value }))}
+                  placeholder="e.g., Blue Dream (as written on COA)"
+                  className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-3 py-2 text-sm focus:outline-none focus:border-white/10"
+                />
+              </div>
 
-                <div>
-                  <label className="block text-white/80 text-sm mb-2">Batch Number</label>
-                  <input
-                    type="text"
-                    value={coaForm.batch_number}
-                    onChange={(e) => setCoaForm(prev => ({ ...prev, batch_number: e.target.value }))}
-                    placeholder="e.g., BATCH-2025-001"
-                    className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-3 py-2 text-sm focus:outline-none focus:border-white/10"
-                  />
-                </div>
+              <div>
+                <label className="block text-white/80 text-sm mb-2">Lab Name</label>
+                <input
+                  type="text"
+                  value={coaForm.lab_name}
+                  onChange={(e) => setCoaForm(prev => ({ ...prev, lab_name: e.target.value }))}
+                  placeholder="e.g., Quantix Analytics"
+                  className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-3 py-2 text-sm focus:outline-none focus:border-white/10"
+                />
+              </div>
+
+              <div>
+                <label className="block text-white/80 text-sm mb-2">Batch Number</label>
+                <input
+                  type="text"
+                  value={coaForm.batch_number}
+                  onChange={(e) => setCoaForm(prev => ({ ...prev, batch_number: e.target.value }))}
+                  placeholder="e.g., BATCH-2025-001"
+                  className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-3 py-2 text-sm focus:outline-none focus:border-white/10"
+                />
+              </div>
 
                 <div>
                   <label className="block text-white/80 text-sm mb-2">Test Date</label>
@@ -921,9 +935,12 @@ export default function EditProduct() {
                           <FileText size={16} className="text-white/60 flex-shrink-0" />
                           <div className="min-w-0 flex-1">
                             <div className="text-white text-sm font-medium truncate">{coa.fileName || 'COA'}</div>
+                            {coa.productNameOnCoa && (
+                              <div className="text-white/80 text-xs font-medium">COA Product: {coa.productNameOnCoa}</div>
+                            )}
                             <div className="text-white/60 text-xs">
-                              {coa.productName && <span>Currently: {coa.productName}</span>}
-                              {!coa.productName && <span>Not assigned</span>}
+                              {coa.productName && <span>Assigned to: {coa.productName}</span>}
+                              {!coa.productName && <span>Not assigned to product</span>}
                             </div>
                             {coa.batchNumber && (
                               <div className="text-white/60 text-xs font-mono">Batch: {coa.batchNumber}</div>
