@@ -9,10 +9,13 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Vendor ID required' }, { status: 401 });
     }
 
+    const { searchParams } = new URL(request.url);
+    const productId = searchParams.get('product_id');
+
     const supabase = getServiceSupabase();
 
-    // Fetch COAs for vendor with comprehensive product details
-    const { data: coas, error: coasError } = await supabase
+    // Build query
+    let query = supabase
       .from('vendor_coas')
       .select(`
         *,
@@ -37,8 +40,17 @@ export async function GET(request: NextRequest) {
         )
       `)
       .eq('vendor_id', vendorId)
-      .eq('is_active', true)
-      .order('upload_date', { ascending: false });
+      .eq('is_active', true);
+
+    // Filter by product if specified
+    if (productId) {
+      query = query.eq('product_id', productId);
+    }
+
+    query = query.order('upload_date', { ascending: false });
+
+    // Fetch COAs for vendor with comprehensive product details
+    const { data: coas, error: coasError } = await query;
 
     if (coasError) {
       console.error('Error fetching COAs:', coasError);
@@ -150,6 +162,172 @@ export async function GET(request: NextRequest) {
     console.error('Vendor COAs API error:', error);
     return NextResponse.json(
       { error: error.message || 'Failed to fetch COAs' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const vendorId = request.headers.get('x-vendor-id');
+
+    if (!vendorId) {
+      return NextResponse.json({ error: 'Vendor ID required' }, { status: 401 });
+    }
+
+    const formData = await request.formData();
+    const file = formData.get('file') as File;
+    const productId = formData.get('product_id') as string;
+    const labName = formData.get('lab_name') as string;
+    const testDate = formData.get('test_date') as string;
+    const expiryDate = formData.get('expiry_date') as string | null;
+    const batchNumber = formData.get('batch_number') as string;
+    
+    // Parse test results JSON
+    const testResultsStr = formData.get('test_results') as string;
+    let testResults = {};
+    if (testResultsStr) {
+      try {
+        testResults = JSON.parse(testResultsStr);
+      } catch (e) {
+        console.error('Failed to parse test_results:', e);
+      }
+    }
+
+    if (!file) {
+      return NextResponse.json({ error: 'File is required' }, { status: 400 });
+    }
+
+    if (!productId) {
+      return NextResponse.json({ error: 'Product ID is required' }, { status: 400 });
+    }
+
+    // Validate file type and size
+    if (file.type !== 'application/pdf' && !file.type.startsWith('image/')) {
+      return NextResponse.json({ error: 'Only PDF and image files are allowed' }, { status: 400 });
+    }
+
+    if (file.size > 25 * 1024 * 1024) { // 25MB limit
+      return NextResponse.json({ error: 'File size must be less than 25MB' }, { status: 400 });
+    }
+
+    const supabase = getServiceSupabase();
+
+    // Upload file to Supabase Storage
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${vendorId}/${productId}/${Date.now()}.${fileExt}`;
+    const fileBuffer = await file.arrayBuffer();
+
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from('vendor-coas')
+      .upload(fileName, fileBuffer, {
+        contentType: file.type,
+        upsert: false
+      });
+
+    if (uploadError) {
+      console.error('Storage upload error:', uploadError);
+      return NextResponse.json({ error: 'Failed to upload file' }, { status: 500 });
+    }
+
+    // Get public URL (for private bucket, this will require signed URL for viewing)
+    const { data: { publicUrl } } = supabase.storage
+      .from('vendor-coas')
+      .getPublicUrl(fileName);
+
+    // Create COA record
+    const { data: coaData, error: coaError } = await supabase
+      .from('vendor_coas')
+      .insert({
+        vendor_id: vendorId,
+        product_id: productId,
+        file_name: file.name,
+        file_url: publicUrl,
+        file_size: file.size,
+        file_type: file.type,
+        lab_name: labName || null,
+        test_date: testDate || null,
+        expiry_date: expiryDate || null,
+        batch_number: batchNumber || null,
+        test_results: testResults,
+        is_active: true,
+        is_verified: false, // Admin needs to verify
+      })
+      .select()
+      .single();
+
+    if (coaError) {
+      console.error('COA creation error:', coaError);
+      // Clean up uploaded file if DB insert fails
+      await supabase.storage.from('vendor-coas').remove([fileName]);
+      return NextResponse.json({ error: coaError.message }, { status: 500 });
+    }
+
+    return NextResponse.json({
+      success: true,
+      coa: coaData,
+      message: 'COA uploaded successfully and pending verification'
+    });
+
+  } catch (error: any) {
+    console.error('COA upload error:', error);
+    return NextResponse.json(
+      { error: error.message || 'Failed to upload COA' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const vendorId = request.headers.get('x-vendor-id');
+
+    if (!vendorId) {
+      return NextResponse.json({ error: 'Vendor ID required' }, { status: 401 });
+    }
+
+    const { searchParams } = new URL(request.url);
+    const coaId = searchParams.get('id');
+
+    if (!coaId) {
+      return NextResponse.json({ error: 'COA ID required' }, { status: 400 });
+    }
+
+    const supabase = getServiceSupabase();
+
+    // Get COA details first
+    const { data: coa, error: fetchError } = await supabase
+      .from('vendor_coas')
+      .select('*')
+      .eq('id', coaId)
+      .eq('vendor_id', vendorId)
+      .single();
+
+    if (fetchError || !coa) {
+      return NextResponse.json({ error: 'COA not found' }, { status: 404 });
+    }
+
+    // Soft delete - mark as inactive
+    const { error: deleteError } = await supabase
+      .from('vendor_coas')
+      .update({ is_active: false })
+      .eq('id', coaId)
+      .eq('vendor_id', vendorId);
+
+    if (deleteError) {
+      console.error('COA delete error:', deleteError);
+      return NextResponse.json({ error: deleteError.message }, { status: 500 });
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: 'COA deleted successfully'
+    });
+
+  } catch (error: any) {
+    console.error('COA delete error:', error);
+    return NextResponse.json(
+      { error: error.message || 'Failed to delete COA' },
       { status: 500 }
     );
   }

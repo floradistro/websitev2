@@ -2,18 +2,48 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, Upload, X, Save, AlertCircle, FileText, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Upload, X, Save, AlertCircle, FileText, CheckCircle, Plus, Trash2 } from 'lucide-react';
 import Link from 'next/link';
+
+interface COA {
+  id: string;
+  file_name: string;
+  file_url: string;
+  lab_name: string | null;
+  test_date: string | null;
+  expiry_date: string | null;
+  batch_number: string | null;
+  test_results: any;
+  is_verified: boolean;
+  upload_date: string;
+}
 
 export default function EditProduct() {
   const params = useParams();
   const router = useRouter();
-  const productId = params.id;
+  const productId = params.id as string;
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploadingCOA, setUploadingCOA] = useState(false);
   const [images, setImages] = useState<string[]>([]);
-  const [coaFile, setCoAFile] = useState<File | null>(null);
-  const [existingCOA, setExistingCOA] = useState<any>(null);
+  const [coas, setCoas] = useState<COA[]>([]);
+  const [showCOAForm, setShowCOAForm] = useState(false);
+  
+  const [coaForm, setCoaForm] = useState({
+    file: null as File | null,
+    lab_name: '',
+    test_date: '',
+    expiry_date: '',
+    batch_number: '',
+    thc: '',
+    cbd: '',
+    thca: '',
+    cbda: '',
+    cbg: '',
+    cbn: '',
+    total_cannabinoids: '',
+    total_terpenes: '',
+  });
   
   const [product, setProduct] = useState({
     name: '',
@@ -31,122 +61,59 @@ export default function EditProduct() {
   });
 
   useEffect(() => {
-    // TODO: Fetch actual product from API
-    // Mock data based on product ID
-    setTimeout(() => {
-      const mockProducts: any = {
-        '50001': {
-          name: 'OG Kush',
-          description: 'The legendary OG Kush from the California coast. This classic strain delivers heavy relaxation with its signature pine and lemon aroma.',
-          category: 'flower',
-          price: '15.99',
-          thc_percentage: '22.8',
-          cbd_percentage: '0.3',
-          strain_type: 'hybrid',
-          lineage: 'Chemdawg × Lemon Thai × Pakistani Kush',
-          terpenes: 'β-Caryophyllene, Limonene, Myrcene',
-          effects: 'Relaxed, Happy, Euphoric, Uplifted',
-          quantity: '156.75',
-          status: 'approved' as const,
-        },
-        '50002': {
-          name: 'Blue Dream',
-          description: 'West Coast staple Blue Dream balances full-body relaxation with gentle cerebral invigoration. Sweet berry aroma with smooth smoke.',
-          category: 'flower',
-          price: '14.99',
-          thc_percentage: '19.2',
-          cbd_percentage: '0.8',
-          strain_type: 'hybrid',
-          lineage: 'Blueberry × Haze',
-          terpenes: 'Myrcene, Pinene, Caryophyllene',
-          effects: 'Creative, Uplifted, Relaxed, Focused',
-          quantity: '203.5',
-          status: 'approved' as const,
-        },
-        '50003': {
-          name: 'Sour Diesel',
-          description: 'Iconic East Coast Sour Diesel with pungent diesel aroma and energizing sativa effects. Perfect for daytime use.',
-          category: 'flower',
-          price: '16.99',
-          thc_percentage: '23.4',
-          cbd_percentage: '0.2',
-          strain_type: 'sativa',
-          lineage: 'Chemdawg 91 × Super Skunk',
-          terpenes: 'Caryophyllene, Limonene, Myrcene',
-          effects: 'Energetic, Uplifted, Creative, Focused',
-          quantity: '127.25',
-          status: 'approved' as const,
-        },
-        '50004': {
-          name: 'Girl Scout Cookies',
-          description: 'The famous GSC (formerly Girl Scout Cookies) offers a sweet and earthy aroma with powerful euphoric effects.',
-          category: 'flower',
-          price: '17.99',
-          thc_percentage: '25.1',
-          cbd_percentage: '0.4',
-          strain_type: 'hybrid',
-          lineage: 'OG Kush × Durban Poison',
-          terpenes: 'Caryophyllene, Limonene, Humulene',
-          effects: 'Euphoric, Happy, Relaxed, Creative',
-          quantity: '145.0',
-          status: 'approved' as const,
-        },
-        '50005': {
-          name: 'Gelato',
-          description: 'Premium Gelato with its signature sweet and fruity flavor profile. Dense, frosty buds with vibrant purple hues.',
-          category: 'flower',
-          price: '18.99',
-          thc_percentage: '21.6',
-          cbd_percentage: '0.4',
-          strain_type: 'hybrid',
-          lineage: 'Sunset Sherbet × Thin Mint Cookies',
-          terpenes: 'Limonene, Caryophyllene, Humulene',
-          effects: 'Relaxed, Happy, Euphoric, Uplifted',
-          quantity: '98.5',
-          status: 'approved' as const,
-        },
-        '50010': {
-          name: 'Durban Poison',
-          description: 'Pure South African sativa with sweet, piney aroma. Energizing and clear-headed effects perfect for productivity.',
-          category: 'flower',
-          price: '16.99',
-          thc_percentage: '24.5',
-          cbd_percentage: '0.2',
-          strain_type: 'sativa',
-          lineage: 'South African Landrace',
-          terpenes: 'Terpinolene, Myrcene, Ocimene',
-          effects: 'Energetic, Uplifted, Focused, Creative',
-          quantity: '0',
-          status: 'pending' as const,
-        },
-      };
-
-      const data = mockProducts[productId as string] || mockProducts['50001'];
-      setProduct(data);
-      
-      // Mock existing COA for approved products
-      if (data.status === 'approved') {
-        const coaData: any = {
-          '50001': { coaNumber: 'COA-2025-001547', thc: '22.8%', cbd: '0.3%' },
-          '50002': { coaNumber: 'COA-2025-001548', thc: '19.2%', cbd: '0.8%' },
-          '50003': { coaNumber: 'COA-2025-001549', thc: '23.4%', cbd: '0.2%' },
-          '50004': { coaNumber: 'COA-2025-001550', thc: '25.1%', cbd: '0.4%' },
-          '50005': { coaNumber: 'COA-2025-001551', thc: '21.6%', cbd: '0.4%' },
-        };
-        
-        if (coaData[productId as string]) {
-          setExistingCOA({
-            ...coaData[productId as string],
-            testDate: '2025-10-15',
-            status: 'approved',
-            lab: 'Quantix Analytics'
-          });
-        }
-      }
-      
-      setLoading(false);
-    }, 1000);
+    loadProductAndCOAs();
   }, [productId]);
+
+  async function loadProductAndCOAs() {
+    try {
+      const vendorId = localStorage.getItem('vendor_id');
+      if (!vendorId) {
+        router.push('/vendor/login');
+        return;
+      }
+
+      // Fetch product data
+      const productRes = await fetch(`/api/supabase/products/${productId}`);
+      const productData = await productRes.json();
+      
+      if (productData.success && productData.product) {
+        const p = productData.product;
+        setProduct({
+          name: p.name || '',
+          description: p.description || '',
+          category: p.primary_category_id || '',
+          price: p.price || p.regular_price || '',
+          thc_percentage: p.meta_data?.thc_percentage || '',
+          cbd_percentage: p.meta_data?.cbd_percentage || '',
+          strain_type: p.meta_data?.strain_type || '',
+          lineage: p.meta_data?.lineage || '',
+          terpenes: p.meta_data?.terpenes || '',
+          effects: p.meta_data?.effects || '',
+          quantity: p.stock_quantity || '',
+          status: p.status === 'published' ? 'approved' : 'pending',
+        });
+      }
+
+      // Fetch COAs
+      const coasRes = await fetch(`/api/vendor/coas?product_id=${productId}`, {
+        headers: {
+          'x-vendor-id': vendorId
+        }
+      });
+      const coasData = await coasRes.json();
+      
+      if (coasData.success) {
+        // Filter COAs for this specific product
+        const productCOAs = coasData.coas.filter((coa: any) => coa.productId === productId);
+        setCoas(productCOAs);
+      }
+
+      setLoading(false);
+    } catch (error) {
+      console.error('Error loading product:', error);
+      setLoading(false);
+    }
+  }
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -165,10 +132,114 @@ export default function EditProduct() {
     setImages(prev => prev.filter((_, i) => i !== index));
   };
 
-  const handleCOAUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleCOAFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setCoAFile(file);
+      setCoaForm(prev => ({ ...prev, file }));
+    }
+  };
+
+  const handleCOAUpload = async () => {
+    if (!coaForm.file) {
+      alert('Please select a file');
+      return;
+    }
+
+    const vendorId = localStorage.getItem('vendor_id');
+    if (!vendorId) {
+      alert('Not authenticated');
+      return;
+    }
+
+    setUploadingCOA(true);
+
+    try {
+      const formData = new FormData();
+      formData.append('file', coaForm.file);
+      formData.append('product_id', productId);
+      formData.append('lab_name', coaForm.lab_name);
+      formData.append('test_date', coaForm.test_date);
+      formData.append('expiry_date', coaForm.expiry_date);
+      formData.append('batch_number', coaForm.batch_number);
+      
+      // Build test results object
+      const testResults: any = {};
+      if (coaForm.thc) testResults.thc = parseFloat(coaForm.thc);
+      if (coaForm.cbd) testResults.cbd = parseFloat(coaForm.cbd);
+      if (coaForm.thca) testResults.thca = parseFloat(coaForm.thca);
+      if (coaForm.cbda) testResults.cbda = parseFloat(coaForm.cbda);
+      if (coaForm.cbg) testResults.cbg = parseFloat(coaForm.cbg);
+      if (coaForm.cbn) testResults.cbn = parseFloat(coaForm.cbn);
+      if (coaForm.total_cannabinoids) testResults.total_cannabinoids = parseFloat(coaForm.total_cannabinoids);
+      if (coaForm.total_terpenes) testResults.total_terpenes = parseFloat(coaForm.total_terpenes);
+      
+      formData.append('test_results', JSON.stringify(testResults));
+
+      const response = await fetch('/api/vendor/coas', {
+        method: 'POST',
+        headers: {
+          'x-vendor-id': vendorId
+        },
+        body: formData
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        alert('COA uploaded successfully!');
+        setShowCOAForm(false);
+        setCoaForm({
+          file: null,
+          lab_name: '',
+          test_date: '',
+          expiry_date: '',
+          batch_number: '',
+          thc: '',
+          cbd: '',
+          thca: '',
+          cbda: '',
+          cbg: '',
+          cbn: '',
+          total_cannabinoids: '',
+          total_terpenes: '',
+        });
+        loadProductAndCOAs(); // Reload to show new COA
+      } else {
+        alert('Failed to upload COA: ' + data.error);
+      }
+    } catch (error) {
+      console.error('COA upload error:', error);
+      alert('Failed to upload COA');
+    } finally {
+      setUploadingCOA(false);
+    }
+  };
+
+  const handleDeleteCOA = async (coaId: string) => {
+    if (!confirm('Are you sure you want to delete this COA?')) return;
+
+    const vendorId = localStorage.getItem('vendor_id');
+    if (!vendorId) return;
+
+    try {
+      const response = await fetch(`/api/vendor/coas?id=${coaId}`, {
+        method: 'DELETE',
+        headers: {
+          'x-vendor-id': vendorId
+        }
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        alert('COA deleted successfully');
+        loadProductAndCOAs();
+      } else {
+        alert('Failed to delete COA: ' + data.error);
+      }
+    } catch (error) {
+      console.error('Delete error:', error);
+      alert('Failed to delete COA');
     }
   };
 
@@ -176,7 +247,7 @@ export default function EditProduct() {
     e.preventDefault();
     setSaving(true);
 
-    // TODO: Submit to API as change request
+    // TODO: Submit product updates to API
     
     setTimeout(() => {
       setSaving(false);
@@ -215,7 +286,7 @@ export default function EditProduct() {
         </p>
       </div>
 
-      {/* Status Notice */}
+      {/* Status Notices */}
       {product.status === 'rejected' && (
         <div className="mb-6 bg-red-500/5 lg:border border-t border-b border-red-500/10 p-4 -mx-4 lg:mx-0">
           <div className="flex gap-3">
@@ -250,7 +321,6 @@ export default function EditProduct() {
           <h2 className="text-white font-medium mb-6">Basic Information</h2>
           
           <div className="space-y-4">
-            {/* Product Name */}
             <div>
               <label className="block text-white/80 text-sm mb-2">
                 Product Name <span className="text-red-500">*</span>
@@ -265,7 +335,6 @@ export default function EditProduct() {
               />
             </div>
 
-            {/* Description */}
             <div>
               <label className="block text-white/80 text-sm mb-2">
                 Description <span className="text-red-500">*</span>
@@ -280,7 +349,6 @@ export default function EditProduct() {
               />
             </div>
 
-            {/* Category */}
             <div>
               <label className="block text-white/80 text-sm mb-2">
                 Category <span className="text-red-500">*</span>
@@ -299,7 +367,6 @@ export default function EditProduct() {
               </select>
             </div>
 
-            {/* Base Price */}
             <div>
               <label className="block text-white/80 text-sm mb-2">
                 Base Price (per gram) <span className="text-red-500">*</span>
@@ -320,49 +387,10 @@ export default function EditProduct() {
           </div>
         </div>
 
-        {/* Product Images */}
-        <div className="bg-[#1a1a1a] lg:border border-t border-white/5 p-4 lg:p-6 -mx-4 lg:mx-0">
-          <h2 className="text-white font-medium mb-6">Product Images</h2>
-          
-          <div className="space-y-4">
-            {images.length > 0 && (
-              <div className="grid grid-cols-3 gap-4 mb-4">
-                {images.map((image, index) => (
-                  <div key={index} className="relative aspect-square bg-white/5 rounded overflow-hidden group">
-                    <img src={image} alt={`Product ${index + 1}`} className="w-full h-full object-cover" />
-                    <button
-                      type="button"
-                      onClick={() => removeImage(index)}
-                      className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <X size={16} />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            <label className="block">
-              <div className="border-2 border-dashed border-white/10 p-8 text-center hover:border-white/20 transition-colors cursor-pointer bg-[#1a1a1a]">
-                <Upload size={32} className="text-white/40 mx-auto mb-3" />
-                <div className="text-white/80 text-sm mb-1">Click to upload new images</div>
-                <div className="text-white/40 text-xs">PNG, JPG up to 10MB</div>
-              </div>
-              <input
-                type="file"
-                accept="image/*"
-                multiple
-                onChange={handleImageUpload}
-                className="hidden"
-              />
-            </label>
-          </div>
-        </div>
-
         {/* Lab Results / COA */}
         <div className="bg-[#1a1a1a] lg:border border-t border-white/5 p-4 lg:p-6 -mx-4 lg:mx-0">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-white font-medium">Certificate of Analysis (COA)</h2>
+            <h2 className="text-white font-medium">Certificates of Analysis (COA)</h2>
             <Link 
               href="/vendor/lab-results"
               className="text-white/60 hover:text-white text-xs uppercase tracking-wider transition-colors"
@@ -371,83 +399,299 @@ export default function EditProduct() {
             </Link>
           </div>
 
-          {/* Existing COA */}
-          {existingCOA && (
-            <div className="mb-4 bg-white/5 border border-white/10 p-4">
-              <div className="flex items-start justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <FileText size={18} className="text-white/60" />
+          {/* Existing COAs */}
+          {coas.length > 0 && (
+            <div className="space-y-3 mb-4">
+              {coas.map((coa) => (
+                <div key={coa.id} className="bg-white/5 border border-white/10 p-4">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <FileText size={18} className="text-white/60" />
+                      <div>
+                        <div className="text-white text-sm font-medium">{coa.file_name}</div>
+                        {coa.batch_number && (
+                          <div className="text-white/60 text-xs font-mono">Batch: {coa.batch_number}</div>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className={`px-2 py-1 text-xs font-medium uppercase tracking-wider inline-flex items-center gap-1 ${
+                        coa.is_verified 
+                          ? 'bg-green-500/10 text-green-500 border border-green-500/20'
+                          : 'bg-white/5 text-white/60 border border-white/10'
+                      }`}>
+                        {coa.is_verified ? <CheckCircle size={12} /> : <AlertCircle size={12} />}
+                        {coa.is_verified ? 'Verified' : 'Pending'}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteCOA(coa.id)}
+                        className="text-red-500 hover:text-red-400 p-1"
+                        title="Delete COA"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-3 gap-3 text-xs">
+                    {coa.test_date && (
+                      <div>
+                        <div className="text-white/60 mb-1">Test Date</div>
+                        <div className="text-white">{new Date(coa.test_date).toLocaleDateString()}</div>
+                      </div>
+                    )}
+                    {coa.test_results?.thc && (
+                      <div>
+                        <div className="text-white/60 mb-1">THC</div>
+                        <div className="text-white font-medium">{coa.test_results.thc}%</div>
+                      </div>
+                    )}
+                    {coa.test_results?.cbd && (
+                      <div>
+                        <div className="text-white/60 mb-1">CBD</div>
+                        <div className="text-white font-medium">{coa.test_results.cbd}%</div>
+                      </div>
+                    )}
+                  </div>
+                  {coa.lab_name && (
+                    <div className="mt-3 pt-3 border-t border-white/10 text-xs text-white/50">
+                      Tested by {coa.lab_name}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Upload New COA Button */}
+          {!showCOAForm && (
+            <button
+              type="button"
+              onClick={() => setShowCOAForm(true)}
+              className="w-full flex items-center justify-center gap-2 bg-white/5 border border-white/10 text-white hover:bg-white/10 hover:border-white/20 px-4 py-3 transition-all"
+            >
+              <Plus size={18} />
+              <span className="text-sm">Upload New COA</span>
+            </button>
+          )}
+
+          {/* COA Upload Form */}
+          {showCOAForm && (
+            <div className="bg-white/5 border border-white/10 p-4 space-y-4">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-white font-medium text-sm">Upload COA Details</h3>
+                <button
+                  type="button"
+                  onClick={() => setShowCOAForm(false)}
+                  className="text-white/60 hover:text-white"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              {/* File Upload */}
+              <div>
+                <label className="block text-white/80 text-sm mb-2">COA File *</label>
+                {coaForm.file ? (
+                  <div className="bg-white/5 border border-white/10 p-3 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <FileText size={16} className="text-white/60" />
+                      <div>
+                        <div className="text-white text-xs">{coaForm.file.name}</div>
+                        <div className="text-white/60 text-xs">{(coaForm.file.size / 1024).toFixed(1)} KB</div>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setCoaForm(prev => ({ ...prev, file: null }))}
+                      className="text-red-500 hover:text-red-400"
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
+                ) : (
+                  <label className="block border-2 border-dashed border-white/10 p-6 text-center hover:border-white/20 transition-colors cursor-pointer">
+                    <Upload size={24} className="text-white/40 mx-auto mb-2" />
+                    <div className="text-white/80 text-xs mb-1">Click to upload COA</div>
+                    <div className="text-white/40 text-xs">PDF or image, max 25MB</div>
+                    <input
+                      type="file"
+                      accept=".pdf,image/*"
+                      onChange={handleCOAFileSelect}
+                      className="hidden"
+                    />
+                  </label>
+                )}
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-white/80 text-sm mb-2">Lab Name</label>
+                  <input
+                    type="text"
+                    value={coaForm.lab_name}
+                    onChange={(e) => setCoaForm(prev => ({ ...prev, lab_name: e.target.value }))}
+                    placeholder="e.g., Quantix Analytics"
+                    className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-3 py-2 text-sm focus:outline-none focus:border-white/10"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-white/80 text-sm mb-2">Batch Number</label>
+                  <input
+                    type="text"
+                    value={coaForm.batch_number}
+                    onChange={(e) => setCoaForm(prev => ({ ...prev, batch_number: e.target.value }))}
+                    placeholder="e.g., BATCH-2025-001"
+                    className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-3 py-2 text-sm focus:outline-none focus:border-white/10"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-white/80 text-sm mb-2">Test Date</label>
+                  <input
+                    type="date"
+                    value={coaForm.test_date}
+                    onChange={(e) => setCoaForm(prev => ({ ...prev, test_date: e.target.value }))}
+                    className="w-full bg-[#1a1a1a] border border-white/5 text-white px-3 py-2 text-sm focus:outline-none focus:border-white/10"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-white/80 text-sm mb-2">Expiry Date</label>
+                  <input
+                    type="date"
+                    value={coaForm.expiry_date}
+                    onChange={(e) => setCoaForm(prev => ({ ...prev, expiry_date: e.target.value }))}
+                    className="w-full bg-[#1a1a1a] border border-white/5 text-white px-3 py-2 text-sm focus:outline-none focus:border-white/10"
+                  />
+                </div>
+              </div>
+
+              {/* Test Results */}
+              <div>
+                <div className="text-white/80 text-sm mb-3">Test Results (Optional)</div>
+                <div className="grid grid-cols-4 gap-2">
                   <div>
-                    <div className="text-white text-sm font-medium">Current COA</div>
-                    <div className="text-white/60 text-xs font-mono">{existingCOA.coaNumber}</div>
+                    <label className="block text-white/60 text-xs mb-1">THC %</label>
+                    <input
+                      type="number"
+                      step="0.1"
+                      value={coaForm.thc}
+                      onChange={(e) => setCoaForm(prev => ({ ...prev, thc: e.target.value }))}
+                      placeholder="22.5"
+                      className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-2 py-2 text-sm focus:outline-none focus:border-white/10"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-white/60 text-xs mb-1">CBD %</label>
+                    <input
+                      type="number"
+                      step="0.1"
+                      value={coaForm.cbd}
+                      onChange={(e) => setCoaForm(prev => ({ ...prev, cbd: e.target.value }))}
+                      placeholder="0.5"
+                      className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-2 py-2 text-sm focus:outline-none focus:border-white/10"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-white/60 text-xs mb-1">THCa %</label>
+                    <input
+                      type="number"
+                      step="0.1"
+                      value={coaForm.thca}
+                      onChange={(e) => setCoaForm(prev => ({ ...prev, thca: e.target.value }))}
+                      placeholder="1.2"
+                      className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-2 py-2 text-sm focus:outline-none focus:border-white/10"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-white/60 text-xs mb-1">CBDa %</label>
+                    <input
+                      type="number"
+                      step="0.1"
+                      value={coaForm.cbda}
+                      onChange={(e) => setCoaForm(prev => ({ ...prev, cbda: e.target.value }))}
+                      placeholder="0.3"
+                      className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-2 py-2 text-sm focus:outline-none focus:border-white/10"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-white/60 text-xs mb-1">CBG %</label>
+                    <input
+                      type="number"
+                      step="0.1"
+                      value={coaForm.cbg}
+                      onChange={(e) => setCoaForm(prev => ({ ...prev, cbg: e.target.value }))}
+                      placeholder="0.8"
+                      className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-2 py-2 text-sm focus:outline-none focus:border-white/10"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-white/60 text-xs mb-1">CBN %</label>
+                    <input
+                      type="number"
+                      step="0.1"
+                      value={coaForm.cbn}
+                      onChange={(e) => setCoaForm(prev => ({ ...prev, cbn: e.target.value }))}
+                      placeholder="0.2"
+                      className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-2 py-2 text-sm focus:outline-none focus:border-white/10"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-white/60 text-xs mb-1">Total Canna %</label>
+                    <input
+                      type="number"
+                      step="0.1"
+                      value={coaForm.total_cannabinoids}
+                      onChange={(e) => setCoaForm(prev => ({ ...prev, total_cannabinoids: e.target.value }))}
+                      placeholder="25.0"
+                      className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-2 py-2 text-sm focus:outline-none focus:border-white/10"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-white/60 text-xs mb-1">Total Terps %</label>
+                    <input
+                      type="number"
+                      step="0.1"
+                      value={coaForm.total_terpenes}
+                      onChange={(e) => setCoaForm(prev => ({ ...prev, total_terpenes: e.target.value }))}
+                      placeholder="2.5"
+                      className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-2 py-2 text-sm focus:outline-none focus:border-white/10"
+                    />
                   </div>
                 </div>
-                <span className="px-2 py-1 text-xs font-medium uppercase tracking-wider bg-white/5 text-white/60 border border-white/10 inline-flex items-center gap-1">
-                  <CheckCircle size={12} />
-                  {existingCOA.status}
-                </span>
               </div>
-              <div className="grid grid-cols-3 gap-3 lg:gap-4 text-xs">
-                <div>
-                  <div className="text-white/60 mb-1">Test Date</div>
-                  <div className="text-white">{new Date(existingCOA.testDate).toLocaleDateString()}</div>
-                </div>
-                <div>
-                  <div className="text-white/60 mb-1">THC</div>
-                  <div className="text-white font-medium">{existingCOA.thc}</div>
-                </div>
-                <div>
-                  <div className="text-white/60 mb-1">CBD</div>
-                  <div className="text-white font-medium">{existingCOA.cbd}</div>
-                </div>
-              </div>
-              <div className="mt-3 pt-3 border-t border-white/10 text-xs text-white/50">
-                Tested by {existingCOA.lab}
+
+              {/* Upload Button */}
+              <div className="flex gap-2 pt-3">
+                <button
+                  type="button"
+                  onClick={() => setShowCOAForm(false)}
+                  className="flex-1 px-4 py-2 bg-white/5 border border-white/10 text-white hover:bg-white/10 text-sm transition-all"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleCOAUpload}
+                  disabled={!coaForm.file || uploadingCOA}
+                  className="flex-1 px-4 py-2 bg-white text-black hover:bg-white/90 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transition-all"
+                >
+                  {uploadingCOA ? 'Uploading...' : 'Upload COA'}
+                </button>
               </div>
             </div>
           )}
 
-          {/* Upload New COA */}
-          <div>
-            <label className="block text-white/80 text-sm mb-3">
-              {existingCOA ? 'Upload Updated COA (New Batch)' : 'Upload COA'}
-            </label>
-            
-            {coaFile ? (
-              <div className="bg-white/5 border border-white/10 p-4 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <FileText size={20} className="text-white/60" />
-                  <div>
-                    <div className="text-white text-sm">{coaFile.name}</div>
-                    <div className="text-white/60 text-xs">{(coaFile.size / 1024).toFixed(1)} KB</div>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setCoAFile(null)}
-                  className="text-red-500 hover:text-red-400 transition-colors"
-                >
-                  <X size={20} />
-                </button>
-              </div>
-            ) : (
-              <label className="block">
-                <div className="border-2 border-dashed border-white/10 p-8 text-center hover:border-white/20 transition-colors cursor-pointer bg-[#1a1a1a]">
-                  <Upload size={32} className="text-white/40 mx-auto mb-3" />
-                  <div className="text-white/80 text-sm mb-1">Upload Certificate of Analysis</div>
-                  <div className="text-white/40 text-xs">PDF format, max 5MB</div>
-                </div>
-                <input
-                  type="file"
-                  accept=".pdf"
-                  onChange={handleCOAUpload}
-                  className="hidden"
-                />
-              </label>
-            )}
-          </div>
-
-          {!existingCOA && !coaFile && (
+          {coas.length === 0 && !showCOAForm && (
             <div className="mt-4 bg-white/5 border border-white/10 p-3">
               <div className="flex gap-2">
                 <AlertCircle size={16} className="text-white/60 flex-shrink-0 mt-0.5" />
@@ -464,11 +708,8 @@ export default function EditProduct() {
           <h2 className="text-white font-medium mb-6">Strain Details</h2>
           
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {/* THC % */}
             <div>
-              <label className="block text-white/80 text-sm mb-2">
-                THC Percentage
-              </label>
+              <label className="block text-white/80 text-sm mb-2">THC Percentage</label>
               <div className="relative">
                 <input
                   type="number"
@@ -482,11 +723,8 @@ export default function EditProduct() {
               </div>
             </div>
 
-            {/* CBD % */}
             <div>
-              <label className="block text-white/80 text-sm mb-2">
-                CBD Percentage
-              </label>
+              <label className="block text-white/80 text-sm mb-2">CBD Percentage</label>
               <div className="relative">
                 <input
                   type="number"
@@ -500,11 +738,8 @@ export default function EditProduct() {
               </div>
             </div>
 
-            {/* Strain Type */}
             <div>
-              <label className="block text-white/80 text-sm mb-2">
-                Strain Type
-              </label>
+              <label className="block text-white/80 text-sm mb-2">Strain Type</label>
               <select
                 value={product.strain_type}
                 onChange={(e) => setProduct({...product, strain_type: e.target.value})}
@@ -517,11 +752,8 @@ export default function EditProduct() {
               </select>
             </div>
 
-            {/* Current Quantity */}
             <div>
-              <label className="block text-white/80 text-sm mb-2">
-                Current Quantity (grams)
-              </label>
+              <label className="block text-white/80 text-sm mb-2">Current Quantity (grams)</label>
               <input
                 type="number"
                 step="0.1"
@@ -536,11 +768,8 @@ export default function EditProduct() {
               )}
             </div>
 
-            {/* Lineage */}
             <div className="lg:col-span-2">
-              <label className="block text-white/80 text-sm mb-2">
-                Lineage / Genetics
-              </label>
+              <label className="block text-white/80 text-sm mb-2">Lineage / Genetics</label>
               <input
                 type="text"
                 value={product.lineage}
@@ -550,11 +779,8 @@ export default function EditProduct() {
               />
             </div>
 
-            {/* Terpenes */}
             <div className="lg:col-span-2">
-              <label className="block text-white/80 text-sm mb-2">
-                Dominant Terpenes
-              </label>
+              <label className="block text-white/80 text-sm mb-2">Dominant Terpenes</label>
               <input
                 type="text"
                 value={product.terpenes}
@@ -564,11 +790,8 @@ export default function EditProduct() {
               />
             </div>
 
-            {/* Effects */}
             <div className="lg:col-span-2">
-              <label className="block text-white/80 text-sm mb-2">
-                Effects
-              </label>
+              <label className="block text-white/80 text-sm mb-2">Effects</label>
               <input
                 type="text"
                 value={product.effects}
@@ -601,4 +824,3 @@ export default function EditProduct() {
     </div>
   );
 }
-

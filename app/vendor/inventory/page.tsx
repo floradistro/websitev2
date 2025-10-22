@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { Search, ChevronRight, Package, CheckCircle, AlertTriangle, X, Save, Plus, Minus, Edit2, FileText, Send, Filter, MapPin, ArrowRightLeft, Download, Sliders, Trash2 } from 'lucide-react';
+import { Search, ChevronRight, Package, CheckCircle, AlertTriangle, X, Save, Plus, Minus, Edit2, FileText, Send, Filter, MapPin, ArrowRightLeft, Download, Sliders, Trash2, Upload, Shield } from 'lucide-react';
 import { useVendorAuth } from '@/context/VendorAuthContext';
 import axios from 'axios';
 import { showNotification, showConfirm } from '@/components/NotificationToast';
@@ -48,7 +48,7 @@ interface Location {
   is_active: boolean;
 }
 
-type ViewMode = 'details' | 'adjust' | 'fields' | 'images';
+type ViewMode = 'details' | 'adjust' | 'fields' | 'images' | 'coas';
 
 export default function VendorInventory() {
   const { isAuthenticated, isLoading: authLoading } = useVendorAuth();
@@ -82,6 +82,25 @@ export default function VendorInventory() {
   // Field editing
   const [editedFields, setEditedFields] = useState<Record<string, FloraFields>>({});
   const [submittingChange, setSubmittingChange] = useState(false);
+  
+  // COA management
+  const [productCOAs, setProductCOAs] = useState<Record<string, any[]>>({});
+  const [uploadingCOA, setUploadingCOA] = useState(false);
+  const [coaForm, setCoaForm] = useState({
+    file: null as File | null,
+    lab_name: '',
+    test_date: '',
+    expiry_date: '',
+    batch_number: '',
+    thc: '',
+    cbd: '',
+    thca: '',
+    cbda: '',
+    cbg: '',
+    cbn: '',
+    total_cannabinoids: '',
+    total_terpenes: '',
+  });
 
   const loadInventory = async () => {
     if (authLoading || !isAuthenticated) {
@@ -543,6 +562,146 @@ export default function VendorInventory() {
           });
         } finally {
           setProcessing(false);
+        }
+      }
+    });
+  };
+
+  // COA Management Functions
+  const loadProductCOAs = async (productId: string) => {
+    if (!vendorId) return;
+    
+    try {
+      const response = await axios.get(`/api/vendor/coas?product_id=${productId}`, {
+        headers: { 'x-vendor-id': vendorId }
+      });
+      
+      if (response.data.success) {
+        setProductCOAs(prev => ({
+          ...prev,
+          [productId]: response.data.coas
+        }));
+      }
+    } catch (error) {
+      console.error('Error loading COAs:', error);
+    }
+  };
+
+  const handleCOAFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setCoaForm(prev => ({ ...prev, file }));
+    }
+  };
+
+  const handleCOAUpload = async (productId: string) => {
+    if (!coaForm.file || !vendorId) {
+      showNotification({
+        type: 'error',
+        title: 'Missing File',
+        message: 'Please select a file to upload'
+      });
+      return;
+    }
+
+    setUploadingCOA(true);
+
+    try {
+      const formData = new FormData();
+      formData.append('file', coaForm.file);
+      formData.append('product_id', productId);
+      formData.append('lab_name', coaForm.lab_name);
+      formData.append('test_date', coaForm.test_date);
+      formData.append('expiry_date', coaForm.expiry_date);
+      formData.append('batch_number', coaForm.batch_number);
+      
+      // Build test results object
+      const testResults: any = {};
+      if (coaForm.thc) testResults.thc = parseFloat(coaForm.thc);
+      if (coaForm.cbd) testResults.cbd = parseFloat(coaForm.cbd);
+      if (coaForm.thca) testResults.thca = parseFloat(coaForm.thca);
+      if (coaForm.cbda) testResults.cbda = parseFloat(coaForm.cbda);
+      if (coaForm.cbg) testResults.cbg = parseFloat(coaForm.cbg);
+      if (coaForm.cbn) testResults.cbn = parseFloat(coaForm.cbn);
+      if (coaForm.total_cannabinoids) testResults.total_cannabinoids = parseFloat(coaForm.total_cannabinoids);
+      if (coaForm.total_terpenes) testResults.total_terpenes = parseFloat(coaForm.total_terpenes);
+      
+      formData.append('test_results', JSON.stringify(testResults));
+
+      const response = await axios.post('/api/vendor/coas', formData, {
+        headers: {
+          'x-vendor-id': vendorId,
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+
+      if (response.data.success) {
+        showNotification({
+          type: 'success',
+          title: 'COA Uploaded',
+          message: 'Certificate of Analysis uploaded successfully'
+        });
+        
+        // Reset form
+        setCoaForm({
+          file: null,
+          lab_name: '',
+          test_date: '',
+          expiry_date: '',
+          batch_number: '',
+          thc: '',
+          cbd: '',
+          thca: '',
+          cbda: '',
+          cbg: '',
+          cbn: '',
+          total_cannabinoids: '',
+          total_terpenes: '',
+        });
+        
+        // Reload COAs for this product
+        await loadProductCOAs(productId);
+      }
+    } catch (error: any) {
+      showNotification({
+        type: 'error',
+        title: 'Upload Failed',
+        message: error.response?.data?.error || 'Failed to upload COA'
+      });
+    } finally {
+      setUploadingCOA(false);
+    }
+  };
+
+  const handleDeleteCOA = async (coaId: string, productId: string) => {
+    if (!vendorId) return;
+
+    await showConfirm({
+      title: 'Delete COA',
+      message: 'Are you sure you want to delete this Certificate of Analysis?',
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      type: 'warning',
+      onConfirm: async () => {
+        try {
+          const response = await axios.delete(`/api/vendor/coas?id=${coaId}`, {
+            headers: { 'x-vendor-id': vendorId }
+          });
+
+          if (response.data.success) {
+            showNotification({
+              type: 'success',
+              title: 'COA Deleted',
+              message: 'Certificate deleted successfully'
+            });
+            await loadProductCOAs(productId);
+          }
+        } catch (error: any) {
+          showNotification({
+            type: 'error',
+            title: 'Delete Failed',
+            message: error.response?.data?.error || 'Failed to delete COA'
+          });
         }
       }
     });
@@ -1094,6 +1253,18 @@ export default function VendorInventory() {
                         Product Fields
                         {hasChanges && <span className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse" />}
                       </button>
+                      <button
+                        onClick={() => {
+                          setViewMode(prev => ({ ...prev, [item.product_id]: 'coas' }));
+                          loadProductCOAs(item.product_id);
+                        }}
+                        className={`flex items-center gap-1.5 px-4 py-2 text-[10px] uppercase tracking-wider border transition-all ${
+                          currentView === 'coas' ? 'border-white text-white' : 'border-white/10 text-white/60 hover:text-white hover:border-white/20'
+                        }`}
+                      >
+                        <Shield size={12} />
+                        COAs
+                      </button>
                     </div>
 
                     <div className="px-4 lg:px-6 py-6">
@@ -1199,6 +1370,18 @@ export default function VendorInventory() {
                             >
                               <FileText size={16} />
                               <span className="text-xs uppercase tracking-wider font-medium">Edit Product Details</span>
+                            </button>
+
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setViewMode(prev => ({ ...prev, [item.product_id]: 'coas' }));
+                                loadProductCOAs(item.product_id);
+                              }}
+                              className="w-full flex items-center justify-center gap-2 bg-white/5 border border-white/10 text-white hover:bg-white/10 hover:border-white/20 px-4 py-3 transition-all"
+                            >
+                              <Shield size={16} />
+                              <span className="text-xs uppercase tracking-wider font-medium">Manage COAs</span>
                             </button>
 
                             {item.id && (
@@ -1504,6 +1687,285 @@ export default function VendorInventory() {
                               <span className="text-yellow-500/80 text-xs">
                                 You have unsaved changes. Click "Submit for Approval" to send for admin review.
                               </span>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* COAs Management View */}
+                      {currentView === 'coas' && (
+                        <div className="space-y-4">
+                          {/* Existing COAs */}
+                          {productCOAs[item.product_id] && productCOAs[item.product_id].length > 0 && (
+                            <div className="space-y-3">
+                              <div className="text-white/60 text-xs font-medium uppercase tracking-wider">
+                                Existing COAs ({productCOAs[item.product_id].length})
+                              </div>
+                              {productCOAs[item.product_id].map((coa: any) => (
+                                <div key={coa.id} className="bg-white/5 border border-white/10 p-4">
+                                  <div className="flex items-start justify-between mb-3">
+                                    <div className="flex items-center gap-2 flex-1">
+                                      <FileText size={16} className="text-white/60 flex-shrink-0" />
+                                      <div className="min-w-0">
+                                        <div className="text-white text-sm font-medium truncate">{coa.fileName || 'COA'}</div>
+                                        {coa.batchNumber && (
+                                          <div className="text-white/60 text-xs font-mono">Batch: {coa.batchNumber}</div>
+                                        )}
+                                      </div>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                      <span className={`px-2 py-1 text-xs font-medium uppercase tracking-wider inline-flex items-center gap-1 ${
+                                        coa.status === 'approved' 
+                                          ? 'bg-green-500/10 text-green-500 border border-green-500/20'
+                                          : 'bg-white/5 text-white/60 border border-white/10'
+                                      }`}>
+                                        {coa.status === 'approved' ? <CheckCircle size={12} /> : <AlertTriangle size={12} />}
+                                        {coa.status}
+                                      </span>
+                                      <button
+                                        type="button"
+                                        onClick={() => handleDeleteCOA(coa.id, item.product_id)}
+                                        className="text-red-500 hover:text-red-400 p-1 transition-colors"
+                                        title="Delete COA"
+                                      >
+                                        <Trash2 size={16} />
+                                      </button>
+                                    </div>
+                                  </div>
+                                  <div className="grid grid-cols-3 gap-3 text-xs">
+                                    {coa.testDate && (
+                                      <div>
+                                        <div className="text-white/60 mb-1">Test Date</div>
+                                        <div className="text-white">{new Date(coa.testDate).toLocaleDateString()}</div>
+                                      </div>
+                                    )}
+                                    {coa.thc && (
+                                      <div>
+                                        <div className="text-white/60 mb-1">THC</div>
+                                        <div className="text-white font-medium">{coa.thc}</div>
+                                      </div>
+                                    )}
+                                    {coa.cbd && (
+                                      <div>
+                                        <div className="text-white/60 mb-1">CBD</div>
+                                        <div className="text-white font-medium">{coa.cbd}</div>
+                                      </div>
+                                    )}
+                                  </div>
+                                  {coa.testingLab && coa.testingLab !== 'N/A' && (
+                                    <div className="mt-3 pt-3 border-t border-white/10 text-xs text-white/50">
+                                      Tested by {coa.testingLab}
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          )}
+
+                          {/* Upload New COA Form */}
+                          <div className="bg-white/5 border border-white/10 p-4 space-y-4">
+                            <div className="text-white font-medium text-sm">Upload New COA</div>
+
+                            {/* File Upload */}
+                            <div>
+                              <label className="block text-white/80 text-xs mb-2">COA File *</label>
+                              {coaForm.file ? (
+                                <div className="bg-white/5 border border-white/10 p-3 flex items-center justify-between">
+                                  <div className="flex items-center gap-2">
+                                    <FileText size={16} className="text-white/60" />
+                                    <div>
+                                      <div className="text-white text-xs">{coaForm.file.name}</div>
+                                      <div className="text-white/60 text-xs">{(coaForm.file.size / 1024).toFixed(1)} KB</div>
+                                    </div>
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() => setCoaForm(prev => ({ ...prev, file: null }))}
+                                    className="text-red-500 hover:text-red-400"
+                                  >
+                                    <X size={16} />
+                                  </button>
+                                </div>
+                              ) : (
+                                <label className="block border-2 border-dashed border-white/10 p-4 text-center hover:border-white/20 transition-colors cursor-pointer">
+                                  <Upload size={20} className="text-white/40 mx-auto mb-2" />
+                                  <div className="text-white/80 text-xs mb-1">Click to upload COA</div>
+                                  <div className="text-white/40 text-xs">PDF or image, max 25MB</div>
+                                  <input
+                                    type="file"
+                                    accept=".pdf,image/*"
+                                    onChange={handleCOAFileSelect}
+                                    className="hidden"
+                                  />
+                                </label>
+                              )}
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-2">
+                              <div>
+                                <label className="block text-white/80 text-xs mb-1">Lab Name</label>
+                                <input
+                                  type="text"
+                                  value={coaForm.lab_name}
+                                  onChange={(e) => setCoaForm(prev => ({ ...prev, lab_name: e.target.value }))}
+                                  placeholder="e.g., Quantix Analytics"
+                                  className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-2 py-2 text-xs focus:outline-none focus:border-white/10"
+                                />
+                              </div>
+
+                              <div>
+                                <label className="block text-white/80 text-xs mb-1">Batch Number</label>
+                                <input
+                                  type="text"
+                                  value={coaForm.batch_number}
+                                  onChange={(e) => setCoaForm(prev => ({ ...prev, batch_number: e.target.value }))}
+                                  placeholder="e.g., BATCH-2025-001"
+                                  className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-2 py-2 text-xs focus:outline-none focus:border-white/10"
+                                />
+                              </div>
+
+                              <div>
+                                <label className="block text-white/80 text-xs mb-1">Test Date</label>
+                                <input
+                                  type="date"
+                                  value={coaForm.test_date}
+                                  onChange={(e) => setCoaForm(prev => ({ ...prev, test_date: e.target.value }))}
+                                  className="w-full bg-[#1a1a1a] border border-white/5 text-white px-2 py-2 text-xs focus:outline-none focus:border-white/10"
+                                />
+                              </div>
+
+                              <div>
+                                <label className="block text-white/80 text-xs mb-1">Expiry Date</label>
+                                <input
+                                  type="date"
+                                  value={coaForm.expiry_date}
+                                  onChange={(e) => setCoaForm(prev => ({ ...prev, expiry_date: e.target.value }))}
+                                  className="w-full bg-[#1a1a1a] border border-white/5 text-white px-2 py-2 text-xs focus:outline-none focus:border-white/10"
+                                />
+                              </div>
+                            </div>
+
+                            {/* Test Results */}
+                            <div>
+                              <div className="text-white/80 text-xs mb-2">Test Results (Optional)</div>
+                              <div className="grid grid-cols-4 gap-2">
+                                <div>
+                                  <label className="block text-white/60 text-xs mb-1">THC %</label>
+                                  <input
+                                    type="number"
+                                    step="0.1"
+                                    value={coaForm.thc}
+                                    onChange={(e) => setCoaForm(prev => ({ ...prev, thc: e.target.value }))}
+                                    placeholder="22.5"
+                                    className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-2 py-1.5 text-xs focus:outline-none focus:border-white/10"
+                                  />
+                                </div>
+
+                                <div>
+                                  <label className="block text-white/60 text-xs mb-1">CBD %</label>
+                                  <input
+                                    type="number"
+                                    step="0.1"
+                                    value={coaForm.cbd}
+                                    onChange={(e) => setCoaForm(prev => ({ ...prev, cbd: e.target.value }))}
+                                    placeholder="0.5"
+                                    className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-2 py-1.5 text-xs focus:outline-none focus:border-white/10"
+                                  />
+                                </div>
+
+                                <div>
+                                  <label className="block text-white/60 text-xs mb-1">THCa %</label>
+                                  <input
+                                    type="number"
+                                    step="0.1"
+                                    value={coaForm.thca}
+                                    onChange={(e) => setCoaForm(prev => ({ ...prev, thca: e.target.value }))}
+                                    placeholder="1.2"
+                                    className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-2 py-1.5 text-xs focus:outline-none focus:border-white/10"
+                                  />
+                                </div>
+
+                                <div>
+                                  <label className="block text-white/60 text-xs mb-1">CBDa %</label>
+                                  <input
+                                    type="number"
+                                    step="0.1"
+                                    value={coaForm.cbda}
+                                    onChange={(e) => setCoaForm(prev => ({ ...prev, cbda: e.target.value }))}
+                                    placeholder="0.3"
+                                    className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-2 py-1.5 text-xs focus:outline-none focus:border-white/10"
+                                  />
+                                </div>
+
+                                <div>
+                                  <label className="block text-white/60 text-xs mb-1">CBG %</label>
+                                  <input
+                                    type="number"
+                                    step="0.1"
+                                    value={coaForm.cbg}
+                                    onChange={(e) => setCoaForm(prev => ({ ...prev, cbg: e.target.value }))}
+                                    placeholder="0.8"
+                                    className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-2 py-1.5 text-xs focus:outline-none focus:border-white/10"
+                                  />
+                                </div>
+
+                                <div>
+                                  <label className="block text-white/60 text-xs mb-1">CBN %</label>
+                                  <input
+                                    type="number"
+                                    step="0.1"
+                                    value={coaForm.cbn}
+                                    onChange={(e) => setCoaForm(prev => ({ ...prev, cbn: e.target.value }))}
+                                    placeholder="0.2"
+                                    className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-2 py-1.5 text-xs focus:outline-none focus:border-white/10"
+                                  />
+                                </div>
+
+                                <div>
+                                  <label className="block text-white/60 text-xs mb-1">Total Canna %</label>
+                                  <input
+                                    type="number"
+                                    step="0.1"
+                                    value={coaForm.total_cannabinoids}
+                                    onChange={(e) => setCoaForm(prev => ({ ...prev, total_cannabinoids: e.target.value }))}
+                                    placeholder="25.0"
+                                    className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-2 py-1.5 text-xs focus:outline-none focus:border-white/10"
+                                  />
+                                </div>
+
+                                <div>
+                                  <label className="block text-white/60 text-xs mb-1">Total Terps %</label>
+                                  <input
+                                    type="number"
+                                    step="0.1"
+                                    value={coaForm.total_terpenes}
+                                    onChange={(e) => setCoaForm(prev => ({ ...prev, total_terpenes: e.target.value }))}
+                                    placeholder="2.5"
+                                    className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-2 py-1.5 text-xs focus:outline-none focus:border-white/10"
+                                  />
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Upload Button */}
+                            <button
+                              type="button"
+                              onClick={() => handleCOAUpload(item.product_id)}
+                              disabled={!coaForm.file || uploadingCOA}
+                              className="w-full px-4 py-2 bg-white text-black hover:bg-white/90 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transition-all"
+                            >
+                              {uploadingCOA ? 'Uploading...' : 'Upload COA'}
+                            </button>
+                          </div>
+
+                          {(!productCOAs[item.product_id] || productCOAs[item.product_id].length === 0) && (
+                            <div className="bg-white/5 border border-white/10 p-3">
+                              <div className="flex gap-2">
+                                <AlertTriangle size={16} className="text-white/60 flex-shrink-0 mt-0.5" />
+                                <div className="text-white/60 text-xs leading-relaxed">
+                                  Products require a valid COA to be approved and sold on the marketplace.
+                                </div>
+                              </div>
                             </div>
                           )}
                         </div>
