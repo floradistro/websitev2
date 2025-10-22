@@ -818,7 +818,7 @@ export default function VendorPurchaseOrders() {
           }}
           title={`Purchase Order: ${selectedPO.po_number}`}
           description={`Created ${new Date(selectedPO.created_at).toLocaleDateString()}`}
-          maxWidth="4xl"
+          maxWidth="2xl"
         >
           <div className="space-y-4">
             {/* Status & Info */}
@@ -885,7 +885,7 @@ export default function VendorPurchaseOrders() {
           description={`PO: ${selectedPO.po_number}`}
           onSubmit={receiveItems}
           submitText="Receive & Update Inventory"
-          maxWidth="3xl"
+          maxWidth="2xl"
         >
           <div className="space-y-3">
             {selectedPO.items?.filter(item => item.receive_status !== 'received').map(item => (
