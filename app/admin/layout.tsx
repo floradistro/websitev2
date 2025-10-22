@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { 
   Home, Package, Store, Settings, LogOut, Users, CheckSquare, 
-  FileText, DollarSign, BarChart3, Menu, X, MapPin, Globe, FolderTree 
+  FileText, DollarSign, BarChart3, Menu, X, MapPin, Globe, FolderTree, Layers 
 } from 'lucide-react';
 import { showConfirm } from '@/components/NotificationToast';
 import { AdminAuthProvider } from '@/context/AdminAuthContext';
@@ -63,6 +63,7 @@ export default function AdminLayout({
     { href: '/admin/dashboard', icon: Home, label: 'Dashboard' },
     { href: '/admin/products', icon: Package, label: 'Products' },
     { href: '/admin/categories', icon: FolderTree, label: 'Categories' },
+    { href: '/admin/field-groups', icon: Layers, label: 'Fields' },
     { href: '/admin/vendors', icon: Store, label: 'Vendors' },
     { href: '/admin/locations', icon: MapPin, label: 'Locations' },
     { href: '/admin/domains', icon: Globe, label: 'Domains' },
