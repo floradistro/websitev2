@@ -316,7 +316,7 @@ export default function VendorLabResults() {
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => setSelectedCOA(coa)}
-                      className="px-4 py-2 bg-white/5 border border-white/10 hover:bg-white/10 text-white text-xs uppercase tracking-wider transition-all min-w-[90px] text-center"
+                      className="px-4 py-2 bg-white/5 border border-white/10 hover:bg-white/10 text-white text-xs uppercase tracking-wider transition-all whitespace-nowrap"
                     >
                       Details
                     </button>
@@ -324,7 +324,7 @@ export default function VendorLabResults() {
                       href={coa.fileUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="px-4 py-2 bg-white/5 border border-white/10 hover:bg-white/10 text-white text-xs uppercase tracking-wider transition-all min-w-[90px] text-center block"
+                      className="px-4 py-2 bg-white/5 border border-white/10 hover:bg-white/10 text-white text-xs uppercase tracking-wider transition-all whitespace-nowrap block"
                     >
                       View PDF
                     </a>
@@ -407,7 +407,7 @@ export default function VendorLabResults() {
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => setSelectedCOA(coa)}
-                        className="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-white/80 hover:text-white text-xs uppercase tracking-wider min-w-[90px] text-center"
+                        className="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-white/80 hover:text-white text-xs uppercase tracking-wider whitespace-nowrap"
                       >
                         Details
                       </button>
@@ -415,7 +415,7 @@ export default function VendorLabResults() {
                         href={coa.fileUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-white/80 hover:text-white text-xs uppercase tracking-wider min-w-[90px] text-center block"
+                        className="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-white/80 hover:text-white text-xs uppercase tracking-wider whitespace-nowrap block"
                       >
                         View PDF
                       </a>
