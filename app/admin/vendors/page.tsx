@@ -62,6 +62,8 @@ export default function AdminVendors() {
   }
 
   async function createVendor() {
+    console.log('Creating vendor...', newVendor);
+    
     if (!newVendor.store_name || !newVendor.email || !newVendor.username || !newVendor.password) {
       showNotification({
         type: 'error',
@@ -72,7 +74,10 @@ export default function AdminVendors() {
     }
 
     try {
+      console.log('Sending request to create vendor...');
       const response = await axios.post(`/api/admin/create-vendor-supabase`, newVendor);
+
+      console.log('Vendor creation response:', response.data);
 
       if (response.data.success) {
         showNotification({
@@ -83,12 +88,19 @@ export default function AdminVendors() {
         setShowAddModal(false);
         setNewVendor({ store_name: '', email: '', username: '', password: '' });
         setTimeout(() => loadVendors(), 1000);
+      } else {
+        showNotification({
+          type: 'error',
+          title: 'Creation Failed',
+          message: response.data.message || 'Failed to create vendor',
+        });
       }
     } catch (error: any) {
+      console.error('Vendor creation error:', error);
       showNotification({
         type: 'error',
         title: 'Error Creating Vendor',
-        message: error.response?.data?.message || error.message,
+        message: error.response?.data?.message || error.message || 'Unknown error occurred',
       });
     }
   }
