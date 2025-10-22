@@ -39,7 +39,7 @@ const getCachedProductComplete = unstable_cache(
       
       // Handle pricing response - may be 404 or error
       let pricingData = { pricingTiers: [] };
-      if (pricingRes.ok) {
+      if (pricingRes.ok && 'json' in pricingRes) {
         try {
           pricingData = await pricingRes.json();
         } catch (e) {
