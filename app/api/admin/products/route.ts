@@ -49,7 +49,10 @@ export async function DELETE(request: NextRequest) {
       if (totalQty > 0) {
         const locationsList = inventory
           .filter(inv => parseFloat(inv.quantity || '0') > 0)
-          .map(inv => `${inv.location?.name || 'Unknown'}: ${inv.quantity}g`)
+          .map(inv => {
+            const location = inv.location as any;
+            return `${location?.name || 'Unknown'}: ${inv.quantity}g`;
+          })
           .join(', ');
         
         return NextResponse.json({ 
