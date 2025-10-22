@@ -46,22 +46,25 @@ export async function GET(request: NextRequest) {
     }
 
     // Transform data to match frontend interface
-    const transformedCoas = (coas || []).map(coa => ({
-      id: coa.id,
-      productId: coa.products?.wordpress_id || null,
-      productName: coa.products?.name || 'Unknown Product',
-      coaNumber: coa.batch_number || `COA-${coa.id.slice(0, 8)}`,
-      testDate: coa.test_date,
-      uploadDate: coa.upload_date,
-      status: coa.is_verified ? 'approved' : 'pending',
-      fileUrl: coa.file_url,
-      thc: coa.test_results?.thc ? `${coa.test_results.thc}%` : 'N/A',
-      cbd: coa.test_results?.cbd ? `${coa.test_results.cbd}%` : 'N/A',
-      testingLab: coa.lab_name || 'N/A',
-      batchNumber: coa.batch_number || 'N/A',
-      expiryDate: coa.expiry_date,
-      fileName: coa.file_name,
-      fileSize: coa.file_size
+    const transformedCoas = (coas || []).map(coa => {
+      const product = Array.isArray(coa.products) ? coa.products[0] : coa.products;
+      return {
+        id: coa.id,
+        productId: product?.wordpress_id || null,
+        productName: product?.name || 'Unknown Product',
+        coaNumber: coa.batch_number || `COA-${coa.id.slice(0, 8)}`,
+        testDate: coa.test_date,
+        uploadDate: coa.upload_date,
+        status: coa.is_verified ? 'approved' : 'pending',
+        fileUrl: coa.file_url,
+        thc: coa.test_results?.thc ? `${coa.test_results.thc}%` : 'N/A',
+        cbd: coa.test_results?.cbd ? `${coa.test_results.cbd}%` : 'N/A',
+        testingLab: coa.lab_name || 'N/A',
+        batchNumber: coa.batch_number || 'N/A',
+        expiryDate: coa.expiry_date,
+        fileName: coa.file_name,
+        fileSize: coa.file_size
+      };
     }));
 
     // If no COAs found in vendor_coas table, check products meta_data for legacy coa_url
