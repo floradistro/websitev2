@@ -19,6 +19,7 @@ const nextConfig: NextConfig = {
     formats: ['image/avif', 'image/webp'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    qualities: [75, 85, 90, 95, 100],
     minimumCacheTTL: 60,
   },
   
@@ -54,6 +55,8 @@ const nextConfig: NextConfig = {
   
   // Headers for caching and performance
   async headers() {
+    const isDev = process.env.NODE_ENV === 'development';
+    
     return [
       {
         source: '/:path*',
@@ -74,6 +77,10 @@ const nextConfig: NextConfig = {
             key: 'Referrer-Policy',
             value: 'origin-when-cross-origin'
           },
+          ...(isDev ? [{
+            key: 'Cache-Control',
+            value: 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0'
+          }] : []),
         ],
       },
       {
@@ -81,7 +88,9 @@ const nextConfig: NextConfig = {
         headers: [
           {
             key: 'Cache-Control',
-            value: 'public, s-maxage=60, stale-while-revalidate=30',
+            value: isDev 
+              ? 'no-store, no-cache, must-revalidate, max-age=0'
+              : 'public, s-maxage=60, stale-while-revalidate=30',
           },
         ],
       },
@@ -90,7 +99,9 @@ const nextConfig: NextConfig = {
         headers: [
           {
             key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable',
+            value: isDev
+              ? 'no-store, must-revalidate, max-age=0'
+              : 'public, max-age=31536000, immutable',
           },
         ],
       },

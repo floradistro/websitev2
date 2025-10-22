@@ -6,20 +6,28 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-// GET - List all field groups
+// GET - Get field group assignments for a category or all assignments
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const activeOnly = searchParams.get('active_only') === 'true';
+    const categoryId = searchParams.get('category_id');
+    const fieldGroupId = searchParams.get('field_group_id');
 
     let query = supabase
-      .from('field_groups')
-      .select('*')
-      .order('display_order', { ascending: true })
-      .order('name', { ascending: true });
+      .from('category_field_groups')
+      .select(`
+        *,
+        category:categories(id, name, slug),
+        field_group:field_groups(id, name, slug, fields)
+      `)
+      .order('display_order', { ascending: true });
 
-    if (activeOnly) {
-      query = query.eq('is_active', true);
+    if (categoryId) {
+      query = query.eq('category_id', categoryId);
+    }
+
+    if (fieldGroupId) {
+      query = query.eq('field_group_id', fieldGroupId);
     }
 
     const { data, error } = await query;
@@ -28,10 +36,10 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      field_groups: data || []
+      assignments: data || []
     });
   } catch (error: any) {
-    console.error('Error fetching field groups:', error);
+    console.error('Error fetching assignments:', error);
     return NextResponse.json(
       { success: false, error: error.message },
       { status: 500 }
@@ -39,48 +47,42 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST - Create new field group
+// POST - Assign field group to category
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { name, slug, description, fields, is_active = true, display_order = 0 } = body;
+    const { category_id, field_group_id, is_required = false, display_order = 0 } = body;
 
-    if (!name || !slug || !fields) {
+    if (!category_id || !field_group_id) {
       return NextResponse.json(
-        { success: false, error: 'Name, slug, and fields are required' },
-        { status: 400 }
-      );
-    }
-
-    // Validate fields structure
-    if (!Array.isArray(fields)) {
-      return NextResponse.json(
-        { success: false, error: 'Fields must be an array' },
+        { success: false, error: 'Category ID and Field Group ID are required' },
         { status: 400 }
       );
     }
 
     const { data, error } = await supabase
-      .from('field_groups')
+      .from('category_field_groups')
       .insert({
-        name,
-        slug,
-        description,
-        fields,
-        is_active,
+        category_id,
+        field_group_id,
+        is_required,
         display_order
       })
-      .select()
+      .select(`
+        *,
+        category:categories(id, name, slug),
+        field_group:field_groups(id, name, slug, fields)
+      `)
       .single();
 
     if (error) throw error;
 
     return NextResponse.json({
       success: true,
-      field_group: data
+      assignment: data
     });
   } catch (error: any) {
-    console.error('Error creating field group:', error);
+    console.error('Error creating assignment:', error);
     return NextResponse.json(
       { success: false, error: error.message },
       { status: 500 }
@@ -88,42 +90,42 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// PUT - Update field group
+// PUT - Update assignment
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json();
-    const { id, name, slug, description, fields, is_active, display_order } = body;
+    const { id, is_required, display_order } = body;
 
     if (!id) {
       return NextResponse.json(
-        { success: false, error: 'Field group ID is required' },
+        { success: false, error: 'Assignment ID is required' },
         { status: 400 }
       );
     }
 
     const updateData: any = {};
-    if (name !== undefined) updateData.name = name;
-    if (slug !== undefined) updateData.slug = slug;
-    if (description !== undefined) updateData.description = description;
-    if (fields !== undefined) updateData.fields = fields;
-    if (is_active !== undefined) updateData.is_active = is_active;
+    if (is_required !== undefined) updateData.is_required = is_required;
     if (display_order !== undefined) updateData.display_order = display_order;
 
     const { data, error } = await supabase
-      .from('field_groups')
+      .from('category_field_groups')
       .update(updateData)
       .eq('id', id)
-      .select()
+      .select(`
+        *,
+        category:categories(id, name, slug),
+        field_group:field_groups(id, name, slug, fields)
+      `)
       .single();
 
     if (error) throw error;
 
     return NextResponse.json({
       success: true,
-      field_group: data
+      assignment: data
     });
   } catch (error: any) {
-    console.error('Error updating field group:', error);
+    console.error('Error updating assignment:', error);
     return NextResponse.json(
       { success: false, error: error.message },
       { status: 500 }
@@ -131,7 +133,7 @@ export async function PUT(request: NextRequest) {
   }
 }
 
-// DELETE - Delete field group
+// DELETE - Remove assignment
 export async function DELETE(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -139,13 +141,13 @@ export async function DELETE(request: NextRequest) {
 
     if (!id) {
       return NextResponse.json(
-        { success: false, error: 'Field group ID is required' },
+        { success: false, error: 'Assignment ID is required' },
         { status: 400 }
       );
     }
 
     const { error } = await supabase
-      .from('field_groups')
+      .from('category_field_groups')
       .delete()
       .eq('id', id);
 
@@ -153,13 +155,14 @@ export async function DELETE(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: 'Field group deleted successfully'
+      message: 'Assignment removed successfully'
     });
   } catch (error: any) {
-    console.error('Error deleting field group:', error);
+    console.error('Error deleting assignment:', error);
     return NextResponse.json(
       { success: false, error: error.message },
       { status: 500 }
     );
   }
 }
+

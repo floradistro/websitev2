@@ -6,14 +6,14 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-// GET - List all field groups
+// GET - List all pricing blueprints
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const activeOnly = searchParams.get('active_only') === 'true';
 
     let query = supabase
-      .from('field_groups')
+      .from('pricing_tier_blueprints')
       .select('*')
       .order('display_order', { ascending: true })
       .order('name', { ascending: true });
@@ -28,10 +28,10 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      field_groups: data || []
+      blueprints: data || []
     });
   } catch (error: any) {
-    console.error('Error fetching field groups:', error);
+    console.error('Error fetching pricing blueprints:', error);
     return NextResponse.json(
       { success: false, error: error.message },
       { status: 500 }
@@ -39,36 +39,49 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST - Create new field group
+// POST - Create new pricing blueprint
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { name, slug, description, fields, is_active = true, display_order = 0 } = body;
+    const { 
+      name, 
+      slug, 
+      description, 
+      tier_type = 'weight',
+      price_breaks,
+      is_active = true,
+      is_default = false,
+      display_order = 0,
+      applicable_to_categories = []
+    } = body;
 
-    if (!name || !slug || !fields) {
+    if (!name || !slug || !price_breaks) {
       return NextResponse.json(
-        { success: false, error: 'Name, slug, and fields are required' },
+        { success: false, error: 'Name, slug, and price_breaks are required' },
         { status: 400 }
       );
     }
 
-    // Validate fields structure
-    if (!Array.isArray(fields)) {
+    // Validate price_breaks structure
+    if (!Array.isArray(price_breaks)) {
       return NextResponse.json(
-        { success: false, error: 'Fields must be an array' },
+        { success: false, error: 'price_breaks must be an array' },
         { status: 400 }
       );
     }
 
     const { data, error } = await supabase
-      .from('field_groups')
+      .from('pricing_tier_blueprints')
       .insert({
         name,
         slug,
         description,
-        fields,
+        tier_type,
+        price_breaks,
         is_active,
-        display_order
+        is_default,
+        display_order,
+        applicable_to_categories
       })
       .select()
       .single();
@@ -77,10 +90,10 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      field_group: data
+      blueprint: data
     });
   } catch (error: any) {
-    console.error('Error creating field group:', error);
+    console.error('Error creating pricing blueprint:', error);
     return NextResponse.json(
       { success: false, error: error.message },
       { status: 500 }
@@ -88,29 +101,21 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// PUT - Update field group
+// PUT - Update pricing blueprint
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json();
-    const { id, name, slug, description, fields, is_active, display_order } = body;
+    const { id, ...updateData } = body;
 
     if (!id) {
       return NextResponse.json(
-        { success: false, error: 'Field group ID is required' },
+        { success: false, error: 'Blueprint ID is required' },
         { status: 400 }
       );
     }
 
-    const updateData: any = {};
-    if (name !== undefined) updateData.name = name;
-    if (slug !== undefined) updateData.slug = slug;
-    if (description !== undefined) updateData.description = description;
-    if (fields !== undefined) updateData.fields = fields;
-    if (is_active !== undefined) updateData.is_active = is_active;
-    if (display_order !== undefined) updateData.display_order = display_order;
-
     const { data, error } = await supabase
-      .from('field_groups')
+      .from('pricing_tier_blueprints')
       .update(updateData)
       .eq('id', id)
       .select()
@@ -120,10 +125,10 @@ export async function PUT(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      field_group: data
+      blueprint: data
     });
   } catch (error: any) {
-    console.error('Error updating field group:', error);
+    console.error('Error updating pricing blueprint:', error);
     return NextResponse.json(
       { success: false, error: error.message },
       { status: 500 }
@@ -131,7 +136,7 @@ export async function PUT(request: NextRequest) {
   }
 }
 
-// DELETE - Delete field group
+// DELETE - Delete pricing blueprint
 export async function DELETE(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -139,13 +144,13 @@ export async function DELETE(request: NextRequest) {
 
     if (!id) {
       return NextResponse.json(
-        { success: false, error: 'Field group ID is required' },
+        { success: false, error: 'Blueprint ID is required' },
         { status: 400 }
       );
     }
 
     const { error } = await supabase
-      .from('field_groups')
+      .from('pricing_tier_blueprints')
       .delete()
       .eq('id', id);
 
@@ -153,13 +158,14 @@ export async function DELETE(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: 'Field group deleted successfully'
+      message: 'Pricing blueprint deleted successfully'
     });
   } catch (error: any) {
-    console.error('Error deleting field group:', error);
+    console.error('Error deleting pricing blueprint:', error);
     return NextResponse.json(
       { success: false, error: error.message },
       { status: 500 }
     );
   }
 }
+

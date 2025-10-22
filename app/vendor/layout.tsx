@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { Home, Package, BarChart3, Settings, LogOut, Palette, ShoppingBag, FileText, DollarSign, Star, ChevronLeft, Menu, X, MapPin, Globe } from 'lucide-react';
 import VendorSupportChat from '@/components/VendorSupportChat';
-import VendorApprovalPanel from '@/components/VendorApprovalPanel';
+import AIActivityMonitor from '@/components/AIActivityMonitor';
 import { VendorAuthProvider, useVendorAuth } from '@/context/VendorAuthContext';
 import { showConfirm } from '@/components/NotificationToast';
 
@@ -402,7 +402,7 @@ function VendorLayoutContent({
       </nav>
 
       <VendorSupportChat isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
-      <VendorApprovalPanel />
+      <AIActivityMonitor />
     </>
   );
 }

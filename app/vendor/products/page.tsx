@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Plus, Search, Filter, Package, FileText, CheckCircle, AlertCircle, XCircle } from 'lucide-react';
+import { Plus, Search, Filter, Package, FileText, CheckCircle, AlertCircle, XCircle, Sparkles } from 'lucide-react';
 import { useVendorAuth } from '@/context/VendorAuthContext';
 import axios from 'axios';
 
@@ -26,14 +26,14 @@ export default function VendorProducts() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<string>('all');
   const [search, setSearch] = useState('');
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
-  useEffect(() => {
-    async function loadProducts() {
-      // Wait for auth to complete
-      if (authLoading || !isAuthenticated) {
-        setLoading(false);
-        return;
-      }
+  async function loadProducts() {
+    // Wait for auth to complete
+    if (authLoading || !isAuthenticated) {
+      setLoading(false);
+      return;
+    }
       
       try {
         setLoading(true);
@@ -83,7 +83,8 @@ export default function VendorProducts() {
         setLoading(false);
       }
     }
-    
+
+  useEffect(() => {
     loadProducts();
   }, [authLoading, isAuthenticated]);
 
@@ -143,6 +144,90 @@ export default function VendorProducts() {
     return true;
   });
 
+  const toggleSelection = (id: string) => {
+    const newSelected = new Set(selectedIds);
+    if (newSelected.has(id)) {
+      newSelected.delete(id);
+    } else {
+      newSelected.add(id);
+    }
+    setSelectedIds(newSelected);
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === filteredProducts.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filteredProducts.map(p => p.submissionId?.toString() || p.id.toString())));
+    }
+  };
+
+  const handleAIAutofill = async () => {
+    if (selectedIds.size === 0) return;
+    
+    // Dispatch event to open AI monitor
+    window.dispatchEvent(new CustomEvent('ai-autofill-start', {
+      detail: { productCount: selectedIds.size }
+    }));
+
+    try {
+      const response = await fetch('/api/ai/autofill-strain', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          productIds: Array.from(selectedIds)
+        })
+      });
+
+      if (!response.ok || !response.body) {
+        throw new Error('Failed to start AI autofill');
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value);
+        const lines = chunk.split('\n');
+
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            try {
+              const data = JSON.parse(line.slice(6));
+              if (data.message) {
+                window.dispatchEvent(new CustomEvent('ai-autofill-progress', {
+                  detail: { message: data.message }
+                }));
+              }
+            } catch (e) {
+              // Ignore parse errors
+            }
+          }
+        }
+      }
+
+      window.dispatchEvent(new CustomEvent('ai-autofill-complete'));
+      setSelectedIds(new Set());
+      
+      // Reload products
+      setTimeout(() => {
+        loadProducts();
+      }, 1000);
+    } catch (error: any) {
+      console.error('AI Autofill error:', error);
+      window.dispatchEvent(new CustomEvent('ai-autofill-progress', {
+        detail: { message: `\n\n❌ Error: ${error.message}` }
+      }));
+      window.dispatchEvent(new CustomEvent('ai-autofill-complete'));
+    }
+  };
+
+
   return (
     <div className="w-full max-w-full animate-fadeIn overflow-x-hidden">
       {/* Header */}
@@ -165,6 +250,30 @@ export default function VendorProducts() {
           <span className="sm:hidden">Add</span>
         </Link>
       </div>
+
+      {/* Bulk Actions Toolbar */}
+      {selectedIds.size > 0 && (
+        <div className="fixed bottom-0 left-0 right-0 lg:static bg-black lg:bg-[#1a1a1a] border-t lg:border border-white/20 lg:border-white/10 p-4 z-50 mb-0 lg:mb-4" style={{ animation: 'slideUp 0.3s ease-out' }}>
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <span className="text-white font-medium">{selectedIds.size} selected</span>
+              <button
+                onClick={() => setSelectedIds(new Set())}
+                className="text-white/60 hover:text-white text-sm transition-colors"
+              >
+                Clear
+              </button>
+            </div>
+            <button
+              onClick={handleAIAutofill}
+              className="flex items-center gap-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-3 font-medium hover:from-purple-700 hover:to-blue-700 transition-all"
+            >
+              <Sparkles className="w-4 h-4" />
+              <span>AI Autofill Strain Data</span>
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Filters */}
       <div className="bg-[#1a1a1a] lg:border border-t border-b border-white/5 px-4 lg:p-4 py-3 lg:py-4 mb-0 lg:mb-6" style={{ animation: 'fadeInUp 0.6s ease-out 0.1s both' }}>
@@ -305,6 +414,14 @@ export default function VendorProducts() {
           <table className="w-full">
             <thead className="border-b border-white/5 bg-[#1a1a1a]">
               <tr>
+                <th className="w-12 p-4">
+                  <input
+                    type="checkbox"
+                    checked={selectedIds.size === filteredProducts.length && filteredProducts.length > 0}
+                    onChange={toggleSelectAll}
+                    className="w-4 h-4 rounded border-white/20 bg-transparent"
+                  />
+                </th>
                 <th className="text-left text-xs font-medium text-white/60 uppercase tracking-wider p-4">Product</th>
                 <th className="text-left text-xs font-medium text-white/60 uppercase tracking-wider p-4">Category</th>
                 <th className="text-left text-xs font-medium text-white/60 uppercase tracking-wider p-4">Price</th>
@@ -315,8 +432,18 @@ export default function VendorProducts() {
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
-              {filteredProducts.map((product) => (
+              {filteredProducts.map((product) => {
+                const productKey = product.submissionId?.toString() || product.id.toString();
+                return (
                 <tr key={product.id} className="hover:bg-[#303030] transition-all">
+                  <td className="p-4">
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.has(productKey)}
+                      onChange={() => toggleSelection(productKey)}
+                      className="w-4 h-4 rounded border-white/20 bg-transparent"
+                    />
+                  </td>
                   <td className="p-4">
                     <div className="flex items-center gap-3">
                       <div className="w-12 h-12 bg-white/5 rounded flex items-center justify-center">
@@ -373,12 +500,14 @@ export default function VendorProducts() {
                     )}
                   </td>
                 </tr>
-              ))}
+              );
+              })}
             </tbody>
           </table>
         </div>
         </>
       )}
+
     </div>
   );
 }

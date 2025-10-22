@@ -80,6 +80,12 @@ export default function RootLayout({
   return (
     <html lang="en" data-scroll-behavior="smooth" className="overflow-x-hidden" suppressHydrationWarning>
       <head>
+        {process.env.NODE_ENV === 'development' && (
+          <script src="/sw-killer.js" />
+        )}
+        <meta httpEquiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+        <meta httpEquiv="Pragma" content="no-cache" />
+        <meta httpEquiv="Expires" content="0" />
         <link rel="preconnect" href="https://api.floradistro.com" />
         <link rel="dns-prefetch" href="https://api.floradistro.com" />
         <meta name="mobile-web-app-capable" content="yes" />
