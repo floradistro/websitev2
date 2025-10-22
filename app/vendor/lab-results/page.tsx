@@ -276,8 +276,7 @@ export default function VendorLabResults() {
             {filteredCOAs.map((coa) => (
               <div
                 key={coa.id}
-                onClick={() => setSelectedCOA(coa)}
-                className="px-4 py-3 active:bg-white/5 transition-all bg-[#1a1a1a]"
+                className="px-4 py-3 bg-[#1a1a1a]"
               >
                 <div className="flex gap-3 mb-2">
                   {coa.productImage && (
@@ -312,7 +311,25 @@ export default function VendorLabResults() {
                     </>
                   )}
                 </div>
-                <div className="text-xs text-white/40 font-mono">{coa.coaNumber}</div>
+                <div className="flex items-center justify-between">
+                  <div className="text-xs text-white/40 font-mono">{coa.coaNumber}</div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setSelectedCOA(coa)}
+                      className="px-3 py-1.5 bg-white/5 border border-white/10 hover:bg-white/10 text-white text-xs uppercase tracking-wider transition-all"
+                    >
+                      View Details
+                    </button>
+                    <a
+                      href={coa.fileUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-3 py-1.5 bg-white/5 border border-white/10 hover:bg-white/10 text-white text-xs uppercase tracking-wider transition-all"
+                    >
+                      View PDF
+                    </a>
+                  </div>
+                </div>
               </div>
             ))}
           </div>
