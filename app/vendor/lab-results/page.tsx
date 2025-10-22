@@ -359,7 +359,7 @@ export default function VendorLabResults() {
                       {coa.productImage ? (
                         <img 
                           src={coa.productImage} 
-                          alt={coa.productName}
+                          alt={coa.productName || ''}
                           className="w-10 h-10 object-cover bg-white/5"
                         />
                       ) : (
@@ -582,7 +582,7 @@ export default function VendorLabResults() {
                       {Object.entries(selectedCOA.terpenes).map(([name, value]) => (
                         <div key={name} className="bg-white/5 border border-white/5 p-2">
                           <div className="text-white/40 text-xs capitalize">{name}</div>
-                          <div className="text-white text-sm">{value}%</div>
+                          <div className="text-white text-sm">{String(value)}%</div>
                         </div>
                       ))}
                     </div>

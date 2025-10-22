@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, Upload, X, Save, AlertCircle, FileText, CheckCircle, Plus, Trash2 } from 'lucide-react';
+import { ArrowLeft, Upload, X, Save, AlertCircle, FileText, CheckCircle, Plus, Trash2, Download } from 'lucide-react';
 import Link from 'next/link';
 
 interface COA {

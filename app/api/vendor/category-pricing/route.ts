@@ -6,6 +6,12 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
+interface ProductWithCategory {
+  id: string;
+  name: string;
+  primary_category: { id: string; name: string } | { id: string; name: string }[] | null;
+}
+
 // GET - Get category pricing assignments for a vendor
 export async function GET(request: NextRequest) {
   try {
@@ -30,7 +36,7 @@ export async function GET(request: NextRequest) {
           name
         )
       `)
-      .eq('vendor_id', vendorId);
+      .eq('vendor_id', vendorId) as { data: ProductWithCategory[] | null; error: any };
 
     if (productsError) throw productsError;
 
@@ -56,7 +62,11 @@ export async function GET(request: NextRequest) {
     const categoryAssignments: Record<string, Set<string>> = {};
     
     products?.forEach(product => {
-      const categoryName = product.primary_category?.name;
+      // Handle both array and object response from Supabase
+      const category = Array.isArray(product.primary_category) 
+        ? product.primary_category[0] 
+        : product.primary_category;
+      const categoryName = category?.name;
       if (!categoryName) return;
       
       if (!categoryAssignments[categoryName]) {
