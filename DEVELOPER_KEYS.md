@@ -1,53 +1,44 @@
-# Developer Keys - Flora Distribution API
+# Developer Keys - Yacht Club (Flora Distro)
 
-## WordPress Production API
-**Base URL**: https://api.floradistro.com
+## Supabase Database
+**Project URL**: https://uaednwpxursknmwdeejn.supabase.co
+**Database**: PostgreSQL
 
-### WooCommerce API Keys
+### API Keys
 ```
-Consumer Key: ck_bb8e5fe3d405e6ed6b8c079c93002d7d8b23a7d5
-Consumer Secret: cs_38194e74c7ddc5d72b6c32c70485728e7e529678
+Anon/Public Key: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVhZWRud3B4dXJza25td2RlZWpuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA5OTcyMzMsImV4cCI6MjA3NjU3MzIzM30.Dj0FtFqxF-FXHJrD_gNkKg5KQRPyMc-f6vO18CPhVVE
+
+Service Role Key: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVhZWRud3B4dXJza25td2RlZWpuIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MDk5NzIzMywiZXhwIjoyMDc2NTczMjMzfQ.l0NvBbS2JQWPObtWeVD2M2LD866A2tgLmModARYNnbI
+```
+
+### Database Connection
+```
+Host: aws-0-us-east-1.pooler.supabase.com
+Port: 6543
+Database: postgres
+User: postgres.uaednwpxursknmwdeejn
+Password: Floradistro2024!
 ```
 
 ### Usage
-These keys provide full access to the WooCommerce REST API for:
-- Products
-- Orders
-- Customers
-- Vendors
-- Inventory Management
-- Shipping
-- Payment Processing
+Our system is 100% Supabase powered:
+- Products & Inventory
+- Multi-location vendor management
+- Orders & Customers
+- Real-time updates
+- File storage
+- Authentication
 
 ### API Endpoints
-- Base: `https://api.floradistro.com/wp-json/wc/v3/`
-- Vendor: `https://api.floradistro.com/wp-json/flora/v1/`
-
-### Authentication
-Use Basic Auth with Consumer Key as username and Consumer Secret as password:
-```bash
-curl -u ck_bb8e5fe3d405e6ed6b8c079c93002d7d8b23a7d5:cs_38194e74c7ddc5d72b6c32c70485728e7e529678 \
-  https://api.floradistro.com/wp-json/wc/v3/products
-```
-
-## Database Access
-**Host**: 127.0.0.1  
-**Database**: dbpm1080lhrpq2  
-**Username**: unr9f5qnxgdfb  
-**Password**: csh4jneuc074  
-**Table Prefix**: avu_
-
-## Server Access (Siteground)
-**Hostname**: gvam1142.siteground.biz  
-**SSH Port**: 18765  
-**Username**: u2736-pgt6vpiklij1  
-**Auth**: SSH Key (provided separately)
-
-**WordPress Installation Path**: `/home/customer/www/api.floradistro.com/public_html/`
+All data comes from Supabase:
+- Products: `/api/supabase/products`
+- Inventory: `/api/supabase/inventory`
+- Vendors: `/api/admin/vendors`
+- Orders: `/api/supabase/orders`
 
 ## Important Notes
+- ✅ **100% Supabase** - No WordPress, No WooCommerce
 - ⚠️ Keep these keys secure and never commit to public repositories
-- ⚠️ These keys have full admin access to the WordPress/WooCommerce system
-- ⚠️ Rate limits may apply to API requests
-- ✅ All keys are for production environment
+- ⚠️ Service role key has full admin access
+- ✅ All keys are for production Supabase instance
 

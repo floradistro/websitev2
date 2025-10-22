@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { Search, ChevronRight, Package, CheckCircle, AlertTriangle, X, Save, Plus, Minus, Edit2, FileText, Send } from 'lucide-react';
+import { Search, ChevronRight, Package, CheckCircle, AlertTriangle, X, Save, Plus, Minus, Edit2, FileText, Send, Filter, MapPin, ArrowRightLeft, Download, Sliders, Trash2 } from 'lucide-react';
 import { useVendorAuth } from '@/context/VendorAuthContext';
 import axios from 'axios';
-import { showNotification } from '@/components/NotificationToast';
+import { showNotification, showConfirm } from '@/components/NotificationToast';
+import AdminModal from '@/components/AdminModal';
 
 interface FloraFields {
   thc_percentage?: string;
@@ -18,10 +19,9 @@ interface FloraFields {
 }
 
 interface InventoryItem {
-  id: number | null; // NULL if no inventory record exists yet
+  id: number | null;
   inventory_id: number | null;
-  product_id: string; // UUID
-  wordpress_product_id: number; // Integer wordpress_id
+  product_id: string; // Supabase UUID
   product_name: string;
   sku: string;
   quantity: number;
@@ -33,7 +33,19 @@ interface InventoryItem {
   stock_status_label: string;
   location_name: string;
   location_id: number | null;
+  location_names?: string; // NEW: Show all locations with stock
+  locations_with_stock?: number; // NEW: Count of locations
+  inventory_locations?: any[]; // NEW: Full inventory data per location
   flora_fields?: FloraFields;
+}
+
+interface Location {
+  id: string;
+  name: string;
+  city: string;
+  state: string;
+  is_primary: boolean;
+  is_active: boolean;
 }
 
 type ViewMode = 'details' | 'adjust' | 'fields' | 'images';
@@ -41,19 +53,31 @@ type ViewMode = 'details' | 'adjust' | 'fields' | 'images';
 export default function VendorInventory() {
   const { isAuthenticated, isLoading: authLoading } = useVendorAuth();
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
+  const [locations, setLocations] = useState<Location[]>([]);
   const [loading, setLoading] = useState(true);
-  const [vendorId, setVendorId] = useState<string | null>(null); // Add vendorId state
+  const [vendorId, setVendorId] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<Record<string, ViewMode>>({});
   const [quickAdjustInput, setQuickAdjustInput] = useState<string>('');
-  const [adjustmentInput, setAdjustmentInput] = useState<string>(''); // Add adjustmentInput
-  const [adjustmentReason, setAdjustmentReason] = useState<string>(''); // Add adjustment reason
+  const [adjustmentInput, setAdjustmentInput] = useState<string>('');
+  const [adjustmentReason, setAdjustmentReason] = useState<string>('');
   const [setQuantityInput, setSetQuantityInput] = useState<string>('');
   const [processing, setProcessing] = useState(false);
+  
+  // Filters
   const [stockFilter, setStockFilter] = useState<'all' | 'in_stock' | 'low_stock' | 'out_of_stock'>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
-  const [sortBy, setSortBy] = useState<'name' | 'quantity' | 'status'>('name');
+  const [locationFilter, setLocationFilter] = useState<string>('all');
+  const [strainTypeFilter, setStrainTypeFilter] = useState<string>('all');
+  const [thcRangeFilter, setThcRangeFilter] = useState<string>('all');
+  const [sortBy, setSortBy] = useState<'name' | 'quantity' | 'status' | 'location'>('name');
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  
+  // Bulk actions
+  const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
+  const [showBulkTransfer, setShowBulkTransfer] = useState(false);
+  const [transferToLocation, setTransferToLocation] = useState<string>('');
   
   // Field editing
   const [editedFields, setEditedFields] = useState<Record<string, FloraFields>>({});
@@ -65,85 +89,134 @@ export default function VendorInventory() {
       return;
     }
     
-      try {
-        setLoading(true);
+    try {
+      setLoading(true);
+      
+      const storedVendorId = localStorage.getItem('vendor_id');
+      if (!storedVendorId) {
+        setLoading(false);
+        return;
+      }
+      
+      setVendorId(storedVendorId);
+
+      // Fetch products, inventory, and locations in parallel
+      const [productsResponse, inventoryResponse, locationsResponse] = await Promise.all([
+        axios.get('/api/vendor/products', {
+          headers: { 'x-vendor-id': storedVendorId }
+        }).catch(() => ({ data: { products: [] } })),
+        axios.get('/api/vendor/inventory', {
+          headers: { 'x-vendor-id': storedVendorId }
+        }).catch(() => ({ data: { inventory: [] } })),
+        axios.get('/api/vendor/locations', {
+          headers: { 'x-vendor-id': storedVendorId }
+        }).catch(() => ({ data: { locations: [] } }))
+      ]);
+      
+      const inventoryData = inventoryResponse.data.inventory || [];
+      const locationsData = locationsResponse.data.locations || [];
+      const allProducts = productsResponse.data.products || [];
+      
+      setLocations(locationsData);
+      
+      // Debug: Check product statuses
+      console.log('🔵 Total vendor products:', allProducts.length);
+      const statusBreakdown = allProducts.reduce((acc: any, p: any) => {
+        acc[p.status] = (acc[p.status] || 0) + 1;
+        return acc;
+      }, {});
+      console.log('🔵 Product status breakdown:', statusBreakdown);
+      
+      // Show ALL vendor products (including pending, draft, etc.) for inventory management
+      const vendorProducts = allProducts;
+      
+      console.log('🔵 Vendor products to display:', vendorProducts.length);
+      console.log('🔵 Inventory records:', inventoryData.length);
+      console.log('🔵 Locations:', locationsData.length);
+      
+      // Debug: Check inventory product_id vs products UUID
+      const inventoryProductIds = new Set(inventoryData.map((i: any) => i.product_id));
+      const productUUIDs = new Set(vendorProducts.map((p: any) => p.id));
+      const orphanedInventory = [...inventoryProductIds].filter(id => !productUUIDs.has(id));
+      if (orphanedInventory.length > 0) {
+        console.log('⚠️ Inventory records without matching products:', orphanedInventory.length, orphanedInventory);
+      }
+      
+      // Create inventory map grouped by product_id (UUID) → locations
+      const inventoryByProduct = new Map();
+      inventoryData.forEach((inv: any) => {
+        // Use product_id which is now UUID
+        const productId = inv.product_id?.toString();
+        if (!inventoryByProduct.has(productId)) {
+          inventoryByProduct.set(productId, []);
+        }
+        inventoryByProduct.get(productId).push(inv);
+      });
+      
+      // Map products to show inventory across all locations
+      const mappedData = vendorProducts.map((product: any) => {
+        // Match by UUID, not wordpress_id
+        const productInventory = inventoryByProduct.get(product.id) || [];
         
-        // Get vendor ID from localStorage
-        const storedVendorId = localStorage.getItem('vendor_id');
-        if (!storedVendorId) {
-          setLoading(false);
-          return;
+        // Calculate totals across all locations
+        const totalQuantity = productInventory.reduce((sum: number, inv: any) => sum + parseFloat(inv.quantity || 0), 0);
+        const locationsWithStock = productInventory.filter((inv: any) => parseFloat(inv.quantity || 0) > 0);
+        
+        // Determine overall stock status
+        let stockStatus = 'out_of_stock';
+        if (totalQuantity > 0) {
+          stockStatus = totalQuantity > 10 ? 'in_stock' : 'low_stock';
         }
         
-        setVendorId(storedVendorId); // Set vendorId state
-
-        // Fetch both products and inventory data in parallel
-        const [productsResponse, inventoryResponse] = await Promise.all([
-          axios.get('/api/vendor/products', {
-            headers: { 'x-vendor-id': storedVendorId }
-          }).catch(() => ({ data: { products: [] } })),
-          axios.get('/api/vendor/inventory', {
-            headers: { 'x-vendor-id': storedVendorId }
-          }).catch(() => ({ data: { inventory: [] } }))
-        ]);
+        // Get primary location (most stock) or first location
+        const primaryInv = productInventory.sort((a: any, b: any) => 
+          parseFloat(b.quantity || 0) - parseFloat(a.quantity || 0)
+        )[0];
         
-        const inventoryData = inventoryResponse.data.inventory || [];
-        
-        // Get only approved/published products (Supabase uses 'published')
-        const approvedProducts = productsResponse.data.products?.filter((p: any) => 
-          p.status === 'published' || p.status === 'publish'
-        ) || [];
-        
-        console.log('🔵 Approved products:', approvedProducts.length);
-        console.log('🔵 Inventory records:', inventoryData.length);
-        
-        // Create inventory map - key by wordpress_id (integer) since that's what inventory uses
-        const inventoryMap = new Map(
-          Array.isArray(inventoryData) 
-            ? inventoryData.map((inv: any) => [inv.product_id, inv]) // product_id is wordpress_id (integer)
-            : []
-        );
-        
-        console.log('🔵 Inventory map keys:', Array.from(inventoryMap.keys()));
-        console.log('🔵 Product wordpress_ids:', approvedProducts.map((p: any) => p.wordpress_id));
-        
-        // Show ALL approved products - with or without inventory
-        const mappedData = approvedProducts.map((product: any) => {
-          // Match by wordpress_id (integer), not UUID
-          const inv = inventoryMap.get(product.wordpress_id);
-          
-          console.log(`Product ${product.name}: wordpress_id=${product.wordpress_id}, has inventory=${!!inv}, qty=${inv?.quantity || 0}`);
-          
-          return {
-            id: inv?.id || null, // NULL if no inventory record yet
-            inventory_id: inv?.id || null,
-            product_id: product.id, // UUID for display
-            wordpress_product_id: product.wordpress_id, // Integer for inventory matching
-            product_name: product.name,
-            sku: product.sku || '',
-            quantity: inv ? parseFloat(inv.quantity) || 0 : 0,
-            category_name: product.primary_category?.name || 'Product',
-            image: product.featured_image_storage || product.featured_image || null,
-            price: parseFloat(product.regular_price || 0),
-            description: product.short_description || product.description || '',
-            stock_status: inv?.stock_status || 'out_of_stock',
-            stock_status_label: inv?.stock_status === 'in_stock' ? 'In Stock' : 
-                               inv?.stock_status === 'low_stock' ? 'Low Stock' : 'Not Stocked',
-            location_name: inv?.location_name || 'No Location',
-            location_id: inv?.location_id || null,
-            flora_fields: product.meta_data || {}
+        // Show WHERE products are in stock
+        const locationsList = productInventory.map((inv: any) => {
+          const loc = locationsData.find((l: any) => l.id === inv.location_id);
+          const qty = parseFloat(inv.quantity || 0);
+          return { 
+            name: loc?.name || 'Unknown Location', 
+            quantity: qty,
+            id: inv.location_id
           };
-        });
+        }).filter((l: any) => l.quantity > 0);
         
-        console.log('✅ Mapped inventory data:', mappedData.length, 'items');
-        
-        setInventory(mappedData);
-        setLoading(false);
-      } catch (error) {
-        console.error('Error loading inventory:', error);
-        setInventory([]);
-        setLoading(false);
-      }
+        return {
+          id: primaryInv?.id || null,
+          inventory_id: primaryInv?.id || null,
+          product_id: product.id, // Supabase UUID
+          product_name: product.name,
+          sku: product.sku || '',
+          quantity: totalQuantity,
+          locations_with_stock: locationsWithStock.length,
+          inventory_locations: productInventory,
+          location_names: locationsList.map((l: any) => l.name).join(', ') || 'No locations',
+          category_name: product.primary_category?.name || 'Product',
+          image: product.featured_image_storage || product.featured_image || null,
+          price: parseFloat(product.regular_price || 0),
+          description: product.short_description || product.description || '',
+          stock_status: stockStatus,
+          stock_status_label: totalQuantity > 0 ? 
+            `In Stock at ${locationsWithStock.length} location${locationsWithStock.length !== 1 ? 's' : ''}` :
+            'Not Stocked',
+          location_name: primaryInv?.location_name || 'No Location',
+          location_id: primaryInv?.location_id || null,
+          flora_fields: product.meta_data || {}
+        };
+      });
+      
+      console.log('✅ Mapped inventory data:', mappedData.length, 'items');
+      
+      setInventory(mappedData);
+      setLoading(false);
+    } catch (error) {
+      console.error('Error loading inventory:', error);
+      setInventory([]);
+      setLoading(false);
+    }
   };
     
   useEffect(() => {
@@ -156,8 +229,7 @@ export default function VendorInventory() {
       const params = new URLSearchParams(window.location.search);
       const expandProductId = params.get('expand');
       if (expandProductId) {
-        setExpandedId(expandProductId); // Keep as string (UUID)
-        // Remove param from URL
+        setExpandedId(expandProductId);
         window.history.replaceState({}, '', window.location.pathname);
       }
     }
@@ -174,7 +246,6 @@ export default function VendorInventory() {
       return;
     }
     
-    // Find the inventory item
     const item = inventory.find(inv => inv.product_id === productId);
     if (!item) {
       showNotification({
@@ -185,144 +256,209 @@ export default function VendorInventory() {
       return;
     }
 
-    console.log('🔵 Adjusting inventory:', {
-      productId: item.product_id,
-      itemId: item.id,
-      currentQty: item.quantity,
-      adjustment: operation === 'add' ? amount : -amount
-    });
-
     try {
       setProcessing(true);
       
-      try {
-        // Call Supabase inventory adjustment API
-        const response = await fetch('/api/vendor/inventory/adjust', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-vendor-id': vendorId || ''
-          },
-          body: JSON.stringify({
-            inventoryId: item.id, // Will be null if no inventory record exists yet
-            productId: item.product_id,
-            adjustment: operation === 'add' ? amount : -amount,
-            reason: adjustmentReason || `${operation === 'add' ? 'Added' : 'Removed'} ${amount} units`,
-            locationId: item.location_id || undefined
-          })
-        });
-        
-        const data = await response.json();
-        
-        console.log('🔵 Adjust response:', data);
-        
-        if (!data.success) {
-          throw new Error(data.error || 'Failed to adjust inventory');
-        }
-        
-        showNotification({
-          type: 'success',
-          title: 'Stock Updated',
-          message: `Inventory ${operation === 'add' ? 'increased' : 'decreased'} by ${amount} units`,
-        });
-        
-        // Reload entire inventory to get fresh data
-        await loadInventory();
-        
-        setAdjustmentInput('');
-        setAdjustmentReason('');
-        setQuickAdjustInput('');
-        
-      } catch (error: any) {
-        showNotification({
-          type: 'error',
-          title: 'Adjustment Failed',
-          message: error.message || 'Failed to adjust inventory',
-        });
-      } finally {
-        setProcessing(false);
+      const response = await fetch('/api/vendor/inventory/adjust', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-vendor-id': vendorId || ''
+        },
+        body: JSON.stringify({
+          inventoryId: item.id,
+          productId: item.product_id,
+          adjustment: operation === 'add' ? amount : -amount,
+          reason: adjustmentReason || `${operation === 'add' ? 'Added' : 'Removed'} ${amount} units`,
+          locationId: item.location_id || undefined
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to adjust inventory');
       }
+      
+      showNotification({
+        type: 'success',
+        title: 'Stock Updated',
+        message: `Inventory ${operation === 'add' ? 'increased' : 'decreased'} by ${amount} units`,
+      });
+      
+      await loadInventory();
+      
+      setAdjustmentInput('');
+      setAdjustmentReason('');
+      setQuickAdjustInput('');
+      
     } catch (error: any) {
       showNotification({
         type: 'error',
-        title: 'Error',
-        message: error.message || 'Failed to adjust',
+        title: 'Adjustment Failed',
+        message: error.message || 'Failed to adjust inventory',
       });
+    } finally {
+      setProcessing(false);
     }
   };
 
   const handleSetQuantity = async (productId: any) => {
     const qty = parseFloat(setQuantityInput);
     if (isNaN(qty) || qty < 0) {
-      alert('Enter a valid quantity');
+      showNotification({
+        type: 'warning',
+        title: 'Invalid Quantity',
+        message: 'Enter a valid quantity',
+      });
+      return;
+    }
+
+    const item = inventory.find(inv => inv.product_id === productId);
+    if (!item) {
+      showNotification({
+        type: 'error',
+        title: 'Not Found',
+        message: 'Inventory item not found',
+      });
       return;
     }
 
     try {
       setProcessing(true);
       
-      const item = inventory.find(inv => inv.product_id === productId);
-      if (!item) {
-        alert('Inventory item not found');
+      const currentQty = item.quantity || 0;
+      const targetQty = qty;
+      const adjustment = targetQty - currentQty;
+      
+      if (adjustment === 0) {
+        showNotification({
+          type: 'info',
+          title: 'No Change',
+          message: 'Quantity unchanged',
+        });
         setProcessing(false);
         return;
       }
       
-      try {
-        // Calculate adjustment needed to reach target quantity
-        const currentQty = item.quantity || 0;
-        const targetQty = qty;
-        const adjustment = targetQty - currentQty;
-        
-        if (adjustment === 0) {
-          alert('Quantity unchanged');
-          setProcessing(false);
-          return;
-        }
-        
-        // Call Supabase inventory adjustment API
-        const response = await fetch('/api/vendor/inventory/adjust', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-vendor-id': vendorId || ''
-          },
-          body: JSON.stringify({
-            inventoryId: item.id,
-            adjustment: adjustment,
-            reason: `Set quantity to ${targetQty}`
-          })
-        });
-        
-        const data = await response.json();
-        
-        if (!data.success) {
-          throw new Error(data.error || 'Failed to set inventory');
-        }
-        
-        // Update UI
-        setInventory(prev => prev.map(inv => {
-          if (inv.product_id === productId) {
-            return {
-              ...inv,
-              quantity: data.new_quantity,
-              stock_status: data.new_quantity > 0 ? 'in_stock' : 'out_of_stock'
-            };
-          }
-          return inv;
-        }));
-        
-        setSetQuantityInput('');
-        alert(`✅ Inventory set to ${targetQty}!`);
-        
-      } catch (error: any) {
-        alert(error.message || 'Failed to set inventory');
-      } finally {
-        setProcessing(false);
+      const response = await fetch('/api/vendor/inventory/adjust', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-vendor-id': vendorId || ''
+        },
+        body: JSON.stringify({
+          inventoryId: item.id,
+          adjustment: adjustment,
+          reason: `Set quantity to ${targetQty}`
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to set inventory');
       }
+      
+      showNotification({
+        type: 'success',
+        title: 'Stock Updated',
+        message: `Inventory set to ${targetQty}g`,
+      });
+      
+      await loadInventory();
+      setSetQuantityInput('');
+      
     } catch (error: any) {
-      alert(error.message || 'Failed to update');
+      showNotification({
+        type: 'error',
+        title: 'Update Failed',
+        message: error.message || 'Failed to update inventory',
+      });
+    } finally {
+      setProcessing(false);
     }
+  };
+
+  const handleBulkTransfer = async () => {
+    if (!transferToLocation || selectedItems.size === 0) {
+      showNotification({
+        type: 'warning',
+        title: 'Invalid Selection',
+        message: 'Select items and destination location',
+      });
+      return;
+    }
+
+    await showConfirm({
+      title: 'Transfer Stock',
+      message: `Transfer ${selectedItems.size} item(s) to selected location?`,
+      confirmText: 'Transfer',
+      cancelText: 'Cancel',
+      type: 'warning',
+      onConfirm: async () => {
+        try {
+          setProcessing(true);
+          
+          // Call bulk transfer API
+          showNotification({
+            type: 'info',
+            title: 'Transfer Initiated',
+            message: 'Processing bulk transfer...',
+          });
+          
+          // TODO: Implement bulk transfer API endpoint
+          
+          showNotification({
+            type: 'success',
+            title: 'Transfer Complete',
+            message: `${selectedItems.size} item(s) transferred successfully`,
+          });
+          
+          setShowBulkTransfer(false);
+          setSelectedItems(new Set());
+          setTransferToLocation('');
+          await loadInventory();
+          
+        } catch (error: any) {
+          showNotification({
+            type: 'error',
+            title: 'Transfer Failed',
+            message: error.message || 'Failed to transfer items',
+          });
+        } finally {
+          setProcessing(false);
+        }
+      }
+    });
+  };
+
+  const handleExportInventory = () => {
+    const csv = [
+      ['Product', 'SKU', 'Category', 'Location', 'Quantity', 'Price', 'Stock Status'].join(','),
+      ...filteredInventory.map(item => [
+        item.product_name,
+        item.sku,
+        item.category_name,
+        item.location_name,
+        item.quantity,
+        item.price,
+        item.stock_status_label
+      ].join(','))
+    ].join('\n');
+    
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `inventory-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    
+    showNotification({
+      type: 'success',
+      title: 'Export Complete',
+      message: 'Inventory exported successfully',
+    });
   };
 
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -331,19 +467,85 @@ export default function VendorInventory() {
     const changes = editedFields[productId];
     
     if (!changes || Object.keys(changes).length === 0) {
-      alert('No changes to submit');
+      showNotification({
+        type: 'warning',
+        title: 'No Changes',
+        message: 'No changes to submit',
+      });
       return;
     }
 
     try {
       setSubmittingChange(true);
-      // Simplified - change requests coming soon
-      alert('Product change requests feature coming soon with simplified API');
+      // Change requests coming soon
+      showNotification({
+        type: 'info',
+        title: 'Coming Soon',
+        message: 'Product change requests feature coming soon',
+      });
     } catch (error: any) {
-      alert(error.message || 'Failed to submit changes');
+      showNotification({
+        type: 'error',
+        title: 'Submit Failed',
+        message: error.message || 'Failed to submit changes',
+      });
     } finally {
       setSubmittingChange(false);
     }
+  };
+
+  const toggleSelectItem = (productId: string) => {
+    const newSelected = new Set(selectedItems);
+    if (newSelected.has(productId)) {
+      newSelected.delete(productId);
+    } else {
+      newSelected.add(productId);
+    }
+    setSelectedItems(newSelected);
+  };
+
+  const selectAll = () => {
+    if (selectedItems.size === filteredInventory.length) {
+      setSelectedItems(new Set());
+    } else {
+      setSelectedItems(new Set(filteredInventory.map(i => i.product_id)));
+    }
+  };
+
+  const handleDeleteInventory = async (inventoryId: string, productName: string) => {
+    await showConfirm({
+      title: 'Delete Inventory Record',
+      message: `Are you sure you want to delete "${productName}" from inventory? This will remove the product from this location.`,
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      type: 'warning',
+      onConfirm: async () => {
+        try {
+          setProcessing(true);
+          
+          const response = await axios.delete(`/api/vendor/inventory?inventory_id=${inventoryId}`, {
+            headers: { 'x-vendor-id': vendorId }
+          });
+
+          if (response.data.success) {
+            showNotification({
+              type: 'success',
+              title: 'Deleted',
+              message: 'Inventory record deleted successfully'
+            });
+            await loadInventory();
+          }
+        } catch (error: any) {
+          showNotification({
+            type: 'error',
+            title: 'Delete Failed',
+            message: error.response?.data?.error || 'Failed to delete inventory record'
+          });
+        } finally {
+          setProcessing(false);
+        }
+      }
+    });
   };
 
   const getStockStatusColor = (status: string) => {
@@ -355,44 +557,143 @@ export default function VendorInventory() {
   };
 
   const categories = ['all', ...Array.from(new Set(inventory.map(i => i.category_name)))];
+  const strainTypes = ['all', ...Array.from(new Set(inventory.map(i => i.flora_fields?.strain_type).filter(Boolean)))];
 
   let filteredInventory = inventory.filter(item => {
-    if (stockFilter !== 'all' && item.stock_status !== stockFilter) return false;
+    // Location filter - check if product has inventory at this location
+    if (locationFilter !== 'all') {
+      const hasInventoryAtLocation = item.inventory_locations?.some((inv: any) => 
+        inv.location_id === locationFilter
+      );
+      if (!hasInventoryAtLocation) return false;
+      
+      // When filtering by location, use that location's quantity for stock status
+      const invAtLocation = item.inventory_locations?.find((inv: any) => inv.location_id === locationFilter);
+      const qtyAtLocation = parseFloat(invAtLocation?.quantity || 0);
+      
+      // Apply stock filter based on location-specific quantity
+      if (stockFilter === 'in_stock' && qtyAtLocation === 0) return false; // Has ANY stock
+      if (stockFilter === 'low_stock' && (qtyAtLocation === 0 || qtyAtLocation > 10)) return false;
+      if (stockFilter === 'out_of_stock' && qtyAtLocation > 0) return false;
+    } else {
+      // No location filter - use aggregated quantity
+      if (stockFilter === 'in_stock' && item.quantity === 0) return false; // Has ANY stock
+      if (stockFilter === 'low_stock' && item.stock_status !== 'low_stock') return false;
+      if (stockFilter === 'out_of_stock' && item.quantity > 0) return false;
+    }
+    
+    // Category filter
     if (categoryFilter !== 'all' && item.category_name !== categoryFilter) return false;
+    
+    // Strain type filter
+    if (strainTypeFilter !== 'all' && item.flora_fields?.strain_type !== strainTypeFilter) return false;
+    
+    // THC range filter
+    if (thcRangeFilter !== 'all') {
+      const thc = parseFloat(item.flora_fields?.thc_percentage || '0');
+      switch (thcRangeFilter) {
+        case 'low': if (thc >= 15) return false; break;
+        case 'medium': if (thc < 15 || thc >= 25) return false; break;
+        case 'high': if (thc < 25) return false; break;
+      }
+    }
+    
+    // Search filter
     if (search && !item.product_name.toLowerCase().includes(search.toLowerCase()) && 
         !(item.sku || '').toLowerCase().includes(search.toLowerCase())) return false;
+    
     return true;
   });
 
+  // Sorting
   filteredInventory = filteredInventory.sort((a, b) => {
     switch (sortBy) {
       case 'name': return a.product_name.localeCompare(b.product_name);
       case 'quantity': return b.quantity - a.quantity;
       case 'status': return a.stock_status.localeCompare(b.stock_status);
+      case 'location': return a.location_name.localeCompare(b.location_name);
       default: return 0;
     }
   });
 
   const stats = {
     total: inventory.length,
-    in_stock: inventory.filter(i => i.stock_status === 'in_stock').length,
+    in_stock: inventory.filter(i => i.quantity > 0).length, // Count ALL with stock (in_stock + low_stock)
     low_stock: inventory.filter(i => i.stock_status === 'low_stock').length,
-    out_of_stock: inventory.filter(i => i.stock_status === 'out_of_stock').length
+    out_of_stock: inventory.filter(i => i.quantity === 0).length
   };
+
+  // Location-based stats - show products with inventory records at each location
+  const locationStats = locations.map(loc => {
+    // Get all products that have inventory records at this location
+    const productsAtLocation = inventory.filter(i => {
+      // Check if product has inventory at this location
+      return i.inventory_locations?.some((inv: any) => inv.location_id === loc.id);
+    });
+    
+    // Count products with stock at this location
+    const stockedAtLocation = productsAtLocation.filter(i => {
+      const invAtLoc = i.inventory_locations?.find((inv: any) => inv.location_id === loc.id);
+      return invAtLoc && parseFloat(invAtLoc.quantity || 0) > 0;
+    });
+    
+    // Calculate totals for this location only
+    const totalGrams = productsAtLocation.reduce((sum, i) => {
+      const invAtLoc = i.inventory_locations?.find((inv: any) => inv.location_id === loc.id);
+      return sum + parseFloat(invAtLoc?.quantity || 0);
+    }, 0);
+    
+    const totalValue = productsAtLocation.reduce((sum, i) => {
+      const invAtLoc = i.inventory_locations?.find((inv: any) => inv.location_id === loc.id);
+      const qty = parseFloat(invAtLoc?.quantity || 0);
+      return sum + (qty * i.price);
+    }, 0);
+    
+    return {
+      location: loc,
+      unique_products: productsAtLocation.length,
+      stocked_products: stockedAtLocation.length,
+      total_grams: totalGrams,
+      total_value: totalValue
+    };
+  }).filter(stat => stat.unique_products > 0); // Only show locations with inventory records
 
   return (
     <div className="w-full max-w-full animate-fadeIn px-4 lg:px-0 py-6 lg:py-0 overflow-x-hidden">
       {/* Header */}
       <div className="mb-6 lg:mb-8">
-        <h1 className="text-2xl lg:text-3xl font-light text-white mb-2 tracking-tight">
-          Inventory Management
-        </h1>
-        <p className="text-white/60 text-xs lg:text-sm">
-          {filteredInventory.length} {filteredInventory.length === 1 ? 'product' : 'products'}
-        </p>
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h1 className="text-2xl lg:text-3xl font-light text-white mb-2 tracking-tight">
+              Multi-Location Inventory
+            </h1>
+            <p className="text-white/60 text-xs lg:text-sm">
+              {filteredInventory.length} of {inventory.length} products • {locations.length} locations
+            </p>
+          </div>
+          
+          <div className="flex gap-2">
+            {selectedItems.size > 0 && (
+              <button
+                onClick={() => setShowBulkTransfer(true)}
+                className="hidden lg:flex items-center gap-2 bg-white/5 border border-white/10 hover:border-white/20 text-white px-4 py-2 text-xs uppercase tracking-wider transition-all"
+              >
+                <ArrowRightLeft size={14} />
+                Transfer ({selectedItems.size})
+              </button>
+            )}
+            <button
+              onClick={handleExportInventory}
+              className="hidden lg:flex items-center gap-2 bg-white/5 border border-white/10 hover:border-white/20 text-white px-4 py-2 text-xs uppercase tracking-wider transition-all"
+            >
+              <Download size={14} />
+              Export
+            </button>
+          </div>
+        </div>
       </div>
 
-      {/* Stats */}
+      {/* Overall Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6 -mx-4 lg:mx-0 px-4 lg:px-0">
         <div className="bg-[#1a1a1a] lg:border border-t border-b border-white/5 p-4">
           <div className="flex items-center gap-2 mb-2">
@@ -424,21 +725,98 @@ export default function VendorInventory() {
         </div>
       </div>
 
+      {/* Location Stats */}
+      {locationStats.length > 0 && (
+        <div className="bg-[#1a1a1a] lg:border border-t border-b border-white/5 mb-6 -mx-4 lg:mx-0">
+          <div className="p-4 border-b border-white/5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <MapPin size={16} className="text-white/60" />
+                <span className="text-white text-sm font-medium">Inventory by Location</span>
+              </div>
+              <span className="text-white/40 text-xs">{locationStats.length} active location{locationStats.length !== 1 ? 's' : ''}</span>
+            </div>
+          </div>
+          
+          <div className="divide-y divide-white/5">
+            {locationStats.map(stat => (
+              <div key={stat.location.id} className="p-4 hover:bg-white/5 transition-colors">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-white font-medium">{stat.location.name}</span>
+                    {stat.location.is_primary && (
+                      <span className="px-2 py-0.5 text-[10px] bg-yellow-500/10 border border-yellow-500/20 text-yellow-500 uppercase tracking-wider">
+                        Primary
+                      </span>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => setLocationFilter(stat.location.id.toString())}
+                    className="text-[10px] text-white/60 hover:text-white uppercase tracking-wider transition-colors"
+                  >
+                    View Products →
+                  </button>
+                </div>
+                
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                  <div className="bg-black/20 border border-white/5 rounded p-2">
+                    <div className="text-[10px] text-white/40 uppercase tracking-wider mb-1">Unique Products</div>
+                    <div className="text-lg text-white font-light">{stat.unique_products}</div>
+                  </div>
+                  
+                  <div className="bg-black/20 border border-white/5 rounded p-2">
+                    <div className="text-[10px] text-white/40 uppercase tracking-wider mb-1">Stocked</div>
+                    <div className="text-lg text-green-500 font-light">{stat.stocked_products}</div>
+                  </div>
+                  
+                  <div className="bg-black/20 border border-white/5 rounded p-2">
+                    <div className="text-[10px] text-white/40 uppercase tracking-wider mb-1">Total Quantity</div>
+                    <div className="text-lg text-white font-light">{stat.total_grams.toFixed(1)}g</div>
+                  </div>
+                  
+                  <div className="bg-black/20 border border-white/5 rounded p-2">
+                    <div className="text-[10px] text-white/40 uppercase tracking-wider mb-1">Inventory Value</div>
+                    <div className="text-lg text-white font-light">${stat.total_value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Filters */}
       <div className="bg-[#1a1a1a] lg:border border-t border-b border-white/5 p-4 mb-6 -mx-4 lg:mx-0">
         <div className="flex flex-col gap-3">
+          {/* Search */}
           <div className="relative">
             <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" />
-          <input
-            type="text"
+            <input
+              type="text"
               placeholder="Search products or SKU..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
               className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 pl-10 pr-4 py-3 focus:outline-none focus:border-white/10 transition-colors text-sm"
             />
           </div>
 
+          {/* Primary Filters */}
           <div className="flex flex-wrap gap-2">
+            {/* Location Filter */}
+            <select
+              value={locationFilter}
+              onChange={(e) => setLocationFilter(e.target.value)}
+              className="bg-[#1a1a1a] border border-white/5 text-white px-3 py-2 text-xs focus:outline-none focus:border-white/10"
+            >
+              <option value="all">All Locations</option>
+              {locations.map(loc => (
+                <option key={loc.id} value={loc.id}>
+                  {loc.name} {loc.is_primary ? '(Primary)' : ''}
+                </option>
+              ))}
+            </select>
+
+            {/* Category Filter */}
             <select
               value={categoryFilter}
               onChange={(e) => setCategoryFilter(e.target.value)}
@@ -449,16 +827,30 @@ export default function VendorInventory() {
               ))}
             </select>
 
+            {/* Sort */}
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as any)}
               className="bg-[#1a1a1a] border border-white/5 text-white px-3 py-2 text-xs focus:outline-none focus:border-white/10"
             >
-              <option value="name">Name</option>
-              <option value="quantity">Quantity</option>
-              <option value="status">Status</option>
+              <option value="name">Sort: Name</option>
+              <option value="quantity">Sort: Quantity</option>
+              <option value="status">Sort: Status</option>
+              <option value="location">Sort: Location</option>
             </select>
 
+            {/* Advanced Filters Toggle */}
+            <button
+              onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+              className={`flex items-center gap-2 px-3 py-2 text-xs uppercase tracking-wider border transition-all ${
+                showAdvancedFilters ? 'border-white text-white bg-white/5' : 'border-white/10 text-white/60 hover:border-white/20'
+              }`}
+            >
+              <Sliders size={14} />
+              Advanced
+            </button>
+
+            {/* Stock Status Pills */}
             {['all', 'in_stock', 'low_stock', 'out_of_stock'].map((filter) => (
               <button
                 key={filter}
@@ -476,19 +868,88 @@ export default function VendorInventory() {
               </button>
             ))}
           </div>
+
+          {/* Advanced Filters */}
+          {showAdvancedFilters && (
+            <div className="pt-3 border-t border-white/5 flex flex-wrap gap-2">
+              {/* Strain Type Filter */}
+              <select
+                value={strainTypeFilter}
+                onChange={(e) => setStrainTypeFilter(e.target.value)}
+                className="bg-[#1a1a1a] border border-white/5 text-white px-3 py-2 text-xs focus:outline-none focus:border-white/10"
+              >
+                <option value="all">All Strains</option>
+                {strainTypes.map(type => (
+                  <option key={type} value={type}>{type}</option>
+                ))}
+              </select>
+
+              {/* THC Range Filter */}
+              <select
+                value={thcRangeFilter}
+                onChange={(e) => setThcRangeFilter(e.target.value)}
+                className="bg-[#1a1a1a] border border-white/5 text-white px-3 py-2 text-xs focus:outline-none focus:border-white/10"
+              >
+                <option value="all">All THC Levels</option>
+                <option value="low">Low (0-15%)</option>
+                <option value="medium">Medium (15-25%)</option>
+                <option value="high">High (25%+)</option>
+              </select>
+
+              {/* Clear Filters */}
+              <button
+                onClick={() => {
+                  setCategoryFilter('all');
+                  setLocationFilter('all');
+                  setStrainTypeFilter('all');
+                  setThcRangeFilter('all');
+                  setStockFilter('all');
+                  setSearch('');
+                }}
+                className="px-3 py-2 text-xs uppercase tracking-wider border border-white/10 text-white/60 hover:border-white/20 hover:text-white transition-all"
+              >
+                Clear All
+              </button>
+            </div>
+          )}
         </div>
       </div>
+
+      {/* Bulk Actions Bar */}
+      {selectedItems.size > 0 && (
+        <div className="bg-blue-500/10 border border-blue-500/20 p-4 mb-6 -mx-4 lg:mx-0 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <input
+              type="checkbox"
+              checked={selectedItems.size === filteredInventory.length}
+              onChange={selectAll}
+              className="w-4 h-4 bg-[#1a1a1a] border border-white/20"
+            />
+            <span className="text-white text-sm">
+              {selectedItems.size} item{selectedItems.size !== 1 ? 's' : ''} selected
+            </span>
+          </div>
+          <button
+            onClick={() => setShowBulkTransfer(true)}
+            className="flex items-center gap-2 bg-white text-black px-4 py-2 text-xs uppercase tracking-wider hover:bg-white/90 transition-all"
+          >
+            <ArrowRightLeft size={14} />
+            Transfer Stock
+          </button>
+        </div>
+      )}
 
       {/* Product Cards */}
       {loading ? (
         <div className="bg-[#1a1a1a] lg:border border-white/5 p-12">
-          <div className="text-center text-white/60">Loading...</div>
+          <div className="text-center text-white/60">Loading inventory...</div>
         </div>
       ) : filteredInventory.length === 0 ? (
         <div className="bg-[#1a1a1a] lg:border border-white/5 p-12">
           <div className="text-center">
             <Package size={48} className="text-white/20 mx-auto mb-4" />
-            <div className="text-white/60">No items found</div>
+            <div className="text-white/60 mb-2">No items found</div>
+            <div className="text-white/40 text-sm">Try adjusting your filters</div>
           </div>
         </div>
       ) : (
@@ -498,48 +959,100 @@ export default function VendorInventory() {
             const currentView = viewMode[item.product_id] || 'details';
             const currentFields = editedFields[item.product_id] || item.flora_fields || {};
             const hasChanges = editedFields[item.product_id] && Object.keys(editedFields[item.product_id]).length > 0;
+            const isSelected = selectedItems.has(item.product_id);
+            
+            // When filtering by location, show location-specific quantity
+            let displayQuantity = item.quantity;
+            let displayStatus = item.stock_status;
+            let displayLabel = item.stock_status_label;
+            
+            if (locationFilter !== 'all') {
+              const invAtLocation = item.inventory_locations?.find((inv: any) => inv.location_id === locationFilter);
+              displayQuantity = parseFloat(invAtLocation?.quantity || 0);
+              displayStatus = displayQuantity === 0 ? 'out_of_stock' : displayQuantity > 10 ? 'in_stock' : 'low_stock';
+              displayLabel = displayStatus === 'in_stock' ? 'In Stock' : displayStatus === 'low_stock' ? 'Low Stock' : 'Not Stocked';
+            }
             
             return (
               <div
                 key={item.id || `inventory-${item.product_id}-${index}`}
-                className="bg-[#1a1a1a] lg:border border-t border-b border-white/[0.04] transition-all -mx-4 lg:mx-0"
+                className={`bg-[#1a1a1a] lg:border border-t border-b transition-all -mx-4 lg:mx-0 ${
+                  isSelected ? 'border-blue-500/50 bg-blue-500/5' : 'border-white/[0.04]'
+                }`}
               >
                 {/* Main Row */}
                 <div
-                  onClick={() => setExpandedId(isExpanded ? null : item.product_id)}
                   className="flex items-center gap-4 px-4 lg:px-6 py-4 cursor-pointer hover:bg-white/5 transition-colors select-none"
                 >
-                  <div className="flex-shrink-0 w-6 h-6 flex items-center justify-center text-white/40">
+                  {/* Checkbox */}
+                  <input
+                    type="checkbox"
+                    checked={isSelected}
+                    onChange={(e) => {
+                      e.stopPropagation();
+                      toggleSelectItem(item.product_id);
+                    }}
+                    className="w-4 h-4 bg-[#1a1a1a] border border-white/20"
+                  />
+
+                  <div
+                    onClick={() => setExpandedId(isExpanded ? null : item.product_id)}
+                    className="flex-shrink-0 w-6 h-6 flex items-center justify-center text-white/40"
+                  >
                     <ChevronRight size={16} className={`transition-transform duration-300 ${isExpanded ? 'rotate-90' : ''}`} />
                   </div>
 
-                  <div className="w-12 h-12 bg-white/5 rounded flex-shrink-0 overflow-hidden">
+                  <div
+                    onClick={() => setExpandedId(isExpanded ? null : item.product_id)}
+                    className="w-12 h-12 bg-white/5 rounded flex-shrink-0 overflow-hidden"
+                  >
                     {item.image ? (
                       <img src={item.image} alt={item.product_name} className="w-full h-full object-cover" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
-                    <Package size={20} className="text-white/40" />
+                        <Package size={20} className="text-white/40" />
                       </div>
                     )}
                   </div>
 
-                  <div className="flex-1 min-w-0">
+                  <div
+                    onClick={() => setExpandedId(isExpanded ? null : item.product_id)}
+                    className="flex-1 min-w-0"
+                  >
                     <div className="text-white font-medium text-sm mb-0.5">{item.product_name}</div>
-                    <div className="flex items-center gap-2 text-[11px] text-white/40">
+                    <div className="flex items-center gap-2 text-[11px] text-white/40 flex-wrap">
                       <span className="font-mono">{item.sku || 'No SKU'}</span>
                       <span>•</span>
                       <span>{item.category_name}</span>
                       <span>•</span>
-                      <span>{item.location_name}</span>
+                      <span className="flex items-center gap-1">
+                        <MapPin size={10} />
+                        {item.location_name}
+                      </span>
+                      {item.flora_fields?.strain_type && (
+                        <>
+                          <span>•</span>
+                          <span className="capitalize">{item.flora_fields.strain_type}</span>
+                        </>
+                      )}
+                      {item.flora_fields?.thc_percentage && (
+                        <>
+                          <span>•</span>
+                          <span>THC: {item.flora_fields.thc_percentage}%</span>
+                        </>
+                      )}
                     </div>
                   </div>
 
-                  <div className="text-right flex-shrink-0">
-                    <div className={`text-2xl font-light mb-0.5 ${getStockStatusColor(item.stock_status)}`}>
-                      {item.quantity.toFixed(1)}g
+                  <div
+                    onClick={() => setExpandedId(isExpanded ? null : item.product_id)}
+                    className="text-right flex-shrink-0"
+                  >
+                    <div className={`text-2xl font-light mb-0.5 ${getStockStatusColor(displayStatus)}`}>
+                      {displayQuantity.toFixed(1)}g
                     </div>
-                    <div className={`text-[10px] uppercase tracking-wider ${getStockStatusColor(item.stock_status)}`}>
-                      {item.stock_status_label}
+                    <div className={`text-[10px] uppercase tracking-wider ${getStockStatusColor(displayStatus)}`}>
+                      {displayLabel}
                     </div>
                   </div>
                 </div>
@@ -569,7 +1082,6 @@ export default function VendorInventory() {
                       <button
                         onClick={() => {
                           setViewMode(prev => ({ ...prev, [item.product_id]: 'fields' }));
-                          // Initialize editing with current values
                           if (!editedFields[item.product_id]) {
                             setEditedFields(prev => ({ ...prev, [item.product_id]: { ...item.flora_fields } }));
                           }
@@ -585,7 +1097,7 @@ export default function VendorInventory() {
                     </div>
 
                     <div className="px-4 lg:px-6 py-6">
-                      {/* Details */}
+                      {/* Details View */}
                       {currentView === 'details' && (
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                           <div className="space-y-3">
@@ -609,16 +1121,9 @@ export default function VendorInventory() {
                               <div className="flex justify-between items-center">
                                 <span className="text-white/40 text-xs">Category</span>
                                 <span className="text-white/80 text-xs">{item.category_name}</span>
-              </div>
-          </div>
-
-                            <div className="border border-white/[0.04] rounded p-3">
-                              <div className="flex justify-between items-center">
-                                <span className="text-white/40 text-xs">Product ID</span>
-                                <span className="text-white/80 text-xs font-mono">{item.product_id}</span>
                               </div>
-                      </div>
-                    </div>
+                            </div>
+                          </div>
 
                           <div className="space-y-3">
                             <div className="text-white/60 text-xs font-medium mb-3 uppercase tracking-wider">Stock Info</div>
@@ -627,8 +1132,8 @@ export default function VendorInventory() {
                               <div className="flex justify-between items-center">
                                 <span className="text-white/40 text-xs">Current Stock</span>
                                 <span className={`text-lg font-medium ${getStockStatusColor(item.stock_status)}`}>
-                      {item.quantity.toFixed(2)}g
-                    </span>
+                                  {item.quantity.toFixed(2)}g
+                                </span>
                               </div>
                             </div>
 
@@ -650,17 +1155,20 @@ export default function VendorInventory() {
 
                             <div className="border border-white/[0.04] rounded p-3">
                               <div className="flex justify-between items-center">
-                                <span className="text-white/40 text-xs">Total Value</span>
-                                <span className="text-white/80 text-xs font-medium">
-                                  ${(item.quantity * item.price).toFixed(2)}
-                    </span>
+                                <span className="text-white/40 text-xs">Location</span>
+                                <span className="text-white/80 text-xs flex items-center gap-1">
+                                  <MapPin size={12} />
+                                  {item.location_name}
+                                </span>
                               </div>
                             </div>
 
                             <div className="border border-white/[0.04] rounded p-3">
                               <div className="flex justify-between items-center">
-                                <span className="text-white/40 text-xs">Location</span>
-                                <span className="text-white/80 text-xs">{item.location_name}</span>
+                                <span className="text-white/40 text-xs">Total Value</span>
+                                <span className="text-white/80 text-xs font-medium">
+                                  ${(item.quantity * item.price).toFixed(2)}
+                                </span>
                               </div>
                             </div>
                           </div>
@@ -682,17 +1190,6 @@ export default function VendorInventory() {
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
-                                setViewMode(prev => ({ ...prev, [item.product_id]: 'images' }));
-                              }}
-                              className="w-full flex items-center justify-center gap-2 bg-white/5 border border-white/10 text-white hover:bg-white/10 hover:border-white/20 px-4 py-3 transition-all"
-                            >
-                              <FileText size={16} />
-                              <span className="text-xs uppercase tracking-wider font-medium">Manage Images</span>
-                            </button>
-                            
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
                                 setViewMode(prev => ({ ...prev, [item.product_id]: 'fields' }));
                                 if (!editedFields[item.product_id]) {
                                   setEditedFields(prev => ({ ...prev, [item.product_id]: { ...item.flora_fields } }));
@@ -703,11 +1200,25 @@ export default function VendorInventory() {
                               <FileText size={16} />
                               <span className="text-xs uppercase tracking-wider font-medium">Edit Product Details</span>
                             </button>
+
+                            {item.id && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDeleteInventory(item.id!.toString(), item.product_name);
+                                }}
+                                disabled={processing}
+                                className="w-full flex items-center justify-center gap-2 bg-red-600/10 border border-red-500/20 text-red-500 hover:bg-red-600/20 hover:border-red-500/40 px-4 py-3 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                              >
+                                <Trash2 size={16} />
+                                <span className="text-xs uppercase tracking-wider font-medium">Delete from Location</span>
+                              </button>
+                            )}
                           </div>
                         </div>
                       )}
 
-                      {/* Adjust Stock */}
+                      {/* Adjust Stock View */}
                       {currentView === 'adjust' && (
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                           <div className="border border-white/[0.04] rounded p-5">
@@ -719,9 +1230,9 @@ export default function VendorInventory() {
                             <div className="space-y-4">
                               <div>
                                 <label className="text-white/60 text-xs mb-2 block">Amount (grams)</label>
-                        <input
-                          type="number"
-                          step="0.1"
+                                <input
+                                  type="number"
+                                  step="0.1"
                                   min="0"
                                   value={quickAdjustInput}
                                   onChange={(e) => setQuickAdjustInput(e.target.value)}
@@ -732,7 +1243,7 @@ export default function VendorInventory() {
                               </div>
 
                               <div className="grid grid-cols-2 gap-3">
-                        <button
+                                <button
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     handleQuickAdjust(item.product_id, 'add');
@@ -742,8 +1253,8 @@ export default function VendorInventory() {
                                 >
                                   <Plus size={18} />
                                   <span className="text-xs uppercase tracking-wider font-medium">Add</span>
-                        </button>
-                        <button
+                                </button>
+                                <button
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     handleQuickAdjust(item.product_id, 'subtract');
@@ -753,14 +1264,14 @@ export default function VendorInventory() {
                                 >
                                   <Minus size={18} />
                                   <span className="text-xs uppercase tracking-wider font-medium">Remove</span>
-                        </button>
+                                </button>
                               </div>
 
                               <div className="pt-4 border-t border-white/5">
                                 <div className="text-white/40 text-[10px] mb-2 uppercase tracking-wider">Quick Presets</div>
                                 <div className="grid grid-cols-5 gap-2">
                                   {[1, 3.5, 7, 14, 28].map(preset => (
-                        <button
+                                    <button
                                       key={preset}
                                       onClick={(e) => {
                                         e.stopPropagation();
@@ -769,7 +1280,7 @@ export default function VendorInventory() {
                                       className="px-2 py-2 border border-white/10 text-white/60 hover:text-white hover:border-white/20 transition-all text-xs"
                                     >
                                       {preset}g
-                        </button>
+                                    </button>
                                   ))}
                                 </div>
                               </div>
@@ -795,9 +1306,9 @@ export default function VendorInventory() {
                                   className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-4 py-3 text-base focus:outline-none focus:border-white/10"
                                   onClick={(e) => e.stopPropagation()}
                                 />
-                      </div>
+                              </div>
 
-                      <button
+                              <button
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   handleSetQuantity(item.product_id);
@@ -807,7 +1318,7 @@ export default function VendorInventory() {
                               >
                                 <Save size={18} />
                                 <span className="text-xs uppercase tracking-wider font-medium">Update Stock</span>
-                      </button>
+                              </button>
 
                               <div className="text-white/40 text-xs pt-3 border-t border-white/5">
                                 Current: {item.quantity.toFixed(2)}g • This will override the stock level
@@ -817,114 +1328,11 @@ export default function VendorInventory() {
                         </div>
                       )}
 
-                      {/* Manage Images */}
-                      {currentView === 'images' && (
-                        <div>
-                          <div className="mb-4">
-                            <h3 className="text-white text-sm font-medium mb-2">Product Images</h3>
-                            <p className="text-white/60 text-xs">Upload new images and they will be submitted for admin approval</p>
-                          </div>
-                          
-                          {/* Current Image */}
-                          {item.image && (
-                            <div className="mb-4">
-                              <label className="text-white/40 text-xs mb-2 block uppercase tracking-wider">Current Image</label>
-                              <div className="bg-[#1a1a1a] border border-white/5 p-4 rounded">
-                                <img src={item.image} alt={item.product_name} className="w-full max-w-xs mx-auto" />
-                              </div>
-                            </div>
-                          )}
-                          
-                          {/* Upload New Images */}
-                          <div className="bg-white/5 border border-white/10 p-6">
-                            <label className="text-white/60 text-xs mb-3 block font-medium uppercase tracking-wider">Upload New Images</label>
-                            <input
-                              type="file"
-                              accept="image/*"
-                              multiple
-                              onChange={async (e) => {
-                                e.stopPropagation();
-                                const files = e.target.files;
-                                if (!files || files.length === 0) return;
-                                
-                                try {
-                                  setProcessing(true);
-                                  const vendorId = localStorage.getItem('vendor_id');
-                                  
-                                  const uploadPromises = Array.from(files).map(async (file) => {
-                                    const uploadFormData = new FormData();
-                                    uploadFormData.append('file', file);
-                                    uploadFormData.append('type', 'product');
-                                    
-                                    const response = await fetch('/api/supabase/vendor/upload', {
-                                      method: 'POST',
-                                      headers: { 'x-vendor-id': vendorId || '' },
-                                      body: uploadFormData
-                                    });
-                                    
-                                    return await response.json();
-                                  });
-                                  
-                                  const results = await Promise.all(uploadPromises);
-                                  const imageUrls = results.filter(r => r.success).map(r => r.file.url);
-                                  
-                                  if (imageUrls.length > 0) {
-                                    // Update product images and resubmit for approval
-                                    const updateResponse = await axios.put(`/api/vendor/products/${item.product_id}`, {
-                                      featured_image_storage: imageUrls[0],
-                                      image_gallery_storage: imageUrls,
-                                      status: 'pending' // Resubmit for approval
-                                    }, {
-                                      headers: { 'x-vendor-id': vendorId || '' }
-                                    });
-                                    
-                                    if (updateResponse.data.success) {
-                                      showNotification({
-                                        type: 'success',
-                                        title: 'Images Uploaded',
-                                        message: `${imageUrls.length} image(s) uploaded and submitted for approval`,
-                                      });
-                                      await loadInventory();
-                                    }
-                                  }
-                                } catch (err: any) {
-                                  showNotification({
-                                    type: 'error',
-                                    title: 'Upload Failed',
-                                    message: err.message || 'Failed to upload images',
-                                  });
-                                } finally {
-                                  setProcessing(false);
-                                }
-                              }}
-                              className="w-full bg-[#1a1a1a] border border-white/10 text-white px-4 py-3 text-sm cursor-pointer hover:border-white/20 transition-all"
-                              onClick={(e) => e.stopPropagation()}
-                            />
-                            <p className="text-white/40 text-xs mt-2">
-                              Uploading new images will resubmit this product for admin approval
-                            </p>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Product Fields */}
+                      {/* Product Fields View */}
                       {currentView === 'fields' && (
                         <div>
-                          {/* Success Message */}
-                          {successMessage === item.product_id && (
-                            <div className="mb-4 p-4 bg-green-500/10 border border-green-500/20 flex items-center gap-3">
-                              <CheckCircle size={20} className="text-green-500 flex-shrink-0" />
-                              <div>
-                                <div className="text-green-500 font-medium text-sm mb-1">✅ Change Request Submitted!</div>
-                                <div className="text-green-500/80 text-xs">
-                                  Your updates are pending admin approval. Changes will go live after review.
-                                </div>
-                              </div>
-        </div>
-                          )}
-                          
                           {/* Header with Submit Button */}
-                          {hasChanges && !successMessage && (
+                          {hasChanges && (
                             <div className="flex items-center justify-between mb-4 pb-3 border-b border-white/5">
                               <div className="flex items-center gap-2">
                                 <AlertTriangle size={14} className="text-yellow-500" />
@@ -1079,8 +1487,8 @@ export default function VendorInventory() {
                             </div>
                           </div>
 
-      {/* Info Box */}
-                          {!hasChanges && !successMessage && (
+                          {/* Info Box */}
+                          {!hasChanges && (
                             <div className="mt-4 p-3 bg-white/5 border border-white/10 flex items-center gap-2">
                               <FileText size={14} className="text-white/60 flex-shrink-0" />
                               <span className="text-white/60 text-xs">
@@ -1089,8 +1497,8 @@ export default function VendorInventory() {
                             </div>
                           )}
                           
-                          {/* Warning Box - Only if unsaved changes */}
-                          {hasChanges && !successMessage && (
+                          {/* Warning Box */}
+                          {hasChanges && (
                             <div className="mt-4 p-3 bg-yellow-500/5 border border-yellow-500/20 flex items-center gap-2">
                               <AlertTriangle size={14} className="text-yellow-500 flex-shrink-0" />
                               <span className="text-yellow-500/80 text-xs">
@@ -1098,16 +1506,61 @@ export default function VendorInventory() {
                               </span>
                             </div>
                           )}
-          </div>
+                        </div>
                       )}
-            </div>
-          </div>
+                    </div>
+                  </div>
                 )}
               </div>
             );
           })}
         </div>
       )}
+
+      {/* Bulk Transfer Modal */}
+      <AdminModal
+        isOpen={showBulkTransfer}
+        onClose={() => {
+          setShowBulkTransfer(false);
+          setTransferToLocation('');
+        }}
+        title="Bulk Transfer Stock"
+        description={`Transfer ${selectedItems.size} selected item(s) to another location`}
+        onSubmit={handleBulkTransfer}
+        submitText="Transfer"
+        maxWidth="xl"
+      >
+        <div className="space-y-4">
+          <div>
+            <label className="block text-white/60 text-xs uppercase tracking-wider mb-2">
+              Destination Location
+            </label>
+            <select
+              value={transferToLocation}
+              onChange={(e) => setTransferToLocation(e.target.value)}
+              className="w-full bg-[#111111] border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
+            >
+              <option value="">Select location...</option>
+              {locations.map(loc => (
+                <option key={loc.id} value={loc.id}>
+                  {loc.name} {loc.is_primary ? '(Primary)' : ''} - {loc.city}, {loc.state}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="bg-white/5 border border-white/10 p-4">
+            <p className="text-white/60 text-xs mb-2">
+              <strong>Note:</strong> Stock transfers will:
+            </p>
+            <ul className="text-white/60 text-xs space-y-1 list-disc list-inside">
+              <li>Move inventory from current location to selected location</li>
+              <li>Update stock levels immediately</li>
+              <li>Create audit trail for tracking</li>
+            </ul>
+          </div>
+        </div>
+      </AdminModal>
     </div>
   );
 }

@@ -183,3 +183,82 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const vendorId = request.headers.get('x-vendor-id');
+    
+    if (!vendorId) {
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+    }
+
+    const { searchParams } = new URL(request.url);
+    const productId = searchParams.get('product_id');
+
+    if (!productId) {
+      return NextResponse.json({ error: 'Product ID required' }, { status: 400 });
+    }
+
+    const supabase = getServiceSupabase();
+
+    // Verify the product belongs to this vendor
+    const { data: product, error: fetchError } = await supabase
+      .from('products')
+      .select('id, name, vendor_id')
+      .eq('id', productId)
+      .single();
+
+    if (fetchError || !product) {
+      return NextResponse.json({ error: 'Product not found' }, { status: 404 });
+    }
+
+    // Check ownership
+    if (product.vendor_id !== vendorId) {
+      return NextResponse.json({ 
+        error: 'Not authorized to delete this product' 
+      }, { status: 403 });
+    }
+
+    // Check if product has inventory - warn but allow deletion (cascade will handle it)
+    const { data: inventory } = await supabase
+      .from('inventory')
+      .select('id, quantity')
+      .eq('product_id', product.id);
+
+    if (inventory && inventory.length > 0) {
+      const totalQty = inventory.reduce((sum, inv) => sum + parseFloat(inv.quantity || '0'), 0);
+      if (totalQty > 0) {
+        return NextResponse.json({ 
+          error: `Cannot delete product with existing inventory. Current stock: ${totalQty}g across ${inventory.length} location(s). Please remove all inventory first.` 
+        }, { status: 400 });
+      }
+    }
+
+    console.log('🗑️ Deleting product:', product.name, 'ID:', productId);
+
+    // Delete the product (this will cascade to related records based on DB constraints)
+    const { error: deleteError } = await supabase
+      .from('products')
+      .delete()
+      .eq('id', productId);
+
+    if (deleteError) {
+      console.error('❌ Error deleting product:', deleteError);
+      return NextResponse.json({ error: deleteError.message }, { status: 500 });
+    }
+
+    console.log('✅ Product deleted successfully');
+
+    return NextResponse.json({
+      success: true,
+      message: 'Product deleted successfully'
+    });
+
+  } catch (error: any) {
+    console.error('Delete product error:', error);
+    return NextResponse.json(
+      { error: error.message || 'Failed to delete product' },
+      { status: 500 }
+    );
+  }
+}

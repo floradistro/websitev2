@@ -26,7 +26,7 @@ export default async function Home() {
                      (p.image_gallery_storage && p.image_gallery_storage[0]);
     
     return {
-      id: p.wordpress_id || p.id,
+      id: p.id,
       uuid: p.id,
       name: p.name,
       slug: p.slug,
@@ -66,7 +66,7 @@ export default async function Home() {
   const productFieldsMap: { [key: number]: any } = {};
   
   bulkProducts.forEach((product: any) => {
-    const productId = product.wordpress_id || product.id;
+    const productId = product.id;
     const blueprintFields = product.blueprint_fields || [];
     
     // Filter and sort fields (handle Supabase JSONB array structure)

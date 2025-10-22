@@ -28,7 +28,7 @@ export function getProductGallery(product: any): string[] {
 }
 
 export function getVendorLogo(vendor: any): string | null {
-  // Supabase Storage → WordPress → Default
+  // Supabase Storage → Default
   return vendor.logo_url || '/yacht-club-logo.png';
 }
 

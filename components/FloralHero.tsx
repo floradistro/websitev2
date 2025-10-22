@@ -218,10 +218,22 @@ export default function FloralHero() {
         };
 
         p.windowResized = () => {
-          if (!containerRef.current) return;
-          canvasWidth = containerRef.current.clientWidth;
-          canvasHeight = containerRef.current.clientHeight;
-          p.resizeCanvas(canvasWidth, canvasHeight);
+          try {
+            if (!containerRef.current) return;
+            const newWidth = containerRef.current.clientWidth;
+            const newHeight = containerRef.current.clientHeight;
+            
+            // Only resize if we have valid dimensions
+            if (typeof newWidth === 'number' && typeof newHeight === 'number' &&
+                newWidth > 0 && newHeight > 0 && 
+                Number.isFinite(newWidth) && Number.isFinite(newHeight)) {
+              canvasWidth = newWidth;
+              canvasHeight = newHeight;
+              p.resizeCanvas(canvasWidth, canvasHeight);
+            }
+          } catch (e) {
+            // Ignore resize errors
+          }
         };
       };
 

@@ -170,7 +170,7 @@ function ProductCard({ product, index, locations, pricingTiers = [], productFiel
       return `$${minPrice.toFixed(0)} - $${maxPrice.toFixed(0)}`;
     }
     
-    // Fallback to product.price from WooCommerce
+    // Fallback to product.price
     const basePrice = product.price ? parseFloat(product.price) : 0;
     
     // If product has no price set, return empty/contact message
@@ -223,39 +223,35 @@ function ProductCard({ product, index, locations, pricingTiers = [], productFiel
 
   // Get locations where product is in stock
   const getStockLocations = () => {
-    // Simple check first - if product has total_stock from bulk API
-    if (product.total_stock && product.total_stock > 0) {
-      return { inStock: true, locations: [], count: 1 };
-    }
-    
-    // Check direct stock fields
-    if (product.stock > 0 || product.stock_quantity > 0) {
-      return { inStock: true, locations: [], count: 1 };
-    }
-    
-    // Check stock status
-    if (product.stock_status === 'instock') {
-      return { inStock: true, locations: [], count: 1 };
-    }
-    
+    // If no inventory records, check product.total_stock (fallback for products not using multi-location)
     if (!inventory || inventory.length === 0) {
-      return { inStock: false, locations: [], count: 0 };
+      const totalStock = parseFloat(product.total_stock || 0);
+      return { 
+        inStock: totalStock > 0, 
+        locations: [], 
+        count: 0,
+        showGenericStock: totalStock > 0 // Flag to show "In Stock" without locations
+      };
     }
 
-    const activeLocations = locations.filter((loc: any) => loc.is_active === "1");
+    const activeLocations = locations.filter((loc: any) => loc.is_active === "1" || loc.is_active === 1 || loc.is_active === true);
     const stockLocations: any[] = [];
 
     inventory.forEach((inv: any) => {
-      const qty = parseFloat(inv.stock_quantity || inv.quantity || inv.stock || 0);
-      const status = inv.status?.toLowerCase();
-      const hasStock = qty > 0 || status === 'instock' || status === 'in_stock';
-
-      if (hasStock) {
+      const qty = parseFloat(inv.quantity || inv.stock_quantity || 0);
+      
+      // STRICT: Only count as in stock if quantity > 0
+      if (qty > 0) {
         const location = activeLocations.find((loc: any) => 
-          loc.id === parseInt(inv.location_id) || loc.id.toString() === inv.location_id?.toString()
+          loc.id === inv.location_id || 
+          loc.id.toString() === inv.location_id?.toString() ||
+          parseInt(loc.id) === parseInt(inv.location_id)
         );
         if (location && !stockLocations.find(l => l.id === location.id)) {
-          stockLocations.push(location);
+          stockLocations.push({
+            ...location,
+            quantity: qty
+          });
         }
       }
     });
@@ -263,7 +259,8 @@ function ProductCard({ product, index, locations, pricingTiers = [], productFiel
     return {
       inStock: stockLocations.length > 0,
       locations: stockLocations,
-      count: stockLocations.length
+      count: stockLocations.length,
+      showGenericStock: false
     };
   };
 
@@ -424,14 +421,6 @@ function ProductCard({ product, index, locations, pricingTiers = [], productFiel
       {/* Product Info */}
       <div className="flex flex-col flex-1 px-3 py-4">
         <div className="space-y-3">
-          {/* Vendor Badge */}
-          {product.vendor && (
-            <div className="flex items-center gap-1.5 text-[9px] text-white/50 uppercase tracking-wider">
-              <Store size={9} />
-              <span>{product.vendor.name}</span>
-            </div>
-          )}
-          
           <h3 className="text-xs uppercase tracking-[0.12em] font-normal text-white line-clamp-2 leading-relaxed transition-all duration-300">
             {product.name}
           </h3>
@@ -441,20 +430,20 @@ function ProductCard({ product, index, locations, pricingTiers = [], productFiel
             {getPriceDisplay()}
           </p>
           
-          {/* Multi-Location Stock Status */}
+          {/* Stock Status with Locations */}
           {stockInfo.inStock ? (
-            <div className="flex flex-col gap-0.5">
-              <div className="flex items-center gap-1.5">
-                <div className="w-2 h-2 rounded-full bg-green-500 flex-shrink-0"></div>
-                <span className="text-[11px] uppercase tracking-wider text-white/60 truncate">
-                  {stockInfo.count === 1 ? 'In Stock' : `In Stock · ${stockInfo.count} locations`}
+            <div className="flex items-center gap-1.5">
+              <div className="w-2 h-2 rounded-full bg-green-500 flex-shrink-0"></div>
+              <div className="flex flex-col">
+                <span className="text-[11px] uppercase tracking-wider text-white/60">
+                  In Stock
                 </span>
+                {!stockInfo.showGenericStock && stockInfo.locations.length > 0 && (
+                  <span className="text-[11px] tracking-wider text-white/60">
+                    {stockInfo.locations.map((loc: any) => loc.name).join(', ')}
+                  </span>
+                )}
               </div>
-              {stockInfo.count <= 2 && (
-                <span className="text-[10px] text-white/40 truncate ml-3.5">
-                  {stockInfo.locations.map((loc: any) => loc.name).join(', ')}
-                </span>
-              )}
             </div>
           ) : (
             <div className="flex flex-col gap-1">

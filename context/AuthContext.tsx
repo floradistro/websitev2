@@ -26,9 +26,8 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const baseUrl = process.env.NEXT_PUBLIC_WORDPRESS_API_URL || "https://api.floradistro.com";
-const consumerKey = process.env.NEXT_PUBLIC_WORDPRESS_CONSUMER_KEY || "ck_bb8e5fe3d405e6ed6b8c079c93002d7d8b23a7d5";
-const consumerSecret = process.env.NEXT_PUBLIC_WORDPRESS_CONSUMER_SECRET || "cs_38194e74c7ddc5d72b6c32c70485728e7e529678";
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://uaednwpxursknmwdeejn.supabase.co";
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVhZWRud3B4dXJza25td2RlZWpuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA5OTcyMzMsImV4cCI6MjA3NjU3MzIzM30.Dj0FtFqxF-FXHJrD_gNkKg5KQRPyMc-f6vO18CPhVVE";
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -79,45 +78,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const register = useCallback(async (email: string, password: string, firstName: string, lastName: string) => {
     try {
-      // Create customer via WooCommerce API
-      const response = await axios.post(
-        `${baseUrl}/wp-json/wc/v3/customers?consumer_key=${consumerKey}&consumer_secret=${consumerSecret}`,
-        {
-          email: email,
-          first_name: firstName,
-          last_name: lastName,
-          username: email.split('@')[0], // Use email prefix as username
-          password: password,
-          billing: {
-            first_name: firstName,
-            last_name: lastName,
-            email: email,
-          },
-          shipping: {
-            first_name: firstName,
-            last_name: lastName,
-          }
-        }
-      );
+      // Create customer via Supabase API
+      const response = await axios.post('/api/auth/register', {
+        email,
+        password,
+        firstName,
+        lastName
+      });
 
-      if (response.data) {
-        const customerData = response.data;
-        const userData: User = {
-          id: customerData.id,
-          email: customerData.email,
-          firstName: customerData.first_name,
-          lastName: customerData.last_name,
-          username: customerData.username,
-          billing: customerData.billing,
-          shipping: customerData.shipping,
-          avatar_url: customerData.avatar_url,
-        };
-
-        setUser(userData);
+      if (response.data.success && response.data.user) {
+        setUser(response.data.user);
+      } else {
+        throw new Error(response.data.error || "Registration failed");
       }
     } catch (error: any) {
       console.error("Registration error:", error);
-      throw new Error(error.response?.data?.message || "Registration failed. Please try again.");
+      throw new Error(error.response?.data?.error || error.message || "Registration failed. Please try again.");
     }
   }, []);
 
@@ -130,34 +106,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!user) return;
 
     try {
-      // Update customer via proxy to avoid CORS
+      // Update customer via Supabase API
       const response = await axios.put(
-        `/api/customers/${user.id}`,
+        `/api/auth/update-profile`,
         {
-          first_name: userData.firstName,
-          last_name: userData.lastName,
-          billing: userData.billing,
-          shipping: userData.shipping,
+          userId: user.id,
+          ...userData
         }
       );
 
-      if (response.data) {
-        const updatedData: User = {
-          id: response.data.id,
-          email: response.data.email,
-          firstName: response.data.first_name,
-          lastName: response.data.last_name,
-          username: response.data.username,
-          billing: response.data.billing,
-          shipping: response.data.shipping,
-          avatar_url: response.data.avatar_url,
-        };
-
-        setUser(updatedData);
+      if (response.data.success && response.data.user) {
+        setUser(response.data.user);
+      } else {
+        throw new Error(response.data.error || "Failed to update profile");
       }
     } catch (error: any) {
       console.error("Update user error:", error);
-      throw new Error(error.response?.data?.message || "Failed to update profile.");
+      throw new Error(error.response?.data?.error || error.message || "Failed to update profile.");
     }
   }, [user]);
 

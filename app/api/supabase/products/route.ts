@@ -3,246 +3,135 @@ import { getServiceSupabase } from '@/lib/supabase/client';
 
 export async function GET(request: NextRequest) {
   try {
+    console.log('🚀 Products API called');
     const { searchParams } = new URL(request.url);
-    
-    // Filters
+    const perPage = parseInt(searchParams.get('per_page') || '200');
     const category = searchParams.get('category');
-    const search = searchParams.get('search');
-    const status = searchParams.get('status') || 'published';
-    const featured = searchParams.get('featured');
-    const onSale = searchParams.get('on_sale');
-    const minPrice = searchParams.get('min_price');
-    const maxPrice = searchParams.get('max_price');
     const vendorId = searchParams.get('vendor_id');
-    const wordpressId = searchParams.get('wordpress_id');
     
-    // Pagination
-    const page = parseInt(searchParams.get('page') || '1');
-    const perPage = parseInt(searchParams.get('per_page') || '20');
-    const offset = (page - 1) * perPage;
-    
-    // Sorting
-    const orderBy = searchParams.get('orderby') || 'date_created';
-    const order = searchParams.get('order') || 'desc';
-    
+    console.log('🔵 Getting Supabase client...');
     const supabase = getServiceSupabase();
     
-    // Build query - LEFT JOIN categories (not inner) to include products without category relationships
+    console.log('🔵 Fetching products...');
+    // Fetch products from Supabase
     let query = supabase
       .from('products')
-      .select(`
-        *,
-        primary_category:categories!primary_category_id(id, name, slug),
-        vendor:vendors!vendor_id(id, store_name, slug, status),
-        product_categories(
-          category:categories(id, name, slug)
-        )
-      `, { count: 'exact' });
+      .select('*')
+      .in('status', ['publish', 'published', 'active'])
+      .order('name', { ascending: true })
+      .limit(perPage);
     
-    // Status filter - default to published only
-    if (status) {
-      query = query.eq('status', status);
-    } else {
-      query = query.eq('status', 'published');
-    }
-    
-    // Category filter - use primary_category_id instead of junction table
     if (category) {
       query = query.eq('primary_category_id', category);
     }
     
-    // Search filter (full-text search)
-    if (search) {
-      query = query.or(`name.ilike.%${search}%,description.ilike.%${search}%,sku.ilike.%${search}%`);
-    }
-    
-    // Featured filter
-    if (featured === 'true') {
-      query = query.eq('featured', true);
-    }
-    
-    // On sale filter
-    if (onSale === 'true') {
-      query = query.eq('on_sale', true);
-    }
-    
-    // Price range
-    if (minPrice) {
-      query = query.gte('price', parseFloat(minPrice));
-    }
-    if (maxPrice) {
-      query = query.lte('price', parseFloat(maxPrice));
-    }
-    
-    // Vendor filter
     if (vendorId) {
-      console.log('🔵 Filtering products by vendor_id:', vendorId);
       query = query.eq('vendor_id', vendorId);
     }
     
-    // WordPress ID filter (for backward compatibility)
-    if (wordpressId) {
-      query = query.eq('wordpress_id', parseInt(wordpressId));
+    const { data: products, error: productsError } = await query;
+    
+    if (productsError) {
+      console.error('❌ Error fetching products:', productsError);
+      return NextResponse.json({ error: productsError.message }, { status: 500 });
     }
     
-    // Sorting
-    const orderColumn = orderBy === 'price' ? 'price' : 
-                       orderBy === 'name' ? 'name' : 
-                       orderBy === 'popularity' ? 'sales_count' : 
-                       orderBy === 'rating' ? 'average_rating' : 
-                       'date_created';
-    
-    query = query.order(orderColumn, { ascending: order === 'asc' });
-    
-    // Pagination
-    query = query.range(offset, offset + perPage - 1);
-    
-    const { data, error, count } = await query;
-    
-    if (error) {
-      console.error('Error fetching products:', error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+    console.log(`✅ Fetched ${products?.length || 0} products`);
+    if (products && products.length > 0) {
+      console.log(`🔵 Sample product ID:`, products[0].id);
     }
     
-    // CRITICAL: Filter out products from suspended vendors
-    const activeProducts = data?.filter((p: any) => {
-      // If product has NO vendor_id, it's a house product - always show
-      if (!p.vendor_id) {
-        return true;
-      }
-      // If product has vendor, check vendor is active
-      if (p.vendor && p.vendor.status) {
-        return p.vendor.status === 'active';
-      }
-      // If vendor data is missing but vendor_id exists, hide it (data integrity issue)
-      return false;
-    }) || [];
+    // Fetch inventory with locations
+    console.log('🔵 Fetching inventory...');
+    const { data: allInventory, error: invError } = await supabase
+      .from('inventory')
+      .select(`
+        product_id,
+        location_id,
+        quantity,
+        location:locations!inner(id, name, city, state, is_active)
+      `)
+      .gt('quantity', 0);
     
-    console.log(`✅ Products query: ${data?.length || 0} total, ${activeProducts.length} active (filtered out suspended vendors)`);
+    if (invError) {
+      console.error('❌ Error fetching inventory:', invError);
+    }
     
-    return NextResponse.json({
-      success: true,
-      products: activeProducts,
-      pagination: {
-        page,
-        per_page: perPage,
-        total: activeProducts.length,
-        total_pages: Math.ceil(activeProducts.length / perPage)
+    console.log(`✅ Fetched ${allInventory?.length || 0} inventory records`);
+    if (allInventory && allInventory.length > 0) {
+      console.log(`🔵 Sample inventory product_id:`, allInventory[0].product_id, 'type:', typeof allInventory[0].product_id);
+    }
+    
+    // Map inventory by product UUID
+    const inventoryMap = new Map<string, any[]>();
+    (allInventory || []).forEach((inv: any) => {
+      const productId = inv.product_id?.toString();
+      if (productId && !inventoryMap.has(productId)) {
+        inventoryMap.set(productId, []);
       }
-    }, {
-      headers: {
-        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=30',
+      if (productId) {
+        inventoryMap.get(productId)!.push(inv);
       }
     });
     
-  } catch (error: any) {
-    console.error('Error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
-}
-
-export async function POST(request: NextRequest) {
-  try {
-    const vendorId = request.headers.get('x-vendor-id');
-    
-    if (!vendorId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-    
-    const body = await request.json();
-    
-    const {
-      name,
-      slug,
-      description,
-      short_description,
-      sku,
-      type = 'simple',
-      status = 'draft',
-      regular_price,
-      sale_price,
-      category_ids = [],
-      featured_image,
-      image_gallery = [],
-      attributes = {},
-      blueprint_fields = [],
-      manage_stock = true,
-      stock_quantity,
-      stock_status = 'instock',
-      weight,
-      length,
-      width,
-      height,
-      featured = false,
-      meta_data = {}
-    } = body;
-    
-    if (!name || !slug) {
-      return NextResponse.json({ 
-        error: 'Missing required fields: name, slug' 
-      }, { status: 400 });
-    }
-    
-    const supabase = getServiceSupabase();
-    
-    // Create product
-    const { data: product, error: productError } = await supabase
-      .from('products')
-      .insert({
-        name,
-        slug,
-        description,
-        short_description,
-        sku,
-        type,
-        status,
-        regular_price: regular_price ? parseFloat(regular_price) : null,
-        sale_price: sale_price ? parseFloat(sale_price) : null,
-        vendor_id: vendorId,
-        primary_category_id: category_ids[0] || null,
-        featured_image,
-        image_gallery,
-        attributes,
-        blueprint_fields,
-        manage_stock,
-        stock_quantity: stock_quantity ? parseFloat(stock_quantity) : null,
-        stock_status,
-        weight: weight ? parseFloat(weight) : null,
-        length: length ? parseFloat(length) : null,
-        width: width ? parseFloat(width) : null,
-        height: height ? parseFloat(height) : null,
-        featured,
-        meta_data
-      })
-      .select()
-      .single();
-    
-    if (productError) {
-      console.error('Error creating product:', productError);
-      return NextResponse.json({ error: productError.message }, { status: 500 });
-    }
-    
-    // Link to categories
-    if (category_ids.length > 0 && product) {
-      const categoryLinks = category_ids.map((catId: string, index: number) => ({
-        product_id: product.id,
-        category_id: catId,
-        is_primary: index === 0
-      }));
+    // Process products
+    const processedProducts = (products || []).map((p: any) => {
+      const inventory = inventoryMap.get(p.id) || [];
       
-      await supabase
-        .from('product_categories')
-        .insert(categoryLinks);
-    }
+      // Filter active locations
+      const activeInventory = inventory.filter((inv: any) => 
+        inv.location?.is_active === true
+      );
+      
+      // Calculate stock
+      const totalStock = activeInventory.reduce((sum: number, inv: any) => 
+        sum + parseFloat(inv.quantity || 0), 0
+      );
+      
+      // Extract pricing tiers from blueprint_fields
+      const pricingTiers = p.blueprint_fields?.find((f: any) => 
+        f.key === '_product_price_tiers'
+      )?.value || [];
+      
+      return {
+        id: p.id,
+        name: p.name,
+        slug: p.slug,
+        price: p.price || p.regular_price,
+        regular_price: p.regular_price,
+        sale_price: p.sale_price,
+        featured_image_storage: p.featured_image_storage,
+        image_gallery_storage: p.image_gallery_storage,
+        stock_quantity: totalStock,
+        stock_status: totalStock > 0 ? 'instock' : 'outofstock',
+        inventory: activeInventory,
+        vendor_id: p.vendor_id,
+        primary_category_id: p.primary_category_id,
+        blueprint_fields: p.blueprint_fields || [],
+        meta_data: p.meta_data || {},
+        pricing_tiers: pricingTiers
+      };
+    });
+    
+    // Filter - only in stock
+    const inStockProducts = processedProducts.filter((p: any) => 
+      parseFloat(p.stock_quantity || 0) > 0
+    );
+    
+    console.log(`✅ ${products.length} products → ${inStockProducts.length} in stock`);
     
     return NextResponse.json({
       success: true,
-      product
+      products: inStockProducts
     });
     
   } catch (error: any) {
-    console.error('Error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error('❌ FATAL ERROR in products API:', error);
+    console.error('Stack:', error.stack);
+    return NextResponse.json({ 
+      error: error.message,
+      details: error.toString(),
+      stack: error.stack 
+    }, { status: 500 });
   }
 }
-

@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { 
   Home, Package, Store, Settings, LogOut, Users, CheckSquare, 
-  FileText, DollarSign, BarChart3, Menu, X, MapPin, Globe, FolderTree, Layers 
+  FileText, DollarSign, BarChart3, Menu, X, MapPin, Globe, FolderTree, Layers, ShoppingBag 
 } from 'lucide-react';
 import { showConfirm } from '@/components/NotificationToast';
 import { AdminAuthProvider } from '@/context/AdminAuthContext';
@@ -61,6 +61,7 @@ export default function AdminLayout({
 
   const navItems = [
     { href: '/admin/dashboard', icon: Home, label: 'Dashboard' },
+    { href: '/admin/orders', icon: ShoppingBag, label: 'Orders' },
     { href: '/admin/products', icon: Package, label: 'Products' },
     { href: '/admin/categories', icon: FolderTree, label: 'Categories' },
     { href: '/admin/field-groups', icon: Layers, label: 'Fields' },

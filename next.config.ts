@@ -5,10 +5,6 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'api.floradistro.com',
-      },
-      {
-        protocol: 'https',
         hostname: 'yachtclub.boats',
       },
       {

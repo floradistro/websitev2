@@ -5,8 +5,8 @@ import { Search, FileText, CheckCircle, XCircle, AlertCircle, Upload, Download, 
 import Link from 'next/link';
 
 interface COA {
-  id: number;
-  productId: number;
+  id: string | number;
+  productId: number | null;
   productName: string;
   coaNumber: string;
   testDate: string;
@@ -17,6 +17,9 @@ interface COA {
   cbd: string;
   testingLab: string;
   batchNumber: string;
+  expiryDate?: string;
+  fileName?: string;
+  fileSize?: number;
 }
 
 export default function VendorLabResults() {
@@ -27,83 +30,35 @@ export default function VendorLabResults() {
   const [selectedCOA, setSelectedCOA] = useState<COA | null>(null);
 
   useEffect(() => {
-    // TODO: Fetch actual COAs from API: /vendor-marketplace/v1/lab-results
-    // For now, mock data
-    setTimeout(() => {
-      setCoas([
-        {
-          id: 1,
-          productId: 50001,
-          productName: 'OG Kush',
-          coaNumber: 'COA-2025-001547',
-          testDate: '2025-10-15',
-          uploadDate: '2025-10-16',
-          status: 'approved',
-          fileUrl: '/coa/sample.pdf',
-          thc: '22.8%',
-          cbd: '0.3%',
-          testingLab: 'Quantix Analytics',
-          batchNumber: 'YC-OGK-OCT-2025'
-        },
-        {
-          id: 2,
-          productId: 50002,
-          productName: 'Blue Dream',
-          coaNumber: 'COA-2025-001548',
-          testDate: '2025-10-14',
-          uploadDate: '2025-10-15',
-          status: 'approved',
-          fileUrl: '/coa/sample.pdf',
-          thc: '19.2%',
-          cbd: '0.8%',
-          testingLab: 'Quantix Analytics',
-          batchNumber: 'YC-BD-OCT-2025'
-        },
-        {
-          id: 3,
-          productId: 50010,
-          productName: 'Durban Poison',
-          coaNumber: 'COA-2025-001549',
-          testDate: '2025-10-17',
-          uploadDate: '2025-10-18',
-          status: 'pending',
-          fileUrl: '/coa/sample.pdf',
-          thc: '24.5%',
-          cbd: '0.2%',
-          testingLab: 'Quantix Analytics',
-          batchNumber: 'YC-DP-OCT-2025'
-        },
-        {
-          id: 4,
-          productId: 50005,
-          productName: 'Gelato',
-          coaNumber: 'COA-2025-001550',
-          testDate: '2025-10-16',
-          uploadDate: '2025-10-16',
-          status: 'approved',
-          fileUrl: '/coa/sample.pdf',
-          thc: '21.6%',
-          cbd: '0.4%',
-          testingLab: 'Quantix Analytics',
-          batchNumber: 'YC-GEL-OCT-2025'
-        },
-        {
-          id: 5,
-          productId: 50009,
-          productName: 'Wedding Cake',
-          coaNumber: 'COA-2025-001551',
-          testDate: '2025-10-17',
-          uploadDate: '2025-10-17',
-          status: 'approved',
-          fileUrl: '/coa/sample.pdf',
-          thc: '25.4%',
-          cbd: '0.5%',
-          testingLab: 'Quantix Analytics',
-          batchNumber: 'YC-WC-OCT-2025'
-        },
-      ]);
-      setLoading(false);
-    }, 1000);
+    async function fetchCOAs() {
+      try {
+        const vendorId = localStorage.getItem('vendor_id');
+        if (!vendorId) {
+          setLoading(false);
+          return;
+        }
+
+        const response = await fetch('/api/vendor/coas', {
+          headers: {
+            'x-vendor-id': vendorId
+          }
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          setCoas(data.coas || []);
+        } else {
+          console.error('Failed to fetch COAs:', data.error);
+        }
+      } catch (error) {
+        console.error('Error fetching COAs:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchCOAs();
   }, []);
 
   const getStatusBadge = (status: string) => {

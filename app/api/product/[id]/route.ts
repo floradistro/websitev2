@@ -24,17 +24,29 @@ const getCachedProductComplete = unstable_cache(
       const endpoint = isUUID ? `/api/supabase/products/${productId}` : `/api/supabase/products?wordpress_id=${productId}&per_page=1`;
       
       // Fetch ALL data in parallel from Supabase
-      const [productRes, inventoryRes, locationsRes, reviewsRes] = await Promise.all([
+      const [productRes, inventoryRes, locationsRes, reviewsRes, pricingRes] = await Promise.all([
         fetch(`${baseUrl}${endpoint}`),
         fetch(`${baseUrl}/api/supabase/inventory?wordpress_product_id=${productId}`),
         fetch(`${baseUrl}/api/supabase/locations`),
-        fetch(`${baseUrl}/api/supabase/reviews?product_id=${productId}&status=approved`)
+        fetch(`${baseUrl}/api/supabase/reviews?product_id=${productId}&status=approved`),
+        fetch(`${baseUrl}/api/supabase/products/${productId}/pricing`).catch(() => ({ ok: false }))
       ]);
 
       const productData = await productRes.json();
       const inventoryData = await inventoryRes.json();
       const locationsData = await locationsRes.json();
       const reviewsData = await reviewsRes.json();
+      
+      // Handle pricing response - may be 404 or error
+      let pricingData = { pricingTiers: [] };
+      if (pricingRes.ok) {
+        try {
+          pricingData = await pricingRes.json();
+        } catch (e) {
+          console.log('No pricing data available for product:', productId);
+          pricingData = { pricingTiers: [] };
+        }
+      }
 
       // If product doesn't exist, return null
       if (!productData.success) {
@@ -66,8 +78,8 @@ const getCachedProductComplete = unstable_cache(
         return sum + parseFloat(inv.quantity || 0);
       }, 0);
 
-      // Extract pricing tiers from meta_data
-      const pricingTiers = product.meta_data?._product_price_tiers || [];
+      // Extract pricing tiers from Supabase vendor_pricing_tiers
+      const pricingTiers = pricingData.pricingTiers || product.meta_data?._product_price_tiers || [];
 
       // Extract product fields from meta_data
       const transformedFields: any = {};

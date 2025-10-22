@@ -132,10 +132,19 @@ function GlobalAnimation() {
         };
 
         p.windowResized = () => {
-          const newWidth = p.windowWidth;
-          const newHeight = p.windowHeight;
-          if (newWidth !== p.width || newHeight !== p.height) {
-            p.resizeCanvas(newWidth, newHeight);
+          try {
+            const newWidth = p.windowWidth;
+            const newHeight = p.windowHeight;
+            
+            // Only resize if we have valid dimensions
+            if (typeof newWidth === 'number' && typeof newHeight === 'number' &&
+                newWidth > 0 && newHeight > 0 && 
+                Number.isFinite(newWidth) && Number.isFinite(newHeight) &&
+                (newWidth !== p.width || newHeight !== p.height)) {
+              p.resizeCanvas(newWidth, newHeight);
+            }
+          } catch (e) {
+            // Ignore resize errors
           }
         };
       };

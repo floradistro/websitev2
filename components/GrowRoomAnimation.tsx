@@ -200,7 +200,16 @@ export default function GrowRoomAnimation() {
         };
 
         p.windowResized = () => {
-          p.resizeCanvas(p.windowWidth, 500);
+          try {
+            const newWidth = p.windowWidth;
+            
+            // Only resize if we have valid dimensions
+            if (typeof newWidth === 'number' && newWidth > 0 && Number.isFinite(newWidth)) {
+              p.resizeCanvas(newWidth, 500);
+            }
+          } catch (e) {
+            // Ignore resize errors
+          }
         };
       };
 

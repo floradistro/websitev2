@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Plus, Search, Filter, Package, FileText, CheckCircle, AlertCircle, XCircle, Sparkles } from 'lucide-react';
+import { Plus, Search, Filter, Package, FileText, CheckCircle, AlertCircle, XCircle, Sparkles, Trash2 } from 'lucide-react';
 import { useVendorAuth } from '@/context/VendorAuthContext';
 import axios from 'axios';
+import { showNotification, showConfirm } from '@/components/NotificationToast';
 
 interface Product {
   id: number;
@@ -61,8 +62,8 @@ export default function VendorProducts() {
             else if (p.status === 'archived') status = 'rejected';
             
             return {
-              id: p.wordpress_id || p.id,
-              submissionId: p.id, // UUID for Supabase
+              id: p.id, // Supabase UUID only
+              submissionId: p.id,
               name: p.name || 'Unnamed Product',
               image: p.featured_image_storage || p.featured_image || '/yacht-club-logo.png',
               status: status,
@@ -160,6 +161,39 @@ export default function VendorProducts() {
     } else {
       setSelectedIds(new Set(filteredProducts.map(p => p.submissionId?.toString() || p.id.toString())));
     }
+  };
+
+  const handleDeleteProduct = async (productId: string, productName: string) => {
+    await showConfirm({
+      title: 'Delete Product',
+      message: `Are you sure you want to delete "${productName}" from your catalog? This action cannot be undone.`,
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      type: 'warning',
+      onConfirm: async () => {
+        try {
+          const vendorId = localStorage.getItem('vendor_id');
+          const response = await axios.delete(`/api/vendor/products?product_id=${productId}`, {
+            headers: { 'x-vendor-id': vendorId }
+          });
+
+          if (response.data.success) {
+            showNotification({
+              type: 'success',
+              title: 'Deleted',
+              message: 'Product deleted successfully'
+            });
+            loadProducts();
+          }
+        } catch (error: any) {
+          showNotification({
+            type: 'error',
+            title: 'Delete Failed',
+            message: error.response?.data?.error || 'Failed to delete product'
+          });
+        }
+      }
+    });
   };
 
   const handleAIAutofill = async () => {
@@ -369,12 +403,14 @@ export default function VendorProducts() {
           {/* Mobile List View - Full Width */}
           <div className="lg:hidden">
             {filteredProducts.map((product) => (
-              <Link
+              <div
                 key={product.id}
-                href={product.status === 'approved' ? `/vendor/inventory?expand=${product.id}` : '#'}
                 className="block active:bg-white/5 transition-all bg-[#1a1a1a] border-b border-white/5"
               >
-                <div className="flex gap-4 p-4">
+                <Link
+                  href={product.status === 'approved' ? `/vendor/inventory?expand=${product.id}` : '#'}
+                  className="flex gap-4 p-4"
+                >
                   <div className="w-20 h-20 bg-white/5 rounded flex items-center justify-center flex-shrink-0">
                     <Package size={28} className="text-white/40" />
                   </div>
@@ -404,8 +440,21 @@ export default function VendorProducts() {
                       <div className="text-xs text-red-500/80 mt-2 leading-relaxed">{product.rejectionReason}</div>
                     )}
                   </div>
+                </Link>
+                <div className="px-4 pb-4 flex justify-end">
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleDeleteProduct(product.id.toString(), product.name);
+                    }}
+                    className="flex items-center gap-2 text-red-500/60 active:text-red-500 text-sm transition-colors px-3 py-2 border border-red-500/20 active:border-red-500/40"
+                  >
+                    <Trash2 size={14} />
+                    <span className="uppercase tracking-wider text-xs">Delete</span>
+                  </button>
                 </div>
-              </Link>
+              </div>
             ))}
           </div>
 
@@ -486,18 +535,31 @@ export default function VendorProducts() {
                     </div>
                   </td>
                   <td className="p-4">
-                    {product.status === 'approved' ? (
-                      <Link
-                        href={`/vendor/inventory?expand=${product.id}`}
-                        className="text-white/60 hover:text-white text-sm transition-colors"
+                    <div className="flex items-center gap-3">
+                      {product.status === 'approved' ? (
+                        <Link
+                          href={`/vendor/inventory?expand=${product.id}`}
+                          className="text-white/60 hover:text-white text-sm transition-colors"
+                        >
+                          Manage
+                        </Link>
+                      ) : product.status === 'pending' ? (
+                        <span className="text-yellow-500/60 text-sm">In Review</span>
+                      ) : (
+                        <span className="text-red-500/60 text-sm">Rejected</span>
+                      )}
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleDeleteProduct(product.id.toString(), product.name);
+                        }}
+                        className="text-red-500/60 hover:text-red-500 transition-colors"
+                        title="Delete product"
                       >
-                        Manage
-                      </Link>
-                    ) : product.status === 'pending' ? (
-                      <span className="text-yellow-500/60 text-sm">In Review</span>
-                    ) : (
-                      <span className="text-red-500/60 text-sm">Rejected</span>
-                    )}
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               );
@@ -511,4 +573,5 @@ export default function VendorProducts() {
     </div>
   );
 }
+
 
