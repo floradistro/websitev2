@@ -614,7 +614,12 @@ export default function AdminUsers() {
         maxWidth="2xl"
       >
         <div className="space-y-4">
-          {assigningLocationsUser?.vendor_id ? (
+          {assigningLocationsUser?.role === 'admin' ? (
+            <div className="bg-white/5 border border-white/10 p-8 text-center">
+              <Shield size={32} className="text-white/20 mx-auto mb-3" />
+              <p className="text-white/40 text-sm">Admin users have access to all locations</p>
+            </div>
+          ) : assigningLocationsUser?.vendor_id ? (
             <>
               <div className="text-white/60 text-sm mb-4">
                 Select which locations this employee can access. Choose one as their primary location.
@@ -672,8 +677,8 @@ export default function AdminUsers() {
             </>
           ) : (
             <div className="bg-white/5 border border-white/10 p-8 text-center">
-              <Shield size={32} className="text-white/20 mx-auto mb-3" />
-              <p className="text-white/40 text-sm">Admin users have access to all locations</p>
+              <MapPin size={32} className="text-white/20 mx-auto mb-3" />
+              <p className="text-white/40 text-sm">This user needs to be assigned to a vendor first</p>
             </div>
           )}
         </div>
