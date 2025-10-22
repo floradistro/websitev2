@@ -57,6 +57,8 @@ export default function VendorDashboard() {
     totalSales30d: 0,
     lowStock: 0,
   });
+  const [vendorLogo, setVendorLogo] = useState<string | null>(null);
+  const [vendorBranding, setVendorBranding] = useState<any>(null);
 
   const [recentProducts, setRecentProducts] = useState<RecentProduct[]>([]);
   const [lowStockItems, setLowStockItems] = useState<LowStockItem[]>([]);
@@ -103,6 +105,19 @@ export default function VendorDashboard() {
         }
 
         console.log('🔵 Loading dashboard for vendor:', vendorId);
+
+        // Load vendor branding (logo, colors, etc.)
+        try {
+          const brandingResponse = await axios.get('/api/supabase/vendor/branding', {
+            headers: { 'x-vendor-id': vendorId }
+          });
+          if (brandingResponse.data.success) {
+            setVendorBranding(brandingResponse.data.branding);
+            setVendorLogo(brandingResponse.data.branding?.logo_url || null);
+          }
+        } catch (error) {
+          console.log('No branding data found');
+        }
 
         // Call dashboard API - LIVE data from Supabase
         const response = await axios.get('/api/vendor/dashboard', {
@@ -243,84 +258,87 @@ export default function VendorDashboard() {
   };
 
   return (
-    <div className="w-full max-w-full animate-fadeIn overflow-x-hidden">
-      {/* Welcome Header */}
-      <div className="px-4 lg:px-0 py-6 lg:py-0 lg:mb-8 border-b lg:border-b-0 border-white/5" style={{ animation: 'fadeInUp 0.5s ease-out' }}>
-        <h1 className="text-2xl lg:text-4xl text-white mb-1.5 lg:mb-2 leading-tight font-light tracking-tight">
-          Welcome Back, {vendor?.store_name || 'Vendor'}
-        </h1>
-        <p className="text-white/60 text-xs lg:text-sm">
-          Here's what's happening with your store today
-        </p>
+    <div className="w-full max-w-full animate-fadeIn overflow-x-hidden px-4 lg:px-0">
+      {/* Welcome Header with Logo */}
+      <div className="mb-8">
+        <div className="flex items-center gap-4 mb-4">
+          {vendorLogo ? (
+            <div className="w-16 h-16 bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden flex-shrink-0">
+              <img 
+                src={vendorLogo} 
+                alt={vendor?.store_name || 'Vendor'} 
+                className="w-full h-full object-cover"
+              />
+            </div>
+          ) : (
+            <div className="w-16 h-16 bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0">
+              <Store size={28} className="text-white/30" />
+            </div>
+          )}
+          <div className="flex-1 min-w-0">
+            <h1 className="text-3xl text-white mb-1 font-light tracking-tight">
+              {vendor?.store_name || 'Vendor Dashboard'}
+            </h1>
+            <p className="text-white/50 text-sm">
+              {vendorBranding?.store_tagline || 'Manage your products, inventory, and orders'}
+            </p>
+          </div>
+        </div>
       </div>
 
-      {/* Stats Grid - Enhanced */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-0 lg:gap-6 mb-0 lg:mb-8 border-b lg:border-b-0 border-white/5" style={{ animation: 'fadeInUp 0.6s ease-out 0.1s both' }}>
-        {/* Total Products */}
-        <div className="bg-[#1a1a1a] border-r lg:border border-white/5 p-4 lg:p-6 active:bg-white/5 lg:hover:border-white/10 lg:hover:-translate-y-0.5 transition-all duration-300 cursor-pointer relative overflow-hidden group min-h-[120px] lg:min-h-0">
-          <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-          <div className="relative h-full flex flex-col justify-between">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-2 lg:mb-4">
-            <div className="text-white/60 text-[10px] lg:text-xs uppercase tracking-wider">Live Products</div>
-            <Package size={18} className="hidden lg:block text-white/40" />
+      {/* Stats Grid - Modernized */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        {/* Live Products */}
+        <div className="bg-[#111111] border border-white/10 p-5 hover:border-white/20 transition-all group">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-white/50 text-xs uppercase tracking-wider">Live Products</span>
+            <Package size={18} className="text-white/30 group-hover:text-white/50 transition-colors" />
           </div>
-          <div>
-            <div className="text-2xl lg:text-3xl font-light text-white mb-0.5 lg:mb-1">
-              {loading ? '—' : stats.approved}
-            </div>
-            <div className="text-white/40 text-[10px] lg:text-xs">Currently selling</div>
+          <div className="text-2xl font-light text-white mb-1">
+            {loading ? '—' : stats.approved}
           </div>
-          </div>
+          <div className="text-white/30 text-xs">Currently selling</div>
         </div>
 
         {/* Pending Review */}
-        <div className="bg-[#1a1a1a] border-b lg:border border-white/5 p-4 lg:p-6 active:bg-white/5 lg:hover:border-white/10 lg:hover:-translate-y-0.5 transition-all duration-300 cursor-pointer relative overflow-hidden group min-h-[120px] lg:min-h-0">
-          <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-          <div className="relative h-full flex flex-col justify-between">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-2 lg:mb-4">
-            <div className="text-white/60 text-[10px] lg:text-xs uppercase tracking-wider">Pending Review</div>
-            <AlertCircle size={18} className="hidden lg:block text-white/40" />
+        <div className="bg-[#111111] border border-white/10 p-5 hover:border-white/20 transition-all group">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-white/50 text-xs uppercase tracking-wider">Pending Review</span>
+            <AlertCircle size={18} className="text-white/30 group-hover:text-white/50 transition-colors" />
           </div>
-          <div>
-            <div className="text-2xl lg:text-3xl font-light text-white mb-0.5 lg:mb-1">
-              {loading ? '—' : stats.pending}
-            </div>
-            <div className="text-white/40 text-[10px] lg:text-xs">Awaiting approval</div>
+          <div className="text-2xl font-light text-white mb-1">
+            {loading ? '—' : stats.pending}
           </div>
-          </div>
+          <div className="text-white/30 text-xs">Awaiting approval</div>
         </div>
 
-        {/* Total Sales (30 Days) */}
-        <div className="bg-[#1a1a1a] border-r lg:border border-white/5 p-4 lg:p-6 active:bg-white/5 lg:hover:border-white/10 lg:hover:-translate-y-0.5 transition-all duration-300 cursor-pointer relative overflow-hidden group min-h-[120px] lg:min-h-0">
-          <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-          <div className="relative h-full flex flex-col justify-between">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-2 lg:mb-4">
-            <div className="text-white/60 text-[10px] lg:text-xs uppercase tracking-wider">Sales (30 Days)</div>
-            <DollarSign size={18} className="hidden lg:block text-white/40" />
+        {/* Sales (30 Days) */}
+        <div className="bg-[#111111] border border-white/10 p-5 hover:border-white/20 transition-all group">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-white/50 text-xs uppercase tracking-wider">Sales (30d)</span>
+            <DollarSign size={18} className="text-white/30 group-hover:text-white/50 transition-colors" />
           </div>
-          <div>
-            <div className="text-2xl lg:text-3xl font-light text-white mb-0.5 lg:mb-1">
-              {loading ? '—' : `$${stats.totalSales30d.toLocaleString()}`}
-            </div>
-            <div className="text-white/40 text-[10px] lg:text-xs">Revenue this month</div>
+          <div className="text-2xl font-light text-white mb-1">
+            {loading ? '—' : `$${stats.totalSales30d.toLocaleString()}`}
           </div>
-          </div>
+          <div className="text-white/30 text-xs">Revenue this month</div>
         </div>
 
-        {/* Low Stock Alerts */}
-        <div className="bg-[#1a1a1a] border-b lg:border border-white/5 p-4 lg:p-6 active:bg-white/5 lg:hover:border-white/10 lg:hover:-translate-y-0.5 transition-all duration-300 cursor-pointer relative overflow-hidden group min-h-[120px] lg:min-h-0">
-          <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-          <div className="relative h-full flex flex-col justify-between">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-2 lg:mb-4">
-            <div className="text-white/60 text-[10px] lg:text-xs uppercase tracking-wider">Low Stock</div>
-            <AlertTriangle size={18} className="hidden lg:block text-red-500" />
+        {/* Low Stock */}
+        <div className="bg-[#111111] border border-white/10 p-5 hover:border-white/20 transition-all group">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-white/50 text-xs uppercase tracking-wider">Low Stock</span>
+            <AlertTriangle size={18} className="text-white/30 group-hover:text-white/50 transition-colors" />
           </div>
-          <div>
-            <div className="text-2xl lg:text-3xl font-light text-white mb-0.5 lg:mb-1">
-              {loading ? '—' : stats.lowStock}
-            </div>
-            <div className="text-red-500 text-[10px] lg:text-xs">Items need restocking</div>
+          <div className="text-2xl font-light text-white mb-1">
+            {loading ? '—' : stats.lowStock}
           </div>
+          <div className="text-white/30 text-xs">
+            {stats.lowStock > 0 ? (
+              <span className="text-yellow-500">Need restocking</span>
+            ) : (
+              'All stocked'
+            )}
           </div>
         </div>
       </div>
