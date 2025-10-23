@@ -1,8 +1,9 @@
 import { getServiceSupabase } from '@/lib/supabase/client';
 import { StorefrontHomeClient } from '@/components/storefront/StorefrontHomeClient';
-import { StorefrontHeader } from '@/components/storefront/StorefrontHeader';
-import { StorefrontFooter } from '@/components/storefront/StorefrontFooter';
 import { notFound } from 'next/navigation';
+
+// Disable main layout for this route
+export const dynamic = 'force-dynamic';
 
 export default async function TestStorefrontPage() {
   const supabase = getServiceSupabase();
@@ -66,18 +67,12 @@ export default async function TestStorefrontPage() {
   });
 
   return (
-    <div className="bg-[#1a1a1a] min-h-screen">
-      <StorefrontHeader vendor={vendor} />
-      <main>
-        <StorefrontHomeClient 
-          vendor={vendor}
-          products={products}
-          inventoryMap={{}}
-          productFieldsMap={{}}
-        />
-      </main>
-      <StorefrontFooter vendor={vendor} />
-    </div>
+    <StorefrontHomeClient 
+      vendor={vendor}
+      products={products}
+      inventoryMap={{}}
+      productFieldsMap={{}}
+    />
   );
 }
 

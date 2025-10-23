@@ -15,6 +15,7 @@ export async function middleware(request: NextRequest) {
   // - Admin routes
   // - Vendor portal routes
   // - Next.js internals
+  // - Test storefront route
   if (
     pathname.startsWith('/_next') ||
     pathname.startsWith('/api') ||
@@ -23,6 +24,7 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith('/login') ||
     pathname.startsWith('/register') ||
     pathname.startsWith('/dashboard') ||
+    pathname.startsWith('/test-storefront') ||
     pathname.includes('.') ||
     domain.includes('localhost') ||
     domain.includes('127.0.0.1')
