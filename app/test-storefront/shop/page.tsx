@@ -59,7 +59,7 @@ export default async function TestShopPage() {
         id,
         name,
         slug,
-        tier_breaks
+        price_breaks
       )
     `)
     .in('product_id', productIds)
@@ -67,19 +67,19 @@ export default async function TestShopPage() {
 
   const pricingMap: { [key: string]: any[] } = {};
   (allPricingConfigs || []).forEach((pricingConfig: any) => {
-    if (pricingConfig.blueprint?.tier_breaks) {
+    if (pricingConfig.blueprint?.price_breaks) {
       const tiers: any[] = [];
       const pricingValues = pricingConfig.pricing_values || {};
       
-      pricingConfig.blueprint.tier_breaks.forEach((tier: any) => {
+      pricingConfig.blueprint.price_breaks.forEach((tier: any) => {
         const breakId = tier.break_id;
         const tierData = pricingValues[breakId];
         
         if (tierData && tierData.enabled && tierData.price) {
           tiers.push({
-            weight: tier.label || tier.weight || breakId,
+            weight: tier.label || breakId,
             label: tier.label,
-            qty: tier.quantity || 1,
+            qty: tier.qty || 1,
             price: parseFloat(tierData.price),
             tier_name: tier.label || breakId,
             break_id: breakId,
@@ -93,6 +93,9 @@ export default async function TestShopPage() {
       pricingMap[pricingConfig.product_id] = tiers;
     }
   });
+
+  console.log('📊 Pricing configs loaded:', (allPricingConfigs || []).length);
+  console.log('📦 Products with pricing:', Object.keys(pricingMap).length);
 
   // Create product fields map
   const productFieldsMap: { [key: string]: any } = {};
