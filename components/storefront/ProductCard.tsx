@@ -326,29 +326,33 @@ function ProductCard({ product, index, locations = [], pricingTiers = [], produc
         
         {/* Pricing Tier Selector */}
         {tiers.length > 0 && (
-          <div className="space-y-2 pt-3 mt-auto border-t border-white/10">
+          <div className="space-y-2 pt-3 mt-auto border-t border-purple-500/30">
+            <div className="text-[10px] text-purple-400/80 uppercase tracking-wider mb-2">
+              Select Size
+            </div>
             <div className="relative">
               <select
                 value={selectedTierIndex ?? ""}
                 onChange={handleTierSelect}
                 onClick={(e) => e.stopPropagation()}
-                className="w-full appearance-none bg-transparent border border-white/20 px-3 py-2.5 pr-7 text-[11px] font-normal text-white hover:border-white/40 hover:bg-white/5 focus:border-white focus:outline-none transition-all cursor-pointer uppercase tracking-[0.1em]"
+                className="w-full appearance-none bg-black/60 border-2 border-purple-500/40 px-3 py-3 pr-8 text-xs font-medium text-white hover:border-purple-400 hover:bg-black/80 focus:border-purple-400 focus:outline-none transition-all cursor-pointer uppercase tracking-wider"
+                style={{ minHeight: '44px' }}
               >
-                <option value="">Select Quantity</option>
+                <option value="" className="bg-black text-white">Select Quantity</option>
                 {tiers.map((tier, idx) => {
                   const price = typeof tier.price === "string" ? parseFloat(tier.price) : tier.price;
                   const tierLabel = getUnitLabel(tier);
                   const displayPrice = price > 0 ? `$${price.toFixed(2)}` : 'TBD';
                   
                   return (
-                    <option key={idx} value={idx}>
+                    <option key={idx} value={idx} className="bg-black text-white">
                       {tierLabel} - {displayPrice}
                     </option>
                   );
                 })}
               </select>
-              <div className="absolute inset-y-0 right-0 flex items-center pr-2.5 pointer-events-none">
-                <svg className="w-3.5 h-3.5 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+              <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                <svg className="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                 </svg>
               </div>
@@ -357,9 +361,10 @@ function ProductCard({ product, index, locations = [], pricingTiers = [], produc
             {showAddToCart && (
               <button
                 onClick={handleAddToCart}
-                className="w-full bg-black border border-white/20 text-white px-3 py-3 text-[10px] uppercase tracking-[0.15em] hover:bg-white hover:text-black hover:border-white font-medium flex items-center justify-center gap-2 transition-all"
+                className="w-full bg-purple-600 hover:bg-purple-500 text-white px-3 py-3 text-[11px] uppercase tracking-[0.15em] font-semibold flex items-center justify-center gap-2 transition-all animate-fadeIn"
+                style={{ minHeight: '44px' }}
               >
-                <ShoppingBag size={13} strokeWidth={2} />
+                <ShoppingBag size={14} strokeWidth={2} />
                 Add to Cart
               </button>
             )}
