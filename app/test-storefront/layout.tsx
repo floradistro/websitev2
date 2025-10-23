@@ -31,6 +31,8 @@ export const viewport: Viewport = {
   themeColor: '#000000',
 };
 
+export const dynamic = 'force-dynamic';
+
 export default async function TestStorefrontLayout({
   children,
 }: {
@@ -46,17 +48,24 @@ export default async function TestStorefrontLayout({
     .single();
 
   if (!vendor) {
-    return <div>Vendor not found</div>;
+    return (
+      <html lang="en">
+        <body>
+          <div>Vendor not found</div>
+        </body>
+      </html>
+    );
   }
 
   return (
     <html lang="en" data-scroll-behavior="smooth" className="overflow-x-hidden" suppressHydrationWarning>
       <head>
         <title>{vendor.store_name} - Premium Cannabis</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col overflow-x-hidden min-h-screen`}
-        style={{ backgroundColor: '#1a1a1a' }}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        style={{ backgroundColor: '#1a1a1a', minHeight: '100vh' }}
         suppressHydrationWarning
       >
         <Providers>
@@ -64,13 +73,9 @@ export default async function TestStorefrontLayout({
           <AuthProvider>
             <WishlistProvider>
               <CartProvider>
-                <div className="storefront-container bg-[#1a1a1a] min-h-screen">
-                  <StorefrontTestHeader vendor={vendor} />
-                  <main className="storefront-main">
-                    {children}
-                  </main>
-                  <StorefrontFooter vendor={vendor} />
-                </div>
+                <StorefrontTestHeader vendor={vendor} />
+                {children}
+                <StorefrontFooter vendor={vendor} />
                 <NotificationToast />
               </CartProvider>
             </WishlistProvider>
