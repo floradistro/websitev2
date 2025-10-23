@@ -1,23 +1,34 @@
-import { getCategories, getLocations, getProducts } from "@/lib/supabase-api";
 import HomeClient from "@/components/HomeClient";
 
 // ISR - Revalidate every 5 minutes for better performance
 export const revalidate = 300;
 
 export default async function Home() {
-  // OPTIMIZED: Use bulk endpoint - returns products with inventory & fields in ONE call
-  const timeout = (ms: number) => new Promise((_, reject) => 
-    setTimeout(() => reject(new Error('Timeout')), ms)
-  );
+  // OPTIMIZED: Single bulk API call - returns everything in ONE request
+  let categories: any[] = [];
+  let locations: any[] = [];
+  let bulkProducts: any[] = [];
   
-  const [categories, locations, productsData] = await Promise.all([
-    Promise.race([getCategories(), timeout(5000)]).catch(() => []),
-    Promise.race([getLocations(), timeout(5000)]).catch(() => []),
-    Promise.race([getProducts({ per_page: 12, orderby: 'date_created', order: 'desc' }), timeout(8000)]).catch(() => ({ products: [] })),
-  ]);
-
-  // Extract products from response
-  const bulkProducts = productsData?.products || [];
+  try {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/page-data/home`, {
+      next: { revalidate: 300 },
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    
+    if (response.ok) {
+      const result = await response.json();
+      if (result.success) {
+        categories = result.data.categories || [];
+        locations = result.data.locations || [];
+        bulkProducts = result.data.products || [];
+        console.log(`✅ Homepage data loaded in ${result.meta.responseTime}`);
+      }
+    }
+  } catch (error) {
+    console.error('Error loading homepage data:', error);
+  }
   
   // Products from Supabase - use ONLY Supabase Storage images
   const allProducts = bulkProducts.map((p: any) => {

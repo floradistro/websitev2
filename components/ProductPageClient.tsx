@@ -331,8 +331,8 @@ export default function ProductPageClient({
             <LabResults metaData={product.meta_data || []} attributes={product.attributes || []} />
 
             {/* Specifications */}
-            {product.meta_data && product.meta_data.length > 0 && (
-              <FloraFields metaData={product.meta_data} />
+            {(product.fields || product.meta_data) && (
+              <FloraFields fields={product.fields} metaData={product.meta_data} />
             )}
 
             {/* Long Description */}
@@ -437,9 +437,9 @@ export default function ProductPageClient({
               </div>
 
               {/* Specifications Block */}
-              {product.meta_data && product.meta_data.length > 0 && (
+              {(product.fields || product.meta_data) && (
                 <div className="mb-6 animate-fadeIn" style={{animationDelay: '400ms'}}>
-                  <FloraFields metaData={product.meta_data} />
+                  <FloraFields fields={product.fields} metaData={product.meta_data} />
                 </div>
               )}
 

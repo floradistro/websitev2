@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useMemo, memo } from "react";
+import { useState, useMemo, memo, useEffect } from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import dynamic from "next/dynamic";
+import { useSearchParams } from "next/navigation";
 import LocationDropdown from "./LocationDropdown";
 import ProductCard from "./ProductCard";
 
@@ -31,6 +32,7 @@ function ProductsClient({
   vendorProducts = [],
   vendors = [],
 }: ProductsClientProps) {
+  const searchParams = useSearchParams();
   const [selectedLocation, setSelectedLocation] = useState<string | null>(null);
   const [categorySlug, setCategorySlug] = useState<string | undefined>(undefined);
   const [selectedStrainType, setSelectedStrainType] = useState<string | null>(null);
@@ -40,6 +42,14 @@ function ProductsClient({
   const [sortBy, setSortBy] = useState<string>("default");
   const [showFilters, setShowFilters] = useState(false);
 
+  // Read category from URL parameter on mount
+  useEffect(() => {
+    const categoryParam = searchParams.get('category');
+    if (categoryParam) {
+      setCategorySlug(categoryParam);
+    }
+  }, [searchParams]);
+
   const activeLocations = useMemo(
     () => locations.filter((loc: any) => loc.is_active === "1" || loc.is_active === 1 || loc.is_active === true),
     [locations]
@@ -47,6 +57,13 @@ function ProductsClient({
 
   const products = useMemo(() => {
     let filtered = vendorProducts;
+    
+    // Filter by category
+    if (categorySlug) {
+      filtered = filtered.filter((product: any) => {
+        return product.categories?.some((cat: any) => cat.slug === categorySlug);
+      });
+    }
     
     // Filter by vendor
     if (selectedVendor) {

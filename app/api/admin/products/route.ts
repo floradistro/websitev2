@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServiceSupabase } from '@/lib/supabase/client';
+import { productCache, vendorCache, inventoryCache } from '@/lib/cache-manager';
 
 export async function DELETE(request: NextRequest) {
   try {
@@ -107,6 +108,12 @@ export async function DELETE(request: NextRequest) {
     }
 
     console.log('✅ Product deleted successfully:', product.name);
+    
+    // Invalidate all caches after deletion
+    console.log('🧹 Invalidating caches after product deletion');
+    productCache.invalidatePattern('products:.*');
+    vendorCache.clear();
+    inventoryCache.clear();
 
     return NextResponse.json({
       success: true,

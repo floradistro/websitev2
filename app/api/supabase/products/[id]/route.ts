@@ -1,36 +1,54 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServiceSupabase } from '@/lib/supabase/client';
+import { productCache, generateCacheKey } from '@/lib/cache-manager';
+import { monitor } from '@/lib/performance-monitor';
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const endTimer = monitor.startTimer('Product Detail API');
+  
   try {
     const { id } = await params;
+    
+    // Generate cache key for individual product
+    const cacheKey = generateCacheKey('product-detail', { id });
+    
+    // Check cache first
+    const cached = productCache.get(cacheKey);
+    if (cached) {
+      endTimer();
+      monitor.recordCacheAccess('product-detail', true);
+      
+      return NextResponse.json(cached, {
+        headers: {
+          'X-Cache-Status': 'HIT',
+          'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=60',
+        }
+      });
+    }
+    
+    monitor.recordCacheAccess('product-detail', false);
     const supabase = getServiceSupabase();
     
+    // Fetch basic product data first (much faster)
     const { data, error } = await supabase
       .from('products')
       .select(`
         *,
-        primary_category:categories!primary_category_id(id, name, slug, description),
-        vendor:vendors(id, store_name, slug, email, phone),
-        product_categories(
-          category:categories(id, name, slug)
-        ),
-        product_tag_relationships(
-          tag:product_tags(id, name, slug)
-        ),
-        product_variations(*)
+        vendor:vendors(id, store_name, slug, email, phone)
       `)
       .eq('id', id)
       .single();
     
     if (error) {
+      endTimer();
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
     
     if (!data) {
+      endTimer();
       return NextResponse.json({ error: 'Product not found' }, { status: 404 });
     }
     
@@ -47,9 +65,20 @@ export async function GET(
     delete product.product_tag_relationships;
     delete product.product_variations;
     
-    return NextResponse.json({
+    // Store in cache
+    const responseData = {
       success: true,
       product
+    };
+    
+    productCache.set(cacheKey, responseData);
+    endTimer();
+    
+    return NextResponse.json(responseData, {
+      headers: {
+        'X-Cache-Status': 'MISS',
+        'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=60',
+      }
     });
     
   } catch (error: any) {
@@ -140,6 +169,11 @@ export async function PUT(
           .insert(categoryLinks);
       }
     }
+    
+    // Clear cache for this product and product list
+    const cacheKey = generateCacheKey('product-detail', { id });
+    productCache.del(cacheKey);
+    productCache.clear(); // Clear all product caches since list needs update
     
     return NextResponse.json({
       success: true,

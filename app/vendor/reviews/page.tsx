@@ -25,66 +25,38 @@ export default function VendorReviews() {
   const [responseText, setResponseText] = useState('');
 
   useEffect(() => {
-    // TODO: Fetch from API: /vendor-marketplace/v1/reviews
-    setTimeout(() => {
-      setReviews([
-        {
-          id: 1,
-          productId: 50002,
-          productName: 'Blue Dream',
-          customerName: 'Jordan Cooper',
-          rating: 5,
-          date: '2025-10-17',
-          comment: 'Classic Blue Dream done right! Perfect balance of effects. Quality is unmatched.',
-          verified: true,
-        },
-        {
-          id: 2,
-          productId: 50001,
-          productName: 'OG Kush',
-          customerName: 'Marcus Thompson',
-          rating: 5,
-          date: '2025-10-16',
-          comment: 'Best OG Kush I\'ve had in years. That classic piney kush smell and flavor. Super fresh, great cure.',
-          verified: true,
-          response: 'Thank you for the amazing review! We take pride in our cultivation process. Looking forward to serving you again!',
-          responseDate: '2025-10-16'
-        },
-        {
-          id: 3,
-          productId: 50005,
-          productName: 'Gelato',
-          customerName: 'Alasia Chestnut',
-          rating: 5,
-          date: '2025-10-15',
-          comment: 'This Gelato is incredible. Sweet, creamy, and potent. Always delivers!',
-          verified: true,
-        },
-        {
-          id: 4,
-          productId: 50004,
-          productName: 'Girl Scout Cookies',
-          customerName: 'Zachariah Kryger',
-          rating: 5,
-          date: '2025-10-14',
-          comment: 'Legendary GSC cut. Minty, sweet, and strong. Exactly what I wanted.',
-          verified: true,
-          response: 'We appreciate your support! Our GSC is a customer favorite.',
-          responseDate: '2025-10-14'
-        },
-        {
-          id: 5,
-          productId: 50008,
-          productName: 'Zkittlez',
-          customerName: 'Brendon Balzano',
-          rating: 5,
-          date: '2025-10-13',
-          comment: 'Fire! The Zkittlez is exactly as advertised. Fruity smell, smooth smoke, perfect high.',
-          verified: true,
-        },
-      ]);
-      setLoading(false);
-    }, 1000);
+    async function fetchReviews() {
+      try {
+        setLoading(true);
+        const vendorId = localStorage.getItem('vendor_id');
+        
+        if (!vendorId) {
+          console.error('No vendor ID found');
+          setLoading(false);
+          return;
+        }
+
+        // Fetch real reviews from API
+        const response = await fetch('/api/vendor/reviews', {
+          headers: { 'x-vendor-id': vendorId }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setReviews(data.reviews || []);
+        } else {
+          console.error('Failed to fetch reviews');
+          setReviews([]);
+        }
+      } catch (error) {
+        console.error('Error fetching reviews:', error);
+        setReviews([]);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchReviews();
   }, []);
 
   const handleRespond = (reviewId: number) => {
@@ -92,10 +64,36 @@ export default function VendorReviews() {
     setResponseText('');
   };
 
-  const submitResponse = (reviewId: number) => {
-    // TODO: Submit response to API
-    setRespondingTo(null);
-    setResponseText('');
+  const submitResponse = async (reviewId: number) => {
+    try {
+      const vendorId = localStorage.getItem('vendor_id');
+      
+      const response = await fetch('/api/vendor/reviews', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-vendor-id': vendorId || ''
+        },
+        body: JSON.stringify({
+          reviewId,
+          response: responseText
+        })
+      });
+
+      if (response.ok) {
+        // Update local state
+        setReviews(reviews.map(r =>
+          r.id === reviewId
+            ? { ...r, response: responseText, responseDate: new Date().toISOString() }
+            : r
+        ));
+      }
+    } catch (error) {
+      console.error('Error submitting response:', error);
+    } finally {
+      setRespondingTo(null);
+      setResponseText('');
+    }
   };
 
   const filteredReviews = reviews.filter(review =>

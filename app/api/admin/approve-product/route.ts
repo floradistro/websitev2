@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServiceSupabase } from '@/lib/supabase/client';
+import { productCache, vendorCache, inventoryCache } from '@/lib/cache-manager';
+import { jobQueue } from '@/lib/job-queue';
 
 export async function POST(request: NextRequest) {
   try {
@@ -37,8 +39,38 @@ export async function POST(request: NextRequest) {
       
       console.log('✅ Product approved:', product.id, product.name);
       
-      // Ensure product is ready for public display
-      // Stock will be managed via vendor inventory manager
+      // Invalidate caches after approval
+      console.log('🧹 Invalidating caches after product approval');
+      productCache.invalidatePattern('products:.*');
+      vendorCache.invalidatePattern(`.*vendorId:${product.vendor_id}.*`);
+      inventoryCache.clear();
+      
+      // Get vendor info for notification
+      const { data: vendor } = await supabase
+        .from('vendors')
+        .select('email, store_name')
+        .eq('id', product.vendor_id)
+        .single();
+      
+      // Queue email notification to vendor
+      if (vendor?.email) {
+        await jobQueue.enqueue(
+          'send-email',
+          {
+            to: vendor.email,
+            subject: 'Product Approved!',
+            html: `
+              <h2>Your Product Has Been Approved!</h2>
+              <p>Good news! Your product <strong>${product.name}</strong> has been approved and is now live.</p>
+              <p>Customers can now purchase this product from your store.</p>
+              <p>Thank you for using our platform!</p>
+            `,
+            productId: product.id,
+            vendorId: product.vendor_id
+          },
+          { priority: 2 }
+        );
+      }
       
       return NextResponse.json({
         success: true,
@@ -65,6 +97,38 @@ export async function POST(request: NextRequest) {
       }
       
       console.log('✅ Product rejected:', product.id, product.name);
+      
+      // Invalidate caches after rejection
+      console.log('🧹 Invalidating caches after product rejection');
+      productCache.invalidatePattern('products:.*');
+      vendorCache.invalidatePattern(`.*vendorId:${product.vendor_id}.*`);
+      
+      // Get vendor info for notification
+      const { data: vendor } = await supabase
+        .from('vendors')
+        .select('email, store_name')
+        .eq('id', product.vendor_id)
+        .single();
+      
+      // Queue email notification to vendor
+      if (vendor?.email) {
+        await jobQueue.enqueue(
+          'send-email',
+          {
+            to: vendor.email,
+            subject: 'Product Submission Update',
+            html: `
+              <h2>Product Submission Update</h2>
+              <p>Your product <strong>${product.name}</strong> has been reviewed.</p>
+              <p>Unfortunately, it does not meet our current requirements.</p>
+              <p>Please review our product guidelines and feel free to submit again.</p>
+            `,
+            productId: product.id,
+            vendorId: product.vendor_id
+          },
+          { priority: 2 }
+        );
+      }
       
       return NextResponse.json({
         success: true,

@@ -1,13 +1,39 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServiceSupabase } from '@/lib/supabase/client';
+import { inventoryCache, generateCacheKey } from '@/lib/cache-manager';
+import { monitor } from '@/lib/performance-monitor';
 
 export async function GET(request: NextRequest) {
+  const endTimer = monitor.startTimer('Locations API');
+  
   try {
     const { searchParams } = new URL(request.url);
     const type = searchParams.get('type');
     const activeOnly = searchParams.get('active') === 'true';
     const vendorId = request.headers.get('x-vendor-id');
     
+    // Generate cache key
+    const cacheKey = generateCacheKey('locations', {
+      type: type || 'all',
+      active: activeOnly ? 'true' : 'false',
+      vendorId: vendorId || 'all'
+    });
+    
+    // Check cache first
+    const cached = inventoryCache.get(cacheKey);
+    if (cached) {
+      endTimer();
+      monitor.recordCacheAccess('locations', true);
+      
+      return NextResponse.json(cached, {
+        headers: {
+          'X-Cache-Status': 'HIT',
+          'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=60',
+        }
+      });
+    }
+    
+    monitor.recordCacheAccess('locations', false);
     const supabase = getServiceSupabase();
     
     let query = supabase
@@ -33,15 +59,23 @@ export async function GET(request: NextRequest) {
     
     if (error) {
       console.error('Error fetching locations:', error);
+      endTimer();
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
     
-    return NextResponse.json({
+    // Store in cache
+    const responseData = {
       success: true,
       locations: data || []
-    }, {
+    };
+    
+    inventoryCache.set(cacheKey, responseData);
+    endTimer();
+    
+    return NextResponse.json(responseData, {
       headers: {
-        'Cache-Control': 'public, s-maxage=120, stale-while-revalidate=60',
+        'X-Cache-Status': 'MISS',
+        'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=60',
       }
     });
     

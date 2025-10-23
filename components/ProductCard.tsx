@@ -38,9 +38,15 @@ function ProductCard({ product, index, locations, pricingTiers = [], productFiel
   const tiers = pricingTiers || [];
   
   const getUnitLabel = (tier: any) => {
-    if (tier.weight) {
-      return tier.weight; // e.g., "1g", "3.5g", "7g"
+    // Use label if available (e.g., "1 gram", "Eighth (3.5g)")
+    if (tier.label) {
+      return tier.label;
     }
+    // Otherwise use weight (e.g., "1g", "3.5g")
+    if (tier.weight) {
+      return tier.weight;
+    }
+    // Fallback to quantity
     const qty = tier.qty || tier.min_quantity || 1;
     return `${qty} ${qty === 1 ? "unit" : "units"}`;
   };
@@ -86,40 +92,30 @@ function ProductCard({ product, index, locations, pricingTiers = [], productFiel
     // Field configuration with proper labels (only real fields)
     const fieldConfig: { [key: string]: string } = {
       // Flower fields
-      'thc_%': 'THC %',
-      'thc_percentage': 'THCa %',
-      'delta9_percentage': 'Δ9 %',
-      'thca_%': 'THCa %',
-      'thca_percentage': 'THCa %',
-      'strain_type': 'Strain',
+      'strain_type': 'Type',
       'lineage': 'Lineage',
-      'nose': 'Aroma',
-      'terpene': 'Terpenes',
+      'nose': 'Nose',
+      'terpene_profile': 'Terpenes',
       'terpenes': 'Terpenes',
       'effects': 'Effects',
       'effect': 'Effects',
+      'thca_percentage': 'THCa %',
+      'delta_9_percentage': 'Δ9 %',
+      'delta9_percentage': 'Δ9 %',
+      // Vape fields
+      'hardware_type': 'Hardware',
+      'oil_type': 'Oil',
+      'capacity': 'Capacity',
       // Edible fields
-      'edible_type': 'Type',
-      'thc_per_serving': 'THC/Serving',
+      'dosage_per_serving': 'Dosage',
       'servings_per_package': 'Servings',
-      'total_thc': 'Total THC',
+      'total_dosage': 'Total',
       'ingredients': 'Ingredients',
       'allergens': 'Allergens',
-      'flavor': 'Flavor',
-      'calories_per_serving': 'Calories',
+      'dietary': 'Dietary',
       // Concentrate fields
-      'consistency': 'Type',
+      'extract_type': 'Type',
       'extraction_method': 'Method',
-      'thc_concentration': 'THC %',
-      // Vape fields
-      'vape_type': 'Type',
-      'battery_type': 'Battery',
-      'volume_ml': 'Volume',
-      // Generic
-      'mg_per_pack': 'Per Pack',
-      'mg_per_piece': 'Per Piece',
-      'description': 'Description',
-      'type': 'Type'
     };
     
     // Iterate through all fields with consistent sorting
@@ -134,14 +130,31 @@ function ProductCard({ product, index, locations, pricingTiers = [], productFiel
       
       // Check if we already added this label (e.g., THCa from different keys)
       const existingField = displayFields.find(f => f.label === label);
-      if (!existingField) {
-        // Show all fields, even empty ones - display "—" for empty
-        const displayValue = (value && value.trim() !== '') ? value : '—';
+      if (!existingField && value !== null && value !== undefined) {
+        let displayValue: string;
+        
+        // Handle arrays (terpenes, effects, etc.)
+        if (Array.isArray(value)) {
+          displayValue = value.length > 0 ? value.join(', ') : '—';
+        } 
+        // Handle numbers
+        else if (typeof value === 'number') {
+          displayValue = value.toString();
+        }
+        // Handle strings
+        else if (typeof value === 'string') {
+          displayValue = value.trim() !== '' ? value : '—';
+        }
+        // Handle other types
+        else {
+          displayValue = String(value);
+        }
+        
         displayFields.push({ label, value: displayValue });
       }
     });
     
-    return displayFields;
+    return displayFields.slice(0, 5); // Limit to 5 fields for card display
   };
 
   const displayFields = getDisplayFields();
@@ -223,18 +236,25 @@ function ProductCard({ product, index, locations, pricingTiers = [], productFiel
 
   // Get locations where product is in stock
   const getStockLocations = () => {
-    // If no inventory records, check product.total_stock (fallback for products not using multi-location)
+    // Calculate total stock directly from product data
+    const totalStockFromProduct = parseFloat(product.total_stock || product.stock_quantity || 0);
+    
+    // If no inventory records, use product total_stock
     if (!inventory || inventory.length === 0) {
-      const totalStock = parseFloat(product.total_stock || 0);
+      console.log(`${product.name}: No inventory array (length=${inventory?.length}), total_stock=${totalStockFromProduct}, stock_status=${product.stock_status}`);
       return { 
-        inStock: totalStock > 0, 
+        inStock: totalStockFromProduct > 0 || product.stock_status === 'instock', 
         locations: [], 
         count: 0,
-        showGenericStock: totalStock > 0 // Flag to show "In Stock" without locations
+        showGenericStock: totalStockFromProduct > 0 // Flag to show "In Stock" without locations
       };
     }
+    
+    console.log(`${product.name}: HAS inventory (${inventory.length} records), locations available=${locations.length}`);
 
     const activeLocations = locations.filter((loc: any) => loc.is_active === "1" || loc.is_active === 1 || loc.is_active === true);
+    console.log(`${product.name}: Active locations=${activeLocations.length}`);
+    
     const stockLocations: any[] = [];
 
     inventory.forEach((inv: any) => {
@@ -247,6 +267,7 @@ function ProductCard({ product, index, locations, pricingTiers = [], productFiel
           loc.id.toString() === inv.location_id?.toString() ||
           parseInt(loc.id) === parseInt(inv.location_id)
         );
+        console.log(`${product.name}: Inv qty=${qty}, location_id=${inv.location_id}, found location=${location?.name || 'NOT FOUND'}`);
         if (location && !stockLocations.find(l => l.id === location.id)) {
           stockLocations.push({
             ...location,
@@ -376,7 +397,7 @@ function ProductCard({ product, index, locations, pricingTiers = [], productFiel
           )}
           
           {/* Low Stock Badge - When stock is available but low */}
-          {product.stock_status === 'in_stock' && totalStock && totalStock <= 5 && totalStock > 0 && (
+          {(product.stock_status === 'instock' || product.stock_status === 'in_stock') && totalStock && totalStock <= 5 && totalStock > 0 && (
             <div className="bg-red-600/90 text-white px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider">
               Only {totalStock} Left
             </div>
@@ -491,13 +512,14 @@ function ProductCard({ product, index, locations, pricingTiers = [], productFiel
                   const price = typeof tier.price === "string" ? parseFloat(tier.price) : tier.price;
                   const tierLabel = getUnitLabel(tier);
                   const qty = tier.qty || tier.min_quantity || 1;
-                  const pricePerUnit = tier.weight
-                    ? ` - $${price.toFixed(0)} ($${(price / qty).toFixed(2)}/g)`
-                    : ` - $${price.toFixed(0)}`;
+                  
+                  // Show price and price per gram
+                  const displayPrice = price > 0 ? `$${price.toFixed(2)}` : 'TBD';
+                  const pricePerGram = (price > 0 && qty > 0) ? ` ($${(price / qty).toFixed(2)}/g)` : '';
                   
                   return (
                     <option key={index} value={index}>
-                      {tierLabel}{pricePerUnit}
+                      {tierLabel} - {displayPrice}{pricePerGram}
                     </option>
                   );
                 })}

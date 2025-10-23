@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Home, Package, BarChart3, Settings, LogOut, Palette, ShoppingBag, FileText, DollarSign, Star, ChevronLeft, Menu, X, MapPin, Globe } from 'lucide-react';
+import { Home, Package, BarChart3, Settings, LogOut, Palette, ShoppingBag, FileText, DollarSign, Star, ChevronLeft, Menu, X, MapPin, Globe, Image } from 'lucide-react';
 import VendorSupportChat from '@/components/VendorSupportChat';
 import AIActivityMonitor from '@/components/AIActivityMonitor';
 import { VendorAuthProvider, useVendorAuth } from '@/context/VendorAuthContext';
@@ -83,6 +83,7 @@ function VendorLayoutContent({
     { href: '/vendor/dashboard', icon: Home, label: 'Dashboard' },
     { href: '/vendor/products', icon: Package, label: 'Products' },
     { href: '/vendor/inventory', icon: BarChart3, label: 'Inventory' },
+    { href: '/vendor/media-library', icon: Image, label: 'Media Library' },
     { href: '/vendor/pricing', icon: DollarSign, label: 'Pricing Tiers' },
     { href: '/vendor/purchase-orders', icon: FileText, label: 'Purchase Orders' },
     { href: '/vendor/locations', icon: MapPin, label: 'Locations' },

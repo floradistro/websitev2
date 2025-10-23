@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { DollarSign, CheckCircle, Clock, XCircle, Calendar } from 'lucide-react';
 
 interface Payout {
@@ -14,34 +14,34 @@ interface Payout {
 
 export default function AdminPayouts() {
   const [filterStatus, setFilterStatus] = useState<'all' | 'pending' | 'completed'>('all');
+  const [payouts, setPayouts] = useState<Payout[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Sample data - replace with real API
-  const payouts: Payout[] = [
-    {
-      id: '1',
-      vendor: 'Vendor A',
-      amount: 1524.50,
-      status: 'pending',
-      period: 'Oct 1-15, 2025',
-      date: '2025-10-15'
-    },
-    {
-      id: '2',
-      vendor: 'Vendor B',
-      amount: 2840.00,
-      status: 'completed',
-      period: 'Oct 1-15, 2025',
-      date: '2025-10-16'
-    },
-    {
-      id: '3',
-      vendor: 'Vendor C',
-      amount: 987.25,
-      status: 'processing',
-      period: 'Oct 1-15, 2025',
-      date: '2025-10-15'
-    },
-  ];
+  useEffect(() => {
+    async function fetchPayouts() {
+      try {
+        setLoading(true);
+        
+        // Fetch real payouts from API
+        const response = await fetch('/api/admin/payouts');
+        
+        if (response.ok) {
+          const data = await response.json();
+          setPayouts(data.payouts || []);
+        } else {
+          console.error('Failed to fetch payouts');
+          setPayouts([]);
+        }
+      } catch (error) {
+        console.error('Error fetching payouts:', error);
+        setPayouts([]);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchPayouts();
+  }, []);
 
   const filteredPayouts = payouts.filter(payout => {
     if (filterStatus === 'all') return true;
@@ -150,7 +150,15 @@ export default function AdminPayouts() {
 
       {/* Payouts List */}
       <div className="grid gap-4">
-        {filteredPayouts.map((payout) => (
+        {loading ? (
+          <div className="bg-[#111111] border border-white/10 p-12 text-center text-white/60">
+            Loading payouts...
+          </div>
+        ) : filteredPayouts.length === 0 ? (
+          <div className="bg-[#111111] border border-white/10 p-12 text-center text-white/60">
+            No payout data available yet
+          </div>
+        ) : filteredPayouts.map((payout) => (
           <div
             key={payout.id}
             className="bg-[#111111] border border-white/10 hover:border-white/20 transition-all group"

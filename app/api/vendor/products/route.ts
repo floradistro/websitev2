@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServiceSupabase } from '@/lib/supabase/client';
+import { productCache, vendorCache, inventoryCache } from '@/lib/cache-manager';
+import { jobQueue } from '@/lib/job-queue';
 
 export async function GET(request: NextRequest) {
   try {
@@ -227,6 +229,49 @@ export async function POST(request: NextRequest) {
         .insert(variantsToInsert);
     }
 
+    // Invalidate relevant caches after product creation
+    console.log('🧹 Invalidating caches after product creation');
+    productCache.invalidatePattern('products:.*');
+    vendorCache.invalidatePattern(`vendor-.*:.*vendorId:${vendorId}.*`);
+    inventoryCache.invalidatePattern('.*');
+    
+    // Queue background jobs (non-blocking)
+    console.log('📋 Queueing background jobs...');
+    
+    // Queue email notification to admin
+    await jobQueue.enqueue(
+      'send-email',
+      {
+        to: 'admin@floradistro.com',
+        subject: 'New Product Submission',
+        html: `
+          <h2>New Product Submitted for Review</h2>
+          <p><strong>Product:</strong> ${product.name}</p>
+          <p><strong>Vendor ID:</strong> ${vendorId}</p>
+          <p><strong>Price:</strong> $${product.regular_price}</p>
+          <p><strong>Stock:</strong> ${stockQty}g</p>
+          <p>Please review and approve/reject in the admin dashboard.</p>
+        `,
+        productId: product.id,
+        vendorId
+      },
+      { priority: 2 }
+    );
+    
+    // Queue image processing if images exist
+    if (productData.image_urls && productData.image_urls.length > 0) {
+      await jobQueue.enqueue(
+        'process-image',
+        {
+          productId: product.id,
+          images: productData.image_urls
+        },
+        { priority: 3 }
+      );
+    }
+    
+    console.log('✅ Background jobs queued');
+    
     return NextResponse.json({
       success: true,
       product,

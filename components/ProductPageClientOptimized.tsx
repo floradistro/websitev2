@@ -20,9 +20,9 @@ export default function ProductPageClientOptimized({
 }: ProductPageClientOptimizedProps) {
   const [isReady, setIsReady] = useState(false);
   
-  // Use SWR for instant cached loads
+  // Use SWR for instant cached loads with bulk endpoint
   const { data, error, isLoading } = useSWR(
-    `/api/product/${productId}`,
+    `/api/page-data/product/${productId}`,
     fetcher,
     {
       fallbackData: initialData,
@@ -55,7 +55,15 @@ export default function ProductPageClientOptimized({
     );
   }
 
-  const { product, inventory, locations, pricingTiers, productFields } = data;
+  const { product, relatedProducts } = data.data || data;
+  const inventory = product?.inventory || [];
+  const pricingTiers = product?.pricing_tiers || [];
+  
+  // Extract locations from inventory and mark as active (they have stock)
+  const locations = inventory.map((inv: any) => ({
+    ...inv.location,
+    is_active: "1" // Mark as active since it has inventory
+  })).filter(Boolean);
 
   return (
     <motion.div
@@ -67,11 +75,11 @@ export default function ProductPageClientOptimized({
     >
       <ProductPageClient
         product={product}
-        locations={locations || []}
-        inventory={inventory || []}
-        pricingTiers={pricingTiers || []}
+        locations={locations}
+        inventory={inventory}
+        pricingTiers={pricingTiers}
         orderType={undefined}
-        relatedProducts={[]}
+        relatedProducts={relatedProducts || []}
         reviews={[]}
       />
     </motion.div>

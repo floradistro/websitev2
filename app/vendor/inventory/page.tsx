@@ -142,48 +142,29 @@ export default function VendorInventory() {
       
       setVendorId(storedVendorId);
 
-      // Fetch products, inventory, and locations in parallel with retry logic
-      const [productsResponse, inventoryResponse, locationsResponse] = await Promise.all([
-        fetchWithRetry(() => axios.get('/api/vendor/products', {
-          headers: { 'x-vendor-id': storedVendorId }
-        })).catch((err) => {
-          console.error('Error fetching products after retries:', err);
-          showNotification({
-            type: 'error',
-            title: 'Products Load Failed',
-            message: 'Could not load products. Refresh the page.',
-          });
-          return { data: { products: [] } };
-        }),
-        fetchWithRetry(() => axios.get('/api/vendor/inventory', {
-          headers: { 'x-vendor-id': storedVendorId }
-        })).catch((err) => {
-          console.error('Error fetching inventory after retries:', err);
-          showNotification({
-            type: 'error',
-            title: 'Inventory Load Failed',
-            message: 'Could not load inventory. Refresh the page.',
-          });
-          return { data: { inventory: [] } };
-        }),
-        fetchWithRetry(() => axios.get('/api/vendor/locations', {
-          headers: { 'x-vendor-id': storedVendorId }
-        })).catch((err) => {
-          console.error('Error fetching locations after retries:', err);
-          showNotification({
-            type: 'error',
-            title: 'Locations Load Failed',
-            message: 'Could not load locations. Refresh the page.',
-          });
-          return { data: { locations: [] } };
-        })
-      ]);
+      // Use bulk endpoint - gets products, inventory, and locations in ONE call
+      console.log('🔵 Loading inventory data via bulk endpoint...');
+      const response = await fetchWithRetry(() => axios.get('/api/page-data/vendor-inventory', {
+        headers: { 'x-vendor-id': storedVendorId },
+        timeout: 15000
+      })).catch((err) => {
+        console.error('Error fetching inventory data after retries:', err);
+        showNotification({
+          type: 'error',
+          title: 'Inventory Load Failed',
+          message: 'Could not load inventory data. Refresh the page.',
+        });
+        return { data: { data: { products: [], inventory: [], locations: [] } } };
+      });
       
-      const inventoryData = inventoryResponse.data.inventory || [];
-      const locationsData = locationsResponse.data.locations || [];
-      const allProducts = productsResponse.data.products || [];
+      console.log(`✅ Inventory data loaded in ${response.data.meta?.responseTime || 'N/A'}`);
       
-      console.log('Frontend loaded:', {
+      // Extract data from bulk response
+      const inventoryData = response.data?.data?.inventory || [];
+      const locationsData = response.data?.data?.locations || [];
+      const allProducts = response.data?.data?.products || [];
+      
+      console.log('Frontend loaded from bulk endpoint:', {
         products: allProducts.length,
         inventory: inventoryData.length,
         locations: locationsData.length
@@ -191,98 +172,8 @@ export default function VendorInventory() {
       
       setLocations(locationsData);
       
-      // Debug: Check product statuses
-      console.log('🔵 Total vendor products:', allProducts.length);
-      const statusBreakdown = allProducts.reduce((acc: any, p: any) => {
-        acc[p.status] = (acc[p.status] || 0) + 1;
-        return acc;
-      }, {});
-      console.log('🔵 Product status breakdown:', statusBreakdown);
-      
-      // Show ALL vendor products (including pending, draft, etc.) for inventory management
-      const vendorProducts = allProducts;
-      
-      console.log('🔵 Vendor products to display:', vendorProducts.length);
-      console.log('🔵 Inventory records:', inventoryData.length);
-      console.log('🔵 Locations:', locationsData.length);
-      
-      // Debug: Check inventory product_id vs products UUID
-      const inventoryProductIds = new Set(inventoryData.map((i: any) => i.product_id));
-      const productUUIDs = new Set(vendorProducts.map((p: any) => p.id));
-      const orphanedInventory = [...inventoryProductIds].filter(id => !productUUIDs.has(id));
-      if (orphanedInventory.length > 0) {
-        console.log('⚠️ Inventory records without matching products:', orphanedInventory.length, orphanedInventory);
-      }
-      
-      // Create inventory map grouped by product_id (UUID) → locations
-      const inventoryByProduct = new Map();
-      inventoryData.forEach((inv: any) => {
-        // Use product_id which is now UUID
-        const productId = inv.product_id?.toString();
-        if (!inventoryByProduct.has(productId)) {
-          inventoryByProduct.set(productId, []);
-        }
-        inventoryByProduct.get(productId).push(inv);
-      });
-      
-      // Map products to show inventory across all locations
-      const mappedData = vendorProducts.map((product: any) => {
-        // Match by UUID
-        const productInventory = inventoryByProduct.get(product.id) || [];
-        
-        // Calculate totals across all locations
-        const totalQuantity = productInventory.reduce((sum: number, inv: any) => sum + parseFloat(inv.quantity || 0), 0);
-        const locationsWithStock = productInventory.filter((inv: any) => parseFloat(inv.quantity || 0) > 0);
-        
-        // Determine overall stock status
-        let stockStatus = 'out_of_stock';
-        if (totalQuantity > 0) {
-          stockStatus = totalQuantity > 10 ? 'in_stock' : 'low_stock';
-        }
-        
-        // Get primary location (most stock) or first location
-        const primaryInv = productInventory.sort((a: any, b: any) => 
-          parseFloat(b.quantity || 0) - parseFloat(a.quantity || 0)
-        )[0];
-        
-        // Show WHERE products are in stock
-        const locationsList = productInventory.map((inv: any) => {
-          const loc = locationsData.find((l: any) => l.id === inv.location_id);
-          const qty = parseFloat(inv.quantity || 0);
-          return { 
-            name: loc?.name || 'Unknown Location', 
-            quantity: qty,
-            id: inv.location_id
-          };
-        }).filter((l: any) => l.quantity > 0);
-        
-        return {
-          id: primaryInv?.id || null,
-          inventory_id: primaryInv?.id || null,
-          product_id: product.id, // Supabase UUID
-          product_name: product.name,
-          sku: product.sku || '',
-          quantity: totalQuantity,
-          locations_with_stock: locationsWithStock.length,
-          inventory_locations: productInventory,
-          location_names: locationsList.map((l: any) => l.name).join(', ') || 'No locations',
-          category_name: product.primary_category?.name || 'Product',
-          image: product.featured_image_storage || product.featured_image || null,
-          price: parseFloat(product.regular_price || 0),
-          description: product.short_description || product.description || '',
-          stock_status: stockStatus,
-          stock_status_label: totalQuantity > 0 ? 
-            `In Stock at ${locationsWithStock.length} location${locationsWithStock.length !== 1 ? 's' : ''}` :
-            'Not Stocked',
-          location_name: primaryInv?.location_name || 'No Location',
-          location_id: primaryInv?.location_id || null,
-          flora_fields: product.meta_data || {}
-        };
-      });
-      
-      console.log('✅ Mapped inventory data:', mappedData.length, 'items');
-      
-      setInventory(mappedData);
+      // Set inventory directly (already formatted by bulk endpoint)
+      setInventory(inventoryData);
       setLoading(false);
     } catch (error) {
       console.error('Error loading inventory:', error);

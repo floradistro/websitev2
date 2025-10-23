@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { 
   Home, Package, Store, Settings, LogOut, Users, CheckSquare, 
-  FileText, DollarSign, BarChart3, Menu, X, MapPin, Globe, FolderTree, Layers, ShoppingBag 
+  FileText, DollarSign, BarChart3, Menu, X, MapPin, Globe, FolderTree, Layers, ShoppingBag, Activity 
 } from 'lucide-react';
 import { showConfirm } from '@/components/NotificationToast';
 import { AdminAuthProvider } from '@/context/AdminAuthContext';
@@ -65,12 +65,14 @@ export default function AdminLayout({
     { href: '/admin/products', icon: Package, label: 'Products' },
     { href: '/admin/categories', icon: FolderTree, label: 'Categories' },
     { href: '/admin/field-groups', icon: Layers, label: 'Fields' },
+    { href: '/admin/pricing-tiers', icon: DollarSign, label: 'Pricing Tiers' },
     { href: '/admin/vendors', icon: Store, label: 'Vendors' },
     { href: '/admin/locations', icon: MapPin, label: 'Locations' },
     { href: '/admin/domains', icon: Globe, label: 'Domains' },
     { href: '/admin/approvals', icon: CheckSquare, label: 'Approvals' },
     { href: '/admin/users', icon: Users, label: 'Users' },
     { href: '/admin/analytics', icon: BarChart3, label: 'Analytics' },
+    { href: '/admin/monitoring', icon: Activity, label: 'Monitoring' },
     { href: '/admin/payouts', icon: DollarSign, label: 'Payouts' },
     { href: '/admin/reports', icon: FileText, label: 'Reports' },
     { href: '/admin/settings', icon: Settings, label: 'Settings' },

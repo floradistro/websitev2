@@ -170,12 +170,12 @@ export default function Header() {
                           </Link>
                           
                           <Link
-                            href="/products?category=concentrates"
+                            href="/products?category=concentrate"
                             className="flex items-center gap-3 px-4 py-3 text-white/70 hover:text-white hover:bg-white/5 transition-all group border-b border-white/5"
                           >
                             <Droplets size={16} className="text-white/40 group-hover:text-white transition-colors" />
                             <div className="flex-1">
-                              <div className="text-sm font-light uppercase tracking-wider">Concentrates</div>
+                              <div className="text-sm font-light uppercase tracking-wider">Concentrate</div>
                             </div>
                           </Link>
                           
@@ -190,22 +190,12 @@ export default function Header() {
                           </Link>
                           
                           <Link
-                            href="/products?category=vapes"
+                            href="/products?category=vape"
                             className="flex items-center gap-3 px-4 py-3 text-white/70 hover:text-white hover:bg-white/5 transition-all group border-b border-white/5"
                           >
                             <Wind size={16} className="text-white/40 group-hover:text-white transition-colors" />
                             <div className="flex-1">
-                              <div className="text-sm font-light uppercase tracking-wider">Vapes</div>
-                            </div>
-                          </Link>
-                          
-                          <Link
-                            href="/products?category=beverages"
-                            className="flex items-center gap-3 px-4 py-3 text-white/70 hover:text-white hover:bg-white/5 transition-all group"
-                          >
-                            <Coffee size={16} className="text-white/40 group-hover:text-white transition-colors" />
-                            <div className="flex-1">
-                              <div className="text-sm font-light uppercase tracking-wider">Beverages</div>
+                              <div className="text-sm font-light uppercase tracking-wider">Vape</div>
                             </div>
                           </Link>
                         </div>

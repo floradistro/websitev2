@@ -7,27 +7,49 @@ import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, R
 export default function AdminAnalytics() {
   const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d'>('30d');
   const [stats, setStats] = useState({
-    totalRevenue: 66109.63,
-    totalOrders: 795,
-    avgOrderValue: 83.16,
+    totalRevenue: 0,
+    totalOrders: 0,
+    avgOrderValue: 0,
     topVendor: 'Loading...',
     topProduct: 'Loading...',
   });
+  const [revenueData, setRevenueData] = useState<any[]>([]);
+  const [categoryData, setCategoryData] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Sample data - replace with real API calls
-  const revenueData = [
-    { date: 'Week 1', revenue: 12500 },
-    { date: 'Week 2', revenue: 15800 },
-    { date: 'Week 3', revenue: 18200 },
-    { date: 'Week 4', revenue: 19609.63 },
-  ];
+  useEffect(() => {
+    async function fetchAnalytics() {
+      try {
+        setLoading(true);
 
-  const categoryData = [
-    { category: 'Flower', sales: 35000 },
-    { category: 'Edibles', sales: 18000 },
-    { category: 'Concentrates', sales: 8000 },
-    { category: 'Pre-Rolls', sales: 5109.63 },
-  ];
+        // Fetch real analytics from API
+        const response = await fetch(`/api/admin/analytics?range=${timeRange}`);
+        
+        if (response.ok) {
+          const data = await response.json();
+          
+          setStats({
+            totalRevenue: data.stats?.totalRevenue || 0,
+            totalOrders: data.stats?.totalOrders || 0,
+            avgOrderValue: data.stats?.avgOrderValue || 0,
+            topVendor: data.stats?.topVendor || 'No data',
+            topProduct: data.stats?.topProduct || 'No data'
+          });
+
+          setRevenueData(data.revenueData || []);
+          setCategoryData(data.categoryData || []);
+        } else {
+          console.error('Failed to fetch analytics');
+        }
+      } catch (error) {
+        console.error('Error fetching analytics:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchAnalytics();
+  }, [timeRange]);
 
   return (
     <div className="w-full animate-fadeIn px-4 lg:px-0">
@@ -224,19 +246,13 @@ export default function AdminAnalytics() {
         <div className="bg-[#111111] border border-white/10 p-6">
           <h3 className="text-white text-sm font-medium mb-4">Top Vendors</h3>
           <div className="space-y-4">
-            {[
-              { name: 'Vendor A', revenue: 15240, orders: 89 },
-              { name: 'Vendor B', revenue: 12500, orders: 67 },
-              { name: 'Vendor C', revenue: 9870, orders: 54 },
-            ].map((vendor, i) => (
-              <div key={i} className="flex items-center justify-between py-3 border-b border-white/5 last:border-0">
-                <div className="flex-1">
-                  <div className="text-white text-sm mb-1">{vendor.name}</div>
-                  <div className="text-white/40 text-xs">{vendor.orders} orders</div>
-                </div>
-                <div className="text-white font-medium">${vendor.revenue.toLocaleString()}</div>
+            {loading ? (
+              <div className="text-white/40 text-sm py-8 text-center">Loading...</div>
+            ) : (
+              <div className="text-white/40 text-sm py-8 text-center">
+                No vendor performance data available yet
               </div>
-            ))}
+            )}
           </div>
         </div>
 
@@ -244,19 +260,13 @@ export default function AdminAnalytics() {
         <div className="bg-[#111111] border border-white/10 p-6">
           <h3 className="text-white text-sm font-medium mb-4">Top Products</h3>
           <div className="space-y-4">
-            {[
-              { name: 'Product A', revenue: 8240, units: 156 },
-              { name: 'Product B', revenue: 6500, units: 98 },
-              { name: 'Product C', revenue: 4870, units: 74 },
-            ].map((product, i) => (
-              <div key={i} className="flex items-center justify-between py-3 border-b border-white/5 last:border-0">
-                <div className="flex-1">
-                  <div className="text-white text-sm mb-1">{product.name}</div>
-                  <div className="text-white/40 text-xs">{product.units} units sold</div>
-                </div>
-                <div className="text-white font-medium">${product.revenue.toLocaleString()}</div>
+            {loading ? (
+              <div className="text-white/40 text-sm py-8 text-center">Loading...</div>
+            ) : (
+              <div className="text-white/40 text-sm py-8 text-center">
+                No product sales data available yet
               </div>
-            ))}
+            )}
           </div>
         </div>
       </div>

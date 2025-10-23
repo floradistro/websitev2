@@ -333,7 +333,7 @@ export default function AdminProducts() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="text-white text-sm font-medium mb-1">{product.name}</div>
-                    <div className="text-white/40 text-xs mb-2">{product.vendor?.store_name || 'Yacht Club'}</div>
+                    <div className="text-white/40 text-xs mb-2">{product.vendor?.store_name || 'Unknown Vendor'}</div>
                     <div className="flex items-center gap-3 text-xs">
                       <div className="text-white/60">${parseFloat(product.price || 0).toFixed(2)}</div>
                       <div className={`${product.stock_quantity > 0 ? 'text-white/60' : 'text-red-500'}`}>
@@ -389,7 +389,7 @@ export default function AdminProducts() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="text-white text-sm font-medium truncate">{product.name}</div>
-                  <div className="text-white/40 text-xs">{product.vendor?.store_name || 'Yacht Club'}</div>
+                  <div className="text-white/40 text-xs">{product.vendor?.store_name || 'Unknown Vendor'}</div>
                 </div>
                 <div className="text-white/60 text-xs">${parseFloat(product.price || 0).toFixed(2)}</div>
                 <div className={`text-xs ${product.stock_quantity > 0 ? 'text-white/60' : 'text-red-500'}`}>

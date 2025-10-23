@@ -4,68 +4,103 @@ interface MetaData {
 }
 
 interface FloraFieldsProps {
-  metaData: MetaData[];
+  metaData?: MetaData[];
+  fields?: { [key: string]: any };
 }
 
-export default function FloraFields({ metaData }: FloraFieldsProps) {
+export default function FloraFields({ metaData, fields: blueprintFields }: FloraFieldsProps) {
   // Define the fields we want to display and their labels
   const fieldConfig: { [key: string]: string } = {
     // Flower fields
-    'strain_type': 'Strain',
-    'thc_percentage': 'THCa %',
-    'delta9_percentage': 'Δ9 %',
-    'thca_%': 'THCa %',
-    'thca_percentage': 'THCa %',
+    'strain_type': 'Type',
     'lineage': 'Lineage',
-    'nose': 'Aroma',
-    'terpene': 'Terpenes',
+    'nose': 'Nose',
+    'terpene_profile': 'Terpenes',
     'terpenes': 'Terpenes',
     'effects': 'Effects',
     'effect': 'Effects',
+    'thca_percentage': 'THCa %',
+    'delta_9_percentage': 'Δ9 %',
+    'delta9_percentage': 'Δ9 %',
+    // Vape fields
+    'hardware_type': 'Hardware',
+    'oil_type': 'Oil',
+    'capacity': 'Capacity',
     // Edible fields
-    'edible_type': 'Type',
-    'thc_per_serving': 'THC/Serving',
+    'dosage_per_serving': 'Dosage',
     'servings_per_package': 'Servings',
-    'total_thc': 'Total THC',
+    'total_dosage': 'Total',
     'ingredients': 'Ingredients',
     'allergens': 'Allergens',
-    'flavor': 'Flavor',
-    'calories_per_serving': 'Calories',
+    'dietary': 'Dietary',
     // Concentrate fields
-    'consistency': 'Type',
+    'extract_type': 'Type',
     'extraction_method': 'Method',
-    'thc_concentration': 'THC %',
-    // Vape fields
-    'vape_type': 'Type',
-    'battery_type': 'Battery',
-    'volume_ml': 'Volume',
-    // Generic
-    'description': 'Description'
   };
 
-  // Extract flora fields from metadata (only _field_ prefixed ones)
+  // Build display fields from either new blueprintFields or old metaData
   const fields: { key: string; label: string; value: string }[] = [];
   
-  metaData.forEach((meta) => {
-    if (meta.key && meta.key.startsWith('_field_')) {
-      const fieldName = meta.key.replace('_field_', '');
-      const label = fieldConfig[fieldName];
-      
-      // Only show fields we have labels for
+  // New format: direct fields object
+  if (blueprintFields && Object.keys(blueprintFields).length > 0) {
+    Object.entries(blueprintFields).forEach(([key, value]) => {
+      const label = fieldConfig[key];
       if (!label) return;
       
-      // Check if we already added this label
       const existingField = fields.find(f => f.label === label);
-      if (!existingField) {
-        const displayValue = (meta.value && meta.value.trim() !== '') ? meta.value : '—';
+      if (!existingField && value !== null && value !== undefined) {
+        let displayValue: string;
+        
+        // Handle arrays (terpenes, effects, etc.)
+        if (Array.isArray(value)) {
+          displayValue = value.length > 0 ? value.join(', ') : '—';
+        } 
+        // Handle numbers
+        else if (typeof value === 'number') {
+          displayValue = value.toString();
+          // Add 'mg' for dosage fields
+          if (key.includes('dosage') || key.includes('total')) {
+            displayValue += 'mg';
+          }
+        }
+        // Handle strings
+        else if (typeof value === 'string') {
+          displayValue = value.trim() !== '' ? value : '—';
+        }
+        // Handle other types
+        else {
+          displayValue = String(value);
+        }
+        
         fields.push({
-          key: fieldName,
-          label: label,
+          key,
+          label,
           value: displayValue,
         });
       }
-    }
-  });
+    });
+  }
+  // Old format: metaData array with _field_ prefix
+  else if (metaData && metaData.length > 0) {
+    metaData.forEach((meta) => {
+      if (meta.key && meta.key.startsWith('_field_')) {
+        const fieldName = meta.key.replace('_field_', '');
+        const label = fieldConfig[fieldName];
+        
+        if (!label) return;
+        
+        const existingField = fields.find(f => f.label === label);
+        if (!existingField) {
+          const displayValue = (meta.value && meta.value.trim() !== '') ? meta.value : '—';
+          fields.push({
+            key: fieldName,
+            label: label,
+            value: displayValue,
+          });
+        }
+      }
+    });
+  }
 
   if (fields.length === 0) {
     return null;

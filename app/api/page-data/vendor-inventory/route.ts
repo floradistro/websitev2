@@ -1,0 +1,157 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { getServiceSupabase } from '@/lib/supabase/client';
+
+export const dynamic = 'force-dynamic';
+
+export async function GET(request: NextRequest) {
+  const startTime = Date.now();
+  
+  try {
+    const vendorId = request.headers.get('x-vendor-id');
+    
+    if (!vendorId) {
+      return NextResponse.json(
+        { success: false, error: 'Vendor ID required' },
+        { status: 401 }
+      );
+    }
+    
+    const supabase = getServiceSupabase();
+    
+    // Execute ALL queries in parallel - products, inventory, locations
+    const [productsResult, inventoryResult, locationsResult] = await Promise.allSettled([
+      // Products with categories
+      supabase
+        .from('products')
+        .select(`
+          id,
+          name,
+          sku,
+          price,
+          stock_quantity,
+          featured_image_storage,
+          description,
+          blueprint_fields,
+          product_categories(
+            category:categories(id, name)
+          )
+        `)
+        .eq('vendor_id', vendorId)
+        .order('name', { ascending: true }),
+      
+      // Inventory with locations
+      supabase
+        .from('inventory')
+        .select(`
+          id,
+          product_id,
+          quantity,
+          stock_status,
+          location_id,
+          location:locations(id, name, city, state)
+        `)
+        .eq('vendor_id', vendorId),
+      
+      // Vendor locations
+      supabase
+        .from('locations')
+        .select('*')
+        .eq('vendor_id', vendorId)
+        .order('is_primary', { ascending: false })
+    ]);
+    
+    // Extract data
+    const products = productsResult.status === 'fulfilled' ? productsResult.value.data || [] : [];
+    const inventoryData = inventoryResult.status === 'fulfilled' ? inventoryResult.value.data || [] : [];
+    const locations = locationsResult.status === 'fulfilled' ? locationsResult.value.data || [] : [];
+    
+    // Group inventory by product
+    const inventoryByProduct: any = {};
+    inventoryData.forEach((inv: any) => {
+      if (!inventoryByProduct[inv.product_id]) {
+        inventoryByProduct[inv.product_id] = [];
+      }
+      inventoryByProduct[inv.product_id].push(inv);
+    });
+    
+    // Map to inventory items format
+    const inventory = products.map((p: any) => {
+      const productInventory = inventoryByProduct[p.id] || [];
+      const totalQuantity = productInventory.reduce((sum: number, inv: any) => sum + (inv.quantity || 0), 0);
+      
+      // Determine stock status
+      let stock_status: 'in_stock' | 'low_stock' | 'out_of_stock' = 'out_of_stock';
+      if (totalQuantity > 10) stock_status = 'in_stock';
+      else if (totalQuantity > 0) stock_status = 'low_stock';
+      
+      // Extract Flora fields
+      const floraFields: any = {};
+      if (p.blueprint_fields && Array.isArray(p.blueprint_fields)) {
+        p.blueprint_fields.forEach((field: any) => {
+          if (field && field.field_name && field.field_value) {
+            floraFields[field.field_name] = field.field_value;
+          }
+        });
+      }
+      
+      return {
+        id: p.id,
+        inventory_id: productInventory[0]?.id || null,
+        product_id: p.id,
+        product_name: p.name,
+        sku: p.sku || '',
+        quantity: totalQuantity,
+        category_name: p.product_categories?.[0]?.category?.name || 'Product',
+        image: p.featured_image_storage,
+        price: parseFloat(p.price || 0),
+        description: p.description,
+        stock_status,
+        stock_status_label: stock_status === 'in_stock' ? 'In Stock' : stock_status === 'low_stock' ? 'Low Stock' : 'Out of Stock',
+        location_name: productInventory[0]?.location?.name || 'No Location',
+        location_id: productInventory[0]?.location_id,
+        locations_with_stock: productInventory.length,
+        inventory_locations: productInventory.map((inv: any) => ({
+          location_id: inv.location_id,
+          location_name: inv.location?.name || 'Unknown',
+          quantity: inv.quantity,
+          stock_status: inv.stock_status
+        })),
+        flora_fields: floraFields
+      };
+    });
+    
+    const responseTime = Date.now() - startTime;
+    
+    return NextResponse.json({
+      success: true,
+      data: {
+        products: products,
+        inventory: inventory,
+        locations: locations
+      },
+      meta: {
+        responseTime: `${responseTime}ms`,
+        vendorId,
+        productCount: products.length,
+        inventoryCount: inventory.length,
+        locationCount: locations.length
+      }
+    }, {
+      headers: {
+        'Cache-Control': 'private, max-age=30',
+        'X-Response-Time': `${responseTime}ms`,
+      }
+    });
+    
+  } catch (error: any) {
+    console.error('❌ Error in /api/page-data/vendor-inventory:', error);
+    return NextResponse.json(
+      { 
+        success: false, 
+        error: error.message || 'Failed to fetch vendor inventory'
+      },
+      { status: 500 }
+    );
+  }
+}
+

@@ -46,36 +46,19 @@ export default function VendorProducts() {
           return;
         }
 
-        // Call simplified products API
-        const response = await axios.get('/api/vendor/products', {
+        // Use bulk endpoint for faster loading
+        console.log('🔵 Loading vendor products via bulk endpoint...');
+        const response = await axios.get('/api/page-data/vendor-products', {
           headers: {
             'x-vendor-id': vendorId
           }
         });
         
+        console.log(`✅ Vendor products loaded in ${response.data.meta?.responseTime || 'N/A'}`);
+        
         if (response.data && response.data.products) {
-          const mappedProducts = response.data.products.map((p: any) => {
-            // Map Supabase status to vendor UI status
-            let status: 'approved' | 'pending' | 'rejected' = 'pending';
-            if (p.status === 'published') status = 'approved';
-            else if (p.status === 'draft' || p.status === 'pending') status = 'pending';
-            else if (p.status === 'archived') status = 'rejected';
-            
-            return {
-              id: p.id, // Supabase UUID only
-              submissionId: p.id,
-              name: p.name || 'Unnamed Product',
-              image: p.featured_image_storage || p.featured_image || '/yacht-club-logo.png',
-              status: status,
-              quantity: p.stock_quantity || 0,
-              price: `$${parseFloat(p.price || 0).toFixed(2)}`,
-              category: p.primary_category?.name || p.categories?.[0]?.name || 'Product',
-              coaStatus: 'missing', // Will add COA check later
-              submittedDate: p.created_at,
-              rejectionReason: null
-            };
-          });
-          setProducts(mappedProducts);
+          // Products are already formatted by bulk endpoint
+          setProducts(response.data.products);
         }
         setLoading(false);
       } catch (error) {
@@ -433,7 +416,7 @@ export default function VendorProducts() {
                         <span className="text-white font-medium text-base">{product.price}</span>
                         {product.status === 'approved' && (
                           <span className={`text-sm ${product.quantity > 0 ? 'text-white/60' : 'text-red-500'}`}>
-                            {product.quantity > 0 ? `${product.quantity}g in stock` : 'Out of stock'}
+                            {product.quantity > 0 ? `${product.quantity}g in stock` : '0'}
                           </span>
                         )}
                       </div>
@@ -522,7 +505,7 @@ export default function VendorProducts() {
                   <td className="p-4">
                     {product.status === 'approved' ? (
                       <span className={`text-sm ${product.quantity > 0 ? 'text-white' : 'text-red-500'}`}>
-                        {product.quantity > 0 ? `${product.quantity}g` : 'Out of stock'}
+                        {product.quantity > 0 ? `${product.quantity}g` : '0'}
                       </span>
                     ) : (
                       <span className="text-white/40 text-sm">—</span>

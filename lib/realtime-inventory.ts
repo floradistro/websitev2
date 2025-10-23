@@ -1,92 +1,236 @@
 /**
- * Real-time inventory updates using Supabase Realtime
- * Similar to Amazon's instant stock updates
+ * Real-Time Inventory Management System
+ * Uses Supabase Realtime for instant inventory updates
+ * Amazon/Apple-style live stock tracking
  */
 
-import { createClient } from '@supabase/supabase-js';
-import { RealtimeChannel } from '@supabase/supabase-js';
+import { createClient, RealtimeChannel } from '@supabase/supabase-js';
+import { inventoryCache } from './cache-manager';
 
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+
+export type InventoryChangeEvent = {
+  eventType: 'INSERT' | 'UPDATE' | 'DELETE';
+  old: any;
+  new: any;
+  table: string;
+};
+
+export type InventoryChangeHandler = (event: InventoryChangeEvent) => void;
+
+/**
+ * Manages real-time inventory subscriptions
+ * Singleton pattern for connection efficiency
+ */
 export class RealtimeInventoryManager {
-  private channel: RealtimeChannel | null = null;
+  private static instance: RealtimeInventoryManager | null = null;
   private supabase: any;
-  
+  private channels: Map<string, RealtimeChannel> = new Map();
+  private handlers: Map<string, Set<InventoryChangeHandler>> = new Map();
+  private isConnected: boolean = false;
+
   constructor() {
-    this.supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
-  }
-  
-  // Subscribe to inventory changes for a product
-  subscribeToProduct(productId: string, callback: (payload: any) => void) {
-    this.channel = this.supabase
-      .channel(`inventory:${productId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'inventory',
-          filter: `product_id=eq.${productId}`
-        },
-        (payload: any) => {
-          console.log('📡 Real-time inventory update:', payload);
-          callback(payload);
+    // Only create client on browser side
+    if (typeof window !== 'undefined') {
+      this.supabase = createClient(supabaseUrl, supabaseAnonKey, {
+        realtime: {
+          params: {
+            eventsPerSecond: 10 // Rate limiting
+          }
         }
-      )
-      .subscribe();
-      
-    return this.channel;
-  }
-  
-  // Subscribe to all vendor inventory changes
-  subscribeToVendor(vendorId: string, callback: (payload: any) => void) {
-    this.channel = this.supabase
-      .channel(`vendor-inventory:${vendorId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'inventory',
-          filter: `vendor_id=eq.${vendorId}`
-        },
-        callback
-      )
-      .subscribe();
-      
-    return this.channel;
-  }
-  
-  // Subscribe to product status changes (approvals)
-  subscribeToProductStatus(callback: (payload: any) => void) {
-    this.channel = this.supabase
-      .channel('product-status')
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'products',
-          filter: 'status=eq.published'
-        },
-        callback
-      )
-      .subscribe();
-      
-    return this.channel;
-  }
-  
-  unsubscribe() {
-    if (this.channel) {
-      this.supabase.removeChannel(this.channel);
+      });
+      console.log('📡 RealtimeInventoryManager initialized');
     }
+  }
+
+  /**
+   * Get singleton instance
+   */
+  static getInstance(): RealtimeInventoryManager {
+    if (!RealtimeInventoryManager.instance) {
+      RealtimeInventoryManager.instance = new RealtimeInventoryManager();
+    }
+    return RealtimeInventoryManager.instance;
+  }
+
+  /**
+   * Subscribe to inventory changes for a specific product
+   */
+  subscribeToProduct(productId: string, handler: InventoryChangeHandler): string {
+    if (!this.supabase) {
+      console.warn('⚠️  Realtime not available (server-side)');
+      return '';
+    }
+
+    const channelName = `inventory-product-${productId}`;
+    
+    // Store handler
+    if (!this.handlers.has(channelName)) {
+      this.handlers.set(channelName, new Set());
+    }
+    this.handlers.get(channelName)!.add(handler);
+
+    // Create channel if it doesn't exist
+    if (!this.channels.has(channelName)) {
+      console.log(`📡 Creating real-time channel: ${channelName}`);
+      
+      const channel = this.supabase
+        .channel(channelName)
+        .on(
+          'postgres_changes',
+          {
+            event: '*', // Listen to all events (INSERT, UPDATE, DELETE)
+            schema: 'public',
+            table: 'inventory',
+            filter: `product_id=eq.${productId}`
+          },
+          (payload: any) => {
+            console.log('📡 Inventory change detected:', payload);
+            
+            // Invalidate inventory cache
+            inventoryCache.invalidatePattern(`.*product.*${productId}.*`);
+            
+            // Notify all handlers
+            const handlers = this.handlers.get(channelName);
+            if (handlers) {
+              const event: InventoryChangeEvent = {
+                eventType: payload.eventType,
+                old: payload.old,
+                new: payload.new,
+                table: payload.table
+              };
+              
+              handlers.forEach(h => {
+                try {
+                  h(event);
+                } catch (error) {
+                  console.error('Error in inventory change handler:', error);
+                }
+              });
+            }
+          }
+        )
+        .subscribe((status: string) => {
+          console.log(`📡 Channel ${channelName} status:`, status);
+          this.isConnected = status === 'SUBSCRIBED';
+        });
+
+      this.channels.set(channelName, channel);
+    }
+
+    return channelName;
+  }
+
+  /**
+   * Subscribe to all inventory changes for a vendor
+   */
+  subscribeToVendor(vendorId: string, handler: InventoryChangeHandler): string {
+    if (!this.supabase) {
+      console.warn('⚠️  Realtime not available (server-side)');
+      return '';
+    }
+
+    const channelName = `inventory-vendor-${vendorId}`;
+    
+    // Store handler
+    if (!this.handlers.has(channelName)) {
+      this.handlers.set(channelName, new Set());
+    }
+    this.handlers.get(channelName)!.add(handler);
+
+    // Create channel if it doesn't exist
+    if (!this.channels.has(channelName)) {
+      console.log(`📡 Creating vendor real-time channel: ${channelName}`);
+      
+      const channel = this.supabase
+        .channel(channelName)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'inventory',
+            filter: `vendor_id=eq.${vendorId}`
+          },
+          (payload: any) => {
+            console.log('📡 Vendor inventory change:', payload);
+            
+            // Invalidate vendor caches
+            inventoryCache.invalidatePattern(`.*vendor.*${vendorId}.*`);
+            
+            // Notify handlers
+            const handlers = this.handlers.get(channelName);
+            if (handlers) {
+              const event: InventoryChangeEvent = {
+                eventType: payload.eventType,
+                old: payload.old,
+                new: payload.new,
+                table: payload.table
+              };
+              
+              handlers.forEach(h => {
+                try {
+                  h(event);
+                } catch (error) {
+                  console.error('Error in vendor inventory handler:', error);
+                }
+              });
+            }
+          }
+        )
+        .subscribe((status) => {
+          console.log(`📡 Vendor channel ${channelName} status:`, status);
+        });
+
+      this.channels.set(channelName, channel);
+    }
+
+    return channelName;
+  }
+
+  /**
+   * Unsubscribe from a channel
+   */
+  unsubscribe(channelName: string): void {
+    const channel = this.channels.get(channelName);
+    if (channel) {
+      console.log(`📡 Unsubscribing from channel: ${channelName}`);
+      this.supabase.removeChannel(channel);
+      this.channels.delete(channelName);
+      this.handlers.delete(channelName);
+    }
+  }
+
+  /**
+   * Unsubscribe from all channels
+   */
+  unsubscribeAll(): void {
+    console.log('📡 Unsubscribing from all channels');
+    this.channels.forEach((channel, name) => {
+      this.supabase.removeChannel(channel);
+    });
+    this.channels.clear();
+    this.handlers.clear();
+    this.isConnected = false;
+  }
+
+  /**
+   * Check if real-time is connected
+   */
+  getConnectionStatus(): boolean {
+    return this.isConnected;
+  }
+
+  /**
+   * Get active channels count
+   */
+  getActiveChannelsCount(): number {
+    return this.channels.size;
   }
 }
 
-// Usage example:
-// const inventoryManager = new RealtimeInventoryManager();
-// inventoryManager.subscribeToProduct(productId, (payload) => {
-//   // Update UI instantly without refresh
-//   updateStockDisplay(payload.new.quantity);
-// });
+// Export singleton instance for convenience
+export const realtimeInventory = typeof window !== 'undefined' 
+  ? RealtimeInventoryManager.getInstance() 
+  : null;

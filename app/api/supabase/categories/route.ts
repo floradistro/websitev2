@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServiceSupabase } from '@/lib/supabase/client';
+import { productCache, generateCacheKey } from '@/lib/cache-manager';
+import { monitor } from '@/lib/performance-monitor';
 
 export async function GET(request: NextRequest) {
+  const endTimer = monitor.startTimer('Categories API');
+  
   try {
     const { searchParams } = new URL(request.url);
     
@@ -9,6 +13,28 @@ export async function GET(request: NextRequest) {
     const activeOnly = searchParams.get('active') === 'true';
     const featured = searchParams.get('featured') === 'true';
     
+    // Generate cache key
+    const cacheKey = generateCacheKey('categories', {
+      parent: parent || 'all',
+      active: activeOnly ? 'true' : 'false',
+      featured: featured ? 'true' : 'false'
+    });
+    
+    // Check cache first
+    const cached = productCache.get(cacheKey);
+    if (cached) {
+      endTimer();
+      monitor.recordCacheAccess('categories', true);
+      
+      return NextResponse.json(cached, {
+        headers: {
+          'X-Cache-Status': 'HIT',
+          'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=60',
+        }
+      });
+    }
+    
+    monitor.recordCacheAccess('categories', false);
     const supabase = getServiceSupabase();
     
     let query = supabase
@@ -41,15 +67,23 @@ export async function GET(request: NextRequest) {
     
     if (error) {
       console.error('Error fetching categories:', error);
+      endTimer();
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
     
-    return NextResponse.json({
+    // Store in cache
+    const responseData = {
       success: true,
       categories: data || []
-    }, {
+    };
+    
+    productCache.set(cacheKey, responseData);
+    endTimer();
+    
+    return NextResponse.json(responseData, {
       headers: {
-        'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=120',
+        'X-Cache-Status': 'MISS',
+        'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=60',
       }
     });
     

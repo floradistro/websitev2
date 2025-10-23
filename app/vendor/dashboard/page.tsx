@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Package, Plus, AlertCircle, CheckCircle, XCircle, TrendingUp, DollarSign, AlertTriangle, Bell, Calendar, ArrowUpRight, ArrowDownRight, FileText, MessageSquare, Store } from 'lucide-react';
+import { Package, Plus, AlertCircle, CheckCircle, XCircle, TrendingUp, DollarSign, AlertTriangle, Bell, Calendar, ArrowUpRight, ArrowDownRight, FileText, MessageSquare, Store, Image } from 'lucide-react';
 import { useVendorAuth } from '@/context/VendorAuthContext';
 import axios from 'axios';
 
@@ -73,16 +73,10 @@ export default function VendorDashboard() {
   });
   const [loading, setLoading] = useState(true);
 
-  // Auto-refresh dashboard every 30 seconds for real-time KPIs
+  // Load dashboard once on mount - no auto-refresh to prevent slowness
   useEffect(() => {
     if (!authLoading && isAuthenticated) {
       loadDashboard();
-      
-      const interval = setInterval(() => {
-        loadDashboard();
-      }, 30000); // 30 seconds
-      
-      return () => clearInterval(interval);
     }
   }, [authLoading, isAuthenticated]);
 
@@ -104,48 +98,45 @@ export default function VendorDashboard() {
           return;
         }
 
-        console.log('🔵 Loading dashboard for vendor:', vendorId);
+        console.log('🔵 Loading dashboard via bulk endpoint for vendor:', vendorId);
 
-        // Load vendor branding (logo, colors, etc.)
-        try {
-          const brandingResponse = await axios.get('/api/supabase/vendor/branding', {
-            headers: { 'x-vendor-id': vendorId }
-          });
-          if (brandingResponse.data.success) {
-            setVendorBranding(brandingResponse.data.branding);
-            setVendorLogo(brandingResponse.data.branding?.logo_url || null);
-          }
-        } catch (error) {
-          console.log('No branding data found');
-        }
-
-        // Call dashboard API - LIVE data from Supabase
-        const response = await axios.get('/api/vendor/dashboard', {
+        // Use bulk endpoint - gets branding + dashboard data in ONE call
+        const response = await axios.get('/api/page-data/vendor-dashboard', {
           headers: {
             'x-vendor-id': vendorId
           }
         });
         
-        const data = response.data;
+        if (!response.data.success) {
+          throw new Error(response.data.error || 'Failed to load dashboard');
+        }
         
-        console.log('🔵 Dashboard data received:', data);
+        const data = response.data.data;
         
-        // Update stats - LIVE from Supabase
-        setStats({
-          totalProducts: (data.stats?.live_products || 0) + (data.stats?.pending_review || 0),
-          approved: data.stats?.live_products || 0,
-          pending: data.stats?.pending_review || 0,
+        console.log(`✅ Vendor dashboard loaded in ${response.data.meta.responseTime}`);
+        
+        // Set vendor branding
+        if (data.vendor) {
+          setVendorBranding(data.vendor);
+          setVendorLogo(data.vendor.logo_url || null);
+        }
+        
+        // Update stats
+        setStats(data.stats || {
+          totalProducts: 0,
+          approved: 0,
+          pending: 0,
           rejected: 0,
-          totalSales30d: data.stats?.sales_30_days || 0,
-          lowStock: data.stats?.low_stock_items || 0,
+          totalSales30d: 0,
+          lowStock: 0,
         });
 
-        // Set live data
-        setRecentProducts(data.recent_products || []);
+        // Set dashboard data
+        setRecentProducts(data.recentProducts || []);
         
-        const lowStockMapped = (data.low_stock_details || []).map((item: any) => ({
+        const lowStockMapped = (data.lowStockItems || []).map((item: any) => ({
           id: item.id,
-          name: `Product #${item.product_id}`,
+          name: item.name,
           currentStock: item.currentStock,
           threshold: item.threshold
         }));
@@ -344,7 +335,7 @@ export default function VendorDashboard() {
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-0 lg:gap-6 mb-0 lg:mb-8 border-b lg:border-b-0 border-white/5" style={{ animation: 'fadeInUp 0.6s ease-out 0.2s both' }}>
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-0 lg:gap-6 mb-0 lg:mb-8 border-b lg:border-b-0 border-white/5" style={{ animation: 'fadeInUp 0.6s ease-out 0.2s both' }}>
         <Link
           href="/vendor/products/new"
           className="group bg-transparent active:bg-white/5 lg:hover:bg-black border-r border-b lg:border border-white/10 lg:hover:border-white/20 p-5 lg:p-6 transition-all duration-300 relative overflow-hidden min-h-[100px] lg:min-h-0"
@@ -388,8 +379,22 @@ export default function VendorDashboard() {
         </Link>
 
         <Link
-          href="/vendor/branding"
+          href="/vendor/media-library"
           className="group bg-transparent active:bg-white/5 lg:hover:bg-black border-b lg:border border-white/10 lg:hover:border-white/20 p-5 lg:p-6 transition-all duration-300 relative overflow-hidden min-h-[100px] lg:min-h-0"
+        >
+          <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+          <div className="relative flex flex-col lg:flex-row items-center justify-center lg:justify-start gap-2 lg:gap-4 h-full">
+            <div className="w-10 h-10 lg:w-12 lg:h-12 bg-black group-hover:bg-white/10 flex items-center justify-center transition-all duration-300 flex-shrink-0">
+              <Image size={18} className="lg:hidden text-white/60 group-hover:text-white transition-colors duration-300" />
+              <Image size={24} className="hidden lg:block text-white/60 group-hover:text-white transition-colors duration-300" />
+            </div>
+            <div className="text-white/80 group-hover:text-white text-xs lg:text-base font-medium transition-colors duration-300 text-center lg:text-left">Media</div>
+          </div>
+        </Link>
+
+        <Link
+          href="/vendor/branding"
+          className="group bg-transparent active:bg-white/5 lg:hover:bg-black border-r border-b lg:border border-white/10 lg:hover:border-white/20 p-5 lg:p-6 transition-all duration-300 relative overflow-hidden min-h-[100px] lg:min-h-0"
         >
           <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
           <div className="relative flex flex-col lg:flex-row items-center justify-center lg:justify-start gap-2 lg:gap-4 h-full">
@@ -469,37 +474,18 @@ export default function VendorDashboard() {
                     );
                   })
                 ) : (
-                  // Empty state with placeholder bars
-                  Array.from({ length: 18 }).map((_, index) => {
-                    const heights = [15, 25, 20, 30, 18, 35, 22, 40, 28, 32, 20, 38, 25, 42, 30, 35, 28, 45];
-                    return (
-                      <div
-                        key={index}
-                        className="flex-1 bg-gradient-to-t from-white/5 to-white/[0.02] border-t border-white/5 relative"
-                        style={{ height: `${heights[index]}%` }}
-                        title="No sales data yet"
-                      >
-                      </div>
-                    );
-                  })
+                  // No sales data - show empty state message
+                  <div className="w-full h-full flex items-center justify-center">
+                    <div className="text-white/40 text-xs text-center">
+                      No sales data available
+                    </div>
+                  </div>
                 )}
               </div>
-              <div className="mt-4 flex justify-between text-xs text-white/40">
-                {salesData.length > 0 ? (
-                  <>
-                    <span>{new Date(salesData[0].date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
-                    <span>Today</span>
-                  </>
-                ) : (
-                  <>
-                    <span>{new Date(Date.now() - 17 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
-                    <span>Today</span>
-                  </>
-                )}
-              </div>
-              {salesData.length === 0 && (
-                <div className="mt-4 text-center">
-                  <p className="text-white/40 text-xs">No sales data yet. Start selling to see your trends!</p>
+              {salesData.length > 0 && (
+                <div className="mt-4 flex justify-between text-xs text-white/40">
+                  <span>{new Date(salesData[0].date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                  <span>Today</span>
                 </div>
               )}
             </div>

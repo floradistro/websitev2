@@ -2,67 +2,90 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import dynamic from 'next/dynamic';
-import { Star, ArrowRight, CheckCircle, ArrowLeft, Search, Package, Users, Award, MapPin } from 'lucide-react';
-import { getVendors } from '@/lib/supabase-api';
+import { ArrowRight, Search, Package, MapPin, Instagram, ExternalLink, CheckCircle } from 'lucide-react';
 
-const VendorWhaleAnimation = dynamic(() => import("@/components/VendorWhaleAnimation"), { ssr: false });
-
-// Vendor Card Component
-function VendorCard({ vendor, index }: { vendor: any; index: number }) {
+// Vendor Card Component - Street Style  
+function VendorCard({ vendor, index }: { vendor, any; index: number }) {
   return (
     <Link
       href={`/vendors/${vendor.slug}`}
-      className="group bg-[#2a2a2a] hover:bg-[#303030] transition-all duration-300 relative overflow-hidden"
-      style={{ animation: `fadeInUp 0.5s ease-out ${index * 0.05}s both` }}
+      className="group relative overflow-hidden fade-in"
+      style={{ animationDelay: `${index * 0.05}s` }}
     >
-      {/* Logo Container */}
-      <div className="aspect-square bg-[#1a1a1a] flex items-center justify-center p-8 lg:p-12 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-        <img 
-          src={vendor.logo} 
-          alt={vendor.name} 
-          className="relative w-full h-full object-contain opacity-80 group-hover:opacity-100 transition-all duration-500 group-hover:scale-105"
-        />
-      </div>
+      <div className="bg-black border-2 border-white/20 hover:border-white/50 transition-all duration-300">
+        {/* Logo */}
+        <div className="relative aspect-square bg-[#0f0f0f] flex items-center justify-center p-12 border-b-2 border-white/20">
+          <img 
+            src={vendor.logo} 
+            alt={vendor.name} 
+            className="w-full h-full object-contain opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500"
+          />
+          {vendor.verified && (
+            <div className="absolute top-3 right-3 bg-black border border-white/40 px-2 py-1 flex items-center gap-1.5">
+              <CheckCircle size={12} className="text-white" />
+              <span className="text-[8px] uppercase tracking-wider text-white font-bold">✓</span>
+            </div>
+          )}
+        </div>
 
-      {/* Info */}
-      <div className="p-4 lg:p-6">
-        <div className="flex items-start justify-between gap-2 mb-2">
-          <h3 className="text-xl lg:text-2xl text-white truncate tracking-wide flex-1 font-light">
+        {/* Info */}
+        <div className="p-6">
+          <h3 className="text-2xl font-bold text-white mb-2 truncate uppercase tracking-tight">
             {vendor.name}
           </h3>
-          {vendor.featured && (
-            <Award size={14} className="text-white/60 flex-shrink-0" />
+          
+          {vendor.tagline && (
+            <p className="text-white/60 text-sm mb-4 line-clamp-2">
+              {vendor.tagline}
+            </p>
           )}
-        </div>
-        
-        <p className="text-white/50 text-xs mb-3 lg:mb-4 line-clamp-2 leading-relaxed">{vendor.tagline}</p>
 
-        {/* Location */}
-        <div className="flex items-center gap-1.5 text-white/40 text-xs mb-3">
-          <MapPin size={10} />
-          <span>{vendor.location}, {vendor.state}</span>
-        </div>
+          {/* Stats */}
+          <div className="grid grid-cols-2 gap-4 mb-4 pb-4 border-b border-white/20">
+            <div className="bg-[#0a0a0a] border border-white/15 p-3 text-center">
+              <div className="text-white text-3xl font-black mb-1">{vendor.totalProducts}</div>
+              <div className="text-white/50 text-[9px] uppercase font-bold">Products</div>
+            </div>
+            {vendor.totalLocations > 1 && (
+              <div className="bg-[#0a0a0a] border border-white/15 p-3 text-center">
+                <div className="text-white text-3xl font-black mb-1">{vendor.totalLocations}</div>
+                <div className="text-white/50 text-[9px] uppercase font-bold">Spots</div>
+              </div>
+            )}
+          </div>
 
-        {/* Stats */}
-        <div className="flex items-center gap-2 text-[10px] text-white/40 mb-3">
-          <Star size={12} className="text-white fill-white" />
-          <span className="text-white/60">{vendor.rating}</span>
-          <span>•</span>
-          <span>{vendor.totalProducts} products</span>
-          {vendor.verified && (
-            <>
-              <span>•</span>
-              <CheckCircle size={12} className="text-white/60" />
-            </>
+          {/* Categories */}
+          {vendor.categories && vendor.categories.length > 0 && (
+            <div className="flex flex-wrap gap-2 mb-4">
+              {vendor.categories.slice(0, 3).map((cat: string, i: number) => (
+                <span key={i} className="px-3 py-1 bg-white/10 text-white text-[9px] font-bold uppercase">
+                  {cat}
+                </span>
+              ))}
+            </div>
           )}
-        </div>
 
-        {/* CTA */}
-        <div className="flex items-center gap-1.5 text-white/60 group-hover:text-white text-[10px] uppercase tracking-[0.15em] transition-colors">
-          <span>View Store</span>
-          <ArrowRight size={12} className="group-hover:translate-x-0.5 transition-transform duration-300" />
+          {/* Contact */}
+          <div className="space-y-2 text-xs text-white/50 mb-4">
+            {vendor.city && vendor.state && (
+              <div className="flex items-center gap-2">
+                <MapPin size={12} />
+                <span>{vendor.city}, {vendor.state}</span>
+              </div>
+            )}
+            {vendor.instagram && (
+              <div className="flex items-center gap-2">
+                <Instagram size={12} />
+                <span>{vendor.instagram}</span>
+              </div>
+            )}
+          </div>
+
+          {/* CTA */}
+          <div className="flex items-center justify-between text-white group-hover:text-white text-xs uppercase tracking-wide font-bold pt-4 border-t border-white/20">
+            <span>Shop</span>
+            <ArrowRight size={14} className="group-hover:translate-x-2 transition-transform duration-300" />
+          </div>
         </div>
       </div>
     </Link>
@@ -79,47 +102,22 @@ export default function VendorsPage() {
     async function loadVendors() {
       try {
         setLoading(true);
-        console.log('🔵 Loading vendors...');
-        const data = await getVendors();
+        console.log('🔵 Loading vendors via bulk endpoint...');
         
-        // Ensure data is an array
-        if (!Array.isArray(data)) {
-          console.error('API returned non-array:', data);
+        // Use bulk endpoint - returns ALL vendor data in ONE call
+        const response = await fetch('/api/page-data/vendors');
+        const result = await response.json();
+        
+        if (result.success) {
+          console.log(`✅ Vendors loaded in ${result.meta.responseTime}`);
+          setVendors(result.data.vendors || []);
+        } else {
+          console.error('Failed to load vendors:', result.error);
           setVendors([]);
-          setLoading(false);
-          return;
         }
-        
-        console.log('🔵 Raw vendor data:', data.map((v: any) => ({ name: v.store_name, status: v.status })));
-        
-        // Map API data to component format and filter out suspended vendors
-        const mappedVendors = data
-          .filter((v: any) => {
-            const isActive = v.status === 'active';
-            console.log(`Vendor ${v.store_name}: status=${v.status}, isActive=${isActive}`);
-            return isActive;
-          })
-          .map((v: any) => ({
-            id: parseInt(v.id),
-            name: v.store_name,
-            slug: v.slug,
-            logo: v.logo_url || '/yacht-club-logo.png',
-            tagline: v.tagline || 'Quality cannabis products',
-            location: v.region || 'California',
-            state: v.state || 'California',
-            region: v.region || 'California',
-            rating: parseFloat(v.rating) || 0,
-            totalReviews: parseInt(v.review_count) || 0,
-            totalProducts: parseInt(v.product_count) || 0,
-            verified: parseInt(v.verified) === 1,
-            featured: parseInt(v.featured) === 1,
-          }));
-        
-        console.log('✅ Active vendors loaded:', mappedVendors.length);
-        
-        setVendors(mappedVendors);
       } catch (error) {
         console.error('Error loading vendors:', error);
+        setVendors([]);
       } finally {
         setLoading(false);
       }
@@ -144,7 +142,7 @@ export default function VendorsPage() {
     slug: 'yacht-club',
     logo: '/yacht-club-logo.png',
     tagline: 'Premium Cannabis Marketplace',
-    rating: 5.0,
+    rating: 0,
     totalReviews: 0,
     totalProducts: 0,
     location: 'California',
@@ -159,374 +157,26 @@ export default function VendorsPage() {
   }, {} as { [key: string]: typeof vendors });
 
   return (
-    <div 
-      className="bg-[#2a2a2a] relative overflow-x-hidden overflow-y-auto max-w-full"
-      style={{ minHeight: 'calc(100vh - env(safe-area-inset-top, 0px))' }}
-    >
-      {/* Vendor Whale Animation Background - DISABLED to prevent memory leaks */}
-      {/* <VendorWhaleAnimation /> */}
-
-      {/* Hero */}
-      <div className="border-b border-white/10 relative pt-20">
-        <div className="absolute inset-0 bg-gradient-to-b from-[#2a2a2a]/40 via-[#2a2a2a]/35 to-[#2a2a2a]/30 backdrop-blur-sm"></div>
-        {/* Yacht Club Logo - Hero */}
-        <div className="absolute top-8 right-8 md:top-16 md:right-16 lg:top-20 lg:right-20 z-10" style={{ animation: 'logoEntrance 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s forwards', opacity: 0 }}>
-          <Link href="/" className="group block">
-            <div className="relative logo-float">
-              {/* Outer glow ring */}
-              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-1000">
-                <div className="absolute inset-0 bg-white/5 rounded-full blur-2xl animate-pulse-slow"></div>
-                <div className="absolute inset-0 bg-white/3 rounded-full blur-3xl" style={{ animation: 'spin-slow 20s linear infinite' }}></div>
-              </div>
-              
-              {/* Spinning accent ring */}
-              <div className="absolute inset-0 opacity-0 group-hover:opacity-20 transition-opacity duration-700">
-                <div className="absolute inset-0 border border-white/20 rounded-full" style={{ animation: 'spin-slow 8s linear infinite' }}></div>
-              </div>
-              
-              {/* Logo */}
-              <img 
-                src="/yacht-club-logo.png" 
-                alt="Yacht Club Marketplace" 
-                className="relative w-24 h-24 md:w-40 md:h-40 lg:w-56 lg:h-56 object-contain opacity-50 group-hover:opacity-100 transition-all duration-1000 filter group-hover:brightness-110 group-hover:drop-shadow-[0_0_30px_rgba(255,255,255,0.3)]" 
-                style={{ animation: 'gentle-float 6s ease-in-out infinite' }}
-              />
-            </div>
-          </Link>
-        </div>
-        
-        <div className="max-w-[2000px] mx-auto px-4 sm:px-6 md:px-8 py-12 md:py-24 relative z-10">
-          <div className="flex items-center gap-4 mb-6">
-            <Link 
-              href="/products"
-              className="inline-flex items-center gap-2 text-white/60 hover:text-white text-sm transition-colors"
-            >
-              <ArrowLeft size={18} />
-              <span className="hidden sm:inline">Back to Products</span>
-            </Link>
-          </div>
-          
-          <h1 className="text-3xl md:text-5xl font-light text-white mb-3 tracking-tight uppercase">
-            Verified Vendors
-          </h1>
-          <div className="h-[1px] w-16 bg-white/20 mb-8"></div>
-          
-          {/* Trust Message */}
-          <div className="inline-block bg-white/5 border border-white/10 px-6 py-4 backdrop-blur-sm">
-            <div className="flex items-center gap-3">
-              <div className="w-1 h-10 bg-gradient-to-b from-white/40 via-white/20 to-transparent"></div>
-              <p className="text-white/70 text-sm font-light leading-relaxed max-w-lg">
-                Every vendor is thoroughly examined and held to our highest standards.<br/>
-                <span className="text-white/50">Lab tested. Quality verified. Trusted partners.</span>
-              </p>
-            </div>
-          </div>
-
-          {/* Stats Bar */}
-          <div className="mt-8 grid grid-cols-3 gap-4 max-w-xl">
-            <div className="bg-white/5 border border-white/10 p-4 backdrop-blur-sm hover:bg-white/10 transition-all duration-300">
-              <div className="flex items-center gap-2 mb-2">
-                <Users size={16} className="text-white/40" />
-                <div className="text-white/40 text-[10px] uppercase tracking-wider">Vendors</div>
-              </div>
-              <div className="text-white text-2xl font-light">{vendors.length}</div>
-            </div>
-            <div className="bg-white/5 border border-white/10 p-4 backdrop-blur-sm hover:bg-white/10 transition-all duration-300">
-              <div className="flex items-center gap-2 mb-2">
-                <Package size={16} className="text-white/40" />
-                <div className="text-white/40 text-[10px] uppercase tracking-wider">Products</div>
-              </div>
-              <div className="text-white text-2xl font-light">{vendors.reduce((sum, v) => sum + v.totalProducts, 0)}</div>
-            </div>
-            <div className="bg-white/5 border border-white/10 p-4 backdrop-blur-sm hover:bg-white/10 transition-all duration-300">
-              <div className="flex items-center gap-2 mb-2">
-                <Award size={16} className="text-white/40" />
-                <div className="text-white/40 text-[10px] uppercase tracking-wider">Avg Rating</div>
-              </div>
-              <div className="text-white text-2xl font-light">
-                {(vendors.reduce((sum, v) => sum + v.rating, 0) / vendors.length).toFixed(1)}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Featured Vendor */}
-      <div className="border-b border-white/10 relative">
-        <div className="absolute inset-0 bg-[#2a2a2a]/35 backdrop-blur-sm"></div>
-        <div className="max-w-[2000px] mx-auto px-4 sm:px-6 md:px-8 py-12 relative z-10">
-          <div className="flex items-center gap-2 mb-6">
-            <Award size={18} className="text-white/60" />
-            <h2 className="text-sm uppercase tracking-[0.2em] text-white/60">Featured Vendor</h2>
-          </div>
-          
-            <Link 
-              href={`/vendors/${featuredVendor.slug}`}
-              className="group block bg-[#1a1a1a] border border-white/10 hover:border-white/20 transition-all duration-500 overflow-hidden"
-            >
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-0">
-              {/* Logo Section */}
-              <div className="bg-black/40 flex items-center justify-center p-12 lg:p-16 relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
-                <img 
-                  src={featuredVendor.logo} 
-                  alt={featuredVendor.name} 
-                  className="relative w-32 h-32 lg:w-48 lg:h-48 object-contain opacity-80 group-hover:opacity-100 transition-all duration-700 group-hover:scale-105"
-                />
-              </div>
-              
-              {/* Info Section */}
-              <div className="lg:col-span-2 p-8 lg:p-12 flex flex-col justify-center">
-                <div className="flex items-center gap-3 mb-4">
-                  <h3 className="text-3xl lg:text-4xl text-white tracking-wide font-light">
-                    {featuredVendor.name}
-                  </h3>
-                  <CheckCircle size={24} className="text-white/60" />
-                </div>
-                
-                <p className="text-white/60 text-base mb-6 leading-relaxed max-w-2xl">
-                  {featuredVendor.tagline}
-                </p>
-                
-                <div className="flex flex-wrap items-center gap-6 mb-6">
-                  <div className="flex items-center gap-2">
-                    <Star size={18} className="text-white fill-white" />
-                    <span className="text-white text-xl font-light">{featuredVendor.rating}</span>
-                    <span className="text-white/40 text-sm">({featuredVendor.totalReviews} reviews)</span>
-                  </div>
-                  <div className="text-white/40 text-sm">
-                    {featuredVendor.totalProducts} products available
-                  </div>
-                  <div className="text-white/40 text-sm">
-                    {featuredVendor.location}
-                  </div>
-                </div>
-                
-                <div className="inline-flex items-center gap-2 text-white/60 group-hover:text-white text-sm uppercase tracking-wider transition-colors">
-                  <span>Visit Store</span>
-                  <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform duration-300" />
-                </div>
-              </div>
-            </div>
-          </Link>
-        </div>
-      </div>
-
-      {/* Search & Filter Bar */}
-      <div className="border-b border-white/10 relative">
-        <div className="absolute inset-0 bg-[#2a2a2a]/30 backdrop-blur-sm"></div>
-        <div className="max-w-[2000px] mx-auto px-4 sm:px-6 md:px-8 py-6 relative z-10">
-          <div className="flex flex-col lg:flex-row gap-4">
-            {/* Search */}
-            <div className="flex-1 relative">
-              <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40" />
-              <input
-                type="text"
-                placeholder="Search vendors by name, location, or specialty..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-white/5 border border-white/10 text-white placeholder-white/40 pl-12 pr-4 py-2.5 focus:outline-none focus:border-white/30 transition-all text-xs rounded"
-              />
-            </div>
-            
-            {/* Region Filter */}
-            <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-              <button
-                onClick={() => setSelectedRegion('all')}
-                className={`px-4 py-2.5 text-xs uppercase tracking-[0.15em] transition-all whitespace-nowrap flex-shrink-0 rounded ${
-                  selectedRegion === 'all'
-                    ? 'bg-white text-black border border-white'
-                    : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white border border-white/10'
-                }`}
-              >
-                All Regions
-              </button>
-              {regions.map(region => (
-                <button
-                  key={region}
-                  onClick={() => setSelectedRegion(region)}
-                  className={`px-4 py-2.5 text-xs uppercase tracking-[0.15em] transition-all whitespace-nowrap flex-shrink-0 rounded ${
-                    selectedRegion === region
-                      ? 'bg-white text-black border border-white'
-                      : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white border border-white/10'
-                  }`}
-                >
-                  {region}
-                </button>
-              ))}
-            </div>
-            
-            {/* Results Count */}
-            <div className="flex items-center gap-2 text-white/40 text-xs uppercase tracking-wider whitespace-nowrap">
-              <span className="hidden md:inline">Showing</span>
-              <span className="text-white font-medium">{filteredVendors.length}</span>
-              <span>{filteredVendors.length === 1 ? 'Vendor' : 'Vendors'}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Vendors by Region */}
-      <div className="max-w-[2000px] mx-auto px-4 sm:px-6 md:px-8 py-12 relative z-10">
-        {loading ? (
-          <div className="text-center py-16">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-white/60 mb-4"></div>
-            <p className="text-white/60">Loading vendors...</p>
-          </div>
-        ) : filteredVendors.length === 0 ? (
-          <div className="text-center py-16 bg-[#1a1a1a] border border-white/10">
-            <Search size={48} className="text-white/20 mx-auto mb-4" />
-            <p className="text-white/60 mb-2">No vendors found in {selectedRegion === 'all' ? 'your search' : selectedRegion}</p>
-            <button 
-              onClick={() => {
-                setSearchQuery('');
-                setSelectedRegion('all');
-              }}
-              className="text-white/40 hover:text-white text-sm transition-colors"
-            >
-              Clear filters
-            </button>
-          </div>
-        ) : selectedRegion === 'all' ? (
-          /* Organized by Region */
-          <div className="space-y-12">
-            {regions.map(region => {
-              const regionVendors = vendorsByRegion[region];
-              if (regionVendors.length === 0) return null;
-              
-              return (
-                <div key={region}>
-                  {/* Region Header */}
-                  <div className="mb-6">
-                    <div className="flex items-center justify-between mb-2">
-                      <h2 className="text-lg font-light uppercase tracking-[0.2em] text-white">
-                        {region}
-                      </h2>
-                      <button
-                        onClick={() => setSelectedRegion(region)}
-                        className="text-white/40 hover:text-white text-xs uppercase tracking-wider transition-colors"
-                      >
-                        View All ({regionVendors.length})
-                      </button>
-                    </div>
-                    <div className="h-[1px] bg-white/10"></div>
-                  </div>
-                  
-                  {/* Region Vendors */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-px bg-white/5">
-                    {regionVendors.map((vendor: any, index: number) => (
-                      <VendorCard key={vendor.id || vendor.uuid || `vendor-${index}`} vendor={vendor} index={index} />
-                    ))}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        ) : (
-          /* Single Region View */
-          <div>
-            <div className="mb-6">
-              <h2 className="text-lg font-light uppercase tracking-[0.2em] text-white mb-2">
-                {selectedRegion}
-              </h2>
-              <div className="h-[1px] bg-white/10"></div>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-px bg-white/5">
-          {filteredVendors.map((vendor, index) => (
-            <VendorCard key={vendor.id || vendor.uuid || index} vendor={vendor} index={index} />
-          ))}
-        </div>
-          </div>
-        )}
-
-        {/* Become a Vendor CTA */}
-        <div className="mt-16 text-center">
-          <div className="inline-block bg-white/5 border border-white/10 px-8 py-6 backdrop-blur-sm">
-            <h3 className="text-white text-xl font-light mb-2">Interested in selling on Yacht Club?</h3>
-            <p className="text-white/60 text-sm mb-4 max-w-md mx-auto">
-              Join our curated marketplace and reach customers across the region
-            </p>
-            <Link 
-              href="/vendor/dashboard"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-white text-black hover:bg-black hover:text-white border border-white hover:border-white/20 text-xs uppercase tracking-[0.2em] transition-all duration-300"
-            >
-              Become a Vendor
-              <ArrowRight size={14} />
-            </Link>
-          </div>
-        </div>
-      </div>
-
-      {/* Inject Fonts & Animations */}
+    <div className="min-h-screen bg-gradient-to-b from-[#0a0a0a] via-[#1a1a1a] to-[#0a0a0a] text-white">
+      {/* Luxury Styles */}
       <style jsx global>{`
-        @font-face {
-          font-family: 'Lobster';
-          src: url('/Lobster 1.4.otf') format('opentype');
-          font-weight: normal;
-          font-style: normal;
+        @keyframes fade-in {
+          from { opacity: 0; transform: translateY(15px); }
+          to { opacity: 1; transform: translateY(0); }
         }
-        @font-face {
-          font-family: 'Monkey Act';
-          src: url('/Monkey Act - Personal Use.otf') format('opentype');
-          font-weight: normal;
-          font-style: normal;
+        @keyframes subtle-pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.7; }
         }
-        
-        /* Logo entrance animation */
-        @keyframes logoEntrance {
-          0% {
-            opacity: 0;
-            transform: scale(0.5) translateY(-50px) rotate(-10deg);
-            filter: blur(10px);
-          }
-          60% {
-            transform: scale(1.05) translateY(5px) rotate(2deg);
-          }
-          100% {
-            opacity: 1;
-            transform: scale(1) translateY(0) rotate(0deg);
-            filter: blur(0);
-          }
+        @keyframes shimmer {
+          0% { background-position: -200% center; }
+          100% { background-position: 200% center; }
         }
-        
-        /* Gentle floating */
-        @keyframes gentle-float {
-          0%, 100% { 
-            transform: translateY(0) rotate(0deg);
-          }
-          25% {
-            transform: translateY(-8px) rotate(1deg);
-          }
-          50% { 
-            transform: translateY(-12px) rotate(0deg);
-          }
-          75% {
-            transform: translateY(-8px) rotate(-1deg);
-          }
+        .fade-in {
+          animation: fade-in 0.8s cubic-bezier(0.4, 0, 0.2, 1) both;
         }
-        
-        /* Slow spin */
-        @keyframes spin-slow {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-        
-        /* Slow pulse */
-        @keyframes pulse-slow {
-          0%, 100% { opacity: 0.3; transform: scale(1); }
-          50% { opacity: 0.6; transform: scale(1.1); }
-        }
-        .animate-pulse-slow {
-          animation: pulse-slow 4s ease-in-out infinite;
-        }
-        
-        /* Background float */
-        @keyframes float {
-          0%, 100% { transform: translateY(0) scale(1); }
-          50% { transform: translateY(-20px) scale(1.05); }
-        }
-        .animate-float {
-          animation: float 8s ease-in-out infinite;
+        .subtle-pulse {
+          animation: subtle-pulse 3s ease-in-out infinite;
         }
         .scrollbar-hide {
           -ms-overflow-style: none;
@@ -536,6 +186,328 @@ export default function VendorsPage() {
           display: none;
         }
       `}</style>
+
+      {/* Street Style Header - Cannabis Culture */}
+      <div className="relative border-b border-white/20">
+        <div className="absolute inset-0 bg-gradient-to-b from-black via-[#0f0f0f] to-[#1a1a1a]"></div>
+        
+        <div className="relative max-w-7xl mx-auto px-6 py-20 fade-in">
+          <div className="mb-16">
+            <h1 className="text-8xl md:text-9xl font-black text-white tracking-tighter mb-4 uppercase">
+              THE PLUG
+            </h1>
+            <p className="text-white/70 text-lg font-medium max-w-2xl">
+              Real brands. Real product. No middlemen. All vendors verified & licensed. We only work with the best.
+            </p>
+          </div>
+
+          {/* Stats - Bold Street Style */}
+          <div className="grid grid-cols-3 gap-6">
+            <div className="bg-black border-2 border-white/30 p-8 hover:border-white/50 transition-all">
+              <div className="text-white text-7xl font-black mb-2 tracking-tighter">
+                {vendors.length}
+              </div>
+              <div className="text-white/60 text-sm font-bold uppercase tracking-wider">VENDORS</div>
+              <div className="text-white/40 text-xs mt-1">Verified ✓</div>
+            </div>
+            
+            <div className="bg-black border-2 border-white/30 p-8 hover:border-white/50 transition-all">
+              <div className="text-white text-7xl font-black mb-2 tracking-tighter">
+                {vendors.reduce((sum, v) => sum + v.totalProducts, 0)}
+              </div>
+              <div className="text-white/60 text-sm font-bold uppercase tracking-wider">PRODUCTS</div>
+              <div className="text-white/40 text-xs mt-1">In Stock</div>
+            </div>
+            
+            <div className="bg-black border-2 border-white/30 p-8 hover:border-white/50 transition-all">
+              <div className="text-white text-7xl font-black mb-2 tracking-tighter">
+                {vendors.reduce((sum, v) => sum + (v.totalLocations || 0), 0)}
+              </div>
+              <div className="text-white/60 text-sm font-bold uppercase tracking-wider">SPOTS</div>
+              <div className="text-white/40 text-xs mt-1">Nationwide</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* What We About - Street Language */}
+      <div className="max-w-7xl mx-auto px-6 py-16 fade-in" style={{ animationDelay: '0.15s' }}>
+        <div className="bg-black border-2 border-white/20">
+          <div className="p-12">
+            <h2 className="text-4xl font-black text-white tracking-tight mb-8 uppercase">
+              Why Shop With Us
+            </h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+              {/* Quality */}
+              <div>
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-3 h-3 bg-white rounded-full"></div>
+                  <h3 className="text-xl font-bold text-white uppercase">Quality</h3>
+                </div>
+                <p className="text-white/60 text-sm leading-relaxed">
+                  Everything lab tested. All vendors licensed. We don't play about quality.
+                </p>
+              </div>
+              
+              {/* Direct */}
+              <div>
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-3 h-3 bg-white rounded-full"></div>
+                  <h3 className="text-xl font-bold text-white uppercase">Direct</h3>
+                </div>
+                <p className="text-white/60 text-sm leading-relaxed">
+                  Straight from the source. No middlemen cutting into your pockets. Better prices, fresher product.
+                </p>
+              </div>
+              
+              {/* Network */}
+              <div>
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-3 h-3 bg-white rounded-full"></div>
+                  <h3 className="text-xl font-bold text-white uppercase">Network</h3>
+                </div>
+                <p className="text-white/60 text-sm leading-relaxed">
+                  Multiple spots across the map. Pick up or we deliver. We got you covered.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Featured Vendor - Street Showcase */}
+      {featuredVendor && featuredVendor.slug !== 'yacht-club' && (
+        <div className="max-w-7xl mx-auto px-6 py-16 fade-in" style={{ animationDelay: '0.2s' }}>
+          <div className="mb-6">
+            <h2 className="text-4xl font-black text-white tracking-tight uppercase">
+              Spotlight
+            </h2>
+            <p className="text-white/50 text-sm">Featured vendor bringing heat</p>
+          </div>
+          
+          <Link 
+            href={`/vendors/${featuredVendor.slug}`}
+            className="group relative block overflow-hidden"
+          >
+            <div className="bg-black border-2 border-white/30 hover:border-white/60 transition-all">
+              <div className="grid grid-cols-1 lg:grid-cols-3">
+                {/* Logo */}
+                <div className="bg-[#0f0f0f] p-16 flex items-center justify-center border-r-2 border-white/30">
+                  <img 
+                    src={featuredVendor.logo}
+                    alt={featuredVendor.name}
+                    className="w-48 h-48 object-contain opacity-95 group-hover:scale-105 transition-transform duration-500"
+                  />
+                </div>
+                
+                {/* Info */}
+                <div className="lg:col-span-2 p-12">
+                  <h3 className="text-5xl font-black text-white tracking-tight mb-3 uppercase">
+                    {featuredVendor.name}
+                  </h3>
+                  {featuredVendor.tagline && (
+                    <p className="text-white/60 text-lg mb-8">
+                      {featuredVendor.tagline}
+                    </p>
+                  )}
+                  
+                  {/* Stats */}
+                  <div className="grid grid-cols-3 gap-6 mb-8">
+                    <div className="bg-[#0a0a0a] border border-white/20 p-5">
+                      <div className="text-white text-4xl font-black mb-1">{featuredVendor.totalProducts}</div>
+                      <div className="text-white/50 text-xs uppercase font-bold">Products</div>
+                    </div>
+                    <div className="bg-[#0a0a0a] border border-white/20 p-5">
+                      <div className="text-white text-4xl font-black mb-1">{featuredVendor.totalLocations || 1}</div>
+                      <div className="text-white/50 text-xs uppercase font-bold">Spots</div>
+                    </div>
+                    <div className="bg-[#0a0a0a] border border-white/20 p-5">
+                      <div className="text-white text-4xl font-black mb-1">{featuredVendor.categories?.length || 0}</div>
+                      <div className="text-white/50 text-xs uppercase font-bold">Categories</div>
+                    </div>
+                  </div>
+                  
+                  {/* Categories */}
+                  {featuredVendor.categories && featuredVendor.categories.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mb-8">
+                      {featuredVendor.categories.map((cat: string, i: number) => (
+                        <span key={i} className="px-3 py-1.5 bg-white/10 text-white text-xs font-bold uppercase">
+                          {cat}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  
+                  <div className="inline-flex items-center gap-3 px-8 py-4 bg-white text-black hover:bg-white/90 text-sm font-bold uppercase tracking-wide transition-all">
+                    <span>Shop Now</span>
+                    <ArrowRight size={14} className="group-hover:translate-x-2 transition-transform duration-300" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </Link>
+        </div>
+      )}
+
+      {/* Search & Filter - Street Style */}
+      <div className="max-w-7xl mx-auto px-6 py-10 fade-in" style={{ animationDelay: '0.4s' }}>
+        <div className="flex flex-col lg:flex-row gap-4">
+          {/* Search */}
+          <div className="flex-1 relative">
+            <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/50" />
+            <input
+              type="text"
+              placeholder="Search vendors..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full bg-black border-2 border-white/20 hover:border-white/30 focus:border-white/50 text-white placeholder-white/40 pl-12 pr-4 py-4 focus:outline-none transition-all text-sm font-medium"
+            />
+          </div>
+          
+          {/* Region Filter */}
+          <div className="flex gap-3 overflow-x-auto scrollbar-hide">
+            <button
+              onClick={() => setSelectedRegion('all')}
+              className={`px-6 py-4 text-xs font-bold tracking-wider transition-all whitespace-nowrap uppercase ${
+                selectedRegion === 'all'
+                  ? 'bg-white text-black'
+                  : 'bg-black border-2 border-white/20 text-white/70 hover:text-white hover:border-white/40'
+              }`}
+            >
+              ALL
+            </button>
+            {regions.map(region => (
+              <button
+                key={region}
+                onClick={() => setSelectedRegion(region)}
+                className={`px-6 py-4 text-xs font-bold tracking-wider transition-all whitespace-nowrap uppercase ${
+                  selectedRegion === region
+                    ? 'bg-white text-black'
+                    : 'bg-black border-2 border-white/20 text-white/70 hover:text-white hover:border-white/40'
+                }`}
+              >
+                {region}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Vendors Grid */}
+      <div className="max-w-7xl mx-auto px-6 pb-12">
+        {loading ? (
+          <div className="bg-black border-2 border-white/20 p-24 text-center">
+            <div className="w-3 h-3 bg-white rounded-full subtle-pulse mx-auto mb-4" />
+            <p className="text-white/60 text-sm font-bold uppercase tracking-wider">LOADING</p>
+          </div>
+        ) : filteredVendors.length === 0 ? (
+          <div className="bg-black border-2 border-white/20 p-24 text-center">
+            <Search size={48} className="text-white/30 mx-auto mb-6" />
+            <p className="text-white/70 text-lg font-bold mb-6 uppercase">No Vendors Found</p>
+            <button 
+              onClick={() => {
+                setSearchQuery('');
+                setSelectedRegion('all');
+              }}
+              className="px-6 py-3 bg-white/10 hover:bg-white/20 text-white text-xs uppercase font-bold tracking-wider transition-all border border-white/20"
+            >
+              Clear Filters
+            </button>
+          </div>
+        ) : selectedRegion === 'all' ? (
+          /* Organized by Region - Luxury */
+          <div className="space-y-20">
+            {regions.map((region, regionIdx) => {
+              const regionVendors = vendorsByRegion[region];
+              if (regionVendors.length === 0) return null;
+              
+              return (
+                <div key={region} className="fade-in" style={{ animationDelay: `${0.3 + regionIdx * 0.1}s` }}>
+                  {/* Region Header */}
+                  <div className="mb-6">
+                    <div className="flex items-center justify-between mb-3">
+                      <h2 className="text-3xl font-black text-white tracking-tight uppercase">
+                        {region}
+                      </h2>
+                      <div className="text-white/50 text-sm font-bold">
+                        {regionVendors.length} {regionVendors.length === 1 ? 'Vendor' : 'Vendors'}
+                      </div>
+                    </div>
+                    <div className="h-1 bg-white/20"></div>
+                  </div>
+                  
+                  {/* Region Vendors */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    {regionVendors.map((vendor: any, index: number) => (
+                      <VendorCard key={vendor.id || vendor.uuid || `vendor-${index}`} vendor={vendor} index={index} />
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          /* Single Region View - Luxury */
+          <div className="fade-in">
+            <div className="mb-8">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="w-1 h-8 bg-gradient-to-b from-white/30 via-white/10 to-transparent"></div>
+                <div className="flex-1">
+                  <h2 className="text-2xl font-light text-white/90 tracking-tight mb-1">
+                    {selectedRegion}
+                  </h2>
+                  <div className="text-white/30 text-[10px] font-light tracking-widest">
+                    {filteredVendors.length} {filteredVendors.length === 1 ? 'Vendor' : 'Vendors'}
+                  </div>
+                </div>
+              </div>
+              <div className="h-px bg-gradient-to-r from-white/10 via-white/5 to-transparent ml-5"></div>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {filteredVendors.map((vendor, index) => (
+                <VendorCard key={vendor.id || vendor.uuid || index} vendor={vendor} index={index} />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Sell With Us - Street CTA */}
+        <div className="mt-20 fade-in" style={{ animationDelay: '0.8s' }}>
+          <div className="bg-black border-2 border-white/30">
+            <div className="p-16 text-center">
+              <h2 className="text-5xl font-black text-white tracking-tight mb-4 uppercase">
+                Want In?
+              </h2>
+              <p className="text-white/60 text-base mb-10 max-w-xl mx-auto">
+                Join the network. Reach customers nationwide. Grow your brand. No BS.
+              </p>
+              
+              <Link
+                href="/vendor/dashboard"
+                className="inline-flex items-center gap-3 px-10 py-5 bg-white text-black hover:bg-white/90 transition-all group/cta"
+              >
+                <span className="text-sm uppercase tracking-wider font-black">Become a Vendor</span>
+                <ArrowRight size={16} className="group-hover/cta:translate-x-1 transition-transform duration-300" />
+              </Link>
+              
+              <div className="flex items-center justify-center gap-12 mt-10 pt-10 border-t-2 border-white/20">
+                <div className="text-center">
+                  <div className="text-white/70 text-sm font-bold">Licensed</div>
+                </div>
+                <div className="w-px h-8 bg-white/20"></div>
+                <div className="text-center">
+                  <div className="text-white/70 text-sm font-bold">No Fees</div>
+                </div>
+                <div className="w-px h-8 bg-white/20"></div>
+                <div className="text-center">
+                  <div className="text-white/70 text-sm font-bold">Volume Deals</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

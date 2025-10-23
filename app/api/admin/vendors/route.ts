@@ -1,8 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServiceSupabase } from '@/lib/supabase/client';
+import { vendorCache, generateCacheKey } from '@/lib/cache-manager';
+import { monitor } from '@/lib/performance-monitor';
 
 export async function GET(request: NextRequest) {
+  const endTimer = monitor.startTimer('Vendors API');
+  
   try {
+    // Generate cache key for vendors
+    const cacheKey = generateCacheKey('vendors', { type: 'all' });
+    
+    // Check cache first
+    const cached = vendorCache.get(cacheKey);
+    if (cached) {
+      endTimer();
+      monitor.recordCacheAccess('vendors', true);
+      
+      return NextResponse.json(cached, {
+        headers: {
+          'X-Cache-Status': 'HIT',
+          'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=60',
+        }
+      });
+    }
+    
+    monitor.recordCacheAccess('vendors', false);
     const supabase = getServiceSupabase();
 
     // Get all vendors from Supabase
@@ -63,13 +85,20 @@ export async function GET(request: NextRequest) {
       featured: 0
     }));
 
-    return NextResponse.json({
+    // Store in cache
+    const responseData = {
       success: true,
       vendors: enrichedVendors,
       total: enrichedVendors.length
-    }, {
+    };
+    
+    vendorCache.set(cacheKey, responseData);
+    endTimer();
+
+    return NextResponse.json(responseData, {
       headers: {
-        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=30',
+        'X-Cache-Status': 'MISS',
+        'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=60',
       }
     });
 
@@ -115,6 +144,9 @@ export async function POST(request: NextRequest) {
       }
       
       console.log('✅ Vendor updated successfully');
+      
+      // Clear cache
+      vendorCache.clear();
 
       return NextResponse.json({
         success: true,
