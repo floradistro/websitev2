@@ -7,7 +7,8 @@ import LoadingBar from "@/components/LoadingBar";
 import NotificationToast from "@/components/NotificationToast";
 import Providers from "@/app/providers";
 import '@/app/globals.css';
-import { StorefrontHeader } from "@/components/storefront/StorefrontHeader";
+import '@/app/storefront/storefront.css';
+import { StorefrontTestHeader } from "@/components/storefront/StorefrontTestHeader";
 import { StorefrontFooter } from "@/components/storefront/StorefrontFooter";
 import { getServiceSupabase } from '@/lib/supabase/client';
 
@@ -40,7 +41,7 @@ export default async function TestStorefrontLayout({
   // Get Flora Distro vendor for header/footer
   const { data: vendor } = await supabase
     .from('vendors')
-    .select('id, store_name, slug, logo_url, social_links')
+    .select('*')
     .eq('slug', 'flora-distro')
     .single();
 
@@ -64,7 +65,7 @@ export default async function TestStorefrontLayout({
             <WishlistProvider>
               <CartProvider>
                 <div className="storefront-container bg-[#1a1a1a] min-h-screen">
-                  <StorefrontHeader vendor={vendor} />
+                  <StorefrontTestHeader vendor={vendor} />
                   <main className="storefront-main">
                     {children}
                   </main>
