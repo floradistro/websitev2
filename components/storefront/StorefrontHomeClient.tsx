@@ -31,7 +31,7 @@ interface StorefrontHomeClientProps {
   productFieldsMap: { [key: number]: any };
 }
 
-function StorefrontHomeClient({
+export function StorefrontHomeClient({
   vendor,
   products,
   inventoryMap,
@@ -171,6 +171,4 @@ function StorefrontHomeClient({
     </div>
   );
 }
-
-export default memo(StorefrontHomeClient);
 
