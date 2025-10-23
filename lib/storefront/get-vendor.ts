@@ -129,7 +129,16 @@ export async function getVendorProducts(vendorId: string, limit?: number) {
     
     let query = supabase
       .from('products')
-      .select('*')
+      .select(`
+        *,
+        product_categories (
+          category:categories (
+            id,
+            name,
+            slug
+          )
+        )
+      `)
       .eq('vendor_id', vendorId)
       .eq('status', 'published')
       .order('created_at', { ascending: false });

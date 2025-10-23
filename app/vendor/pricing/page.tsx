@@ -645,7 +645,14 @@ export default function VendorPricingPage() {
                                 <div className="lg:col-span-2">
                                   <label className="block text-white/60 text-xs mb-2">Quantity</label>
                                   <div className="text-white/80 text-sm px-3 py-2">
-                                    {priceBreak.qty}{priceBreak.unit}
+                                    {(() => {
+                                      const currentUnit = displayUnits[config.id] || 'gram';
+                                      if (priceBreak.qty && priceBreak.unit) {
+                                        const converted = convertUnits(priceBreak.qty, priceBreak.unit, currentUnit);
+                                        return `${converted.toFixed(converted < 1 ? 3 : converted < 10 ? 2 : 1)}${formatUnit(currentUnit)}`;
+                                      }
+                                      return `${priceBreak.qty}${priceBreak.unit}`;
+                                    })()}
                                   </div>
                                 </div>
                               )}
