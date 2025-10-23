@@ -6,6 +6,7 @@ import { Search, ShoppingBag, User, Menu, X, ChevronDown, LayoutDashboard, Users
 import { useState, useEffect } from "react";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
+import { useVendorAuth } from "@/context/VendorAuthContext";
 import CartDrawer from "./CartDrawer";
 import SearchModal from "./SearchModal";
 import LoyaltyBadge from "./LoyaltyBadge";
@@ -25,6 +26,7 @@ export default function Header() {
   const [lastScrollY, setLastScrollY] = useState(0);
   const { itemCount, items, total } = useCart();
   const { user, isAuthenticated } = useAuth();
+  const { vendor, isAuthenticated: isVendorAuthenticated } = useVendorAuth();
 
   useEffect(() => {
     let ticking = false;
@@ -131,6 +133,17 @@ export default function Header() {
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center space-x-6 text-xs uppercase tracking-wider">
             <LoyaltyBadge />
+            
+            {/* Wholesale Link - For vendors and authenticated users */}
+            {(isAuthenticated || isVendorAuthenticated) && (
+              <Link
+                href="/wholesale"
+                className="nav-link text-white/80 hover:text-white active:text-white click-feedback flex items-center gap-1.5 bg-white/5 px-3 py-1.5 rounded border border-white/10 hover:border-white/20 transition-all"
+              >
+                <Store size={14} />
+                <span>Wholesale</span>
+              </Link>
+            )}
             
             {/* Products Mega Menu */}
             <div 
@@ -477,7 +490,18 @@ export default function Header() {
             >
               <Search size={18} className="transition-transform duration-300 group-hover:scale-110 group-active:scale-95" />
             </button>
-            {isAuthenticated && user ? (
+            {isVendorAuthenticated && vendor ? (
+              <Link 
+                href="/vendor/dashboard" 
+                className="text-white/80 hover:text-white active:text-white transition-smooth hidden sm:flex items-center gap-2 p-3 hover:bg-white/10 active:bg-white/20 rounded click-feedback group touch-target" 
+                aria-label="Vendor Portal"
+                style={{ minHeight: '44px' }}
+                title={`Vendor: ${vendor.store_name}`}
+              >
+                <Store size={16} className="text-white/60" />
+                <div className="text-[10px] font-medium uppercase text-white/80">{vendor.store_name}</div>
+              </Link>
+            ) : isAuthenticated && user ? (
               <Link 
                 href="/dashboard" 
                 className="text-white/80 hover:text-white active:text-white transition-smooth hidden sm:flex items-center gap-2 p-3 hover:bg-white/10 active:bg-white/20 rounded click-feedback group touch-target" 
@@ -730,6 +754,23 @@ export default function Header() {
                       <ArrowRight size={12} className="opacity-0 group-hover:opacity-50 -translate-x-1 group-hover:translate-x-0 transition-all" strokeWidth={1.5} />
                     </div>
                   </Link>
+                  
+                  {/* Wholesale Link - Mobile */}
+                  {(isAuthenticated || isVendorAuthenticated) && (
+                    <Link
+                      href="/wholesale"
+                      className="group block py-2.5 text-white/90 hover:text-white transition-all relative bg-white/5 rounded px-2 border border-white/10"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Store size={14} />
+                          <span className="text-sm font-light tracking-wide">Wholesale</span>
+                        </div>
+                        <ArrowRight size={12} className="opacity-0 group-hover:opacity-50 -translate-x-1 group-hover:translate-x-0 transition-all" strokeWidth={1.5} />
+                      </div>
+                    </Link>
+                  )}
                 </div>
 
                 {/* Divider */}
@@ -826,7 +867,20 @@ export default function Header() {
 
             {/* Elegant Footer */}
             <div className="p-4 border-t border-white/10 bg-gradient-to-b from-transparent to-black/50">
-              {isAuthenticated ? (
+              {isVendorAuthenticated ? (
+                <div className="space-y-2">
+                  <div className="text-white/50 text-xs text-center mb-2 tracking-wider">
+                    Logged in as <span className="text-white">{vendor?.store_name}</span>
+                  </div>
+                  <Link
+                    href="/vendor/dashboard"
+                    className="block w-full py-3 px-4 text-center bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-white text-sm font-light tracking-wider transition-all"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Vendor Portal
+                  </Link>
+                </div>
+              ) : isAuthenticated ? (
                 <Link
                   href="/dashboard"
                   className="block w-full py-3 px-4 text-center bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-white text-sm font-light tracking-wider transition-all"

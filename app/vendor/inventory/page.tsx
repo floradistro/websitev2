@@ -20,6 +20,8 @@ interface FloraFields {
   effects?: string;
   nose?: string;
   taste?: string;
+  price?: string;
+  cost_price?: string;
 }
 
 interface InventoryItem {
@@ -32,6 +34,7 @@ interface InventoryItem {
   category_name: string;
   image: string | null;
   price: number;
+  cost_price?: number;
   description?: string;
   stock_status: 'in_stock' | 'low_stock' | 'out_of_stock';
   stock_status_label: string;
@@ -90,6 +93,9 @@ export default function VendorInventory() {
   
   // COA management
   const [productCOAs, setProductCOAs] = useState<Record<string, any[]>>({});
+  
+  // Pricing tiers management
+  const [productPricing, setProductPricing] = useState<Record<string, any>>({});
   const [uploadingCOA, setUploadingCOA] = useState(false);
   const [coaLibrary, setCoaLibrary] = useState<any[]>([]);
   const [showCoaLibrary, setShowCoaLibrary] = useState(false);
@@ -570,17 +576,52 @@ export default function VendorInventory() {
 
     try {
       setSubmittingChange(true);
-      // Change requests coming soon
-      showNotification({
-        type: 'info',
-        title: 'Coming Soon',
-        message: 'Product change requests feature coming soon',
+      
+      // Prepare update data
+      const updateData: any = {};
+      
+      if (changes.thc_percentage !== undefined) updateData.thc_percentage = changes.thc_percentage;
+      if (changes.cbd_percentage !== undefined) updateData.cbd_percentage = changes.cbd_percentage;
+      if (changes.strain_type !== undefined) updateData.strain_type = changes.strain_type;
+      if (changes.lineage !== undefined) updateData.lineage = changes.lineage;
+      if (changes.terpenes !== undefined) updateData.terpenes = changes.terpenes;
+      if (changes.effects !== undefined) updateData.effects = changes.effects;
+      if (changes.nose !== undefined) updateData.nose = changes.nose;
+      if (changes.taste !== undefined) updateData.taste = changes.taste;
+      if (changes.price !== undefined) updateData.price = changes.price;
+      if (changes.cost_price !== undefined) updateData.cost_price = changes.cost_price;
+
+      // Make API call to update product
+      const response = await axios.put(`/api/vendor/products/${productId}`, updateData, {
+        headers: {
+          'x-vendor-id': vendorId || ''
+        }
       });
+
+      if (response.data.success) {
+        showNotification({
+          type: 'success',
+          title: 'Updated',
+          message: 'Product details updated successfully',
+        });
+        
+        // Clear the edited fields for this product
+        setEditedFields(prev => {
+          const newFields = { ...prev };
+          delete newFields[productId];
+          return newFields;
+        });
+        
+        // Reload inventory to show updated data
+        loadInventory();
+      } else {
+        throw new Error(response.data.error || 'Update failed');
+      }
     } catch (error: any) {
       showNotification({
         type: 'error',
-        title: 'Submit Failed',
-        message: error.message || 'Failed to submit changes',
+        title: 'Update Failed',
+        message: error.response?.data?.error || error.message || 'Failed to update product',
       });
     } finally {
       setSubmittingChange(false);
@@ -658,6 +699,49 @@ export default function VendorInventory() {
       }
     } catch (error) {
       console.error('Error loading COAs:', error);
+    }
+  };
+
+  const loadProductPricing = async (productId: string) => {
+    if (!vendorId) return;
+    
+    try {
+      const response = await axios.get(`/api/vendor/product-pricing?product_id=${productId}`);
+      
+      if (response.data.success && response.data.assignments && response.data.assignments.length > 0) {
+        const assignment = response.data.assignments[0]; // Get first (primary) assignment
+        
+        // Ensure blueprint exists
+        if (assignment.blueprint) {
+          setProductPricing(prev => ({
+            ...prev,
+            [productId]: {
+              assignment,
+              blueprint: assignment.blueprint,
+              price_overrides: assignment.price_overrides || {}
+            }
+          }));
+        } else {
+          // Assignment exists but no blueprint data
+          setProductPricing(prev => ({
+            ...prev,
+            [productId]: null
+          }));
+        }
+      } else {
+        // No pricing assignment for this product
+        setProductPricing(prev => ({
+          ...prev,
+          [productId]: null
+        }));
+      }
+    } catch (error: any) {
+      console.warn('Product pricing not available:', error.response?.data?.error || error.message);
+      // Fail gracefully - product just won't show pricing tiers
+      setProductPricing(prev => ({
+        ...prev,
+        [productId]: null
+      }));
     }
   };
 
@@ -1363,8 +1447,16 @@ export default function VendorInventory() {
                       <button
                         onClick={() => {
                           setViewMode(prev => ({ ...prev, [item.product_id]: 'fields' }));
+                          loadProductPricing(item.product_id);
                           if (!editedFields[item.product_id]) {
-                            setEditedFields(prev => ({ ...prev, [item.product_id]: { ...item.flora_fields } }));
+                            setEditedFields(prev => ({ 
+                              ...prev, 
+                              [item.product_id]: { 
+                                ...item.flora_fields,
+                                price: item.price?.toString(),
+                                cost_price: item.cost_price?.toString()
+                              } 
+                            }));
                           }
                         }}
                         className={`flex items-center gap-1.5 px-4 py-2 text-[10px] uppercase tracking-wider border transition-all ${
@@ -1418,6 +1510,33 @@ export default function VendorInventory() {
                                 <span className="text-white/80 text-xs">${item.price.toFixed(2)}</span>
                               </div>
                             </div>
+
+                            {item.cost_price && (
+                              <div className="border border-white/[0.04] rounded p-3">
+                                <div className="flex justify-between items-center mb-1">
+                                  <span className="text-white/40 text-xs flex items-center gap-1">
+                                    Cost Price
+                                    <span className="text-white/30 text-[10px]">🔒</span>
+                                  </span>
+                                  <span className="text-white/80 text-xs">${item.cost_price.toFixed(2)}</span>
+                                </div>
+                                {(() => {
+                                  const margin = ((item.price - item.cost_price) / item.price * 100);
+                                  return (
+                                    <div className="flex justify-between items-center pt-1 border-t border-white/[0.04]">
+                                      <span className="text-white/40 text-[10px]">Margin</span>
+                                      <span className={`text-[10px] font-medium ${
+                                        margin >= 40 ? 'text-green-400' : 
+                                        margin >= 25 ? 'text-yellow-400' : 
+                                        'text-red-400'
+                                      }`}>
+                                        {margin.toFixed(1)}%
+                                      </span>
+                                    </div>
+                                  );
+                                })()}
+                              </div>
+                            )}
 
                             <div className="border border-white/[0.04] rounded p-3">
                               <div className="flex justify-between items-center">
@@ -1493,8 +1612,16 @@ export default function VendorInventory() {
                               onClick={(e) => {
                                 e.stopPropagation();
                                 setViewMode(prev => ({ ...prev, [item.product_id]: 'fields' }));
+                                loadProductPricing(item.product_id);
                                 if (!editedFields[item.product_id]) {
-                                  setEditedFields(prev => ({ ...prev, [item.product_id]: { ...item.flora_fields } }));
+                                  setEditedFields(prev => ({ 
+                                    ...prev, 
+                                    [item.product_id]: { 
+                                      ...item.flora_fields,
+                                      price: item.price?.toString(),
+                                      cost_price: item.cost_price?.toString()
+                                    } 
+                                  }));
                                 }
                               }}
                               className="w-full flex items-center justify-center gap-2 bg-white/5 border border-white/10 text-white hover:bg-white/10 hover:border-white/20 px-4 py-3 transition-all"
@@ -1667,6 +1794,63 @@ export default function VendorInventory() {
 
                           {/* Compact Grid */}
                           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                            {/* Cost Price */}
+                            <div className="border border-white/[0.04] rounded p-2">
+                              <label className="text-white/40 text-[10px] mb-1.5 block uppercase tracking-wider flex items-center gap-1">
+                                Cost Price
+                                <span className="text-white/30">🔒</span>
+                              </label>
+                              <div className="flex items-center">
+                                <span className="text-white/40 text-sm mr-1">$</span>
+                                <input
+                                  type="number"
+                                  step="0.01"
+                                  value={currentFields.cost_price || ''}
+                                  onChange={(e) => setEditedFields(prev => ({
+                                    ...prev,
+                                    [item.product_id]: { ...currentFields, cost_price: e.target.value }
+                                  }))}
+                                  placeholder="—"
+                                  className="w-full bg-transparent border-none text-white placeholder-white/30 px-0 py-1 text-sm focus:outline-none"
+                                  onClick={(e) => e.stopPropagation()}
+                                />
+                              </div>
+                            </div>
+
+                            {/* Selling Price - Show pricing tiers if assigned */}
+                            {productPricing[item.product_id]?.blueprint ? (
+                              <div className="border border-white/[0.04] rounded p-2 lg:col-span-2">
+                                <label className="text-white/40 text-[10px] mb-1.5 block uppercase tracking-wider flex items-center justify-between">
+                                  <span>Pricing Tiers ({productPricing[item.product_id].blueprint.name})</span>
+                                  <span className="text-[9px] text-white/30">
+                                    {productPricing[item.product_id].blueprint.tier_type}
+                                  </span>
+                                </label>
+                                <div className="text-white/60 text-[10px] mb-2">
+                                  Configure prices for each tier below
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="border border-white/[0.04] rounded p-2">
+                                <label className="text-white/40 text-[10px] mb-1.5 block uppercase tracking-wider">Selling Price</label>
+                                <div className="flex items-center">
+                                  <span className="text-white/40 text-sm mr-1">$</span>
+                                  <input
+                                    type="number"
+                                    step="0.01"
+                                    value={currentFields.price || ''}
+                                    onChange={(e) => setEditedFields(prev => ({
+                                      ...prev,
+                                      [item.product_id]: { ...currentFields, price: e.target.value }
+                                    }))}
+                                    placeholder="—"
+                                    className="w-full bg-transparent border-none text-white placeholder-white/30 px-0 py-1 text-sm focus:outline-none"
+                                    onClick={(e) => e.stopPropagation()}
+                                  />
+                                </div>
+                              </div>
+                            )}
+
                             {/* THC % */}
                             <div className="border border-white/[0.04] rounded p-2">
                               <label className="text-white/40 text-[10px] mb-1.5 block uppercase tracking-wider">THC %</label>
@@ -1800,6 +1984,137 @@ export default function VendorInventory() {
                               />
                             </div>
                           </div>
+
+                          {/* Pricing Tiers Section */}
+                          {productPricing[item.product_id]?.blueprint && (
+                            <div className="mt-6 pt-6 border-t border-white/5">
+                              <div className="mb-4">
+                                <h3 className="text-white text-sm font-medium mb-1">
+                                  📊 {productPricing[item.product_id].blueprint.name}
+                                </h3>
+                                <p className="text-white/50 text-xs">
+                                  {productPricing[item.product_id].blueprint.description || 'Configure your pricing for each tier'}
+                                </p>
+                              </div>
+
+                              <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+                                {productPricing[item.product_id]?.blueprint?.price_breaks?.map((priceBreak: any) => {
+                                  const overridePrice = productPricing[item.product_id].price_overrides?.[priceBreak.break_id];
+                                  const tierContext = productPricing[item.product_id]?.blueprint?.context || 
+                                    (productPricing[item.product_id]?.blueprint?.slug?.includes('wholesale') ? 'wholesale' : 'retail');
+                                  const isRetail = tierContext === 'retail';
+                                  const isWholesale = tierContext === 'wholesale';
+                                  
+                                  return (
+                                    <div key={priceBreak.break_id} className="border border-white/10 rounded p-3 bg-white/[0.02] hover:bg-white/[0.04] transition-colors">
+                                      <div className="flex items-start justify-between mb-2">
+                                        <div className="flex-1">
+                                          <div className="text-white text-xs font-medium mb-0.5">
+                                            {priceBreak.label}
+                                          </div>
+                                          {priceBreak.qty && (
+                                            <div className="text-white/40 text-[10px]">
+                                              {priceBreak.qty}{priceBreak.unit || 'g'}
+                                            </div>
+                                          )}
+                                          {(priceBreak.min_qty || priceBreak.max_qty) && (
+                                            <div className="text-white/40 text-[10px]">
+                                              {priceBreak.min_qty}
+                                              {priceBreak.max_qty ? `-${priceBreak.max_qty}` : '+'} units
+                                            </div>
+                                          )}
+                                        </div>
+                                        {isRetail && (
+                                          <span className="px-1.5 py-0.5 bg-blue-500/20 text-blue-400 text-[9px] uppercase tracking-wider font-medium rounded">
+                                            Retail
+                                          </span>
+                                        )}
+                                        {isWholesale && (
+                                          <span className="px-1.5 py-0.5 bg-purple-500/20 text-purple-400 text-[9px] uppercase tracking-wider font-medium rounded">
+                                            Wholesale
+                                          </span>
+                                        )}
+                                      </div>
+                                      
+                                      <div className="flex items-center gap-1 mt-2">
+                                        <span className="text-white/40 text-xs">$</span>
+                                        <input
+                                          type="number"
+                                          step="0.01"
+                                          value={overridePrice || ''}
+                                          onChange={(e) => {
+                                            setProductPricing(prev => ({
+                                              ...prev,
+                                              [item.product_id]: {
+                                                ...prev[item.product_id],
+                                                price_overrides: {
+                                                  ...prev[item.product_id].price_overrides,
+                                                  [priceBreak.break_id]: e.target.value
+                                                }
+                                              }
+                                            }));
+                                          }}
+                                          placeholder="Set price"
+                                          className="flex-1 bg-transparent border border-white/10 text-white placeholder-white/30 px-2 py-1.5 text-sm focus:outline-none focus:border-white/20 rounded"
+                                          onClick={(e) => e.stopPropagation()}
+                                        />
+                                      </div>
+
+                                      {priceBreak.discount_expected && (
+                                        <div className="text-yellow-500/60 text-[9px] mt-1">
+                                          Suggested: {priceBreak.discount_expected}% off
+                                        </div>
+                                      )}
+                                    </div>
+                                  );
+                                })}
+                              </div>
+
+                              <div className="mt-4 flex items-center justify-end gap-2">
+                                <button
+                                  onClick={async () => {
+                                    // Save pricing tier overrides
+                                    try {
+                                      const assignmentId = productPricing[item.product_id].assignment?.id;
+                                      
+                                      if (assignmentId) {
+                                        // Update existing assignment
+                                        const response = await axios.put('/api/vendor/product-pricing', {
+                                          assignment_id: assignmentId,
+                                          price_overrides: productPricing[item.product_id].price_overrides,
+                                          is_active: true
+                                        });
+
+                                        if (response.data.success) {
+                                          showNotification({
+                                            type: 'success',
+                                            title: 'Pricing Updated',
+                                            message: 'Pricing tiers saved successfully'
+                                          });
+                                        }
+                                      } else {
+                                        showNotification({
+                                          type: 'warning',
+                                          title: 'No Assignment',
+                                          message: 'Product pricing configuration not found'
+                                        });
+                                      }
+                                    } catch (error: any) {
+                                      showNotification({
+                                        type: 'error',
+                                        title: 'Update Failed',
+                                        message: error.response?.data?.error || 'Failed to save pricing'
+                                      });
+                                    }
+                                  }}
+                                  className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 text-xs uppercase tracking-wider font-medium transition-all rounded"
+                                >
+                                  <Save size={14} />
+                                  Save Pricing Tiers
+                                </button>
+                              </div>
+                            </div>
+                          )}
 
                           {/* Info Box */}
                           {!hasChanges && (

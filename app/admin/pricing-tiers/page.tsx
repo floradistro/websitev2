@@ -109,6 +109,54 @@ export default function AdminPricingTiers() {
     setShowBlueprintModal(true);
   }
 
+  function createFromTemplate(template: 'retail' | 'wholesale-flat' | 'wholesale-tiered') {
+    const templates = {
+      retail: {
+        name: 'Retail Flower',
+        slug: 'retail-flower-' + Date.now(),
+        description: 'Standard retail gram-based pricing (1g, 3.5g, 7g, 14g, 28g)',
+        tier_type: 'weight' as const,
+        price_breaks: [
+          { break_id: '1g', label: '1 gram', qty: 1, unit: 'g', sort_order: 1 },
+          { break_id: '3_5g', label: '3.5g (Eighth)', qty: 3.5, unit: 'g', sort_order: 2 },
+          { break_id: '7g', label: '7g (Quarter)', qty: 7, unit: 'g', sort_order: 3 },
+          { break_id: '14g', label: '14g (Half Oz)', qty: 14, unit: 'g', sort_order: 4 },
+          { break_id: '28g', label: '28g (Ounce)', qty: 28, unit: 'g', sort_order: 5 },
+        ]
+      },
+      'wholesale-flat': {
+        name: 'Wholesale Cost Plus',
+        slug: 'wholesale-flat-' + Date.now(),
+        description: 'Simple flat rate per pound (set your markup once)',
+        tier_type: 'weight' as const,
+        price_breaks: [
+          { break_id: 'per_lb', label: 'Per Pound', qty: 1, unit: 'lb', sort_order: 1 }
+        ]
+      },
+      'wholesale-tiered': {
+        name: 'Wholesale Tiered',
+        slug: 'wholesale-tiered-' + Date.now(),
+        description: 'Multi-tier wholesale pricing (customize your tiers)',
+        tier_type: 'weight' as const,
+        price_breaks: [
+          { break_id: 'tier_1', label: 'Tier 1 (1-9 lbs)', qty: 1, unit: 'lb', min_qty: 1, max_qty: 9, sort_order: 1 },
+          { break_id: 'tier_2', label: 'Tier 2 (10+ lbs)', qty: 10, unit: 'lb', min_qty: 10, max_qty: null as any, sort_order: 2 }
+        ]
+      }
+    };
+
+    const selected = templates[template];
+    setEditingBlueprint({
+      ...selected,
+      is_active: true,
+      is_default: false,
+      display_order: blueprints.length + 1,
+      applicable_to_categories: null
+    });
+    setEditingBreaks(selected.price_breaks);
+    setShowBlueprintModal(true);
+  }
+
   function openEditModal(blueprint: PricingBlueprint) {
     setEditingBlueprint(blueprint);
     setEditingBreaks([...blueprint.price_breaks]);
@@ -279,15 +327,26 @@ export default function AdminPricingTiers() {
   }
 
   return (
-    <div className="w-full animate-fadeIn px-4 lg:px-0">
+    <div className="w-full px-4 lg:px-0">
+      <style jsx>{`
+        .minimal-glass {
+          background: rgba(255, 255, 255, 0.02);
+          backdrop-filter: blur(20px);
+          border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .subtle-glow {
+          box-shadow: 0 0 30px rgba(255, 255, 255, 0.02);
+        }
+      `}</style>
+
       {/* Header */}
-      <div className="flex justify-between items-start gap-4 mb-6">
+      <div className="flex justify-between items-start gap-4 mb-8">
         <div className="min-w-0">
-          <h1 className="text-2xl lg:text-3xl text-white font-light tracking-tight mb-2">
-            Pricing Tier Blueprints
+          <h1 className="text-2xl lg:text-3xl font-thin text-white/90 tracking-tight mb-2">
+            Pricing
           </h1>
-          <p className="text-white/50 text-sm">
-            Define pricing structures for vendors to use across products
+          <p className="text-white/40 text-xs font-light tracking-wide">
+            PRICING STRUCTURES · PARTNER TIERS
           </p>
         </div>
         <button 
@@ -305,12 +364,70 @@ export default function AdminPricingTiers() {
         <div className="flex gap-3">
           <AlertCircle size={20} className="text-white/60 flex-shrink-0 mt-0.5" />
           <div>
-            <p className="text-white/90 text-sm mb-1">About Pricing Blueprints</p>
+            <p className="text-white/90 text-sm mb-1">Keep It Simple</p>
             <p className="text-white/50 text-xs leading-relaxed">
-              Blueprints define the pricing structure (1g, 3.5g, 7g, etc.). Vendors then set their own prices for each tier. 
-              Changes here affect all vendors using these blueprints.
+              Blueprints are just empty templates showing the structure (1g, 3.5g, etc.). Vendors configure their own prices. 
+              <strong className="text-white/70"> No pre-filled prices or placeholders</strong> - just clean structure.
             </p>
           </div>
+        </div>
+      </div>
+
+      {/* Quick Templates */}
+      <div className="bg-[#111111] border border-white/10 p-6 mb-6 -mx-4 lg:mx-0">
+        <h3 className="text-white font-medium text-sm mb-4 uppercase tracking-wider">Quick Start Templates</h3>
+        <p className="text-white/50 text-xs mb-4">Create a pricing blueprint from a simple template</p>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+          <button
+            onClick={() => createFromTemplate('retail')}
+            className="bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 p-4 text-left transition-all"
+          >
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 bg-blue-500/20 flex items-center justify-center flex-shrink-0">
+                <DollarSign size={20} className="text-blue-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h4 className="text-white text-sm font-medium mb-1">Retail Flower</h4>
+                <p className="text-white/40 text-xs leading-relaxed">
+                  1g, 3.5g, 7g, 14g, 28g
+                </p>
+              </div>
+            </div>
+          </button>
+
+          <button
+            onClick={() => createFromTemplate('wholesale-flat')}
+            className="bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 p-4 text-left transition-all"
+          >
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 bg-purple-500/20 flex items-center justify-center flex-shrink-0">
+                <DollarSign size={20} className="text-purple-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h4 className="text-white text-sm font-medium mb-1">Wholesale Flat Rate</h4>
+                <p className="text-white/40 text-xs leading-relaxed">
+                  Simple per-pound pricing
+                </p>
+              </div>
+            </div>
+          </button>
+
+          <button
+            onClick={() => createFromTemplate('wholesale-tiered')}
+            className="bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 p-4 text-left transition-all"
+          >
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 bg-green-500/20 flex items-center justify-center flex-shrink-0">
+                <DollarSign size={20} className="text-green-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h4 className="text-white text-sm font-medium mb-1">Wholesale Tiered</h4>
+                <p className="text-white/40 text-xs leading-relaxed">
+                  Multiple price tiers by volume
+                </p>
+              </div>
+            </div>
+          </button>
         </div>
       </div>
 

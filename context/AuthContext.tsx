@@ -4,7 +4,7 @@ import { createContext, useContext, useState, useEffect, ReactNode, useCallback,
 import axios from "axios";
 
 interface User {
-  id: number;
+  id: string | number;
   email: string;
   firstName: string;
   lastName: string;
@@ -12,6 +12,7 @@ interface User {
   billing?: any;
   shipping?: any;
   avatar_url?: string;
+  isWholesaleApproved?: boolean;
 }
 
 interface AuthContextType {
@@ -66,7 +67,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
 
       if (response.data.success && response.data.user) {
+        console.log('✅ Setting user in context:', response.data.user);
         setUser(response.data.user);
+        // Explicitly save to localStorage immediately
+        localStorage.setItem("flora-user", JSON.stringify(response.data.user));
+        if (response.data.session) {
+          localStorage.setItem("supabase-session", response.data.session);
+        }
       } else {
         throw new Error(response.data.error || "Invalid email or password");
       }

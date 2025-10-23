@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServiceSupabase } from '@/lib/supabase/client';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 30; // Cache for 30 seconds
+
 export async function GET(request: NextRequest) {
   try {
     const supabase = getServiceSupabase();

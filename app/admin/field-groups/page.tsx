@@ -323,8 +323,8 @@ export default function FieldGroupsPage() {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Field Groups</h1>
-          <p className="text-white/60">Manage custom field sets and category assignments</p>
+          <h1 className="text-3xl font-thin text-white/90 tracking-tight mb-2">Attributes</h1>
+          <p className="text-white/40 text-xs font-light tracking-wide">CUSTOM FIELD SETS · CATEGORY ASSIGNMENTS</p>
         </div>
 
         {/* Tabs */}

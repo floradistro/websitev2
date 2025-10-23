@@ -7,6 +7,8 @@ import PullToRefresh from "@/components/PullToRefresh";
 import LoadingBar from "@/components/LoadingBar";
 import { CartProvider } from "@/context/CartContext";
 import { AuthProvider } from "@/context/AuthContext";
+import { VendorAuthProvider } from "@/context/VendorAuthContext";
+import { AdminAuthProvider } from "@/context/AdminAuthContext";
 import { WishlistProvider } from "@/context/WishlistContext";
 import { LoyaltyProvider } from "@/context/LoyaltyContext";
 import Providers from "./providers";
@@ -103,19 +105,23 @@ export default function RootLayout({
         <Providers>
           <LoadingBar />
           <AuthProvider>
-            <LoyaltyProvider>
-              <WishlistProvider>
-                <CartProvider>
-                  {/* <RecentlyViewedProvider> */}
-                    <PullToRefresh />
-                    <ConditionalLayout>
-                      {children}
-                    </ConditionalLayout>
-                    <NotificationToast />
-                  {/* </RecentlyViewedProvider> */}
-                </CartProvider>
-              </WishlistProvider>
-            </LoyaltyProvider>
+            <VendorAuthProvider>
+              <AdminAuthProvider>
+                <LoyaltyProvider>
+                  <WishlistProvider>
+                    <CartProvider>
+                      {/* <RecentlyViewedProvider> */}
+                        <PullToRefresh />
+                        <ConditionalLayout>
+                          {children}
+                        </ConditionalLayout>
+                        <NotificationToast />
+                      {/* </RecentlyViewedProvider> */}
+                    </CartProvider>
+                  </WishlistProvider>
+                </LoyaltyProvider>
+              </AdminAuthProvider>
+            </VendorAuthProvider>
           </AuthProvider>
         </Providers>
       </body>

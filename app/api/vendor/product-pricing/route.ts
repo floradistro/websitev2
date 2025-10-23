@@ -35,6 +35,7 @@ export async function GET(request: NextRequest) {
           id,
           name,
           slug,
+          description,
           tier_type,
           price_breaks
         )
@@ -49,16 +50,21 @@ export async function GET(request: NextRequest) {
 
     const { data: assignments, error } = await query;
 
-    if (error) throw error;
+    if (error) {
+      console.error('❌ Supabase error fetching product pricing assignments:', error);
+      throw error;
+    }
+
+    console.log(`✅ Loaded ${assignments?.length || 0} pricing assignments for product ${productId || 'vendor ' + vendorId}`);
 
     return NextResponse.json({
       success: true,
       assignments: assignments || []
     });
   } catch (error: any) {
-    console.error('Error fetching product pricing assignments:', error);
+    console.error('❌ Error fetching product pricing assignments:', error);
     return NextResponse.json(
-      { success: false, error: error.message },
+      { success: false, error: error.message || 'Failed to load pricing' },
       { status: 500 }
     );
   }

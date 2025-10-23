@@ -56,14 +56,25 @@ export default function AdminPayouts() {
   };
 
   return (
-    <div className="w-full animate-fadeIn px-4 lg:px-0">
+    <div className="w-full px-4 lg:px-0">
+      <style jsx>{`
+        .minimal-glass {
+          background: rgba(255, 255, 255, 0.02);
+          backdrop-filter: blur(20px);
+          border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .subtle-glow {
+          box-shadow: 0 0 30px rgba(255, 255, 255, 0.02);
+        }
+      `}</style>
+
       {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-3xl text-white font-light tracking-tight mb-2">
-          Vendor Payouts
+      <div className="mb-8">
+        <h1 className="text-3xl font-thin text-white/90 tracking-tight mb-2">
+          Payments
         </h1>
-        <p className="text-white/50 text-sm">
-          Manage vendor payments and commissions
+        <p className="text-white/40 text-xs font-light tracking-wide">
+          PARTNER PAYOUTS · COMMISSIONS
         </p>
       </div>
 

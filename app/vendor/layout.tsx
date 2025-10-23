@@ -6,7 +6,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { Home, Package, BarChart3, Settings, LogOut, Palette, ShoppingBag, FileText, DollarSign, Star, ChevronLeft, Menu, X, MapPin, Globe, Image } from 'lucide-react';
 import VendorSupportChat from '@/components/VendorSupportChat';
 import AIActivityMonitor from '@/components/AIActivityMonitor';
-import { VendorAuthProvider, useVendorAuth } from '@/context/VendorAuthContext';
+import { useVendorAuth } from '@/context/VendorAuthContext';
 import { showConfirm } from '@/components/NotificationToast';
 
 function VendorLayoutContent({
@@ -416,9 +416,7 @@ export default function VendorLayout({
   children: React.ReactNode;
 }) {
   return (
-    <VendorAuthProvider>
-      <VendorLayoutContent>{children}</VendorLayoutContent>
-    </VendorAuthProvider>
+    <VendorLayoutContent>{children}</VendorLayoutContent>
   );
 }
 

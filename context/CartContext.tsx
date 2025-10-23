@@ -10,6 +10,11 @@ interface CartItem {
   quantity: number;
   tierName: string;
   image?: string;
+  
+  // DUAL UNIT SYSTEM - Critical for inventory deduction
+  quantity_grams?: number;          // Actual amount in grams (for inventory deduction)
+  quantity_display?: string;        // Display label (e.g., "1 lb", "3.5g", "½ oz")
+  
   orderType?: "pickup" | "delivery";
   locationId?: string;
   locationName?: string;

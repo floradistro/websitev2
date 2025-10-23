@@ -96,6 +96,7 @@ export async function POST(request: NextRequest) {
       status: 'pending', // Requires admin approval (marketplace pattern)
       vendor_id: vendorId,
       regular_price: productData.price ? parseFloat(productData.price) : null,
+      cost_price: productData.cost_price ? parseFloat(productData.cost_price) : null,  // ← ADD COST TRACKING
       sku: productData.sku || `YC-${Date.now()}`,
       // Stock management follows enterprise patterns
       manage_stock: shouldManageStock,

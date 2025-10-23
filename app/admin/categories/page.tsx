@@ -230,15 +230,56 @@ export default function CategoriesPage() {
     categories.filter(c => c.parent_id === parentId);
 
   return (
-    <div className="w-full animate-fadeIn px-4 lg:px-0">
+    <div className="w-full px-4 lg:px-0">
+      <style jsx>{`
+        .minimal-glass {
+          background: rgba(255, 255, 255, 0.02);
+          backdrop-filter: blur(20px);
+          border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .subtle-glow {
+          box-shadow: 0 0 30px rgba(255, 255, 255, 0.02);
+        }
+        input[type="checkbox"] {
+          appearance: none;
+          -webkit-appearance: none;
+          width: 16px;
+          height: 16px;
+          border: 1px solid rgba(255, 255, 255, 0.15);
+          background: rgba(255, 255, 255, 0.03);
+          cursor: pointer;
+          position: relative;
+          transition: all 0.3s ease;
+        }
+        input[type="checkbox"]:hover {
+          border-color: rgba(255, 255, 255, 0.25);
+          background: rgba(255, 255, 255, 0.05);
+        }
+        input[type="checkbox"]:checked {
+          background: rgba(255, 255, 255, 0.1);
+          border-color: rgba(255, 255, 255, 0.3);
+        }
+        input[type="checkbox"]:checked::after {
+          content: '';
+          position: absolute;
+          left: 5px;
+          top: 2px;
+          width: 4px;
+          height: 8px;
+          border: solid rgba(255, 255, 255, 0.9);
+          border-width: 0 1.5px 1.5px 0;
+          transform: rotate(45deg);
+        }
+      `}</style>
+
       {/* Header */}
       <div className="mb-8 flex items-center justify-between">
         <div>
-          <h1 className="text-3xl text-white mb-2 font-light tracking-tight">
-            Categories
+          <h1 className="text-3xl font-thin text-white/90 tracking-tight mb-2">
+            Collections
           </h1>
-          <p className="text-white/50 text-sm">
-            Manage product categories and hierarchy
+          <p className="text-white/40 text-xs font-light tracking-wide">
+            {loading ? 'LOADING...' : `${categories.length} CATEGORIES`}
           </p>
         </div>
         <button

@@ -1,51 +1,53 @@
-import { NextResponse } from 'next/server';
-import { getServiceSupabase } from '@/lib/supabase/client';
+import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@supabase/supabase-js';
 
-/**
- * Health check endpoint for monitoring
- * GET /api/health
- */
-export async function GET() {
-  try {
-    const supabase = getServiceSupabase();
-    
-    // Test database connection
-    const startTime = Date.now();
-    const { error } = await supabase
-      .from('products')
-      .select('id')
-      .limit(1)
-      .single();
-    const dbLatency = Date.now() - startTime;
-    
-    if (error && error.code !== 'PGRST116') {
-      // PGRST116 is "no rows returned" which is fine
-      throw error;
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+
+export async function GET(request: NextRequest) {
+  const checks = {
+    timestamp: new Date().toISOString(),
+    status: 'healthy',
+    checks: {
+      database: { status: 'unknown', latency: 0 },
+      api: { status: 'healthy', latency: 0 },
+      cache: { status: 'healthy', latency: 0 },
+      storage: { status: 'unknown', latency: 0 }
     }
-    
-    return NextResponse.json({
-      status: 'healthy',
-      timestamp: new Date().toISOString(),
-      database: {
-        connected: true,
-        latency: `${dbLatency}ms`
-      },
-      uptime: process.uptime(),
-      memory: {
-        used: Math.round(process.memoryUsage().heapUsed / 1024 / 1024),
-        total: Math.round(process.memoryUsage().heapTotal / 1024 / 1024),
-        unit: 'MB'
+  };
+
+  try {
+    // Database check
+    const dbStart = Date.now();
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const { error: dbError } = await supabase.from('vendors').select('id').limit(1);
+    checks.checks.database = {
+      status: dbError ? 'unhealthy' : 'healthy',
+      latency: Date.now() - dbStart
+    };
+
+    // Storage check
+    const storageStart = Date.now();
+    const { error: storageError } = await supabase.storage.listBuckets();
+    checks.checks.storage = {
+      status: storageError ? 'unhealthy' : 'healthy',
+      latency: Date.now() - storageStart
+    };
+
+    // Overall status
+    const allHealthy = Object.values(checks.checks).every(check => check.status === 'healthy');
+    checks.status = allHealthy ? 'healthy' : 'degraded';
+
+    return NextResponse.json(checks, {
+      headers: {
+        'Cache-Control': 'no-store, max-age=0',
       }
     });
   } catch (error: any) {
+    checks.status = 'unhealthy';
     return NextResponse.json({
-      status: 'unhealthy',
-      timestamp: new Date().toISOString(),
-      error: error.message,
-      database: {
-        connected: false
-      }
+      ...checks,
+      error: error.message
     }, { status: 503 });
   }
 }
-

@@ -2,6 +2,142 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServiceSupabase } from '@/lib/supabase/client';
 import { productCache, vendorCache, inventoryCache } from '@/lib/cache-manager';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 30; // Cache for 30 seconds
+
+/**
+ * GET - Fetch ALL products from ALL vendors for admin
+ * No filtering by status or vendor - shows everything
+ */
+export async function GET(request: NextRequest) {
+  try {
+    console.log('🔵 ADMIN: Fetching ALL products from ALL vendors');
+    const { searchParams } = new URL(request.url);
+    
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = Math.min(parseInt(searchParams.get('limit') || '100'), 100); // Max 100 for speed
+    const search = searchParams.get('search');
+    const status = searchParams.get('status');
+    const vendorId = searchParams.get('vendor_id');
+    const withWholesale = searchParams.get('with_wholesale') === 'true';
+    
+    const offset = (page - 1) * limit;
+    
+    const supabase = getServiceSupabase();
+    
+    // Build query - NO STATUS FILTER for admin, show ALL products
+    let query = supabase
+      .from('products')
+      .select(`
+        *,
+        vendor:vendors(
+          id,
+          store_name,
+          slug,
+          email,
+          vendor_type,
+          wholesale_enabled,
+          logo_url
+        ),
+        category:categories!primary_category_id(
+          id,
+          name,
+          slug
+        )
+      `, { count: 'exact' });
+    
+    // Optional filters
+    if (search) {
+      query = query.or(`name.ilike.%${search}%,sku.ilike.%${search}%`);
+    }
+    
+    if (status) {
+      query = query.eq('status', status);
+    }
+    
+    if (vendorId) {
+      query = query.eq('vendor_id', vendorId);
+    }
+    
+    // Order and paginate
+    query = query
+      .order('created_at', { ascending: false })
+      .range(offset, offset + limit - 1);
+    
+    const { data: products, error, count } = await query;
+    
+    if (error) {
+      console.error('❌ Error fetching admin products:', error);
+      return NextResponse.json(
+        { error: 'Failed to fetch products', details: error.message },
+        { status: 500 }
+      );
+    }
+    
+    console.log(`✅ Fetched ${products?.length || 0} products from ${count || 0} total`);
+    
+    // If wholesale info requested, fetch tier counts
+    let productsWithTiers = products;
+    if (withWholesale && products) {
+      const productIds = products.map(p => p.id);
+      
+      // Get tier counts for each product
+      const { data: tiers } = await supabase
+        .from('wholesale_pricing')
+        .select('product_id')
+        .in('product_id', productIds)
+        .eq('is_active', true);
+      
+      // Count tiers per product
+      const tierCounts = new Map<string, number>();
+      (tiers || []).forEach(tier => {
+        tierCounts.set(
+          tier.product_id,
+          (tierCounts.get(tier.product_id) || 0) + 1
+        );
+      });
+      
+      productsWithTiers = products.map(p => ({
+        ...p,
+        tier_count: tierCounts.get(p.id) || 0
+      }));
+    }
+    
+    // Get vendor stats
+    const { data: vendors } = await supabase
+      .from('vendors')
+      .select('id, store_name')
+      .eq('status', 'active');
+    
+    console.log(`📊 Total vendors: ${vendors?.length || 0}`);
+    
+    return NextResponse.json({
+      success: true,
+      products: productsWithTiers || [],
+      pagination: {
+        page,
+        limit,
+        total: count || 0,
+        totalPages: Math.ceil((count || 0) / limit)
+      },
+      stats: {
+        totalProducts: count || 0,
+        totalVendors: vendors?.length || 0
+      }
+    });
+    
+  } catch (error: any) {
+    console.error('❌ Admin products GET error:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch products', details: error.message },
+      { status: 500 }
+    );
+  }
+}
+
+/**
+ * DELETE - Delete a product
+ */
 export async function DELETE(request: NextRequest) {
   try {
     console.log('🔵 DELETE /api/admin/products called');
@@ -128,4 +264,3 @@ export async function DELETE(request: NextRequest) {
     );
   }
 }
-

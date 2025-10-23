@@ -212,10 +212,10 @@ export default function MonitoringDashboard() {
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-3xl font-thin text-white/90 tracking-tight mb-2">
-              Performance Monitor
+              Performance
             </h1>
             <p className="text-white/40 text-xs font-light tracking-wide">
-              SYSTEM METRICS · {new Date(stats.timestamp).toLocaleTimeString()}
+              SYSTEM METRICS · {new Date(stats.timestamp).toLocaleTimeString().toUpperCase()}
             </p>
           </div>
           <button

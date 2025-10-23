@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Package, Plus, AlertCircle, CheckCircle, XCircle, TrendingUp, DollarSign, AlertTriangle, Bell, Calendar, ArrowUpRight, ArrowDownRight, FileText, MessageSquare, Store, Image } from 'lucide-react';
 import { useVendorAuth } from '@/context/VendorAuthContext';
+import VendorProfitWidget from '@/components/VendorProfitWidget';
 import axios from 'axios';
 
 interface RecentProduct {
@@ -595,6 +596,9 @@ export default function VendorDashboard() {
 
         {/* Right Column - 1/3 width */}
         <div className="space-y-6">
+          {/* Profit Margin Widget */}
+          <VendorProfitWidget />
+
           {/* Payout Summary */}
           <div className="bg-[#1a1a1a] lg:border border-t lg:border-t-0 border-white/5">
             <div className="border-b border-white/5 px-4 lg:p-6 py-4">

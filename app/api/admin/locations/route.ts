@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServiceSupabase } from '@/lib/supabase/client';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 30; // Cache for 30 seconds
+
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
@@ -13,7 +16,7 @@ export async function GET(request: NextRequest) {
       .from('locations')
       .select(`
         *,
-        vendors(store_name, email)
+        vendors(store_name, email, logo_url)
       `)
       .order('created_at', { ascending: false });
     
@@ -105,7 +108,7 @@ export async function POST(request: NextRequest) {
         })
         .select(`
           *,
-          vendors(store_name, email)
+          vendors(store_name, email, logo_url)
         `)
         .single();
       
@@ -161,7 +164,7 @@ export async function POST(request: NextRequest) {
         .eq('id', location_id)
         .select(`
           *,
-          vendors(store_name, email)
+          vendors(store_name, email, logo_url)
         `)
         .single();
       
@@ -239,7 +242,7 @@ export async function POST(request: NextRequest) {
         .eq('id', location_id)
         .select(`
           *,
-          vendors(store_name, email)
+          vendors(store_name, email, logo_url)
         `)
         .single();
       
@@ -270,7 +273,7 @@ export async function POST(request: NextRequest) {
         .eq('id', location_id)
         .select(`
           *,
-          vendors(store_name, email)
+          vendors(store_name, email, logo_url)
         `)
         .single();
       

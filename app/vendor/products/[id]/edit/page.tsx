@@ -53,6 +53,7 @@ export default function EditProduct() {
     description: '',
     category: '',
     price: '',
+    cost_price: '',  // ← ADD COST TRACKING
     thc_percentage: '',
     cbd_percentage: '',
     strain_type: '',
@@ -86,6 +87,7 @@ export default function EditProduct() {
           description: p.description || '',
           category: p.primary_category_id || '',
           price: p.price || p.regular_price || '',
+          cost_price: p.cost_price || '',  // ← LOAD COST PRICE
           thc_percentage: p.meta_data?.thc_percentage || '',
           cbd_percentage: p.meta_data?.cbd_percentage || '',
           strain_type: p.meta_data?.strain_type || '',
@@ -299,12 +301,47 @@ export default function EditProduct() {
     e.preventDefault();
     setSaving(true);
 
-    // TODO: Submit product updates to API
-    
-    setTimeout(() => {
+    try {
+      const vendorId = localStorage.getItem('vendor_id');
+      
+      const updateData = {
+        name: product.name,
+        description: product.description,
+        category: product.category,
+        price: product.price,
+        cost_price: product.cost_price || null,  // ← INCLUDE COST PRICE
+        thc_percentage: product.thc_percentage,
+        cbd_percentage: product.cbd_percentage,
+        strain_type: product.strain_type,
+        lineage: product.lineage,
+        terpenes: product.terpenes,
+        effects: product.effects,
+        quantity: product.quantity,
+      };
+
+      const response = await fetch(`/api/vendor/products/${productId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-vendor-id': vendorId || ''
+        },
+        body: JSON.stringify(updateData)
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        alert('Product updated successfully!');
+        router.push('/vendor/products');
+      } else {
+        alert(data.error || 'Failed to update product');
+        setSaving(false);
+      }
+    } catch (error) {
+      console.error('Update error:', error);
+      alert('Failed to update product');
       setSaving(false);
-      router.push('/vendor/products');
-    }, 2000);
+    }
   };
 
   if (loading) {
@@ -419,9 +456,32 @@ export default function EditProduct() {
               </select>
             </div>
 
+            {/* COST PRICE (Vendor Private) */}
             <div>
               <label className="block text-white/80 text-sm mb-2">
-                Base Price (per gram) <span className="text-red-500">*</span>
+                Cost Price (Your Cost)
+                <span className="ml-2 text-white/40 text-xs">🔒 Private</span>
+              </label>
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/60">$</span>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={product.cost_price}
+                  onChange={(e) => setProduct({...product, cost_price: e.target.value})}
+                  placeholder="10.00"
+                  className="w-full bg-white/5 border border-white/10 text-white placeholder-white/40 pl-8 pr-4 py-3 rounded focus:outline-none focus:border-white/20 text-base"
+                />
+              </div>
+              <p className="text-white/40 text-xs mt-1">
+                Your cost per unit (not visible to customers)
+              </p>
+            </div>
+
+            {/* SELLING PRICE */}
+            <div>
+              <label className="block text-white/80 text-sm mb-2">
+                Selling Price (per gram) <span className="text-red-500">*</span>
               </label>
               <div className="relative">
                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/60">$</span>
@@ -435,6 +495,33 @@ export default function EditProduct() {
                   className="w-full bg-white/5 border border-white/10 text-white placeholder-white/40 pl-8 pr-4 py-3 rounded focus:outline-none focus:border-white/20 text-base"
                 />
               </div>
+              
+              {/* MARGIN CALCULATION */}
+              {product.cost_price && product.price && parseFloat(product.cost_price) > 0 && parseFloat(product.price) > 0 && (
+                <div className="mt-2 flex items-center gap-3 text-xs">
+                  <span className={`font-medium ${
+                    ((parseFloat(product.price) - parseFloat(product.cost_price)) / parseFloat(product.price) * 100) >= 40 
+                      ? 'text-green-400' 
+                      : ((parseFloat(product.price) - parseFloat(product.cost_price)) / parseFloat(product.price) * 100) >= 25 
+                      ? 'text-yellow-400' 
+                      : 'text-red-400'
+                  }`}>
+                    Margin: {((parseFloat(product.price) - parseFloat(product.cost_price)) / parseFloat(product.price) * 100).toFixed(1)}%
+                  </span>
+                  <span className="text-white/40">|</span>
+                  <span className="text-green-400">
+                    Profit: ${(parseFloat(product.price) - parseFloat(product.cost_price)).toFixed(2)}/unit
+                  </span>
+                  {product.quantity && parseFloat(product.quantity) > 0 && (
+                    <>
+                      <span className="text-white/40">|</span>
+                      <span className="text-blue-400">
+                        Total Value: ${((parseFloat(product.price) - parseFloat(product.cost_price)) * parseFloat(product.quantity)).toFixed(2)}
+                      </span>
+                    </>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </div>

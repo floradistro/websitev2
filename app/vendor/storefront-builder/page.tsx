@@ -63,7 +63,18 @@ What kind of storefront would you like?`,
     setGenerating(true);
 
     try {
-      const response = await fetch('/api/ai-agent/generate', {
+      // Initialize storefront if needed
+      let currentStorefrontId = preview?.id;
+      if (!currentStorefrontId) {
+        const initResponse = await fetch('/api/ai-agent/init-storefront', {
+          method: 'POST',
+          headers: { 'x-vendor-id': vendor!.id.toString() },
+        });
+        const initResult = await initResponse.json();
+        currentStorefrontId = initResult.storefrontId;
+      }
+
+      const response = await fetch('/api/ai-agent/generate-code', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -71,12 +82,20 @@ What kind of storefront would you like?`,
         },
         body: JSON.stringify({
           message: input,
-          history: messages.filter(m => m.role !== 'system').map(m => ({
+          storefrontId: currentStorefrontId,
+          conversationHistory: messages.filter(m => m.role !== 'system').map(m => ({
             role: m.role,
             content: m.content,
           })),
         }),
       });
+
+      // Check if response is JSON
+      const contentType = response.headers.get('content-type');
+      if (!contentType?.includes('application/json')) {
+        const text = await response.text();
+        throw new Error(`API returned non-JSON: ${text.substring(0, 200)}`);
+      }
 
       const result = await response.json();
 
@@ -90,8 +109,8 @@ What kind of storefront would you like?`,
         setMessages([...messages, userMessage, assistantMessage]);
 
         setPreview({
-          id: result.storefrontId,
-          previewUrl: result.previewUrl,
+          id: currentStorefrontId,
+          previewUrl: `/api/ai-agent/preview/${currentStorefrontId}`,
           requirements: result.requirements,
         });
       } else {
@@ -135,14 +154,17 @@ What kind of storefront would you like?`,
       const result = await response.json();
 
       if (result.success) {
+        // For now, show localhost URL (in production this would be Vercel URL)
+        const liveUrl = `http://localhost:3002`;
+        
         setDeployed({
-          url: result.deploymentUrl,
-          id: result.deploymentId,
+          url: liveUrl,
+          id: result.deploymentId || preview.id,
         });
 
         const successMessage: Message = {
           role: 'assistant',
-          content: `🎉 Your storefront is now live at ${result.deploymentUrl}!`,
+          content: `🎉 Your storefront is now live! Visit ${liveUrl} to see it in action.`,
           timestamp: new Date(),
         };
         setMessages([...messages, successMessage]);
@@ -303,32 +325,43 @@ What kind of storefront would you like?`,
 
           <div className="flex-1 overflow-hidden bg-[#0a0a0a]">
             {preview ? (
-              <div className="w-full h-full flex items-center justify-center p-8">
-                <div className="text-center">
-                  <div className="w-20 h-20 rounded-full bg-purple-500/10 flex items-center justify-center mx-auto mb-4">
-                    <Sparkles size={32} className="text-purple-400" />
+              deployed ? (
+                <iframe
+                  src={deployed.url}
+                  className="w-full h-full bg-white"
+                  title="Live Storefront"
+                />
+              ) : (
+                <div className="w-full h-full flex flex-col">
+                  {/* Preview iframe */}
+                  <div className="flex-1">
+                    <iframe
+                      key={preview.id}
+                      src={`/api/ai-agent/preview/${preview.id}`}
+                      className="w-full h-full bg-white border-0"
+                      title="Storefront Preview"
+                      sandbox="allow-scripts allow-same-origin"
+                    />
                   </div>
-                  <h3 className="text-white text-lg mb-2">Storefront Generated!</h3>
-                  <p className="text-white/60 text-sm mb-6 max-w-md">
-                    Your {preview.requirements?.theme?.style || 'custom'} storefront is ready. 
-                    Click "Deploy Live" to publish it to the web.
-                  </p>
-                  {preview.requirements && (
-                    <div className="bg-white/5 border border-white/10 p-4 text-left text-xs space-y-2">
-                      <div className="text-white/40">Specifications:</div>
-                      <div className="text-white/80">
-                        Style: {preview.requirements.theme?.style}
+                  {/* Specs footer */}
+                  <div className="bg-black/50 backdrop-blur border-t border-white/10 p-4">
+                    <div className="flex items-center gap-6 text-xs">
+                      <div>
+                        <span className="text-white/40">Style:</span>
+                        <span className="text-white ml-2">{preview.requirements?.theme?.style}</span>
                       </div>
-                      <div className="text-white/80">
-                        Colors: {preview.requirements.theme?.colors?.primary}
+                      <div>
+                        <span className="text-white/40">Colors:</span>
+                        <span className="text-white ml-2">{preview.requirements?.theme?.colors?.primary}</span>
                       </div>
-                      <div className="text-white/80">
-                        Grid: {preview.requirements.layout?.productGrid} columns
+                      <div>
+                        <span className="text-white/40">Grid:</span>
+                        <span className="text-white ml-2">{preview.requirements?.layout?.productGrid} columns</span>
                       </div>
                     </div>
-                  )}
+                  </div>
                 </div>
-              </div>
+              )
             ) : (
               <div className="w-full h-full flex items-center justify-center">
                 <div className="text-center text-white/40 text-sm">

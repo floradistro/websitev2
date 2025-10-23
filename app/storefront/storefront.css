@@ -1,103 +1,104 @@
-/* Storefront Global Styles */
+/* Storefront Global Styles - Yacht Club Design */
 
 :root {
   --color-primary: #000000;
   --color-secondary: #FFFFFF;
   --color-accent: #666666;
-  --color-background: #FFFFFF;
-  --color-text: #1A1A1A;
+  --color-background: #1a1a1a;
+  --color-text: #FFFFFF;
   --font-heading: 'Inter', sans-serif;
   --font-body: 'Inter', sans-serif;
-}
-
-.storefront-body {
-  margin: 0;
-  padding: 0;
-  background-color: var(--color-background);
-  color: var(--color-text);
-  font-family: var(--font-body);
-  line-height: 1.6;
 }
 
 .storefront-container {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  background-color: #1a1a1a;
 }
 
 .storefront-main {
   flex: 1;
+  background-color: #2a2a2a;
 }
 
-/* Typography */
+/* Typography - Yacht Club Style */
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-heading);
   color: var(--color-text);
   margin: 0;
-  font-weight: 600;
+  font-weight: 300;
+  letter-spacing: -0.02em;
 }
 
 h1 {
   font-size: 3rem;
-  line-height: 1.2;
+  line-height: 1.1;
 }
 
 h2 {
   font-size: 2.25rem;
-  line-height: 1.3;
+  line-height: 1.2;
 }
 
 h3 {
   font-size: 1.875rem;
-  line-height: 1.4;
+  line-height: 1.3;
 }
 
-/* Buttons */
+/* Buttons - Yacht Club Style */
 .btn-primary {
-  background-color: var(--color-primary);
-  color: var(--color-secondary);
+  background-color: var(--color-secondary, #FFFFFF);
+  color: var(--color-primary, #000000);
   border: none;
   padding: 0.875rem 2rem;
-  font-size: 1rem;
+  font-size: 0.75rem;
   font-weight: 500;
-  border-radius: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
   font-family: var(--font-body);
 }
 
 .btn-primary:hover {
-  opacity: 0.9;
+  background-color: rgba(255, 255, 255, 0.9);
   transform: translateY(-1px);
 }
 
 .btn-secondary {
-  background-color: transparent;
-  color: var(--color-primary);
-  border: 2px solid var(--color-primary);
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--color-secondary, #FFFFFF);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   padding: 0.875rem 2rem;
-  font-size: 1rem;
+  font-size: 0.75rem;
   font-weight: 500;
-  border-radius: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
   font-family: var(--font-body);
 }
 
 .btn-secondary:hover {
-  background-color: var(--color-primary);
-  color: var(--color-secondary);
+  background-color: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
 }
 
 /* Links */
 a {
-  color: var(--color-primary);
+  color: inherit;
   text-decoration: none;
   transition: opacity 0.2s ease;
 }
 
 a:hover {
-  opacity: 0.7;
+  opacity: 0.8;
+}
+
+/* Nav Links */
+.nav-link {
+  transition: all 0.2s ease;
 }
 
 /* Responsive */

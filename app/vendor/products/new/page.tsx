@@ -48,6 +48,7 @@ export default function NewProduct() {
     description: '',
     category: '',
     price: '',
+    cost_price: '',  // ← ADD COST TRACKING
     thc_percentage: '',
     cbd_percentage: '',
     strain_type: '',
@@ -342,6 +343,7 @@ export default function NewProduct() {
         name: formData.name,
         description: formData.description,
         category: formData.category,
+        cost_price: formData.cost_price || null,  // ← ADD COST TRACKING
         thc_percentage: formData.thc_percentage,
         cbd_percentage: formData.cbd_percentage,
         strain_type: formData.strain_type,
@@ -615,9 +617,33 @@ export default function NewProduct() {
 
             {/* Single Price - Only for Simple Products with Single Pricing */}
             {productType === 'simple' && pricingMode === 'single' && (
+              <>
+              {/* COST PRICE (Private - Vendor Only) */}
               <div>
                 <label className="block text-white/80 text-sm mb-2">
-                  Price <span className="text-red-500">*</span>
+                  Cost Price (Your Cost)
+                  <span className="ml-2 text-white/40 text-xs">🔒 Private</span>
+                </label>
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/60">$</span>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={formData.cost_price}
+                    onChange={(e) => setFormData({...formData, cost_price: e.target.value})}
+                    placeholder="10.00"
+                    className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 pl-8 pr-4 py-3 focus:outline-none focus:border-white/10 transition-colors text-base"
+                  />
+                </div>
+                <p className="text-white/40 text-xs mt-1">
+                  Your cost per unit (not visible to customers)
+                </p>
+              </div>
+
+              {/* SELLING PRICE */}
+              <div>
+                <label className="block text-white/80 text-sm mb-2">
+                  Selling Price <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
                   <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/60">$</span>
@@ -631,7 +657,27 @@ export default function NewProduct() {
                     className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 pl-8 pr-4 py-3 focus:outline-none focus:border-white/10 transition-colors text-base"
                   />
                 </div>
+                
+                {/* SHOW MARGIN CALCULATION */}
+                {formData.cost_price && formData.price && parseFloat(formData.cost_price) > 0 && parseFloat(formData.price) > 0 && (
+                  <div className="mt-2 flex items-center gap-3 text-xs">
+                    <span className={`font-medium ${
+                      ((parseFloat(formData.price) - parseFloat(formData.cost_price)) / parseFloat(formData.price) * 100) >= 40 
+                        ? 'text-green-400' 
+                        : ((parseFloat(formData.price) - parseFloat(formData.cost_price)) / parseFloat(formData.price) * 100) >= 25 
+                        ? 'text-yellow-400' 
+                        : 'text-red-400'
+                    }`}>
+                      Margin: {((parseFloat(formData.price) - parseFloat(formData.cost_price)) / parseFloat(formData.price) * 100).toFixed(1)}%
+                    </span>
+                    <span className="text-white/40">|</span>
+                    <span className="text-green-400">
+                      Profit: ${(parseFloat(formData.price) - parseFloat(formData.cost_price)).toFixed(2)}/unit
+                    </span>
+                  </div>
+                )}
               </div>
+              </>
             )}
           </div>
         </div>

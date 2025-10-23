@@ -49,15 +49,26 @@ export default function AdminReports() {
   });
 
   return (
-    <div className="w-full animate-fadeIn px-4 lg:px-0">
+    <div className="w-full px-4 lg:px-0">
+      <style jsx>{`
+        .minimal-glass {
+          background: rgba(255, 255, 255, 0.02);
+          backdrop-filter: blur(20px);
+          border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .subtle-glow {
+          box-shadow: 0 0 30px rgba(255, 255, 255, 0.02);
+        }
+      `}</style>
+
       {/* Header */}
-      <div className="flex justify-between items-center gap-4 mb-6">
+      <div className="flex justify-between items-center gap-4 mb-8">
         <div>
-          <h1 className="text-3xl text-white font-light tracking-tight mb-2">
+          <h1 className="text-3xl font-thin text-white/90 tracking-tight mb-2">
             Reports
           </h1>
-          <p className="text-white/50 text-sm">
-            Generate and download marketplace reports
+          <p className="text-white/40 text-xs font-light tracking-wide">
+            GENERATE · DOWNLOAD · MARKETPLACE DATA
           </p>
         </div>
         <button className="flex items-center gap-2 bg-white text-black px-5 py-3 text-xs font-medium uppercase tracking-wider hover:bg-white/90 transition-all">

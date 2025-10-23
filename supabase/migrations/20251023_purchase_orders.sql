@@ -423,3 +423,5 @@ GRANT SELECT ON public.purchase_order_summary TO authenticated;
 -- Grant sequence usage
 GRANT USAGE, SELECT ON SEQUENCE po_number_seq TO authenticated;
 
+
+

@@ -8,7 +8,6 @@ import {
   FileText, DollarSign, BarChart3, Menu, X, MapPin, Globe, FolderTree, Layers, ShoppingBag, Activity 
 } from 'lucide-react';
 import { showConfirm } from '@/components/NotificationToast';
-import { AdminAuthProvider } from '@/context/AdminAuthContext';
 import AdminProtectedRoute from '@/components/AdminProtectedRoute';
 
 export default function AdminLayout({
@@ -60,20 +59,20 @@ export default function AdminLayout({
   }, [lastScrollY]);
 
   const navItems = [
-    { href: '/admin/dashboard', icon: Home, label: 'Dashboard' },
-    { href: '/admin/orders', icon: ShoppingBag, label: 'Orders' },
-    { href: '/admin/products', icon: Package, label: 'Products' },
-    { href: '/admin/categories', icon: FolderTree, label: 'Categories' },
-    { href: '/admin/field-groups', icon: Layers, label: 'Fields' },
-    { href: '/admin/pricing-tiers', icon: DollarSign, label: 'Pricing Tiers' },
-    { href: '/admin/vendors', icon: Store, label: 'Vendors' },
+    { href: '/admin/dashboard', icon: Home, label: 'Overview' },
+    { href: '/admin/orders', icon: ShoppingBag, label: 'Transactions' },
+    { href: '/admin/products', icon: Package, label: 'Catalog' },
+    { href: '/admin/categories', icon: FolderTree, label: 'Collections' },
+    { href: '/admin/field-groups', icon: Layers, label: 'Attributes' },
+    { href: '/admin/pricing-tiers', icon: DollarSign, label: 'Pricing' },
+    { href: '/admin/vendors', icon: Store, label: 'Partners' },
     { href: '/admin/locations', icon: MapPin, label: 'Locations' },
     { href: '/admin/domains', icon: Globe, label: 'Domains' },
-    { href: '/admin/approvals', icon: CheckSquare, label: 'Approvals' },
-    { href: '/admin/users', icon: Users, label: 'Users' },
-    { href: '/admin/analytics', icon: BarChart3, label: 'Analytics' },
-    { href: '/admin/monitoring', icon: Activity, label: 'Monitoring' },
-    { href: '/admin/payouts', icon: DollarSign, label: 'Payouts' },
+    { href: '/admin/approvals', icon: CheckSquare, label: 'Review' },
+    { href: '/admin/users', icon: Users, label: 'Team' },
+    { href: '/admin/analytics', icon: BarChart3, label: 'Insights' },
+    { href: '/admin/monitoring', icon: Activity, label: 'Performance' },
+    { href: '/admin/payouts', icon: DollarSign, label: 'Payments' },
     { href: '/admin/reports', icon: FileText, label: 'Reports' },
     { href: '/admin/settings', icon: Settings, label: 'Settings' },
   ];
@@ -98,16 +97,11 @@ export default function AdminLayout({
   }
 
   if (pathname === '/admin/login') {
-    return (
-      <AdminAuthProvider>
-        {children}
-      </AdminAuthProvider>
-    );
+    return <>{children}</>;
   }
 
   return (
-    <AdminAuthProvider>
-      <AdminProtectedRoute>
+    <AdminProtectedRoute>
       <style jsx global>{`
         @supports (padding-bottom: env(safe-area-inset-bottom)) {
           .safe-bottom {
@@ -149,6 +143,42 @@ export default function AdminLayout({
         }
         .luxury-border {
           border-image: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.03)) 1;
+        }
+        /* Sidebar scrollbar */
+        aside::-webkit-scrollbar {
+          width: 6px;
+        }
+        aside::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        aside::-webkit-scrollbar-thumb {
+          background: rgba(255, 255, 255, 0.1);
+          border-radius: 3px;
+        }
+        aside::-webkit-scrollbar-thumb:hover {
+          background: rgba(255, 255, 255, 0.2);
+        }
+        aside {
+          scrollbar-width: thin;
+          scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+        }
+        /* Main content scrollbar */
+        main::-webkit-scrollbar {
+          width: 8px;
+        }
+        main::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        main::-webkit-scrollbar-thumb {
+          background: rgba(255, 255, 255, 0.1);
+          border-radius: 4px;
+        }
+        main::-webkit-scrollbar-thumb:hover {
+          background: rgba(255, 255, 255, 0.2);
+        }
+        main {
+          scrollbar-width: thin;
+          scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
         }
       `}</style>
 
@@ -276,9 +306,9 @@ export default function AdminLayout({
         </div>
       )}
 
-      {/* Desktop Header */}
+      {/* Desktop Header - Fixed */}
       <nav 
-        className="hidden lg:block border-b border-white/5 sticky top-0 z-[110] luxury-glow"
+        className="hidden lg:block border-b border-white/5 fixed top-0 left-0 right-0 z-[110] luxury-glow"
         style={{ 
           paddingTop: 'env(safe-area-inset-top, 0px)',
           background: 'linear-gradient(135deg, rgba(10,10,10,0.98), rgba(0,0,0,0.95))',
@@ -316,16 +346,22 @@ export default function AdminLayout({
         </div>
       </nav>
 
-      <div className="flex min-h-screen pb-[env(safe-area-inset-bottom)]" style={{ background: 'linear-gradient(to bottom, #000000, #0a0a0a)' }}>
-        {/* Desktop Sidebar */}
+      <div className="fixed inset-0" style={{ 
+        top: 'calc(80px + env(safe-area-inset-top, 0px))',
+        paddingBottom: 'env(safe-area-inset-bottom)',
+        background: 'linear-gradient(to bottom, #000000, #0a0a0a)' 
+      }}>
+        {/* Desktop Sidebar - Fixed */}
         <aside 
-          className="hidden lg:block w-72 border-r border-white/5"
+          className="hidden lg:block w-72 border-r border-white/5 fixed left-0 bottom-0 overflow-y-auto"
           style={{ 
-            minHeight: 'calc(100vh - 80px - env(safe-area-inset-top, 0px))',
-            background: 'linear-gradient(to bottom, rgba(0,0,0,0.5), rgba(10,10,10,0.3))'
+            top: 'calc(80px + env(safe-area-inset-top, 0px))',
+            bottom: 'env(safe-area-inset-bottom)',
+            background: 'linear-gradient(to bottom, rgba(0,0,0,0.98), rgba(10,10,10,0.95))',
+            backdropFilter: 'blur(20px)'
           }}
         >
-          <nav className="p-4 space-y-1">
+          <nav className="p-4 space-y-1 pb-8">
             {navItems.map((item) => {
               const Icon = item.icon;
               const active = isActive(item.href);
@@ -348,9 +384,11 @@ export default function AdminLayout({
           </nav>
         </aside>
 
-        {/* Main Content */}
-        <main className="flex-1 lg:py-10 lg:px-10 xl:px-16 safe-bottom overflow-x-hidden w-full max-w-full pt-16 lg:pt-10">
-          {children}
+        {/* Main Content - Scrollable area only */}
+        <main className="absolute inset-0 lg:left-72 overflow-y-auto overflow-x-hidden">
+          <div className="lg:py-10 lg:px-10 xl:px-16 px-0 pt-16 lg:pt-10 pb-24 lg:pb-10">
+            {children}
+          </div>
         </main>
       </div>
 
@@ -364,9 +402,9 @@ export default function AdminLayout({
       >
         <div className="flex items-center justify-around px-2 pt-2 pb-1">
           {[
-            { href: '/admin/dashboard', icon: Home, label: 'Home' },
-            { href: '/admin/products', icon: Package, label: 'Products' },
-            { href: '/admin/vendors', icon: Store, label: 'Vendors' },
+            { href: '/admin/dashboard', icon: Home, label: 'Overview' },
+            { href: '/admin/products', icon: Package, label: 'Catalog' },
+            { href: '/admin/vendors', icon: Store, label: 'Partners' },
             { href: '/admin/settings', icon: Settings, label: 'Settings' },
           ].map((item) => {
             const Icon = item.icon;
@@ -388,7 +426,6 @@ export default function AdminLayout({
           })}
         </div>
       </nav>
-      </AdminProtectedRoute>
-    </AdminAuthProvider>
+    </AdminProtectedRoute>
   );
 }

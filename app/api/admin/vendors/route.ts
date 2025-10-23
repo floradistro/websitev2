@@ -3,6 +3,9 @@ import { getServiceSupabase } from '@/lib/supabase/client';
 import { vendorCache, generateCacheKey } from '@/lib/cache-manager';
 import { monitor } from '@/lib/performance-monitor';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 30; // Cache for 30 seconds
+
 export async function GET(request: NextRequest) {
   const endTimer = monitor.startTimer('Vendors API');
   

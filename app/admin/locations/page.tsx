@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { MapPin, Plus, Edit2, Trash2, CheckCircle, XCircle, Star, ChevronDown, ChevronUp } from 'lucide-react';
 import axios from 'axios';
 import { showNotification, showConfirm } from '@/components/NotificationToast';
+import { TableSkeleton } from '@/components/AdminSkeleton';
 import AdminModal from '@/components/AdminModal';
 
 interface Location {
@@ -40,6 +41,7 @@ interface Vendor {
   store_name: string;
   email: string;
   total_locations: number;
+  logo_url?: string;
 }
 
 interface VendorWithLocations {
@@ -83,7 +85,10 @@ export default function AdminLocations() {
 
   async function loadLocations() {
     try {
-      setLoading(true);
+      // Don't set loading if we already have locations (refresh)
+      if (locations.length === 0) {
+        setLoading(true);
+      }
       const response = await axios.get('/api/admin/locations');
       
       if (response.data.success) {
@@ -108,11 +113,33 @@ export default function AdminLocations() {
     });
   }
 
-  // Group locations by vendor
-  const vendorGroups: VendorWithLocations[] = vendors.map(vendor => ({
-    vendor,
-    locations: locations.filter(loc => loc.vendor_id === vendor.id)
-  })).filter(group => group.locations.length > 0);
+  // Group locations by vendor - extract vendor info from locations data
+  const vendorGroups: VendorWithLocations[] = (() => {
+    const vendorMap = new Map<string, VendorWithLocations>();
+    
+    locations.forEach(location => {
+      if (!location.vendor_id || !location.vendors) return;
+      
+      if (!vendorMap.has(location.vendor_id)) {
+        vendorMap.set(location.vendor_id, {
+          vendor: {
+            id: location.vendor_id,
+            store_name: location.vendors.store_name,
+            email: location.vendors.email,
+            logo_url: (location.vendors as any).logo_url,
+            total_locations: 0
+          },
+          locations: []
+        });
+      }
+      
+      const group = vendorMap.get(location.vendor_id)!;
+      group.locations.push(location);
+      group.vendor.total_locations = group.locations.length;
+    });
+    
+    return Array.from(vendorMap.values());
+  })();
 
   function openEditModal(location: Location) {
     setEditingLocation(location);
@@ -261,66 +288,85 @@ export default function AdminLocations() {
   const totalLocations = locations.length;
 
   return (
-    <div className="w-full animate-fadeIn px-4 lg:px-0">
+    <div className="w-full px-4 lg:px-0">
+      <style jsx>{`
+        .minimal-glass {
+          background: rgba(255, 255, 255, 0.02);
+          backdrop-filter: blur(20px);
+          border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .subtle-glow {
+          box-shadow: 0 0 30px rgba(255, 255, 255, 0.02);
+        }
+      `}</style>
+
       {/* Header */}
-      <div className="flex justify-between items-start gap-4 mb-6">
+      <div className="flex justify-between items-start gap-4 mb-8">
         <div className="min-w-0">
-          <h1 className="text-2xl lg:text-3xl text-white font-light tracking-tight mb-2">Locations</h1>
-          <p className="text-white/50 text-sm">{totalLocations} locations across {vendorGroups.length} vendors</p>
+          <h1 className="text-2xl lg:text-3xl font-thin text-white/90 tracking-tight mb-2">Locations</h1>
+          <p className="text-white/40 text-xs font-light tracking-wide">
+            {loading ? 'LOADING...' : `${totalLocations} STORES · ${vendorGroups.length} PARTNERS`}
+          </p>
         </div>
         <button
           onClick={() => setShowAddModal(true)}
           className="flex items-center gap-2 bg-white text-black px-4 py-2.5 lg:px-5 lg:py-3 text-xs font-medium uppercase tracking-wider hover:bg-white/90 transition-all whitespace-nowrap flex-shrink-0"
         >
           <Plus size={16} />
-          <span className="hidden sm:inline">Add Location</span>
-          <span className="sm:hidden">Add</span>
+          <span className="hidden sm:inline">New Location</span>
+          <span className="sm:hidden">New</span>
         </button>
       </div>
 
       {/* Vendor Groups */}
       {loading ? (
-        <div className="bg-[#111111] border border-white/10 p-12 text-center -mx-4 lg:mx-0">
-          <div className="text-white/40 text-sm">Loading...</div>
-        </div>
+        <TableSkeleton rows={4} />
       ) : vendorGroups.length === 0 ? (
-        <div className="bg-[#111111] border border-white/10 p-12 text-center -mx-4 lg:mx-0">
-          <MapPin size={32} className="text-white/20 mx-auto mb-3" />
-          <div className="text-white/60 text-sm">No locations found</div>
+        <div className="minimal-glass subtle-glow p-12 text-center -mx-4 lg:mx-0">
+          <MapPin size={32} className="text-white/10 mx-auto mb-3" strokeWidth={1.5} />
+          <div className="text-white/30 text-xs font-light tracking-wider uppercase">No Locations Found</div>
         </div>
       ) : (
-        <div className="space-y-4 -mx-4 lg:mx-0">
+        <div className="space-y-3 -mx-4 lg:mx-0">
           {vendorGroups.map((group) => {
             const isExpanded = expandedVendors.has(group.vendor.id);
             
             return (
-              <div key={group.vendor.id} className="bg-[#111111] border border-white/10">
+              <div key={group.vendor.id} className="minimal-glass subtle-glow">
                 {/* Vendor Header - Clickable */}
                 <button
                   onClick={() => toggleVendor(group.vendor.id)}
-                  className="w-full px-4 py-4 flex items-center justify-between hover:bg-white/5 transition-colors"
+                  className="w-full px-4 lg:px-6 py-4 flex items-center justify-between hover:bg-white/[0.02] transition-all duration-300"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-white/5 flex items-center justify-center flex-shrink-0">
-                      <MapPin size={18} className="text-white/40" />
+                    <div className="w-10 h-10 bg-white/5 flex items-center justify-center flex-shrink-0 rounded overflow-hidden relative">
+                      {group.vendor.logo_url ? (
+                        <img 
+                          src={group.vendor.logo_url} 
+                          alt={group.vendor.store_name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <MapPin size={16} className="text-white/30" strokeWidth={1.5} />
+                      )}
                     </div>
                     <div className="text-left">
-                      <div className="text-white text-sm font-medium">{group.vendor.store_name}</div>
-                      <div className="text-white/40 text-xs">{group.locations.length} location{group.locations.length !== 1 ? 's' : ''}</div>
+                      <div className="text-white/90 text-sm font-light">{group.vendor.store_name}</div>
+                      <div className="text-white/30 text-xs font-light">{group.locations.length} location{group.locations.length !== 1 ? 's' : ''}</div>
                     </div>
                   </div>
-                  <div className="text-white/40">
-                    {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                  <div className="text-white/30">
+                    {isExpanded ? <ChevronUp size={18} strokeWidth={1.5} /> : <ChevronDown size={18} strokeWidth={1.5} />}
                   </div>
                 </button>
 
                 {/* Locations List - Expandable */}
                 {isExpanded && (
-                  <div className="border-t border-white/10">
+                  <div className="border-t border-white/5">
                     {group.locations.map((location, index) => (
                       <div
                         key={location.id}
-                        className={`px-4 py-4 hover:bg-white/5 transition-colors ${
+                        className={`px-4 lg:px-6 py-4 hover:bg-white/[0.02] transition-all duration-300 ${
                           index !== group.locations.length - 1 ? 'border-b border-white/5' : ''
                         }`}
                       >

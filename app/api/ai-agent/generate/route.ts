@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { AIStorefrontAgent } from '@/ai-agent/src/index';
+import { NLPProcessor } from '@/ai-agent/src/nlp/processor';
 import { getServiceSupabase } from '@/lib/supabase/client';
 
 export const dynamic = 'force-dynamic';
@@ -47,44 +47,34 @@ export async function POST(request: NextRequest) {
     
     console.log(`🔵 Generating storefront for ${vendor.store_name} (${vendor.slug})`);
     
-    // Initialize AI agent
-    const agent = new AIStorefrontAgent();
+    // Use NLP processor directly (templates not needed for specs)
+    const processor = new NLPProcessor('anthropic');
     
-    // Generate storefront
-    const result = await agent.generate({
-      vendorId: vendor.id,
-      vendorSlug: vendor.slug,
-      userMessage: message,
-      conversationHistory: history || [],
-    });
+    const { requirements, response, confidence } = await processor.processVendorRequest(
+      message,
+      history || []
+    );
     
-    if (!result.success) {
-      return NextResponse.json(
-        { success: false, error: result.error },
-        { status: 500 }
-      );
-    }
+    console.log(`✅ AI generated specs with ${(confidence * 100).toFixed(0)}% confidence`);
     
     // Save conversation to database
-    if (result.requirements) {
-      await supabase.from('ai_conversations').insert({
-        vendor_id: vendorId,
-        messages: [
-          ...(history || []),
-          { role: 'user', content: message },
-          { role: 'assistant', content: result.response },
-        ],
-      });
-    }
+    await supabase.from('ai_conversations').insert({
+      vendor_id: vendorId,
+      messages: [
+        ...(history || []),
+        { role: 'user', content: message },
+        { role: 'assistant', content: response },
+      ],
+    });
     
     // Save storefront specification
     const { data: storefront } = await supabase
       .from('vendor_storefronts')
       .insert({
         vendor_id: vendorId,
-        template: result.requirements?.theme.style,
-        customizations: result.requirements,
-        ai_specs: result.requirements,
+        template: requirements?.theme.style,
+        customizations: requirements,
+        ai_specs: requirements,
         status: 'draft',
       })
       .select()
@@ -94,14 +84,13 @@ export async function POST(request: NextRequest) {
     
     return NextResponse.json({
       success: true,
-      requirements: result.requirements,
-      response: result.response,
-      confidence: result.confidence,
+      requirements: requirements,
+      response: response,
+      confidence: confidence,
       storefrontId: storefront?.id,
       previewUrl: `/api/ai-agent/preview/${storefront?.id}`,
       meta: {
         responseTime: `${responseTime}ms`,
-        filesGenerated: result.files?.length || 0,
       },
     });
     
@@ -113,4 +102,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-

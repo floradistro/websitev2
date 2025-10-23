@@ -52,45 +52,107 @@ export default function AdminAnalytics() {
   }, [timeRange]);
 
   return (
-    <div className="w-full animate-fadeIn px-4 lg:px-0">
+    <div className="w-full px-4 lg:px-0">
+      <style jsx>{`
+        @keyframes fade-in {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in {
+          animation: fade-in 0.6s ease-out;
+        }
+        .minimal-glass {
+          background: rgba(255, 255, 255, 0.02);
+          backdrop-filter: blur(20px);
+          border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .subtle-glow {
+          box-shadow: 0 0 30px rgba(255, 255, 255, 0.02);
+        }
+        /* Modern minimal checkbox */
+        input[type="checkbox"], input[type="radio"] {
+          appearance: none;
+          -webkit-appearance: none;
+          width: 16px;
+          height: 16px;
+          border: 1px solid rgba(255, 255, 255, 0.15);
+          background: rgba(255, 255, 255, 0.03);
+          cursor: pointer;
+          position: relative;
+          transition: all 0.3s ease;
+        }
+        input[type="checkbox"]:hover, input[type="radio"]:hover {
+          border-color: rgba(255, 255, 255, 0.25);
+          background: rgba(255, 255, 255, 0.05);
+        }
+        input[type="checkbox"]:checked, input[type="radio"]:checked {
+          background: rgba(255, 255, 255, 0.1);
+          border-color: rgba(255, 255, 255, 0.3);
+        }
+        input[type="checkbox"]:checked::after {
+          content: '';
+          position: absolute;
+          left: 5px;
+          top: 2px;
+          width: 4px;
+          height: 8px;
+          border: solid rgba(255, 255, 255, 0.9);
+          border-width: 0 1.5px 1.5px 0;
+          transform: rotate(45deg);
+        }
+        input[type="radio"] {
+          border-radius: 50%;
+        }
+        input[type="radio"]:checked::after {
+          content: '';
+          position: absolute;
+          left: 4px;
+          top: 4px;
+          width: 6px;
+          height: 6px;
+          border-radius: 50%;
+          background: rgba(255, 255, 255, 0.9);
+        }
+      `}</style>
+
       {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-3xl text-white font-light tracking-tight mb-2">
-          Analytics
+      <div className="mb-12 fade-in">
+        <h1 className="text-3xl font-thin text-white/90 tracking-tight mb-2">
+          Insights
         </h1>
-        <p className="text-white/50 text-sm">
-          Marketplace insights and performance metrics
+        <p className="text-white/40 text-xs font-light tracking-wide">
+          MARKETPLACE ANALYTICS · PERFORMANCE METRICS
         </p>
       </div>
 
       {/* Time Range Selector */}
-      <div className="flex gap-2 mb-6">
+      <div className="flex gap-2 mb-8 fade-in" style={{ animationDelay: '0.1s' }}>
         <button
           onClick={() => setTimeRange('7d')}
-          className={`px-4 py-2 text-xs uppercase tracking-wider transition-all ${
+          className={`px-5 py-2 text-[11px] uppercase tracking-[0.2em] font-light transition-all duration-300 ${
             timeRange === '7d'
               ? 'bg-white text-black'
-              : 'bg-[#111111] text-white/60 hover:text-white border border-white/10 hover:border-white/20'
+              : 'bg-black/20 text-white/60 hover:text-white border border-white/10 hover:border-white/20'
           }`}
         >
           7 Days
         </button>
         <button
           onClick={() => setTimeRange('30d')}
-          className={`px-4 py-2 text-xs uppercase tracking-wider transition-all ${
+          className={`px-5 py-2 text-[11px] uppercase tracking-[0.2em] font-light transition-all duration-300 ${
             timeRange === '30d'
               ? 'bg-white text-black'
-              : 'bg-[#111111] text-white/60 hover:text-white border border-white/10 hover:border-white/20'
+              : 'bg-black/20 text-white/60 hover:text-white border border-white/10 hover:border-white/20'
           }`}
         >
           30 Days
         </button>
         <button
           onClick={() => setTimeRange('90d')}
-          className={`px-4 py-2 text-xs uppercase tracking-wider transition-all ${
+          className={`px-5 py-2 text-[11px] uppercase tracking-[0.2em] font-light transition-all duration-300 ${
             timeRange === '90d'
               ? 'bg-white text-black'
-              : 'bg-[#111111] text-white/60 hover:text-white border border-white/10 hover:border-white/20'
+              : 'bg-black/20 text-white/60 hover:text-white border border-white/10 hover:border-white/20'
           }`}
         >
           90 Days
@@ -98,62 +160,62 @@ export default function AdminAnalytics() {
       </div>
 
       {/* Key Metrics */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <div className="bg-[#111111] border border-white/10 p-5">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-white/50 text-xs uppercase tracking-wider">Revenue</span>
-            <DollarSign size={18} className="text-white/30" />
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
+        <div className="minimal-glass subtle-glow p-6 hover:bg-white/[0.03] transition-all duration-300 fade-in" style={{ animationDelay: '0.2s' }}>
+          <div className="flex items-center justify-between mb-4">
+            <span className="text-white/40 text-[11px] uppercase tracking-[0.2em] font-light">Revenue</span>
+            <DollarSign size={16} className="text-white/20" strokeWidth={1.5} />
           </div>
-          <div className="text-2xl font-light text-white mb-1">
+          <div className="text-3xl font-thin text-white mb-2">
             ${stats.totalRevenue.toLocaleString('en-US', { minimumFractionDigits: 2 })}
           </div>
-          <div className="text-white/30 text-xs">Total earnings</div>
+          <div className="text-white/30 text-[10px] font-light tracking-wider uppercase">Total Earnings</div>
         </div>
 
-        <div className="bg-[#111111] border border-white/10 p-5">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-white/50 text-xs uppercase tracking-wider">Orders</span>
-            <ShoppingCart size={18} className="text-white/30" />
+        <div className="minimal-glass subtle-glow p-6 hover:bg-white/[0.03] transition-all duration-300 fade-in" style={{ animationDelay: '0.3s' }}>
+          <div className="flex items-center justify-between mb-4">
+            <span className="text-white/40 text-[11px] uppercase tracking-[0.2em] font-light">Orders</span>
+            <ShoppingCart size={16} className="text-white/20" strokeWidth={1.5} />
           </div>
-          <div className="text-2xl font-light text-white mb-1">
+          <div className="text-3xl font-thin text-white mb-2">
             {stats.totalOrders}
           </div>
-          <div className="text-white/30 text-xs">Completed</div>
+          <div className="text-white/30 text-[10px] font-light tracking-wider uppercase">Completed</div>
         </div>
 
-        <div className="bg-[#111111] border border-white/10 p-5">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-white/50 text-xs uppercase tracking-wider">Avg Order</span>
-            <TrendingUp size={18} className="text-white/30" />
+        <div className="minimal-glass subtle-glow p-6 hover:bg-white/[0.03] transition-all duration-300 fade-in" style={{ animationDelay: '0.4s' }}>
+          <div className="flex items-center justify-between mb-4">
+            <span className="text-white/40 text-[11px] uppercase tracking-[0.2em] font-light">Avg Order</span>
+            <TrendingUp size={16} className="text-white/20" strokeWidth={1.5} />
           </div>
-          <div className="text-2xl font-light text-white mb-1">
+          <div className="text-3xl font-thin text-white mb-2">
             ${stats.avgOrderValue.toFixed(2)}
           </div>
-          <div className="text-white/30 text-xs">Per transaction</div>
+          <div className="text-white/30 text-[10px] font-light tracking-wider uppercase">Per Transaction</div>
         </div>
 
-        <div className="bg-[#111111] border border-white/10 p-5">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-white/50 text-xs uppercase tracking-wider">Conversion</span>
-            <Users size={18} className="text-white/30" />
+        <div className="minimal-glass subtle-glow p-6 hover:bg-white/[0.03] transition-all duration-300 fade-in" style={{ animationDelay: '0.5s' }}>
+          <div className="flex items-center justify-between mb-4">
+            <span className="text-white/40 text-[11px] uppercase tracking-[0.2em] font-light">Conversion</span>
+            <Users size={16} className="text-white/20" strokeWidth={1.5} />
           </div>
-          <div className="text-2xl font-light text-white mb-1">
+          <div className="text-3xl font-thin text-white mb-2">
             3.2%
           </div>
-          <div className="text-white/30 text-xs">Rate</div>
+          <div className="text-white/30 text-[10px] font-light tracking-wider uppercase">Rate</div>
         </div>
       </div>
 
       {/* Charts */}
-      <div className="grid lg:grid-cols-2 gap-4 mb-6">
+      <div className="grid lg:grid-cols-2 gap-3 mb-8">
         {/* Revenue Trend */}
-        <div className="bg-[#111111] border border-white/10 p-6">
+        <div className="minimal-glass subtle-glow p-6 fade-in" style={{ animationDelay: '0.6s' }}>
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h3 className="text-white text-sm font-medium mb-1">Revenue Trend</h3>
-              <p className="text-white/40 text-xs">Last 30 days</p>
+              <h3 className="text-white/40 text-[11px] font-light tracking-[0.2em] uppercase mb-2">Revenue Trend</h3>
+              <p className="text-white/30 text-[10px] font-light">LAST 30 DAYS</p>
             </div>
-            <TrendingUp size={18} className="text-white/30" />
+            <div className="w-1 h-1 bg-white/20 rounded-full" />
           </div>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
@@ -195,13 +257,13 @@ export default function AdminAnalytics() {
         </div>
 
         {/* Sales by Category */}
-        <div className="bg-[#111111] border border-white/10 p-6">
+        <div className="minimal-glass subtle-glow p-6 fade-in" style={{ animationDelay: '0.7s' }}>
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h3 className="text-white text-sm font-medium mb-1">Sales by Category</h3>
-              <p className="text-white/40 text-xs">Last 30 days</p>
+              <h3 className="text-white/40 text-[11px] font-light tracking-[0.2em] uppercase mb-2">Sales by Category</h3>
+              <p className="text-white/30 text-[10px] font-light">LAST 30 DAYS</p>
             </div>
-            <Package size={18} className="text-white/30" />
+            <div className="w-1 h-1 bg-white/20 rounded-full" />
           </div>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
@@ -241,30 +303,36 @@ export default function AdminAnalytics() {
       </div>
 
       {/* Top Performers */}
-      <div className="grid lg:grid-cols-2 gap-4">
+      <div className="grid lg:grid-cols-2 gap-3">
         {/* Top Vendors */}
-        <div className="bg-[#111111] border border-white/10 p-6">
-          <h3 className="text-white text-sm font-medium mb-4">Top Vendors</h3>
+        <div className="minimal-glass subtle-glow p-6 fade-in" style={{ animationDelay: '0.8s' }}>
+          <div className="mb-6">
+            <h3 className="text-white/40 text-[11px] font-light tracking-[0.2em] uppercase mb-2">Top Vendors</h3>
+            <p className="text-white/30 text-[10px] font-light">HIGHEST PERFORMERS</p>
+          </div>
           <div className="space-y-4">
             {loading ? (
-              <div className="text-white/40 text-sm py-8 text-center">Loading...</div>
+              <div className="text-white/20 text-xs font-light py-12 text-center">LOADING DATA...</div>
             ) : (
-              <div className="text-white/40 text-sm py-8 text-center">
-                No vendor performance data available yet
+              <div className="text-white/20 text-xs font-light py-12 text-center">
+                NO VENDOR PERFORMANCE DATA AVAILABLE YET
               </div>
             )}
           </div>
         </div>
 
         {/* Top Products */}
-        <div className="bg-[#111111] border border-white/10 p-6">
-          <h3 className="text-white text-sm font-medium mb-4">Top Products</h3>
+        <div className="minimal-glass subtle-glow p-6 fade-in" style={{ animationDelay: '0.9s' }}>
+          <div className="mb-6">
+            <h3 className="text-white/40 text-[11px] font-light tracking-[0.2em] uppercase mb-2">Top Products</h3>
+            <p className="text-white/30 text-[10px] font-light">BEST SELLERS</p>
+          </div>
           <div className="space-y-4">
             {loading ? (
-              <div className="text-white/40 text-sm py-8 text-center">Loading...</div>
+              <div className="text-white/20 text-xs font-light py-12 text-center">LOADING DATA...</div>
             ) : (
-              <div className="text-white/40 text-sm py-8 text-center">
-                No product sales data available yet
+              <div className="text-white/20 text-xs font-light py-12 text-center">
+                NO PRODUCT SALES DATA AVAILABLE YET
               </div>
             )}
           </div>

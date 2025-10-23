@@ -78,37 +78,51 @@ export async function POST(request: NextRequest) {
       vendor_id, 
       blueprint_id, 
       pricing_values,
+      display_unit = 'gram',
       notes = null,
       is_active = true
     } = body;
 
-    if (!vendor_id || !blueprint_id || !pricing_values) {
+    if (!vendor_id || !blueprint_id) {
       return NextResponse.json(
-        { success: false, error: 'vendor_id, blueprint_id, and pricing_values are required' },
+        { success: false, error: 'vendor_id and blueprint_id are required' },
         { status: 400 }
       );
     }
+
+    console.log('💰 Creating pricing config:', {
+      vendor_id,
+      blueprint_id,
+      display_unit,
+      pricing_values
+    });
 
     const { data, error } = await supabase
       .from('vendor_pricing_configs')
       .insert({
         vendor_id,
         blueprint_id,
-        pricing_values,
+        pricing_values: pricing_values || {},
+        display_unit,
         notes,
         is_active
       })
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error('❌ Error creating pricing config:', error);
+      throw error;
+    }
+
+    console.log('✅ Pricing config created:', data.id);
 
     return NextResponse.json({
       success: true,
       config: data
     });
   } catch (error: any) {
-    console.error('Error creating vendor pricing config:', error);
+    console.error('❌ Error in POST /api/vendor/pricing-config:', error);
     return NextResponse.json(
       { success: false, error: error.message },
       { status: 500 }

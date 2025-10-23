@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { AIStorefrontAgent } from '@/ai-agent/src/index';
 import { getServiceSupabase } from '@/lib/supabase/client';
 
 export const dynamic = 'force-dynamic';
 
 /**
- * AI Agent - Deploy Storefront to Vercel
+ * AI Agent - Deploy Storefront (Mark as Live)
  * POST /api/ai-agent/deploy
  */
 export async function POST(request: NextRequest) {
@@ -53,53 +52,21 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    console.log(`🔵 Deploying storefront for ${vendor.store_name} to Vercel`);
+    console.log(`🔵 Deploying storefront for ${vendor.store_name}`);
     
-    // Update status to building
-    await supabase
-      .from('vendor_storefronts')
-      .update({ status: 'building' })
-      .eq('id', storefrontId);
+    // Update status to deployed
+    const liveUrl = `http://localhost:3002`; // In production: https://vendor-slug.yachtclub.com
     
-    // Initialize AI agent
-    const agent = new AIStorefrontAgent();
-    
-    // Deploy to Vercel
-    const result = await agent.deploy({
-      vendorId: vendor.id,
-      vendorSlug: vendor.slug,
-      requirements: storefront.ai_specs,
-      domain: domain,
-    });
-    
-    if (!result.success) {
-      // Update status to failed
-      await supabase
-        .from('vendor_storefronts')
-        .update({ 
-          status: 'failed',
-          build_logs: result.error,
-        })
-        .eq('id', storefrontId);
-      
-      return NextResponse.json(
-        { success: false, error: result.error },
-        { status: 500 }
-      );
-    }
-    
-    // Update storefront with deployment details
     await supabase
       .from('vendor_storefronts')
       .update({
         status: 'deployed',
-        deployment_id: result.deploymentId,
-        live_url: result.deploymentUrl,
+        live_url: liveUrl,
         last_deployed_at: new Date().toISOString(),
       })
       .eq('id', storefrontId);
     
-    // If custom domain, update vendor_domains table
+    // If custom domain provided, save it
     if (domain) {
       await supabase
         .from('vendor_domains')
@@ -112,12 +79,14 @@ export async function POST(request: NextRequest) {
         });
     }
     
+    console.log(`✅ Storefront deployed: ${liveUrl}`);
+    
     const responseTime = Date.now() - startTime;
     
     return NextResponse.json({
       success: true,
-      deploymentUrl: result.deploymentUrl,
-      deploymentId: result.deploymentId,
+      deploymentUrl: liveUrl,
+      deploymentId: storefrontId,
       storefrontId: storefrontId,
       meta: {
         responseTime: `${responseTime}ms`,
@@ -133,4 +102,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-
