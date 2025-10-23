@@ -1,0 +1,32 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --primary: #000000;
+  --secondary: #FFFFFF;
+  --accent: #666666;
+  --background: #FFFFFF;
+  --text: #1A1A1A;
+}
+
+body {
+  color: var(--text);
+  background: var(--background);
+  font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.btn {
+  @apply px-6 py-3 bg-black text-white hover:bg-gray-800 transition-colors;
+}
+
+.btn-outline {
+  @apply px-6 py-3 border border-black text-black hover:bg-black hover:text-white transition-all;
+}
+
