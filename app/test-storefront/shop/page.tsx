@@ -1,5 +1,5 @@
 import { getServiceSupabase } from '@/lib/supabase/client';
-import { ProductGrid } from '@/components/storefront/ProductGrid';
+import { StorefrontShopClient } from '@/components/storefront/StorefrontShopClient';
 import { notFound } from 'next/navigation';
 
 export default async function TestShopPage() {
@@ -16,51 +16,82 @@ export default async function TestShopPage() {
     notFound();
   }
 
-  // Get all Flora Distro products
+  // Get all Flora Distro products with full data
   const { data: allProducts } = await supabase
     .from('products')
     .select('*')
     .eq('vendor_id', vendor.id)
     .eq('status', 'published')
-    .order('created_at', { ascending: false });
+    .order('created_at', { ascending: false});
 
-  const products = (allProducts || []).map((p: any) => ({
-    id: p.id,
-    name: p.name,
-    description: p.description,
-    images: p.images || (p.featured_image_storage ? [p.featured_image_storage] : []),
-    retail_price: p.retail_price || 0,
-    category: p.category || 'Product',
-    status: p.status,
-    slug: p.slug || p.id,
-  }));
+  // Get all locations for this vendor
+  const { data: locations } = await supabase
+    .from('locations')
+    .select('*')
+    .eq('vendor_id', vendor.id)
+    .eq('is_active', true);
+
+  // Get all inventory for these products
+  const productIds = (allProducts || []).map((p: any) => p.id);
+  const { data: inventory } = await supabase
+    .from('inventory')
+    .select('*')
+    .in('product_id', productIds);
+
+  // Create inventory map
+  const inventoryMap: { [key: string]: any[] } = {};
+  (inventory || []).forEach((inv: any) => {
+    if (!inventoryMap[inv.product_id]) {
+      inventoryMap[inv.product_id] = [];
+    }
+    inventoryMap[inv.product_id].push(inv);
+  });
+
+  // Create product fields map
+  const productFieldsMap: { [key: string]: any } = {};
+  (allProducts || []).forEach((p: any) => {
+    const blueprintFields = Array.isArray(p.blueprint_fields) ? p.blueprint_fields : [];
+    const fields: { [key: string]: string } = {};
+    blueprintFields.forEach((field: any) => {
+      if (field && field.field_name && field.field_value) {
+        fields[field.field_name] = field.field_value;
+      }
+    });
+    const pricingTiers = p.meta_data?._product_price_tiers || [];
+    productFieldsMap[p.id] = { fields, pricingTiers };
+  });
+
+  const products = (allProducts || []).map((p: any) => {
+    const imageUrl = p.images && p.images.length > 0 ? p.images[0] : (p.featured_image_storage || null);
+    
+    return {
+      id: p.id,
+      uuid: p.id,
+      name: p.name,
+      description: p.description,
+      images: imageUrl ? [{ src: imageUrl, id: 0, name: p.name }] : [],
+      price: p.retail_price || 0,
+      regular_price: p.retail_price || 0,
+      sale_price: p.sale_price,
+      categories: p.category ? [{ name: p.category }] : [],
+      meta_data: p.meta_data || {},
+      blueprint_fields: Array.isArray(p.blueprint_fields) ? p.blueprint_fields : [],
+      stock_status: p.stock_status || 'in_stock',
+      stock_quantity: p.stock_quantity || 0,
+      total_stock: p.stock_quantity || 0,
+      type: 'simple',
+      slug: p.slug || p.id,
+      date_created: p.created_at,
+      total_sales: 0,
+    };
+  });
 
   return (
-    <div className="bg-[#2a2a2a] min-h-screen">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="mb-12">
-          <h1 className="text-4xl md:text-5xl font-light text-white mb-4 uppercase tracking-wider">Shop All Products</h1>
-          <div className="h-[1px] w-24 bg-gradient-to-r from-purple-500/60 to-transparent mb-6"></div>
-          <p className="text-white/60 text-lg font-light">
-            Browse our complete collection of premium cannabis products
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-px">
-          {products.map((product, index) => (
-            <ProductCard 
-              key={product.id}
-              product={product}
-              index={index}
-              locations={locations || []}
-              pricingTiers={productFieldsMap[product.id]?.pricingTiers || []}
-              productFields={productFieldsMap[product.id] ? { fields: productFieldsMap[product.id].fields } : undefined}
-              inventory={product.inventory}
-            />
-          ))}
-        </div>
-      </div>
-    </div>
+    <StorefrontShopClient 
+      products={products}
+      locations={locations || []}
+      inventoryMap={inventoryMap}
+      productFieldsMap={productFieldsMap}
+    />
   );
 }
-
