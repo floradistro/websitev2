@@ -47,54 +47,29 @@ export default async function TestShopPage() {
     inventoryMap[inv.product_id].push(inv);
   });
 
-  // Fetch ALL pricing tiers at once (much faster)
-  const { data: allPricingConfigs } = await supabase
-    .from('vendor_pricing_configs')
-    .select(`
-      id,
-      product_id,
-      pricing_values,
-      display_unit,
-      blueprint:pricing_tier_blueprints (
-        id,
-        name,
-        slug,
-        price_breaks
-      )
-    `)
-    .in('product_id', productIds)
-    .eq('is_active', true);
-
+  // Fetch pricing tiers using the existing pricing API (handles vendor-level pricing)
   const pricingMap: { [key: string]: any[] } = {};
-  (allPricingConfigs || []).forEach((pricingConfig: any) => {
-    if (pricingConfig.blueprint?.price_breaks) {
-      const tiers: any[] = [];
-      const pricingValues = pricingConfig.pricing_values || {};
-      
-      pricingConfig.blueprint.price_breaks.forEach((tier: any) => {
-        const breakId = tier.break_id;
-        const tierData = pricingValues[breakId];
-        
-        if (tierData && tierData.enabled && tierData.price) {
-          tiers.push({
-            weight: tier.label || breakId,
-            label: tier.label,
-            qty: tier.qty || 1,
-            price: parseFloat(tierData.price),
-            tier_name: tier.label || breakId,
-            break_id: breakId,
-            blueprint_name: pricingConfig.blueprint.name,
-            sort_order: tier.sort_order || 0
-          });
+  const baseUrl = 'http://localhost:3000';
+  
+  // Fetch pricing for a sample of products (to avoid timeout)
+  const sampleProducts = productIds.slice(0, 50); // First 50 products
+  
+  await Promise.all(
+    sampleProducts.map(async (productId) => {
+      try {
+        const response = await fetch(`${baseUrl}/api/supabase/products/${productId}/pricing`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && data.pricingTiers && data.pricingTiers.length > 0) {
+            pricingMap[productId] = data.pricingTiers;
+          }
         }
-      });
-      
-      tiers.sort((a, b) => a.sort_order - b.sort_order);
-      pricingMap[pricingConfig.product_id] = tiers;
-    }
-  });
+      } catch (error) {
+        // Silently fail for products without pricing
+      }
+    })
+  );
 
-  console.log('📊 Pricing configs loaded:', (allPricingConfigs || []).length);
   console.log('📦 Products with pricing:', Object.keys(pricingMap).length);
 
   // Create product fields map
