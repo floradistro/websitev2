@@ -84,11 +84,8 @@ export default function VendorPricingPage() {
   async function loadPricingData(vendorId: string) {
     setLoading(true);
     try {
-      console.log('📥 Loading pricing data for vendor:', vendorId);
       const res = await fetch(`/api/vendor/pricing-config?vendor_id=${vendorId}`);
       const data = await res.json();
-
-      console.log('📊 Pricing data received:', JSON.parse(JSON.stringify(data)));
 
       if (data.success) {
         setConfigs(data.configs || []);
@@ -121,17 +118,12 @@ export default function VendorPricingPage() {
           initialUnits[config.id] = config.display_unit || (isWholesale ? 'pound' : 'gram');
         });
         
-        console.log('🎨 Initialized states:');
-        console.log('  - editingPrices:', JSON.parse(JSON.stringify(initialEditing)));
-        console.log('  - customTiers:', JSON.parse(JSON.stringify(initialTiers)));
-        console.log('  - displayUnits:', initialUnits);
-        
         setEditingPrices(initialEditing);
         setCustomTiers(initialTiers);
         setDisplayUnits(initialUnits);
       }
     } catch (error) {
-      console.error('❌ Error loading pricing:', error);
+      console.error('Error loading pricing:', error);
     } finally {
       setLoading(false);
     }
