@@ -116,10 +116,11 @@ export async function GET(
     
     // Build pricing tiers from assignment
     let pricingTiers: any[] = [];
-    if (pricingResult.data?.blueprint?.price_breaks) {
+    const blueprint = Array.isArray(pricingResult.data?.blueprint) ? pricingResult.data.blueprint[0] : pricingResult.data?.blueprint;
+    if (blueprint?.price_breaks && pricingResult.data) {
       const basePrice = p.price ? parseFloat(p.price) : 0;
-      pricingTiers = pricingResult.data.blueprint.price_breaks.map((priceBreak: any) => {
-        const overridePrice = pricingResult.data.price_overrides?.[priceBreak.break_id];
+      pricingTiers = blueprint.price_breaks.map((priceBreak: any) => {
+        const overridePrice = pricingResult.data?.price_overrides?.[priceBreak.break_id];
         
         return {
           qty: priceBreak.qty,

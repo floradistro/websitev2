@@ -179,7 +179,7 @@ export class RealtimeInventoryManager {
             }
           }
         )
-        .subscribe((status) => {
+        .subscribe((status: string) => {
           console.log(`📡 Vendor channel ${channelName} status:`, status);
         });
 

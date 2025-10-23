@@ -139,7 +139,7 @@ function ProductCard({ product, index, locations, pricingTiers = [], productFiel
         } 
         // Handle numbers
         else if (typeof value === 'number') {
-          displayValue = value.toString();
+          displayValue = String(value);
         }
         // Handle strings
         else if (typeof value === 'string') {

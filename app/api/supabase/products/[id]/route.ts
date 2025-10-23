@@ -172,7 +172,7 @@ export async function PUT(
     
     // Clear cache for this product and product list
     const cacheKey = generateCacheKey('product-detail', { id });
-    productCache.del(cacheKey);
+    productCache.delete(cacheKey);
     productCache.clear(); // Clear all product caches since list needs update
     
     return NextResponse.json({

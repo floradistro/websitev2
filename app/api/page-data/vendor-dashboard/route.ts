@@ -90,12 +90,15 @@ export async function GET(request: NextRequest) {
     }));
     
     // Format low stock items
-    const lowStock = lowStockItems.map(item => ({
-      id: item.id,
-      name: item.product?.name || 'Unknown',
-      currentStock: item.quantity,
-      threshold: item.low_stock_threshold || 5
-    }));
+    const lowStock = lowStockItems.map((item: any) => {
+      const product = Array.isArray(item.product) ? item.product[0] : item.product;
+      return {
+        id: item.id,
+        name: product?.name || 'Unknown',
+        currentStock: item.quantity,
+        threshold: item.low_stock_threshold || 5
+      };
+    });
     
     const responseTime = Date.now() - startTime;
     

@@ -87,6 +87,7 @@ export async function GET(request: NextRequest) {
         categories: Array.from(stats.categories),
         verified: v.status === 'active',
         featured: false,
+        rating: 4.5, // Default rating
         instagram: socialLinks.instagram,
         website: socialLinks.website,
         primaryColor: brandColors.primary || '#000000',
@@ -102,7 +103,7 @@ export async function GET(request: NextRequest) {
       totalVendors: vendors.length,
       totalProducts: vendors.reduce((sum, v) => sum + v.totalProducts, 0),
       averageRating: vendors.length > 0 
-        ? (vendors.reduce((sum, v) => sum + v.rating, 0) / vendors.length).toFixed(1)
+        ? (vendors.reduce((sum, v) => sum + (v.rating || 0), 0) / vendors.length).toFixed(1)
         : '0.0',
       featuredVendor: vendors.find(v => v.featured) || vendors[0] || null,
     };

@@ -95,16 +95,19 @@ export async function GET(request: NextRequest) {
     const activeVendors = vendors.filter(v => v.status === 'active').length;
     
     // Format pending products for approvals page
-    const formattedPendingProducts = pendingProducts.map(p => ({
-      id: p.id,
-      name: p.name,
-      price: p.price,
-      stock: p.stock_quantity,
-      vendor: p.vendor?.store_name || 'Unknown',
-      vendorId: p.vendor?.id,
-      submittedDate: p.created_at,
-      image: p.featured_image_storage || '/yacht-club-logo.png'
-    }));
+    const formattedPendingProducts = pendingProducts.map((p: any) => {
+      const vendor = Array.isArray(p.vendor) ? p.vendor[0] : p.vendor;
+      return {
+        id: p.id,
+        name: p.name,
+        price: p.price,
+        stock: p.stock_quantity,
+        vendor: vendor?.store_name || 'Unknown',
+        vendorId: vendor?.id,
+        submittedDate: p.created_at,
+        image: p.featured_image_storage || '/yacht-club-logo.png'
+      };
+    });
     
     const responseTime = Date.now() - startTime;
     
@@ -133,13 +136,17 @@ export async function GET(request: NextRequest) {
         pendingProducts: formattedPendingProducts,
         
         // Low stock alerts
-        lowStockItems: lowStock.map(item => ({
-          id: item.id,
-          productName: item.product?.name || 'Unknown',
-          vendorName: item.vendor?.store_name || 'Unknown',
-          currentStock: item.quantity,
-          threshold: item.low_stock_threshold || 5
-        })),
+        lowStockItems: lowStock.map((item: any) => {
+          const vendor = Array.isArray(item.vendor) ? item.vendor[0] : item.vendor;
+          const product = Array.isArray(item.product) ? item.product[0] : item.product;
+          return {
+            id: item.id,
+            productName: product?.name || 'Unknown',
+            vendorName: vendor?.store_name || 'Unknown',
+            currentStock: item.quantity,
+            threshold: item.low_stock_threshold || 5
+          };
+        }),
         
         // Recent activity
         recentOrders: orders.slice(0, 10).map(o => ({
