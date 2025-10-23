@@ -80,9 +80,9 @@ export async function GET(request: NextRequest) {
       featured_image_storage: p.featured_image_storage,
       image_gallery_storage: p.image_gallery_storage,
       categories: p.product_categories?.map((pc: any) => pc.category) || [],
-      inventory: p.inventory || [],
-      blueprint_fields: p.blueprint_fields || [],
-      meta_data: p.meta_data || {},
+      inventory: Array.isArray(p.inventory) ? p.inventory : [],
+      blueprint_fields: Array.isArray(p.blueprint_fields) ? p.blueprint_fields : [],
+      meta_data: (typeof p.meta_data === 'object' && p.meta_data !== null && !Array.isArray(p.meta_data)) ? p.meta_data : {},
       vendor_id: p.vendor_id,
     }));
     
