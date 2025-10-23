@@ -2,10 +2,35 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { DollarSign, Save, AlertCircle, Check, Calculator, Package, Plus, Trash2, Edit3 } from 'lucide-react';
+import { DollarSign, Save, AlertCircle, Check, Calculator, Package, Plus, Trash2 } from 'lucide-react';
 import { showNotification } from '@/components/NotificationToast';
 import { useVendorAuth } from '@/context/VendorAuthContext';
-// Unit conversion temporarily disabled to fix SSR error
+
+// Unit conversion utilities (inline to avoid SSR issues)
+const CONVERSIONS: any = {
+  gram: 1,
+  ounce: 28.3495,
+  pound: 453.592,
+  kilogram: 1000,
+  milliliter: 1,
+  liter: 1000,
+  fluid_ounce: 29.5735,
+  gallon: 3785.41
+};
+
+function convertUnits(value: number, fromUnit: string, toUnit: string): number {
+  if (fromUnit === toUnit) return value;
+  const baseValue = value * (CONVERSIONS[fromUnit] || 1);
+  return baseValue / (CONVERSIONS[toUnit] || 1);
+}
+
+function formatUnit(unit: string): string {
+  const labels: any = {
+    'milligram': 'mg', 'gram': 'g', 'ounce': 'oz', 'pound': 'lb', 'kilogram': 'kg',
+    'milliliter': 'ml', 'liter': 'L', 'fluid_ounce': 'fl oz', 'gallon': 'gal'
+  };
+  return labels[unit] || unit;
+}
 
 interface PriceBreak {
   break_id: string;
@@ -55,12 +80,6 @@ export default function VendorPricingPage() {
     }
   }, [authLoading, isAuthenticated]);
 
-  // Debug: Log state changes
-  useEffect(() => {
-    if (Object.keys(editingPrices).length > 0) {
-      console.log('💰 Editing prices state updated:', JSON.parse(JSON.stringify(editingPrices)));
-    }
-  }, [editingPrices]);
 
   async function loadPricingData(vendorId: string) {
     setLoading(true);

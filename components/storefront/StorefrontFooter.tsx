@@ -98,16 +98,6 @@ export function StorefrontFooter({ vendor }: StorefrontFooterProps) {
                   About Us
                 </Link>
               </li>
-              {vendor.shipping_policy && (
-                <li>
-                  <span className="text-white/50 font-light">Shipping Policy</span>
-                </li>
-              )}
-              {vendor.return_policy && (
-                <li>
-                  <span className="text-white/50 font-light">Return Policy</span>
-                </li>
-              )}
             </ul>
           </div>
 
