@@ -233,7 +233,7 @@ export function StorefrontTestHeader({ vendor }: StorefrontTestHeaderProps) {
             </div>
 
             {/* Navigation - Scrollable */}
-            <nav className="flex-1 overflow-y-auto px-4 py-4 relative">
+            <nav className="flex-1 overflow-y-auto px-4 py-4 relative z-10">
               <div className="flex flex-col space-y-4">
                 {/* Primary Navigation */}
                 <div className="space-y-0.5">
@@ -243,8 +243,8 @@ export function StorefrontTestHeader({ vendor }: StorefrontTestHeaderProps) {
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     <div className="flex items-center justify-between">
-                      <span className="text-sm font-light tracking-wide">Home</span>
-                      <ArrowRight size={12} className="opacity-0 group-hover:opacity-50 -translate-x-1 group-hover:translate-x-0 transition-all" strokeWidth={1.5} />
+                      <span className="text-sm font-light tracking-wide text-white">Home</span>
+                      <ArrowRight size={12} className="opacity-0 group-hover:opacity-50 -translate-x-1 group-hover:translate-x-0 transition-all text-white/50" strokeWidth={1.5} />
                     </div>
                   </Link>
                   
@@ -254,8 +254,8 @@ export function StorefrontTestHeader({ vendor }: StorefrontTestHeaderProps) {
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     <div className="flex items-center justify-between">
-                      <span className="text-sm font-light tracking-wide">Shop</span>
-                      <ArrowRight size={12} className="opacity-0 group-hover:opacity-50 -translate-x-1 group-hover:translate-x-0 transition-all" strokeWidth={1.5} />
+                      <span className="text-sm font-light tracking-wide text-white">Shop</span>
+                      <ArrowRight size={12} className="opacity-0 group-hover:opacity-50 -translate-x-1 group-hover:translate-x-0 transition-all text-white/50" strokeWidth={1.5} />
                     </div>
                   </Link>
 
@@ -265,8 +265,8 @@ export function StorefrontTestHeader({ vendor }: StorefrontTestHeaderProps) {
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     <div className="flex items-center justify-between">
-                      <span className="text-sm font-light tracking-wide">About</span>
-                      <ArrowRight size={12} className="opacity-0 group-hover:opacity-50 -translate-x-1 group-hover:translate-x-0 transition-all" strokeWidth={1.5} />
+                      <span className="text-sm font-light tracking-wide text-white">About</span>
+                      <ArrowRight size={12} className="opacity-0 group-hover:opacity-50 -translate-x-1 group-hover:translate-x-0 transition-all text-white/50" strokeWidth={1.5} />
                     </div>
                   </Link>
                   
@@ -276,8 +276,8 @@ export function StorefrontTestHeader({ vendor }: StorefrontTestHeaderProps) {
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     <div className="flex items-center justify-between">
-                      <span className="text-sm font-light tracking-wide">Contact</span>
-                      <ArrowRight size={12} className="opacity-0 group-hover:opacity-50 -translate-x-1 group-hover:translate-x-0 transition-all" strokeWidth={1.5} />
+                      <span className="text-sm font-light tracking-wide text-white">Contact</span>
+                      <ArrowRight size={12} className="opacity-0 group-hover:opacity-50 -translate-x-1 group-hover:translate-x-0 transition-all text-white/50" strokeWidth={1.5} />
                     </div>
                   </Link>
                 </div>
@@ -288,7 +288,7 @@ export function StorefrontTestHeader({ vendor }: StorefrontTestHeaderProps) {
                 {/* Secondary Navigation */}
                 <div className="space-y-2">
                   <div className="text-white/30 text-[9px] uppercase tracking-[0.15em] mb-2 font-light">
-                    Information
+                    Categories
                   </div>
                   
                   <Link
