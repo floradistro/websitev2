@@ -3,10 +3,11 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ShoppingBag, Menu, X, Search, User, ArrowRight } from 'lucide-react';
+import { ShoppingBag, Menu, X, Search, User, ArrowRight, ChevronDown, Flower2, Droplets, Cookie, Wind } from 'lucide-react';
 import { VendorStorefront } from '@/lib/storefront/get-vendor';
 import { useCart } from '@/context/CartContext';
 import CartDrawer from '@/components/CartDrawer';
+import SearchModal from '@/components/SearchModal';
 
 interface StorefrontHeaderProps {
   vendor: VendorStorefront;
@@ -15,9 +16,11 @@ interface StorefrontHeaderProps {
 export function StorefrontHeader({ vendor }: StorefrontHeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [productsDropdownOpen, setProductsDropdownOpen] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
-  const { itemCount } = useCart();
+  const { itemCount, items, total } = useCart();
 
   useEffect(() => {
     const controlHeader = () => {
@@ -101,14 +104,58 @@ export function StorefrontHeader({ vendor }: StorefrontHeaderProps) {
               </span>
             </Link>
 
-            {/* Desktop Navigation */}
+            {/* Desktop Navigation - Yacht Club Style */}
             <nav className="hidden lg:flex items-center space-x-6 text-xs uppercase tracking-wider">
-              <Link href="/" className="nav-link text-white/80 hover:text-white transition-colors">
-                Home
-              </Link>
-              <Link href="/shop" className="nav-link text-white/80 hover:text-white transition-colors">
-                Shop
-              </Link>
+              {/* Products Dropdown */}
+              <div 
+                className="relative group"
+                onMouseEnter={() => setProductsDropdownOpen(true)}
+                onMouseLeave={() => setProductsDropdownOpen(false)}
+              >
+                <Link
+                  href="/shop"
+                  className="nav-link text-white/80 hover:text-white transition-colors flex items-center gap-1.5"
+                >
+                  <span>Shop</span>
+                  <ChevronDown size={12} className={`transition-transform duration-200 ${productsDropdownOpen ? 'rotate-180' : ''}`} />
+                </Link>
+                
+                {/* Dropdown Menu */}
+                {productsDropdownOpen && (
+                  <div 
+                    className="absolute top-full left-1/2 -translate-x-1/2 pt-2 w-[520px] z-[120]"
+                    onMouseEnter={() => setProductsDropdownOpen(true)}
+                    onMouseLeave={() => setProductsDropdownOpen(false)}
+                  >
+                    <div className="bg-[#1a1a1a] border border-white/10 animate-fadeIn">
+                      <div className="grid grid-cols-2 gap-0">
+                        <div className="col-span-2 p-8">
+                          <p className="text-[10px] text-white/40 uppercase tracking-[0.2em] mb-6 font-light">Shop by Category</p>
+                          <div className="grid grid-cols-2 gap-1">
+                            <Link href="/shop?category=flower" className="flex items-center gap-3 px-4 py-3 text-white/70 hover:text-white hover:bg-white/5 transition-all group">
+                              <Flower2 size={16} className="text-white/40 group-hover:text-white transition-colors" />
+                              <div className="text-sm font-light uppercase tracking-wider">Flower</div>
+                            </Link>
+                            <Link href="/shop?category=concentrate" className="flex items-center gap-3 px-4 py-3 text-white/70 hover:text-white hover:bg-white/5 transition-all group">
+                              <Droplets size={16} className="text-white/40 group-hover:text-white transition-colors" />
+                              <div className="text-sm font-light uppercase tracking-wider">Concentrate</div>
+                            </Link>
+                            <Link href="/shop?category=edibles" className="flex items-center gap-3 px-4 py-3 text-white/70 hover:text-white hover:bg-white/5 transition-all group">
+                              <Cookie size={16} className="text-white/40 group-hover:text-white transition-colors" />
+                              <div className="text-sm font-light uppercase tracking-wider">Edibles</div>
+                            </Link>
+                            <Link href="/shop?category=vape" className="flex items-center gap-3 px-4 py-3 text-white/70 hover:text-white hover:bg-white/5 transition-all group">
+                              <Wind size={16} className="text-white/40 group-hover:text-white transition-colors" />
+                              <div className="text-sm font-light uppercase tracking-wider">Vape</div>
+                            </Link>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+              
               <Link href="/about" className="nav-link text-white/80 hover:text-white transition-colors">
                 About
               </Link>
@@ -118,27 +165,28 @@ export function StorefrontHeader({ vendor }: StorefrontHeaderProps) {
             </nav>
 
             {/* Right icons */}
-            <div className="flex items-center space-x-3 sm:space-x-5">
+            <div className="flex items-center space-x-3 sm:space-x-5 relative z-10">
               <button 
-                className="text-white/80 hover:text-white p-3 hover:bg-white/10 rounded transition-all"
+                onClick={() => setSearchOpen(true)}
+                className="text-white/80 hover:text-white p-3 hover:bg-white/10 rounded transition-all group"
                 aria-label="Search"
               >
-                <Search size={18} />
+                <Search size={18} className="transition-transform duration-300 group-hover:scale-110" />
               </button>
               <button 
-                className="text-white/80 hover:text-white p-3 hover:bg-white/10 rounded transition-all hidden sm:block"
+                className="text-white/80 hover:text-white p-3 hover:bg-white/10 rounded transition-all hidden sm:block group"
                 aria-label="Account"
               >
-                <User size={18} />
+                <User size={18} className="transition-transform duration-300 group-hover:scale-110" />
               </button>
               <button 
                 onClick={() => setCartOpen(true)}
-                className="text-white/80 hover:text-white relative p-3 hover:bg-white/10 rounded transition-all"
+                className="text-white/80 hover:text-white relative p-3 hover:bg-white/10 rounded transition-all group"
                 aria-label="Cart"
               >
-                <ShoppingBag size={18} />
+                <ShoppingBag size={18} className="transition-transform duration-300 group-hover:scale-110" />
                 {itemCount > 0 && (
-                  <span className="absolute top-0 right-0 w-5 h-5 bg-white text-black text-[10px] font-medium flex items-center justify-center rounded-full">
+                  <span className="absolute top-0 right-0 w-5 h-5 bg-white text-black text-[10px] font-medium flex items-center justify-center rounded-full badge-pulse">
                     {itemCount}
                   </span>
                 )}
@@ -227,6 +275,9 @@ export function StorefrontHeader({ vendor }: StorefrontHeaderProps) {
 
       {/* Cart Drawer */}
       <CartDrawer isOpen={cartOpen} onClose={() => setCartOpen(false)} />
+      
+      {/* Search Modal */}
+      <SearchModal isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
     </>
   );
 }
