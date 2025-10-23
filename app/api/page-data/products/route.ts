@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
     const supabase = getServiceSupabase();
     
     // Execute ALL queries in parallel - single round trip
-    const [categoriesResult, locationsResult, productsResult, vendorsResult, pricingAssignmentsResult] = await Promise.all([
+    const [categoriesResult, locationsResult, productsResult, vendorsResult, vendorPricingConfigsResult] = await Promise.all([
       // Categories
       supabase
         .from('categories')
@@ -63,15 +63,17 @@ export async function GET(request: NextRequest) {
         .eq('status', 'active')
         .order('store_name', { ascending: true}),
       
-      // Pricing tier assignments
+      // Vendor pricing configs (auto-applies to ALL vendor products)
       supabase
-        .from('product_pricing_assignments')
+        .from('vendor_pricing_configs')
         .select(`
-          product_id,
-          price_overrides,
+          vendor_id,
+          pricing_values,
           blueprint:pricing_tier_blueprints(
             id,
             name,
+            slug,
+            tier_type,
             price_breaks
           )
         `)
@@ -83,27 +85,41 @@ export async function GET(request: NextRequest) {
     if (locationsResult.error) throw locationsResult.error;
     if (productsResult.error) throw productsResult.error;
     if (vendorsResult.error) throw vendorsResult.error;
-    if (pricingAssignmentsResult.error) console.warn('Pricing assignments error:', pricingAssignmentsResult.error);
+    if (vendorPricingConfigsResult.error) console.warn('Vendor pricing configs error:', vendorPricingConfigsResult.error);
     
-    // Build pricing map by product_id
-    const pricingMap = new Map();
-    (pricingAssignmentsResult.data || []).forEach((assignment: any) => {
-      if (!assignment.blueprint?.price_breaks) return;
+    // Build pricing map by vendor_id (pricing applies to ALL products from that vendor)
+    const vendorPricingMap = new Map();
+    (vendorPricingConfigsResult.data || []).forEach((config: any) => {
+      if (!config.blueprint?.price_breaks) return;
       
-      const tiers = assignment.blueprint.price_breaks.map((priceBreak: any) => {
-        // Check for price override for this specific break
-        const overridePrice = assignment.price_overrides?.[priceBreak.break_id];
+      const pricingValues = config.pricing_values || {};
+      const tiers: any[] = [];
+      
+      config.blueprint.price_breaks.forEach((priceBreak: any) => {
+        const breakId = priceBreak.break_id;
+        const vendorPrice = pricingValues[breakId];
         
-        return {
-          qty: priceBreak.qty,
-          weight: `${priceBreak.qty}${priceBreak.unit}`,
-          price: overridePrice || 0, // Will be calculated from base price if 0
-          label: priceBreak.label,
-          min_quantity: priceBreak.qty,
-        };
+        // Only add if tier is ENABLED and has a price
+        if (vendorPrice && vendorPrice.enabled !== false && vendorPrice.price) {
+          tiers.push({
+            weight: priceBreak.label || `${priceBreak.qty}${priceBreak.unit || ''}`,
+            qty: priceBreak.qty || 1,
+            price: parseFloat(vendorPrice.price),
+            label: priceBreak.label,
+            tier_name: priceBreak.label,
+            break_id: breakId,
+            blueprint_name: config.blueprint.name,
+            sort_order: priceBreak.sort_order || 0,
+            min_quantity: priceBreak.qty,
+          });
+        }
       });
       
-      pricingMap.set(assignment.product_id, tiers);
+      // Sort by sort_order
+      tiers.sort((a, b) => a.sort_order - b.sort_order);
+      
+      // Store tiers for this vendor (will apply to ALL their products)
+      vendorPricingMap.set(config.vendor_id, tiers);
     });
     
     // Map products to expected format
@@ -129,17 +145,8 @@ export async function GET(request: NextRequest) {
       const totalStock = p.inventory?.reduce((sum: number, inv: any) => sum + (inv.quantity || 0), 0) || 0;
       const actualStockStatus = totalStock > 0 ? 'instock' : 'outofstock';
       
-      // Get pricing tiers for this product
-      let pricingTiers = pricingMap.get(p.id) || [];
-      
-      // If we have tiers but no prices set, calculate based on base price
-      if (pricingTiers.length > 0 && p.price) {
-        const basePrice = parseFloat(p.price);
-        pricingTiers = pricingTiers.map((tier: any) => ({
-          ...tier,
-          price: tier.price || (basePrice * tier.qty) // Calculate price if not set
-        }));
-      }
+      // Get pricing tiers for this product (from vendor's config)
+      const pricingTiers = vendorPricingMap.get(p.vendor_id) || [];
       
       return {
         id: p.id,

@@ -19,6 +19,18 @@ export function StorefrontShopClient({ products, locations, inventoryMap, produc
     return tiers.length > 0;
   });
   console.log('🛒 Shop Client - Products with pricing tiers:', productsWithPricing.length);
+  
+  // Log first product with pricing for debugging
+  if (productsWithPricing.length > 0) {
+    const firstId = productsWithPricing[0];
+    const firstProduct = products.find(p => p.id === firstId);
+    const firstTiers = productFieldsMap[firstId]?.pricingTiers || [];
+    console.log('🛒 Sample product:', firstProduct?.name, '- Tiers:', firstTiers.length);
+    console.log('🛒 First tier:', firstTiers[0]);
+  } else {
+    console.warn('⚠️ NO products have pricing tiers!');
+    console.log('🛒 Sample productFieldsMap entry:', Object.values(productFieldsMap)[0]);
+  }
 
   return (
     <div className="bg-[#2a2a2a] min-h-screen">
@@ -40,6 +52,11 @@ export function StorefrontShopClient({ products, locations, inventoryMap, produc
             {products.map((product, index) => {
               const pricingTiers = productFieldsMap[product.id]?.pricingTiers || [];
               const productFields = productFieldsMap[product.id] ? { fields: productFieldsMap[product.id].fields } : undefined;
+              
+              // Debug first 3 products
+              if (index < 3) {
+                console.log(`Product ${index + 1}: ${product.name} - ${pricingTiers.length} tiers`);
+              }
               
               return (
                 <ProductCard 
