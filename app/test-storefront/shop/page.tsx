@@ -76,15 +76,27 @@ export default async function TestShopPage() {
   }
 
   console.log('📦 Products with pricing:', Object.keys(pricingMap).length, '/', productIds.length);
+  
+  // Log sample pricing to verify
+  const firstProductWithPricing = Object.keys(pricingMap)[0];
+  if (firstProductWithPricing) {
+    console.log('Sample pricing for', firstProductWithPricing, ':', pricingMap[firstProductWithPricing]);
+  }
 
   // Create product fields map
   const productFieldsMap: { [key: string]: any } = {};
   (allProducts || []).forEach((p: any) => {
     const blueprintFields = p.blueprint_fields || {};
+    const pricing = pricingMap[p.id] || [];
     productFieldsMap[p.id] = { 
       fields: blueprintFields,
-      pricingTiers: pricingMap[p.id] || []
+      pricingTiers: pricing
     };
+    
+    // Log products that have pricing
+    if (pricing.length > 0) {
+      console.log('✅ Product with pricing:', p.name, '- tiers:', pricing.length);
+    }
   });
 
   const products = (allProducts || []).map((p: any) => {
