@@ -1,0 +1,12 @@
+
+> website@0.1.0 build
+> next build
+
+   ▲ Next.js 15.5.5
+   - Environments: .env.local
+   - Experiments (use with caution):
+     · optimizePackageImports
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 4.5s
+   Linting and checking validity of types ...

@@ -6,8 +6,9 @@ export const dynamic = 'force-dynamic';
 // PUT update pricing blueprint
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
+  const params = await context.params;
   try {
     const { id } = params;
     const body = await request.json();
@@ -74,8 +75,9 @@ export async function PUT(
 // DELETE pricing blueprint
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
+  const params = await context.params;
   try {
     const { id } = params;
     const supabase = getServiceSupabase();

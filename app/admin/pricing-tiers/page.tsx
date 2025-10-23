@@ -227,15 +227,13 @@ export default function AdminPricingTiers() {
   }
 
   async function deleteBlueprint(id: string, name: string) {
-    const confirmed = await showConfirm({
+    await showConfirm({
       title: 'Delete Pricing Blueprint?',
       message: `Are you sure you want to delete "${name}"? This will affect all products using this blueprint.`,
       confirmText: 'Delete',
-      confirmStyle: 'danger'
-    });
-    
-    if (!confirmed) return;
-    
+      cancelText: 'Cancel',
+      type: 'warning',
+      onConfirm: async () => {
     try {
       const response = await fetch(`/api/admin/pricing-blueprints/${id}`, {
         method: 'DELETE'
@@ -262,6 +260,8 @@ export default function AdminPricingTiers() {
         message: error.message || 'Failed to delete pricing blueprint'
       });
     }
+      }
+    });
   }
 
   function toggleExpanded(id: string) {
@@ -444,7 +444,6 @@ export default function AdminPricingTiers() {
           isOpen={showBlueprintModal}
           onClose={() => setShowBlueprintModal(false)}
           title={editingBlueprint.id ? 'Edit Pricing Blueprint' : 'Create Pricing Blueprint'}
-          size="xl"
         >
           <div className="space-y-6">
             {/* Basic Info */}

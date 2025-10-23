@@ -44,13 +44,13 @@ export default function MonitoringDashboard() {
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [performanceHistory, setPerformanceHistory] = useState<any[]>([]);
   const [cacheHistory, setCacheHistory] = useState<any[]>([]);
-  const animationRef = useRef<number>();
+  const animationRef = useRef<number | null>(null);
   const [pulseAnimation, setPulseAnimation] = useState(0);
 
   useEffect(() => {
     async function loadStats() {
       try {
-        const response = await fetch('/api/admin/performance-stats');
+        const response = await fetch('/api/admin/performance-stats', { cache: 'no-store' });
         const data = await response.json();
         setStats(data);
         setLoading(false);

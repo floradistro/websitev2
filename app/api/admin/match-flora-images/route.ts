@@ -93,10 +93,10 @@ export async function POST(request: NextRequest) {
           }
         }
         
-        // Word overlap
-        const imageWords = imageNameClean.split(' ').filter(w => w.length > 2);
-        const productWords = productNameClean.split(' ').filter(w => w.length > 2);
-        const overlap = imageWords.filter(w => productWords.includes(w)).length;
+      // Word overlap
+      const imageWords = imageNameClean.split(' ').filter((w: string) => w.length > 2);
+      const productWords = productNameClean.split(' ').filter((w: string) => w.length > 2);
+      const overlap = imageWords.filter((w: string) => productWords.includes(w)).length;
         const score = overlap > 0 ? (overlap / Math.max(imageWords.length, productWords.length)) * 60 : 0;
         
         if (score > bestScore && score > 30) {

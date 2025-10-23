@@ -234,8 +234,8 @@ export async function PUT(request: NextRequest) {
     console.log(`🔵 Bulk upscaling ${files.length} images by ${scale}x`);
     console.log(`⚡ Concurrency: ${concurrency} (Replicate has no rate limits)`);
     
-    const results = [];
-    const errors = [];
+    const results: any[] = [];
+    const errors: any[] = [];
     
     // Process in chunks (Replicate can handle high concurrency)
     const chunks = [];
