@@ -10,7 +10,12 @@ export default async function Home() {
   let bulkProducts: any[] = [];
   
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/page-data/home`, {
+    // Use VERCEL_URL during build/SSR on Vercel
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || (process.env.VERCEL_URL 
+      ? `https://${process.env.VERCEL_URL}` 
+      : 'http://localhost:3000');
+    
+    const response = await fetch(`${baseUrl}/api/page-data/home`, {
       next: { revalidate: 300 },
       headers: {
         'Content-Type': 'application/json',
