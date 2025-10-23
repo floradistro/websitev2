@@ -47,18 +47,61 @@ export default async function TestShopPage() {
     inventoryMap[inv.product_id].push(inv);
   });
 
+  // Fetch pricing tiers for all products
+  const pricingMap: { [key: string]: any[] } = {};
+  for (const product of (allProducts || [])) {
+    const { data: pricingConfig } = await supabase
+      .from('vendor_pricing_configs')
+      .select(`
+        id,
+        pricing_values,
+        display_unit,
+        blueprint:pricing_tier_blueprints (
+          id,
+          name,
+          slug,
+          tier_breaks
+        )
+      `)
+      .eq('product_id', product.id)
+      .eq('is_active', true)
+      .single();
+
+    if (pricingConfig && pricingConfig.blueprint?.tier_breaks) {
+      const tiers: any[] = [];
+      const pricingValues = pricingConfig.pricing_values || {};
+      
+      pricingConfig.blueprint.tier_breaks.forEach((tier: any) => {
+        const breakId = tier.break_id;
+        const tierData = pricingValues[breakId];
+        
+        if (tierData && tierData.enabled && tierData.price) {
+          tiers.push({
+            weight: tier.label || tier.weight || breakId,
+            label: tier.label,
+            qty: tier.quantity || 1,
+            price: parseFloat(tierData.price),
+            tier_name: tier.label || breakId,
+            break_id: breakId,
+            blueprint_name: pricingConfig.blueprint.name,
+            sort_order: tier.sort_order || 0
+          });
+        }
+      });
+      
+      tiers.sort((a, b) => a.sort_order - b.sort_order);
+      pricingMap[product.id] = tiers;
+    }
+  }
+
   // Create product fields map
   const productFieldsMap: { [key: string]: any } = {};
   (allProducts || []).forEach((p: any) => {
-    const blueprintFields = Array.isArray(p.blueprint_fields) ? p.blueprint_fields : [];
-    const fields: { [key: string]: string } = {};
-    blueprintFields.forEach((field: any) => {
-      if (field && field.field_name && field.field_value) {
-        fields[field.field_name] = field.field_value;
-      }
-    });
-    const pricingTiers = p.meta_data?._product_price_tiers || [];
-    productFieldsMap[p.id] = { fields, pricingTiers };
+    const blueprintFields = p.blueprint_fields || {};
+    productFieldsMap[p.id] = { 
+      fields: blueprintFields,
+      pricingTiers: pricingMap[p.id] || []
+    };
   });
 
   const products = (allProducts || []).map((p: any) => {
