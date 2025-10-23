@@ -49,7 +49,7 @@ export default async function Home() {
       images: imageUrl ? [{ src: imageUrl, id: 0, name: p.name }] : [],
       categories: p.product_categories?.map((pc: any) => pc.category) || [],
       meta_data: p.meta_data || {},
-      blueprint_fields: p.blueprint_fields || [],
+      blueprint_fields: Array.isArray(p.blueprint_fields) ? p.blueprint_fields : [],
       stock_status: p.stock_status || 'in_stock',
       total_stock: p.stock_quantity || 0,
       inventory: [],
@@ -78,7 +78,7 @@ export default async function Home() {
   
   bulkProducts.forEach((product: any) => {
     const productId = product.id;
-    const blueprintFields = product.blueprint_fields || [];
+    const blueprintFields = Array.isArray(product.blueprint_fields) ? product.blueprint_fields : [];
     
     // Filter and sort fields (handle Supabase JSONB array structure)
     const sortedFields = blueprintFields
