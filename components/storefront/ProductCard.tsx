@@ -10,13 +10,15 @@ import { useRouter } from "next/navigation";
 interface ProductCardProps {
   product: any;
   index: number;
+  locations?: any[];
   pricingTiers?: any[];
   productFields?: {
     fields: { [key: string]: string };
   };
+  inventory?: any[];
 }
 
-function ProductCard({ product, index, pricingTiers = [], productFields }: ProductCardProps) {
+function ProductCard({ product, index, locations = [], pricingTiers = [], productFields, inventory = [] }: ProductCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [selectedTierIndex, setSelectedTierIndex] = useState<number | null>(null);
   const [showAddToCart, setShowAddToCart] = useState(false);
@@ -160,8 +162,50 @@ function ProductCard({ product, index, pricingTiers = [], productFields }: Produ
     }
   };
 
+  // Get locations where product is in stock
+  const getStockLocations = () => {
+    const totalStockFromProduct = parseFloat(product.total_stock || product.stock_quantity || 0);
+    
+    if (!inventory || inventory.length === 0) {
+      return { 
+        inStock: totalStockFromProduct > 0 || product.stock_status === 'instock', 
+        locations: [], 
+        count: 0,
+        showGenericStock: totalStockFromProduct > 0
+      };
+    }
+    
+    const activeLocations = locations.filter((loc: any) => loc.is_active);
+    const stockLocations: any[] = [];
+
+    inventory.forEach((inv: any) => {
+      const qty = parseFloat(inv.quantity || inv.stock || 0);
+      
+      if (qty > 0) {
+        const location = activeLocations.find((loc: any) => 
+          loc.id === inv.location_id || 
+          loc.id.toString() === inv.location_id?.toString()
+        );
+        if (location && !stockLocations.find(l => l.id === location.id)) {
+          stockLocations.push({
+            ...location,
+            quantity: qty
+          });
+        }
+      }
+    });
+
+    return {
+      inStock: stockLocations.length > 0,
+      locations: stockLocations,
+      count: stockLocations.length,
+      showGenericStock: false
+    };
+  };
+
+  const stockInfo = getStockLocations();
   const totalStock = product.stock_quantity || product.total_stock || 0;
-  const inStock = totalStock > 0 || product.stock_status === 'in_stock' || product.stock_status === 'instock';
+  const inStock = stockInfo.inStock;
 
   return (
     <div
@@ -226,18 +270,28 @@ function ProductCard({ product, index, pricingTiers = [], productFields }: Produ
             {getPriceDisplay()}
           </p>
           
-          {/* Stock Status */}
-          {inStock ? (
+          {/* Stock Status with Locations */}
+          {stockInfo.inStock ? (
             <div className="flex items-center gap-1.5">
               <div className="w-2 h-2 rounded-full bg-green-500 flex-shrink-0"></div>
-              <span className="text-[11px] uppercase tracking-wider text-white/60">
-                In Stock
-              </span>
+              <div className="flex flex-col">
+                <span className="text-[11px] uppercase tracking-wider text-white/60">
+                  In Stock
+                </span>
+                {!stockInfo.showGenericStock && stockInfo.locations.length > 0 && (
+                  <span className="text-[10px] tracking-wider text-white/40">
+                    {stockInfo.locations.slice(0, 2).map((loc: any) => loc.name).join(', ')}
+                  </span>
+                )}
+              </div>
             </div>
           ) : (
-            <div className="flex items-center gap-1.5">
-              <div className="w-2 h-2 rounded-full bg-red-500/60 flex-shrink-0"></div>
-              <span className="text-[11px] uppercase tracking-wider text-white/40">Out of Stock</span>
+            <div className="flex flex-col gap-1">
+              <div className="flex items-center gap-1.5">
+                <div className="w-2 h-2 rounded-full bg-red-500/60 flex-shrink-0"></div>
+                <span className="text-[11px] uppercase tracking-wider text-white/40">Out of Stock</span>
+              </div>
+              <span className="text-[10px] text-white/30">Check back soon</span>
             </div>
           )}
           

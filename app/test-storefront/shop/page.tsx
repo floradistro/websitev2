@@ -46,7 +46,19 @@ export default async function TestShopPage() {
           </p>
         </div>
 
-        <ProductGrid products={products} />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-px">
+          {products.map((product, index) => (
+            <ProductCard 
+              key={product.id}
+              product={product}
+              index={index}
+              locations={locations || []}
+              pricingTiers={productFieldsMap[product.id]?.pricingTiers || []}
+              productFields={productFieldsMap[product.id] ? { fields: productFieldsMap[product.id].fields } : undefined}
+              inventory={product.inventory}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );
