@@ -200,71 +200,129 @@ export function StorefrontTestHeader({ vendor }: StorefrontTestHeaderProps) {
       {mobileMenuOpen && (
         <div className="lg:hidden fixed inset-0 z-[10000] bg-black/80 backdrop-blur-md" onClick={() => setMobileMenuOpen(false)}>
           <div 
-            className="absolute left-0 top-0 bottom-0 w-[320px] bg-gradient-to-b from-black via-[#0a0a0a] to-black border-r border-white/20 flex flex-col z-[10001] shadow-2xl"
+            className="absolute left-0 top-0 bottom-0 w-[320px] bg-gradient-to-b from-black via-[#0a0a0a] to-black border-r border-white/20 flex flex-col shadow-2xl"
             onClick={(e) => e.stopPropagation()}
+            style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
           >
             {/* Header */}
-            <div className="p-4 pb-4 border-b border-white/10">
+            <div className="p-4 pb-4 border-b border-white/10 relative">
               <button 
                 onClick={() => setMobileMenuOpen(false)}
-                className="absolute top-4 right-4 p-2 text-white/50 hover:text-white rounded-full transition-all"
+                className="absolute top-4 right-4 p-2 text-white/50 hover:text-white rounded-full transition-all z-50"
               >
-                <X size={18} />
+                <X size={18} strokeWidth={1.5} />
               </button>
               
               <Link href="/test-storefront" className="block" onClick={() => setMobileMenuOpen(false)}>
                 <div className="flex items-center gap-2.5 mb-2">
                   {vendor.logo_url ? (
-                    <div className="w-10 h-10 rounded-full overflow-hidden border border-white/10">
+                    <div className="w-10 h-10 bg-gradient-to-br from-white/10 to-white/5 rounded-full flex items-center justify-center overflow-hidden border border-white/10">
                       <Image src={vendor.logo_url} alt={vendor.store_name} width={40} height={40} className="w-full h-full object-contain p-0.5" />
                     </div>
                   ) : (
                     <div className="w-10 h-10 bg-gradient-to-br from-white/10 to-white/5 rounded-full flex items-center justify-center border border-white/10">
-                      <span className="text-white text-xs">{vendor.store_name[0]}</span>
+                      <span className="text-white text-xs font-light">{vendor.store_name[0]}</span>
                     </div>
                   )}
                   <div>
-                    <div className="text-white text-base font-light tracking-wide">{vendor.store_name}</div>
+                    <div className="text-white text-base font-light tracking-wide logo-font">{vendor.store_name}</div>
                     <div className="text-white/30 text-[9px] uppercase tracking-[0.15em] font-light">Premium Cannabis</div>
                   </div>
                 </div>
               </Link>
             </div>
 
-            {/* Navigation */}
-            <nav className="flex-1 overflow-y-auto px-4 py-4">
+            {/* Navigation - Scrollable */}
+            <nav className="flex-1 overflow-y-auto px-4 py-4 relative">
               <div className="flex flex-col space-y-4">
+                {/* Primary Navigation */}
                 <div className="space-y-0.5">
-                  <Link href="/test-storefront" className="group block py-2.5 text-white/90 hover:text-white transition-all" onClick={() => setMobileMenuOpen(false)}>
+                  <Link
+                    href="/test-storefront"
+                    className="group block py-2.5 text-white/90 hover:text-white transition-all relative"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-light tracking-wide">Home</span>
-                      <ArrowRight size={12} className="opacity-0 group-hover:opacity-50 transition-all" />
+                      <ArrowRight size={12} className="opacity-0 group-hover:opacity-50 -translate-x-1 group-hover:translate-x-0 transition-all" strokeWidth={1.5} />
                     </div>
                   </Link>
-                  <Link href="/test-storefront/shop" className="group block py-2.5 text-white/90 hover:text-white transition-all" onClick={() => setMobileMenuOpen(false)}>
+                  
+                  <Link
+                    href="/test-storefront/shop"
+                    className="group block py-2.5 text-white/90 hover:text-white transition-all relative"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-light tracking-wide">Shop</span>
-                      <ArrowRight size={12} className="opacity-0 group-hover:opacity-50 transition-all" />
+                      <ArrowRight size={12} className="opacity-0 group-hover:opacity-50 -translate-x-1 group-hover:translate-x-0 transition-all" strokeWidth={1.5} />
                     </div>
                   </Link>
-                  <Link href="/test-storefront/about" className="group block py-2.5 text-white/90 hover:text-white transition-all" onClick={() => setMobileMenuOpen(false)}>
+
+                  <Link
+                    href="/test-storefront/about"
+                    className="group block py-2.5 text-white/90 hover:text-white transition-all relative"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-light tracking-wide">About</span>
-                      <ArrowRight size={12} className="opacity-0 group-hover:opacity-50 transition-all" />
+                      <ArrowRight size={12} className="opacity-0 group-hover:opacity-50 -translate-x-1 group-hover:translate-x-0 transition-all" strokeWidth={1.5} />
                     </div>
                   </Link>
-                  <Link href="/test-storefront/contact" className="group block py-2.5 text-white/90 hover:text-white transition-all" onClick={() => setMobileMenuOpen(false)}>
+                  
+                  <Link
+                    href="/test-storefront/contact"
+                    className="group block py-2.5 text-white/90 hover:text-white transition-all relative"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-light tracking-wide">Contact</span>
-                      <ArrowRight size={12} className="opacity-0 group-hover:opacity-50 transition-all" />
+                      <ArrowRight size={12} className="opacity-0 group-hover:opacity-50 -translate-x-1 group-hover:translate-x-0 transition-all" strokeWidth={1.5} />
                     </div>
+                  </Link>
+                </div>
+
+                {/* Divider */}
+                <div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
+                
+                {/* Secondary Navigation */}
+                <div className="space-y-2">
+                  <div className="text-white/30 text-[9px] uppercase tracking-[0.15em] mb-2 font-light">
+                    Information
+                  </div>
+                  
+                  <Link
+                    href="/test-storefront/shop?category=flower"
+                    className="block py-1.5 text-white/60 hover:text-white/90 transition-all text-sm font-light"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Flower
+                  </Link>
+                  
+                  <Link
+                    href="/test-storefront/shop?category=concentrates"
+                    className="block py-1.5 text-white/60 hover:text-white/90 transition-all text-sm font-light"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Concentrates
+                  </Link>
+                  
+                  <Link
+                    href="/test-storefront/shop?category=edibles"
+                    className="block py-1.5 text-white/60 hover:text-white/90 transition-all text-sm font-light"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Edibles
                   </Link>
                 </div>
               </div>
             </nav>
 
             {/* Footer */}
-            <div className="p-4 border-t border-white/10 bg-gradient-to-b from-transparent to-black/50">
+            <div 
+              className="p-4 border-t border-white/10 bg-gradient-to-b from-transparent to-black/50"
+              style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+            >
               <div className="text-center text-white/20 text-[9px] tracking-wider font-light">
                 © 2025 {vendor.store_name}
               </div>
