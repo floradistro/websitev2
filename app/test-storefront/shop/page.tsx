@@ -47,27 +47,27 @@ export default async function TestShopPage() {
     inventoryMap[inv.product_id].push(inv);
   });
 
-  // Fetch pricing tiers for all products
-  const pricingMap: { [key: string]: any[] } = {};
-  for (const product of (allProducts || [])) {
-    const { data: pricingConfig } = await supabase
-      .from('vendor_pricing_configs')
-      .select(`
+  // Fetch ALL pricing tiers at once (much faster)
+  const { data: allPricingConfigs } = await supabase
+    .from('vendor_pricing_configs')
+    .select(`
+      id,
+      product_id,
+      pricing_values,
+      display_unit,
+      blueprint:pricing_tier_blueprints (
         id,
-        pricing_values,
-        display_unit,
-        blueprint:pricing_tier_blueprints (
-          id,
-          name,
-          slug,
-          tier_breaks
-        )
-      `)
-      .eq('product_id', product.id)
-      .eq('is_active', true)
-      .single();
+        name,
+        slug,
+        tier_breaks
+      )
+    `)
+    .in('product_id', productIds)
+    .eq('is_active', true);
 
-    if (pricingConfig && pricingConfig.blueprint?.tier_breaks) {
+  const pricingMap: { [key: string]: any[] } = {};
+  (allPricingConfigs || []).forEach((pricingConfig: any) => {
+    if (pricingConfig.blueprint?.tier_breaks) {
       const tiers: any[] = [];
       const pricingValues = pricingConfig.pricing_values || {};
       
@@ -90,9 +90,9 @@ export default async function TestShopPage() {
       });
       
       tiers.sort((a, b) => a.sort_order - b.sort_order);
-      pricingMap[product.id] = tiers;
+      pricingMap[pricingConfig.product_id] = tiers;
     }
-  }
+  });
 
   // Create product fields map
   const productFieldsMap: { [key: string]: any } = {};
