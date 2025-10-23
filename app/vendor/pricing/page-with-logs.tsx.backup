@@ -568,6 +568,12 @@ export default function VendorPricingPage() {
                         const tierEnabled = Boolean(tierState.enabled !== false);
                         
                         if (index === 0) {
+                          console.log('📊 Rendering FIRST tier:');
+                          console.log('  - breakId:', priceBreak.break_id);
+                          console.log('  - tierState:', JSON.parse(JSON.stringify(tierState)));
+                          console.log('  - enabled value:', tierState?.enabled);
+                          console.log('  - tierEnabled (computed):', tierEnabled);
+                          console.log('  - ALL prices:', JSON.parse(JSON.stringify(editingPrices[config.id])));
                         }
                         
                         return (
@@ -582,6 +588,14 @@ export default function VendorPricingPage() {
                                     checked={tierEnabled}
                                     onChange={(e) => {
                                       e.stopPropagation();
+                                      console.log('═══════════════════════════════');
+                                      console.log('✅ CHECKBOX CLICKED');
+                                      console.log('  - Tier:', priceBreak.label);
+                                      console.log('  - breakId:', priceBreak.break_id);
+                                      console.log('  - configId:', config.id);
+                                      console.log('  - Current tierEnabled:', tierEnabled);
+                                      console.log('  - Current tierState:', JSON.parse(JSON.stringify(tierState)));
+                                      console.log('═══════════════════════════════');
                                       toggleTierEnabled(config.id, priceBreak.break_id);
                                     }}
                                     className="w-4 h-4 rounded border-white/20 cursor-pointer"
@@ -603,7 +617,7 @@ export default function VendorPricingPage() {
                               </div>
 
                               {/* Quantity Range (for wholesale tiered) */}
-                              {isWholesale && config.blueprint?.slug.includes('tiered') ? (
+                              {isWholesale && config.blueprint.slug.includes('tiered') ? (
                                 <>
                                   <div className="lg:col-span-2">
                                     <label className="block text-white/60 text-xs mb-2">Min Qty</label>

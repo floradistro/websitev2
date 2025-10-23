@@ -1,82 +1,308 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { ShoppingCart } from 'lucide-react';
-
-interface Product {
-  id: string;
-  name: string;
-  description: string;
-  images: string[];
-  retail_price: number;
-  category: string;
-  slug: string;
-}
+import { useState, memo } from "react";
+import { ShoppingBag, Heart } from "lucide-react";
+import { useCart } from "@/context/CartContext";
+import { useWishlist } from "@/context/WishlistContext";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 interface ProductCardProps {
-  product: Product;
+  product: any;
+  index: number;
+  pricingTiers?: any[];
+  productFields?: {
+    fields: { [key: string]: string };
+  };
 }
 
-export function ProductCard({ product }: ProductCardProps) {
-  const imageUrl = product.images && product.images.length > 0 
-    ? product.images[0] 
-    : '/placeholder-product.png';
+function ProductCard({ product, index, pricingTiers = [], productFields }: ProductCardProps) {
+  const [isHovered, setIsHovered] = useState(false);
+  const [selectedTierIndex, setSelectedTierIndex] = useState<number | null>(null);
+  const [showAddToCart, setShowAddToCart] = useState(false);
+  const { addToCart } = useCart();
+  const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
+  const router = useRouter();
+  
+  const inWishlist = isInWishlist(product.id);
+  
+  const tiers = pricingTiers || [];
+  
+  const getUnitLabel = (tier: any) => {
+    if (tier.label) return tier.label;
+    if (tier.weight) return tier.weight;
+    const qty = tier.qty || tier.min_quantity || 1;
+    return `${qty} ${qty === 1 ? "unit" : "units"}`;
+  };
+  
+  const handleTierSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    e.stopPropagation();
+    const index = parseInt(e.target.value);
+    setSelectedTierIndex(index);
+    setShowAddToCart(index >= 0);
+  };
+  
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (selectedTierIndex === null || !tiers[selectedTierIndex]) return;
+    
+    const tier = tiers[selectedTierIndex];
+    const price = typeof tier.price === "string" ? parseFloat(tier.price) : tier.price;
+    const tierLabel = getUnitLabel(tier);
+    
+    addToCart({
+      productId: product.id,
+      name: product.name,
+      price: price,
+      quantity: 1,
+      tierName: tierLabel,
+      image: product.images?.[0]?.src,
+    });
+    
+    setSelectedTierIndex(null);
+    setShowAddToCart(false);
+  };
 
-  const price = typeof product.retail_price === 'number' 
-    ? product.retail_price.toFixed(2)
-    : '0.00';
+  const getDisplayFields = () => {
+    if (!productFields?.fields) return [];
+    
+    const fields = productFields.fields;
+    const displayFields: Array<{ label: string; value: string }> = [];
+    
+    const fieldConfig: { [key: string]: string } = {
+      'strain_type': 'Type',
+      'lineage': 'Lineage',
+      'terpene_profile': 'Terpenes',
+      'effects': 'Effects',
+      'thca_percentage': 'THCa %',
+      'delta_9_percentage': 'Δ9 %',
+    };
+    
+    Object.keys(fields).sort().forEach((key) => {
+      const value = fields[key];
+      const label = fieldConfig[key];
+      
+      if (!label) return;
+      
+      const existingField = displayFields.find(f => f.label === label);
+      if (!existingField && value !== null && value !== undefined) {
+        let displayValue: string;
+        
+        if (Array.isArray(value)) {
+          displayValue = value.length > 0 ? value.join(', ') : '—';
+        } else if (typeof value === 'number') {
+          displayValue = String(value);
+        } else if (typeof value === 'string') {
+          displayValue = value.trim() !== '' ? value : '—';
+        } else {
+          displayValue = String(value);
+        }
+        
+        displayFields.push({ label, value: displayValue });
+      }
+    });
+    
+    return displayFields.slice(0, 5);
+  };
+
+  const displayFields = getDisplayFields();
+  
+  const getPriceDisplay = () => {
+    if (tiers.length > 0) {
+      if (selectedTierIndex !== null && tiers[selectedTierIndex]) {
+        const tier = tiers[selectedTierIndex];
+        const price = typeof tier.price === "string" ? parseFloat(tier.price) : tier.price;
+        return `$${price.toFixed(0)}`;
+      }
+      
+      const prices = tiers.map((t: any) => 
+        typeof t.price === "string" ? parseFloat(t.price) : t.price
+      );
+      const minPrice = Math.min(...prices);
+      const maxPrice = Math.max(...prices);
+      
+      if (minPrice === maxPrice) {
+        return `$${minPrice.toFixed(0)}`;
+      }
+      
+      return `$${minPrice.toFixed(0)} - $${maxPrice.toFixed(0)}`;
+    }
+    
+    const basePrice = product.price ? parseFloat(product.price) : 0;
+    
+    if (basePrice === 0 || !product.price) {
+      return 'Contact for Pricing';
+    }
+    
+    return `$${basePrice.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+  };
+
+  const handleCardClick = () => {
+    router.push(`/products/${product.uuid || product.id}`);
+  };
+
+  const handleWishlistToggle = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (inWishlist) {
+      removeFromWishlist(product.id);
+    } else {
+      addToWishlist({
+        productId: product.id,
+        name: product.name,
+        price: product.price,
+        image: product.images?.[0]?.src,
+        slug: product.slug,
+      });
+    }
+  };
+
+  const totalStock = product.stock_quantity || product.total_stock || 0;
+  const inStock = totalStock > 0 || product.stock_status === 'in_stock' || product.stock_status === 'instock';
 
   return (
-    <Link href={`/products/${product.slug || product.id}`}>
-      <div className="group bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer">
-        {/* Product Image */}
-        <div className="aspect-square overflow-hidden bg-gray-100">
-          <img
-            src={imageUrl}
+    <div
+      className={`group flex flex-col relative bg-[#3a3a3a] md:hover:bg-[#404040] cursor-pointer md:hover:shadow-2xl md:hover:-translate-y-1 border border-transparent md:hover:border-white/10 transition-all duration-300 ${!inStock ? 'opacity-75' : ''}`}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      onClick={handleCardClick}
+      style={{
+        animation: `fadeInUp 0.6s ease-out ${index * 0.05}s both`,
+      }}
+    >
+      {/* Product Image */}
+      <div className="relative aspect-[4/5] overflow-hidden bg-[#2a2a2a]">
+        {product.images?.[0] ? (
+          <Image
+            src={product.images[0].src || product.images[0]}
             alt={product.name}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            fill
+            sizes="(max-width: 640px) 85vw, (max-width: 768px) 45vw, (max-width: 1024px) 32vw, 23vw"
+            className="object-contain transition-all duration-700 ease-out group-hover:scale-105"
+            loading="lazy"
+            quality={85}
           />
-        </div>
-
-        {/* Product Info */}
-        <div className="p-4">
-          <div className="mb-2">
-            <span className="text-xs text-gray-500 uppercase tracking-wide">
-              {product.category || 'Product'}
-            </span>
+        ) : (
+          <div className="relative w-full h-full flex items-center justify-center p-12">
+            <div className="text-white/10 text-xs">No Image</div>
           </div>
-          
-          <h3 className="font-semibold text-lg mb-2 line-clamp-2 group-hover:text-gray-700">
+        )}
+
+        {/* Wishlist Heart */}
+        <button
+          onClick={handleWishlistToggle}
+          className={`absolute top-2 right-2 z-10 w-9 h-9 rounded-full flex items-center justify-center transition-all duration-300 ${
+            inWishlist 
+              ? "bg-white text-black" 
+              : "bg-black/40 backdrop-blur-sm text-white hover:bg-black/60"
+          }`}
+        >
+          <Heart 
+            size={16} 
+            className={`transition-all duration-300 ${inWishlist ? "fill-black" : "fill-none"}`}
+            strokeWidth={2}
+          />
+        </button>
+
+        {/* Low Stock Badge */}
+        {inStock && totalStock <= 5 && totalStock > 0 && (
+          <div className="absolute top-2 left-2 bg-red-600/90 text-white px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider">
+            Only {totalStock} Left
+          </div>
+        )}
+      </div>
+
+      {/* Product Info */}
+      <div className="flex flex-col flex-1 px-3 py-4">
+        <div className="space-y-3">
+          <h3 className="text-xs uppercase tracking-[0.12em] font-normal text-white line-clamp-2 leading-relaxed">
             {product.name}
           </h3>
           
-          <p className="text-gray-600 text-sm line-clamp-2 mb-4">
-            {product.description}
+          <p className="text-sm font-medium text-white tracking-wide">
+            {getPriceDisplay()}
           </p>
-
-          <div className="flex items-center justify-between">
-            <span className="text-2xl font-bold">
-              ${price}
-            </span>
-            
-            <button 
-              className="p-2 rounded-full transition-all hover:scale-110"
-              style={{
-                backgroundColor: 'var(--color-primary)',
-                color: 'var(--color-secondary)'
-              }}
-              onClick={(e) => {
-                e.preventDefault();
-                // TODO: Add to cart functionality
-                console.log('Add to cart:', product.id);
-              }}
-            >
-              <ShoppingCart size={18} />
-            </button>
-          </div>
+          
+          {/* Stock Status */}
+          {inStock ? (
+            <div className="flex items-center gap-1.5">
+              <div className="w-2 h-2 rounded-full bg-green-500 flex-shrink-0"></div>
+              <span className="text-[11px] uppercase tracking-wider text-white/60">
+                In Stock
+              </span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-1.5">
+              <div className="w-2 h-2 rounded-full bg-red-500/60 flex-shrink-0"></div>
+              <span className="text-[11px] uppercase tracking-wider text-white/40">Out of Stock</span>
+            </div>
+          )}
+          
+          {/* Fields */}
+          {displayFields.length > 0 && (
+            <div className="space-y-1.5 pt-2 border-t border-white/10">
+              {displayFields.map((field, idx) => (
+                <div key={idx} className="flex items-center justify-between gap-2">
+                  <span className="uppercase tracking-[0.12em] font-medium text-white/60 text-[10px]">
+                    {field.label}
+                  </span>
+                  <span className="text-[11px] tracking-wide text-white/90 font-normal text-right truncate">
+                    {field.value}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
+        
+        {/* Pricing Tier Selector */}
+        {tiers.length > 0 && (
+          <div className="space-y-2 pt-3 mt-auto border-t border-white/10">
+            <div className="relative">
+              <select
+                value={selectedTierIndex ?? ""}
+                onChange={handleTierSelect}
+                onClick={(e) => e.stopPropagation()}
+                className="w-full appearance-none bg-transparent border border-white/20 px-3 py-2.5 pr-7 text-[11px] font-normal text-white hover:border-white/40 hover:bg-white/5 focus:border-white focus:outline-none transition-all cursor-pointer uppercase tracking-[0.1em]"
+              >
+                <option value="">Select Quantity</option>
+                {tiers.map((tier, idx) => {
+                  const price = typeof tier.price === "string" ? parseFloat(tier.price) : tier.price;
+                  const tierLabel = getUnitLabel(tier);
+                  const displayPrice = price > 0 ? `$${price.toFixed(2)}` : 'TBD';
+                  
+                  return (
+                    <option key={idx} value={idx}>
+                      {tierLabel} - {displayPrice}
+                    </option>
+                  );
+                })}
+              </select>
+              <div className="absolute inset-y-0 right-0 flex items-center pr-2.5 pointer-events-none">
+                <svg className="w-3.5 h-3.5 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </div>
+            
+            {showAddToCart && (
+              <button
+                onClick={handleAddToCart}
+                className="w-full bg-black border border-white/20 text-white px-3 py-3 text-[10px] uppercase tracking-[0.15em] hover:bg-white hover:text-black hover:border-white font-medium flex items-center justify-center gap-2 transition-all"
+              >
+                <ShoppingBag size={13} strokeWidth={2} />
+                Add to Cart
+              </button>
+            )}
+          </div>
+        )}
       </div>
-    </Link>
+    </div>
   );
 }
+
+export default memo(ProductCard);
 
