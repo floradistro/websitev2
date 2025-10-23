@@ -12,16 +12,35 @@ export default function VendorBranding() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   
+  const [bannerFile, setBannerFile] = useState<File | null>(null);
+  const [bannerPreview, setBannerPreview] = useState<string>('');
+  
   const [branding, setBranding] = useState({
     tagline: '',
     about: '',
-    primaryColor: '#0EA5E9',
-    accentColor: '#06B6D4',
+    primaryColor: '#000000',
+    secondaryColor: '#FFFFFF',
+    accentColor: '#666666',
+    backgroundColor: '#FFFFFF',
+    textColor: '#1A1A1A',
     website: '',
     instagram: '',
     facebook: '',
-    customFont: ''
+    customFont: 'Inter'
   });
+
+  const fontOptions = [
+    'Inter',
+    'Playfair Display',
+    'Montserrat',
+    'Lato',
+    'Roboto',
+    'Open Sans',
+    'Poppins',
+    'Raleway',
+    'Merriweather',
+    'Crimson Text'
+  ];
 
   useEffect(() => {
     if (vendor) {
@@ -43,7 +62,13 @@ export default function VendorBranding() {
         const data = result.branding;
         
         // Parse brand_colors if it's a JSON string
-        let brandColors = { primary: '#0EA5E9', accent: '#06B6D4' };
+        let brandColors = { 
+          primary: '#000000', 
+          secondary: '#FFFFFF',
+          accent: '#666666',
+          background: '#FFFFFF',
+          text: '#1A1A1A'
+        };
         if (data.brand_colors) {
           try {
             brandColors = typeof data.brand_colors === 'string' 
@@ -69,17 +94,23 @@ export default function VendorBranding() {
         setBranding({
           tagline: data.store_tagline || '',
           about: data.store_description || '',
-          primaryColor: brandColors.primary || '#0EA5E9',
-          accentColor: brandColors.accent || '#06B6D4',
+          primaryColor: brandColors.primary || '#000000',
+          secondaryColor: brandColors.secondary || '#FFFFFF',
+          accentColor: brandColors.accent || '#666666',
+          backgroundColor: brandColors.background || '#FFFFFF',
+          textColor: brandColors.text || '#1A1A1A',
           website: socialLinks.website || '',
           instagram: socialLinks.instagram || '',
           facebook: socialLinks.facebook || '',
-          customFont: data.custom_font || ''
+          customFont: data.custom_font || 'Inter'
         });
         
-        // Set logo preview
+        // Set logo and banner previews
         if (data.logo_url) {
           setLogoPreview(data.logo_url);
+        }
+        if (data.banner_url) {
+          setBannerPreview(data.banner_url);
         }
       }
     } catch (err) {
@@ -97,6 +128,16 @@ export default function VendorBranding() {
     }
   };
 
+  const handleBannerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setBannerFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => setBannerPreview(reader.result as string);
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -108,6 +149,7 @@ export default function VendorBranding() {
       if (!vendorId) throw new Error('Not authenticated');
 
       let logoUrl = '';
+      let bannerUrl = '';
 
       // Upload logo if changed
       if (logoFile) {
@@ -134,13 +176,41 @@ export default function VendorBranding() {
         setLogoFile(null);
       }
 
+      // Upload banner if changed
+      if (bannerFile) {
+        const formData = new FormData();
+        formData.append('file', bannerFile);
+        formData.append('type', 'banner');
+
+        const uploadResponse = await fetch(
+          '/api/supabase/vendor/upload',
+          {
+            method: 'POST',
+            headers: { 'x-vendor-id': vendorId },
+            body: formData
+          }
+        );
+
+        if (!uploadResponse.ok) {
+          const errorData = await uploadResponse.json().catch(() => ({}));
+          throw new Error(errorData.error || 'Banner upload failed');
+        }
+
+        const uploadData = await uploadResponse.json();
+        bannerUrl = uploadData.file.url;
+        setBannerFile(null);
+      }
+
       // Prepare update data
       const updateData: any = {
         store_tagline: branding.tagline,
         store_description: branding.about,
         brand_colors: JSON.stringify({
           primary: branding.primaryColor,
-          accent: branding.accentColor
+          secondary: branding.secondaryColor,
+          accent: branding.accentColor,
+          background: branding.backgroundColor,
+          text: branding.textColor
         }),
         social_links: JSON.stringify({
           website: branding.website,
@@ -150,9 +220,12 @@ export default function VendorBranding() {
         custom_font: branding.customFont
       };
 
-      // Add logo URL if uploaded
+      // Add URLs if uploaded
       if (logoUrl) {
         updateData.logo_url = logoUrl;
+      }
+      if (bannerUrl) {
+        updateData.banner_url = bannerUrl;
       }
 
       // Submit branding via Supabase API
@@ -193,9 +266,9 @@ export default function VendorBranding() {
         <form onSubmit={handleSubmit} className="grid lg:grid-cols-2 gap-6">
           {/* Left Column - Settings */}
           <div className="space-y-6">
-            {/* Brand Icon (Logo) */}
+            {/* Brand Logo */}
             <div className="bg-[#1a1a1a] border border-white/5 p-6">
-              <h2 className="text-white font-medium mb-4">Brand Icon</h2>
+              <h2 className="text-white font-medium mb-4">Brand Logo</h2>
               
               <div className="space-y-4">
                 {logoPreview && (
@@ -224,6 +297,43 @@ export default function VendorBranding() {
                     type="file"
                     accept="image/*"
                     onChange={handleLogoChange}
+                    className="hidden"
+                  />
+                </label>
+              </div>
+            </div>
+
+            {/* Hero Banner */}
+            <div className="bg-[#1a1a1a] border border-white/5 p-6">
+              <h2 className="text-white font-medium mb-4">Hero Banner</h2>
+              
+              <div className="space-y-4">
+                {bannerPreview && (
+                  <div className="relative w-full h-48 bg-white/5 border border-white/10 rounded overflow-hidden">
+                    <img src={bannerPreview} alt="Banner" className="w-full h-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setBannerPreview('');
+                        setBannerFile(null);
+                      }}
+                      className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded hover:bg-red-600"
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
+                )}
+                
+                <label className="block cursor-pointer">
+                  <div className="border-2 border-dashed border-white/10 p-6 text-center hover:border-white/20 transition-colors bg-[#0a0a0a]">
+                    <Upload size={24} className="text-white/40 mx-auto mb-2" />
+                    <div className="text-white/80 text-sm">Upload Hero Banner</div>
+                    <div className="text-white/40 text-xs mt-1">1920x600px recommended • Max 10MB</div>
+                  </div>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleBannerChange}
                     className="hidden"
                   />
                 </label>
@@ -259,6 +369,24 @@ export default function VendorBranding() {
               </div>
             </div>
 
+            {/* Typography */}
+            <div className="bg-[#1a1a1a] border border-white/5 p-6">
+              <h2 className="text-white font-medium mb-4">Typography</h2>
+              
+              <div>
+                <label className="block text-white/80 text-sm mb-2">Font Family</label>
+                <select
+                  value={branding.customFont}
+                  onChange={(e) => setBranding({ ...branding, customFont: e.target.value })}
+                  className="w-full bg-[#0a0a0a] border border-white/5 text-white px-4 py-2 focus:outline-none focus:border-white/20"
+                >
+                  {fontOptions.map(font => (
+                    <option key={font} value={font}>{font}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
             {/* Brand Colors */}
             <div className="bg-[#1a1a1a] border border-white/5 p-6">
               <h2 className="text-white font-medium mb-4">Brand Colors</h2>
@@ -283,6 +411,24 @@ export default function VendorBranding() {
                 </div>
 
                 <div>
+                  <label className="block text-white/80 text-sm mb-2">Secondary Color</label>
+                  <div className="flex gap-2">
+                    <input
+                      type="color"
+                      value={branding.secondaryColor}
+                      onChange={(e) => setBranding({ ...branding, secondaryColor: e.target.value })}
+                      className="w-12 h-10 bg-transparent border-0 cursor-pointer"
+                    />
+                    <input
+                      type="text"
+                      value={branding.secondaryColor}
+                      onChange={(e) => setBranding({ ...branding, secondaryColor: e.target.value })}
+                      className="flex-1 bg-[#0a0a0a] border border-white/5 text-white px-3 py-2 text-sm focus:outline-none focus:border-white/20"
+                    />
+                  </div>
+                </div>
+
+                <div>
                   <label className="block text-white/80 text-sm mb-2">Accent Color</label>
                   <div className="flex gap-2">
                     <input
@@ -295,6 +441,24 @@ export default function VendorBranding() {
                       type="text"
                       value={branding.accentColor}
                       onChange={(e) => setBranding({ ...branding, accentColor: e.target.value })}
+                      className="flex-1 bg-[#0a0a0a] border border-white/5 text-white px-3 py-2 text-sm focus:outline-none focus:border-white/20"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-white/80 text-sm mb-2">Text Color</label>
+                  <div className="flex gap-2">
+                    <input
+                      type="color"
+                      value={branding.textColor}
+                      onChange={(e) => setBranding({ ...branding, textColor: e.target.value })}
+                      className="w-12 h-10 bg-transparent border-0 cursor-pointer"
+                    />
+                    <input
+                      type="text"
+                      value={branding.textColor}
+                      onChange={(e) => setBranding({ ...branding, textColor: e.target.value })}
                       className="flex-1 bg-[#0a0a0a] border border-white/5 text-white px-3 py-2 text-sm focus:outline-none focus:border-white/20"
                     />
                   </div>
@@ -352,6 +516,15 @@ export default function VendorBranding() {
                 <Save size={18} />
                 {loading ? 'Saving...' : 'Save Changes'}
               </button>
+              
+              <a
+                href={`https://${vendor?.slug || 'preview'}.floradistro.com`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-white/10 hover:bg-white/20 text-white px-6 py-3 transition-colors flex items-center justify-center gap-2"
+              >
+                Preview Storefront
+              </a>
             </div>
 
             {/* Messages */}
