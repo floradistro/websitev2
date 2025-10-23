@@ -32,7 +32,20 @@ export interface StorefrontTheme {
 
 export async function getVendorFromHeaders(): Promise<string | null> {
   const headersList = await headers();
-  return headersList.get('x-vendor-id');
+  
+  // Check for vendor ID in headers (from middleware)
+  const vendorIdFromHeader = headersList.get('x-vendor-id');
+  if (vendorIdFromHeader) {
+    return vendorIdFromHeader;
+  }
+  
+  // For preview/testing: check query params (only in development)
+  if (process.env.NODE_ENV === 'development') {
+    // This will be set by preview route
+    return null;
+  }
+  
+  return null;
 }
 
 export async function getVendorStorefront(vendorId: string): Promise<VendorStorefront | null> {
