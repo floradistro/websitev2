@@ -49,28 +49,33 @@ export default async function TestShopPage() {
 
   // Fetch pricing tiers using the existing pricing API (handles vendor-level pricing)
   const pricingMap: { [key: string]: any[] } = {};
-  const baseUrl = 'http://localhost:3000';
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
   
-  // Fetch pricing for a sample of products (to avoid timeout)
-  const sampleProducts = productIds.slice(0, 50); // First 50 products
-  
-  await Promise.all(
-    sampleProducts.map(async (productId) => {
-      try {
-        const response = await fetch(`${baseUrl}/api/supabase/products/${productId}/pricing`);
-        if (response.ok) {
-          const data = await response.json();
-          if (data.success && data.pricingTiers && data.pricingTiers.length > 0) {
-            pricingMap[productId] = data.pricingTiers;
+  // Batch fetch pricing in chunks of 20 to avoid timeout
+  const chunkSize = 20;
+  for (let i = 0; i < productIds.length; i += chunkSize) {
+    const chunk = productIds.slice(i, i + chunkSize);
+    
+    await Promise.all(
+      chunk.map(async (productId) => {
+        try {
+          const response = await fetch(`${baseUrl}/api/supabase/products/${productId}/pricing`, {
+            next: { revalidate: 300 } // Cache for 5 minutes
+          });
+          if (response.ok) {
+            const data = await response.json();
+            if (data.success && data.pricingTiers && data.pricingTiers.length > 0) {
+              pricingMap[productId] = data.pricingTiers;
+            }
           }
+        } catch (error) {
+          // Silently fail for products without pricing
         }
-      } catch (error) {
-        // Silently fail for products without pricing
-      }
-    })
-  );
+      })
+    );
+  }
 
-  console.log('📦 Products with pricing:', Object.keys(pricingMap).length);
+  console.log('📦 Products with pricing:', Object.keys(pricingMap).length, '/', productIds.length);
 
   // Create product fields map
   const productFieldsMap: { [key: string]: any } = {};
