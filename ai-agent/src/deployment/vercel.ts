@@ -115,7 +115,7 @@ export class VercelDeployment {
       throw new Error('Failed to get deployment status');
     }
 
-    const data = await response.json();
+    const data: any = await response.json();
 
     return {
       state: data.readyState,

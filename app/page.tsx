@@ -51,14 +51,16 @@ export default async function Home() {
       meta_data: p.meta_data || {},
       blueprint_fields: Array.isArray(p.blueprint_fields) ? p.blueprint_fields : [],
       stock_status: p.stock_status || 'in_stock',
+      stock_quantity: p.stock_quantity || 0,
       total_stock: p.stock_quantity || 0,
-      inventory: [],
+      inventory: p.inventory || [],
     };
   });
 
   // Helper function to check if product has stock
   const hasStockAnywhere = (product: any): boolean => {
-    return product.total_stock > 0 || (product.inventory && product.inventory.some((inv: any) => {
+    const stockQty = product.stock_quantity || product.total_stock || 0;
+    return stockQty > 0 || (product.inventory && product.inventory.some((inv: any) => {
       const qty = parseFloat(inv.stock || inv.quantity || 0);
       return qty > 0;
     }));
