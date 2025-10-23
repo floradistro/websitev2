@@ -89,6 +89,7 @@ export async function GET(request: NextRequest) {
     
     // Build pricing map by vendor_id (pricing applies to ALL products from that vendor)
     const vendorPricingMap = new Map();
+    
     (vendorPricingConfigsResult.data || []).forEach((config: any) => {
       if (!config.blueprint?.price_breaks) return;
       
@@ -123,7 +124,7 @@ export async function GET(request: NextRequest) {
     });
     
     // Map products to expected format
-    const products = (productsResult.data || []).map((p: any) => {
+    const products = (productsResult.data || []).map((p: any, index: number) => {
       // Extract blueprint fields (handle both array and object)
       const fields: { [key: string]: any } = {};
       const blueprintFields = p.blueprint_fields || {};
@@ -146,6 +147,7 @@ export async function GET(request: NextRequest) {
       const actualStockStatus = totalStock > 0 ? 'instock' : 'outofstock';
       
       // Get pricing tiers for this product (from vendor's config)
+      // Apply vendor pricing to ALL vendor products (vendor configures which pricing they use)
       const pricingTiers = vendorPricingMap.get(p.vendor_id) || [];
       
       return {

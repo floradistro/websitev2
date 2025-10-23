@@ -1,4 +1,4 @@
-import { getVendorFromHeaders, getVendorStorefront, getVendorProducts } from '@/lib/storefront/get-vendor';
+import { getVendorFromHeaders, getVendorStorefront, getVendorProducts, getVendorLocations } from '@/lib/storefront/get-vendor';
 import { StorefrontHomeClient } from '@/components/storefront/StorefrontHomeClient';
 import { notFound } from 'next/navigation';
 
@@ -9,44 +9,61 @@ export default async function StorefrontHomePage() {
     notFound();
   }
 
-  const vendor = await getVendorStorefront(vendorId);
-  const allProducts = await getVendorProducts(vendorId);
+  const [vendor, allProducts, locations] = await Promise.all([
+    getVendorStorefront(vendorId),
+    getVendorProducts(vendorId, 12), // Limit to 12 featured products for home page
+    getVendorLocations()
+  ]);
 
   if (!vendor) {
     notFound();
   }
 
-  // Format products to match Yacht Club structure
+  // Products now come pre-formatted from getVendorProducts with:
+  // - fields (from blueprint_fields)
+  // - pricingTiers (from vendor_pricing_configs)
+  // - inventory (with location data)
+  // - proper stock calculation
+  
+  // Map to format expected by StorefrontHomeClient
   const products = allProducts.map((p: any) => {
-    const imageUrl = p.images && p.images.length > 0 ? p.images[0] : null;
+    const imageUrl = p.featured_image_storage || (p.image_gallery_storage && p.image_gallery_storage[0]);
     
     return {
       id: p.id,
       uuid: p.id,
       name: p.name,
       slug: p.slug || p.id,
-      type: p.type || 'simple',
-      status: p.status,
-      price: p.retail_price || 0,
-      regular_price: p.retail_price || 0,
+      price: p.price || 0,
+      regular_price: p.regular_price || 0,
       sale_price: p.sale_price,
       images: imageUrl ? [{ src: imageUrl, id: 0, name: p.name }] : [],
-      categories: p.category ? [{ name: p.category }] : [],
-      meta_data: {},
-      blueprint_fields: [],
-      stock_status: 'in_stock',
-      stock_quantity: 100,
-      total_stock: 100,
-      inventory: [],
+      categories: p.categories || [],
+      stock_status: p.stock_status,
+      stock_quantity: p.stock_quantity,
+      total_stock: p.total_stock,
+      inventory: p.inventory || [],
+      fields: p.fields || {},
+      pricingTiers: p.pricingTiers || [],
     };
+  });
+
+  // Build inventory map and product fields map for StorefrontHomeClient
+  const inventoryMap: { [key: string]: any[] } = {};
+  const productFieldsMap: { [key: string]: any } = {};
+  
+  products.forEach((p: any) => {
+    inventoryMap[p.id] = p.inventory;
+    productFieldsMap[p.id] = { fields: p.fields };
   });
 
   return (
     <StorefrontHomeClient 
       vendor={vendor}
       products={products}
-      inventoryMap={{}}
-      productFieldsMap={{}}
+      inventoryMap={inventoryMap}
+      productFieldsMap={productFieldsMap}
+      locations={locations}
     />
   );
 }

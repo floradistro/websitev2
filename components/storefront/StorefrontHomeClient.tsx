@@ -26,6 +26,7 @@ interface StorefrontHomeClientProps {
   products: any[];
   inventoryMap: { [key: number]: any[] };
   productFieldsMap: { [key: number]: any };
+  locations?: any[];
 }
 
 export function StorefrontHomeClient({
@@ -33,6 +34,7 @@ export function StorefrontHomeClient({
   products,
   inventoryMap,
   productFieldsMap,
+  locations = [],
 }: StorefrontHomeClientProps) {
   return (
     <div 
@@ -173,6 +175,7 @@ export function StorefrontHomeClient({
           <div className="relative z-10">
             <ProductsCarousel 
               products={products}
+              locations={locations}
               inventoryMap={inventoryMap}
               productFieldsMap={productFieldsMap}
             />

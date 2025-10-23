@@ -1,4 +1,4 @@
-import { getVendorFromHeaders, getVendorProducts } from '@/lib/storefront/get-vendor';
+import { getVendorFromHeaders, getVendorProducts, getVendorLocations } from '@/lib/storefront/get-vendor';
 import { ProductGrid } from '@/components/storefront/ProductGrid';
 import { notFound } from 'next/navigation';
 
@@ -9,30 +9,17 @@ export default async function StorefrontShopPage() {
     notFound();
   }
 
-  const allProducts = await getVendorProducts(vendorId);
+  // Fetch products with pricing tiers and inventory (unified data structure)
+  const [products, locations] = await Promise.all([
+    getVendorProducts(vendorId),
+    getVendorLocations()
+  ]);
 
-  const products = allProducts.map((p: any) => {
-    const imageUrl = p.images && p.images.length > 0 ? p.images[0] : (p.featured_image_storage || null);
-    
-    return {
-      id: p.id,
-      uuid: p.id,
-      name: p.name,
-      description: p.description,
-      images: imageUrl ? [{ src: imageUrl, id: 0, name: p.name }] : [],
-      price: p.retail_price || 0,
-      retail_price: p.retail_price || 0,
-      category: p.category || 'Product',
-      status: p.status,
-      slug: p.slug || p.id,
-      meta_data: p.meta_data || {},
-      blueprint_fields: Array.isArray(p.blueprint_fields) ? p.blueprint_fields : [],
-      stock_status: p.stock_status || 'in_stock',
-      stock_quantity: p.stock_quantity || 0,
-      total_stock: p.stock_quantity || 0,
-      type: 'simple',
-    };
-  });
+  // Products now come pre-formatted from getVendorProducts with:
+  // - fields (from blueprint_fields)
+  // - pricingTiers (from vendor_pricing_configs)
+  // - inventory (with location data)
+  // - proper stock calculation
 
   return (
     <div className="bg-[#2a2a2a] min-h-screen">
@@ -45,7 +32,7 @@ export default async function StorefrontShopPage() {
           </p>
         </div>
 
-        <ProductGrid products={products} />
+        <ProductGrid products={products} locations={locations} />
       </div>
     </div>
   );
