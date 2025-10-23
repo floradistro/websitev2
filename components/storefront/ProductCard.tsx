@@ -68,21 +68,31 @@ function ProductCard({ product, index, locations = [], pricingTiers = [], produc
   };
 
   const getDisplayFields = () => {
-    if (!productFields?.fields) return [];
+    if (!productFields?.fields) {
+      console.log('No productFields for', product.name);
+      return [];
+    }
     
     const fields = productFields.fields;
+    console.log('Product fields for', product.name, ':', fields);
     const displayFields: Array<{ label: string; value: string }> = [];
     
     const fieldConfig: { [key: string]: string } = {
       'strain_type': 'Type',
       'lineage': 'Lineage',
       'terpene_profile': 'Terpenes',
+      'terpenes': 'Terpenes',
       'effects': 'Effects',
+      'effect': 'Effects',
       'thca_percentage': 'THCa %',
+      'thc_percentage': 'THC %',
       'delta_9_percentage': 'Δ9 %',
+      'cbd_percentage': 'CBD %',
+      'nose': 'Nose',
+      'flavors': 'Flavors',
     };
     
-    Object.keys(fields).sort().forEach((key) => {
+    Object.keys(fields).forEach((key) => {
       const value = fields[key];
       const label = fieldConfig[key];
       
@@ -106,10 +116,12 @@ function ProductCard({ product, index, locations = [], pricingTiers = [], produc
       }
     });
     
+    console.log('Display fields for', product.name, ':', displayFields);
     return displayFields.slice(0, 5);
   };
 
   const displayFields = getDisplayFields();
+  console.log('Product', product.name, 'has', pricingTiers?.length || 0, 'pricing tiers');
   
   const getPriceDisplay = () => {
     if (tiers.length > 0) {
