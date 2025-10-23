@@ -2,6 +2,9 @@ import { getServiceSupabase } from '@/lib/supabase/client';
 import { StorefrontShopClient } from '@/components/storefront/StorefrontShopClient';
 import { notFound } from 'next/navigation';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function TestShopPage() {
   const supabase = getServiceSupabase();
   
