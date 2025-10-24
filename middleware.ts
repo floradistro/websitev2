@@ -41,8 +41,8 @@ export async function middleware(request: NextRequest) {
     return response;
   }
 
-  // LOCAL TESTING: Check for ?vendor param on /storefront
-  if ((domain.includes('localhost') || domain.includes('127.0.0.1')) && pathname.startsWith('/storefront')) {
+  // VENDOR PARAM: Check for ?vendor param on /storefront (works on all environments)
+  if (pathname.startsWith('/storefront')) {
     const vendorSlug = request.nextUrl.searchParams.get('vendor');
     
     if (vendorSlug) {
@@ -76,12 +76,12 @@ export async function middleware(request: NextRequest) {
           const response = NextResponse.next();
           response.headers.set('x-vendor-id', vendor.id);
           response.headers.set('x-tenant-type', 'vendor');
-          response.headers.set('x-is-local-test', 'true');
-          console.log(`🧪 Local vendor test - ${vendorSlug} → ${vendor.id}`);
+          response.headers.set('x-is-local-test', domain.includes('localhost') || domain.includes('127.0.0.1') ? 'true' : 'false');
+          console.log(`✅ Vendor param - ${vendorSlug} → ${vendor.id}`);
           return response;
         }
       } catch (error) {
-        console.error('Local vendor lookup error:', error);
+        console.error('Vendor lookup error:', error);
       }
     }
     
