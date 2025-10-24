@@ -161,7 +161,7 @@ export default function FlowerAnimation() {
 
           // Occasionally add new flowers with good spacing
           if (p.frameCount % 400 === 0 && flowers.length < maxFlowers + 2) {
-            let x: number;
+            let x: number = p.random(100, p.width - 100);
             let tooClose = true;
             let attempts = 0;
             
