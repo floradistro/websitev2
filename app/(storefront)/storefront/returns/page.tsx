@@ -3,6 +3,7 @@ import { getVendorFromHeaders, getVendorStorefront } from '@/lib/storefront/get-
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { RotateCcw, CheckCircle, XCircle, Clock } from 'lucide-react';
+import Footer from '@/components/storefront/templates/default/Footer';
 
 export default async function ReturnsPage() {
   const vendorId = await getVendorFromHeaders();
