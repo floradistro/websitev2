@@ -924,11 +924,11 @@ export default function LiveEditorV2() {
   );
 }
 
-// Helper Components - VSCode/Vercel Style
+// Helper Components - True VSCode Style
 function EditorField({ label, value, onChange, multiline = false, placeholder = '' }: any) {
   return (
-    <div className="group">
-      <label className="text-[#a1a1aa] text-[11px] block mb-1.5 font-medium group-focus-within:text-white/70 transition-colors">
+    <div>
+      <label className="text-[#888888] text-[11px] block mb-1 font-normal">
         {label}
       </label>
       {multiline ? (
@@ -937,7 +937,7 @@ function EditorField({ label, value, onChange, multiline = false, placeholder = 
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
           rows={3}
-          className="w-full bg-[#18181b] border border-[#27272a] text-white px-3 py-2.5 rounded-md text-[13px] leading-relaxed focus:border-[#3f3f46] focus:bg-[#1c1c1f] transition-all resize-none font-normal placeholder:text-[#52525b]"
+          className="w-full bg-[#1e1e1e] border-0 text-[#cccccc] px-2 py-1.5 rounded text-[13px] leading-[1.6] focus:outline-none focus:ring-1 focus:ring-[#007acc] transition-all resize-none font-normal placeholder:text-[#6a6a6a]"
         />
       ) : (
         <input
@@ -945,7 +945,7 @@ function EditorField({ label, value, onChange, multiline = false, placeholder = 
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
-          className="w-full bg-[#18181b] border border-[#27272a] text-white px-3 py-2.5 rounded-md text-[13px] focus:border-[#3f3f46] focus:bg-[#1c1c1f] transition-all font-normal placeholder:text-[#52525b]"
+          className="w-full bg-[#1e1e1e] border-0 text-[#cccccc] px-2 py-1.5 rounded text-[13px] focus:outline-none focus:ring-1 focus:ring-[#007acc] transition-all font-normal placeholder:text-[#6a6a6a]"
         />
       )}
     </div>

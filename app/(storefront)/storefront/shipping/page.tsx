@@ -18,15 +18,9 @@ export default async function ShippingPage() {
   }
 
   return (
-    <div className="min-h-screen relative overflow-hidden">
-      {/* Background */}
-      <div className="fixed inset-0">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#0a0a0a] via-black to-[#141414]" />
-        <div className="absolute inset-0 bg-gradient-to-tr from-neutral-950/50 via-transparent to-neutral-900/50" />
-      </div>
-
+    <div className="min-h-screen bg-black">
       {/* Breadcrumb */}
-      <div className="sticky top-0 z-20 border-b border-white/10 bg-black/80 backdrop-blur-xl">
+      <div className="sticky top-0 z-20 border-b border-white/10 bg-black">
         <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-10 py-3">
           <nav className="flex items-center gap-x-2 text-xs uppercase tracking-wider">
             <Link href="/storefront" className="text-white/40 hover:text-white transition-colors">Home</Link>
@@ -37,8 +31,8 @@ export default async function ShippingPage() {
       </div>
 
       {/* Content */}
-      <div className="relative z-10 max-w-4xl mx-auto px-6 py-16">
-        <div className="bg-black/60 backdrop-blur-xl rounded-[32px] border border-white/10 p-8 md:p-12">
+      <div className="max-w-4xl mx-auto px-6 py-16">
+        <div className="bg-black rounded-[32px] border border-white/10 p-8 md:p-12">
           {/* Animated Logo Header */}
           {vendor.logo_url && (
             <div className="mb-8 flex justify-center">
