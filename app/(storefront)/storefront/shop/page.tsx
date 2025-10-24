@@ -88,27 +88,22 @@ export default async function StorefrontShopPage({ searchParams }: { searchParam
   const { getVendorPageSections } = await import('@/lib/storefront/content-api');
   const shopSections = await getVendorPageSections(vendorId, 'shop');
   
-  const shopHeaderSection = shopSections.find(s => s.section_key === 'shop_header');
   const shopConfigSection = shopSections.find(s => s.section_key === 'shop_config');
 
   // Check if in preview mode (live editor) - show sections + products
   const params = await searchParams;
   if (params.preview === 'true') {
     return (
-      <>
-        {/* Editable sections above */}
-        <div className="-mt-[44px]">
-          <UniversalPageRenderer vendor={vendor} pageType="shop" />
-        </div>
-        {/* Shop products below with editable config */}
-        <div className="relative z-10">
-          <StorefrontShopClient 
-            vendorId={vendorId}
-            config={shopConfigSection?.content_data}
-            header={shopHeaderSection?.content_data}
-          />
-        </div>
-      </>
+      <div className="-mt-[44px]">
+        {/* Editable sections above (only if any exist) */}
+        <UniversalPageRenderer vendor={vendor} pageType="shop" />
+        
+        {/* Shop products with editable config */}
+        <StorefrontShopClient 
+          vendorId={vendorId}
+          config={shopConfigSection?.content_data}
+        />
+      </div>
     );
   }
 
@@ -146,7 +141,6 @@ export default async function StorefrontShopPage({ searchParams }: { searchParam
       <StorefrontShopClient 
         vendorId={vendorId}
         config={shopConfigSection?.content_data}
-        header={shopHeaderSection?.content_data}
       />
     </div>
   );

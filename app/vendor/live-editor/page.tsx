@@ -605,15 +605,6 @@ export default function LiveEditorV2() {
           </>
         )}
 
-        {section_key === 'shop_header' && (
-          <>
-            <div className="space-y-2">
-              <EditorField label="Page Title" value={content_data.title || ''} onChange={(v) => updateContent('title', v)} placeholder="Shop" />
-              <EditorField label="Subtitle" value={content_data.subtitle || ''} onChange={(v) => updateContent('subtitle', v)} placeholder="Browse our collection..." />
-            </div>
-          </>
-        )}
-
         {section_key === 'shop_config' && (
           <>
             <div className="space-y-2">
@@ -672,7 +663,7 @@ export default function LiveEditorV2() {
         )}
 
         {/* Fallback JSON Editor */}
-        {!['hero', 'process', 'about_story', 'cta', 'shop_header', 'shop_config'].includes(section_key) && (
+        {!['hero', 'process', 'about_story', 'cta', 'shop_config'].includes(section_key) && (
           <div>
             <label className="text-white/40 text-[11px] block mb-1 font-normal">Section Data</label>
             <textarea

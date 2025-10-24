@@ -231,22 +231,6 @@ export const SECTION_LIBRARY: SectionTemplate[] = [
     }
   },
   {
-    key: 'shop_header',
-    name: 'Shop Page Header',
-    description: 'Title and subtitle for the shop page',
-    icon: '',
-    category: 'content',
-    pageTypes: ['shop'],
-    defaultContent: {
-      title: 'Shop',
-      subtitle: 'Browse our complete collection',
-      show_filters: true,
-      show_category_bar: true,
-      show_location_filter: true,
-      show_sort: true
-    }
-  },
-  {
     key: 'shop_config',
     name: 'Shop Layout Settings',
     description: 'Configure product grid, cards, and filters',

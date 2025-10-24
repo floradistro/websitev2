@@ -16,13 +16,9 @@ interface StorefrontShopClientProps {
     show_location_filter?: boolean;
     show_sort?: boolean;
   };
-  header?: {
-    title?: string;
-    subtitle?: string;
-  };
 }
 
-export function StorefrontShopClient({ vendorId, config, header }: StorefrontShopClientProps) {
+export function StorefrontShopClient({ vendorId, config }: StorefrontShopClientProps) {
   const [loading, setLoading] = useState(true);
   const [allProducts, setAllProducts] = useState<any[]>([]);
   const [locations, setLocations] = useState<any[]>([]);
@@ -234,13 +230,11 @@ export function StorefrontShopClient({ vendorId, config, header }: StorefrontSho
 
       <div className="relative z-10 max-w-7xl mx-auto px-0 sm:px-6 lg:px-10 py-16">
       <div className="mb-12 px-6 sm:px-0">
-        {/* Editable Title */}
+        {/* Title */}
         <div className="mb-6">
-          <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold text-white mb-2 uppercase tracking-[-0.03em]">
-            {header?.title || 'Shop All'}
-          </h1>
+          <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold text-white mb-2 uppercase tracking-[-0.03em]">Shop All</h1>
           <p className="text-lg sm:text-xl text-neutral-400 font-light tracking-wide">
-            {header?.subtitle || `${filteredProducts.length} ${filteredProducts.length === 1 ? 'Product' : 'Products'}`}
+            {filteredProducts.length} {filteredProducts.length === 1 ? 'Product' : 'Products'}
           </p>
         </div>
 
@@ -367,7 +361,6 @@ export function StorefrontShopClient({ vendorId, config, header }: StorefrontSho
           <p className="text-white/60 text-lg font-light">No products available at the moment.</p>
         </div>
       ) : (
-        {/* Editable Grid */}
         <div className={`grid gap-px ${gridClass}`}>
           {filteredProducts.map((product: any) => (
             <StorefrontProductCard 

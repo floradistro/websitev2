@@ -17,7 +17,6 @@ import {
   FeaturedProductsSection,
   ShippingBadgesSection,
   FooterSection,
-  ShopHeaderSection,
   ShopConfigSection,
   ProductGridSection
 } from './content-sections';
@@ -50,7 +49,6 @@ const SECTION_COMPONENTS: Record<string, any> = {
   featured_products: FeaturedProductsSection,
   shipping_badges: ShippingBadgesSection,
   footer: FooterSection,
-  shop_header: ShopHeaderSection,
   shop_config: ShopConfigSection,
   product_grid: ProductGridSection,
 };
