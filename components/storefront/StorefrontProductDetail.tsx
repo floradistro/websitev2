@@ -86,6 +86,15 @@ export function StorefrontProductDetail({ productSlug, vendorId }: StorefrontPro
 
   const pricingTiers = product?.pricing_tiers || [];
   const inventory = product?.inventory || [];
+  
+  // Debug logging for pricing tiers
+  if (product) {
+    console.log(`Product ${product.name} pricing tiers:`, {
+      pricingTiers,
+      count: pricingTiers.length,
+      rawPricingTiers: product.pricing_tiers
+    });
+  }
 
   const inWishlist = product ? isInWishlist(product.id) : false;
 

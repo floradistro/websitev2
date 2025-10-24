@@ -42,7 +42,7 @@ function StorefrontProductCard({ product, vendorSlug, locations = [] }: Storefro
     const fields = product.fields;
     const displayFields: Array<{ label: string; value: string }> = [];
     
-    // Field configuration with proper labels (only real fields)
+    // Field configuration with proper labels - ALL available fields from API
     const fieldConfig: { [key: string]: string } = {
       // Flower fields
       'strain_type': 'Type',
@@ -60,6 +60,8 @@ function StorefrontProductCard({ product, vendorSlug, locations = [] }: Storefro
       'dosage_per_serving': 'Dosage',
       'servings_per_package': 'Servings',
       'total_dosage': 'Total',
+      'dietary': 'Dietary',
+      'ingredients': 'Ingredients',
       // Concentrate fields
       'extract_type': 'Type',
       'extraction_method': 'Method',
