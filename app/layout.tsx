@@ -112,6 +112,7 @@ export default function RootLayout({
                     <CartProvider>
                       {/* <RecentlyViewedProvider> */}
                         <PullToRefresh />
+                        {/* ConditionalLayout wraps main site, but storefront has its own layout */}
                         <ConditionalLayout>
                           {children}
                         </ConditionalLayout>

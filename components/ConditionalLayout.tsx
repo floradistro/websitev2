@@ -12,9 +12,9 @@ export default function ConditionalLayout({ children }: { children: React.ReactN
   const isStorefront = pathname?.startsWith('/storefront');
   const hideNavigation = isVendorPortal || isAdminPortal || isStorefront;
 
-  // Debug log
-  if (typeof window !== 'undefined' && isStorefront) {
-    console.log('🚫 ConditionalLayout: Hiding Yacht Club header (storefront detected)');
+  // For storefront routes, render NOTHING - they have their own complete layout
+  if (isStorefront) {
+    return <>{children}</>;
   }
 
   return (
