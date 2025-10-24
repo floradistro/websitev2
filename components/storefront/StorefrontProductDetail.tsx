@@ -34,7 +34,7 @@ export function StorefrontProductDetail({ productSlug, vendorId }: StorefrontPro
   const [addedToCart, setAddedToCart] = useState(false);
   
   const { addToCart } = useCart();
-  const { isInWishlist, toggleWishlist } = useWishlist();
+  const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
 
   // Fetch product using Yacht Club API
   const { data, error, isLoading } = useSWR(
@@ -89,6 +89,21 @@ export function StorefrontProductDetail({ productSlug, vendorId }: StorefrontPro
 
   const inWishlist = product ? isInWishlist(product.id) : false;
 
+  const handleToggleWishlist = () => {
+    if (!product) return;
+    if (inWishlist) {
+      removeFromWishlist(product.id);
+    } else {
+      addToWishlist({
+        productId: product.id,
+        name: product.name,
+        price: product.price,
+        image: product.images?.[0]?.src || product.featured_image_storage,
+        slug: product.slug
+      });
+    }
+  };
+
   const handlePriceSelect = (price: number, quantity: number, tierName: string) => {
     setSelectedPrice(price);
     setSelectedQuantity(quantity);
@@ -106,15 +121,14 @@ export function StorefrontProductDetail({ productSlug, vendorId }: StorefrontPro
     if (!product || !selectedPrice) return;
 
     addToCart({
-      id: product.id,
+      productId: product.id,
       name: product.name,
       price: selectedPrice,
       quantity: selectedQuantity,
+      tierName: selectedTierName || "",
       image: product.images?.[0]?.src || product.featured_image_storage,
-      tier: selectedTierName || "",
       orderType: orderDetails?.orderType,
       locationId: orderDetails?.locationId,
-      fulfillmentDate: orderDetails?.fulfillmentDate,
     });
 
     setAddedToCart(true);
@@ -309,7 +323,7 @@ export function StorefrontProductDetail({ productSlug, vendorId }: StorefrontPro
               
               <div className="flex space-x-3">
                 <button 
-                  onClick={() => product && toggleWishlist(product.id)}
+                  onClick={handleToggleWishlist}
                   className="flex-1 border-2 border-white bg-transparent text-white py-4 text-xs uppercase tracking-wider hover:bg-white hover:text-black transition-all duration-300 flex items-center justify-center space-x-2 rounded-full"
                 >
                   <Heart size={16} className={inWishlist ? 'fill-current' : ''} strokeWidth={2} />
@@ -473,7 +487,7 @@ export function StorefrontProductDetail({ productSlug, vendorId }: StorefrontPro
                     
                     <div className="flex space-x-3">
                       <button 
-                        onClick={() => product && toggleWishlist(product.id)}
+                        onClick={handleToggleWishlist}
                         className="flex-1 border-2 border-white bg-transparent text-white py-4 text-xs uppercase tracking-wider hover:bg-white hover:text-black transition-all duration-300 flex items-center justify-center space-x-2 rounded-full"
                       >
                         <Heart size={16} className={inWishlist ? 'fill-current' : ''} strokeWidth={2} />
