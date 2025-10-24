@@ -20,9 +20,9 @@ export default function ProductPageClientOptimized({
 }: ProductPageClientOptimizedProps) {
   const [isReady, setIsReady] = useState(false);
   
-  // Use SWR with bulk products endpoint (same as storefront)
-  const { data: bulkData, error, isLoading } = useSWR(
-    `/api/page-data/products`,
+  // Use SWR for instant cached loads with dedicated product endpoint
+  const { data, error, isLoading } = useSWR(
+    `/api/page-data/product/${productId}`,
     fetcher,
     {
       fallbackData: initialData,
@@ -31,55 +31,6 @@ export default function ProductPageClientOptimized({
       dedupingInterval: 60000, // 1 minute
     }
   );
-  
-  // Extract the specific product from bulk data and map images
-  const data = bulkData?.success && bulkData?.data?.products ? {
-    success: true,
-    data: {
-      product: (() => {
-        try {
-          const p = bulkData.data.products.find((prod: any) => 
-            prod.id === productId || prod.slug === productId
-          );
-          if (!p) return null;
-          
-          // Map images from storage fields to images array
-          const images = [];
-          if (p.featured_image_storage) {
-            images.push({ src: p.featured_image_storage, id: 0, name: p.name });
-          }
-          if (p.image_gallery_storage && Array.isArray(p.image_gallery_storage)) {
-            p.image_gallery_storage.forEach((img: string, idx: number) => {
-              images.push({ src: img, id: images.length, name: p.name });
-            });
-          }
-          
-          return {
-            ...p,
-            images: images.length > 0 ? images : p.images || []
-          };
-        } catch (err) {
-          console.error('Error mapping product:', err);
-          return null;
-        }
-      })(),
-      relatedProducts: (() => {
-        try {
-          return bulkData.data.products.filter((p: any) => 
-            (p.id !== productId && p.slug !== productId)
-          ).slice(0, 12).map((p: any) => ({
-            ...p,
-            images: p.featured_image_storage 
-              ? [{ src: p.featured_image_storage, id: 0, name: p.name }]
-              : p.images || []
-          }));
-        } catch (err) {
-          console.error('Error mapping related products:', err);
-          return [];
-        }
-      })()
-    }
-  } : bulkData;
 
   useEffect(() => {
     // Delay for smooth transition
