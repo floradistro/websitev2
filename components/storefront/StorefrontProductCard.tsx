@@ -106,7 +106,8 @@ function StorefrontProductCard({ product, vendorSlug, locations = [] }: Storefro
       }
     });
     
-    return displayFields.slice(0, 3);
+    // Return all fields, not just 3
+    return displayFields;
   };
 
   const displayFields = getDisplayFields();
