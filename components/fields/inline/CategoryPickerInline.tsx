@@ -37,24 +37,48 @@ export function CategoryPickerFieldInline({ label, value = [], onChange }: { lab
 
   const selectedCategories = categories.filter(c => value.includes(c.id) || value.includes(c.slug));
 
+  // Load categories initially to show selected items
+  useEffect(() => {
+    if (value.length > 0 && categories.length === 0) {
+      loadCategories();
+    }
+  }, [value]);
+
   return (
     <div className="mb-2">
-      <label className="text-white/60 text-xs block mb-1">{label}</label>
+      <div className="flex items-center justify-between mb-1">
+        <label className="text-white/60 text-xs">{label}</label>
+        {selectedCategories.length > 0 && (
+          <span className="text-green-400 text-[10px]">
+            ✓ {selectedCategories.length} selected
+          </span>
+        )}
+      </div>
       
-      {/* Selected items */}
+      {/* Selected items - Always visible */}
       {selectedCategories.length > 0 && (
         <div className="flex flex-wrap gap-1 mb-1">
           {selectedCategories.map(cat => (
             <span key={cat.id} className="inline-flex items-center gap-1 bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded text-[10px]">
               {cat.name}
               <button
-                onClick={() => onChange(value.filter(v => v !== cat.id && v !== cat.slug))}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onChange(value.filter(v => v !== cat.id && v !== cat.slug));
+                }}
                 className="hover:text-purple-100"
               >
                 <X size={10} />
               </button>
             </span>
           ))}
+        </div>
+      )}
+      
+      {/* Loading state while fetching category names */}
+      {value.length > 0 && categories.length === 0 && (
+        <div className="bg-white/5 rounded px-2 py-1 mb-1">
+          <span className="text-white/40 text-[10px]">Loading category names...</span>
         </div>
       )}
 

@@ -84,6 +84,7 @@ export default function LiveEditorV2() {
   const pages = [
     { id: 'home', name: 'Home' },
     { id: 'shop', name: 'Shop' },
+    { id: 'product', name: 'Product' },
     { id: 'about', name: 'About' },
     { id: 'contact', name: 'Contact' },
     { id: 'faq', name: 'FAQ' },
@@ -140,6 +141,10 @@ export default function LiveEditorV2() {
           break;
         case 'shop':
           pageUrl = `/storefront/shop?vendor=${vendor.slug}&preview=true`;
+          break;
+        case 'product':
+          // Show first product for preview
+          pageUrl = `/storefront/products/preview?vendor=${vendor.slug}&preview=true`;
           break;
         case 'about':
           pageUrl = `/storefront/about?vendor=${vendor.slug}&preview=true`;

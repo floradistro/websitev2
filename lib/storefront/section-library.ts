@@ -231,6 +231,45 @@ export const SECTION_LIBRARY: SectionTemplate[] = [
     }
   },
   {
+    key: 'product_detail_config',
+    name: 'Product Page Settings',
+    description: 'Configure product page layout, gallery, and sections',
+    icon: '',
+    category: 'settings',
+    pageTypes: ['product'],
+    defaultContent: {
+      // Layout
+      layout_style: 'split',  // split, stacked, gallery-left
+      gallery_size: 'large',  // small, medium, large
+      
+      // Gallery
+      gallery_thumbnails: true,
+      gallery_zoom: true,
+      gallery_autoplay: false,
+      gallery_columns: 4,
+      
+      // Sections Visibility
+      show_pricing_tiers: true,
+      show_product_fields: true,
+      show_delivery_options: true,
+      show_lab_results: true,
+      show_reviews: true,
+      show_related_products: true,
+      show_breadcrumbs: true,
+      show_share_button: true,
+      show_wishlist_button: true,
+      
+      // Colors
+      name_color: '#ffffff',
+      price_color: '#ffffff',
+      description_color: '#a3a3a3',
+      
+      // Related Products
+      related_columns: 4,
+      related_columns_mobile: 2,
+    }
+  },
+  {
     key: 'shop_config',
     name: 'Shop Layout Settings',
     description: 'Configure product grid, cards, and filters',
