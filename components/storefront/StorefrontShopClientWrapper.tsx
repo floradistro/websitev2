@@ -25,17 +25,8 @@ export function StorefrontShopClientWrapper({ vendorId }: StorefrontShopClientWr
   useEffect(() => {
     const shopConfigSection = sections.find(s => s.section_key === 'shop_config');
     const newConfig = shopConfigSection?.content_data || {};
-    
-    console.log('🔄 Shop Config Update:', {
-      found: !!shopConfigSection,
-      newConfig,
-      sectionsCount: sections.length
-    });
-    
     setConfig(newConfig);
   }, [sections]);
-  
-  console.log('🛍️ StorefrontShopClientWrapper render:', { config });
 
   return (
     <StorefrontShopClient 

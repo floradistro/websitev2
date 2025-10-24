@@ -238,18 +238,20 @@ export const SECTION_LIBRARY: SectionTemplate[] = [
     category: 'settings',
     pageTypes: ['shop'],
     defaultContent: {
+      page_title: 'Shop All Products',
+      page_subtitle: 'Premium quality, delivered fresh',
       grid_columns: 3,
       card_style: 'card',
+      corner_radius: 'lg',
+      image_aspect: 'square',
       show_quick_add: true,
       show_stock_badge: true,
       show_pricing_tiers: true,
-      image_aspect: 'square',
-      corner_radius: 'lg',
+      show_product_fields: true,
+      show_hover_overlay: true,
       show_categories: true,
       show_location_filter: true,
-      show_sort: true,
-      page_title: 'Shop All Products',
-      page_subtitle: 'Premium quality, delivered fresh'
+      show_sort: true
     }
   }
 ];

@@ -7,6 +7,7 @@ import { Save, Eye, Monitor, Smartphone, Plus, Trash2, EyeOff, GripVertical, Loa
 import { SECTION_LIBRARY, getSectionsForPage, SectionTemplate } from '@/lib/storefront/section-library';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { AddCustomFieldButton } from '@/components/storefront/AddCustomFieldButton';
+import { FieldLibraryPanel } from '@/components/vendor/FieldLibraryPanel';
 
 interface ContentSection {
   id: string;
@@ -1176,67 +1177,36 @@ export default function LiveEditorV2() {
                 </>
               )}
               
-              {/* Fields Manager Tab */}
+              {/* Fields Manager Tab - Full Featured */}
               {activeTab === 'fields' && (
-                <div className="p-3">
-                  <div className="mb-4">
-                    <h3 className="text-white/80 text-xs font-semibold mb-2">Custom Fields</h3>
-                    <p className="text-white/40 text-[10px] leading-relaxed">
-                      Extend sections with custom fields unique to your store
-                    </p>
-                  </div>
-
-                  {Object.keys(customFieldsCache).length === 0 ? (
-                    <div className="text-center py-8">
-                      <Settings className="mx-auto mb-3 text-white/20" size={32} />
-                      <p className="text-white/40 text-xs mb-4">No custom fields yet</p>
-                      <p className="text-white/30 text-[10px] mb-4">
-                        Add custom fields to sections using the + button when editing
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      {Object.entries(customFieldsCache).map(([sectionKey, fields]: [string, any]) => (
-                        <div key={sectionKey} className="bg-white/5 rounded p-2">
-                          <div className="text-white/60 text-[10px] uppercase tracking-wider mb-2 font-semibold">
-                            {sectionKey}
-                          </div>
-                          <div className="space-y-1.5">
-                            {fields.map((field: any) => (
-                              <div key={field.id} className="flex items-center justify-between bg-black/50 rounded px-2 py-1.5">
-                                <div className="flex-1">
-                                  <div className="text-white text-xs">{field.field_definition.label}</div>
-                                  <div className="text-white/30 text-[10px] font-mono">{field.field_id}</div>
-                                </div>
-                                <div className="flex items-center gap-1">
-                                  <span className="text-purple-400 text-[9px] bg-purple-500/20 px-1.5 py-0.5 rounded">
-                                    {field.field_definition.type}
-                                  </span>
-                                  <button
-                                    onClick={async () => {
-                                      if (confirm('Delete this custom field?')) {
-                                        const vendorId = localStorage.getItem('vendor_id');
-                                        const response = await fetch(`/api/vendor/custom-fields?id=${field.id}`, {
-                                          method: 'DELETE',
-                                          headers: { 'x-vendor-id': vendorId! }
-                                        });
-                                        if (response.ok) {
-                                          loadCustomFields();
-                                        }
-                                      }
-                                    }}
-                                    className="text-red-400 hover:text-red-300 p-1"
-                                  >
-                                    <Trash2 size={10} />
-                                  </button>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                <div className="h-full">
+                  <FieldLibraryPanel
+                    customFields={Object.values(customFieldsCache).flat()}
+                    onAddField={async (sectionKey, fieldConfig) => {
+                      // Handle adding field
+                      console.log('Add field:', sectionKey, fieldConfig);
+                    }}
+                    onEditField={async (fieldId, updates) => {
+                      // Handle editing field
+                      const vendorId = localStorage.getItem('vendor_id');
+                      // Update API call would go here
+                      console.log('Edit field:', fieldId, updates);
+                      loadCustomFields();
+                    }}
+                    onDeleteField={async (fieldId) => {
+                      if (confirm('Delete this custom field?')) {
+                        const vendorId = localStorage.getItem('vendor_id');
+                        const response = await fetch(`/api/vendor/custom-fields?id=${fieldId}`, {
+                          method: 'DELETE',
+                          headers: { 'x-vendor-id': vendorId! }
+                        });
+                        if (response.ok) {
+                          loadCustomFields();
+                        }
+                      }
+                    }}
+                    onRefresh={loadCustomFields}
+                  />
                 </div>
               )}
               

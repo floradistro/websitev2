@@ -8,10 +8,17 @@ import StorefrontProductCard from "./StorefrontProductCard";
 interface StorefrontShopClientProps {
   vendorId: string;
   config?: {
+    page_title?: string;
+    page_subtitle?: string;
     grid_columns?: number;
     card_style?: string;
     corner_radius?: string;
     image_aspect?: string;
+    show_quick_add?: boolean;
+    show_stock_badge?: boolean;
+    show_pricing_tiers?: boolean;
+    show_product_fields?: boolean;
+    show_hover_overlay?: boolean;
     show_categories?: boolean;
     show_location_filter?: boolean;
     show_sort?: boolean;
@@ -19,8 +26,6 @@ interface StorefrontShopClientProps {
 }
 
 export function StorefrontShopClient({ vendorId, config }: StorefrontShopClientProps) {
-  console.log('🏪 StorefrontShopClient render with config:', config);
-  
   const [loading, setLoading] = useState(true);
   const [allProducts, setAllProducts] = useState<any[]>([]);
   const [locations, setLocations] = useState<any[]>([]);
