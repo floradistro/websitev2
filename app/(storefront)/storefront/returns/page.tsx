@@ -142,7 +142,7 @@ export default async function ReturnsPage() {
                     <div className="flex-shrink-0 w-8 h-8 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-white font-bold text-sm">1</div>
                     <div>
                       <p className="text-white font-semibold">Contact Us</p>
-                      <p className="text-sm">Email us at returns@{vendor.slug}.com or call to initiate a return</p>
+                      <p className="text-sm">Email us or call to initiate a return</p>
                     </div>
                   </div>
                   <div className="flex gap-4">

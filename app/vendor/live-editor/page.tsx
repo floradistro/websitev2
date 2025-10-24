@@ -22,36 +22,36 @@ export default function LiveEditorV2() {
     const style = document.createElement('style');
     style.textContent = `
       .custom-scrollbar::-webkit-scrollbar {
-        width: 6px;
+        width: 4px;
       }
       .custom-scrollbar::-webkit-scrollbar-track {
         background: transparent;
       }
       .custom-scrollbar::-webkit-scrollbar-thumb {
-        background: #27272a;
-        border-radius: 3px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 2px;
       }
       .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-        background: #3f3f46;
+        background: rgba(255, 255, 255, 0.15);
       }
       .slider-modern::-webkit-slider-thumb {
         appearance: none;
-        width: 14px;
-        height: 14px;
+        width: 12px;
+        height: 12px;
         border-radius: 50%;
         background: white;
         cursor: pointer;
-        border: 2px solid #0a0a0a;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        border: 0;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.3);
       }
       .slider-modern::-moz-range-thumb {
-        width: 14px;
-        height: 14px;
+        width: 12px;
+        height: 12px;
         border-radius: 50%;
         background: white;
         cursor: pointer;
-        border: 2px solid #0a0a0a;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        border: 0;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.3);
       }
     `;
     document.head.appendChild(style);
@@ -74,6 +74,7 @@ export default function LiveEditorV2() {
   const [expandedCategories, setExpandedCategories] = useState<string[]>(['hero', 'content', 'features']);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
 
   const pages = [
     { id: 'home', name: 'Home' },
@@ -447,6 +448,71 @@ export default function LiveEditorV2() {
     refreshPreview();
   }
 
+  function toggleSectionExpansion(sectionId: string) {
+    setExpandedSections(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(sectionId)) {
+        newSet.delete(sectionId);
+      } else {
+        newSet.add(sectionId);
+      }
+      return newSet;
+    });
+    
+    // Also set as selected
+    const section = sections.find(s => s.id === sectionId);
+    if (section) {
+      setSelectedSection(section);
+    }
+  }
+
+  function renderSectionEditorInline(section: ContentSection) {
+    const { section_key, content_data, id } = section;
+    
+    // Update functions for inline editing
+    const updateContent = (field: string, value: any) => {
+      const updatedSection = {
+        ...section,
+        content_data: {
+          ...section.content_data,
+          [field]: value
+        }
+      };
+      
+      setSections(sections.map(s => s.id === section.id ? updatedSection : s));
+      setHasUnsavedChanges(true);
+      
+      // Debounced preview update
+      if (updateTimeoutRef.current) clearTimeout(updateTimeoutRef.current);
+      updateTimeoutRef.current = setTimeout(() => {
+        if (!iframeReady) return;
+        const iframe = document.getElementById('preview-iframe') as HTMLIFrameElement;
+        if (iframe && iframe.contentWindow) {
+          iframe.contentWindow.postMessage({
+            type: 'UPDATE_SECTION',
+            data: { section_key, field, value }
+          }, '*');
+        }
+      }, 300);
+    };
+    
+    const updateNested = (path: string, value: any) => {
+      const keys = path.split('.');
+      const newContentData = JSON.parse(JSON.stringify(section.content_data));
+      let current = newContentData;
+      
+      for (let i = 0; i < keys.length - 1; i++) {
+        if (!current[keys[i]]) current[keys[i]] = {};
+        current = current[keys[i]];
+      }
+      
+      current[keys[keys.length - 1]] = value;
+      
+      const updatedSection = { ...section, content_data: newContentData };
+      setSections(sections.map(s => s.id === section.id ? updatedSection : s));
+      setHasUnsavedChanges(true);
+    };
+
   function renderSectionEditor() {
     if (!selectedSection) return null;
 
@@ -458,135 +524,89 @@ export default function LiveEditorV2() {
         {/* Dynamic Editors Based on Section Type */}
         {section_key === 'hero' && (
           <>
-            <div className="space-y-3">
-              <div className="text-[10px] uppercase tracking-wider text-[#52525b] font-semibold mb-2">Content</div>
-              <EditorField label="Headline" value={content_data.headline || ''} onChange={(v) => updateSectionContent('headline', v)} placeholder="Your bold headline..." />
-              <EditorField label="Subheadline" value={content_data.subheadline || ''} onChange={(v) => updateSectionContent('subheadline', v)} multiline placeholder="Supporting text that describes your offer..." />
-            </div>
-
-            <div className="h-px bg-[#27272a] my-4"></div>
-
-            <div className="space-y-3">
-              <div className="text-[10px] uppercase tracking-wider text-[#52525b] font-semibold mb-2">Call to Action</div>
-              <div className="grid grid-cols-2 gap-2">
-                <EditorField label="Primary Text" value={content_data.cta_primary?.text || ''} onChange={(v) => updateNestedContent('cta_primary.text', v)} placeholder="Shop Now" />
-                <EditorField label="Primary Link" value={content_data.cta_primary?.link || ''} onChange={(v) => updateNestedContent('cta_primary.link', v)} placeholder="/shop" />
+            <div className="space-y-2">
+              <EditorField label="Headline" value={content_data.headline || ''} onChange={(v) => updateContent('headline', v)} placeholder="Your bold headline..." />
+              <EditorField label="Subheadline" value={content_data.subheadline || ''} onChange={(v) => updateContent('subheadline', v)} multiline placeholder="Supporting text..." />
+              <div className="grid grid-cols-2 gap-1.5">
+                <EditorField label="Primary Button" value={content_data.cta_primary?.text || ''} onChange={(v) => updateNested('cta_primary.text', v)} placeholder="Shop Now" />
+                <EditorField label="Link" value={content_data.cta_primary?.link || ''} onChange={(v) => updateNested('cta_primary.link', v)} placeholder="/shop" />
               </div>
-              <div className="grid grid-cols-2 gap-2">
-                <EditorField label="Secondary Text" value={content_data.cta_secondary?.text || ''} onChange={(v) => updateNestedContent('cta_secondary.text', v)} placeholder="Learn More" />
-                <EditorField label="Secondary Link" value={content_data.cta_secondary?.link || ''} onChange={(v) => updateNestedContent('cta_secondary.link', v)} placeholder="/about" />
+              <div className="grid grid-cols-2 gap-1.5">
+                <EditorField label="Secondary Button" value={content_data.cta_secondary?.text || ''} onChange={(v) => updateNested('cta_secondary.text', v)} placeholder="Learn More" />
+                <EditorField label="Link" value={content_data.cta_secondary?.link || ''} onChange={(v) => updateNested('cta_secondary.link', v)} placeholder="/about" />
               </div>
-            </div>
-
-            <div className="h-px bg-[#27272a] my-4"></div>
-
-            <div className="space-y-3">
-              <div className="text-[10px] uppercase tracking-wider text-[#52525b] font-semibold mb-2">Style</div>
-              <ColorPicker label="Background Color" value={content_data.background_color || '#000000'} onChange={(v) => updateSectionContent('background_color', v)} />
-              <SliderField label="Overlay Opacity" value={content_data.overlay_opacity || 0.6} min={0} max={1} step={0.1} onChange={(v) => updateSectionContent('overlay_opacity', v)} />
+              <ColorPicker label="Background" value={content_data.background_color || '#000000'} onChange={(v) => updateContent('background_color', v)} />
+              <SliderField label="Overlay" value={content_data.overlay_opacity || 0.6} min={0} max={1} step={0.1} onChange={(v) => updateContent('overlay_opacity', v)} />
             </div>
           </>
         )}
 
         {section_key === 'process' && (
           <>
-            <div className="space-y-3">
-              <div className="text-[10px] uppercase tracking-wider text-[#52525b] font-semibold mb-2">Content</div>
-              <EditorField label="Headline" value={content_data.headline || ''} onChange={(v) => updateSectionContent('headline', v)} placeholder="How it works..." />
-              <EditorField label="Subheadline" value={content_data.subheadline || ''} onChange={(v) => updateSectionContent('subheadline', v)} placeholder="Simple process..." />
-            </div>
-
-            <div className="h-px bg-[#27272a] my-4"></div>
-
-            <ArrayEditor 
-              label="Process Steps" 
-              items={content_data.steps || []}
-              onChange={(items) => updateSectionContent('steps', items)}
-              renderItem={(item, index, onChange) => (
-                <div className="space-y-2">
-                  <input
-                    type="text"
-                    value={item.title}
-                    onChange={(e) => onChange({ ...item, title: e.target.value })}
-                    placeholder="Step title"
-                    className="w-full bg-[#0a0a0a] border border-[#27272a] text-white px-2.5 py-2 rounded text-xs focus:border-[#3f3f46] transition-all"
-                  />
-                  <textarea
-                    value={item.description}
-                    onChange={(e) => onChange({ ...item, description: e.target.value })}
-                    placeholder="Description"
-                    rows={2}
-                    className="w-full bg-[#0a0a0a] border border-[#27272a] text-white px-2.5 py-2 rounded text-xs focus:border-[#3f3f46] transition-all resize-none"
-                  />
-                </div>
-              )}
-            />
-
-            <div className="h-px bg-[#27272a] my-4"></div>
-
-            <div className="space-y-3">
-              <div className="text-[10px] uppercase tracking-wider text-[#52525b] font-semibold mb-2">Style</div>
-              <ColorPicker label="Background Color" value={content_data.background_color || '#0a0a0a'} onChange={(v) => updateSectionContent('background_color', v)} />
+            <div className="space-y-2">
+              <EditorField label="Headline" value={content_data.headline || ''} onChange={(v) => updateContent('headline', v)} placeholder="How it works..." />
+              <EditorField label="Subheadline" value={content_data.subheadline || ''} onChange={(v) => updateContent('subheadline', v)} placeholder="Simple process..." />
+              <ArrayEditor 
+                label="Steps" 
+                items={content_data.steps || []}
+                onChange={(items) => updateContent('steps', items)}
+                renderItem={(item, index, onChange) => (
+                  <div className="space-y-1.5">
+                    <input
+                      type="text"
+                      value={item.title}
+                      onChange={(e) => onChange({ ...item, title: e.target.value })}
+                      placeholder="Step title"
+                      className="w-full bg-black border border-white/10 text-white px-2 py-1.5 rounded text-xs focus:outline-none focus:border-white/30 transition-all placeholder:text-white/20"
+                    />
+                    <textarea
+                      value={item.description}
+                      onChange={(e) => onChange({ ...item, description: e.target.value })}
+                      placeholder="Description"
+                      rows={2}
+                      className="w-full bg-black border border-white/10 text-white px-2 py-1.5 rounded text-xs focus:outline-none focus:border-white/30 transition-all resize-none placeholder:text-white/20"
+                    />
+                  </div>
+                )}
+              />
+              <ColorPicker label="Background" value={content_data.background_color || '#0a0a0a'} onChange={(v) => updateContent('background_color', v)} />
             </div>
           </>
         )}
 
         {section_key === 'about_story' && (
           <>
-            <div className="space-y-3">
-              <div className="text-[10px] uppercase tracking-wider text-[#52525b] font-semibold mb-2">Content</div>
+            <div className="space-y-2.5">
               <EditorField label="Headline" value={content_data.headline || ''} onChange={(v) => updateSectionContent('headline', v)} placeholder="Our story..." />
-            </div>
-
-            <div className="h-px bg-[#27272a] my-4"></div>
-
-            <ArrayEditor 
-              label="Story Paragraphs" 
-              items={content_data.paragraphs || []}
-              onChange={(items) => updateSectionContent('paragraphs', items)}
-              renderItem={(item, index, onChange) => (
-                <textarea
-                  value={item}
-                  onChange={(e) => onChange(e.target.value)}
-                  placeholder={`Tell your story...`}
-                  rows={2}
-                  className="w-full bg-[#0a0a0a] border border-[#27272a] text-white px-2.5 py-2 rounded text-xs focus:border-[#3f3f46] transition-all resize-none leading-relaxed"
-                />
-              )}
-            />
-
-            <div className="h-px bg-[#27272a] my-4"></div>
-
-            <div className="space-y-3">
-              <div className="text-[10px] uppercase tracking-wider text-[#52525b] font-semibold mb-2">Style</div>
-              <ColorPicker label="Background Color" value={content_data.background_color || '#000000'} onChange={(v) => updateSectionContent('background_color', v)} />
+              <ArrayEditor 
+                label="Paragraphs" 
+                items={content_data.paragraphs || []}
+                onChange={(items) => updateSectionContent('paragraphs', items)}
+                renderItem={(item, index, onChange) => (
+                  <textarea
+                    value={item}
+                    onChange={(e) => onChange(e.target.value)}
+                    placeholder="Tell your story..."
+                    rows={2}
+                    className="w-full bg-black border border-white/10 text-white px-2 py-1.5 rounded text-xs focus:outline-none focus:border-white/30 transition-all resize-none leading-relaxed placeholder:text-white/20"
+                  />
+                )}
+              />
+              <ColorPicker label="Background" value={content_data.background_color || '#000000'} onChange={(v) => updateSectionContent('background_color', v)} />
             </div>
           </>
         )}
 
         {section_key === 'cta' && (
           <>
-            <div className="space-y-3">
-              <div className="text-[10px] uppercase tracking-wider text-[#52525b] font-semibold mb-2">Content</div>
+            <div className="space-y-2.5">
               <EditorField label="Headline" value={content_data.headline || ''} onChange={(v) => updateSectionContent('headline', v)} placeholder="Ready to start?" />
-              <EditorField label="Subheadline" value={content_data.subheadline || ''} onChange={(v) => updateSectionContent('subheadline', v)} multiline placeholder="Join thousands of customers..." />
-            </div>
-
-            <div className="h-px bg-[#27272a] my-4"></div>
-
-            <div className="space-y-3">
-              <div className="text-[10px] uppercase tracking-wider text-[#52525b] font-semibold mb-2">Button</div>
-              <div className="grid grid-cols-2 gap-2">
-                <EditorField label="Text" value={content_data.cta_button?.text || ''} onChange={(v) => updateNestedContent('cta_button.text', v)} placeholder="Shop Now" />
+              <EditorField label="Subheadline" value={content_data.subheadline || ''} onChange={(v) => updateSectionContent('subheadline', v)} multiline placeholder="Join thousands..." />
+              <div className="grid grid-cols-2 gap-1.5">
+                <EditorField label="Button Text" value={content_data.cta_button?.text || ''} onChange={(v) => updateNestedContent('cta_button.text', v)} placeholder="Shop Now" />
                 <EditorField label="Link" value={content_data.cta_button?.link || ''} onChange={(v) => updateNestedContent('cta_button.link', v)} placeholder="/shop" />
               </div>
-            </div>
-
-            <div className="h-px bg-[#27272a] my-4"></div>
-
-            <div className="space-y-3">
-              <div className="text-[10px] uppercase tracking-wider text-[#52525b] font-semibold mb-2">Style</div>
-              <ColorPicker label="Background Color" value={content_data.background_color || '#000000'} onChange={(v) => updateSectionContent('background_color', v)} />
+              <ColorPicker label="Background" value={content_data.background_color || '#000000'} onChange={(v) => updateSectionContent('background_color', v)} />
             </div>
           </>
         )}
@@ -594,7 +614,7 @@ export default function LiveEditorV2() {
         {/* Fallback JSON Editor */}
         {!['hero', 'process', 'about_story', 'cta'].includes(section_key) && (
           <div>
-            <div className="text-[10px] uppercase tracking-wider text-[#52525b] font-semibold mb-2">Raw Data</div>
+            <label className="text-white/40 text-[11px] block mb-1 font-normal">Section Data</label>
             <textarea
               value={JSON.stringify(content_data, null, 2)}
               onChange={(e) => {
@@ -609,10 +629,9 @@ export default function LiveEditorV2() {
                   // Invalid JSON
                 }
               }}
-              rows={10}
-              className="w-full bg-[#18181b] border border-[#27272a] text-white px-3 py-2.5 rounded-md font-mono text-[11px] leading-relaxed focus:border-[#3f3f46] transition-all resize-none"
+              rows={12}
+              className="w-full bg-black border border-white/10 text-white px-2 py-1.5 rounded font-mono text-[11px] leading-[1.6] focus:outline-none focus:border-white/30 transition-all resize-none"
             />
-            <p className="text-[#52525b] text-[9px] mt-1.5">Edit JSON data for this section</p>
           </div>
         )}
       </div>
@@ -646,18 +665,19 @@ export default function LiveEditorV2() {
   };
 
   return (
-    <div className="fixed inset-0 bg-black flex flex-col">
-      {/* Minimal Top Bar */}
-      <div className="h-12 bg-[#0a0a0a] border-b border-white/5 flex items-center justify-between px-4 flex-shrink-0">
-        <div className="flex items-center gap-3">
-          <a href="/vendor/dashboard" className="text-white/50 hover:text-white text-xs transition-colors">
-            ← Back
+    <div className="fixed inset-0 bg-[#0a0a0a] flex flex-col">
+      {/* Ultra-Minimal Toolbar */}
+      <div className="h-10 bg-[#000000] border-b border-[#1a1a1a] flex items-center justify-between px-3 flex-shrink-0">
+        {/* Left */}
+        <div className="flex items-center gap-2">
+          <a href="/vendor/dashboard" className="text-[#6a6a6a] hover:text-white text-xs transition-colors">
+            ←
           </a>
-          <div className="w-px h-4 bg-white/10" />
+          <div className="w-px h-3 bg-[#1a1a1a]" />
           <select
             value={selectedPage}
             onChange={(e) => setSelectedPage(e.target.value)}
-            className="bg-transparent border-0 text-white text-sm font-medium focus:outline-none cursor-pointer hover:text-white/80 transition-colors"
+            className="bg-[#0a0a0a] border-0 text-white text-xs font-medium px-2 py-1 rounded focus:outline-none cursor-pointer hover:bg-[#1a1a1a] transition-colors"
           >
             {pages.map(page => (
               <option key={page.id} value={page.id} className="bg-[#1a1a1a]">{page.name}</option>
@@ -665,97 +685,67 @@ export default function LiveEditorV2() {
           </select>
         </div>
         
-        <div className="flex items-center gap-4">
-          {/* Device Toggle */}
-          <div className="flex gap-0.5 bg-white/5 rounded-md p-0.5">
+        {/* Right */}
+        <div className="flex items-center gap-2">
+          {/* Device Toggle - Dark */}
+          <div className="flex gap-px bg-[#0a0a0a] rounded p-px">
             <button
               onClick={() => setPreviewDevice('desktop')}
-              className={`p-2 rounded transition-all ${
+              className={`p-1.5 rounded-sm transition-all ${
                 previewDevice === 'desktop'
-                  ? 'bg-white/10 text-white'
-                  : 'text-white/40 hover:text-white/70'
+                  ? 'bg-[#1a1a1a] text-white'
+                  : 'text-[#6a6a6a] hover:text-white'
               }`}
-              title="Desktop"
             >
-              <Monitor size={13} />
+              <Monitor size={12} />
             </button>
             <button
               onClick={() => setPreviewDevice('mobile')}
-              className={`p-2 rounded transition-all ${
+              className={`p-1.5 rounded-sm transition-all ${
                 previewDevice === 'mobile'
-                  ? 'bg-white/10 text-white'
-                  : 'text-white/40 hover:text-white/70'
+                  ? 'bg-[#1a1a1a] text-white'
+                  : 'text-[#6a6a6a] hover:text-white'
               }`}
-              title="Mobile"
             >
-              <Smartphone size={13} />
+              <Smartphone size={12} />
             </button>
           </div>
 
-          {/* Status */}
-          <div className="text-[10px] text-white/40 flex items-center gap-1.5 min-w-[60px]">
-            {saving ? (
-              <>
-                <Loader2 size={10} className="animate-spin" />
-                <span>Saving</span>
-              </>
-            ) : hasUnsavedChanges ? (
-              <>
-                <span className="w-1.5 h-1.5 bg-yellow-500 rounded-full animate-pulse"></span>
-                <span>Unsaved</span>
-              </>
-            ) : lastSaved ? (
-              <>
-                <span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
-                <span>Saved</span>
-              </>
-            ) : null}
-          </div>
+          {/* Status Dot Only */}
+          {saving ? (
+            <Loader2 size={10} className="animate-spin text-white/40" />
+          ) : hasUnsavedChanges ? (
+            <span className="w-1.5 h-1.5 bg-yellow-500 rounded-full animate-pulse" title="Unsaved changes"></span>
+          ) : lastSaved ? (
+            <span className="w-1.5 h-1.5 bg-green-500 rounded-full" title="Saved"></span>
+          ) : null}
         </div>
       </div>
 
       {/* Main Content */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Left Sidebar - Compact */}
-        <div className="w-[320px] bg-[#0a0a0a] border-r border-white/5 flex flex-col overflow-hidden flex-shrink-0">
-          {/* Compact Header */}
-          <div className="p-3 border-b border-white/5 bg-[#0a0a0a] flex-shrink-0">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-white/90 text-xs font-semibold uppercase tracking-wider">Sections</h3>
-              <span className="text-white/30 text-[10px]">{sections.length}</span>
-            </div>
-            <button 
-              onClick={() => setShowSectionLibrary(true)}
-              className="flex items-center gap-1.5 text-white bg-white/5 hover:bg-white/10 px-3 py-2 rounded text-xs font-medium transition-colors border border-white/10 w-full justify-center"
-            >
-              <Plus size={12} />
-              Add Section
-            </button>
-          </div>
-
-          {/* Content */}
+        {/* Left Sidebar - Cursor AI Style */}
+        <div className="w-[260px] bg-[#0a0a0a] border-r border-[#1a1a1a] flex flex-col overflow-hidden flex-shrink-0">
+          {/* Content - No header, start immediately */}
           <div className="flex-1 overflow-y-auto custom-scrollbar">
-            <div className="p-2">
+            <div className="p-1.5">
               
               {loading ? (
-                <div className="text-white/40 text-xs text-center py-8">
-                  <Loader2 className="animate-spin mx-auto mb-2" size={16} />
+                <div className="text-white/30 text-xs text-center py-8">
+                  <Loader2 className="animate-spin mx-auto mb-2 text-white/30" size={16} />
                   Loading...
                 </div>
-              ) : sections.length === 0 ? (
-                <div className="text-center py-8 px-3">
-                  <div className="w-12 h-12 bg-white/5 rounded-lg flex items-center justify-center mx-auto mb-3">
-                    <Layout size={18} className="text-white/20" />
-                  </div>
-                  <p className="text-white/40 text-xs mb-3">No sections</p>
-                  <button 
-                    onClick={() => setShowSectionLibrary(true)}
-                    className="text-white/60 text-[10px] font-medium hover:text-white transition-colors"
-                  >
-                    Add first section
-                  </button>
-                </div>
               ) : (
+                <button 
+                  onClick={() => setShowSectionLibrary(true)}
+                  className="flex items-center gap-1.5 text-white/50 hover:text-white hover:bg-white/5 px-2 py-1.5 rounded text-[11px] transition-colors w-full mb-1"
+                >
+                  <Plus size={12} />
+                  Add Section
+                </button>
+              )}
+              
+              {!loading && sections.length > 0 && (
                   <DragDropContext onDragEnd={onDragEnd}>
                     <Droppable droppableId="sections">
                       {(provided) => (
@@ -772,61 +762,73 @@ export default function LiveEditorV2() {
                                   <div
                                     ref={provided.innerRef}
                                     {...provided.draggableProps}
-                                    onClick={() => setSelectedSection(section)}
-                                    className={`group p-2.5 border rounded cursor-pointer transition-all ${
-                                      selectedSection?.id === section.id
-                                        ? 'bg-white/10 border-white/20'
-                                        : 'bg-white/[0.02] border-white/5 hover:bg-white/5 hover:border-white/10'
-                                    } ${snapshot.isDragging ? 'shadow-lg' : ''}`}
+                                    className={`group rounded transition-all ${
+                                      expandedSections.has(section.id)
+                                        ? 'bg-white/5 mb-2'
+                                        : ''
+                                    } ${snapshot.isDragging ? 'bg-white/5' : ''}`}
                                   >
-                                    <div className="flex items-center gap-1.5">
+                                    {/* Section Header - Collapsible */}
+                                    <div
+                                      onClick={() => toggleSectionExpansion(section.id)}
+                                      className="flex items-center gap-1 px-1.5 py-1 cursor-pointer hover:bg-white/[0.02] rounded"
+                                    >
                                       <div
                                         {...provided.dragHandleProps}
-                                        className="text-white/15 hover:text-white/40 cursor-grab active:cursor-grabbing"
+                                        onClick={(e) => e.stopPropagation()}
+                                        className="text-white/10 hover:text-white/30 cursor-grab active:cursor-grabbing"
                                       >
-                                        <GripVertical size={12} />
+                                        <GripVertical size={10} />
                                       </div>
+                                      <ChevronDown 
+                                        size={10} 
+                                        className={`text-white/20 transition-transform ${expandedSections.has(section.id) ? 'rotate-0' : '-rotate-90'}`} 
+                                      />
                                       <div className="flex-1 min-w-0">
-                                        <div className="text-white text-[11px] font-medium capitalize truncate">
+                                        <div className="text-white/80 text-[11px] font-normal capitalize truncate">
                                           {section.section_key.replace(/_/g, ' ')}
                                         </div>
-                                        <div className="text-white/25 text-[9px] truncate mt-0.5 leading-tight">
-                                          {section.content_data.headline || section.content_data.title || '—'}
-                                        </div>
                                       </div>
-                                      <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                      <div className="flex items-center gap-px opacity-0 group-hover:opacity-100">
                                         <button
                                           onClick={(e) => {
                                             e.stopPropagation();
                                             duplicateSection(section.id);
                                           }}
-                                          className="text-white/25 hover:text-white p-0.5 rounded hover:bg-white/10 transition-colors"
+                                          className="text-white/20 hover:text-white/60 p-0.5 rounded"
                                           title="Duplicate"
                                         >
-                                          <Plus size={11} />
+                                          <Plus size={9} />
                                         </button>
                                         <button
                                           onClick={(e) => {
                                             e.stopPropagation();
                                             toggleSection(section.id);
                                           }}
-                                          className="text-white/25 hover:text-white p-0.5 rounded hover:bg-white/10 transition-colors"
+                                          className="text-white/20 hover:text-white/60 p-0.5 rounded"
                                           title={section.is_enabled ? 'Hide' : 'Show'}
                                         >
-                                          {section.is_enabled ? <Eye size={11} /> : <EyeOff size={11} />}
+                                          {section.is_enabled ? <Eye size={9} /> : <EyeOff size={9} />}
                                         </button>
                                         <button
                                           onClick={(e) => {
                                             e.stopPropagation();
                                             deleteSection(section.id);
                                           }}
-                                          className="text-white/25 hover:text-red-400 p-0.5 rounded hover:bg-red-500/10 transition-colors"
+                                          className="text-white/20 hover:text-red-400 p-0.5 rounded"
                                           title="Delete"
                                         >
-                                          <Trash2 size={11} />
+                                          <Trash2 size={9} />
                                         </button>
                                       </div>
                                     </div>
+
+                                    {/* Expanded Editor - Inline */}
+                                    {expandedSections.has(section.id) && (
+                                      <div className="px-1.5 pb-2 pt-1">
+                                        {renderSectionEditorInline(section)}
+                                      </div>
+                                    )}
                                   </div>
                                 )}
                               </Draggable>
@@ -839,17 +841,6 @@ export default function LiveEditorV2() {
                   </DragDropContext>
                 )}
 
-              {/* Section Editor */}
-              {selectedSection && (
-                <div className="mt-4 pt-4 border-t border-white/5">
-                  <h4 className="text-white/60 text-[10px] font-semibold mb-3 uppercase tracking-wider px-1">
-                    {selectedSection.section_key.replace(/_/g, ' ')}
-                  </h4>
-                  <div className="px-1">
-                    {renderSectionEditor()}
-                  </div>
-                </div>
-              )}
             </div>
           </div>
         </div>
@@ -881,41 +872,42 @@ export default function LiveEditorV2() {
         </div>
       </div>
 
-      {/* Section Library Modal - Modern */}
+      {/* Section Library - Dark */}
       {showSectionLibrary && (
-        <div className="fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex items-center justify-center p-6">
-          <div className="bg-[#0a0a0a] border border-white/10 rounded-xl max-w-3xl w-full max-h-[70vh] flex flex-col shadow-2xl">
-            {/* Compact Header */}
-            <div className="flex items-center justify-between p-4 border-b border-white/5 flex-shrink-0">
-              <h2 className="text-base font-semibold text-white">Add Section</h2>
+        <div className="fixed inset-0 bg-black/90 z-50 flex items-start justify-center pt-20">
+          <div className="bg-[#0a0a0a] border border-white/10 rounded-lg max-w-2xl w-full max-h-[500px] flex flex-col shadow-2xl">
+            {/* Header */}
+            <div className="flex items-center gap-2 p-3 border-b border-white/10">
+              <Plus size={14} className="text-white/40" />
+              <h2 className="text-sm font-normal text-white flex-1">Add Section</h2>
               <button
                 onClick={() => setShowSectionLibrary(false)}
                 className="text-white/40 hover:text-white p-1 rounded hover:bg-white/10 transition-colors"
               >
-                <X size={18} />
+                <X size={14} />
               </button>
             </div>
 
-            {/* Grid */}
-            <div className="flex-1 overflow-y-auto p-4">
-              <div className="grid grid-cols-2 gap-2">
-                {availableSections.map((template) => (
-                  <button
-                    key={template.key}
-                    onClick={() => addSection(template)}
-                    className="flex flex-col gap-1.5 p-3 bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 rounded-lg transition-all text-left group"
-                  >
-                    <div className="flex items-center justify-between">
-                      <h4 className="text-white font-medium text-xs">{template.name}</h4>
-                      <Plus size={12} className="text-white/30 group-hover:text-white flex-shrink-0" />
+            {/* List */}
+            <div className="flex-1 overflow-y-auto custom-scrollbar">
+              {availableSections.map((template) => (
+                <button
+                  key={template.key}
+                  onClick={() => addSection(template)}
+                  className="flex items-center gap-3 p-3 w-full text-left border-b border-white/5 hover:bg-white/5 transition-colors group"
+                >
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <span className="text-white text-xs font-normal">{template.name}</span>
+                      <span className="text-[9px] text-white/30 px-1.5 py-0.5 bg-white/5 rounded">
+                        {template.category}
+                      </span>
                     </div>
-                    <p className="text-white/30 text-[10px] leading-relaxed">{template.description}</p>
-                    <span className="text-[9px] uppercase tracking-wider text-white/20 mt-0.5">
-                      {template.category}
-                    </span>
-                  </button>
-                ))}
-              </div>
+                    <p className="text-white/40 text-[10px] leading-relaxed">{template.description}</p>
+                  </div>
+                  <Plus size={11} className="text-white/20 group-hover:text-white/50 transition-colors" />
+                </button>
+              ))}
             </div>
           </div>
         </div>
@@ -924,11 +916,11 @@ export default function LiveEditorV2() {
   );
 }
 
-// Helper Components - True VSCode Style
+// Helper Components - Dark Theme
 function EditorField({ label, value, onChange, multiline = false, placeholder = '' }: any) {
   return (
     <div>
-      <label className="text-[#888888] text-[11px] block mb-1 font-normal">
+      <label className="text-white/40 text-[11px] block mb-1 font-normal">
         {label}
       </label>
       {multiline ? (
@@ -937,7 +929,7 @@ function EditorField({ label, value, onChange, multiline = false, placeholder = 
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
           rows={3}
-          className="w-full bg-[#1e1e1e] border-0 text-[#cccccc] px-2 py-1.5 rounded text-[13px] leading-[1.6] focus:outline-none focus:ring-1 focus:ring-[#007acc] transition-all resize-none font-normal placeholder:text-[#6a6a6a]"
+          className="w-full bg-black border border-white/10 text-white px-2 py-1.5 rounded text-[13px] leading-[1.6] focus:outline-none focus:border-white/30 transition-all resize-none font-normal placeholder:text-white/20"
         />
       ) : (
         <input
@@ -945,7 +937,7 @@ function EditorField({ label, value, onChange, multiline = false, placeholder = 
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
-          className="w-full bg-[#1e1e1e] border-0 text-[#cccccc] px-2 py-1.5 rounded text-[13px] focus:outline-none focus:ring-1 focus:ring-[#007acc] transition-all font-normal placeholder:text-[#6a6a6a]"
+          className="w-full bg-black border border-white/10 text-white px-2 py-1.5 rounded text-[13px] focus:outline-none focus:border-white/30 transition-all font-normal placeholder:text-white/20"
         />
       )}
     </div>
@@ -954,20 +946,20 @@ function EditorField({ label, value, onChange, multiline = false, placeholder = 
 
 function ColorPicker({ label, value, onChange }: any) {
   return (
-    <div className="group">
-      <label className="text-[#a1a1aa] text-[11px] block mb-1.5 font-medium group-focus-within:text-white/70 transition-colors">
+    <div>
+      <label className="text-white/40 text-[11px] block mb-1 font-normal">
         {label}
       </label>
-      <div className="flex gap-2">
+      <div className="flex gap-1.5">
         <div className="relative">
           <input
             type="color"
             value={value}
             onChange={(e) => onChange(e.target.value)}
-            className="w-10 h-10 rounded-md cursor-pointer border border-[#27272a] bg-[#18181b] opacity-0 absolute inset-0"
+            className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent opacity-0 absolute inset-0"
           />
           <div 
-            className="w-10 h-10 rounded-md border border-[#27272a] pointer-events-none"
+            className="w-8 h-8 rounded border border-white/10 pointer-events-none"
             style={{ backgroundColor: value }}
           />
         </div>
@@ -975,7 +967,7 @@ function ColorPicker({ label, value, onChange }: any) {
           type="text"
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="flex-1 bg-[#18181b] border border-[#27272a] text-white px-3 py-2.5 rounded-md text-[13px] font-mono focus:border-[#3f3f46] focus:bg-[#1c1c1f] transition-all uppercase"
+          className="flex-1 bg-black border border-white/10 text-white px-2 py-1.5 rounded text-[12px] font-mono focus:outline-none focus:border-white/30 transition-all uppercase"
           placeholder="#000000"
         />
       </div>
@@ -985,10 +977,10 @@ function ColorPicker({ label, value, onChange }: any) {
 
 function SliderField({ label, value, min, max, step, onChange }: any) {
   return (
-    <div className="group">
-      <div className="flex items-center justify-between mb-2">
-        <label className="text-[#a1a1aa] text-[11px] font-medium group-hover:text-white/70 transition-colors">{label}</label>
-        <span className="text-white/60 text-[11px] font-mono bg-[#18181b] px-2 py-0.5 rounded border border-[#27272a]">
+    <div>
+      <div className="flex items-center justify-between mb-1">
+        <label className="text-white/40 text-[11px] font-normal">{label}</label>
+        <span className="text-white/60 text-[11px] font-mono tabular-nums">
           {(value * 100).toFixed(0)}%
         </span>
       </div>
@@ -999,9 +991,9 @@ function SliderField({ label, value, min, max, step, onChange }: any) {
         step={step}
         value={value}
         onChange={(e) => onChange(parseFloat(e.target.value))}
-        className="w-full h-2 bg-[#27272a] rounded-lg appearance-none cursor-pointer slider-modern"
+        className="w-full h-1 bg-white/10 rounded appearance-none cursor-pointer slider-modern"
         style={{
-          background: `linear-gradient(to right, white 0%, white ${value * 100}%, #27272a ${value * 100}%, #27272a 100%)`
+          background: `linear-gradient(to right, white 0%, white ${value * 100}%, rgba(255,255,255,0.1) ${value * 100}%, rgba(255,255,255,0.1) 100%)`
         }}
       />
     </div>
@@ -1023,29 +1015,29 @@ function ArrayEditor({ label, items, onChange, renderItem }: any) {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-2">
-        <label className="text-[#a1a1aa] text-[11px] font-medium">
+      <div className="flex items-center justify-between mb-1">
+        <label className="text-white/40 text-[11px] font-normal">
           {label}
-          <span className="text-[#52525b] ml-1.5">({items.length})</span>
+          <span className="text-white/20 ml-1">({items.length})</span>
         </label>
         <button
           onClick={addItem}
-          className="text-[#71717a] hover:text-white text-[11px] flex items-center gap-1 bg-[#18181b] hover:bg-[#27272a] px-2 py-1 rounded border border-[#27272a] hover:border-[#3f3f46] transition-all"
+          className="text-white/50 hover:text-white text-[10px] flex items-center gap-1 bg-white/5 hover:bg-white/10 px-2 py-1 rounded transition-all"
         >
-          <Plus size={11} />
+          <Plus size={10} />
           Add
         </button>
       </div>
-      <div className="space-y-2 max-h-64 overflow-y-auto pr-1 custom-scrollbar">
+      <div className="space-y-1.5 max-h-64 overflow-y-auto pr-1 custom-scrollbar">
         {items.map((item: any, index: number) => (
-          <div key={index} className="bg-[#18181b] border border-[#27272a] p-2.5 rounded-md hover:border-[#3f3f46] transition-colors group">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-[#71717a] text-[10px] font-medium">Item {index + 1}</span>
+          <div key={index} className="bg-black border border-white/10 p-2 rounded group hover:border-white/20 transition-colors">
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="text-white/30 text-[10px]">Item {index + 1}</span>
               <button
                 onClick={() => removeItem(index)}
-                className="text-[#52525b] hover:text-red-400 p-1 rounded hover:bg-red-500/10 transition-all opacity-0 group-hover:opacity-100"
+                className="text-white/30 hover:text-red-400 p-0.5 rounded transition-all opacity-0 group-hover:opacity-100"
               >
-                <Trash2 size={11} />
+                <Trash2 size={10} />
               </button>
             </div>
             {renderItem(item, index, (newItem: any) => updateItem(index, newItem))}

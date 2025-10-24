@@ -60,7 +60,7 @@ export default async function PrivacyPage() {
           <div className="space-y-8 text-neutral-300 font-light leading-relaxed">
             <section>
               <h2 className="text-2xl font-semibold text-white mb-4">Your Privacy Matters</h2>
-              <p>At {vendor.store_name}, we take your privacy seriously. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website and make purchases.</p>
+              <p>We take your privacy seriously. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website and make purchases.</p>
             </section>
 
             <section>
