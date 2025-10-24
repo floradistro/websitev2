@@ -24,9 +24,9 @@ export function FAQItemsSection({ content }: FAQItemsSectionProps) {
 
   return (
     <section className="py-16 px-6 relative">
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-xl" />
+      <div className="absolute inset-0 bg-black" />
       <div className="max-w-4xl mx-auto relative z-10">
-        <div className="bg-black/60 backdrop-blur-xl rounded-[32px] border border-white/10 p-8 md:p-12">
+        <div className="bg-black rounded-[32px] border border-white/10 p-8 md:p-12">
           {content.headline && (
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-4 uppercase tracking-[-0.03em] text-center">
               {content.headline}

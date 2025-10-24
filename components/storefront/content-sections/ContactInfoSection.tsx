@@ -14,7 +14,7 @@ interface ContactInfoSectionProps {
 export function ContactInfoSection({ content, vendor }: ContactInfoSectionProps) {
   return (
     <section className="py-8 sm:py-16 px-4 sm:px-6 relative">
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-xl" />
+      <div className="absolute inset-0 bg-black" />
       <div className="max-w-5xl mx-auto relative z-10">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
           {/* Email */}

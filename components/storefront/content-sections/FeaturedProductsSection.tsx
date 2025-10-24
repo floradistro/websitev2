@@ -29,7 +29,7 @@ export function FeaturedProductsSection({
 
   return (
     <section className="py-12 sm:py-20 px-0 sm:px-6 relative">
-      <div className="absolute inset-0 bg-black/65 backdrop-blur-xl" />
+      <div className="absolute inset-0 bg-black" />
       <div className="max-w-7xl mx-auto relative z-10">
         <div className="flex items-center justify-between mb-8 sm:mb-12 px-4 sm:px-6 md:px-0">
           <h2 className="text-2xl sm:text-4xl md:text-5xl font-light text-white tracking-[-0.02em]">

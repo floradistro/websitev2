@@ -28,8 +28,8 @@ export function ShippingBadgesSection({ content }: ShippingBadgesSectionProps) {
   const badges = content.badges && content.badges.length > 0 ? content.badges : defaultBadges;
 
   return (
-    <section className="py-8 sm:py-16 bg-[#0a0a0a] border-t border-white/10 relative">
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-xl" />
+    <section className="py-8 sm:py-16 bg-black border-t border-white/10 relative">
+      <div className="absolute inset-0 bg-black" />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10 relative z-10">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-8 max-w-3xl mx-auto">
           {badges.map((badge: any, index: number) => (

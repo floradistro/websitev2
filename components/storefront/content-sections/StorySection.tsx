@@ -13,7 +13,7 @@ interface StorySectionProps {
 export function StorySection({ content, templateStyle = 'minimalist' }: StorySectionProps) {
   return (
     <section className="py-12 sm:py-24 px-4 sm:px-6 relative overflow-hidden">
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-xl" />
+      <div className="absolute inset-0 bg-black" />
       
       <div className="max-w-4xl mx-auto relative z-10">
         {content.headline && (

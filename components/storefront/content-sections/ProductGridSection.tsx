@@ -10,7 +10,7 @@ interface ProductGridSectionProps {
 export function ProductGridSection({ content }: ProductGridSectionProps) {
   return (
     <section className="py-12 sm:py-20 px-4 sm:px-6 relative">
-      <div className="absolute inset-0 bg-black/65 backdrop-blur-xl" />
+      <div className="absolute inset-0 bg-black" />
       <div className="max-w-7xl mx-auto relative z-10">
         {content.headline && (
           <div className="mb-8 sm:mb-12 text-center">

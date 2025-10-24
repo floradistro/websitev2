@@ -17,7 +17,7 @@ interface DifferentiatorsSectionProps {
 export function DifferentiatorsSection({ content, templateStyle = 'minimalist' }: DifferentiatorsSectionProps) {
   const styles = {
     minimalist: {
-      container: 'py-16 bg-[#0a0a0a]',
+      container: 'py-16 bg-black',
       headline: 'text-3xl md:text-4xl font-light text-white mb-12',
       grid: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8',
       item: 'space-y-2',

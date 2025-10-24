@@ -49,7 +49,7 @@ export function AboutStorySection({ content, templateStyle = 'minimalist', baseP
 
   return (
     <div className={style.container} style={{ backgroundColor }}>
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-xl" />
+      <div className="absolute inset-0 bg-black" />
       <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-10 relative z-10" style={{ color: textColor }}>
         <h2 className={style.headline}>
           {content.headline}

@@ -87,7 +87,7 @@ export function ProcessSection({ content, templateStyle = 'minimalist' }: Proces
 
   return (
     <div className={style.container} style={{ backgroundColor }}>
-      <div className="absolute inset-0 bg-black/65 backdrop-blur-xl" />
+      <div className="absolute inset-0 bg-black" />
       <div className="max-w-4xl mx-auto text-center relative z-10" style={{ color: textColor }}>
         <h2 className={style.headline}>
           {typeof content.headline === 'string' ? content.headline : 'How It Works'}

@@ -35,7 +35,7 @@ export function ReviewsSection({ content, reviews, templateStyle = 'minimalist' 
 
   const styles = {
     minimalist: {
-      container: 'py-12 sm:py-20 bg-[#0a0a0a]',
+      container: 'py-12 sm:py-20 bg-black',
       header: 'flex items-center justify-between mb-8 sm:mb-12 px-4 sm:px-0',
       headline: 'text-2xl sm:text-3xl md:text-4xl font-light text-white',
       count: 'text-white/40 text-xs sm:text-sm',

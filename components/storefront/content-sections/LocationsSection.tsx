@@ -21,7 +21,7 @@ export function LocationsSection({ content, locations = [], vendor }: LocationsS
 
   return (
     <section className="py-12 sm:py-24 px-4 sm:px-6 relative">
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-xl" />
+      <div className="absolute inset-0 bg-black" />
       <div className="max-w-7xl mx-auto relative z-10">
         <div className="mb-8 sm:mb-16 text-center">
           <h2 className="text-3xl sm:text-4xl md:text-6xl font-light text-white mb-3 sm:mb-4 tracking-[-0.02em]">

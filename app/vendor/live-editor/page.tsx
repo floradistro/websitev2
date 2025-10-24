@@ -411,7 +411,7 @@ export default function LiveEditorV2() {
     const { section_key, content_data } = selectedSection;
 
     return (
-      <div className="space-y-4">
+      <div className="space-y-3">
 
         {/* Dynamic Editors Based on Section Type */}
         {section_key === 'hero' && (
@@ -777,43 +777,38 @@ export default function LiveEditorV2() {
         </div>
       </div>
 
-      {/* Section Library Modal */}
+      {/* Section Library Modal - Modern */}
       {showSectionLibrary && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-6">
-          <div className="bg-[#1a1a1a] border border-white/20 rounded-2xl max-w-4xl w-full max-h-[80vh] flex flex-col shadow-2xl">
-            {/* Header */}
-            <div className="flex items-center justify-between p-5 border-b border-white/10 flex-shrink-0">
-              <div>
-                <h2 className="text-xl font-semibold text-white">Add Section</h2>
-                <p className="text-white/40 text-xs mt-1">Choose a section type</p>
-              </div>
+        <div className="fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex items-center justify-center p-6">
+          <div className="bg-[#0a0a0a] border border-white/10 rounded-xl max-w-3xl w-full max-h-[70vh] flex flex-col shadow-2xl">
+            {/* Compact Header */}
+            <div className="flex items-center justify-between p-4 border-b border-white/5 flex-shrink-0">
+              <h2 className="text-base font-semibold text-white">Add Section</h2>
               <button
                 onClick={() => setShowSectionLibrary(false)}
-                className="text-white/50 hover:text-white p-1.5 rounded hover:bg-white/10 transition-colors"
+                className="text-white/40 hover:text-white p-1 rounded hover:bg-white/10 transition-colors"
               >
-                <X size={20} />
+                <X size={18} />
               </button>
             </div>
 
-            {/* Content */}
-            <div className="flex-1 overflow-y-auto p-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {/* Grid */}
+            <div className="flex-1 overflow-y-auto p-4">
+              <div className="grid grid-cols-2 gap-2">
                 {availableSections.map((template) => (
                   <button
                     key={template.key}
                     onClick={() => addSection(template)}
-                    className="flex items-start gap-3 p-4 bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/30 rounded-lg transition-all text-left group"
+                    className="flex flex-col gap-1.5 p-3 bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 rounded-lg transition-all text-left group"
                   >
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h4 className="text-white font-medium text-sm">{template.name}</h4>
-                        <span className="text-[10px] uppercase tracking-wider text-white/30 bg-white/5 px-1.5 py-0.5 rounded">
-                          {template.category}
-                        </span>
-                      </div>
-                      <p className="text-white/40 text-xs leading-relaxed">{template.description}</p>
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-white font-medium text-xs">{template.name}</h4>
+                      <Plus size={12} className="text-white/30 group-hover:text-white flex-shrink-0" />
                     </div>
-                    <Plus size={16} className="text-white/30 group-hover:text-white flex-shrink-0 mt-0.5" />
+                    <p className="text-white/30 text-[10px] leading-relaxed">{template.description}</p>
+                    <span className="text-[9px] uppercase tracking-wider text-white/20 mt-0.5">
+                      {template.category}
+                    </span>
                   </button>
                 ))}
               </div>
@@ -907,28 +902,28 @@ function ArrayEditor({ label, items, onChange, renderItem }: any) {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-2">
-        <label className="text-white/80 text-xs uppercase tracking-wider font-medium">
+      <div className="flex items-center justify-between mb-1.5">
+        <label className="text-white/50 text-[10px] font-medium">
           {label} ({items.length})
         </label>
         <button
           onClick={addItem}
-          className="text-white/60 hover:text-white text-xs flex items-center gap-1 bg-white/10 hover:bg-white/20 px-2 py-1 rounded transition-colors"
+          className="text-white/50 hover:text-white text-[10px] flex items-center gap-1 bg-white/5 hover:bg-white/10 px-1.5 py-0.5 rounded transition-colors"
         >
-          <Plus size={12} />
+          <Plus size={10} />
           Add
         </button>
       </div>
-      <div className="space-y-2 max-h-64 overflow-y-auto">
+      <div className="space-y-1.5 max-h-48 overflow-y-auto">
         {items.map((item: any, index: number) => (
-          <div key={index} className="bg-white/5 border border-white/10 p-3 rounded-lg">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-white/40 text-xs font-medium">Item {index + 1}</span>
+          <div key={index} className="bg-white/5 border border-white/10 p-2 rounded">
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="text-white/30 text-[9px] font-medium">#{index + 1}</span>
               <button
                 onClick={() => removeItem(index)}
-                className="text-white/40 hover:text-red-400 p-1 rounded hover:bg-red-500/10 transition-colors"
+                className="text-white/30 hover:text-red-400 p-0.5 rounded hover:bg-red-500/10 transition-colors"
               >
-                <Trash2 size={12} />
+                <Trash2 size={10} />
               </button>
             </div>
             {renderItem(item, index, (newItem: any) => updateItem(index, newItem))}
