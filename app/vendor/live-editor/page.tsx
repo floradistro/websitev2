@@ -1313,14 +1313,17 @@ export default function LiveEditorV2() {
           )}
 
           {/* Add Custom Field Button */}
-          <div className="mt-4 pt-4 border-t border-white/10">
-            <AddCustomFieldButton 
-              sectionKey="hero" 
-              vendorId={vendor?.id || localStorage.getItem('vendor_id') || ''} 
-              onFieldAdded={() => {
-                loadCustomFields(); // Reload to show new field
-              }} 
-            />
+          <div className="mt-4 pt-4 border-t border-[#3e3e3e]">
+            <button
+              onClick={() => {
+                // Open Field Library in modal or switch to fields tab
+                setActiveTab('fields');
+              }}
+              className="w-full bg-[#1e1e1e] hover:bg-[#252526] border border-[#3e3e3e] hover:border-[#007acc] text-[#cccccc] px-3 py-2 rounded text-xs flex items-center justify-center gap-2 transition-colors"
+            >
+              <Plus size={12} />
+              Add Custom Field
+            </button>
           </div>
         </div>
       );
