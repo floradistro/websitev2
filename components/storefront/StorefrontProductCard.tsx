@@ -274,23 +274,19 @@ function StorefrontProductCard({ product, vendorSlug, locations = [], config = {
                            infoPadding === 'md' ? 'px-3 space-y-2' :
                            'px-4 space-y-3';
   
-  // Build inline styles
+  // Build inline styles - handle transparency properly
   const cardStyle: React.CSSProperties = {
-    backgroundColor: config.card_bg && config.card_bg !== 'transparent' ? config.card_bg : undefined,
-    borderColor: config.card_border_color || undefined,
+    backgroundColor: config.card_bg === 'transparent' || !config.card_bg ? undefined : config.card_bg,
+    borderColor: config.card_border_width !== '0' && config.card_border_color ? config.card_border_color : undefined,
   };
-  
-  const cardHoverStyle: React.CSSProperties = config.card_hover_bg && config.card_hover_bg !== 'transparent' ? {
-    backgroundColor: config.card_hover_bg,
-  } : {};
   
   const imageStyle: React.CSSProperties = {
     backgroundColor: config.image_bg || '#000000',
-    borderColor: config.image_border_color || undefined,
+    borderColor: config.image_border_width !== '0' && config.image_border_color ? config.image_border_color : undefined,
   };
   
   const infoStyle: React.CSSProperties = {
-    backgroundColor: config.info_bg && config.info_bg !== 'transparent' ? config.info_bg : undefined,
+    backgroundColor: config.info_bg === 'transparent' || !config.info_bg ? undefined : config.info_bg,
   };
 
   return (
@@ -306,13 +302,6 @@ function StorefrontProductCard({ product, vendorSlug, locations = [], config = {
         className={`relative ${imageAspectClass} overflow-hidden mb-4 ${imageRadiusClass} ${imageBorderClass}`}
         style={imageStyle}
       >
-        {/* Subtle Picture Frame */}
-        <div className="absolute inset-0 pointer-events-none z-20 rounded-t-[20px] sm:rounded-t-[32px] overflow-hidden">
-          {/* Inner shadow frame */}
-          <div className="absolute inset-0 shadow-[inset_0_0_40px_rgba(0,0,0,0.7)]" />
-          {/* Thick transparent border glow */}
-          <div className="absolute inset-[12px] rounded-[8px] sm:rounded-[20px] border-[8px] border-white/[0.03] shadow-[0_0_15px_rgba(255,255,255,0.04)]" />
-        </div>
 
         {product.images?.[0]?.src ? (
           <Image

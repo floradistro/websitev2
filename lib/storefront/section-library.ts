@@ -247,12 +247,12 @@ export const SECTION_LIBRARY: SectionTemplate[] = [
       grid_gap: 'md',
       
       // Card Container
-      card_bg: 'transparent',
+      card_bg: '#000000',
       card_padding: 'md',
       card_radius: 'lg',
       card_border_width: '0',
       card_border_color: '#ffffff',
-      card_hover_bg: 'transparent',
+      card_hover_bg: '#1a1a1a',
       
       // Product Image
       image_aspect: 'square',
@@ -263,7 +263,7 @@ export const SECTION_LIBRARY: SectionTemplate[] = [
       image_border_color: '#ffffff',
       
       // Product Info
-      info_bg: 'transparent',
+      info_bg: '#000000',
       info_padding: 'md',
       name_color: '#ffffff',
       price_color: '#ffffff',

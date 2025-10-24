@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Plus, Copy, Info, Sparkles, Edit2, Save, X } from 'lucide-react';
+import { AddFieldFromLibraryModal } from './AddFieldFromLibraryModal';
 
 // Comprehensive field type library
 const FIELD_TYPE_LIBRARY = [
@@ -468,46 +469,17 @@ export function FieldLibraryPanel({
         </div>
       )}
 
-      {/* Add Field from Library Modal */}
+      {/* Add Field from Library Modal - With Preview */}
       {showAddModal && selectedFieldType && (
-        <div className="absolute inset-0 bg-black/95 z-50 flex items-center justify-center p-4">
-          <div className="bg-[#1a1a1a] border border-white/10 rounded-lg max-w-md w-full p-4">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <span className="text-2xl">{selectedFieldType.icon}</span>
-                <h3 className="text-white font-semibold text-sm">{selectedFieldType.name}</h3>
-              </div>
-              <button onClick={() => { setShowAddModal(false); setSelectedFieldType(null); }} className="text-white/60 hover:text-white">
-                <X size={16} />
-              </button>
-            </div>
-
-            <p className="text-white/60 text-xs mb-4">{selectedFieldType.description}</p>
-
-            <div className="bg-purple-500/10 border border-purple-500/20 rounded p-3 mb-4">
-              <p className="text-purple-400 text-[10px] font-medium mb-1">Properties Available:</p>
-              <div className="flex flex-wrap gap-1">
-                {selectedFieldType.properties.map((prop: string) => (
-                  <span key={prop} className="text-white/60 text-[9px] bg-white/5 px-1.5 py-0.5 rounded">
-                    {prop}
-                  </span>
-                ))}
-              </div>
-            </div>
-
-            <button
-              onClick={() => {
-                // Open full add field form with this type pre-selected
-                setShowAddModal(false);
-                // Trigger parent to open add field modal with this type
-                alert(`Ready to add ${selectedFieldType.name} field! (Connect to AddCustomFieldButton with pre-selected type)`);
-              }}
-              className="w-full bg-white text-black px-4 py-2 rounded text-xs hover:bg-white/90"
-            >
-              Add This Field Type
-            </button>
-          </div>
-        </div>
+        <AddFieldFromLibraryModal
+          fieldType={selectedFieldType}
+          onClose={() => { setShowAddModal(false); setSelectedFieldType(null); }}
+          onAdd={(sectionKey, fieldConfig) => {
+            onAddField(sectionKey, fieldConfig);
+            setShowAddModal(false);
+            setSelectedFieldType(null);
+          }}
+        />
       )}
     </div>
   );

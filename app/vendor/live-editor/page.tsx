@@ -596,7 +596,7 @@ export default function LiveEditorV2() {
             <label className="text-white/60 text-[10px] uppercase tracking-wider block font-medium">Card Container</label>
             <ColorPicker 
               label="Background" 
-              value={content_data.card_bg || 'transparent'} 
+              value={content_data.card_bg || '#000000'} 
               onChange={(v) => updateContent('card_bg', v)} 
             />
             <div>
@@ -650,7 +650,7 @@ export default function LiveEditorV2() {
             )}
             <ColorPicker 
               label="Hover Background" 
-              value={content_data.card_hover_bg || 'transparent'} 
+              value={content_data.card_hover_bg || '#1a1a1a'} 
               onChange={(v) => updateContent('card_hover_bg', v)} 
             />
           </div>
@@ -732,7 +732,7 @@ export default function LiveEditorV2() {
             <label className="text-white/60 text-[10px] uppercase tracking-wider block font-medium">Product Info</label>
             <ColorPicker 
               label="Background" 
-              value={content_data.info_bg || 'transparent'} 
+              value={content_data.info_bg || '#000000'} 
               onChange={(v) => updateContent('info_bg', v)} 
             />
             <div>
