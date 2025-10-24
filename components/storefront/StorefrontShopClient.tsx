@@ -26,6 +26,7 @@ interface StorefrontShopClientProps {
     image_bg?: string;
     image_fit?: string;
     image_padding?: string;
+    image_spacing?: string;
     image_radius?: string;
     image_border_width?: string;
     image_border_color?: string;
