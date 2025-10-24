@@ -140,6 +140,9 @@ export function HeroSection({ content, templateStyle = 'minimalist', basePath = 
           // Skip if field key is just a number (likely auto-generated)
           if (/^\d+$/.test(key)) return null;
           
+          // Skip if field KEY itself is a UUID
+          if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(key)) return null;
+          
           // Only render simple custom fields with meaningful values
           return (
             <div key={key} className="mt-4 text-sm text-white/80 bg-white/10 backdrop-blur px-4 py-2 rounded">
