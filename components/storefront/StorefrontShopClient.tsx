@@ -19,6 +19,8 @@ interface StorefrontShopClientProps {
 }
 
 export function StorefrontShopClient({ vendorId, config }: StorefrontShopClientProps) {
+  console.log('🏪 StorefrontShopClient render with config:', config);
+  
   const [loading, setLoading] = useState(true);
   const [allProducts, setAllProducts] = useState<any[]>([]);
   const [locations, setLocations] = useState<any[]>([]);

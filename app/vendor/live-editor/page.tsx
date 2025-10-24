@@ -619,41 +619,51 @@ export default function LiveEditorV2() {
             </div>
           </div>
 
-          {/* Product Card Features */}
+          {/* Product Card Display */}
           <div className="space-y-2 pb-2 border-b border-white/5">
-            <label className="text-white/60 text-[10px] uppercase tracking-wider block font-medium">Card Features</label>
-            <ToggleField 
-              label="Show Quick Add Button" 
+            <label className="text-white/60 text-[10px] uppercase tracking-wider block font-medium">Card Display</label>
+            <CheckboxField 
+              label="Quick Add Button" 
               value={content_data.show_quick_add !== false} 
               onChange={(v) => updateContent('show_quick_add', v)} 
             />
-            <ToggleField 
-              label="Show Stock Badge" 
+            <CheckboxField 
+              label="Stock Badges" 
               value={content_data.show_stock_badge !== false} 
               onChange={(v) => updateContent('show_stock_badge', v)} 
             />
-            <ToggleField 
-              label="Show Pricing Tiers" 
+            <CheckboxField 
+              label="Pricing Tiers" 
               value={content_data.show_pricing_tiers !== false} 
               onChange={(v) => updateContent('show_pricing_tiers', v)} 
+            />
+            <CheckboxField 
+              label="Product Fields" 
+              value={content_data.show_product_fields !== false} 
+              onChange={(v) => updateContent('show_product_fields', v)} 
+            />
+            <CheckboxField 
+              label="Hover Overlay" 
+              value={content_data.show_hover_overlay !== false} 
+              onChange={(v) => updateContent('show_hover_overlay', v)} 
             />
           </div>
 
           {/* Filters & Navigation */}
           <div className="space-y-2">
-            <label className="text-white/60 text-[10px] uppercase tracking-wider block font-medium">Filters & Nav</label>
-            <ToggleField 
-              label="Show Categories" 
+            <label className="text-white/60 text-[10px] uppercase tracking-wider block font-medium">Page Controls</label>
+            <CheckboxField 
+              label="Category Tabs" 
               value={content_data.show_categories !== false} 
               onChange={(v) => updateContent('show_categories', v)} 
             />
-            <ToggleField 
-              label="Show Location Filter" 
+            <CheckboxField 
+              label="Location Filter" 
               value={content_data.show_location_filter !== false} 
               onChange={(v) => updateContent('show_location_filter', v)} 
             />
-            <ToggleField 
-              label="Show Sort Dropdown" 
+            <CheckboxField 
+              label="Sort Dropdown" 
               value={content_data.show_sort !== false} 
               onChange={(v) => updateContent('show_sort', v)} 
             />
@@ -1533,24 +1543,27 @@ function ArrayEditor({ label, items, onChange, renderItem }: any) {
   );
 }
 
-function ToggleField({ label, value, onChange }: any) {
+function CheckboxField({ label, value, onChange }: any) {
   return (
-    <div className="flex items-center justify-between">
-      <label className="text-white/40 text-[11px] font-normal">
-        {label}
-      </label>
-      <button
-        onClick={() => onChange(!value)}
-        className={`relative w-9 h-5 rounded-full transition-all duration-200 ${
-          value ? 'bg-white' : 'bg-white/10'
-        }`}
-      >
-        <div
-          className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full transition-all duration-200 ${
-            value ? 'translate-x-4 bg-black' : 'translate-x-0 bg-white/40'
-          }`}
+    <label className="flex items-center gap-2 cursor-pointer group py-1">
+      <div className="relative">
+        <input
+          type="checkbox"
+          checked={value}
+          onChange={(e) => onChange(e.target.checked)}
+          className="peer sr-only"
         />
-      </button>
-    </div>
+        <div className="w-4 h-4 border-2 border-white/20 rounded bg-black peer-checked:bg-white peer-checked:border-white transition-all group-hover:border-white/40">
+          {value && (
+            <svg className="w-full h-full text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+          )}
+        </div>
+      </div>
+      <span className="text-white/70 text-[11px] font-normal group-hover:text-white transition-colors select-none">
+        {label}
+      </span>
+    </label>
   );
 }

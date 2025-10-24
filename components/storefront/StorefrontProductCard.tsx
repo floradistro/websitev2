@@ -17,6 +17,8 @@ interface StorefrontProductCardProps {
     show_quick_add?: boolean;
     show_stock_badge?: boolean;
     show_pricing_tiers?: boolean;
+    show_product_fields?: boolean;
+    show_hover_overlay?: boolean;
   };
 }
 
@@ -295,28 +297,30 @@ function StorefrontProductCard({ product, vendorSlug, locations = [], config = {
         )}
 
         {/* Hover Overlay - Desktop */}
-        <div className={`hidden md:flex absolute inset-0 items-center justify-center transition-all duration-500 bg-black/60 backdrop-blur-xl ${
-          isHovered ? 'opacity-100' : 'opacity-0'
-        }`}>
-          <div className="flex flex-col items-center gap-2 transform translate-y-3 group-hover:translate-y-0 transition-transform duration-500">
-            <div className="bg-white text-black px-6 py-3 text-xs uppercase tracking-[0.2em] font-medium rounded-full shadow-lg">
-              View Product
+        {config.show_hover_overlay !== false && (
+          <div className={`hidden md:flex absolute inset-0 items-center justify-center transition-all duration-500 bg-black/60 backdrop-blur-xl ${
+            isHovered ? 'opacity-100' : 'opacity-0'
+          }`}>
+            <div className="flex flex-col items-center gap-2 transform translate-y-3 group-hover:translate-y-0 transition-transform duration-500">
+              <div className="bg-white text-black px-6 py-3 text-xs uppercase tracking-[0.2em] font-medium rounded-full shadow-lg">
+                View Product
+              </div>
+              {config.show_quick_add !== false && stockInfo.inStock && (
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    // Quick add functionality would go here
+                    alert('Quick Add - Coming soon!');
+                  }}
+                  className="bg-black/80 text-white border border-white/20 px-6 py-2 text-xs uppercase tracking-[0.2em] font-medium rounded-full shadow-lg hover:bg-white hover:text-black transition-all"
+                >
+                  Quick Add
+                </button>
+              )}
             </div>
-            {config.show_quick_add !== false && stockInfo.inStock && (
-              <button
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  // Quick add functionality would go here
-                  alert('Quick Add - Coming soon!');
-                }}
-                className="bg-black/80 text-white border border-white/20 px-6 py-2 text-xs uppercase tracking-[0.2em] font-medium rounded-full shadow-lg hover:bg-white hover:text-black transition-all"
-              >
-                Quick Add
-              </button>
-            )}
           </div>
-        </div>
+        )}
       </div>
 
       {/* Product Info */}
@@ -358,7 +362,7 @@ function StorefrontProductCard({ product, vendorSlug, locations = [], config = {
         )}
         
         {/* Product Fields - Stacked vertically */}
-        {displayFields.length > 0 && (
+        {config.show_product_fields !== false && displayFields.length > 0 && (
           <div className="flex flex-col gap-1">
             {displayFields.map((field, idx) => (
               <div key={idx} className="flex items-start gap-1.5 text-[10px]">

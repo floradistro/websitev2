@@ -16,21 +16,26 @@ interface StorefrontShopClientWrapperProps {
 export function StorefrontShopClientWrapper({ vendorId }: StorefrontShopClientWrapperProps) {
   const { sections } = useLiveEditing();
   
-  // Find shop_config section
-  const shopConfigSection = sections.find(s => s.section_key === 'shop_config');
-  const [config, setConfig] = useState(shopConfigSection?.content_data || {});
+  const [config, setConfig] = useState(() => {
+    const shopConfigSection = sections.find(s => s.section_key === 'shop_config');
+    return shopConfigSection?.content_data || {};
+  });
   
-  // Update config when sections change
+  // Update config when sections change - use sections directly as dependency
   useEffect(() => {
+    const shopConfigSection = sections.find(s => s.section_key === 'shop_config');
     const newConfig = shopConfigSection?.content_data || {};
-    const configString = JSON.stringify(newConfig);
-    const currentConfigString = JSON.stringify(config);
     
-    // Only update if content actually changed
-    if (configString !== currentConfigString) {
-      setConfig(newConfig);
-    }
+    console.log('🔄 Shop Config Update:', {
+      found: !!shopConfigSection,
+      newConfig,
+      sectionsCount: sections.length
+    });
+    
+    setConfig(newConfig);
   }, [sections]);
+  
+  console.log('🛍️ StorefrontShopClientWrapper render:', { config });
 
   return (
     <StorefrontShopClient 
