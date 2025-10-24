@@ -889,7 +889,7 @@ export default function LiveEditorV2() {
           {customFieldsCache['hero']?.length > 0 && (
             <div className="mt-4 pt-4 border-t border-purple-500/20">
               <div className="text-xs text-purple-400 uppercase tracking-wider mb-3 flex items-center gap-2">
-                <span>Custom Fields</span>
+                <span>🔧 Custom Fields</span>
                 <span className="bg-purple-500/20 px-1.5 py-0.5 rounded text-[10px]">
                   {customFieldsCache['hero'].length}
                 </span>
@@ -898,6 +898,7 @@ export default function LiveEditorV2() {
                 const fieldDef = customField.field_definition;
                 const fieldId = customField.field_id;
                 
+                // Render based on field type
                 if (fieldDef.type === 'text') {
                   return (
                     <EditorField 
@@ -908,8 +909,83 @@ export default function LiveEditorV2() {
                       placeholder={fieldDef.placeholder}
                     />
                   );
+                } else if (fieldDef.type === 'textarea') {
+                  return (
+                    <EditorField 
+                      key={fieldId}
+                      label={`${fieldDef.label} 🔧`}
+                      value={content_data[fieldId] || ''}
+                      onChange={(v) => updateContent(fieldId, v)}
+                      multiline
+                      placeholder={fieldDef.placeholder}
+                    />
+                  );
+                } else if (fieldDef.type === 'color') {
+                  return (
+                    <ColorPicker 
+                      key={fieldId}
+                      label={`${fieldDef.label} 🔧`}
+                      value={content_data[fieldId] || '#000000'}
+                      onChange={(v) => updateContent(fieldId, v)}
+                    />
+                  );
+                } else if (fieldDef.type === 'boolean') {
+                  return (
+                    <ToggleField
+                      key={fieldId}
+                      label={`${fieldDef.label} 🔧`}
+                      value={content_data[fieldId] || false}
+                      onChange={(v) => updateContent(fieldId, v)}
+                    />
+                  );
+                } else if (fieldDef.type === 'url' || fieldDef.type === 'image') {
+                  return (
+                    <EditorField 
+                      key={fieldId}
+                      label={`${fieldDef.label} 🔧`}
+                      value={content_data[fieldId] || ''}
+                      onChange={(v) => updateContent(fieldId, v)}
+                      placeholder={fieldDef.placeholder || 'https://...'}
+                    />
+                  );
+                } else if (fieldDef.type === 'number') {
+                  return (
+                    <div key={fieldId} className="mb-2">
+                      <label className="text-white/60 text-xs block mb-1">{fieldDef.label} 🔧</label>
+                      <input
+                        type="number"
+                        value={content_data[fieldId] || 0}
+                        onChange={(e) => updateContent(fieldId, parseInt(e.target.value))}
+                        className="w-full bg-black border border-white/10 text-white px-2 py-1.5 rounded text-xs"
+                      />
+                    </div>
+                  );
+                } else {
+                  // Fallback for complex types (category_picker, product_picker, etc.)
+                  return (
+                    <div key={fieldId} className="mb-3 p-3 bg-purple-500/10 border border-purple-500/20 rounded">
+                      <div className="text-xs text-purple-400 font-medium mb-1">{fieldDef.label} 🔧</div>
+                      <div className="text-white/40 text-[10px] mb-2">Type: {fieldDef.type}</div>
+                      <div className="bg-black/50 border border-white/10 rounded p-2">
+                        <textarea
+                          value={JSON.stringify(content_data[fieldId] || null, null, 2)}
+                          onChange={(e) => {
+                            try {
+                              const parsed = JSON.parse(e.target.value);
+                              updateContent(fieldId, parsed);
+                            } catch (err) {
+                              // Invalid JSON, ignore
+                            }
+                          }}
+                          rows={3}
+                          className="w-full bg-black border-0 text-white font-mono text-[10px] resize-none"
+                          placeholder={`Value for ${fieldDef.label} (JSON format)`}
+                        />
+                      </div>
+                      <p className="text-white/30 text-[9px] mt-1">Complex field - edit as JSON for now</p>
+                    </div>
+                  );
                 }
-                return null;
               })}
             </div>
           )}
