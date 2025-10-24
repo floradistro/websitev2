@@ -203,7 +203,7 @@ function StorefrontProductCard({ product, vendorSlug, locations = [] }: Storefro
       onMouseLeave={() => setIsHovered(false)}
     >
       {/* Product Image Container */}
-      <div className="relative aspect-[4/5] bg-black/20 rounded-t-[20px] sm:rounded-t-[32px] overflow-hidden mb-4">
+      <div className="relative aspect-[4/5] bg-black overflow-hidden mb-4">
         {/* Subtle Picture Frame */}
         <div className="absolute inset-0 pointer-events-none z-20 rounded-t-[20px] sm:rounded-t-[32px] overflow-hidden">
           {/* Inner shadow frame */}
