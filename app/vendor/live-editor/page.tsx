@@ -564,7 +564,7 @@ export default function LiveEditorV2() {
           <div className="space-y-2 pb-2 border-b border-white/5">
             <label className="text-white/60 text-[10px] uppercase tracking-wider block font-medium">Layout</label>
             <div>
-              <label className="text-white/40 text-[11px] block mb-1 font-normal">Grid Columns</label>
+              <label className="text-white/40 text-[11px] block mb-1 font-normal">Desktop Columns</label>
               <select
                 value={content_data.grid_columns || 3}
                 onChange={(e) => updateContent('grid_columns', parseInt(e.target.value))}
@@ -576,18 +576,32 @@ export default function LiveEditorV2() {
               </select>
             </div>
             <div>
-              <label className="text-white/40 text-[11px] block mb-1 font-normal">Gap Size</label>
+              <label className="text-white/40 text-[11px] block mb-1 font-normal">Mobile Columns</label>
+              <select
+                value={content_data.grid_columns_mobile || 2}
+                onChange={(e) => updateContent('grid_columns_mobile', parseInt(e.target.value))}
+                className="w-full bg-black border border-white/10 text-white px-2 py-1.5 rounded text-[13px] focus:outline-none focus:border-white/30 transition-all"
+              >
+                <option value={1}>1 Column</option>
+                <option value={2}>2 Columns</option>
+              </select>
+            </div>
+            <div>
+              <label className="text-white/40 text-[11px] block mb-1 font-normal">Gap Between Cards</label>
               <select
                 value={content_data.grid_gap || 'md'}
                 onChange={(e) => updateContent('grid_gap', e.target.value)}
                 className="w-full bg-black border border-white/10 text-white px-2 py-1.5 rounded text-[13px] focus:outline-none focus:border-white/30 transition-all"
               >
-                <option value="none">None</option>
-                <option value="sm">Small</option>
-                <option value="md">Medium</option>
-                <option value="lg">Large</option>
-                <option value="xl">Extra Large</option>
+                <option value="none">None (Images Touch)</option>
+                <option value="sm">Small (8px)</option>
+                <option value="md">Medium (16px)</option>
+                <option value="lg">Large (24px)</option>
+                <option value="xl">Extra Large (32px)</option>
               </select>
+            </div>
+            <div className="mt-2 p-2 bg-white/5 rounded text-[10px] text-white/50 leading-relaxed">
+              💡 For edge-to-edge images: Set Gap="None", Card Padding="None", Image Inset="None"
             </div>
           </div>
 
@@ -961,14 +975,57 @@ export default function LiveEditorV2() {
                     </div>
                   );
                 } else {
-                  // Fallback for complex types (category_picker, product_picker, etc.)
+                  // Complex types (category_picker, product_picker, etc.)
+                  const currentValue = content_data[fieldId];
+                  const hasValue = currentValue && (Array.isArray(currentValue) ? currentValue.length > 0 : Object.keys(currentValue).length > 0);
+                  
                   return (
                     <div key={fieldId} className="mb-3 p-3 bg-purple-500/10 border border-purple-500/20 rounded">
                       <div className="text-xs text-purple-400 font-medium mb-1">{fieldDef.label} 🔧</div>
-                      <div className="text-white/40 text-[10px] mb-2">Type: {fieldDef.type}</div>
-                      <div className="bg-black/50 border border-white/10 rounded p-2">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-white/40 text-[10px] bg-white/5 px-1.5 py-0.5 rounded">
+                          {fieldDef.type}
+                        </span>
+                        {hasValue && (
+                          <span className="text-green-400 text-[10px]">
+                            ✓ Has value
+                          </span>
+                        )}
+                      </div>
+                      
+                      {/* Show friendly message for complex types */}
+                      {fieldDef.type === 'category_picker' && (
+                        <div className="bg-black/50 border border-white/10 rounded p-2 mb-2">
+                          <div className="text-white/60 text-[10px] mb-1">
+                            {hasValue 
+                              ? `${Array.isArray(currentValue) ? currentValue.length : 0} categories selected`
+                              : 'No categories selected'}
+                          </div>
+                          {hasValue && Array.isArray(currentValue) && (
+                            <div className="text-white/40 text-[9px] font-mono">
+                              IDs: {currentValue.join(', ')}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      
+                      {fieldDef.type === 'product_picker' && (
+                        <div className="bg-black/50 border border-white/10 rounded p-2 mb-2">
+                          <div className="text-white/60 text-[10px] mb-1">
+                            {hasValue 
+                              ? `${Array.isArray(currentValue) ? currentValue.length : 0} products selected`
+                              : 'No products selected'}
+                          </div>
+                        </div>
+                      )}
+                      
+                      {/* JSON editor for direct editing */}
+                      <details className="mt-2">
+                        <summary className="text-white/40 text-[10px] cursor-pointer hover:text-white/60">
+                          Advanced: Edit JSON Value
+                        </summary>
                         <textarea
-                          value={JSON.stringify(content_data[fieldId] || null, null, 2)}
+                          value={JSON.stringify(content_data[fieldId] || [], null, 2)}
                           onChange={(e) => {
                             try {
                               const parsed = JSON.parse(e.target.value);
@@ -977,12 +1034,16 @@ export default function LiveEditorV2() {
                               // Invalid JSON, ignore
                             }
                           }}
-                          rows={3}
-                          className="w-full bg-black border-0 text-white font-mono text-[10px] resize-none"
-                          placeholder={`Value for ${fieldDef.label} (JSON format)`}
+                          rows={4}
+                          className="w-full bg-black border border-white/10 text-white font-mono text-[10px] resize-none mt-2 p-2 rounded"
+                          placeholder={`Enter ${fieldDef.type} value as JSON array`}
                         />
-                      </div>
-                      <p className="text-white/30 text-[9px] mt-1">Complex field - edit as JSON for now</p>
+                        <p className="text-white/30 text-[9px] mt-1">
+                          {fieldDef.type === 'category_picker' && 'Example: ["category-id-1", "category-id-2"]'}
+                          {fieldDef.type === 'product_picker' && 'Example: ["product-id-1", "product-id-2"]'}
+                          {!['category_picker', 'product_picker'].includes(fieldDef.type) && 'Enter value as valid JSON'}
+                        </p>
+                      </details>
                     </div>
                   );
                 }

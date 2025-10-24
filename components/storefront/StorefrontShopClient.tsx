@@ -11,6 +11,7 @@ interface StorefrontShopClientProps {
     page_title?: string;
     page_subtitle?: string;
     grid_columns?: number;
+    grid_columns_mobile?: number;
     grid_gap?: string;
     
     // Card Container
@@ -229,9 +230,15 @@ export function StorefrontShopClient({ vendorId, config }: StorefrontShopClientP
 
   // Apply config settings
   const gridCols = config?.grid_columns || 3;
-  const gridClass = gridCols === 2 ? 'grid-cols-1 md:grid-cols-2' :
-                    gridCols === 4 ? 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4' :
-                    'grid-cols-2 md:grid-cols-3'; // default 3
+  const gridColsMobile = config?.grid_columns_mobile || 2;
+  
+  // Build responsive grid classes
+  const mobileClass = gridColsMobile === 1 ? 'grid-cols-1' : 'grid-cols-2';
+  const desktopClass = gridCols === 2 ? 'md:grid-cols-2' :
+                       gridCols === 4 ? 'md:grid-cols-3 lg:grid-cols-4' :
+                       'md:grid-cols-3'; // default 3
+  
+  const gridClass = `${mobileClass} ${desktopClass}`;
   
   const gridGap = config?.grid_gap || 'md';
   const gapClass = gridGap === 'none' ? 'gap-0' :

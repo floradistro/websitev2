@@ -244,6 +244,7 @@ export const SECTION_LIBRARY: SectionTemplate[] = [
       
       // Layout
       grid_columns: 3,
+      grid_columns_mobile: 2,
       grid_gap: 'md',
       
       // Card Container
