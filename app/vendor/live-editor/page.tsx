@@ -76,6 +76,7 @@ export default function LiveEditorV2() {
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
+  const [customFieldsCache, setCustomFieldsCache] = useState<Record<string, any[]>>({});
 
   const pages = [
     { id: 'home', name: 'Home' },
@@ -88,6 +89,7 @@ export default function LiveEditorV2() {
   useEffect(() => {
     if (vendor) {
       loadSections();
+      loadCustomFields();
       updatePreviewPage();
     }
   }, [selectedPage, vendor]);
