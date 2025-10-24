@@ -690,6 +690,22 @@ export default function LiveEditorV2() {
               </select>
             </div>
             <div>
+              <label className="text-white/40 text-[11px] block mb-1 font-normal">Inner Padding</label>
+              <select
+                value={content_data.image_padding || 'none'}
+                onChange={(e) => updateContent('image_padding', e.target.value)}
+                className="w-full bg-black border border-white/10 text-white px-2 py-1.5 rounded text-[13px] focus:outline-none focus:border-white/30 transition-all"
+              >
+                <option value="none">None</option>
+                <option value="xs">Extra Small (2px)</option>
+                <option value="sm">Small (4px)</option>
+                <option value="md">Medium (8px)</option>
+                <option value="lg">Large (12px)</option>
+                <option value="xl">Extra Large (16px)</option>
+                <option value="2xl">2XL (24px)</option>
+              </select>
+            </div>
+            <div>
               <label className="text-white/40 text-[11px] block mb-1 font-normal">Corner Radius</label>
               <select
                 value={content_data.image_radius || 'lg'}

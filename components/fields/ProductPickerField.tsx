@@ -48,9 +48,16 @@ export function ProductPickerField({
     try {
       setLoading(true);
       const response = await fetch('/api/page-data/products');
+      
+      if (!response.ok) {
+        console.error('Failed to fetch products:', response.status);
+        setLoading(false);
+        return;
+      }
+      
       const data = await response.json();
       
-      if (data.success) {
+      if (data.success && data.data && data.data.products) {
         let vendorProducts = data.data.products.filter((p: any) => p.vendor_id === vendorId);
         
         // Apply filters

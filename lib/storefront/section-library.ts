@@ -258,6 +258,7 @@ export const SECTION_LIBRARY: SectionTemplate[] = [
       image_aspect: 'square',
       image_bg: '#000000',
       image_fit: 'contain',
+      image_padding: 'none',
       image_radius: 'lg',
       image_border_width: '0',
       image_border_color: '#ffffff',

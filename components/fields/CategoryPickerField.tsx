@@ -35,8 +35,21 @@ export function CategoryPickerField({
   async function loadCategories() {
     try {
       setLoading(true);
-      // Connect to your categories - adjust endpoint as needed
       const response = await fetch('/api/categories');
+      
+      if (!response.ok) {
+        console.error('Failed to fetch categories:', response.status);
+        setLoading(false);
+        return;
+      }
+      
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        console.error('Categories API returned non-JSON response');
+        setLoading(false);
+        return;
+      }
+      
       const data = await response.json();
       
       if (data.success || Array.isArray(data)) {

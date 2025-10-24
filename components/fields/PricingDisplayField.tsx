@@ -38,10 +38,19 @@ export function PricingDisplayField({
     try {
       setLoading(true);
       const response = await fetch(`/api/vendor/pricing?vendor_id=${vendorId}`);
-      const data = await response.json();
       
-      if (data.success) {
-        setPricingData(data);
+      if (!response.ok) {
+        console.error('Failed to fetch pricing:', response.status);
+        setLoading(false);
+        return;
+      }
+      
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        const data = await response.json();
+        if (data.success) {
+          setPricingData(data);
+        }
       }
     } catch (error) {
       console.error('Error loading pricing:', error);

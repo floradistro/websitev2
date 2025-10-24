@@ -40,6 +40,20 @@ export function LocationPickerField({
     try {
       setLoading(true);
       const response = await fetch(`/api/locations?vendor_id=${vendorId}`);
+      
+      if (!response.ok) {
+        console.error('Failed to fetch locations:', response.status);
+        setLoading(false);
+        return;
+      }
+      
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        console.error('Locations API returned non-JSON response');
+        setLoading(false);
+        return;
+      }
+      
       const data = await response.json();
       
       if (data.success || Array.isArray(data)) {

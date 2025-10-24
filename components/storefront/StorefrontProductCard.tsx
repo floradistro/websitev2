@@ -23,6 +23,7 @@ interface StorefrontProductCardProps {
     image_aspect?: string;
     image_bg?: string;
     image_fit?: string;
+    image_padding?: string;
     image_radius?: string;
     image_border_width?: string;
     image_border_color?: string;
@@ -267,6 +268,15 @@ function StorefrontProductCard({ product, vendorSlug, locations = [], config = {
                            imageBorderWidth === '4' ? 'border-4' :
                            'border-8';
   
+  const imagePadding = config.image_padding || 'none';
+  const imagePaddingClass = imagePadding === 'none' ? '' :
+                            imagePadding === 'xs' ? 'p-0.5' :
+                            imagePadding === 'sm' ? 'p-1' :
+                            imagePadding === 'md' ? 'p-2' :
+                            imagePadding === 'lg' ? 'p-3' :
+                            imagePadding === 'xl' ? 'p-4' :
+                            'p-6';
+  
   // Info section
   const infoPadding = config.info_padding || 'md';
   const infoPaddingClass = infoPadding === 'none' ? '' :
@@ -299,7 +309,7 @@ function StorefrontProductCard({ product, vendorSlug, locations = [], config = {
     >
       {/* Product Image Container */}
       <div 
-        className={`relative ${imageAspectClass} overflow-hidden mb-4 ${imageRadiusClass} ${imageBorderClass}`}
+        className={`relative ${imageAspectClass} overflow-hidden mb-4 ${imageRadiusClass} ${imageBorderClass} ${imagePaddingClass}`}
         style={imageStyle}
       >
 
