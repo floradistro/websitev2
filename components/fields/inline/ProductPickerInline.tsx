@@ -51,7 +51,7 @@ export function ProductPickerFieldInline({ label, value = [], onChange, vendorId
       {selectedProducts.length > 0 && (
         <div className="flex flex-wrap gap-1 mb-1">
           {selectedProducts.map(product => (
-            <span key={product.id} className="inline-flex items-center gap-1 bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded text-[10px]">
+            <span key={product.id} className="inline-flex items-center gap-1 bg-[#007acc]/20 text-[#4fc1ff] px-2 py-0.5 rounded text-[10px] border border-[#007acc]/30">
               {product.name}
               <button
                 onClick={() => onChange(value.filter(id => id !== product.id))}
@@ -76,7 +76,7 @@ export function ProductPickerFieldInline({ label, value = [], onChange, vendorId
 
       {/* Dropdown picker */}
       {showPicker && (
-        <div className="mt-1 bg-black border border-white/10 rounded">
+        <div className="mt-1 bg-[#252526] border border-[#3e3e3e] rounded shadow-lg">
           <div className="p-2 border-b border-white/10">
             <div className="relative">
               <Search size={12} className="absolute left-2 top-1/2 -translate-y-1/2 text-white/40" />
@@ -110,11 +110,11 @@ export function ProductPickerFieldInline({ label, value = [], onChange, vendorId
                         }
                       }}
                       className={`flex items-center gap-2 px-2 py-1.5 rounded cursor-pointer text-xs ${
-                        isSelected ? 'bg-purple-500/20 text-purple-300' : 'text-white/70 hover:bg-white/5'
+                        isSelected ? 'bg-[#007acc]/20 text-[#4fc1ff]' : 'text-[#cccccc] hover:bg-[#2a2d2e]'
                       }`}
                     >
                       <div className={`w-3 h-3 rounded border flex items-center justify-center flex-shrink-0 ${
-                        isSelected ? 'bg-purple-500 border-purple-500' : 'border-white/20'
+                        isSelected ? 'bg-[#007acc] border-[#007acc]' : 'border-[#3e3e3e]'
                       }`}>
                         {isSelected && <Check size={8} className="text-white" />}
                       </div>
