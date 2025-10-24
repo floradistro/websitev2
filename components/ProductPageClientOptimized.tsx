@@ -20,9 +20,9 @@ export default function ProductPageClientOptimized({
 }: ProductPageClientOptimizedProps) {
   const [isReady, setIsReady] = useState(false);
   
-  // Use SWR for instant cached loads with bulk endpoint
-  const { data, error, isLoading } = useSWR(
-    `/api/page-data/product/${productId}`,
+  // Use SWR with bulk products endpoint (same as storefront)
+  const { data: bulkData, error, isLoading } = useSWR(
+    `/api/page-data/products`,
     fetcher,
     {
       fallbackData: initialData,
@@ -31,6 +31,19 @@ export default function ProductPageClientOptimized({
       dedupingInterval: 60000, // 1 minute
     }
   );
+  
+  // Extract the specific product from bulk data
+  const data = bulkData?.success ? {
+    success: true,
+    data: {
+      product: bulkData.data.products.find((p: any) => 
+        p.id === productId || p.slug === productId
+      ),
+      relatedProducts: bulkData.data.products.filter((p: any) => 
+        (p.id !== productId && p.slug !== productId)
+      ).slice(0, 12)
+    }
+  } : bulkData;
 
   useEffect(() => {
     // Delay for smooth transition
