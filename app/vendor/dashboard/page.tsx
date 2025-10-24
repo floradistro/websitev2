@@ -336,7 +336,7 @@ export default function VendorDashboard() {
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-0 lg:gap-6 mb-0 lg:mb-8 border-b lg:border-b-0 border-white/5" style={{ animation: 'fadeInUp 0.6s ease-out 0.2s both' }}>
+      <div className="grid grid-cols-2 lg:grid-cols-6 gap-0 lg:gap-6 mb-0 lg:mb-8 border-b lg:border-b-0 border-white/5" style={{ animation: 'fadeInUp 0.6s ease-out 0.2s both' }}>
         <Link
           href="/vendor/products/new"
           className="group bg-transparent active:bg-white/5 lg:hover:bg-black border-r border-b lg:border border-white/10 lg:hover:border-white/20 p-5 lg:p-6 transition-all duration-300 relative overflow-hidden min-h-[100px] lg:min-h-0"
@@ -404,6 +404,20 @@ export default function VendorDashboard() {
               <Package size={24} className="hidden lg:block text-white/60 group-hover:text-white transition-colors duration-300" />
             </div>
             <div className="text-white/80 group-hover:text-white text-xs lg:text-base font-medium transition-colors duration-300 text-center lg:text-left">Branding</div>
+          </div>
+        </Link>
+
+        <Link
+          href="/vendor/live-editor"
+          className="group bg-transparent active:bg-white/5 lg:hover:bg-black border-b lg:border border-white/10 lg:hover:border-white/20 p-5 lg:p-6 transition-all duration-300 relative overflow-hidden min-h-[100px] lg:min-h-0 col-span-2 md:col-span-1"
+        >
+          <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+          <div className="relative flex flex-col lg:flex-row items-center justify-center lg:justify-start gap-2 lg:gap-4 h-full">
+            <div className="w-10 h-10 lg:w-12 lg:h-12 bg-black group-hover:bg-white/10 flex items-center justify-center transition-all duration-300 flex-shrink-0">
+              <Store size={18} className="lg:hidden text-white/60 group-hover:text-white transition-colors duration-300" />
+              <Store size={24} className="hidden lg:block text-white/60 group-hover:text-white transition-colors duration-300" />
+            </div>
+            <div className="text-white/80 group-hover:text-white text-xs lg:text-base font-medium transition-colors duration-300 text-center lg:text-left">Live Editor</div>
           </div>
         </Link>
       </div>

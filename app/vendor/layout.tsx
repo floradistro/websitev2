@@ -3,10 +3,10 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Home, Package, BarChart3, Settings, LogOut, Palette, ShoppingBag, FileText, DollarSign, Star, ChevronLeft, Menu, X, MapPin, Globe, Image } from 'lucide-react';
+import { Home, Package, BarChart3, Settings, LogOut, Palette, ShoppingBag, FileText, DollarSign, Star, ChevronLeft, Menu, X, MapPin, Globe, Image, Layout, FileEdit, PenTool } from 'lucide-react';
 import VendorSupportChat from '@/components/VendorSupportChat';
 import AIActivityMonitor from '@/components/AIActivityMonitor';
-import { useVendorAuth } from '@/context/VendorAuthContext';
+import { useVendorAuth, VendorAuthProvider } from '@/context/VendorAuthContext';
 import { showConfirm } from '@/components/NotificationToast';
 
 function VendorLayoutContent({
@@ -91,6 +91,9 @@ function VendorLayoutContent({
     { href: '/vendor/lab-results', icon: FileText, label: 'Lab Results' },
     { href: '/vendor/payouts', icon: DollarSign, label: 'Payouts' },
     { href: '/vendor/reviews', icon: Star, label: 'Reviews' },
+    { href: '/vendor/live-editor', icon: PenTool, label: 'Live Editor' },
+    { href: '/vendor/storefront-builder', icon: Layout, label: 'Template Selector' },
+    { href: '/vendor/content-manager', icon: FileEdit, label: 'Content Manager' },
     { href: '/vendor/branding', icon: Palette, label: 'Branding' },
     { href: '/vendor/domains', icon: Globe, label: 'Domains' },
     { href: '/vendor/settings', icon: Settings, label: 'Settings' },
@@ -112,6 +115,11 @@ function VendorLayoutContent({
 
   // Allow login page without auth
   if (pathname === '/vendor/login') {
+    return <>{children}</>;
+  }
+
+  // Live editor needs special layout (no navigation)
+  if (pathname === '/vendor/live-editor') {
     return <>{children}</>;
   }
 
@@ -416,7 +424,9 @@ export default function VendorLayout({
   children: React.ReactNode;
 }) {
   return (
-    <VendorLayoutContent>{children}</VendorLayoutContent>
+    <VendorAuthProvider>
+      <VendorLayoutContent>{children}</VendorLayoutContent>
+    </VendorAuthProvider>
   );
 }
 

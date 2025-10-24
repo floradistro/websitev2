@@ -4,8 +4,9 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, MapPin, Award, Leaf, Users } from 'lucide-react';
 import AnimatedStats from '@/components/storefront/AnimatedStats';
+import { UniversalPageRenderer } from '@/components/storefront/UniversalPageRenderer';
 
-export default async function AboutPage() {
+export default async function AboutPage({ searchParams }: { searchParams: Promise<{ preview?: string }> }) {
   const vendorId = await getVendorFromHeaders();
 
   if (!vendorId) {
@@ -18,6 +19,26 @@ export default async function AboutPage() {
     notFound();
   }
 
+  // If in preview mode (live editor), use Universal Renderer
+  const params = await searchParams;
+  if (params.preview === 'true') {
+    return (
+      <>
+        <div className="sticky top-0 z-20 border-b border-white/10 bg-black/80 backdrop-blur-xl">
+          <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-10 py-3">
+            <nav className="flex items-center gap-x-2 text-xs uppercase tracking-wider">
+              <Link href="/storefront" className="text-white/40 hover:text-white transition-colors whitespace-nowrap">Home</Link>
+              <span className="text-white/20">/</span>
+              <span className="text-white/60 font-medium">About</span>
+            </nav>
+          </div>
+        </div>
+        <UniversalPageRenderer vendor={vendor} pageType="about" />
+      </>
+    );
+  }
+
+  // Normal mode - show existing page
   return (
     <div className="min-h-screen relative overflow-hidden">
       {/* UHD Gradient Background - iOS 26 */}
@@ -166,7 +187,7 @@ export default async function AboutPage() {
               Experience the difference.
             </p>
             <Link
-              href="/storefront/shop?vendor=flora-distro"
+              href="/storefront/shop"
               className="inline-flex items-center gap-3 bg-white text-black px-10 py-5 rounded-full text-base font-bold uppercase tracking-wider hover:bg-neutral-100 transition-all duration-300 shadow-2xl shadow-white/20 hover:shadow-white/30 hover:scale-105"
             >
               <span>Shop Now</span>

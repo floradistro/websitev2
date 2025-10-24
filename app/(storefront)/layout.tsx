@@ -1,38 +1,19 @@
 import { headers } from 'next/headers';
-import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import { getVendorFromHeaders, getVendorStorefront } from '@/lib/storefront/get-vendor';
+import { getTemplateComponents } from '@/lib/storefront/template-loader';
 import { StorefrontThemeProvider } from '@/components/storefront/ThemeProvider';
-import { StorefrontHeader } from '@/components/storefront/StorefrontHeader';
-import { StorefrontFooter } from '@/components/storefront/StorefrontFooter';
+import { PreservePreviewMode } from '@/components/storefront/PreservePreviewMode';
+import { LiveEditingProvider } from '@/components/storefront/LiveEditingProvider';
 import { CartProvider } from "@/context/CartContext";
 import { AuthProvider } from "@/context/AuthContext";
 import { WishlistProvider } from "@/context/WishlistContext";
 import LoadingBar from "@/components/LoadingBar";
 import NotificationToast from "@/components/NotificationToast";
-import Providers from "@/app/providers";
 import { notFound } from 'next/navigation';
 import '@/app/globals.css';
 import './storefront.css';
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
-export const viewport: Viewport = {
-  width: 'device-width',
-  initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
-  viewportFit: 'cover',
-  themeColor: '#000000',
-};
+export const dynamic = 'force-dynamic';
 
 export default async function StorefrontLayout({
   children,
@@ -43,9 +24,27 @@ export default async function StorefrontLayout({
   const headersList = await headers();
   const tenantType = headersList.get('x-tenant-type');
   
-  // If template preview, just pass children (no vendor required)
+  // If template preview, render minimal blank template
   if (tenantType === 'template-preview') {
-    return <>{children}</>;
+    return (
+      <>
+        <div className="storefront-container bg-[#1a1a1a] min-h-screen">
+          <header className="sticky top-0 bg-black text-white z-50 border-b border-white/10">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-center">
+              <span className="text-sm uppercase tracking-wider text-white/40">Blank Template</span>
+            </div>
+          </header>
+          <main className="storefront-main">
+            {children}
+          </main>
+          <footer className="bg-black border-t border-white/10 py-8">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+              <p className="text-white/30 text-xs">Template Preview</p>
+            </div>
+          </footer>
+        </div>
+      </>
+    );
   }
   
   // For vendor mode, validate vendor exists
@@ -61,8 +60,39 @@ export default async function StorefrontLayout({
     notFound();
   }
 
-  // Root layout handles vendor html/body rendering
-  // This layout just passes through children
-  return <>{children}</>;
-}
+  // Load template components based on vendor's template_id
+  const templateId = vendor.template_id || 'default';
+  const { Header, Footer } = getTemplateComponents(templateId);
 
+  // Fetch ALL content sections for live editing (across all pages)
+  const { getVendorPageSections } = await import('@/lib/storefront/content-api');
+  const allSections = await Promise.all([
+    getVendorPageSections(vendorId, 'home'),
+    getVendorPageSections(vendorId, 'about'),
+    getVendorPageSections(vendorId, 'contact'),
+    getVendorPageSections(vendorId, 'faq'),
+    getVendorPageSections(vendorId, 'global'),
+  ]).then(results => results.flat());
+
+  // Render complete vendor storefront with database-driven customization
+  return (
+    <AuthProvider>
+      <WishlistProvider>
+        <CartProvider>
+          <LiveEditingProvider initialSections={allSections} isPreviewMode={true}>
+            <StorefrontThemeProvider vendor={vendor}>
+              <PreservePreviewMode />
+              <div className="storefront-container bg-[#1a1a1a] min-h-screen">
+                <Header vendor={vendor} />
+                <main className="storefront-main">
+                  {children}
+                </main>
+                <Footer vendor={vendor} />
+              </div>
+            </StorefrontThemeProvider>
+          </LiveEditingProvider>
+        </CartProvider>
+      </WishlistProvider>
+    </AuthProvider>
+  );
+}

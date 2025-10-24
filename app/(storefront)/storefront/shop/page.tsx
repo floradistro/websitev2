@@ -114,7 +114,7 @@ export default async function StorefrontShopPage() {
         </>
       )}
 
-      <StorefrontShopClient vendorId={vendorId} vendor={vendor} />
+      <StorefrontShopClient vendorId={vendorId} />
     </div>
   );
 }

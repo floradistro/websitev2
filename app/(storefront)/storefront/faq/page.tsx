@@ -3,8 +3,9 @@ import { getVendorFromHeaders, getVendorStorefront } from '@/lib/storefront/get-
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { HelpCircle } from 'lucide-react';
+import { UniversalPageRenderer } from '@/components/storefront/UniversalPageRenderer';
 
-export default async function FAQPage() {
+export default async function FAQPage({ searchParams }: { searchParams: Promise<{ preview?: string }> }) {
   const vendorId = await getVendorFromHeaders();
 
   if (!vendorId) {
@@ -96,6 +97,26 @@ export default async function FAQPage() {
     }
   ];
 
+  // Check if in preview mode (live editor)
+  const params = await searchParams;
+  if (params.preview === 'true') {
+    return (
+      <>
+        <div className="sticky top-0 z-20 border-b border-white/10 bg-black/80 backdrop-blur-xl">
+          <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-10 py-3">
+            <nav className="flex items-center gap-x-2 text-xs uppercase tracking-wider">
+              <Link href="/storefront" className="text-white/40 hover:text-white transition-colors">Home</Link>
+              <span className="text-white/20">/</span>
+              <span className="text-white/60 font-medium">FAQ</span>
+            </nav>
+          </div>
+        </div>
+        <UniversalPageRenderer vendor={vendor} pageType="faq" />
+      </>
+    );
+  }
+
+  // Normal mode - show full page
   return (
     <div className="min-h-screen relative overflow-hidden">
       {/* Background */}

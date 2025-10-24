@@ -214,12 +214,14 @@ export async function middleware(request: NextRequest) {
     return response;
   }
 
-  // Default: Continue to main site
+  // Default: Continue to main Yacht Club marketplace
   const response = NextResponse.next();
+  response.headers.set('x-tenant-type', 'marketplace');
   response.headers.set('X-Frame-Options', 'SAMEORIGIN');
   response.headers.set('X-Content-Type-Options', 'nosniff');
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
   
+  console.log('🏪 Marketplace request');
   return response;
 }
 

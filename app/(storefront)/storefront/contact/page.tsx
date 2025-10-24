@@ -3,8 +3,9 @@ import { getVendorFromHeaders, getVendorStorefront, getVendorLocations } from '@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { Mail, Phone, MapPin, Clock, Instagram, Facebook, Twitter } from 'lucide-react';
+import { UniversalPageRenderer } from '@/components/storefront/UniversalPageRenderer';
 
-export default async function ContactPage() {
+export default async function ContactPage({ searchParams }: { searchParams: Promise<{ preview?: string }> }) {
   const vendorId = await getVendorFromHeaders();
 
   if (!vendorId) {
@@ -22,6 +23,26 @@ export default async function ContactPage() {
 
   const retailLocations = locations.filter((loc: any) => loc.type === 'retail');
 
+  // Check if in preview mode (live editor)
+  const params = await searchParams;
+  if (params.preview === 'true') {
+    return (
+      <>
+        <div className="sticky top-0 z-20 border-b border-white/10 bg-black/80 backdrop-blur-xl">
+          <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-10 py-3">
+            <nav className="flex items-center gap-x-2 text-xs uppercase tracking-wider">
+              <Link href="/storefront" className="text-white/40 hover:text-white transition-colors whitespace-nowrap">Home</Link>
+              <span className="text-white/20">/</span>
+              <span className="text-white/60 font-medium">Contact</span>
+            </nav>
+          </div>
+        </div>
+        <UniversalPageRenderer vendor={vendor} pageType="contact" locations={locations} />
+      </>
+    );
+  }
+
+  // Normal mode - show full page
   return (
     <div className="min-h-screen relative overflow-hidden">
       {/* UHD Gradient Background - iOS 26 */}

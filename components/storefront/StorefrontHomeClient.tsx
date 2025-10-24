@@ -1,8 +1,10 @@
 "use client";
 
-import { memo } from "react";
+import { memo, useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
+import { LiveEditingProvider, useLiveEditing } from './LiveEditingProvider';
+import { LiveEditableStorefront } from './LiveEditableStorefront';
 import { ArrowRight, Store, Truck, Shield, Package, Leaf, Award, Users, FlaskConical, CheckCircle, Star, MapPin, Phone, Clock, Sparkles } from "lucide-react";
 import { VendorStorefront } from "@/lib/storefront/get-vendor";
 import ProductsCarousel from "@/components/ProductsCarousel";
@@ -33,13 +35,43 @@ export function StorefrontHomeClient({
   reviews = [],
 }: StorefrontHomeClientProps) {
   const pathname = usePathname();
+  const { sections: liveSections, isLiveEditMode } = useLiveEditing();
+  const [localSections, setLocalSections] = useState(liveSections);
   
   // Determine base path based on current path
   const basePath = pathname?.startsWith('/storefront') ? '/storefront' : '';
   
-  // Sample data for template
+  // Update local sections when live sections change
+  useEffect(() => {
+    if (isLiveEditMode && liveSections.length > 0) {
+      console.log('🔄 Live sections updated:', liveSections.length);
+      setLocalSections(liveSections);
+    }
+  }, [liveSections, isLiveEditMode]);
+  
+  // Organize live sections if in edit mode
+  const liveContentMap = isLiveEditMode && localSections.length > 0
+    ? localSections.reduce((acc: any, section: any) => {
+        acc[section.section_key] = section.content_data;
+        return acc;
+      }, {})
+    : {};
+  
+  // Debug logging
+  useEffect(() => {
+    if (isLiveEditMode) {
+      console.log('🎨 StorefrontHomeClient in LIVE EDIT MODE');
+      console.log('📊 Live sections count:', localSections.length);
+      console.log('🗂️ Live content map:', liveContentMap);
+      if (liveContentMap.hero) {
+        console.log('🎯 Hero headline:', liveContentMap.hero.headline);
+      }
+    }
+  }, [isLiveEditMode, localSections, liveContentMap]);
+  
+  // Sample data for template (uses live content if available)
   const sampleData = {
-    hero: {
+    hero: liveContentMap.hero || {
       headline: "Fresh. Fast. Fire.",
       subheadline: "Same day shipping before 2PM. Regional delivery hits next day.",
       ctaPrimary: "Shop now",
