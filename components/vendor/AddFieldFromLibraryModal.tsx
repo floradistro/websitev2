@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { X, Eye } from 'lucide-react';
+import { SimpleScopeSelector } from './SimpleScopeSelector';
 import { ProductPickerField } from '@/components/fields/ProductPickerField';
 import { CategoryPickerField } from '@/components/fields/CategoryPickerField';
 import { PricingDisplayField } from '@/components/fields/PricingDisplayField';
@@ -17,7 +18,7 @@ interface AddFieldFromLibraryModalProps {
 export function AddFieldFromLibraryModal({ fieldType, onClose, onAdd }: AddFieldFromLibraryModalProps) {
   const [step, setStep] = useState<'preview' | 'configure'>('preview');
   const [config, setConfig] = useState({
-    section_key: 'hero',
+    scope: { type: 'section_type' as 'section_type' | 'page' | 'global', value: 'hero' },
     field_id: '',
     label: '',
     helper_text: ''
@@ -50,7 +51,9 @@ export function AddFieldFromLibraryModal({ fieldType, onClose, onAdd }: AddField
           'x-vendor-id': vendorId
         },
         body: JSON.stringify({
-          section_key: config.section_key,
+          section_key: config.scope.value, // For backward compatibility
+          scope_type: config.scope.type,
+          scope_value: config.scope.value,
           field_id: config.field_id,
           field_definition: fieldDefinition
         })
@@ -265,23 +268,10 @@ export function AddFieldFromLibraryModal({ fieldType, onClose, onAdd }: AddField
             <>
               {/* Configuration */}
               <div className="space-y-3">
-                <div>
-                  <label className="block text-white/80 text-sm mb-1">Apply to Section</label>
-                  <select
-                    value={config.section_key}
-                    onChange={(e) => setConfig({ ...config, section_key: e.target.value })}
-                    className="w-full bg-black border border-white/10 rounded px-3 py-2 text-white"
-                  >
-                    <option value="hero">Hero</option>
-                    <option value="process">Process Steps</option>
-                    <option value="featured_products">Featured Products</option>
-                    <option value="reviews">Reviews</option>
-                    <option value="locations">Locations</option>
-                    <option value="about_story">About Story</option>
-                    <option value="footer">Footer</option>
-                    <option value="global">Global (All Sections)</option>
-                  </select>
-                </div>
+                <SimpleScopeSelector
+                  value={config.scope}
+                  onChange={(scope) => setConfig({ ...config, scope })}
+                />
 
                 <div>
                   <label className="block text-white/80 text-sm mb-1">
