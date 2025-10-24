@@ -20,7 +20,7 @@ export default function ProductPageClientOptimized({
 }: ProductPageClientOptimizedProps) {
   const [isReady, setIsReady] = useState(false);
   
-  // Use SWR for instant cached loads with dedicated product endpoint
+  // Use SWR for instant cached loads with bulk endpoint
   const { data, error, isLoading } = useSWR(
     `/api/page-data/product/${productId}`,
     fetcher,
@@ -31,19 +31,6 @@ export default function ProductPageClientOptimized({
       dedupingInterval: 60000, // 1 minute
     }
   );
-
-  useEffect(() => {
-    // Debug logging
-    console.log('🟦 ProductPageClientOptimized state:', {
-      productId,
-      isLoading,
-      hasData: !!data,
-      hasError: !!error,
-      dataSuccess: data?.success,
-      hasProduct: !!(data?.data?.product || data?.product),
-      rawData: data
-    });
-  }, [productId, isLoading, data, error]);
 
   useEffect(() => {
     // Delay for smooth transition
@@ -70,7 +57,6 @@ export default function ProductPageClientOptimized({
 
   const { product, relatedProducts } = data.data || data;
   
-  // If no product found, show not found
   if (!product) {
     return (
       <div className="min-h-screen bg-[#1a1a1a] flex items-center justify-center">
