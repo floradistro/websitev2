@@ -1,12 +1,14 @@
 import { headers } from 'next/headers';
 import Link from 'next/link';
 import { getVendorFromHeaders, getVendorStorefront, getVendorProducts, getVendorLocations, getVendorReviews } from '@/lib/storefront/get-vendor';
-import { StorefrontHomeClient } from '@/components/storefront/StorefrontHomeClient';
+import { LiveEditingProvider } from '@/components/storefront/LiveEditingProvider';
+import { StorefrontHomeWithLiveEdit } from '@/components/storefront/StorefrontHomeWithLiveEdit';
+import { UniversalPageRenderer } from '@/components/storefront/UniversalPageRenderer';
 import { getServiceSupabase } from '@/lib/supabase/client';
 import { notFound } from 'next/navigation';
-import { getTemplateComponents } from '@/lib/storefront/template-loader';
+import { getVendorSectionsWithInit } from '@/lib/storefront/init-vendor-content';
 
-export default async function StorefrontHomePage() {
+export default async function StorefrontHomePage({ searchParams }: { searchParams: Promise<{ vendor?: string; preview?: string }> }) {
   // Check if template preview mode (no vendor)
   const headersList = await headers();
   const tenantType = headersList.get('x-tenant-type');
@@ -88,6 +90,9 @@ export default async function StorefrontHomePage() {
     notFound();
   }
 
+  // Auto-initialize default content if vendor has none (Shopify-style)
+  const homeSections = await getVendorSectionsWithInit(vendorId, vendor.store_name, 'home');
+
   // Products now come pre-formatted from getVendorProducts with:
   // - fields (from blueprint_fields)
   // - pricingTiers (from vendor_pricing_configs)
@@ -117,7 +122,7 @@ export default async function StorefrontHomePage() {
     };
   });
 
-  // Build inventory map and product fields map for StorefrontHomeClient
+  // Build inventory map and product fields map
   const inventoryMap: { [key: string]: any[] } = {};
   const productFieldsMap: { [key: string]: any } = {};
   
@@ -126,19 +131,54 @@ export default async function StorefrontHomePage() {
     productFieldsMap[p.id] = { fields: p.fields };
   });
 
-  // Load template components based on vendor's template_id
-  const templateId = vendor.template_id || 'default';
-  const { HomePage } = getTemplateComponents(templateId);
+  // Check if in preview mode (live editor)
+  const params = await searchParams;
+  if (params.preview === 'true') {
+    return (
+      <LiveEditingProvider initialSections={homeSections} isPreviewMode={true}>
+        <UniversalPageRenderer
+          vendor={vendor}
+          pageType="home"
+          products={products}
+          inventoryMap={inventoryMap}
+          productFieldsMap={productFieldsMap}
+          locations={locations}
+          reviews={reviews}
+        />
+      </LiveEditingProvider>
+    );
+  }
 
+  // Normal mode - if vendor has sections, use UniversalPageRenderer (content-driven)
+  // If no sections (shouldn't happen now with auto-init), fallback to old component
+  if (homeSections && homeSections.length > 0) {
+    return (
+      <LiveEditingProvider initialSections={homeSections} isPreviewMode={false}>
+        <UniversalPageRenderer
+          vendor={vendor}
+          pageType="home"
+          products={products}
+          inventoryMap={inventoryMap}
+          productFieldsMap={productFieldsMap}
+          locations={locations}
+          reviews={reviews}
+        />
+      </LiveEditingProvider>
+    );
+  }
+
+  // Fallback to old hardcoded component (should rarely happen now)
   return (
-    <HomePage 
-      vendor={vendor}
-      products={products}
-      inventoryMap={inventoryMap}
-      productFieldsMap={productFieldsMap}
-      locations={locations}
-      reviews={reviews}
-    />
+    <LiveEditingProvider initialSections={[]} isPreviewMode={false}>
+      <StorefrontHomeWithLiveEdit 
+        vendor={vendor}
+        products={products}
+        inventoryMap={inventoryMap}
+        productFieldsMap={productFieldsMap}
+        locations={locations}
+        reviews={reviews}
+      />
+    </LiveEditingProvider>
   );
 }
 

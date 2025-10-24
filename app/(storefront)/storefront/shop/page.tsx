@@ -4,7 +4,6 @@ import { getVendorFromHeaders, getVendorStorefront } from '@/lib/storefront/get-
 import { StorefrontShopClient } from '@/components/storefront/StorefrontShopClient';
 import { getServiceSupabase } from '@/lib/supabase/client';
 import { notFound } from 'next/navigation';
-import { getTemplateComponents } from '@/lib/storefront/template-loader';
 
 export default async function StorefrontShopPage() {
   // Check if template preview mode (no vendor)
@@ -84,9 +83,8 @@ export default async function StorefrontShopPage() {
     notFound();
   }
 
-  // Load template components based on vendor's template_id
+  // Use vendor's template_id for styling
   const templateId = vendor.template_id || 'default';
-  const { ShopPage } = getTemplateComponents(templateId);
 
   return (
     <div className="min-h-screen relative overflow-hidden">
@@ -116,7 +114,7 @@ export default async function StorefrontShopPage() {
         </>
       )}
 
-      <ShopPage vendorId={vendorId} />
+      <StorefrontShopClient vendorId={vendorId} vendor={vendor} />
     </div>
   );
 }
