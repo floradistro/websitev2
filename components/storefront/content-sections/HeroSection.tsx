@@ -120,13 +120,17 @@ export function HeroSection({ content, templateStyle = 'minimalist', basePath = 
           )}
         </div>
 
-        {/* Render any OTHER custom fields generically */}
+        {/* Render custom fields - don't show raw IDs, only meaningful data */}
         {Object.entries(content).map(([key, value]) => {
-          // Skip known base fields
+          // Skip known base fields and empty values
           const baseFields = ['headline', 'subheadline', 'cta_primary', 'cta_secondary', 'background_color', 'text_color', 'background_type', 'overlay_opacity', 'promotional_badge', 'video_background'];
           if (baseFields.includes(key) || !value) return null;
           
-          // Render unknown custom fields as simple text overlays
+          // Skip array/object fields (category IDs, product IDs) - these are data, not display content
+          if (Array.isArray(value)) return null;
+          if (typeof value === 'object') return null;
+          
+          // Only render simple custom fields (text, urls, numbers, etc.)
           return (
             <div key={key} className="mt-4 text-sm text-white/80 bg-white/10 backdrop-blur px-4 py-2 rounded">
               <span className="font-semibold">Custom: </span>
