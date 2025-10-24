@@ -56,6 +56,19 @@ export default function ProductPageClientOptimized({
   }
 
   const { product, relatedProducts } = data.data || data;
+  
+  // If no product found, show not found
+  if (!product) {
+    return (
+      <div className="min-h-screen bg-[#1a1a1a] flex items-center justify-center">
+        <div className="text-white/50 text-center">
+          <p className="text-xl mb-4">Product not found</p>
+          <a href="/products" className="text-white underline">Back to products</a>
+        </div>
+      </div>
+    );
+  }
+  
   const inventory = product?.inventory || [];
   const pricingTiers = product?.pricing_tiers || [];
   
