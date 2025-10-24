@@ -134,7 +134,7 @@ export default function FlowerAnimation() {
           const positions: number[] = [];
           
           for (let i = 0; i < maxFlowers; i++) {
-            let x, tooClose;
+            let x: number, tooClose: boolean;
             let attempts = 0;
             
             // Keep trying until we find a position with good spacing
@@ -161,7 +161,7 @@ export default function FlowerAnimation() {
 
           // Occasionally add new flowers with good spacing
           if (p.frameCount % 400 === 0 && flowers.length < maxFlowers + 2) {
-            let x;
+            let x: number;
             let tooClose = true;
             let attempts = 0;
             
