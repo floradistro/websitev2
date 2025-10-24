@@ -55,15 +55,7 @@ export function PreservePreviewMode() {
     };
   }, [isPreview, searchParams]);
 
-  // Visual indicator for preview mode
-  if (isPreview) {
-    return (
-      <div className="fixed top-0 left-0 right-0 bg-purple-600 text-white text-center py-1 text-xs z-[9999] pointer-events-none">
-        🎨 Preview Mode - You're viewing a draft
-      </div>
-    );
-  }
-
+  // No visual indicator - preview mode works silently
   return null;
 }
 

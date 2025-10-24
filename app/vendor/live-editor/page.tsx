@@ -89,6 +89,9 @@ export default function LiveEditorV2() {
         case 'home':
           pageUrl = `/storefront?vendor=${vendor.slug}&preview=true`;
           break;
+        case 'shop':
+          pageUrl = `/storefront/shop?vendor=${vendor.slug}&preview=true`;
+          break;
         case 'about':
           pageUrl = `/storefront/about?vendor=${vendor.slug}&preview=true`;
           break;

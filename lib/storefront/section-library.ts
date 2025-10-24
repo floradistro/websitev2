@@ -20,7 +20,7 @@ export const SECTION_LIBRARY: SectionTemplate[] = [
     description: 'Large header with headline, subheadline, and CTA buttons',
     icon: '',
     category: 'hero',
-    pageTypes: ['home', 'about', 'contact'],
+    pageTypes: ['home', 'shop', 'about', 'contact'],
     defaultContent: {
       headline: 'Your Headline Here',
       subheadline: 'A compelling subheadline that describes your value proposition',
@@ -43,7 +43,7 @@ export const SECTION_LIBRARY: SectionTemplate[] = [
     description: 'Show your process or workflow as visual steps',
     icon: '',
     category: 'features',
-    pageTypes: ['home', 'about'],
+    pageTypes: ['home', 'shop', 'about'],
     defaultContent: {
       headline: 'How It Works',
       subheadline: 'Simple, fast, reliable',
@@ -62,7 +62,7 @@ export const SECTION_LIBRARY: SectionTemplate[] = [
     description: 'Tell your brand story with rich text and images',
     icon: '',
     category: 'content',
-    pageTypes: ['home', 'about'],
+    pageTypes: ['home', 'shop', 'about'],
     defaultContent: {
       headline: 'Our Story',
       paragraphs: [
@@ -80,7 +80,7 @@ export const SECTION_LIBRARY: SectionTemplate[] = [
     description: 'Highlight what makes you different with icon cards',
     icon: '',
     category: 'features',
-    pageTypes: ['home', 'about'],
+    pageTypes: ['home', 'shop', 'about'],
     defaultContent: {
       headline: 'Why Choose Us',
       subheadline: 'The difference is in the details',
@@ -115,7 +115,7 @@ export const SECTION_LIBRARY: SectionTemplate[] = [
     description: 'Show impressive numbers with animated counters',
     icon: '',
     category: 'social',
-    pageTypes: ['home', 'about'],
+    pageTypes: ['home', 'shop', 'about'],
     defaultContent: {
       headline: 'By The Numbers',
       background_color: '#000000',
@@ -190,7 +190,7 @@ export const SECTION_LIBRARY: SectionTemplate[] = [
     description: 'Strong call-to-action section to drive conversions',
     icon: '',
     category: 'cta',
-    pageTypes: ['home', 'about', 'contact'],
+    pageTypes: ['home', 'shop', 'about', 'contact'],
     defaultContent: {
       headline: 'Ready to Get Started?',
       subheadline: 'Join thousands of satisfied customers',
@@ -200,6 +200,20 @@ export const SECTION_LIBRARY: SectionTemplate[] = [
         link: '/shop'
       },
       style: 'centered' // centered, split, minimal
+    }
+  },
+  {
+    key: 'product_grid',
+    name: 'Product Grid Header',
+    description: 'Header section above product listings',
+    icon: '',
+    category: 'content',
+    pageTypes: ['shop'],
+    defaultContent: {
+      headline: 'Shop All Products',
+      subheadline: 'Browse our complete collection',
+      show_filters: true,
+      columns: 3
     }
   }
 ];

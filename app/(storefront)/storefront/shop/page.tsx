@@ -2,10 +2,11 @@ import { headers } from 'next/headers';
 import Link from 'next/link';
 import { getVendorFromHeaders, getVendorStorefront } from '@/lib/storefront/get-vendor';
 import { StorefrontShopClient } from '@/components/storefront/StorefrontShopClient';
+import { UniversalPageRenderer } from '@/components/storefront/UniversalPageRenderer';
 import { getServiceSupabase } from '@/lib/supabase/client';
 import { notFound } from 'next/navigation';
 
-export default async function StorefrontShopPage() {
+export default async function StorefrontShopPage({ searchParams }: { searchParams: Promise<{ vendor?: string; preview?: string }> }) {
   // Check if template preview mode (no vendor)
   const headersList = await headers();
   const tenantType = headersList.get('x-tenant-type');
@@ -81,6 +82,16 @@ export default async function StorefrontShopPage() {
 
   if (!vendor) {
     notFound();
+  }
+
+  // Check if in preview mode (live editor)
+  const params = await searchParams;
+  if (params.preview === 'true') {
+    return (
+      <div className="-mt-[44px]">
+        <UniversalPageRenderer vendor={vendor} pageType="shop" />
+      </div>
+    );
   }
 
   // Use vendor's template_id for styling

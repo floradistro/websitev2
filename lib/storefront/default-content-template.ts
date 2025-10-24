@@ -98,6 +98,23 @@ export const DEFAULT_CONTENT_TEMPLATE = {
         ],
         background_color: '#000000'
       }
+    },
+    {
+      section_key: 'footer',
+      section_order: 8,
+      is_enabled: true,
+      content_data: {
+        compliance_text: 'All products comply with applicable regulations.',
+        restricted_states: 'Shipping restrictions may apply in certain states.',
+        show_powered_by: false,
+        custom_footer_text: '© 2025 [Store Name]. All rights reserved.',
+        footer_links: [
+          { title: 'Privacy Policy', url: '/privacy' },
+          { title: 'Terms of Service', url: '/terms' },
+          { title: 'Shipping', url: '/shipping' },
+          { title: 'Returns', url: '/returns' }
+        ]
+      }
     }
   ],
   about: [
@@ -166,6 +183,23 @@ export const DEFAULT_CONTENT_TEMPLATE = {
         button_link: '/shop',
         background_color: '#000000'
       }
+    },
+    {
+      section_key: 'footer',
+      section_order: 6,
+      is_enabled: true,
+      content_data: {
+        compliance_text: 'All products comply with applicable regulations.',
+        restricted_states: 'Shipping restrictions may apply in certain states.',
+        show_powered_by: false,
+        custom_footer_text: '© 2025 [Store Name]. All rights reserved.',
+        footer_links: [
+          { title: 'Privacy Policy', url: '/privacy' },
+          { title: 'Terms of Service', url: '/terms' },
+          { title: 'Shipping', url: '/shipping' },
+          { title: 'Returns', url: '/returns' }
+        ]
+      }
     }
   ],
   contact: [
@@ -192,6 +226,22 @@ export const DEFAULT_CONTENT_TEMPLATE = {
         show_social: true,
         background_color: '#000000'
       }
+    },
+    {
+      section_key: 'footer',
+      section_order: 3,
+      is_enabled: true,
+      content_data: {
+        compliance_text: 'All products comply with applicable regulations.',
+        restricted_states: 'Shipping restrictions may apply in certain states.',
+        show_powered_by: false,
+        custom_footer_text: '© 2025 [Store Name]. All rights reserved.',
+        footer_links: [
+          { title: 'Privacy Policy', url: '/privacy' },
+          { title: 'Terms of Service', url: '/terms' },
+          { title: 'Contact', url: '/contact' }
+        ]
+      }
     }
   ],
   faq: [
@@ -210,23 +260,20 @@ export const DEFAULT_CONTENT_TEMPLATE = {
         ],
         background_color: '#000000'
       }
-    }
-  ],
-  global: [
+    },
     {
       section_key: 'footer',
-      section_order: 1,
+      section_order: 2,
       is_enabled: true,
       content_data: {
-        compliance_text: 'Add compliance or legal text here.',
-        restricted_states: 'Add shipping restrictions if applicable.',
+        compliance_text: 'All products comply with applicable regulations.',
+        restricted_states: 'Shipping restrictions may apply in certain states.',
         show_powered_by: false,
         custom_footer_text: '© 2025 [Store Name]. All rights reserved.',
         footer_links: [
           { title: 'Privacy Policy', url: '/privacy' },
           { title: 'Terms of Service', url: '/terms' },
-          { title: 'Shipping', url: '/shipping' },
-          { title: 'Returns', url: '/returns' }
+          { title: 'FAQ', url: '/faq' }
         ]
       }
     }
