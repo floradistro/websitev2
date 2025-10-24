@@ -82,7 +82,7 @@ export default async function StorefrontLayout({
           <LiveEditingProvider initialSections={allSections} isPreviewMode={true}>
             <StorefrontThemeProvider vendor={vendor}>
               <PreservePreviewMode />
-              <div className="storefront-container bg-[#1a1a1a] min-h-screen">
+              <div className="storefront-container bg-black min-h-screen">
                 <Header vendor={vendor} />
                 <main className="storefront-main">
                   {children}

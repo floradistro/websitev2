@@ -29,20 +29,20 @@ export default function Footer({ vendor }: FooterProps) {
   };
 
   return (
-    <footer className="bg-gray-50 border-t">
+    <footer className="bg-black border-t border-white/10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
           {/* Company */}
           <div>
-            <h3 className="text-sm font-semibold text-gray-900 mb-4">Company</h3>
-            <ul className="space-y-2">
+            <h3 className="text-xs font-bold text-white uppercase tracking-wider mb-4">Company</h3>
+            <ul className="space-y-3">
               <li>
-                <Link href={getHref(`${basePath}/about`)} className="text-gray-600 hover:text-gray-900">
+                <Link href={getHref(`${basePath}/about`)} className="text-white/60 hover:text-white transition-colors text-sm">
                   About
                 </Link>
               </li>
               <li>
-                <Link href={getHref(`${basePath}/contact`)} className="text-gray-600 hover:text-gray-900">
+                <Link href={getHref(`${basePath}/contact`)} className="text-white/60 hover:text-white transition-colors text-sm">
                   Contact
                 </Link>
               </li>
@@ -51,10 +51,10 @@ export default function Footer({ vendor }: FooterProps) {
 
           {/* Shop */}
           <div>
-            <h3 className="text-sm font-semibold text-gray-900 mb-4">Shop</h3>
-            <ul className="space-y-2">
+            <h3 className="text-xs font-bold text-white uppercase tracking-wider mb-4">Shop</h3>
+            <ul className="space-y-3">
               <li>
-                <Link href={getHref(`${basePath}/shop`)} className="text-gray-600 hover:text-gray-900">
+                <Link href={getHref(`${basePath}/shop`)} className="text-white/60 hover:text-white transition-colors text-sm">
                   All Products
                 </Link>
               </li>
@@ -63,20 +63,20 @@ export default function Footer({ vendor }: FooterProps) {
 
           {/* Support */}
           <div>
-            <h3 className="text-sm font-semibold text-gray-900 mb-4">Support</h3>
-            <ul className="space-y-2">
+            <h3 className="text-xs font-bold text-white uppercase tracking-wider mb-4">Support</h3>
+            <ul className="space-y-3">
               <li>
-                <Link href={getHref(`${basePath}/shipping`)} className="text-gray-600 hover:text-gray-900">
+                <Link href={getHref(`${basePath}/shipping`)} className="text-white/60 hover:text-white transition-colors text-sm">
                   Shipping
                 </Link>
               </li>
               <li>
-                <Link href={getHref(`${basePath}/returns`)} className="text-gray-600 hover:text-gray-900">
+                <Link href={getHref(`${basePath}/returns`)} className="text-white/60 hover:text-white transition-colors text-sm">
                   Returns
                 </Link>
               </li>
               <li>
-                <Link href={getHref(`${basePath}/faq`)} className="text-gray-600 hover:text-gray-900">
+                <Link href={getHref(`${basePath}/faq`)} className="text-white/60 hover:text-white transition-colors text-sm">
                   FAQ
                 </Link>
               </li>
@@ -85,15 +85,15 @@ export default function Footer({ vendor }: FooterProps) {
 
           {/* Legal */}
           <div>
-            <h3 className="text-sm font-semibold text-gray-900 mb-4">Legal</h3>
-            <ul className="space-y-2">
+            <h3 className="text-xs font-bold text-white uppercase tracking-wider mb-4">Legal</h3>
+            <ul className="space-y-3">
               <li>
-                <Link href={getHref(`${basePath}/privacy`)} className="text-gray-600 hover:text-gray-900">
+                <Link href={getHref(`${basePath}/privacy`)} className="text-white/60 hover:text-white transition-colors text-sm">
                   Privacy
                 </Link>
               </li>
               <li>
-                <Link href={getHref(`${basePath}/terms`)} className="text-gray-600 hover:text-gray-900">
+                <Link href={getHref(`${basePath}/terms`)} className="text-white/60 hover:text-white transition-colors text-sm">
                   Terms
                 </Link>
               </li>
@@ -101,9 +101,9 @@ export default function Footer({ vendor }: FooterProps) {
           </div>
         </div>
 
-        <div className="mt-8 pt-8 border-t border-gray-200">
-          <p className="text-sm text-gray-600 text-center">
-            © {currentYear} {vendor.store_name}. All rights reserved. Powered by Yacht Club.
+        <div className="mt-12 pt-8 border-t border-white/10">
+          <p className="text-sm text-white/40 text-center font-light">
+            © {currentYear} {vendor.store_name}. All rights reserved.
           </p>
         </div>
       </div>

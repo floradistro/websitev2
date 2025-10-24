@@ -34,11 +34,11 @@ export default function Header({ vendor }: HeaderProps) {
   };
 
   return (
-    <header className="bg-white shadow-sm sticky top-0 z-50">
+    <header className="bg-black border-b border-white/10 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link href={getHref(basePath || "/")} className="flex items-center gap-3">
+          <Link href={getHref(basePath || "/")} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
             {vendor.logo_url && (
               <div className="relative w-10 h-10">
                 <Image 
@@ -49,27 +49,27 @@ export default function Header({ vendor }: HeaderProps) {
                 />
               </div>
             )}
-            <span className="text-xl font-bold text-gray-900">{vendor.store_name}</span>
+            <span className="text-xl font-semibold text-white tracking-tight">{vendor.store_name}</span>
           </Link>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
-            <Link href={getHref(`${basePath}/shop`)} className="text-gray-700 hover:text-gray-900">
+            <Link href={getHref(`${basePath}/shop`)} className="text-white/70 hover:text-white transition-colors text-sm font-medium uppercase tracking-wider">
               Shop
             </Link>
-            <Link href={getHref(`${basePath}/about`)} className="text-gray-700 hover:text-gray-900">
+            <Link href={getHref(`${basePath}/about`)} className="text-white/70 hover:text-white transition-colors text-sm font-medium uppercase tracking-wider">
               About
             </Link>
-            <Link href={getHref(`${basePath}/contact`)} className="text-gray-700 hover:text-gray-900">
+            <Link href={getHref(`${basePath}/contact`)} className="text-white/70 hover:text-white transition-colors text-sm font-medium uppercase tracking-wider">
               Contact
             </Link>
           </nav>
 
           {/* Cart Button */}
-          <button className="relative p-2">
-            <ShoppingBag size={24} className="text-gray-700" />
+          <button className="relative p-2 hover:bg-white/10 rounded-lg transition-colors">
+            <ShoppingBag size={22} className="text-white" />
             {itemCount > 0 && (
-              <span className="absolute top-0 right-0 bg-blue-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+              <span className="absolute -top-1 -right-1 bg-white text-black text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
                 {itemCount}
               </span>
             )}
@@ -78,7 +78,7 @@ export default function Header({ vendor }: HeaderProps) {
           {/* Mobile Menu Button */}
           <button 
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2"
+            className="md:hidden p-2 text-white"
           >
             {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
@@ -87,25 +87,25 @@ export default function Header({ vendor }: HeaderProps) {
 
       {/* Mobile Menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden bg-white border-t">
+        <div className="md:hidden bg-black border-t border-white/10">
           <div className="px-4 py-2 space-y-1">
             <Link 
               href={getHref(`${basePath}/shop`)} 
-              className="block py-2 text-gray-700"
+              className="block py-3 text-white/70 hover:text-white transition-colors text-sm font-medium uppercase tracking-wider"
               onClick={() => setMobileMenuOpen(false)}
             >
               Shop
             </Link>
             <Link 
               href={getHref(`${basePath}/about`)} 
-              className="block py-2 text-gray-700"
+              className="block py-3 text-white/70 hover:text-white transition-colors text-sm font-medium uppercase tracking-wider"
               onClick={() => setMobileMenuOpen(false)}
             >
               About
             </Link>
             <Link 
               href={getHref(`${basePath}/contact`)} 
-              className="block py-2 text-gray-700"
+              className="block py-3 text-white/70 hover:text-white transition-colors text-sm font-medium uppercase tracking-wider"
               onClick={() => setMobileMenuOpen(false)}
             >
               Contact
