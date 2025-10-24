@@ -143,8 +143,9 @@ export default function LiveEditorV2() {
           pageUrl = `/storefront/shop?vendor=${vendor.slug}&preview=true`;
           break;
         case 'product':
-          // Show first product for preview
-          pageUrl = `/storefront/products/preview?vendor=${vendor.slug}&preview=true`;
+          // Show first product for preview - use a real product slug
+          // For Flora Distro we'll use 'prime-runts', but this will work for any vendor's first product
+          pageUrl = `/storefront/products/prime-runts?vendor=${vendor.slug}&preview=true`;
           break;
         case 'about':
           pageUrl = `/storefront/about?vendor=${vendor.slug}&preview=true`;
@@ -940,6 +941,217 @@ export default function LiveEditorV2() {
               value={content_data.show_sort !== false} 
               onChange={(v) => updateContent('show_sort', v)} 
             />
+          </div>
+        </div>
+      );
+    }
+
+    if (section_key === 'product_detail_config') {
+      return (
+        <div className="space-y-3">
+          {/* Device Mode Indicator */}
+          <div className="p-2 bg-blue-500/10 border border-blue-500/20 rounded">
+            <div className="flex items-center gap-2 text-[10px] text-blue-300/90">
+              {previewDevice === 'desktop' ? <Monitor size={12} /> : <Smartphone size={12} />}
+              <div className="flex-1">
+                <div className="font-medium">Editing {previewDevice === 'desktop' ? 'Desktop' : 'Mobile'} View</div>
+                <div className="text-[9px] text-blue-300/60">Configure product page layout & sections</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Layout Settings */}
+          <div className="space-y-2 pb-2 border-b border-white/5">
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-white/60 text-[10px] uppercase tracking-wider font-medium">Layout</label>
+              <div className="flex items-center gap-1 text-[8px] text-white/30 uppercase tracking-wider">
+                <Monitor size={9} />
+                <Smartphone size={9} />
+                Both
+              </div>
+            </div>
+            <div>
+              <label className="text-white/40 text-[11px] block mb-1 font-normal">Layout Style</label>
+              <select
+                value={content_data.layout_style || 'split'}
+                onChange={(e) => updateContent('layout_style', e.target.value)}
+                className="w-full bg-black border border-white/10 text-white px-2 py-1.5 rounded text-[13px] focus:outline-none focus:border-white/30 transition-all"
+              >
+                <option value="split">Split (Image | Info)</option>
+                <option value="stacked">Stacked (Image on Top)</option>
+                <option value="gallery-left">Gallery Left</option>
+              </select>
+            </div>
+            <div>
+              <label className="text-white/40 text-[11px] block mb-1 font-normal">Gallery Size</label>
+              <select
+                value={content_data.gallery_size || 'large'}
+                onChange={(e) => updateContent('gallery_size', e.target.value)}
+                className="w-full bg-black border border-white/10 text-white px-2 py-1.5 rounded text-[13px] focus:outline-none focus:border-white/30 transition-all"
+              >
+                <option value="small">Small (40%)</option>
+                <option value="medium">Medium (50%)</option>
+                <option value="large">Large (60%)</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Gallery Settings */}
+          <div className="space-y-2 pb-2 border-b border-white/5">
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-white/60 text-[10px] uppercase tracking-wider font-medium">Gallery</label>
+              <div className="flex items-center gap-1 text-[8px] text-white/30 uppercase tracking-wider">
+                <Monitor size={9} />
+                <Smartphone size={9} />
+                Both
+              </div>
+            </div>
+            <CheckboxField 
+              label="Show Thumbnails" 
+              value={content_data.gallery_thumbnails !== false} 
+              onChange={(v) => updateContent('gallery_thumbnails', v)} 
+            />
+            <CheckboxField 
+              label="Enable Zoom" 
+              value={content_data.gallery_zoom !== false} 
+              onChange={(v) => updateContent('gallery_zoom', v)} 
+            />
+            <div>
+              <label className="text-white/40 text-[11px] block mb-1 font-normal">Thumbnail Columns</label>
+              <select
+                value={content_data.gallery_columns || 4}
+                onChange={(e) => updateContent('gallery_columns', parseInt(e.target.value))}
+                className="w-full bg-black border border-white/10 text-white px-2 py-1.5 rounded text-[13px] focus:outline-none focus:border-white/30 transition-all"
+              >
+                <option value={3}>3 Columns</option>
+                <option value={4}>4 Columns</option>
+                <option value={5}>5 Columns</option>
+                <option value={6}>6 Columns</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Section Visibility */}
+          <div className="space-y-2 pb-2 border-b border-white/5">
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-white/60 text-[10px] uppercase tracking-wider font-medium">Sections</label>
+              <div className="flex items-center gap-1 text-[8px] text-white/30 uppercase tracking-wider">
+                <Monitor size={9} />
+                <Smartphone size={9} />
+                Both
+              </div>
+            </div>
+            <CheckboxField 
+              label="Pricing Tiers" 
+              value={content_data.show_pricing_tiers !== false} 
+              onChange={(v) => updateContent('show_pricing_tiers', v)} 
+            />
+            <CheckboxField 
+              label="Product Fields" 
+              value={content_data.show_product_fields !== false} 
+              onChange={(v) => updateContent('show_product_fields', v)} 
+            />
+            <CheckboxField 
+              label="Delivery Options" 
+              value={content_data.show_delivery_options !== false} 
+              onChange={(v) => updateContent('show_delivery_options', v)} 
+            />
+            <CheckboxField 
+              label="Lab Results" 
+              value={content_data.show_lab_results !== false} 
+              onChange={(v) => updateContent('show_lab_results', v)} 
+            />
+            <CheckboxField 
+              label="Reviews" 
+              value={content_data.show_reviews !== false} 
+              onChange={(v) => updateContent('show_reviews', v)} 
+            />
+            <CheckboxField 
+              label="Related Products" 
+              value={content_data.show_related_products !== false} 
+              onChange={(v) => updateContent('show_related_products', v)} 
+            />
+            <CheckboxField 
+              label="Breadcrumbs" 
+              value={content_data.show_breadcrumbs !== false} 
+              onChange={(v) => updateContent('show_breadcrumbs', v)} 
+            />
+            <CheckboxField 
+              label="Share Button" 
+              value={content_data.show_share_button !== false} 
+              onChange={(v) => updateContent('show_share_button', v)} 
+            />
+            <CheckboxField 
+              label="Wishlist Button" 
+              value={content_data.show_wishlist_button !== false} 
+              onChange={(v) => updateContent('show_wishlist_button', v)} 
+            />
+          </div>
+
+          {/* Colors */}
+          <div className="space-y-2 pb-2 border-b border-white/5">
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-white/60 text-[10px] uppercase tracking-wider font-medium">Colors</label>
+              <div className="flex items-center gap-1 text-[8px] text-white/30 uppercase tracking-wider">
+                <Monitor size={9} />
+                <Smartphone size={9} />
+                Both
+              </div>
+            </div>
+            <ColorPicker 
+              label="Product Name" 
+              value={content_data.name_color || '#ffffff'} 
+              onChange={(v) => updateContent('name_color', v)} 
+            />
+            <ColorPicker 
+              label="Price" 
+              value={content_data.price_color || '#ffffff'} 
+              onChange={(v) => updateContent('price_color', v)} 
+            />
+            <ColorPicker 
+              label="Description" 
+              value={content_data.description_color || '#a3a3a3'} 
+              onChange={(v) => updateContent('description_color', v)} 
+            />
+          </div>
+
+          {/* Related Products */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-white/60 text-[10px] uppercase tracking-wider font-medium">Related Products</label>
+              <div className="flex items-center gap-1 text-[9px] text-white/40">
+                {previewDevice === 'desktop' ? <Monitor size={10} /> : <Smartphone size={10} />}
+                <span className="uppercase tracking-wider">{previewDevice}</span>
+              </div>
+            </div>
+            
+            {previewDevice === 'desktop' ? (
+              <div>
+                <label className="text-white/40 text-[11px] block mb-1 font-normal">Columns</label>
+                <select
+                  value={content_data.related_columns || 4}
+                  onChange={(e) => updateContent('related_columns', parseInt(e.target.value))}
+                  className="w-full bg-black border border-white/10 text-white px-2 py-1.5 rounded text-[13px] focus:outline-none focus:border-white/30 transition-all"
+                >
+                  <option value={2}>2 Columns</option>
+                  <option value={3}>3 Columns</option>
+                  <option value={4}>4 Columns</option>
+                  <option value={6}>6 Columns</option>
+                </select>
+              </div>
+            ) : (
+              <div>
+                <label className="text-white/40 text-[11px] block mb-1 font-normal">Columns</label>
+                <select
+                  value={content_data.related_columns_mobile || 2}
+                  onChange={(e) => updateContent('related_columns_mobile', parseInt(e.target.value))}
+                  className="w-full bg-black border border-white/10 text-white px-2 py-1.5 rounded text-[13px] focus:outline-none focus:border-white/30 transition-all"
+                >
+                  <option value={1}>1 Column</option>
+                  <option value={2}>2 Columns</option>
+                </select>
+              </div>
+            )}
           </div>
         </div>
       );

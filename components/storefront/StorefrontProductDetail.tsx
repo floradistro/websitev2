@@ -23,9 +23,30 @@ const fetcher = (url: string) => fetch(url).then((res) => res.json());
 interface StorefrontProductDetailProps {
   productSlug: string;
   vendorId: string;
+  config?: {
+    layout_style?: string;
+    gallery_size?: string;
+    gallery_thumbnails?: boolean;
+    gallery_zoom?: boolean;
+    gallery_columns?: number;
+    show_pricing_tiers?: boolean;
+    show_product_fields?: boolean;
+    show_delivery_options?: boolean;
+    show_lab_results?: boolean;
+    show_reviews?: boolean;
+    show_related_products?: boolean;
+    show_breadcrumbs?: boolean;
+    show_share_button?: boolean;
+    show_wishlist_button?: boolean;
+    name_color?: string;
+    price_color?: string;
+    description_color?: string;
+    related_columns?: number;
+    related_columns_mobile?: number;
+  };
 }
 
-export function StorefrontProductDetail({ productSlug, vendorId }: StorefrontProductDetailProps) {
+export function StorefrontProductDetail({ productSlug, vendorId, config = {} }: StorefrontProductDetailProps) {
   const [selectedPrice, setSelectedPrice] = useState<number | null>(null);
   const [selectedQuantity, setSelectedQuantity] = useState<number>(1);
   const [selectedTierName, setSelectedTierName] = useState<string | null>(null);
@@ -48,9 +69,17 @@ export function StorefrontProductDetail({ productSlug, vendorId }: StorefrontPro
   );
 
   const product = data?.success 
-    ? data.data.products.find((p: any) => 
-        p.vendor_id === vendorId && (p.slug === productSlug || p.id === productSlug)
-      )
+    ? data.data.products.find((p: any) => {
+        const matchesVendor = p.vendor_id === vendorId;
+        const matchesSlug = p.slug === productSlug || p.id === productSlug;
+        console.log('🔍 Product check:', { 
+          name: p.name, 
+          slug: p.slug, 
+          vendorMatch: matchesVendor, 
+          slugMatch: matchesSlug 
+        });
+        return matchesVendor && matchesSlug;
+      })
     : null;
 
   const locations = data?.success ? data.data.locations : [];
@@ -151,11 +180,13 @@ export function StorefrontProductDetail({ productSlug, vendorId }: StorefrontPro
   }
 
   if (!product) {
+    console.error('❌ Product not found:', { productSlug, vendorId, totalProducts: allProducts.length });
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-center">
-          <p className="text-white/60 text-lg font-light mb-4">Product not found</p>
-          <Link href="/storefront/shop?vendor=flora-distro" className="text-white underline">
+          <p className="text-white/60 text-lg font-light mb-4">Product not found: {productSlug}</p>
+          <p className="text-white/40 text-sm mb-4">Vendor ID: {vendorId}</p>
+          <Link href={`/storefront/shop?vendor=${vendor?.slug || 'shop'}`} className="text-white underline">
             Back to Shop
           </Link>
         </div>
@@ -211,9 +242,10 @@ export function StorefrontProductDetail({ productSlug, vendorId }: StorefrontPro
       </div>
 
       {/* Breadcrumb Navigation */}
-      <div className="sticky top-0 z-20 border-b border-white/10 bg-black/80 backdrop-blur-xl">
-        <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-10 py-3">
-          <nav className="flex items-center gap-x-2 text-xs uppercase tracking-wider overflow-x-auto scrollbar-hide">
+      {config.show_breadcrumbs !== false && (
+        <div className="sticky top-0 z-20 border-b border-white/10 bg-black/80 backdrop-blur-xl">
+          <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-10 py-3">
+            <nav className="flex items-center gap-x-2 text-xs uppercase tracking-wider overflow-x-auto scrollbar-hide">
             <Link
               href="/storefront"
               className="text-white/40 hover:text-white transition-colors whitespace-nowrap"
@@ -242,7 +274,8 @@ export function StorefrontProductDetail({ productSlug, vendorId }: StorefrontPro
             <span className="text-white/60 font-medium">{product.name}</span>
           </nav>
         </div>
-      </div>
+        </div>
+      )}
 
       {/* Product Content */}
       <div className="relative">
@@ -417,11 +450,11 @@ export function StorefrontProductDetail({ productSlug, vendorId }: StorefrontPro
               <div className="relative z-10 space-y-6">
                 {/* Product Name & Price */}
                 <div className="animate-fadeIn">
-                  <h1 className="text-4xl uppercase tracking-[0.12em] text-white leading-relaxed mb-3" style={{ fontWeight: 900 }}>
+                  <h1 className="text-4xl uppercase tracking-[0.12em] leading-relaxed mb-3" style={{ fontWeight: 900, color: config.name_color || '#ffffff' }}>
                     {product.name}
                   </h1>
                   
-                  <p className="text-xl font-medium text-white tracking-wide mb-4">
+                  <p className="text-xl font-medium tracking-wide mb-4" style={{ color: config.price_color || '#ffffff' }}>
                     {selectedPrice ? `$${selectedPrice.toFixed(0)}` : `$${Math.min(...pricingTiers.map((t: any) => t.price)).toFixed(0)} - $${Math.max(...pricingTiers.map((t: any) => t.price)).toFixed(0)}`}
                   </p>
 
@@ -440,7 +473,7 @@ export function StorefrontProductDetail({ productSlug, vendorId }: StorefrontPro
                 </div>
 
                 {/* Pricing Tiers */}
-                {pricingTiers.length > 0 && (
+                {config.show_pricing_tiers !== false && pricingTiers.length > 0 && (
                   <div className="animate-fadeIn">
                     <PricingTiers
                       tiers={pricingTiers}
@@ -450,14 +483,16 @@ export function StorefrontProductDetail({ productSlug, vendorId }: StorefrontPro
                 )}
 
                 {/* Delivery Options */}
-                <div className="animate-fadeIn">
-                  <DeliveryAvailability
-                    inventory={inventory}
-                    locations={locations}
-                    stockStatus={product.stock_status}
-                    onDetailsChange={handleOrderDetailsChange}
-                  />
-                </div>
+                {config.show_delivery_options !== false && (
+                  <div className="animate-fadeIn">
+                    <DeliveryAvailability
+                      inventory={inventory}
+                      locations={locations}
+                      stockStatus={product.stock_status}
+                      onDetailsChange={handleOrderDetailsChange}
+                    />
+                  </div>
+                )}
 
                 {/* Shipping Estimator */}
                 <div className="animate-fadeIn">
@@ -572,7 +607,7 @@ export function StorefrontProductDetail({ productSlug, vendorId }: StorefrontPro
       </div>
 
       {/* Related Products Carousel */}
-      {relatedProducts.length > 0 && (
+      {config.show_related_products !== false && relatedProducts.length > 0 && (
         <section className="border-t border-white/10 relative py-24 px-0 sm:px-6">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-xl"></div>
           <div className="max-w-7xl mx-auto relative z-10">
