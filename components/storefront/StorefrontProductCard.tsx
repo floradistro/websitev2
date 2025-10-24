@@ -298,24 +298,7 @@ function StorefrontProductCard({ product, vendorSlug, locations = [] }: Storefro
           {product.name}
         </h3>
         
-        {/* Product Fields - Stacked vertically */}
-        {displayFields.length > 0 && (
-          <div className="flex flex-col gap-1">
-            {displayFields.map((field, idx) => (
-              <div key={idx} className="flex items-start gap-1.5 text-[10px]">
-                <span className="text-neutral-500 uppercase tracking-wider whitespace-nowrap">{field.label}:</span>
-                <span className="text-neutral-400 font-medium leading-tight">{field.value}</span>
-              </div>
-            ))}
-          </div>
-        )}
-        
-        {/* Price */}
-        <p className="text-sm font-medium tracking-wide text-white">
-          {getPriceDisplay()}
-        </p>
-        
-        {/* Stock Status with Locations */}
+        {/* Stock Status with Locations - Right after name */}
         {stockInfo.inStock ? (
           <div className="flex items-center gap-1.5">
             <div className="w-2 h-2 rounded-full bg-green-500 flex-shrink-0"></div>
@@ -338,6 +321,23 @@ function StorefrontProductCard({ product, vendorSlug, locations = [] }: Storefro
             </span>
           </div>
         )}
+        
+        {/* Product Fields - Stacked vertically */}
+        {displayFields.length > 0 && (
+          <div className="flex flex-col gap-1">
+            {displayFields.map((field, idx) => (
+              <div key={idx} className="flex items-start gap-1.5 text-[10px]">
+                <span className="text-neutral-500 uppercase tracking-wider whitespace-nowrap">{field.label}:</span>
+                <span className="text-neutral-400 font-medium leading-tight">{field.value}</span>
+              </div>
+            ))}
+          </div>
+        )}
+        
+        {/* Price */}
+        <p className="text-sm font-medium tracking-wide text-white">
+          {getPriceDisplay()}
+        </p>
       </div>
     </Link>
   );
