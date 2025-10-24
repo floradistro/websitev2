@@ -212,6 +212,28 @@ export default function LiveEditorV2() {
     }
   }, [sections, selectedPage, iframeReady]);
 
+  async function loadCustomFields() {
+    try {
+      const vendorId = localStorage.getItem('vendor_id');
+      const response = await fetch('/api/vendor/custom-fields', {
+        headers: { 'x-vendor-id': vendorId! }
+      });
+      const data = await response.json();
+      if (data.success) {
+        // Group by section_key for easy lookup
+        const grouped = (data.customFields || []).reduce((acc: any, field: any) => {
+          const key = field.section_key;
+          if (!acc[key]) acc[key] = [];
+          acc[key].push(field);
+          return acc;
+        }, {});
+        setCustomFieldsCache(grouped);
+      }
+    } catch (error) {
+      console.error('Error loading custom fields:', error);
+    }
+  }
+
   async function loadSections() {
     setLoading(true);
     try {
