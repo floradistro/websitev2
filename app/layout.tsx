@@ -89,8 +89,7 @@ export default async function RootLayout({
   // If VENDOR tenant OR template preview, render vendor layout
   if ((tenantType === 'vendor' || tenantType === 'template-preview') && vendorId) {
     const { getVendorStorefront } = await import('@/lib/storefront/get-vendor');
-    const { StorefrontHeader } = await import('@/components/storefront/StorefrontHeader');
-    const { StorefrontFooter } = await import('@/components/storefront/StorefrontFooter');
+    const { getTemplateComponents } = await import('@/lib/storefront/template-loader');
     const { StorefrontThemeProvider } = await import('@/components/storefront/ThemeProvider');
     
     const vendor = await getVendorStorefront(vendorId);
@@ -146,6 +145,10 @@ export default async function RootLayout({
     
     // Render COMPLETE vendor layout - NO Yacht Club wrapper!
     if (vendor) {
+      // Load template components based on vendor's template_id
+      const templateId = vendor.template_id || 'default';
+      const { Header, Footer } = getTemplateComponents(templateId);
+      
       return (
         <html lang="en" data-scroll-behavior="smooth" className="overflow-x-hidden" suppressHydrationWarning>
           <head>
@@ -164,11 +167,11 @@ export default async function RootLayout({
                 <CartProvider>
                   <StorefrontThemeProvider vendor={vendor}>
                     <div className="storefront-container bg-[#1a1a1a] min-h-screen">
-                      <StorefrontHeader vendor={vendor} />
+                      <Header vendor={vendor} />
                       <main className="storefront-main">
                         {children}
                       </main>
-                      <StorefrontFooter vendor={vendor} />
+                      <Footer vendor={vendor} />
                     </div>
                     <NotificationToast />
                   </StorefrontThemeProvider>

@@ -22,6 +22,7 @@ export interface VendorStorefront {
   business_hours: any;
   return_policy: string | null;
   shipping_policy: string | null;
+  template_id: string;
 }
 
 export interface StorefrontTheme {
@@ -68,7 +69,8 @@ export async function getVendorStorefront(vendorId: string): Promise<VendorStore
         social_links,
         business_hours,
         return_policy,
-        shipping_policy
+        shipping_policy,
+        template_id
       `)
       .eq('id', vendorId)
       .eq('status', 'active')

@@ -14,6 +14,7 @@ export async function middleware(request: NextRequest) {
   // - API routes
   // - Admin routes
   // - Vendor portal routes
+  // - Main Yacht Club pages
   // - Next.js internals
   if (
     pathname.startsWith('/_next') ||
@@ -23,6 +24,10 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith('/login') ||
     pathname.startsWith('/register') ||
     pathname.startsWith('/dashboard') ||
+    pathname.startsWith('/products') ||
+    pathname.startsWith('/shop') ||
+    pathname.startsWith('/cart') ||
+    pathname.startsWith('/checkout') ||
     pathname.startsWith('/test-storefront') ||
     pathname.includes('.')
   ) {

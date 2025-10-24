@@ -4,6 +4,7 @@ import { getVendorFromHeaders, getVendorStorefront, getVendorProducts, getVendor
 import { StorefrontHomeClient } from '@/components/storefront/StorefrontHomeClient';
 import { getServiceSupabase } from '@/lib/supabase/client';
 import { notFound } from 'next/navigation';
+import { getTemplateComponents } from '@/lib/storefront/template-loader';
 
 export default async function StorefrontHomePage() {
   // Check if template preview mode (no vendor)
@@ -125,8 +126,12 @@ export default async function StorefrontHomePage() {
     productFieldsMap[p.id] = { fields: p.fields };
   });
 
+  // Load template components based on vendor's template_id
+  const templateId = vendor.template_id || 'default';
+  const { HomePage } = getTemplateComponents(templateId);
+
   return (
-    <StorefrontHomeClient 
+    <HomePage 
       vendor={vendor}
       products={products}
       inventoryMap={inventoryMap}
