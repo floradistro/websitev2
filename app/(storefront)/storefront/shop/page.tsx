@@ -99,18 +99,21 @@ export default async function StorefrontShopPage({ searchParams }: { searchParam
     );
     
     return (
-      <div className="-mt-[44px]">
+      <>
         {/* Only render sections container if there are visible sections */}
         {visibleShopSections.length > 0 && (
-          <UniversalPageRenderer vendor={vendor} pageType="shop" />
+          <div className="-mt-[44px]">
+            <UniversalPageRenderer vendor={vendor} pageType="shop" />
+          </div>
         )}
         
-        {/* Shop products with editable config */}
+        {/* Shop products with editable config - starts right after header if no sections */}
         <StorefrontShopClient 
+          key={JSON.stringify(shopConfigSection?.content_data)}
           vendorId={vendorId}
           config={shopConfigSection?.content_data}
         />
-      </div>
+      </>
     );
   }
 

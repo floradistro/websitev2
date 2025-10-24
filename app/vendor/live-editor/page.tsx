@@ -6,6 +6,7 @@ import { useVendorAuth } from '@/context/VendorAuthContext';
 import { Save, Eye, Monitor, Smartphone, Plus, Trash2, EyeOff, GripVertical, Loader2, RefreshCw, Layout, Settings, Palette, X, ChevronDown, ChevronUp } from 'lucide-react';
 import { SECTION_LIBRARY, getSectionsForPage, SectionTemplate } from '@/lib/storefront/section-library';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
+import { AddCustomFieldButton } from '@/components/storefront/AddCustomFieldButton';
 
 interface ContentSection {
   id: string;
@@ -531,6 +532,17 @@ export default function LiveEditorV2() {
               </div>
               <ColorPicker label="Background" value={content_data.background_color || '#000000'} onChange={(v) => updateContent('background_color', v)} />
               <SliderField label="Overlay" value={content_data.overlay_opacity || 0.6} min={0} max={1} step={0.1} onChange={(v) => updateContent('overlay_opacity', v)} />
+              
+              {/* Add Custom Field Button */}
+              <div className="mt-4 pt-4 border-t border-white/10">
+                <AddCustomFieldButton 
+                  sectionKey="hero" 
+                  vendorId={vendor?.id || localStorage.getItem('vendor_id') || ''} 
+                  onFieldAdded={() => {
+                    alert('Custom field added! Refresh the editor to see it.');
+                  }} 
+                />
+              </div>
             </div>
           </>
         )}
