@@ -1174,10 +1174,10 @@ export default function LiveEditorV2() {
           
           {/* Custom Fields (Vendor-Added) */}
           {customFieldsCache['hero']?.length > 0 && (
-            <div className="mt-4 pt-4 border-t border-purple-500/20">
-              <div className="text-xs text-purple-400 uppercase tracking-wider mb-3 flex items-center gap-2">
-                <span>🔧 Custom Fields</span>
-                <span className="bg-purple-500/20 px-1.5 py-0.5 rounded text-[10px]">
+            <div className="mt-4 pt-4 border-t border-[#3e3e3e]">
+              <div className="text-xs text-[#4fc1ff] tracking-wide mb-3 flex items-center gap-2">
+                <span>Custom Fields</span>
+                <span className="bg-[#007acc]/20 text-[#4fc1ff] px-1.5 py-0.5 rounded text-[10px] border border-[#007acc]/30">
                   {customFieldsCache['hero'].length}
                 </span>
               </div>
@@ -1274,15 +1274,15 @@ export default function LiveEditorV2() {
                   const hasValue = currentValue && (Array.isArray(currentValue) ? currentValue.length > 0 : typeof currentValue === 'object' ? Object.keys(currentValue).length > 0 : !!currentValue);
                   
                   return (
-                    <div key={fieldId} className="mb-3 p-3 bg-purple-500/10 border border-purple-500/20 rounded">
-                      <div className="text-xs text-purple-400 font-medium mb-1">{fieldDef.label} 🔧</div>
+                    <div key={fieldId} className="mb-3 p-2.5 bg-[#1e1e1e] border border-[#3e3e3e] rounded">
+                      <div className="text-xs text-[#cccccc] font-medium mb-1">{fieldDef.label}</div>
                       <div className="flex items-center gap-2 mb-2">
-                        <span className="text-white/40 text-[10px] bg-white/5 px-1.5 py-0.5 rounded">
+                        <span className="text-[#858585] text-[10px] bg-[#252526] px-1.5 py-0.5 rounded border border-[#3e3e3e]">
                           {fieldDef.type}
                         </span>
                         {hasValue && (
-                          <span className="text-green-400 text-[10px]">
-                            ✓ Has value
+                          <span className="text-[#89d185] text-[10px]">
+                            ✓ Set
                           </span>
                         )}
                       </div>
@@ -1762,8 +1762,8 @@ export default function LiveEditorV2() {
                     Add Section
                   </button>
                   <button 
-                    onClick={() => setActiveTab(activeTab === 'fields' ? 'sections' : 'fields')}
-                    className="flex items-center gap-1.5 text-purple-400 hover:text-purple-300 hover:bg-purple-500/10 px-2 py-1.5 rounded text-[11px] transition-colors w-full mb-1"
+                  onClick={() => setActiveTab(activeTab === 'fields' ? 'sections' : 'fields')}
+                  className="flex items-center gap-1.5 text-[#4fc1ff] hover:text-[#75beff] hover:bg-[#007acc]/10 px-2 py-1.5 rounded text-[11px] transition-colors w-full mb-1"
                   >
                     <Settings size={12} />
                     {activeTab === 'fields' ? 'Back to Sections' : 'Manage Custom Fields'}
