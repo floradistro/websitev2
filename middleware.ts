@@ -9,12 +9,17 @@ export async function middleware(request: NextRequest) {
   // Extract domain (remove port for localhost)
   const domain = hostname.split(':')[0];
   
+  // Determine if this is the main Yacht Club domain
+  const isYachtClubDomain = domain.includes('yachtclub.vip') || 
+                           domain === 'localhost' || 
+                           domain.startsWith('localhost:');
+  
   // Skip middleware for:
   // - Static assets
   // - API routes
   // - Admin routes
   // - Vendor portal routes
-  // - Main Yacht Club pages
+  // - Main Yacht Club pages (ONLY for yacht club domain, not vendor domains)
   // - Next.js internals
   if (
     pathname.startsWith('/_next') ||
@@ -24,12 +29,23 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith('/login') ||
     pathname.startsWith('/register') ||
     pathname.startsWith('/dashboard') ||
-    pathname.startsWith('/products') ||
-    pathname.startsWith('/shop') ||
-    pathname.startsWith('/cart') ||
-    pathname.startsWith('/checkout') ||
     pathname.startsWith('/test-storefront') ||
-    pathname.includes('.')
+    pathname.includes('.') ||
+    // These routes are ONLY excluded for main Yacht Club domain
+    (isYachtClubDomain && (
+      pathname.startsWith('/products') ||
+      pathname.startsWith('/shop') ||
+      pathname.startsWith('/cart') ||
+      pathname.startsWith('/checkout') ||
+      pathname.startsWith('/about') ||
+      pathname.startsWith('/contact') ||
+      pathname.startsWith('/faq') ||
+      pathname.startsWith('/privacy') ||
+      pathname.startsWith('/terms') ||
+      pathname.startsWith('/shipping') ||
+      pathname.startsWith('/returns') ||
+      pathname.startsWith('/cookies')
+    ))
   ) {
     const response = NextResponse.next();
     response.headers.set('X-Frame-Options', 'SAMEORIGIN');
