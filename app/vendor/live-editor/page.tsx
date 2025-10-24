@@ -514,10 +514,158 @@ export default function LiveEditorV2() {
       setHasUnsavedChanges(true);
     };
 
+    // Render appropriate editor for this section type
+    if (section_key === 'shop_config') {
+      return (
+        <div className="space-y-2">
+          <div>
+            <label className="text-white/40 text-[11px] block mb-1 font-normal">Grid Columns</label>
+            <select
+              value={content_data.grid_columns || 3}
+              onChange={(e) => updateContent('grid_columns', parseInt(e.target.value))}
+              className="w-full bg-black border border-white/10 text-white px-2 py-1.5 rounded text-[13px] focus:outline-none focus:border-white/30 transition-all"
+            >
+              <option value={2}>2 Columns</option>
+              <option value={3}>3 Columns</option>
+              <option value={4}>4 Columns</option>
+            </select>
+          </div>
+          <div>
+            <label className="text-white/40 text-[11px] block mb-1 font-normal">Card Style</label>
+            <select
+              value={content_data.card_style || 'card'}
+              onChange={(e) => updateContent('card_style', e.target.value)}
+              className="w-full bg-black border border-white/10 text-white px-2 py-1.5 rounded text-[13px] focus:outline-none focus:border-white/30 transition-all"
+            >
+              <option value="minimal">Minimal</option>
+              <option value="card">Card</option>
+              <option value="bordered">Bordered</option>
+            </select>
+          </div>
+          <div>
+            <label className="text-white/40 text-[11px] block mb-1 font-normal">Corner Radius</label>
+            <select
+              value={content_data.corner_radius || 'lg'}
+              onChange={(e) => updateContent('corner_radius', e.target.value)}
+              className="w-full bg-black border border-white/10 text-white px-2 py-1.5 rounded text-[13px] focus:outline-none focus:border-white/30 transition-all"
+            >
+              <option value="none">None</option>
+              <option value="sm">Small</option>
+              <option value="md">Medium</option>
+              <option value="lg">Large</option>
+              <option value="xl">Extra Large</option>
+            </select>
+          </div>
+          <div>
+            <label className="text-white/40 text-[11px] block mb-1 font-normal">Image Aspect</label>
+            <select
+              value={content_data.image_aspect || 'square'}
+              onChange={(e) => updateContent('image_aspect', e.target.value)}
+              className="w-full bg-black border border-white/10 text-white px-2 py-1.5 rounded text-[13px] focus:outline-none focus:border-white/30 transition-all"
+            >
+              <option value="square">Square (1:1)</option>
+              <option value="portrait">Portrait (3:4)</option>
+              <option value="landscape">Landscape (4:3)</option>
+            </select>
+          </div>
+        </div>
+      );
+    }
+
+    if (section_key === 'hero') {
+      return (
+        <div className="space-y-2">
+          <EditorField label="Headline" value={content_data.headline || ''} onChange={(v) => updateContent('headline', v)} placeholder="Your bold headline..." />
+          <EditorField label="Subheadline" value={content_data.subheadline || ''} onChange={(v) => updateContent('subheadline', v)} multiline placeholder="Supporting text..." />
+          <div className="grid grid-cols-2 gap-1.5">
+            <EditorField label="Primary Button" value={content_data.cta_primary?.text || ''} onChange={(v) => updateNested('cta_primary.text', v)} placeholder="Shop Now" />
+            <EditorField label="Link" value={content_data.cta_primary?.link || ''} onChange={(v) => updateNested('cta_primary.link', v)} placeholder="/shop" />
+          </div>
+          <div className="grid grid-cols-2 gap-1.5">
+            <EditorField label="Secondary Button" value={content_data.cta_secondary?.text || ''} onChange={(v) => updateNested('cta_secondary.text', v)} placeholder="Learn More" />
+            <EditorField label="Link" value={content_data.cta_secondary?.link || ''} onChange={(v) => updateNested('cta_secondary.link', v)} placeholder="/about" />
+          </div>
+          <ColorPicker label="Background" value={content_data.background_color || '#000000'} onChange={(v) => updateContent('background_color', v)} />
+          <SliderField label="Overlay" value={content_data.overlay_opacity || 0.6} min={0} max={1} step={0.1} onChange={(v) => updateContent('overlay_opacity', v)} />
+        </div>
+      );
+    }
+
+    if (section_key === 'process') {
+      return (
+        <div className="space-y-2">
+          <EditorField label="Headline" value={content_data.headline || ''} onChange={(v) => updateContent('headline', v)} placeholder="How it works..." />
+          <EditorField label="Subheadline" value={content_data.subheadline || ''} onChange={(v) => updateContent('subheadline', v)} placeholder="Simple process..." />
+          <ArrayEditor 
+            label="Steps" 
+            items={content_data.steps || []}
+            onChange={(items) => updateContent('steps', items)}
+            renderItem={(item, index, onChange) => (
+              <div className="space-y-1.5">
+                <input
+                  type="text"
+                  value={item.title}
+                  onChange={(e) => onChange({ ...item, title: e.target.value })}
+                  placeholder="Step title"
+                  className="w-full bg-black border border-white/10 text-white px-2 py-1.5 rounded text-xs focus:outline-none focus:border-white/30 transition-all placeholder:text-white/20"
+                />
+                <textarea
+                  value={item.description}
+                  onChange={(e) => onChange({ ...item, description: e.target.value })}
+                  placeholder="Description"
+                  rows={2}
+                  className="w-full bg-black border border-white/10 text-white px-2 py-1.5 rounded text-xs focus:outline-none focus:border-white/30 transition-all resize-none placeholder:text-white/20"
+                />
+              </div>
+            )}
+          />
+          <ColorPicker label="Background" value={content_data.background_color || '#0a0a0a'} onChange={(v) => updateContent('background_color', v)} />
+        </div>
+      );
+    }
+
+    if (section_key === 'about_story' || section_key === 'story') {
+      return (
+        <div className="space-y-2">
+          <EditorField label="Headline" value={content_data.headline || ''} onChange={(v) => updateContent('headline', v)} placeholder="Our story..." />
+          <ArrayEditor 
+            label="Paragraphs" 
+            items={content_data.paragraphs || []}
+            onChange={(items) => updateContent('paragraphs', items)}
+            renderItem={(item, index, onChange) => (
+              <textarea
+                value={item}
+                onChange={(e) => onChange(e.target.value)}
+                placeholder="Tell your story..."
+                rows={2}
+                className="w-full bg-black border border-white/10 text-white px-2 py-1.5 rounded text-xs focus:outline-none focus:border-white/30 transition-all resize-none leading-relaxed placeholder:text-white/20"
+              />
+            )}
+          />
+          <ColorPicker label="Background" value={content_data.background_color || '#000000'} onChange={(v) => updateContent('background_color', v)} />
+        </div>
+      );
+    }
+
+    if (section_key === 'cta') {
+      return (
+        <div className="space-y-2">
+          <EditorField label="Headline" value={content_data.headline || ''} onChange={(v) => updateContent('headline', v)} placeholder="Ready to start?" />
+          <EditorField label="Subheadline" value={content_data.subheadline || ''} onChange={(v) => updateContent('subheadline', v)} multiline placeholder="Join thousands..." />
+          <div className="grid grid-cols-2 gap-1.5">
+            <EditorField label="Button Text" value={content_data.cta_button?.text || ''} onChange={(v) => updateNested('cta_button.text', v)} placeholder="Shop Now" />
+            <EditorField label="Link" value={content_data.cta_button?.link || ''} onChange={(v) => updateNested('cta_button.link', v)} placeholder="/shop" />
+          </div>
+          <ColorPicker label="Background" value={content_data.background_color || '#000000'} onChange={(v) => updateContent('background_color', v)} />
+        </div>
+      );
+    }
+
+    // Fallback JSON editor for unknown section types
     return (
       <div className="space-y-2">
         {/* Dynamic Editors Based on Section Type */}
-        {section_key === 'hero' && (
+        {section_key === 'REMOVE_THIS' && (
           <>
             <div className="space-y-2">
               <EditorField label="Headline" value={content_data.headline || ''} onChange={(v) => updateContent('headline', v)} placeholder="Your bold headline..." />
@@ -533,13 +681,85 @@ export default function LiveEditorV2() {
               <ColorPicker label="Background" value={content_data.background_color || '#000000'} onChange={(v) => updateContent('background_color', v)} />
               <SliderField label="Overlay" value={content_data.overlay_opacity || 0.6} min={0} max={1} step={0.1} onChange={(v) => updateContent('overlay_opacity', v)} />
               
+              
+              {/* Custom Fields (Vendor-Added) */}
+              {customFieldsCache[section_key]?.length > 0 && (
+                <div className="mt-4 pt-4 border-t border-purple-500/20">
+                  <div className="text-xs text-purple-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                    <span>Custom Fields</span>
+                    <span className="bg-purple-500/20 px-1.5 py-0.5 rounded text-[10px]">
+                      {customFieldsCache[section_key].length}
+                    </span>
+                  </div>
+                  {customFieldsCache[section_key].map((customField: any) => {
+                    const fieldDef = customField.field_definition;
+                    const fieldId = customField.field_id;
+                    
+                    if (fieldDef.type === 'text') {
+                      return (
+                        <EditorField 
+                          key={fieldId}
+                          label={`${fieldDef.label} 🔧`}
+                          value={content_data[fieldId] || ''}
+                          onChange={(v) => updateContent(fieldId, v)}
+                          placeholder={fieldDef.placeholder}
+                        />
+                      );
+                    } else if (fieldDef.type === 'textarea') {
+                      return (
+                        <EditorField 
+                          key={fieldId}
+                          label={`${fieldDef.label} 🔧`}
+                          value={content_data[fieldId] || ''}
+                          onChange={(v) => updateContent(fieldId, v)}
+                          multiline
+                          placeholder={fieldDef.placeholder}
+                        />
+                      );
+                    } else if (fieldDef.type === 'color') {
+                      return (
+                        <ColorPicker 
+                          key={fieldId}
+                          label={`${fieldDef.label} 🔧`}
+                          value={content_data[fieldId] || '#000000'}
+                          onChange={(v) => updateContent(fieldId, v)}
+                        />
+                      );
+                    } else if (fieldDef.type === 'boolean') {
+                      return (
+                        <div key={fieldId} className="flex items-center gap-2 mb-2">
+                          <input
+                            type="checkbox"
+                            checked={content_data[fieldId] || false}
+                            onChange={(e) => updateContent(fieldId, e.target.checked)}
+                            className="w-4 h-4"
+                          />
+                          <label className="text-white/60 text-xs">{fieldDef.label} 🔧</label>
+                        </div>
+                      );
+                    } else if (fieldDef.type === 'url') {
+                      return (
+                        <EditorField 
+                          key={fieldId}
+                          label={`${fieldDef.label} 🔧`}
+                          value={content_data[fieldId] || ''}
+                          onChange={(v) => updateContent(fieldId, v)}
+                          placeholder={fieldDef.placeholder || 'https://...'}
+                        />
+                      );
+                    }
+                    return null;
+                  })}
+                </div>
+              )}
+
               {/* Add Custom Field Button */}
               <div className="mt-4 pt-4 border-t border-white/10">
                 <AddCustomFieldButton 
                   sectionKey="hero" 
                   vendorId={vendor?.id || localStorage.getItem('vendor_id') || ''} 
                   onFieldAdded={() => {
-                    alert('Custom field added! Refresh the editor to see it.');
+                    loadCustomFields(); // Reload to show new field
                   }} 
                 />
               </div>
