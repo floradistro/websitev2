@@ -45,7 +45,7 @@ export function ProductPickerFieldInline({ label, value = [], onChange, vendorId
 
   return (
     <div className="mb-2">
-      <label className="text-white/60 text-xs block mb-1">{label}</label>
+      <label className="text-[#858585] text-[10px] block mb-1">{label}</label>
       
       {/* Selected products */}
       {selectedProducts.length > 0 && (

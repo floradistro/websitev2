@@ -16,8 +16,6 @@ export function PreservePreviewMode() {
   useEffect(() => {
     if (!isPreview) return;
 
-    console.log('🔗 Preview mode: Intercepting all navigation to preserve parameters');
-
     // Get current vendor from URL
     const currentVendor = searchParams?.get('vendor');
 
@@ -45,7 +43,6 @@ export function PreservePreviewMode() {
           e.preventDefault();
           
           const newPath = url.pathname + url.search;
-          console.log('🔗 Navigating to:', newPath);
           
           // Use router.push for smooth client-side navigation
           router.push(newPath);

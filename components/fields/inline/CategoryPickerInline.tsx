@@ -46,14 +46,7 @@ export function CategoryPickerFieldInline({ label, value = [], onChange }: { lab
 
   return (
     <div className="mb-2">
-      <div className="flex items-center justify-between mb-1">
-        <label className="text-white/60 text-xs">{label}</label>
-        {selectedCategories.length > 0 && (
-          <span className="text-green-400 text-[10px]">
-            ✓ {selectedCategories.length} selected
-          </span>
-        )}
-      </div>
+      <label className="text-[#858585] text-[10px] block mb-1">{label}</label>
       
       {/* Selected items - Always visible */}
       {selectedCategories.length > 0 && (

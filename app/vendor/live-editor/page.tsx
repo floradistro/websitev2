@@ -1175,11 +1175,8 @@ export default function LiveEditorV2() {
           {/* Custom Fields (Vendor-Added) */}
           {customFieldsCache['hero']?.length > 0 && (
             <div className="mt-4 pt-4 border-t border-[#3e3e3e]">
-              <div className="text-xs text-[#4fc1ff] tracking-wide mb-3 flex items-center gap-2">
-                <span>Custom Fields</span>
-                <span className="bg-[#007acc]/20 text-[#4fc1ff] px-1.5 py-0.5 rounded text-[10px] border border-[#007acc]/30">
-                  {customFieldsCache['hero'].length}
-                </span>
+              <div className="text-[10px] text-[#858585] uppercase tracking-wider mb-2 font-medium">
+                Custom Fields ({customFieldsCache['hero'].length})
               </div>
               {customFieldsCache['hero'].map((customField: any) => {
                 const fieldDef = customField.field_definition;
@@ -1190,7 +1187,7 @@ export default function LiveEditorV2() {
                   return (
                     <EditorField 
                       key={fieldId}
-                      label={`${fieldDef.label} 🔧`}
+                      label={fieldDef.label}
                       value={content_data[fieldId] || ''}
                       onChange={(v) => updateContent(fieldId, v)}
                       placeholder={fieldDef.placeholder}
@@ -1200,7 +1197,7 @@ export default function LiveEditorV2() {
                   return (
                     <EditorField 
                       key={fieldId}
-                      label={`${fieldDef.label} 🔧`}
+                      label={fieldDef.label}
                       value={content_data[fieldId] || ''}
                       onChange={(v) => updateContent(fieldId, v)}
                       multiline
@@ -1211,7 +1208,7 @@ export default function LiveEditorV2() {
                   return (
                     <ColorPicker 
                       key={fieldId}
-                      label={`${fieldDef.label} 🔧`}
+                      label={fieldDef.label}
                       value={content_data[fieldId] || '#000000'}
                       onChange={(v) => updateContent(fieldId, v)}
                     />
@@ -1220,7 +1217,7 @@ export default function LiveEditorV2() {
                   return (
                     <ToggleField
                       key={fieldId}
-                      label={`${fieldDef.label} 🔧`}
+                      label={fieldDef.label}
                       value={content_data[fieldId] || false}
                       onChange={(v) => updateContent(fieldId, v)}
                     />
@@ -1229,7 +1226,7 @@ export default function LiveEditorV2() {
                   return (
                     <EditorField 
                       key={fieldId}
-                      label={`${fieldDef.label} 🔧`}
+                      label={fieldDef.label}
                       value={content_data[fieldId] || ''}
                       onChange={(v) => updateContent(fieldId, v)}
                       placeholder={fieldDef.placeholder || 'https://...'}
@@ -1238,31 +1235,31 @@ export default function LiveEditorV2() {
                 } else if (fieldDef.type === 'number') {
                   return (
                     <div key={fieldId} className="mb-2">
-                      <label className="text-white/60 text-xs block mb-1">{fieldDef.label} 🔧</label>
+                      <label className="text-[#858585] text-[10px] block mb-1">{fieldDef.label}</label>
                       <input
                         type="number"
                         value={content_data[fieldId] || 0}
                         onChange={(e) => updateContent(fieldId, parseInt(e.target.value))}
-                        className="w-full bg-black border border-white/10 text-white px-2 py-1.5 rounded text-xs"
+                        className="w-full bg-[#1e1e1e] border border-[#3e3e3e] text-[#cccccc] px-2 py-1.5 rounded text-xs focus:border-[#007acc] focus:outline-none"
                       />
                     </div>
                   );
                 } else if (fieldDef.type === 'category_picker') {
-                  // Category Picker - Full UI
+                  // Category Picker - Minimal
                   return (
                     <CategoryPickerFieldInline
                       key={fieldId}
-                      label={`${fieldDef.label} 🔧`}
+                      label={fieldDef.label}
                       value={content_data[fieldId] || []}
                       onChange={(v) => updateContent(fieldId, v)}
                     />
                   );
                 } else if (fieldDef.type === 'product_picker') {
-                  // Product Picker - Full UI
+                  // Product Picker - Minimal
                   return (
                     <ProductPickerFieldInline
                       key={fieldId}
-                      label={`${fieldDef.label} 🔧`}
+                      label={fieldDef.label}
                       value={content_data[fieldId] || []}
                       onChange={(v) => updateContent(fieldId, v)}
                       vendorId={vendor?.id || localStorage.getItem('vendor_id') || ''}
