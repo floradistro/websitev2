@@ -7,6 +7,11 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
+import { ProductPickerField } from '@/components/fields/ProductPickerField';
+import { CategoryPickerField } from '@/components/fields/CategoryPickerField';
+import { PricingDisplayField } from '@/components/fields/PricingDisplayField';
+import { LocationPickerField } from '@/components/fields/LocationPickerField';
+import { CodeEditorField } from '@/components/fields/CodeEditorField';
 
 export interface FieldSchema {
   id: string;
@@ -209,6 +214,62 @@ export function FieldRenderer({ field, value, onChange, allValues = {} }: FieldR
           field={field} 
           value={currentValue || []} 
           onChange={onChange} 
+        />
+      );
+
+    case 'product_picker':
+      return (
+        <ProductPickerField
+          value={currentValue || []}
+          onChange={onChange}
+          vendorId={allValues.vendor_id || ''}
+          maxSelections={field.max_items}
+          filter={field.filter}
+          label={field.label}
+        />
+      );
+
+    case 'category_picker':
+      return (
+        <CategoryPickerField
+          value={currentValue || []}
+          onChange={onChange}
+          multiSelect={field.multi_select !== false}
+          showProductCount={field.show_product_count !== false}
+          label={field.label}
+        />
+      );
+
+    case 'pricing_display':
+      return (
+        <PricingDisplayField
+          value={currentValue || {}}
+          onChange={onChange}
+          vendorId={allValues.vendor_id || ''}
+          label={field.label}
+        />
+      );
+
+    case 'location_picker':
+      return (
+        <LocationPickerField
+          value={currentValue || []}
+          onChange={onChange}
+          vendorId={allValues.vendor_id || ''}
+          filterType={field.filter_type}
+          multiSelect={field.multi_select !== false}
+          label={field.label}
+        />
+      );
+
+    case 'code':
+      return (
+        <CodeEditorField
+          value={currentValue || ''}
+          onChange={onChange}
+          language={field.language || 'html'}
+          maxLength={field.max_length}
+          label={field.label}
         />
       );
 
