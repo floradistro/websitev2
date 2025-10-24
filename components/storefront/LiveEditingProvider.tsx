@@ -84,30 +84,41 @@ export function LiveEditingProvider({ children, initialSections, isPreviewMode =
       window.parent.postMessage({ type: 'PREVIEW_READY' }, '*');
       
       // Detect page navigation and notify parent
-      const detectPageChange = () => {
+      let currentPage = '';
+      const detectAndNotifyPageChange = () => {
         const path = window.location.pathname;
         let pageType = 'home';
         
         if (path.includes('/about')) pageType = 'about';
         else if (path.includes('/contact')) pageType = 'contact';
         else if (path.includes('/faq')) pageType = 'faq';
+        else if (path.includes('/shop')) pageType = 'shop';
         
-        window.parent.postMessage({ 
-          type: 'PAGE_CHANGED', 
-          page: pageType 
-        }, '*');
+        if (pageType !== currentPage) {
+          currentPage = pageType;
+          console.log('📍 Detected page change to:', pageType);
+          window.parent.postMessage({ 
+            type: 'PAGE_CHANGED', 
+            page: pageType 
+          }, '*');
+        }
       };
       
       // Detect initial page
-      detectPageChange();
+      detectAndNotifyPageChange();
       
-      // Listen for navigation changes
-      const observer = new MutationObserver(detectPageChange);
+      // Use multiple detection methods for Next.js
+      // Method 1: URL changes
+      const urlChangeInterval = setInterval(detectAndNotifyPageChange, 500);
+      
+      // Method 2: DOM mutations
+      const observer = new MutationObserver(detectAndNotifyPageChange);
       observer.observe(document.body, { subtree: true, childList: true });
 
       return () => {
         window.removeEventListener('message', handleMessage);
         observer.disconnect();
+        clearInterval(urlChangeInterval);
       };
     }
   }, []);
