@@ -23,19 +23,19 @@ export function LocationsSection({ content, locations = [], vendor }: LocationsS
   const subheadline = typeof content?.subheadline === 'string' ? content.subheadline : `${retailLocations.length} locations`;
 
   return (
-    <section className="py-24 px-6 relative">
+    <section className="py-12 sm:py-24 px-4 sm:px-6 relative">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-xl" />
       <div className="max-w-7xl mx-auto relative z-10">
-        <div className="mb-16 text-center">
-          <h2 className="text-4xl md:text-6xl font-light text-white mb-4 tracking-[-0.02em]">
+        <div className="mb-8 sm:mb-16 text-center">
+          <h2 className="text-3xl sm:text-4xl md:text-6xl font-light text-white mb-3 sm:mb-4 tracking-[-0.02em]">
             {headline}
           </h2>
-          <p className="text-xl text-neutral-400 font-light">
+          <p className="text-base sm:text-xl text-neutral-400 font-light">
             {subheadline}
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
           {retailLocations.map((location: any) => {
             const fullAddress = `${location.address_line1}, ${location.city}, ${location.state} ${location.zip}`;
             const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddress)}`;
@@ -46,7 +46,7 @@ export function LocationsSection({ content, locations = [], vendor }: LocationsS
                 className="group bg-black/80 backdrop-blur-xl hover:bg-black/90 rounded-[32px] overflow-hidden transition-all duration-300 hover:shadow-2xl hover:shadow-white/10 hover:-translate-y-1"
               >
                 {/* Logo Header */}
-                <div className="aspect-[4/3] bg-black/20 flex items-center justify-center p-8 border-b border-white/10 relative overflow-hidden">
+                <div className="aspect-[4/3] bg-black/20 flex items-center justify-center p-4 sm:p-8 border-b border-white/10 relative overflow-hidden">
                   <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent" />
                   {vendor?.logo_url ? (
                     <img 
@@ -60,26 +60,26 @@ export function LocationsSection({ content, locations = [], vendor }: LocationsS
                 </div>
                 
                 {/* Location Info */}
-                <div className="p-8">
-                  <div className="flex items-start gap-3 mb-6">
-                    <div className="w-10 h-10 rounded-[16px] bg-white/10 border border-white/20 flex items-center justify-center flex-shrink-0">
-                      <MapPin className="w-4 h-4 text-white" />
+                <div className="p-4 sm:p-8">
+                  <div className="flex items-start gap-2 sm:gap-3 mb-4 sm:mb-6">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-[12px] sm:rounded-[16px] bg-white/10 border border-white/20 flex items-center justify-center flex-shrink-0">
+                      <MapPin className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
                     </div>
                     <div className="flex-1">
-                      <h3 className="text-lg font-semibold text-white mb-1.5 tracking-tight">
+                      <h3 className="text-base sm:text-lg font-semibold text-white mb-1 sm:mb-1.5 tracking-tight">
                         {typeof location.name === 'string' ? location.name : String(location.name || 'Location')}
                       </h3>
                     </div>
                   </div>
 
-                  <div className="space-y-1.5 text-sm text-neutral-400 mb-6 font-light">
+                  <div className="space-y-1 sm:space-y-1.5 text-xs sm:text-sm text-neutral-400 mb-4 sm:mb-6 font-light">
                     <div>{String(location.address_line1 || '')}</div>
                     <div>{String(location.city || '')}, {String(location.state || '')} {String(location.zip || '')}</div>
                   </div>
 
                   {location.phone && (
-                    <div className="flex items-center gap-2 text-sm text-neutral-500 mb-6">
-                      <Phone className="w-4 h-4" />
+                    <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-neutral-500 mb-4 sm:mb-6">
+                      <Phone className="w-3 h-3 sm:w-4 sm:h-4" />
                       <span>{String(location.phone)}</span>
                     </div>
                   )}
@@ -88,10 +88,10 @@ export function LocationsSection({ content, locations = [], vendor }: LocationsS
                     href={mapsUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2 text-sm text-white font-semibold group-hover:gap-3 transition-all"
+                    className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-white font-semibold group-hover:gap-3 transition-all"
                   >
                     <span>Get directions</span>
-                    <ArrowRight className="w-4 h-4 transition-transform" />
+                    <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 transition-transform" />
                   </a>
                 </div>
               </div>

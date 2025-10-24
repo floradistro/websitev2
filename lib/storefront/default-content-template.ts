@@ -13,8 +13,8 @@ export const DEFAULT_CONTENT_TEMPLATE = {
         cta_primary: { text: 'Shop Now', link: '/shop' },
         cta_secondary: { text: 'Learn More', link: '/about' },
         background_type: 'solid',
-        background_color: '#f9fafb',
-        text_color: '#111827',
+        background_color: '#000000',
+        text_color: '#FFFFFF',
         overlay_opacity: 0
       }
     },
@@ -24,15 +24,15 @@ export const DEFAULT_CONTENT_TEMPLATE = {
       is_enabled: true,
       content_data: {
         headline: 'How It Works',
-        subheadline: 'Your process description',
+        subheadline: 'Simple, fast, reliable',
         steps: [
-          { icon: 'search', title: 'Step 1', description: 'Describe your first step' },
-          { icon: 'check', title: 'Step 2', description: 'Describe your second step' },
-          { icon: 'package', title: 'Step 3', description: 'Describe your third step' },
-          { icon: 'truck', title: 'Step 4', description: 'Describe your final step' }
+          { icon: 'search', title: 'Browse', description: 'Explore our selection' },
+          { icon: 'check', title: 'Select', description: 'Choose your products' },
+          { icon: 'package', title: 'Order', description: 'Secure checkout' },
+          { icon: 'truck', title: 'Receive', description: 'Fast delivery' }
         ],
         background_color: '#ffffff',
-        text_color: '#111827'
+        text_color: '#000000'
       }
     },
     {
@@ -43,7 +43,7 @@ export const DEFAULT_CONTENT_TEMPLATE = {
         headline: 'Our Locations',
         subheadline: 'Visit us in person',
         show_from_database: true,
-        background_color: '#f9fafb'
+        background_color: '#000000'
       }
     },
     {
@@ -55,7 +55,7 @@ export const DEFAULT_CONTENT_TEMPLATE = {
         products_count: 12,
         cta_text: 'View all',
         cta_link: '/shop',
-        background_color: '#ffffff'
+        background_color: '#000000'
       }
     },
     {
@@ -67,7 +67,7 @@ export const DEFAULT_CONTENT_TEMPLATE = {
         show_count: true,
         max_display: 6,
         layout: 'grid',
-        background_color: '#f9fafb'
+        background_color: '#ffffff'
       }
     },
     {
@@ -83,8 +83,8 @@ export const DEFAULT_CONTENT_TEMPLATE = {
         ],
         cta_text: 'Learn more',
         cta_link: '/about',
-        background_color: '#ffffff',
-        text_color: '#111827'
+        background_color: '#000000',
+        text_color: '#FFFFFF'
       }
     },
     {
@@ -109,7 +109,7 @@ export const DEFAULT_CONTENT_TEMPLATE = {
         headline: 'About [Store Name]',
         subheadline: 'Learn more about who we are',
         image_type: 'logo',
-        background_color: '#f9fafb'
+        background_color: '#000000'
       }
     },
     {
@@ -133,12 +133,12 @@ export const DEFAULT_CONTENT_TEMPLATE = {
       content_data: {
         headline: 'Why Choose Us',
         items: [
-          { title: 'Feature 1', description: 'Describe your first key benefit' },
-          { title: 'Feature 2', description: 'Describe your second key benefit' },
-          { title: 'Feature 3', description: 'Describe your third key benefit' },
-          { title: 'Feature 4', description: 'Describe your fourth key benefit' }
+          { title: 'Quality', description: 'Premium products you can trust' },
+          { title: 'Service', description: 'Exceptional customer support' },
+          { title: 'Speed', description: 'Fast and reliable delivery' },
+          { title: 'Value', description: 'Competitive pricing' }
         ],
-        background_color: '#f9fafb'
+        background_color: '#000000'
       }
     },
     {
@@ -147,10 +147,10 @@ export const DEFAULT_CONTENT_TEMPLATE = {
       is_enabled: true,
       content_data: {
         stats: [
-          { number: '---', label: 'Your Stat 1' },
-          { number: '---', label: 'Your Stat 2' },
-          { number: '---', label: 'Your Stat 3' },
-          { number: '---', label: 'Your Stat 4' }
+          { number: '1000+', label: 'Customers' },
+          { number: '100%', label: 'Satisfaction' },
+          { number: '24/7', label: 'Support' },
+          { number: '5★', label: 'Rated' }
         ],
         background_color: '#ffffff'
       }
@@ -164,7 +164,7 @@ export const DEFAULT_CONTENT_TEMPLATE = {
         description: 'Explore our products',
         button_text: 'Shop Now',
         button_link: '/shop',
-        background_color: '#f9fafb'
+        background_color: '#000000'
       }
     }
   ],
@@ -176,7 +176,7 @@ export const DEFAULT_CONTENT_TEMPLATE = {
       content_data: {
         headline: 'Contact Us',
         description: 'Get in touch with our team',
-        background_color: '#f9fafb'
+        background_color: '#000000'
       }
     },
     {
@@ -202,13 +202,13 @@ export const DEFAULT_CONTENT_TEMPLATE = {
       content_data: {
         headline: 'Frequently Asked Questions',
         items: [
-          { question: 'Your question here?', answer: 'Add your answer here. Be clear and helpful.' },
-          { question: 'Another common question?', answer: 'Provide a detailed answer.' },
-          { question: 'Question about shipping?', answer: 'Explain your shipping policy.' },
-          { question: 'Returns and refunds?', answer: 'Describe your return policy.' },
-          { question: 'How to contact support?', answer: 'Provide contact information.' }
+          { question: 'How do I place an order?', answer: 'Browse our products and add items to your cart. Click checkout when ready.' },
+          { question: 'What are your shipping options?', answer: 'We offer standard and express shipping. Delivery times vary by location.' },
+          { question: 'Do you accept returns?', answer: 'Yes, we accept returns within 30 days of purchase. Items must be unopened.' },
+          { question: 'How can I track my order?', answer: 'You will receive a tracking number via email once your order ships.' },
+          { question: 'Do you offer customer support?', answer: 'Yes, our support team is available via email and phone during business hours.' }
         ],
-        background_color: '#f9fafb'
+        background_color: '#ffffff'
       }
     }
   ],

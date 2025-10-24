@@ -29,12 +29,12 @@ export function HeroSection({ content, templateStyle = 'minimalist', basePath = 
   // Template-specific styling
   const styles = {
     minimalist: {
-      container: 'relative min-h-[85vh] flex items-center justify-center px-6 overflow-hidden bg-black',
+      container: 'relative min-h-[85vh] flex items-center justify-center px-4 sm:px-6 overflow-hidden bg-black',
       content: 'relative z-10 max-w-5xl mx-auto text-center',
-      headline: 'text-7xl sm:text-8xl md:text-[120px] font-bold text-white mb-8 leading-[0.95] tracking-[-0.04em] uppercase',
-      subheadline: 'text-lg sm:text-xl text-neutral-400 leading-relaxed mb-12 max-w-xl mx-auto font-medium tracking-wide',
-      buttonPrimary: 'inline-flex items-center gap-3 bg-white text-black px-10 py-5 rounded-full text-base font-bold uppercase tracking-wider hover:bg-neutral-100 transition-all duration-300 shadow-2xl shadow-white/20 hover:shadow-white/30 hover:scale-105',
-      buttonSecondary: 'inline-flex items-center gap-2.5 bg-transparent border-2 border-white text-white hover:bg-white hover:text-black px-10 py-5 rounded-full text-base font-bold uppercase tracking-wider transition-all duration-300 hover:scale-105',
+      headline: 'text-4xl sm:text-6xl md:text-8xl lg:text-[120px] font-bold text-white mb-6 sm:mb-8 leading-[0.95] tracking-[-0.04em] uppercase',
+      subheadline: 'text-sm sm:text-lg md:text-xl text-neutral-400 leading-relaxed mb-8 sm:mb-12 max-w-xl mx-auto font-medium tracking-wide px-4',
+      buttonPrimary: 'inline-flex items-center gap-2 sm:gap-3 bg-white text-black px-6 py-3 sm:px-10 sm:py-5 rounded-full text-sm sm:text-base font-bold uppercase tracking-wider hover:bg-neutral-100 transition-all duration-300 shadow-2xl shadow-white/20 hover:shadow-white/30',
+      buttonSecondary: 'inline-flex items-center gap-2 sm:gap-2.5 bg-transparent border-2 border-white text-white hover:bg-white hover:text-black px-6 py-3 sm:px-10 sm:py-5 rounded-full text-sm sm:text-base font-bold uppercase tracking-wider transition-all duration-300',
     },
     luxury: {
       container: 'relative bg-gradient-to-b from-black via-neutral-900 to-black py-32 md:py-40',
@@ -80,7 +80,7 @@ export function HeroSection({ content, templateStyle = 'minimalist', basePath = 
         <p className={style.subheadline}>
           {typeof content.subheadline === 'string' ? content.subheadline : ''}
         </p>
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 sm:gap-4 w-full sm:w-auto px-4 sm:px-0">
           {content.cta_primary && (
             <Link 
               href={`${basePath}${content.cta_primary.link}`}

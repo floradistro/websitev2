@@ -18,7 +18,7 @@ export const SECTION_LIBRARY: SectionTemplate[] = [
     key: 'hero',
     name: 'Hero Banner',
     description: 'Large header with headline, subheadline, and CTA buttons',
-    icon: '🎯',
+    icon: '',
     category: 'hero',
     pageTypes: ['home', 'about', 'contact'],
     defaultContent: {
@@ -41,7 +41,7 @@ export const SECTION_LIBRARY: SectionTemplate[] = [
     key: 'process',
     name: 'Process Timeline',
     description: 'Show your process or workflow as visual steps',
-    icon: '📋',
+    icon: '',
     category: 'features',
     pageTypes: ['home', 'about'],
     defaultContent: {
@@ -60,7 +60,7 @@ export const SECTION_LIBRARY: SectionTemplate[] = [
     key: 'about_story',
     name: 'Brand Story',
     description: 'Tell your brand story with rich text and images',
-    icon: '📖',
+    icon: '',
     category: 'content',
     pageTypes: ['home', 'about'],
     defaultContent: {
@@ -78,7 +78,7 @@ export const SECTION_LIBRARY: SectionTemplate[] = [
     key: 'differentiators',
     name: 'Key Features',
     description: 'Highlight what makes you different with icon cards',
-    icon: '⭐',
+    icon: '',
     category: 'features',
     pageTypes: ['home', 'about'],
     defaultContent: {
@@ -113,7 +113,7 @@ export const SECTION_LIBRARY: SectionTemplate[] = [
     key: 'stats',
     name: 'Statistics',
     description: 'Show impressive numbers with animated counters',
-    icon: '📊',
+    icon: '',
     category: 'social',
     pageTypes: ['home', 'about'],
     defaultContent: {
@@ -131,7 +131,7 @@ export const SECTION_LIBRARY: SectionTemplate[] = [
     key: 'reviews',
     name: 'Customer Reviews',
     description: 'Display customer testimonials and ratings',
-    icon: '⭐',
+    icon: '',
     category: 'social',
     pageTypes: ['home'],
     defaultContent: {
@@ -161,7 +161,7 @@ export const SECTION_LIBRARY: SectionTemplate[] = [
     key: 'faq',
     name: 'FAQ',
     description: 'Frequently asked questions with expandable answers',
-    icon: '❓',
+    icon: '',
     category: 'content',
     pageTypes: ['home', 'faq'],
     defaultContent: {
@@ -188,7 +188,7 @@ export const SECTION_LIBRARY: SectionTemplate[] = [
     key: 'cta',
     name: 'Call to Action',
     description: 'Strong call-to-action section to drive conversions',
-    icon: '🎯',
+    icon: '',
     category: 'cta',
     pageTypes: ['home', 'about', 'contact'],
     defaultContent: {

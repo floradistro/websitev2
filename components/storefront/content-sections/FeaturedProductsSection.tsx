@@ -28,19 +28,20 @@ export function FeaturedProductsSection({
   if (products.length === 0) return null;
 
   return (
-    <section className="py-20 px-0 sm:px-6 relative">
+    <section className="py-12 sm:py-20 px-0 sm:px-6 relative">
       <div className="absolute inset-0 bg-black/65 backdrop-blur-xl" />
       <div className="max-w-7xl mx-auto relative z-10">
-        <div className="flex items-center justify-between mb-12 px-6 sm:px-0">
-          <h2 className="text-4xl md:text-5xl font-light text-white tracking-[-0.02em]">
+        <div className="flex items-center justify-between mb-8 sm:mb-12 px-4 sm:px-6 md:px-0">
+          <h2 className="text-2xl sm:text-4xl md:text-5xl font-light text-white tracking-[-0.02em]">
             {typeof content?.headline === 'string' ? content.headline : 'Featured'}
           </h2>
           <Link
             href={`${basePath}/shop`}
-            className="inline-flex items-center gap-2 text-base text-neutral-400 hover:text-white transition-colors font-semibold"
+            className="inline-flex items-center gap-1.5 sm:gap-2 text-sm sm:text-base text-neutral-400 hover:text-white transition-colors font-semibold"
           >
-            View all
-            <ArrowRight size={18} />
+            <span className="hidden sm:inline">View all</span>
+            <span className="sm:hidden">All</span>
+            <ArrowRight size={16} className="sm:w-[18px] sm:h-[18px]" />
           </Link>
         </div>
 

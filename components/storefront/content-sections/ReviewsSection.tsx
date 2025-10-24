@@ -35,17 +35,17 @@ export function ReviewsSection({ content, reviews, templateStyle = 'minimalist' 
 
   const styles = {
     minimalist: {
-      container: 'py-20 bg-[#0a0a0a]',
-      header: 'flex items-center justify-between mb-12',
-      headline: 'text-3xl md:text-4xl font-light text-white',
-      count: 'text-white/40 text-sm',
-      grid: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6',
-      card: 'bg-white/5 border border-white/10 p-6 rounded-lg',
-      stars: 'flex gap-1 mb-4',
-      star: 'text-white/80',
-      quote: 'text-white/70 text-sm mb-4 leading-relaxed',
-      author: 'text-white/50 text-xs',
-      product: 'text-white/30 text-xs',
+      container: 'py-12 sm:py-20 bg-[#0a0a0a]',
+      header: 'flex items-center justify-between mb-8 sm:mb-12 px-4 sm:px-0',
+      headline: 'text-2xl sm:text-3xl md:text-4xl font-light text-white',
+      count: 'text-white/40 text-xs sm:text-sm',
+      grid: 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 px-4 sm:px-0',
+      card: 'bg-white/5 border border-white/10 p-4 sm:p-6 rounded-lg',
+      stars: 'flex gap-0.5 sm:gap-1 mb-3 sm:mb-4',
+      star: 'text-white/80 w-3 h-3 sm:w-4 sm:h-4',
+      quote: 'text-white/70 text-xs sm:text-sm mb-3 sm:mb-4 leading-relaxed',
+      author: 'text-white/50 text-[10px] sm:text-xs',
+      product: 'text-white/30 text-[10px] sm:text-xs',
     },
     luxury: {
       container: 'py-32 bg-gradient-to-b from-neutral-900 to-black',
@@ -92,7 +92,7 @@ export function ReviewsSection({ content, reviews, templateStyle = 'minimalist' 
 
   return (
     <div className={style.container}>
-      <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-10">
+      <div className="max-w-7xl mx-auto px-0 sm:px-6 md:px-8 lg:px-10">
         <div className={style.header}>
           <h2 className={style.headline}>{content.headline}</h2>
           {content.show_count && (
@@ -107,7 +107,6 @@ export function ReviewsSection({ content, reviews, templateStyle = 'minimalist' 
                 {[...Array(5)].map((_, i) => (
                   <Star 
                     key={i} 
-                    size={16} 
                     className={style.star}
                     fill={i < review.rating ? 'currentColor' : 'none'}
                   />

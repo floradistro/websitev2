@@ -41,13 +41,13 @@ export function ProcessSection({ content, templateStyle = 'minimalist' }: Proces
 
   const styles = {
     minimalist: {
-      container: 'py-24 px-6 relative bg-black',
-      headline: 'text-4xl md:text-6xl font-light text-white mb-3 text-center tracking-[-0.02em]',
-      subheadline: 'text-xl text-neutral-500 mb-20 font-light text-center',
-      stepsContainer: 'flex flex-wrap md:flex-nowrap items-center justify-center gap-3 max-w-6xl mx-auto',
-      stepCard: 'flex-1 min-w-[140px] bg-transparent border-2 border-white rounded-full px-6 py-8 hover:bg-white hover:text-black transition-all duration-300 hover:scale-105 group flex flex-col items-center justify-center',
-      icon: 'w-8 h-8 text-white group-hover:text-black mb-3 transition-colors',
-      stepTitle: 'text-xs text-white group-hover:text-black font-bold uppercase tracking-wider transition-colors',
+      container: 'py-16 sm:py-24 px-4 sm:px-6 relative bg-black',
+      headline: 'text-3xl sm:text-4xl md:text-6xl font-light text-white mb-2 sm:mb-3 text-center tracking-[-0.02em]',
+      subheadline: 'text-base sm:text-xl text-neutral-500 mb-12 sm:mb-20 font-light text-center',
+      stepsContainer: 'flex flex-wrap md:flex-nowrap items-center justify-center gap-2 sm:gap-3 max-w-6xl mx-auto',
+      stepCard: 'flex-1 min-w-[100px] sm:min-w-[140px] bg-transparent border-2 border-white rounded-full px-4 py-5 sm:px-6 sm:py-8 hover:bg-white hover:text-black transition-all duration-300 hover:scale-105 group flex flex-col items-center justify-center',
+      icon: 'w-6 h-6 sm:w-8 sm:h-8 text-white group-hover:text-black mb-2 sm:mb-3 transition-colors',
+      stepTitle: 'text-[10px] sm:text-xs text-white group-hover:text-black font-bold uppercase tracking-wider transition-colors',
       stepDescription: 'hidden',
       arrow: 'hidden md:block w-5 h-5 text-white/30 flex-shrink-0',
     },

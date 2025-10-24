@@ -32,10 +32,10 @@ export default function LiveEditorV2() {
   const [expandedCategories, setExpandedCategories] = useState<string[]>(['hero', 'content', 'features']);
 
   const pages = [
-    { id: 'home', name: 'Home', icon: '🏠' },
-    { id: 'about', name: 'About', icon: '📖' },
-    { id: 'contact', name: 'Contact', icon: '📧' },
-    { id: 'faq', name: 'FAQ', icon: '❓' },
+    { id: 'home', name: 'Home' },
+    { id: 'about', name: 'About' },
+    { id: 'contact', name: 'Contact' },
+    { id: 'faq', name: 'FAQ' },
   ];
 
   useEffect(() => {
@@ -323,20 +323,9 @@ export default function LiveEditorV2() {
     if (!selectedSection) return null;
 
     const { section_key, content_data } = selectedSection;
-    const sectionMeta = SECTION_LIBRARY.find(s => s.key === section_key);
 
     return (
-      <div className="space-y-6">
-        {/* Section Info */}
-        <div className="bg-white/5 border border-white/10 rounded-lg p-4">
-          <div className="flex items-center gap-3 mb-2">
-            <span className="text-2xl">{sectionMeta?.icon || '📄'}</span>
-            <div>
-              <h4 className="text-white font-semibold">{sectionMeta?.name || section_key}</h4>
-              <p className="text-white/50 text-xs">{sectionMeta?.description}</p>
-            </div>
-          </div>
-        </div>
+      <div className="space-y-4">
 
         {/* Dynamic Editors Based on Section Type */}
         {section_key === 'hero' && (
@@ -471,105 +460,91 @@ export default function LiveEditorV2() {
       {/* Top Bar */}
       <div className="h-14 bg-[#1a1a1a] border-b border-white/10 flex items-center justify-between px-6 flex-shrink-0">
         <div className="flex items-center gap-4">
-          <a href="/vendor/dashboard" className="text-white/60 hover:text-white text-sm transition-colors">
-            ← Dashboard
+          <a href="/vendor/dashboard" className="text-white/60 hover:text-white text-sm transition-colors font-medium">
+            ← Back
           </a>
           <div className="w-px h-6 bg-white/10" />
-          <h1 className="text-white font-semibold text-sm">Live Editor</h1>
-          
+          <div className="flex items-center gap-3">
+            <h1 className="text-white font-semibold text-sm">Storefront Editor</h1>
+            {/* Page Title Badge */}
+            <div className="bg-white/10 px-3 py-1 rounded text-xs text-white/80 font-medium capitalize">
+              {selectedPage} Page
+            </div>
+          </div>
+        </div>
+        
+        <div className="flex items-center gap-2">
           {/* Page Selector */}
           <select
             value={selectedPage}
             onChange={(e) => setSelectedPage(e.target.value)}
-            className="bg-black border border-white/20 text-white px-4 py-2 rounded text-sm font-medium hover:border-white/40 transition-colors"
+            className="bg-black border border-white/20 text-white px-3 py-1.5 rounded text-sm font-medium hover:border-white/40 transition-colors"
           >
             {pages.map(page => (
-              <option key={page.id} value={page.id}>
-                {page.icon} {page.name}
-              </option>
+              <option key={page.id} value={page.id}>{page.name}</option>
             ))}
           </select>
-        </div>
-        
-        <div className="flex items-center gap-3">
+
+          <div className="w-px h-6 bg-white/10" />
+
           {/* Device Toggle */}
-          <div className="flex gap-1 bg-black rounded p-1 border border-white/20">
+          <div className="flex gap-1 bg-black rounded p-0.5 border border-white/20">
             <button
               onClick={() => setPreviewDevice('desktop')}
-              className={`px-3 py-1.5 rounded text-xs transition-all font-medium ${
+              className={`px-2.5 py-1.5 rounded text-xs transition-all font-medium ${
                 previewDevice === 'desktop'
                   ? 'bg-white text-black'
                   : 'text-white/60 hover:text-white'
               }`}
+              title="Desktop"
             >
-              <Monitor size={14} className="inline mr-1.5" />
-              Desktop
+              <Monitor size={14} />
             </button>
             <button
               onClick={() => setPreviewDevice('tablet')}
-              className={`px-3 py-1.5 rounded text-xs transition-all font-medium ${
+              className={`px-2.5 py-1.5 rounded text-xs transition-all font-medium ${
                 previewDevice === 'tablet'
                   ? 'bg-white text-black'
                   : 'text-white/60 hover:text-white'
               }`}
+              title="Tablet"
             >
-              <Monitor size={14} className="inline mr-1.5" />
-              Tablet
+              <Monitor size={13} />
             </button>
             <button
               onClick={() => setPreviewDevice('mobile')}
-              className={`px-3 py-1.5 rounded text-xs transition-all font-medium ${
+              className={`px-2.5 py-1.5 rounded text-xs transition-all font-medium ${
                 previewDevice === 'mobile'
                   ? 'bg-white text-black'
                   : 'text-white/60 hover:text-white'
               }`}
+              title="Mobile"
             >
-              <Smartphone size={14} className="inline mr-1.5" />
-              Mobile
+              <Smartphone size={14} />
             </button>
           </div>
 
-          <button
-            onClick={refreshPreview}
-            className="text-white/60 hover:text-white p-2 rounded hover:bg-white/5 transition-colors"
-            title="Refresh preview"
-          >
-            <RefreshCw size={16} />
-          </button>
-
           {hasUnsavedChanges && (
-            <span className="text-yellow-500 text-xs font-medium bg-yellow-500/10 px-3 py-1.5 rounded">
-              Unsaved changes
-            </span>
+            <span className="text-yellow-500 text-xs font-medium">●</span>
           )}
           
           <button
             onClick={saveAllChanges}
             disabled={saving || !hasUnsavedChanges}
-            className="flex items-center gap-2 bg-white text-black px-6 py-2 rounded text-sm font-semibold hover:bg-white/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-white/20"
+            className="flex items-center gap-1.5 bg-white text-black px-5 py-1.5 rounded text-sm font-semibold hover:bg-white/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
           >
             {saving ? (
               <>
-                <Loader2 size={14} className="animate-spin" />
-                Saving...
+                <Loader2 size={13} className="animate-spin" />
+                Saving
               </>
             ) : (
               <>
-                <Save size={14} />
-                Save Changes
+                <Save size={13} />
+                Save
               </>
             )}
           </button>
-          
-          <a
-            href={previewUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-2 border border-white/20 text-white px-4 py-2 rounded text-sm font-medium hover:border-white/40 hover:bg-white/5 transition-colors"
-          >
-            <Eye size={14} />
-            View Live
-          </a>
         </div>
       </div>
 
@@ -577,59 +552,24 @@ export default function LiveEditorV2() {
       <div className="flex-1 flex overflow-hidden">
         {/* Left Sidebar - Editor */}
         <div className="w-[400px] bg-[#1a1a1a] border-r border-white/10 flex flex-col overflow-hidden flex-shrink-0">
-          {/* Tabs */}
-          <div className="flex border-b border-white/10 bg-[#141414] flex-shrink-0">
-            <button
-              onClick={() => setActiveTab('sections')}
-              className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
-                activeTab === 'sections'
-                  ? 'text-white border-b-2 border-white'
-                  : 'text-white/50 hover:text-white/80'
-              }`}
-            >
-              <Layout size={16} className="inline mr-2" />
-              Sections
-            </button>
-            <button
-              onClick={() => setActiveTab('design')}
-              className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
-                activeTab === 'design'
-                  ? 'text-white border-b-2 border-white'
-                  : 'text-white/50 hover:text-white/80'
-              }`}
-            >
-              <Palette size={16} className="inline mr-2" />
-              Design
-            </button>
-            <button
-              onClick={() => setActiveTab('settings')}
-              className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
-                activeTab === 'settings'
-                  ? 'text-white border-b-2 border-white'
-                  : 'text-white/50 hover:text-white/80'
-              }`}
-            >
-              <Settings size={16} className="inline mr-2" />
-              Settings
-            </button>
+          {/* Header */}
+          <div className="p-4 border-b border-white/10 bg-[#141414] flex-shrink-0">
+            <h3 className="text-white/90 text-sm font-semibold">Page Sections</h3>
+            <p className="text-white/40 text-xs mt-0.5">{sections.length} sections on this page</p>
           </div>
 
-          {/* Tab Content */}
+          {/* Content */}
           <div className="flex-1 overflow-y-auto">
-            {activeTab === 'sections' && (
-              <div className="p-4">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-white/80 text-sm font-semibold uppercase tracking-wider">
-                    Page Sections ({sections.length})
-                  </h3>
-                  <button 
-                    onClick={() => setShowSectionLibrary(true)}
-                    className="flex items-center gap-1.5 text-white bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded text-xs font-medium transition-colors border border-white/20"
-                  >
-                    <Plus size={14} />
-                    Add Section
-                  </button>
-                </div>
+            <div className="p-4">
+              <div className="flex items-center justify-between mb-4">
+                <button 
+                  onClick={() => setShowSectionLibrary(true)}
+                  className="flex items-center gap-1.5 text-white bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded text-xs font-medium transition-colors border border-white/20 w-full justify-center"
+                >
+                  <Plus size={14} />
+                  Add Section
+                </button>
+              </div>
                 
                 {loading ? (
                   <div className="text-white/40 text-sm text-center py-12">
@@ -637,12 +577,14 @@ export default function LiveEditorV2() {
                     Loading sections...
                   </div>
                 ) : sections.length === 0 ? (
-                  <div className="text-center py-12">
-                    <div className="text-white/30 text-5xl mb-4">📄</div>
-                    <p className="text-white/50 text-sm mb-4">No sections yet</p>
+                  <div className="text-center py-12 px-4">
+                    <div className="w-16 h-16 bg-white/5 rounded-lg flex items-center justify-center mx-auto mb-4">
+                      <Layout size={24} className="text-white/30" />
+                    </div>
+                    <p className="text-white/50 text-sm mb-4">No sections on this page</p>
                     <button 
                       onClick={() => setShowSectionLibrary(true)}
-                      className="text-white text-sm font-medium hover:underline"
+                      className="text-white text-xs font-medium hover:underline"
                     >
                       Add your first section
                     </button>
@@ -667,46 +609,45 @@ export default function LiveEditorV2() {
                                     onClick={() => setSelectedSection(section)}
                                     className={`group p-3 border rounded-lg cursor-pointer transition-all ${
                                       selectedSection?.id === section.id
-                                        ? 'bg-white/10 border-white/30 shadow-lg'
+                                        ? 'bg-white/10 border-white/30'
                                         : 'bg-white/5 border-white/10 hover:bg-white/[0.07] hover:border-white/20'
-                                    } ${snapshot.isDragging ? 'shadow-2xl shadow-white/20' : ''}`}
+                                    } ${snapshot.isDragging ? 'shadow-xl' : ''}`}
                                   >
-                                    <div className="flex items-center gap-3">
+                                    <div className="flex items-center gap-2">
                                       <div
                                         {...provided.dragHandleProps}
-                                        className="text-white/30 hover:text-white/60 cursor-grab active:cursor-grabbing"
+                                        className="text-white/20 hover:text-white/50 cursor-grab active:cursor-grabbing"
                                       >
-                                        <GripVertical size={16} />
+                                        <GripVertical size={14} />
                                       </div>
-                                      <span className="text-xl">{meta?.icon || '📄'}</span>
                                       <div className="flex-1 min-w-0">
-                                        <div className="text-white text-sm font-medium capitalize truncate">
-                                          {meta?.name || section.section_key.replace('_', ' ')}
+                                        <div className="text-white text-xs font-medium capitalize truncate">
+                                          {section.section_key.replace(/_/g, ' ')}
                                         </div>
-                                        <div className="text-white/40 text-xs truncate">
-                                          {section.content_data.headline || section.content_data.title || 'Click to edit'}
+                                        <div className="text-white/30 text-[10px] truncate mt-0.5">
+                                          {section.content_data.headline || section.content_data.title || '—'}
                                         </div>
                                       </div>
-                                      <div className="flex items-center gap-1">
+                                      <div className="flex items-center gap-0.5">
                                         <button
                                           onClick={(e) => {
                                             e.stopPropagation();
                                             toggleSection(section.id);
                                           }}
-                                          className="text-white/40 hover:text-white p-1 rounded hover:bg-white/10 transition-colors"
-                                          title={section.is_enabled ? 'Hide section' : 'Show section'}
+                                          className="text-white/30 hover:text-white p-1 rounded hover:bg-white/10 transition-colors"
+                                          title={section.is_enabled ? 'Hide' : 'Show'}
                                         >
-                                          {section.is_enabled ? <Eye size={14} /> : <EyeOff size={14} />}
+                                          {section.is_enabled ? <Eye size={12} /> : <EyeOff size={12} />}
                                         </button>
                                         <button
                                           onClick={(e) => {
                                             e.stopPropagation();
                                             deleteSection(section.id);
                                           }}
-                                          className="text-white/40 hover:text-red-400 p-1 rounded hover:bg-red-500/10 transition-colors"
-                                          title="Delete section"
+                                          className="text-white/30 hover:text-red-400 p-1 rounded hover:bg-red-500/10 transition-colors"
+                                          title="Delete"
                                         >
-                                          <Trash2 size={14} />
+                                          <Trash2 size={12} />
                                         </button>
                                       </div>
                                     </div>
@@ -722,40 +663,16 @@ export default function LiveEditorV2() {
                   </DragDropContext>
                 )}
 
-                {/* Section Editor */}
-                {selectedSection && (
-                  <div className="mt-6 pt-6 border-t border-white/10">
-                    <h4 className="text-white font-semibold mb-4 flex items-center gap-2">
-                      <span className="w-2 h-2 bg-white rounded-full animate-pulse" />
-                      Edit Section
-                    </h4>
-                    {renderSectionEditor()}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {activeTab === 'design' && (
-              <div className="p-4">
-                <h3 className="text-white/80 text-sm font-semibold uppercase tracking-wider mb-4">
-                  Global Design Settings
-                </h3>
-                <p className="text-white/50 text-sm">
-                  Global theme customization coming soon...
-                </p>
-              </div>
-            )}
-
-            {activeTab === 'settings' && (
-              <div className="p-4">
-                <h3 className="text-white/80 text-sm font-semibold uppercase tracking-wider mb-4">
-                  Page Settings
-                </h3>
-                <p className="text-white/50 text-sm">
-                  SEO, meta tags, and page settings coming soon...
-                </p>
-              </div>
-            )}
+              {/* Section Editor */}
+              {selectedSection && (
+                <div className="mt-6 pt-6 border-t border-white/10">
+                  <h4 className="text-white text-xs font-semibold mb-4 uppercase tracking-wider text-white/70">
+                    Edit {selectedSection.section_key.replace(/_/g, ' ')}
+                  </h4>
+                  {renderSectionEditor()}
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
@@ -792,57 +709,41 @@ export default function LiveEditorV2() {
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-6">
           <div className="bg-[#1a1a1a] border border-white/20 rounded-2xl max-w-4xl w-full max-h-[80vh] flex flex-col shadow-2xl">
             {/* Header */}
-            <div className="flex items-center justify-between p-6 border-b border-white/10 flex-shrink-0">
+            <div className="flex items-center justify-between p-5 border-b border-white/10 flex-shrink-0">
               <div>
-                <h2 className="text-2xl font-bold text-white mb-1">Add Section</h2>
-                <p className="text-white/50 text-sm">Choose a section to add to your page</p>
+                <h2 className="text-xl font-semibold text-white">Add Section</h2>
+                <p className="text-white/40 text-xs mt-1">Choose a section type</p>
               </div>
               <button
                 onClick={() => setShowSectionLibrary(false)}
-                className="text-white/60 hover:text-white p-2 rounded-lg hover:bg-white/10 transition-colors"
+                className="text-white/50 hover:text-white p-1.5 rounded hover:bg-white/10 transition-colors"
               >
-                <X size={24} />
+                <X size={20} />
               </button>
             </div>
 
             {/* Content */}
             <div className="flex-1 overflow-y-auto p-6">
-              {Object.entries(sectionsByCategory).map(([category, sectionsInCategory]) => (
-                <div key={category} className="mb-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {availableSections.map((template) => (
                   <button
-                    onClick={() => toggleCategory(category)}
-                    className="flex items-center justify-between w-full text-left mb-3 group"
+                    key={template.key}
+                    onClick={() => addSection(template)}
+                    className="flex items-start gap-3 p-4 bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/30 rounded-lg transition-all text-left group"
                   >
-                    <h3 className="text-white/80 text-sm font-semibold uppercase tracking-wider">
-                      {category}
-                    </h3>
-                    {expandedCategories.includes(category) ? (
-                      <ChevronUp size={16} className="text-white/40 group-hover:text-white/60" />
-                    ) : (
-                      <ChevronDown size={16} className="text-white/40 group-hover:text-white/60" />
-                    )}
-                  </button>
-                  
-                  {expandedCategories.includes(category) && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      {sectionsInCategory.map((template) => (
-                        <button
-                          key={template.key}
-                          onClick={() => addSection(template)}
-                          className="flex items-start gap-4 p-4 bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/30 rounded-lg transition-all text-left group"
-                        >
-                          <span className="text-3xl flex-shrink-0">{template.icon}</span>
-                          <div className="flex-1 min-w-0">
-                            <h4 className="text-white font-medium mb-1 group-hover:text-white/90">{template.name}</h4>
-                            <p className="text-white/50 text-xs leading-relaxed">{template.description}</p>
-                          </div>
-                          <Plus size={18} className="text-white/30 group-hover:text-white/60 flex-shrink-0 mt-1" />
-                        </button>
-                      ))}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h4 className="text-white font-medium text-sm">{template.name}</h4>
+                        <span className="text-[10px] uppercase tracking-wider text-white/30 bg-white/5 px-1.5 py-0.5 rounded">
+                          {template.category}
+                        </span>
+                      </div>
+                      <p className="text-white/40 text-xs leading-relaxed">{template.description}</p>
                     </div>
-                  )}
-                </div>
-              ))}
+                    <Plus size={16} className="text-white/30 group-hover:text-white flex-shrink-0 mt-0.5" />
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         </div>
