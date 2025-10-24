@@ -298,13 +298,13 @@ function StorefrontProductCard({ product, vendorSlug, locations = [] }: Storefro
           {product.name}
         </h3>
         
-        {/* Product Fields - Display top 3 */}
+        {/* Product Fields - Stacked vertically */}
         {displayFields.length > 0 && (
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-col gap-1">
             {displayFields.map((field, idx) => (
-              <div key={idx} className="flex items-center gap-1 text-[10px]">
-                <span className="text-neutral-500 uppercase tracking-wider">{field.label}:</span>
-                <span className="text-neutral-400 font-medium">{field.value}</span>
+              <div key={idx} className="flex items-start gap-1.5 text-[10px]">
+                <span className="text-neutral-500 uppercase tracking-wider whitespace-nowrap">{field.label}:</span>
+                <span className="text-neutral-400 font-medium leading-tight">{field.value}</span>
               </div>
             ))}
           </div>

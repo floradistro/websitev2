@@ -88,13 +88,13 @@ export function StorefrontProductDetail({ productSlug, vendorId }: StorefrontPro
   const inventory = product?.inventory || [];
   
   // Debug logging for pricing tiers
-  if (product) {
-    console.log(`Product ${product.name} pricing tiers:`, {
-      pricingTiers,
-      count: pricingTiers.length,
-      rawPricingTiers: product.pricing_tiers
-    });
-  }
+  console.log('Product detail page - Full product data:', {
+    productName: product?.name,
+    pricingTiers,
+    tiersCount: pricingTiers.length,
+    hasProduct: !!product,
+    productKeys: product ? Object.keys(product) : []
+  });
 
   const inWishlist = product ? isInWishlist(product.id) : false;
 
@@ -279,12 +279,16 @@ export function StorefrontProductDetail({ productSlug, vendorId }: StorefrontPro
             </div>
 
             {/* Pricing Tiers Dropdown */}
-            {pricingTiers.length > 0 && (
+            {pricingTiers.length > 0 ? (
               <div className="animate-fadeIn">
                 <PricingTiers
                   tiers={pricingTiers}
                   onPriceSelect={handlePriceSelect}
                 />
+              </div>
+            ) : (
+              <div className="text-red-500 text-xs p-2 border border-red-500/30 rounded">
+                DEBUG: No pricing tiers found (count: {pricingTiers.length})
               </div>
             )}
 
@@ -442,12 +446,16 @@ export function StorefrontProductDetail({ productSlug, vendorId }: StorefrontPro
                 </div>
 
                 {/* Pricing Tiers */}
-                {pricingTiers.length > 0 && (
+                {pricingTiers.length > 0 ? (
                   <div className="animate-fadeIn">
                     <PricingTiers
                       tiers={pricingTiers}
                       onPriceSelect={handlePriceSelect}
                     />
+                  </div>
+                ) : (
+                  <div className="text-red-500 text-xs p-2 border border-red-500/30 rounded">
+                    DEBUG: No pricing tiers found (count: {pricingTiers.length})
                   </div>
                 )}
 
