@@ -84,13 +84,20 @@ export default async function StorefrontShopPage({ searchParams }: { searchParam
     notFound();
   }
 
-  // Check if in preview mode (live editor)
+  // Check if in preview mode (live editor) - show sections + products
   const params = await searchParams;
   if (params.preview === 'true') {
     return (
-      <div className="-mt-[44px]">
-        <UniversalPageRenderer vendor={vendor} pageType="shop" />
-      </div>
+      <>
+        {/* Editable sections above */}
+        <div className="-mt-[44px]">
+          <UniversalPageRenderer vendor={vendor} pageType="shop" />
+        </div>
+        {/* Shop products below */}
+        <div className="relative z-10">
+          <StorefrontShopClient vendorId={vendorId} />
+        </div>
+      </>
     );
   }
 
