@@ -33,6 +33,19 @@ export default function ProductPageClientOptimized({
   );
 
   useEffect(() => {
+    // Debug logging
+    console.log('🟦 ProductPageClientOptimized state:', {
+      productId,
+      isLoading,
+      hasData: !!data,
+      hasError: !!error,
+      dataSuccess: data?.success,
+      hasProduct: !!(data?.data?.product || data?.product),
+      rawData: data
+    });
+  }, [productId, isLoading, data, error]);
+
+  useEffect(() => {
     // Delay for smooth transition
     const timer = setTimeout(() => setIsReady(true), 50);
     return () => clearTimeout(timer);
