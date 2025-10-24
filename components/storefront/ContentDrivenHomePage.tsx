@@ -206,7 +206,6 @@ export async function ContentDrivenHomePage({
               products={products}
               inventoryMap={inventoryMap}
               productFieldsMap={productFieldsMap}
-              basePath={basePath}
             />
           </div>
         </div>

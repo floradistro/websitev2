@@ -30,6 +30,8 @@ export default function LiveEditorV2() {
   const [activeTab, setActiveTab] = useState<'sections' | 'design' | 'settings'>('sections');
   const [showSectionLibrary, setShowSectionLibrary] = useState(false);
   const [expandedCategories, setExpandedCategories] = useState<string[]>(['hero', 'content', 'features']);
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const pages = [
     { id: 'home', name: 'Home' },
@@ -70,23 +72,39 @@ export default function LiveEditorV2() {
     }
   }
 
+  // Auto-save when changes are made
+  useEffect(() => {
+    if (hasUnsavedChanges) {
+      // Clear existing timeout
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+      
+      // Auto-save after 2 seconds of inactivity
+      saveTimeoutRef.current = setTimeout(() => {
+        saveAllChanges();
+      }, 2000);
+    }
+
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, [hasUnsavedChanges, sections]);
+
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
-      if (event.origin !== window.location.origin) return; // Security
+      if (event.origin !== window.location.origin) return;
 
       if (event.data.type === 'PREVIEW_READY') {
-        console.log('✅ Preview iframe is ready');
         setIframeReady(true);
-        // Reload sections to preview after a short delay
         setTimeout(() => reloadPreviewSections(), 200);
       }
       
-      // Listen for page navigation inside iframe
       if (event.data.type === 'PAGE_CHANGED') {
         const newPage = event.data.page;
-        console.log('📄 Page changed in iframe to:', newPage, '(current:', selectedPage, ')');
         if (newPage && newPage !== selectedPage) {
-          console.log('🔄 Updating editor to match iframe page');
           setSelectedPage(newPage);
         }
       }
@@ -99,7 +117,6 @@ export default function LiveEditorV2() {
   function reloadPreviewSections() {
     const iframe = document.getElementById('preview-iframe') as HTMLIFrameElement;
     if (iframe && iframe.contentWindow) {
-      console.log('📤 Sending RELOAD_SECTIONS for page:', selectedPage, 'Count:', sections.filter(s => s.page_type === selectedPage).length);
       iframe.contentWindow.postMessage({
         type: 'RELOAD_SECTIONS',
         data: { sections: sections.filter(s => s.page_type === selectedPage) }
@@ -110,7 +127,6 @@ export default function LiveEditorV2() {
   // Reload preview when sections change OR when page changes
   useEffect(() => {
     if (iframeReady) {
-      console.log(`🔄 Sections or page changed, reloading preview for ${selectedPage}`);
       setTimeout(() => reloadPreviewSections(), 100);
     }
   }, [sections, selectedPage, iframeReady]);
@@ -119,7 +135,6 @@ export default function LiveEditorV2() {
     setLoading(true);
     try {
       const vendorId = localStorage.getItem('vendor_id');
-      console.log(`🔄 Loading sections for page: ${selectedPage}, vendor: ${vendorId}`);
       const response = await fetch(`/api/vendor/content?page_type=${selectedPage}&vendor_id=${vendorId}`);
       const data = await response.json();
       
@@ -127,7 +142,6 @@ export default function LiveEditorV2() {
         const sorted = (data.sections || []).sort((a: ContentSection, b: ContentSection) => 
           a.section_order - b.section_order
         );
-        console.log(`✅ Loaded ${sorted.length} sections for ${selectedPage}`);
         setSections(sorted);
         
         // Auto-select first section when switching pages
@@ -145,12 +159,14 @@ export default function LiveEditorV2() {
   }
 
   async function saveAllChanges() {
+    if (saving) return; // Prevent concurrent saves
+    
     setSaving(true);
     try {
       const vendorId = localStorage.getItem('vendor_id');
       
-      for (const section of sections) {
-        await fetch(`/api/vendor/content?vendor_id=${vendorId}`, {
+      await Promise.all(sections.map(section => 
+        fetch(`/api/vendor/content?vendor_id=${vendorId}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -160,15 +176,13 @@ export default function LiveEditorV2() {
             section_order: section.section_order,
             is_enabled: section.is_enabled
           })
-        });
-      }
+        })
+      ));
       
-      alert('✅ Changes saved successfully!');
       setHasUnsavedChanges(false);
-      refreshPreview();
+      setLastSaved(new Date());
     } catch (error) {
       console.error('Save error:', error);
-      alert('❌ Failed to save changes');
     } finally {
       setSaving(false);
     }
@@ -178,6 +192,9 @@ export default function LiveEditorV2() {
     setPreviewKey(prev => prev + 1);
     setIframeReady(false);
   }
+
+  // Debounced update to preview
+  const updateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   function updateSectionContent(field: string, value: any) {
     if (!selectedSection) return;
@@ -194,19 +211,26 @@ export default function LiveEditorV2() {
     setSections(sections.map(s => s.id === selectedSection.id ? updatedSection : s));
     setHasUnsavedChanges(true);
     
-    if (!iframeReady) return;
-
-    const iframe = document.getElementById('preview-iframe') as HTMLIFrameElement;
-    if (iframe && iframe.contentWindow) {
-      iframe.contentWindow.postMessage({
-        type: 'UPDATE_SECTION',
-        data: {
-          section_key: selectedSection.section_key,
-          field: field,
-          value: value
-        }
-      }, '*');
+    // Debounce preview updates
+    if (updateTimeoutRef.current) {
+      clearTimeout(updateTimeoutRef.current);
     }
+    
+    updateTimeoutRef.current = setTimeout(() => {
+      if (!iframeReady) return;
+
+      const iframe = document.getElementById('preview-iframe') as HTMLIFrameElement;
+      if (iframe && iframe.contentWindow) {
+        iframe.contentWindow.postMessage({
+          type: 'UPDATE_SECTION',
+          data: {
+            section_key: selectedSection.section_key,
+            field: field,
+            value: value
+          }
+        }, '*');
+      }
+    }, 300);
   }
 
   function updateNestedContent(path: string, value: any) {
@@ -291,12 +315,37 @@ export default function LiveEditorV2() {
   }
 
   async function deleteSection(sectionId: string) {
-    if (!confirm('Are you sure you want to delete this section?')) return;
+    if (!confirm('Delete this section?')) return;
 
     setSections(sections.filter(s => s.id !== sectionId));
     if (selectedSection?.id === sectionId) {
       setSelectedSection(sections[0] || null);
     }
+    setHasUnsavedChanges(true);
+    refreshPreview();
+  }
+
+  function duplicateSection(sectionId: string) {
+    const section = sections.find(s => s.id === sectionId);
+    if (!section) return;
+
+    const duplicate: ContentSection = {
+      ...section,
+      id: `temp-${Date.now()}`,
+      section_order: section.section_order + 1,
+      content_data: { ...section.content_data }
+    };
+
+    // Insert after original section
+    const newSections = [...sections];
+    const index = newSections.findIndex(s => s.id === sectionId);
+    newSections.splice(index + 1, 0, duplicate);
+    
+    // Reorder
+    newSections.forEach((s, i) => s.section_order = i);
+
+    setSections(newSections);
+    setSelectedSection(duplicate);
     setHasUnsavedChanges(true);
     refreshPreview();
   }
@@ -524,27 +573,25 @@ export default function LiveEditorV2() {
             </button>
           </div>
 
-          {hasUnsavedChanges && (
-            <span className="text-yellow-500 text-xs font-medium">●</span>
-          )}
-          
-          <button
-            onClick={saveAllChanges}
-            disabled={saving || !hasUnsavedChanges}
-            className="flex items-center gap-1.5 bg-white text-black px-5 py-1.5 rounded text-sm font-semibold hover:bg-white/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-          >
+          {/* Auto-save Status */}
+          <div className="text-xs text-white/50 flex items-center gap-2">
             {saving ? (
               <>
-                <Loader2 size={13} className="animate-spin" />
-                Saving
+                <Loader2 size={12} className="animate-spin" />
+                Saving...
               </>
-            ) : (
+            ) : hasUnsavedChanges ? (
               <>
-                <Save size={13} />
-                Save
+                <span className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></span>
+                Unsaved
               </>
-            )}
-          </button>
+            ) : lastSaved ? (
+              <>
+                <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                Saved
+              </>
+            ) : null}
+          </div>
         </div>
       </div>
 
@@ -628,7 +675,17 @@ export default function LiveEditorV2() {
                                           {section.content_data.headline || section.content_data.title || '—'}
                                         </div>
                                       </div>
-                                      <div className="flex items-center gap-0.5">
+                                      <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <button
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            duplicateSection(section.id);
+                                          }}
+                                          className="text-white/30 hover:text-white p-1 rounded hover:bg-white/10 transition-colors"
+                                          title="Duplicate"
+                                        >
+                                          <Plus size={12} />
+                                        </button>
                                         <button
                                           onClick={(e) => {
                                             e.stopPropagation();
