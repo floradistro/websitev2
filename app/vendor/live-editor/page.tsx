@@ -513,14 +513,8 @@ export default function LiveEditorV2() {
       setHasUnsavedChanges(true);
     };
 
-  function renderSectionEditor() {
-    if (!selectedSection) return null;
-
-    const { section_key, content_data } = selectedSection;
-
     return (
-      <div className="space-y-3">
-
+      <div className="space-y-2">
         {/* Dynamic Editors Based on Section Type */}
         {section_key === 'hero' && (
           <>
@@ -1046,4 +1040,3 @@ function ArrayEditor({ label, items, onChange, renderItem }: any) {
     </div>
   );
 }
-
