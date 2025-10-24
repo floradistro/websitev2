@@ -765,11 +765,14 @@ export default function LiveEditorV2() {
             <div 
               className={`bg-white shadow-2xl shadow-black/50 overflow-hidden transition-all duration-300 ${
                 previewDevice === 'mobile' 
-                  ? 'w-[375px] h-[812px] rounded-[3rem] border-[14px] border-black' 
+                  ? 'w-[393px] h-[852px] rounded-[3.5rem] border-[16px] border-[#1d1d1f]' 
                   : previewDevice === 'tablet'
-                  ? 'w-[768px] h-[1024px] rounded-[2rem] border-[12px] border-black'
+                  ? 'w-[820px] h-[1180px] rounded-[2.5rem] border-[14px] border-[#1d1d1f]'
                   : 'w-full h-full rounded-lg'
               }`}
+              style={previewDevice === 'mobile' ? {
+                boxShadow: '0 0 0 2px #2d2d2f, 0 25px 50px -12px rgba(0, 0, 0, 0.8)'
+              } : {}}
             >
               <iframe
                 id="preview-iframe"

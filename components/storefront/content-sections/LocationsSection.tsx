@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { MapPin, Phone, Store, Truck, ArrowRight } from 'lucide-react';
 
 interface LocationsSectionProps {

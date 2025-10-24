@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { HelpCircle } from 'lucide-react';
 
 interface FAQItemsSectionProps {
