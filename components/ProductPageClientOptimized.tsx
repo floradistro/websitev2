@@ -60,10 +60,12 @@ export default function ProductPageClientOptimized({
   const pricingTiers = product?.pricing_tiers || [];
   
   // Extract locations from inventory and mark as active (they have stock)
-  const locations = inventory.map((inv: any) => ({
-    ...inv.location,
-    is_active: "1" // Mark as active since it has inventory
-  })).filter(Boolean);
+  const locations = inventory
+    .filter((inv: any) => inv?.location)
+    .map((inv: any) => ({
+      ...inv.location,
+      is_active: "1" // Mark as active since it has inventory
+    }));
 
   return (
     <motion.div
