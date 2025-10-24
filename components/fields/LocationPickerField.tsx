@@ -39,7 +39,7 @@ export function LocationPickerField({
   async function loadLocations() {
     try {
       setLoading(true);
-      const response = await fetch(`/api/locations?vendor_id=${vendorId}`);
+      const response = await fetch(`/api/vendor/locations?vendor_id=${vendorId}`);
       
       if (!response.ok) {
         console.error('Failed to fetch locations:', response.status);

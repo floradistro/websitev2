@@ -35,7 +35,7 @@ export function CategoryPickerField({
   async function loadCategories() {
     try {
       setLoading(true);
-      const response = await fetch('/api/categories');
+      const response = await fetch('/api/supabase/categories');
       
       if (!response.ok) {
         console.error('Failed to fetch categories:', response.status);
