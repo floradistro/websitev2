@@ -120,17 +120,27 @@ export function HeroSection({ content, templateStyle = 'minimalist', basePath = 
           )}
         </div>
 
-        {/* Render custom fields - don't show raw IDs, only meaningful data */}
+        {/* Render custom fields - only display-friendly values */}
         {Object.entries(content).map(([key, value]) => {
           // Skip known base fields and empty values
           const baseFields = ['headline', 'subheadline', 'cta_primary', 'cta_secondary', 'background_color', 'text_color', 'background_type', 'overlay_opacity', 'promotional_badge', 'video_background'];
           if (baseFields.includes(key) || !value) return null;
           
-          // Skip array/object fields (category IDs, product IDs) - these are data, not display content
+          // Skip array fields (category IDs, product IDs)
           if (Array.isArray(value)) return null;
-          if (typeof value === 'object') return null;
           
-          // Only render simple custom fields (text, urls, numbers, etc.)
+          // Skip object fields
+          if (typeof value === 'object' && value !== null) return null;
+          
+          // Skip UUID-like strings (they're IDs, not display content)
+          if (typeof value === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value)) {
+            return null;
+          }
+          
+          // Skip if field key is just a number (likely auto-generated)
+          if (/^\d+$/.test(key)) return null;
+          
+          // Only render simple custom fields with meaningful values
           return (
             <div key={key} className="mt-4 text-sm text-white/80 bg-white/10 backdrop-blur px-4 py-2 rounded">
               <span className="font-semibold">Custom: </span>
