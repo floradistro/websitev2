@@ -9,13 +9,13 @@ export const DEFAULT_CONTENT_TEMPLATE = {
       is_enabled: true,
       content_data: {
         headline: 'Welcome to [Store Name]',
-        subheadline: 'Premium products, delivered fast',
+        subheadline: 'Your tagline goes here',
         cta_primary: { text: 'Shop Now', link: '/shop' },
         cta_secondary: { text: 'Learn More', link: '/about' },
-        background_type: 'animation',
-        background_color: '#000000',
-        text_color: '#FFFFFF',
-        overlay_opacity: 0.6
+        background_type: 'solid',
+        background_color: '#f9fafb',
+        text_color: '#111827',
+        overlay_opacity: 0
       }
     },
     {
@@ -24,15 +24,15 @@ export const DEFAULT_CONTENT_TEMPLATE = {
       is_enabled: true,
       content_data: {
         headline: 'How It Works',
-        subheadline: 'Simple, fast, reliable',
+        subheadline: 'Your process description',
         steps: [
-          { icon: 'leaf', title: 'Browse', description: 'Explore our premium selection' },
-          { icon: 'flask', title: 'Verify', description: 'Lab-tested for quality and safety' },
-          { icon: 'package', title: 'Order', description: 'Quick and secure checkout' },
-          { icon: 'truck', title: 'Receive', description: 'Fast, discreet delivery' }
+          { icon: 'search', title: 'Step 1', description: 'Describe your first step' },
+          { icon: 'check', title: 'Step 2', description: 'Describe your second step' },
+          { icon: 'package', title: 'Step 3', description: 'Describe your third step' },
+          { icon: 'truck', title: 'Step 4', description: 'Describe your final step' }
         ],
-        background_color: '#0a0a0a',
-        text_color: '#FFFFFF'
+        background_color: '#ffffff',
+        text_color: '#111827'
       }
     },
     {
@@ -40,10 +40,10 @@ export const DEFAULT_CONTENT_TEMPLATE = {
       section_order: 3,
       is_enabled: true,
       content_data: {
-        headline: 'Visit Us',
-        subheadline: 'Find a location near you',
+        headline: 'Our Locations',
+        subheadline: 'Visit us in person',
         show_from_database: true,
-        background_color: '#000000'
+        background_color: '#f9fafb'
       }
     },
     {
@@ -55,7 +55,7 @@ export const DEFAULT_CONTENT_TEMPLATE = {
         products_count: 12,
         cta_text: 'View all',
         cta_link: '/shop',
-        background_color: '#000000'
+        background_color: '#ffffff'
       }
     },
     {
@@ -63,11 +63,11 @@ export const DEFAULT_CONTENT_TEMPLATE = {
       section_order: 5,
       is_enabled: true,
       content_data: {
-        headline: 'Customer Reviews',
+        headline: 'What Our Customers Say',
         show_count: true,
         max_display: 6,
         layout: 'grid',
-        background_color: '#0a0a0a'
+        background_color: '#f9fafb'
       }
     },
     {
@@ -75,16 +75,16 @@ export const DEFAULT_CONTENT_TEMPLATE = {
       section_order: 6,
       is_enabled: true,
       content_data: {
-        headline: 'Our Story',
+        headline: 'About [Store Name]',
         paragraphs: [
-          'We are committed to providing the highest quality products.',
-          'Every item is carefully selected and tested for your satisfaction.',
-          'Experience the difference with [Store Name].'
+          'Tell your customers about your business and what makes you unique.',
+          'Share your story, mission, and values.',
+          'This is your chance to connect with your audience.'
         ],
         cta_text: 'Learn more',
         cta_link: '/about',
-        background_color: '#000000',
-        text_color: '#FFFFFF'
+        background_color: '#ffffff',
+        text_color: '#111827'
       }
     },
     {
@@ -93,10 +93,10 @@ export const DEFAULT_CONTENT_TEMPLATE = {
       is_enabled: true,
       content_data: {
         badges: [
-          { icon: 'truck', title: 'Fast Shipping', description: 'Quick delivery to your door' },
-          { icon: 'package', title: 'Easy Pickup', description: 'Order online, pick up today' }
+          { icon: 'truck', title: 'Free Shipping', description: 'On orders over $50' },
+          { icon: 'shield', title: 'Secure Checkout', description: 'Safe and encrypted' }
         ],
-        background_color: '#0a0a0a'
+        background_color: '#ffffff'
       }
     }
   ],
@@ -107,9 +107,9 @@ export const DEFAULT_CONTENT_TEMPLATE = {
       is_enabled: true,
       content_data: {
         headline: 'About [Store Name]',
-        subheadline: 'Your trusted source for premium products',
+        subheadline: 'Learn more about who we are',
         image_type: 'logo',
-        background_color: '#000000'
+        background_color: '#f9fafb'
       }
     },
     {
@@ -117,13 +117,13 @@ export const DEFAULT_CONTENT_TEMPLATE = {
       section_order: 2,
       is_enabled: true,
       content_data: {
-        intro: 'Welcome to [Store Name]',
+        intro: 'Our Story',
         paragraphs: [
-          'We started with a simple mission: provide the best products to our customers.',
-          'Today, we continue that commitment with every order.',
-          'Thank you for choosing [Store Name].'
+          'Add your company history and background here.',
+          'Explain what makes your business special and why customers should choose you.',
+          'Share your values, mission, and vision for the future.'
         ],
-        background_color: '#0a0a0a'
+        background_color: '#ffffff'
       }
     },
     {
@@ -133,12 +133,12 @@ export const DEFAULT_CONTENT_TEMPLATE = {
       content_data: {
         headline: 'Why Choose Us',
         items: [
-          { title: 'Quality First', description: 'Every product meets our high standards' },
-          { title: 'Fast Delivery', description: 'Quick shipping to your location' },
-          { title: 'Trusted', description: 'Thousands of satisfied customers' },
-          { title: 'Support', description: 'Here to help whenever you need' }
+          { title: 'Feature 1', description: 'Describe your first key benefit' },
+          { title: 'Feature 2', description: 'Describe your second key benefit' },
+          { title: 'Feature 3', description: 'Describe your third key benefit' },
+          { title: 'Feature 4', description: 'Describe your fourth key benefit' }
         ],
-        background_color: '#000000'
+        background_color: '#f9fafb'
       }
     },
     {
@@ -147,12 +147,12 @@ export const DEFAULT_CONTENT_TEMPLATE = {
       is_enabled: true,
       content_data: {
         stats: [
-          { number: '1000+', label: 'Happy Customers' },
-          { number: '100%', label: 'Quality Tested' },
-          { number: '24/7', label: 'Support' },
-          { number: '5⭐', label: 'Average Rating' }
+          { number: '---', label: 'Your Stat 1' },
+          { number: '---', label: 'Your Stat 2' },
+          { number: '---', label: 'Your Stat 3' },
+          { number: '---', label: 'Your Stat 4' }
         ],
-        background_color: '#0a0a0a'
+        background_color: '#ffffff'
       }
     },
     {
@@ -161,10 +161,10 @@ export const DEFAULT_CONTENT_TEMPLATE = {
       is_enabled: true,
       content_data: {
         headline: 'Ready to Get Started?',
-        description: 'Browse our selection today',
+        description: 'Explore our products',
         button_text: 'Shop Now',
         button_link: '/shop',
-        background_color: '#000000'
+        background_color: '#f9fafb'
       }
     }
   ],
@@ -175,8 +175,8 @@ export const DEFAULT_CONTENT_TEMPLATE = {
       is_enabled: true,
       content_data: {
         headline: 'Contact Us',
-        description: 'We\'re here to help',
-        background_color: '#000000'
+        description: 'Get in touch with our team',
+        background_color: '#f9fafb'
       }
     },
     {
@@ -187,10 +187,10 @@ export const DEFAULT_CONTENT_TEMPLATE = {
         show_email: true,
         show_phone: true,
         show_hours: true,
-        custom_hours: 'Open Daily 9AM - 9PM',
+        custom_hours: 'Add your business hours',
         show_locations: true,
         show_social: true,
-        background_color: '#0a0a0a'
+        background_color: '#ffffff'
       }
     }
   ],
@@ -202,13 +202,13 @@ export const DEFAULT_CONTENT_TEMPLATE = {
       content_data: {
         headline: 'Frequently Asked Questions',
         items: [
-          { question: 'How do I place an order?', answer: 'Browse our products and add items to your cart. Proceed to checkout when ready.' },
-          { question: 'What are your shipping options?', answer: 'We offer standard and express shipping. Delivery times vary by location.' },
-          { question: 'Do you offer returns?', answer: 'Yes, we accept returns on unopened products within 30 days.' },
-          { question: 'How can I track my order?', answer: 'You will receive a tracking number via email once your order ships.' },
-          { question: 'Do you ship to my state?', answer: 'We ship to most states. See our shipping page for details.' }
+          { question: 'Your question here?', answer: 'Add your answer here. Be clear and helpful.' },
+          { question: 'Another common question?', answer: 'Provide a detailed answer.' },
+          { question: 'Question about shipping?', answer: 'Explain your shipping policy.' },
+          { question: 'Returns and refunds?', answer: 'Describe your return policy.' },
+          { question: 'How to contact support?', answer: 'Provide contact information.' }
         ],
-        background_color: '#000000'
+        background_color: '#f9fafb'
       }
     }
   ],
@@ -218,10 +218,16 @@ export const DEFAULT_CONTENT_TEMPLATE = {
       section_order: 1,
       is_enabled: true,
       content_data: {
-        compliance_text: 'All products comply with applicable regulations.',
-        restricted_states: 'Shipping restrictions may apply in certain states.',
-        show_powered_by: true,
-        custom_footer_text: null
+        compliance_text: 'Add compliance or legal text here.',
+        restricted_states: 'Add shipping restrictions if applicable.',
+        show_powered_by: false,
+        custom_footer_text: '© 2025 [Store Name]. All rights reserved.',
+        footer_links: [
+          { title: 'Privacy Policy', url: '/privacy' },
+          { title: 'Terms of Service', url: '/terms' },
+          { title: 'Shipping', url: '/shipping' },
+          { title: 'Returns', url: '/returns' }
+        ]
       }
     }
   ]
