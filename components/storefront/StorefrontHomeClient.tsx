@@ -36,8 +36,12 @@ export function StorefrontHomeClient({
   productFieldsMap,
   locations = [],
 }: StorefrontHomeClientProps) {
-  // For custom domains, links are at root. For main site, they're at /storefront
-  const basePath = '';
+  // Determine base path based on current URL
+  // Custom domains: '' (routes at root like floradistro.com/shop)
+  // Localhost: '/storefront' (routes like localhost:3000/storefront/shop)
+  const basePath = typeof window !== 'undefined' && window.location.hostname.includes('localhost') 
+    ? '/storefront' 
+    : '';
   
   return (
     <div 

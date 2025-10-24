@@ -20,8 +20,12 @@ export function StorefrontHeader({ vendor }: StorefrontHeaderProps) {
   const [productsDropdownOpen, setProductsDropdownOpen] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
   
-  // Determine base path (storefront root is always at current domain root for custom domains)
-  const basePath = '';
+  // Determine base path based on current URL
+  // Custom domains: '' (routes at root like floradistro.com/shop)
+  // Localhost: '/storefront' (routes like localhost:3000/storefront/shop)
+  const basePath = typeof window !== 'undefined' && window.location.hostname.includes('localhost') 
+    ? '/storefront' 
+    : '';
   const [lastScrollY, setLastScrollY] = useState(0);
   const { itemCount, items, total } = useCart();
 
