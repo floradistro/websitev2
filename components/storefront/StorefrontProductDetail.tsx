@@ -57,7 +57,7 @@ export function StorefrontProductDetail({ productSlug, vendorId, config = {} }: 
   const { addToCart } = useCart();
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
 
-  // Fetch product using Yacht Club API
+  // Fetch product using Yacht Club API - SWR handles deduplication
   const { data, error, isLoading } = useSWR(
     `/api/page-data/products`,
     fetcher,
@@ -65,6 +65,7 @@ export function StorefrontProductDetail({ productSlug, vendorId, config = {} }: 
       revalidateOnFocus: false,
       revalidateOnReconnect: false,
       dedupingInterval: 60000,
+      keepPreviousData: true, // Keep previous data while revalidating
     }
   );
 

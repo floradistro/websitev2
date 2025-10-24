@@ -262,7 +262,7 @@ export function FieldLibraryPanel({
                 </p>
                 <button
                   onClick={() => setView('library')}
-                  className="text-purple-400 hover:text-purple-300 text-xs"
+                  className="text-[#007acc] hover:text-[#4fc1ff] text-xs transition-colors"
                 >
                   Browse Library →
                 </button>
@@ -301,7 +301,7 @@ export function FieldLibraryPanel({
                           </div>
                           
                           <div className="flex items-center gap-2">
-                            <span className="text-purple-400 text-[9px] bg-purple-500/20 px-1.5 py-0.5 rounded">
+                            <span className="text-[#858585] text-[9px] bg-[#252526] px-1.5 py-0.5 rounded border border-[#3e3e3e]">
                               {field.field_definition.type}
                             </span>
                             {field.field_definition.required && (
