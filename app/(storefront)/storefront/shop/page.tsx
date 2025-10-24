@@ -93,10 +93,17 @@ export default async function StorefrontShopPage({ searchParams }: { searchParam
   // Check if in preview mode (live editor) - show sections + products
   const params = await searchParams;
   if (params.preview === 'true') {
+    // Filter to visible sections only
+    const visibleShopSections = shopSections.filter(s => 
+      s.section_key !== 'shop_config' && s.is_enabled !== false
+    );
+    
     return (
       <div className="-mt-[44px]">
-        {/* Editable sections above (only if any exist) */}
-        <UniversalPageRenderer vendor={vendor} pageType="shop" />
+        {/* Only render sections container if there are visible sections */}
+        {visibleShopSections.length > 0 && (
+          <UniversalPageRenderer vendor={vendor} pageType="shop" />
+        )}
         
         {/* Shop products with editable config */}
         <StorefrontShopClient 
