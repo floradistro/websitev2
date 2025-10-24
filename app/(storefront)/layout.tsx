@@ -51,46 +51,9 @@ export default async function StorefrontLayout({
     notFound();
   }
 
-  return (
-    <html lang="en" data-scroll-behavior="smooth" className="overflow-x-hidden" suppressHydrationWarning>
-      <head>
-        <title>{vendor.store_name} - Premium Cannabis</title>
-        <meta name="description" content={vendor.store_description || `Shop premium cannabis products from ${vendor.store_name}`} />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <meta name="mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        {vendor.logo_url && <link rel="apple-touch-icon" href={vendor.logo_url} />}
-      </head>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col overflow-x-hidden min-h-screen`}
-        style={{ 
-          backgroundColor: '#1a1a1a' 
-        }}
-        suppressHydrationWarning
-      >
-        <Providers>
-          <LoadingBar />
-          <AuthProvider>
-            <WishlistProvider>
-              <CartProvider>
-                <StorefrontThemeProvider vendor={vendor}>
-                  <div className="storefront-container bg-[#1a1a1a] min-h-screen">
-                    <StorefrontHeader vendor={vendor} />
-                    <main className="storefront-main">
-                      {children}
-                    </main>
-                    <StorefrontFooter vendor={vendor} />
-                  </div>
-                  <NotificationToast />
-                </StorefrontThemeProvider>
-              </CartProvider>
-            </WishlistProvider>
-          </AuthProvider>
-        </Providers>
-      </body>
-    </html>
-  );
+  // REMOVED: Root layout now handles vendor html/body rendering
+  // This layout just passes through children
+  // Root layout detects x-tenant-type=vendor and renders complete vendor layout
+  return <>{children}</>;
 }
 

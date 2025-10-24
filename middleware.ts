@@ -41,41 +41,34 @@ export async function middleware(request: NextRequest) {
     return response;
   }
 
-  // LOCAL TESTING: Check for ?vendor param on localhost
-  if ((domain.includes('localhost') || domain.includes('127.0.0.1'))) {
-    const vendorSlug = request.nextUrl.searchParams.get('vendor');
+  // LOCAL TESTING: Check if accessing /storefront or has ?vendor param
+  if ((domain.includes('localhost') || domain.includes('127.0.0.1')) && pathname.startsWith('/storefront')) {
+    const vendorSlug = request.nextUrl.searchParams.get('vendor') || 'flora-distro';
     
-    if (vendorSlug && !pathname.startsWith('/api')) {
-      try {
-        const supabase = createClient(
-          process.env.NEXT_PUBLIC_SUPABASE_URL!,
-          process.env.SUPABASE_SERVICE_ROLE_KEY!
-        );
+    try {
+      const supabase = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!
+      );
+      
+      const { data: vendor } = await supabase
+        .from('vendors')
+        .select('id, status')
+        .eq('slug', vendorSlug)
+        .eq('status', 'active')
+        .single();
         
-        const { data: vendor } = await supabase
-          .from('vendors')
-          .select('id, status')
-          .eq('slug', vendorSlug)
-          .eq('status', 'active')
-          .single();
-          
-        if (vendor) {
-          const response = NextResponse.next();
-          response.headers.set('x-vendor-id', vendor.id);
-          response.headers.set('x-tenant-type', 'vendor');
-          response.headers.set('x-is-local-test', 'true');
-          console.log(`🧪 Local vendor test - ${vendorSlug} → serves from ROOT`);
-          return response;
-        }
-      } catch (error) {
-        console.error('Local vendor lookup error:', error);
+      if (vendor) {
+        const response = NextResponse.next();
+        response.headers.set('x-vendor-id', vendor.id);
+        response.headers.set('x-tenant-type', 'vendor');
+        response.headers.set('x-is-local-test', 'true');
+        console.log(`🧪 Local storefront test - Vendor: ${vendorSlug} (${vendor.id})`);
+        return response;
       }
+    } catch (error) {
+      console.error('Local vendor lookup error:', error);
     }
-    
-    // No vendor param = Yacht Club marketplace
-    const response = NextResponse.next();
-    response.headers.set('x-tenant-type', 'marketplace');
-    return response;
   }
   
   // Check if this is a custom vendor domain
@@ -99,11 +92,14 @@ export async function middleware(request: NextRequest) {
     console.log('📊 Domain lookup result:', { domainRecord, domainError });
 
     if (domainRecord && !domainError) {
-      // Custom domain found - inject tenant context (NO REWRITE!)
+      // Custom domain found - rewrite to /storefront AND inject tenant context
       console.log('✅ Custom domain detected! Vendor ID:', domainRecord.vendor_id);
-      console.log('🎯 Serving vendor storefront at domain ROOT (industry standard)');
+      console.log('🔀 Rewriting to /storefront/* + injecting tenant context');
       
-      const response = NextResponse.next();
+      const url = request.nextUrl.clone();
+      url.pathname = `/storefront${pathname}`;
+      
+      const response = NextResponse.rewrite(url);
       response.headers.set('x-vendor-id', domainRecord.vendor_id);
       response.headers.set('x-tenant-type', 'vendor');
       response.headers.set('x-is-custom-domain', 'true');
