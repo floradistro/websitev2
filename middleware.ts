@@ -41,57 +41,6 @@ export async function middleware(request: NextRequest) {
     return response;
   }
 
-  // VENDOR PARAM: Check for ?vendor param on /storefront (works on all environments)
-  if (pathname.startsWith('/storefront')) {
-    const vendorSlug = request.nextUrl.searchParams.get('vendor');
-    
-    if (vendorSlug) {
-      try {
-        if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
-          console.error('❌ CRITICAL: Missing Supabase env vars in middleware');
-          return NextResponse.next();
-        }
-        
-        const supabase = createClient(
-          process.env.NEXT_PUBLIC_SUPABASE_URL!,
-          process.env.SUPABASE_SERVICE_ROLE_KEY!
-        );
-        
-        const { data: vendor } = await supabase
-          .from('vendors')
-          .select('id, status, site_hidden')
-          .eq('slug', vendorSlug)
-          .eq('status', 'active')
-          .single();
-          
-        if (vendor) {
-          // Check if site is hidden and redirect to coming soon (unless already on that page)
-          if (vendor.site_hidden && !pathname.includes('/coming-soon')) {
-            const url = request.nextUrl.clone();
-            url.pathname = '/storefront/coming-soon';
-            url.searchParams.set('vendor', vendorSlug);
-            return NextResponse.redirect(url);
-          }
-          
-          const response = NextResponse.next();
-          response.headers.set('x-vendor-id', vendor.id);
-          response.headers.set('x-tenant-type', 'vendor');
-          response.headers.set('x-is-local-test', domain.includes('localhost') || domain.includes('127.0.0.1') ? 'true' : 'false');
-          console.log(`✅ Vendor param - ${vendorSlug} → ${vendor.id}`);
-          return response;
-        }
-      } catch (error) {
-        console.error('Vendor lookup error:', error);
-      }
-    }
-    
-    // No vendor param = blank template mode
-    const response = NextResponse.next();
-    response.headers.set('x-tenant-type', 'template-preview');
-    console.log('📋 Blank template preview mode');
-    return response;
-  }
-  
   // Check if this is a custom vendor domain
   try {
     console.log('🔍 Middleware - Checking domain:', domain);
@@ -132,7 +81,10 @@ export async function middleware(request: NextRequest) {
       console.log('🔀 Rewriting to /storefront/* + injecting tenant context');
       
       const url = request.nextUrl.clone();
-      url.pathname = `/storefront${pathname}`;
+      // Only prepend /storefront if not already there
+      if (!pathname.startsWith('/storefront')) {
+        url.pathname = `/storefront${pathname}`;
+      }
       
       const response = NextResponse.rewrite(url);
       response.headers.set('x-vendor-id', domainRecord.vendor_id);
@@ -188,6 +140,57 @@ export async function middleware(request: NextRequest) {
     }
   } catch (error) {
     console.error('Middleware error:', error);
+  }
+
+  // VENDOR PARAM: Check for ?vendor param on /storefront (fallback for testing/preview)
+  if (pathname.startsWith('/storefront')) {
+    const vendorSlug = request.nextUrl.searchParams.get('vendor');
+    
+    if (vendorSlug) {
+      try {
+        const supabase = createClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.SUPABASE_SERVICE_ROLE_KEY!
+        );
+        
+        const { data: vendor } = await supabase
+          .from('vendors')
+          .select('id, status, site_hidden')
+          .eq('slug', vendorSlug)
+          .eq('status', 'active')
+          .single();
+          
+        if (vendor) {
+          // Check if site is hidden and redirect to coming soon
+          if (vendor.site_hidden && !pathname.includes('/coming-soon')) {
+            const url = request.nextUrl.clone();
+            url.pathname = '/storefront/coming-soon';
+            url.searchParams.set('vendor', vendorSlug);
+            return NextResponse.redirect(url);
+          }
+          
+          const response = NextResponse.next();
+          response.headers.set('x-vendor-id', vendor.id);
+          response.headers.set('x-tenant-type', 'vendor');
+          response.headers.set('X-Frame-Options', 'SAMEORIGIN');
+          response.headers.set('X-Content-Type-Options', 'nosniff');
+          response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+          console.log(`✅ Vendor param - ${vendorSlug} → ${vendor.id}`);
+          return response;
+        }
+      } catch (error) {
+        console.error('Vendor param lookup error:', error);
+      }
+    }
+    
+    // No vendor param on storefront path = blank template mode
+    const response = NextResponse.next();
+    response.headers.set('x-tenant-type', 'template-preview');
+    response.headers.set('X-Frame-Options', 'SAMEORIGIN');
+    response.headers.set('X-Content-Type-Options', 'nosniff');
+    response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+    console.log('📋 Blank template preview mode');
+    return response;
   }
 
   // Default: Continue to main site
