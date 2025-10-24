@@ -25,18 +25,20 @@ export async function POST(request: NextRequest) {
             id,
             name,
             slug,
-            tier_breaks
+            price_breaks
           )
         `)
         .eq('product_id', productId)
         .eq('is_active', true)
         .single();
 
-      if (pricingConfig && pricingConfig.blueprint?.tier_breaks) {
+      const blueprint = Array.isArray(pricingConfig?.blueprint) ? pricingConfig.blueprint[0] : pricingConfig?.blueprint;
+      
+      if (blueprint?.price_breaks && pricingConfig) {
         const tiers: any[] = [];
         const pricingValues = pricingConfig.pricing_values || {};
         
-        pricingConfig.blueprint.tier_breaks.forEach((tier: any) => {
+        blueprint.price_breaks.forEach((tier: any) => {
           const breakId = tier.break_id;
           const tierData = pricingValues[breakId];
           
@@ -48,7 +50,7 @@ export async function POST(request: NextRequest) {
               price: parseFloat(tierData.price),
               tier_name: tier.label || breakId,
               break_id: breakId,
-              blueprint_name: pricingConfig.blueprint.name,
+              blueprint_name: blueprint.name,
               sort_order: tier.sort_order || 0
             });
           }

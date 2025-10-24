@@ -93,7 +93,7 @@ export function LoyaltyProvider({ children }: { children: ReactNode }) {
       const newPoints = points + amount;
       const newTransaction: PointsTransaction = {
         id: Date.now(),
-        user_id: user.id,
+        user_id: typeof user.id === 'string' ? parseInt(user.id) : user.id,
         points: amount,
         type: amount > 0 ? 'earn' : 'redeem',
         description,

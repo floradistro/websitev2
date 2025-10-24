@@ -220,11 +220,12 @@ export async function getVendorProducts(vendorId: string, limit?: number) {
     
     if (vendorPricingConfigsResult.data && vendorPricingConfigsResult.data.length > 0) {
       const config = vendorPricingConfigsResult.data[0];
+      const blueprint = Array.isArray(config.blueprint) ? config.blueprint[0] : config.blueprint;
       
-      if (config.blueprint?.price_breaks) {
+      if (blueprint?.price_breaks) {
         const pricingValues = config.pricing_values || {};
         
-        config.blueprint.price_breaks.forEach((priceBreak: any) => {
+        blueprint.price_breaks.forEach((priceBreak: any) => {
           const breakId = priceBreak.break_id;
           const vendorPrice = pricingValues[breakId];
           
@@ -237,7 +238,7 @@ export async function getVendorProducts(vendorId: string, limit?: number) {
               label: priceBreak.label,
               tier_name: priceBreak.label,
               break_id: breakId,
-              blueprint_name: config.blueprint.name,
+              blueprint_name: blueprint.name,
               sort_order: priceBreak.sort_order || 0,
               min_quantity: priceBreak.qty,
             });

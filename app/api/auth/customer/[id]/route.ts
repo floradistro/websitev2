@@ -6,11 +6,11 @@ import { getServiceSupabase } from '@/lib/supabase/client';
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const supabase = getServiceSupabase();
-    const customerId = params.id;
+    const { id: customerId } = await params;
     
     const { data: customer, error } = await supabase
       .from('customers')

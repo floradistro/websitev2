@@ -6,11 +6,11 @@ import { getServiceSupabase } from '@/lib/supabase/client';
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const supabase = getServiceSupabase();
-    const productId = params.id;
+    const { id: productId } = await params;
     
     const { data: tiers, error } = await supabase
       .from('wholesale_pricing')
@@ -43,11 +43,11 @@ export async function GET(
  */
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const supabase = getServiceSupabase();
-    const productId = params.id;
+    const { id: productId } = await params;
     const body = await request.json();
     
     const { tiers } = body;

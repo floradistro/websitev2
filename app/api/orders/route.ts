@@ -243,10 +243,27 @@ export async function POST(request: NextRequest) {
       // ============================================================================
       console.log(`📉 Deducting ${quantity_grams}g (${quantity_display}) from ${item.name}`);
 
+      // First get current stock
+      const { data: currentProduct, error: fetchError } = await supabase
+        .from('products')
+        .select('stock_quantity, name')
+        .eq('id', item.product_id)
+        .single();
+
+      if (fetchError || !currentProduct) {
+        console.error('❌ Failed to fetch product:', fetchError);
+        throw new Error(`Failed to fetch product ${item.name}`);
+      }
+
+      // Calculate new stock
+      const currentStock = parseFloat(currentProduct.stock_quantity || '0');
+      const newStock = Math.max(0, currentStock - quantity_grams);
+
+      // Update stock
       const { data: updatedProduct, error: stockError } = await supabase
         .from('products')
         .update({
-          stock_quantity: supabase.raw(`stock_quantity - ${quantity_grams}`)
+          stock_quantity: newStock
         })
         .eq('id', item.product_id)
         .select('stock_quantity, name')
@@ -261,19 +278,32 @@ export async function POST(request: NextRequest) {
 
       // If using multi-location inventory, also update inventory_items table
       if (item.locationId) {
-        const { error: locationStockError } = await supabase
+        // First get current inventory
+        const { data: currentInventory } = await supabase
           .from('inventory_items')
-          .update({
-            quantity: supabase.raw(`quantity - ${quantity_grams}`)
-          })
+          .select('quantity')
           .eq('product_id', item.product_id)
-          .eq('location_id', item.locationId);
+          .eq('location_id', item.locationId)
+          .single();
 
-        if (locationStockError) {
-          console.warn('⚠️ Location inventory update failed:', locationStockError);
-          // Don't fail the order, just log it
-        } else {
-          console.log(`✅ Location inventory updated: ${item.locationName}`);
+        if (currentInventory) {
+          const currentInvQty = parseFloat(currentInventory.quantity || '0');
+          const newInvQty = Math.max(0, currentInvQty - quantity_grams);
+
+          const { error: locationStockError } = await supabase
+            .from('inventory_items')
+            .update({
+              quantity: newInvQty
+            })
+            .eq('product_id', item.product_id)
+            .eq('location_id', item.locationId);
+
+          if (locationStockError) {
+            console.warn('⚠️ Location inventory update failed:', locationStockError);
+            // Don't fail the order, just log it
+          } else {
+            console.log(`✅ Location inventory updated: ${item.locationName}`);
+          }
         }
       }
     }

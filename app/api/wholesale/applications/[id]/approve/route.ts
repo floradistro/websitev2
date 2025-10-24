@@ -7,14 +7,14 @@ import { getServiceSupabase } from '@/lib/supabase/client';
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const supabase = getServiceSupabase();
     const body = await request.json();
     
     const { adminId, notes } = body;
-    const applicationId = params.id;
+    const { id: applicationId } = await params;
     
     if (!adminId) {
       return NextResponse.json(

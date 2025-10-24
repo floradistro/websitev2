@@ -108,11 +108,13 @@ What kind of storefront would you like?`,
 
         setMessages([...messages, userMessage, assistantMessage]);
 
-        setPreview({
-          id: currentStorefrontId,
-          previewUrl: `/api/ai-agent/preview/${currentStorefrontId}`,
-          requirements: result.requirements,
-        });
+        if (currentStorefrontId) {
+          setPreview({
+            id: currentStorefrontId,
+            previewUrl: `/api/ai-agent/preview/${currentStorefrontId}`,
+            requirements: result.requirements,
+          });
+        }
       } else {
         const errorMessage: Message = {
           role: 'assistant',

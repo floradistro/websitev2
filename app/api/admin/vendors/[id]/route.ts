@@ -6,11 +6,11 @@ import { getServiceSupabase } from '@/lib/supabase/client';
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const supabase = getServiceSupabase();
-    const vendorId = params.id;
+    const { id: vendorId } = await params;
     
     const { data: vendor, error } = await supabase
       .from('vendors')
@@ -48,11 +48,11 @@ export async function GET(
  */
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const supabase = getServiceSupabase();
-    const vendorId = params.id;
+    const { id: vendorId } = await params;
     const body = await request.json();
     
     // Build update object

@@ -52,6 +52,7 @@ export function StorefrontProductsSection({ products }: StorefrontProductsSectio
       <div className="relative z-10">
         <ProductsCarousel 
           products={mappedProducts}
+          locations={[]}
           inventoryMap={{}}
           productFieldsMap={{}}
         />
