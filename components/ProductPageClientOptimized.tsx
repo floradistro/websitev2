@@ -1,11 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
 import useSWR from 'swr';
 import ProductPageClient from "./ProductPageClient";
-import ProductRecommendations from "./ProductRecommendations";
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -80,23 +77,15 @@ export default function ProductPageClientOptimized({
     }));
 
   return (
-    <motion.div
-      key={productId}
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.15, ease: [0.4, 0, 0.2, 1] }}
-    >
-      <ProductPageClient
-        product={product}
-        locations={locations}
-        inventory={inventory}
-        pricingTiers={pricingTiers}
-        orderType={undefined}
-        relatedProducts={relatedProducts || []}
-        reviews={[]}
-      />
-    </motion.div>
+    <ProductPageClient
+      product={product}
+      locations={locations}
+      inventory={inventory}
+      pricingTiers={pricingTiers}
+      orderType={undefined}
+      relatedProducts={relatedProducts || []}
+      reviews={[]}
+    />
   );
 }
 
