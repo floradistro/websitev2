@@ -82,7 +82,8 @@ export function LiveEditingProvider({ children, initialSections, isPreviewMode =
         const path = window.location.pathname;
         let pageType = 'home';
         
-        if (path.includes('/about')) pageType = 'about';
+        if (path.includes('/products/')) pageType = 'product';
+        else if (path.includes('/about')) pageType = 'about';
         else if (path.includes('/contact')) pageType = 'contact';
         else if (path.includes('/faq')) pageType = 'faq';
         else if (path.includes('/shop')) pageType = 'shop';

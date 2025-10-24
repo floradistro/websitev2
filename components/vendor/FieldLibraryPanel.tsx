@@ -271,16 +271,16 @@ export function FieldLibraryPanel({
               <div className="space-y-3">
                 {Object.entries(fieldsBySection).map(([sectionKey, fields]: [string, any]) => (
                   <div key={sectionKey}>
-                    <div className="text-white/60 text-[10px] uppercase tracking-wider mb-2 font-semibold">
-                      {sectionKey}
-                    </div>
+                  <div className="text-[#858585] text-[10px] uppercase tracking-wider mb-2 font-medium">
+                    {sectionKey}
+                  </div>
                     <div className="space-y-1.5">
                       {fields.map((field: any) => (
-                        <div key={field.id} className="bg-white/5 rounded p-2.5">
+                        <div key={field.id} className="bg-[#252526] border border-[#3e3e3e] rounded p-2.5">
                           <div className="flex items-start justify-between mb-2">
                             <div className="flex-1">
-                              <div className="text-white text-xs font-medium">{field.field_definition.label}</div>
-                              <div className="text-white/30 text-[10px] font-mono">{field.field_id}</div>
+                            <div className="text-[#cccccc] text-xs font-medium">{field.field_definition.label}</div>
+                            <div className="text-[#858585] text-[10px] font-mono">{field.field_id}</div>
                             </div>
                             <div className="flex items-center gap-1">
                               <button
@@ -357,20 +357,20 @@ export function FieldLibraryPanel({
                             setSelectedFieldType(fieldType);
                             setShowAddModal(true);
                           }}
-                          className="text-purple-400 hover:text-purple-300"
+                          className="text-[#858585] hover:text-[#cccccc] hover:bg-[#2a2d2e] p-1 rounded transition-colors"
                           title="Use this field type"
                         >
                           <Plus size={12} />
                         </button>
                       </div>
-                      <p className="text-white/40 text-[10px] leading-relaxed mb-1.5">
+                      <p className="text-[#858585] text-[10px] leading-relaxed mb-1.5">
                         {fieldType.description}
                       </p>
                       <div className="flex items-center gap-1.5">
-                        <span className="text-white/30 text-[9px] bg-black/30 px-1.5 py-0.5 rounded font-mono">
+                        <span className="text-[#858585] text-[9px] bg-[#252526] px-1.5 py-0.5 rounded font-mono border border-[#3e3e3e]">
                           {fieldType.type}
                         </span>
-                        <span className="text-white/30 text-[9px]">
+                        <span className="text-[#858585] text-[9px]">
                           {fieldType.example}
                         </span>
                       </div>
