@@ -350,6 +350,7 @@ export function StorefrontHomeClient({
                 locations={locations}
                 inventoryMap={inventoryMap}
                 productFieldsMap={productFieldsMap}
+                vendorSlug={vendor?.slug}
               />
             </div>
           </div>

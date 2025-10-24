@@ -3,7 +3,7 @@
 import { useState, useMemo, useRef, useEffect } from "react";
 import { MapPin, ChevronDown, Check } from "lucide-react";
 import Link from "next/link";
-import ProductCard from "../ProductCard";
+import StorefrontProductCard from "./StorefrontProductCard";
 
 interface StorefrontShopClientProps {
   vendorId: string;
@@ -13,6 +13,7 @@ export function StorefrontShopClient({ vendorId }: StorefrontShopClientProps) {
   const [loading, setLoading] = useState(true);
   const [allProducts, setAllProducts] = useState<any[]>([]);
   const [locations, setLocations] = useState<any[]>([]);
+  const [vendorSlug, setVendorSlug] = useState<string>("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedLocation, setSelectedLocation] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<string>("default");
@@ -35,6 +36,13 @@ export function StorefrontShopClient({ vendorId }: StorefrontShopClientProps) {
         
         if (result.success) {
           const apiProducts = result.data.products || [];
+          const apiVendors = result.data.vendors || [];
+          
+          // Get vendor slug
+          const vendor = apiVendors.find((v: any) => v.id === vendorId);
+          if (vendor) {
+            setVendorSlug(vendor.slug);
+          }
           
           // Filter to only this vendor's products
           const vendorProducts = apiProducts.filter((p: any) => p.vendor_id === vendorId);
@@ -59,6 +67,8 @@ export function StorefrontShopClient({ vendorId }: StorefrontShopClientProps) {
               categories: p.categories || [],
               pricingTiers: p.pricing_tiers || [],
               fields: p.fields || {},
+              date_created: p.date_created,
+              total_sales: p.total_sales,
             };
           });
           
@@ -337,15 +347,11 @@ export function StorefrontShopClient({ vendorId }: StorefrontShopClientProps) {
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-1 sm:gap-4 px-1 sm:px-0">
-          {filteredProducts.map((product: any, index: number) => (
-            <ProductCard 
+          {filteredProducts.map((product: any) => (
+            <StorefrontProductCard 
               key={product.id} 
               product={product}
-              index={index}
-              locations={locations}
-              pricingTiers={product.pricingTiers || []}
-              productFields={{ fields: product.fields || {} }}
-              inventory={product.inventory || []}
+              vendorSlug={vendorSlug}
             />
           ))}
         </div>

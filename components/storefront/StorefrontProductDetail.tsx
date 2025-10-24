@@ -594,6 +594,7 @@ export function StorefrontProductDetail({ productSlug, vendorId }: StorefrontPro
                   };
                   return acc;
                 }, {})}
+                vendorSlug={vendor?.slug}
               />
             </div>
           </div>
