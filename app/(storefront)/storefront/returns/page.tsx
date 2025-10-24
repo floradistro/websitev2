@@ -179,6 +179,9 @@ export default async function ReturnsPage() {
           </div>
         </div>
       </div>
+      
+      {/* Footer */}
+      <Footer vendor={vendor} />
     </div>
   );
 }

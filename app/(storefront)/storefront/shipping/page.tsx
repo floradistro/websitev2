@@ -134,6 +134,9 @@ export default async function ShippingPage() {
           </div>
         </div>
       </div>
+      
+      {/* Footer */}
+      <Footer vendor={vendor} />
     </div>
   );
 }

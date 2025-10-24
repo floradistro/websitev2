@@ -3,6 +3,7 @@ import { getVendorFromHeaders, getVendorStorefront } from '@/lib/storefront/get-
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { FileText } from 'lucide-react';
+import Footer from '@/components/storefront/templates/default/Footer';
 
 export default async function TermsPage() {
   const vendorId = await getVendorFromHeaders();
@@ -157,6 +158,9 @@ export default async function TermsPage() {
           </div>
         </div>
       </div>
+      
+      {/* Footer */}
+      <Footer vendor={vendor} />
     </div>
   );
 }
