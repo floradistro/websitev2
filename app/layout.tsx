@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { headers } from "next/headers";
 import "./globals.css";
+import "./(storefront)/storefront.css";
 import ConditionalLayout from "@/components/ConditionalLayout";
 import NotificationToast from "@/components/NotificationToast";
 import PullToRefresh from "@/components/PullToRefresh";
@@ -74,11 +76,74 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // INDUSTRY STANDARD: Detect tenant from middleware headers
+  const headersList = await headers();
+  const tenantType = headersList.get('x-tenant-type');
+  const vendorId = headersList.get('x-vendor-id');
+  
+  // If VENDOR tenant, render complete vendor layout (Shopify-style)
+  if (tenantType === 'vendor' && vendorId) {
+    const { getVendorStorefront } = await import('@/lib/storefront/get-vendor');
+    const { StorefrontHeader } = await import('@/components/storefront/StorefrontHeader');
+    const { StorefrontFooter } = await import('@/components/storefront/StorefrontFooter');
+    const { StorefrontThemeProvider } = await import('@/components/storefront/ThemeProvider');
+    
+    const vendor = await getVendorStorefront(vendorId);
+    
+    if (!vendor) {
+      return (
+        <html lang="en">
+          <body>
+            <div className="flex items-center justify-center min-h-screen">
+              <p>Vendor not found</p>
+            </div>
+          </body>
+        </html>
+      );
+    }
+    
+    // Render COMPLETE vendor layout - NO Yacht Club wrapper!
+    return (
+      <html lang="en" data-scroll-behavior="smooth" className="overflow-x-hidden" suppressHydrationWarning>
+        <head>
+          <title>{vendor.store_name} - Premium Cannabis</title>
+          <meta name="description" content={vendor.store_description || `Shop premium cannabis products from ${vendor.store_name}`} />
+        </head>
+        <body
+          className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col overflow-x-hidden min-h-screen`}
+          style={{ backgroundColor: '#1a1a1a' }}
+          suppressHydrationWarning
+        >
+          <Providers>
+            <LoadingBar />
+            <AuthProvider>
+              <WishlistProvider>
+                <CartProvider>
+                  <StorefrontThemeProvider vendor={vendor}>
+                    <div className="storefront-container bg-[#1a1a1a] min-h-screen">
+                      <StorefrontHeader vendor={vendor} />
+                      <main className="storefront-main">
+                        {children}
+                      </main>
+                      <StorefrontFooter vendor={vendor} />
+                    </div>
+                    <NotificationToast />
+                  </StorefrontThemeProvider>
+                </CartProvider>
+              </WishlistProvider>
+            </AuthProvider>
+          </Providers>
+        </body>
+      </html>
+    );
+  }
+  
+  // Render Yacht Club marketplace layout
   return (
     <html lang="en" data-scroll-behavior="smooth" className="overflow-x-hidden" suppressHydrationWarning>
       <head>
@@ -112,7 +177,6 @@ export default function RootLayout({
                     <CartProvider>
                       {/* <RecentlyViewedProvider> */}
                         <PullToRefresh />
-                        {/* ConditionalLayout wraps main site, but storefront has its own layout */}
                         <ConditionalLayout>
                           {children}
                         </ConditionalLayout>
@@ -129,3 +193,4 @@ export default function RootLayout({
     </html>
   );
 }
+
