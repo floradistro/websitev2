@@ -50,8 +50,22 @@ export async function getProducts(params?: {
 }
 
 export async function getProduct(id: string) {
-  const response = await fetch(`${BASE_URL}/api/supabase/products/${id}`);
-  return response.json();
+  try {
+    const response = await fetch(`${BASE_URL}/api/page-data/product/${id}`, {
+      next: { revalidate: 60 }
+    });
+    
+    if (!response.ok) {
+      console.error(`Product API returned ${response.status} for ${id}`);
+      return { success: false, product: null };
+    }
+    
+    const data = await response.json();
+    return data.success ? data.data : { success: false, product: null };
+  } catch (error) {
+    console.error(`Error fetching product ${id}:`, error);
+    return { success: false, product: null };
+  }
 }
 
 export async function getCategories() {
