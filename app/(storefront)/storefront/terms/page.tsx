@@ -40,7 +40,7 @@ export default async function TermsPage() {
                 <div className="absolute inset-0 bg-white/5 rounded-full blur-xl animate-pulse" style={{ animationDuration: '3s' }} />
                 <img 
                   src={vendor.logo_url} 
-                  alt={vendor.store_name}
+                  alt=Our Store
                   className="relative w-full h-full object-contain drop-shadow-xl opacity-60 hover:opacity-100 hover:scale-110 transition-all duration-500"
                 />
               </div>
@@ -60,12 +60,12 @@ export default async function TermsPage() {
           <div className="space-y-8 text-neutral-300 font-light leading-relaxed">
             <section>
               <h2 className="text-2xl font-semibold text-white mb-4">Agreement to Terms</h2>
-              <p>By accessing and using {vendor.store_name}, you agree to be bound by these Terms of Service. If you disagree with any part of these terms, you may not access our services.</p>
+              <p>By accessing and using Our Store, you agree to be bound by these Terms of Service. If you disagree with any part of these terms, you may not access our services.</p>
             </section>
 
             <section>
               <h2 className="text-2xl font-semibold text-white mb-4">Age Requirement</h2>
-              <p>You must be at least 21 years of age to purchase products from {vendor.store_name}. By making a purchase, you confirm that you are of legal age.</p>
+              <p>You must be at least 21 years of age to purchase products from Our Store. By making a purchase, you confirm that you are of legal age.</p>
             </section>
 
             <section>
@@ -122,17 +122,17 @@ export default async function TermsPage() {
 
             <section>
               <h2 className="text-2xl font-semibold text-white mb-4">Intellectual Property</h2>
-              <p>All content on this site, including text, graphics, logos, images, and software, is the property of {vendor.store_name} or its licensors and is protected by copyright and trademark laws.</p>
+              <p>All content on this site, including text, graphics, logos, images, and software, is the property of Our Store or its licensors and is protected by copyright and trademark laws.</p>
             </section>
 
             <section>
               <h2 className="text-2xl font-semibold text-white mb-4">Limitation of Liability</h2>
-              <p>To the fullest extent permitted by law, {vendor.store_name} shall not be liable for any indirect, incidental, special, or consequential damages arising from your use of our products or services.</p>
+              <p>To the fullest extent permitted by law, Our Store shall not be liable for any indirect, incidental, special, or consequential damages arising from your use of our products or services.</p>
             </section>
 
             <section>
               <h2 className="text-2xl font-semibold text-white mb-4">Indemnification</h2>
-              <p>You agree to indemnify and hold harmless {vendor.store_name} from any claims, damages, or expenses arising from your violation of these Terms or misuse of our products.</p>
+              <p>You agree to indemnify and hold harmless Our Store from any claims, damages, or expenses arising from your violation of these Terms or misuse of our products.</p>
             </section>
 
             <section>
@@ -142,15 +142,15 @@ export default async function TermsPage() {
 
             <section>
               <h2 className="text-2xl font-semibold text-white mb-4">Governing Law</h2>
-              <p>These Terms are governed by the laws of the United States and the state where {vendor.store_name} operates, without regard to conflict of law principles.</p>
+              <p>These Terms are governed by the laws of the United States and the state where Our Store operates, without regard to conflict of law principles.</p>
             </section>
 
             <section className="border-t border-white/10 pt-8">
               <h2 className="text-2xl font-semibold text-white mb-4">Contact Us</h2>
               <p>Questions about these Terms? Contact us:</p>
               <div className="mt-4 bg-white/5 border border-white/10 rounded-[20px] p-6">
-                <p><strong>{vendor.store_name}</strong></p>
-                <p className="mt-2">Email: legal@{vendor.slug}.com</p>
+                <p><strong>Our Store</strong></p>
+                <p className="mt-2">Email: legalsupport@example.com</p>
                 <p className="mt-1"><Link href="/storefront/contact" className="text-white hover:underline">Contact Form</Link></p>
               </div>
             </section>

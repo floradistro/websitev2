@@ -40,7 +40,7 @@ export default async function PrivacyPage() {
                 <div className="absolute inset-0 bg-white/5 rounded-full blur-xl animate-pulse" style={{ animationDuration: '3s' }} />
                 <img 
                   src={vendor.logo_url} 
-                  alt={vendor.store_name}
+                  alt=Our Store
                   className="relative w-full h-full object-contain drop-shadow-xl opacity-60 hover:opacity-100 hover:scale-110 transition-all duration-500"
                 />
               </div>
@@ -127,7 +127,7 @@ export default async function PrivacyPage() {
                 <li>Opt-out of marketing communications</li>
                 <li>Restrict processing of your information</li>
               </ul>
-              <p className="mt-4">To exercise these rights, contact us at privacy@{vendor.slug}.com</p>
+              <p className="mt-4">To exercise these rights, contact us at privacysupport@example.com</p>
             </section>
 
             <section>
@@ -149,8 +149,8 @@ export default async function PrivacyPage() {
               <h2 className="text-2xl font-semibold text-white mb-4">Contact Us</h2>
               <p>If you have questions about this Privacy Policy, contact us at:</p>
               <div className="mt-4 bg-white/5 border border-white/10 rounded-[20px] p-6">
-                <p><strong>{vendor.store_name}</strong></p>
-                <p className="mt-2">Email: privacy@{vendor.slug}.com</p>
+                <p><strong>Our Store</strong></p>
+                <p className="mt-2">Email: privacysupport@example.com</p>
                 <p className="mt-1"><Link href="/storefront/contact" className="text-white hover:underline">Contact Form</Link></p>
               </div>
             </section>

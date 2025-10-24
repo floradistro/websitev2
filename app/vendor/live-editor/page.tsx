@@ -576,12 +576,12 @@ export default function LiveEditorV2() {
 
         {section_key === 'about_story' && (
           <>
-            <div className="space-y-2.5">
-              <EditorField label="Headline" value={content_data.headline || ''} onChange={(v) => updateSectionContent('headline', v)} placeholder="Our story..." />
+            <div className="space-y-2">
+              <EditorField label="Headline" value={content_data.headline || ''} onChange={(v) => updateContent('headline', v)} placeholder="Our story..." />
               <ArrayEditor 
                 label="Paragraphs" 
                 items={content_data.paragraphs || []}
-                onChange={(items) => updateSectionContent('paragraphs', items)}
+                onChange={(items) => updateContent('paragraphs', items)}
                 renderItem={(item, index, onChange) => (
                   <textarea
                     value={item}
@@ -592,21 +592,21 @@ export default function LiveEditorV2() {
                   />
                 )}
               />
-              <ColorPicker label="Background" value={content_data.background_color || '#000000'} onChange={(v) => updateSectionContent('background_color', v)} />
+              <ColorPicker label="Background" value={content_data.background_color || '#000000'} onChange={(v) => updateContent('background_color', v)} />
             </div>
           </>
         )}
 
         {section_key === 'cta' && (
           <>
-            <div className="space-y-2.5">
-              <EditorField label="Headline" value={content_data.headline || ''} onChange={(v) => updateSectionContent('headline', v)} placeholder="Ready to start?" />
-              <EditorField label="Subheadline" value={content_data.subheadline || ''} onChange={(v) => updateSectionContent('subheadline', v)} multiline placeholder="Join thousands..." />
+            <div className="space-y-2">
+              <EditorField label="Headline" value={content_data.headline || ''} onChange={(v) => updateContent('headline', v)} placeholder="Ready to start?" />
+              <EditorField label="Subheadline" value={content_data.subheadline || ''} onChange={(v) => updateContent('subheadline', v)} multiline placeholder="Join thousands..." />
               <div className="grid grid-cols-2 gap-1.5">
-                <EditorField label="Button Text" value={content_data.cta_button?.text || ''} onChange={(v) => updateNestedContent('cta_button.text', v)} placeholder="Shop Now" />
-                <EditorField label="Link" value={content_data.cta_button?.link || ''} onChange={(v) => updateNestedContent('cta_button.link', v)} placeholder="/shop" />
+                <EditorField label="Button Text" value={content_data.cta_button?.text || ''} onChange={(v) => updateNested('cta_button.text', v)} placeholder="Shop Now" />
+                <EditorField label="Link" value={content_data.cta_button?.link || ''} onChange={(v) => updateNested('cta_button.link', v)} placeholder="/shop" />
               </div>
-              <ColorPicker label="Background" value={content_data.background_color || '#000000'} onChange={(v) => updateSectionContent('background_color', v)} />
+              <ColorPicker label="Background" value={content_data.background_color || '#000000'} onChange={(v) => updateContent('background_color', v)} />
             </div>
           </>
         )}
@@ -620,16 +620,15 @@ export default function LiveEditorV2() {
               onChange={(e) => {
                 try {
                   const parsed = JSON.parse(e.target.value);
-                  setSelectedSection({ ...selectedSection, content_data: parsed });
                   setSections(sections.map(s => 
-                    s.id === selectedSection.id ? { ...selectedSection, content_data: parsed } : s
+                    s.id === id ? { ...section, content_data: parsed } : s
                   ));
                   setHasUnsavedChanges(true);
                 } catch (error) {
                   // Invalid JSON
                 }
               }}
-              rows={12}
+              rows={10}
               className="w-full bg-black border border-white/10 text-white px-2 py-1.5 rounded font-mono text-[11px] leading-[1.6] focus:outline-none focus:border-white/30 transition-all resize-none"
             />
           </div>
