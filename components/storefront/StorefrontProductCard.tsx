@@ -111,17 +111,6 @@ function StorefrontProductCard({ product, vendorSlug, locations = [] }: Storefro
   };
 
   const displayFields = getDisplayFields();
-  
-  // Debug logging
-  if (product.name === "Tiger Runtz") {
-    console.log('Tiger Runtz product data:', {
-      fields: product.fields,
-      pricingTiers: product.pricingTiers,
-      inventory: product.inventory,
-      total_stock: product.total_stock,
-      displayFields
-    });
-  }
 
   // Get price display
   const getPriceDisplay = () => {

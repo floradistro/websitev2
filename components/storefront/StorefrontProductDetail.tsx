@@ -26,8 +26,6 @@ interface StorefrontProductDetailProps {
 }
 
 export function StorefrontProductDetail({ productSlug, vendorId }: StorefrontProductDetailProps) {
-  console.log('🔴 StorefrontProductDetail MOUNTED with:', { productSlug, vendorId });
-  
   const [selectedPrice, setSelectedPrice] = useState<number | null>(null);
   const [selectedQuantity, setSelectedQuantity] = useState<number>(1);
   const [selectedTierName, setSelectedTierName] = useState<string | null>(null);
@@ -39,7 +37,6 @@ export function StorefrontProductDetail({ productSlug, vendorId }: StorefrontPro
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
 
   // Fetch product using Yacht Club API
-  console.log('🔴 Fetching from /api/page-data/products');
   const { data, error, isLoading } = useSWR(
     `/api/page-data/products`,
     fetcher,
@@ -49,8 +46,6 @@ export function StorefrontProductDetail({ productSlug, vendorId }: StorefrontPro
       dedupingInterval: 60000,
     }
   );
-  
-  console.log('🔴 SWR State:', { isLoading, hasData: !!data, hasError: !!error });
 
   const product = data?.success 
     ? data.data.products.find((p: any) => 
@@ -87,20 +82,8 @@ export function StorefrontProductDetail({ productSlug, vendorId }: StorefrontPro
         .slice(0, 12)
     : [];
   
-  console.log('Related products count:', relatedProducts.length);
-
   const pricingTiers = product?.pricing_tiers || [];
   const inventory = product?.inventory || [];
-  
-  // Debug logging for pricing tiers
-  console.log('========== STOREFRONT PRODUCT DETAIL DEBUG ==========');
-  console.log('1. Product found:', !!product);
-  console.log('2. Product name:', product?.name);
-  console.log('3. Raw pricing_tiers from product:', product?.pricing_tiers);
-  console.log('4. Parsed pricingTiers variable:', pricingTiers);
-  console.log('5. Pricing tiers count:', pricingTiers.length);
-  console.log('6. Product has these keys:', product ? Object.keys(product).filter(k => k.includes('pric') || k.includes('tier')) : []);
-  console.log('====================================================');
 
   const inWishlist = product ? isInWishlist(product.id) : false;
 
@@ -285,16 +268,12 @@ export function StorefrontProductDetail({ productSlug, vendorId }: StorefrontPro
             </div>
 
             {/* Pricing Tiers Dropdown */}
-            {pricingTiers.length > 0 ? (
+            {pricingTiers.length > 0 && (
               <div className="animate-fadeIn">
                 <PricingTiers
                   tiers={pricingTiers}
                   onPriceSelect={handlePriceSelect}
                 />
-              </div>
-            ) : (
-              <div className="text-red-500 text-xs p-2 border border-red-500/30 rounded">
-                DEBUG: No pricing tiers found (count: {pricingTiers.length})
               </div>
             )}
 
@@ -452,16 +431,12 @@ export function StorefrontProductDetail({ productSlug, vendorId }: StorefrontPro
                 </div>
 
                 {/* Pricing Tiers */}
-                {pricingTiers.length > 0 ? (
+                {pricingTiers.length > 0 && (
                   <div className="animate-fadeIn">
                     <PricingTiers
                       tiers={pricingTiers}
                       onPriceSelect={handlePriceSelect}
                     />
-                  </div>
-                ) : (
-                  <div className="text-red-500 text-xs p-2 border border-red-500/30 rounded">
-                    DEBUG: No pricing tiers found (count: {pricingTiers.length})
                   </div>
                 )}
 
