@@ -44,13 +44,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Vendor ID required' }, { status: 401 });
     }
 
-    const { section_key, field_id, field_definition } = await request.json();
+    const { section_key, field_id, field_definition, scope_type, scope_value } = await request.json();
 
-    if (!section_key || !field_id || !field_definition) {
+    if (!field_id || !field_definition) {
       return NextResponse.json({ 
-        error: 'section_key, field_id, and field_definition required' 
+        error: 'field_id and field_definition required' 
       }, { status: 400 });
     }
+    
+    // Handle scope - use new system if provided, fall back to section_key
+    const finalScopeType = scope_type || 'section_type';
+    const finalScopeValue = scope_value || section_key || 'hero';
+    const finalSectionKey = section_key || scope_value || 'hero';
 
     // Validate field_definition has required properties
     if (!field_definition.type || !field_definition.label) {
@@ -65,9 +70,11 @@ export async function POST(request: NextRequest) {
       .from('vendor_custom_fields')
       .insert({
         vendor_id: vendorId,
-        section_key: section_key,
+        section_key: finalSectionKey,
         field_id: field_id,
-        field_definition: field_definition
+        field_definition: field_definition,
+        scope_type: finalScopeType,
+        scope_value: finalScopeValue
       })
       .select()
       .single();

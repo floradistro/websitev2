@@ -1,14 +1,16 @@
 "use client";
 
 import { useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 
 /**
  * Preserves preview=true parameter on all navigation
  * Ensures live editing stays active when clicking links
+ * Uses Next.js router for smooth client-side navigation
  */
 export function PreservePreviewMode() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const isPreview = searchParams?.get('preview') === 'true';
 
   useEffect(() => {
@@ -39,11 +41,14 @@ export function PreservePreviewMode() {
             url.searchParams.set('vendor', currentVendor);
           }
           
-          // Prevent default and navigate with all params
+          // Prevent default and use Next.js router for client-side navigation
           e.preventDefault();
-          window.location.href = url.toString();
           
-          console.log('🔗 Navigating to:', url.toString());
+          const newPath = url.pathname + url.search;
+          console.log('🔗 Navigating to:', newPath);
+          
+          // Use router.push for smooth client-side navigation
+          router.push(newPath);
         }
       }
     };
@@ -53,7 +58,7 @@ export function PreservePreviewMode() {
     return () => {
       document.removeEventListener('click', handleClick, true);
     };
-  }, [isPreview, searchParams]);
+  }, [isPreview, searchParams, router]);
 
   // No visual indicator - preview mode works silently
   return null;
