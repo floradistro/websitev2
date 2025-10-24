@@ -85,6 +85,15 @@ export function StorefrontProductDetail({ productSlug, vendorId }: StorefrontPro
   const pricingTiers = product?.pricing_tiers || [];
   const inventory = product?.inventory || [];
 
+  // Client-side only logging for pricing tiers
+  useEffect(() => {
+    if (product) {
+      console.log('📊 Product loaded:', product.name);
+      console.log('📊 Pricing tiers:', product.pricing_tiers);
+      console.log('📊 Tiers count:', pricingTiers.length);
+    }
+  }, [product, pricingTiers.length]);
+
   const inWishlist = product ? isInWishlist(product.id) : false;
 
   const handleToggleWishlist = () => {
