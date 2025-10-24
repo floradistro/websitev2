@@ -542,90 +542,68 @@ export default function LiveEditorV2() {
   };
 
   return (
-    <div className="fixed inset-0 bg-[#0a0a0a] flex flex-col">
-      {/* Top Bar */}
-      <div className="h-14 bg-[#1a1a1a] border-b border-white/10 flex items-center justify-between px-6 flex-shrink-0">
-        <div className="flex items-center gap-4">
-          <a href="/vendor/dashboard" className="text-white/60 hover:text-white text-sm transition-colors font-medium">
+    <div className="fixed inset-0 bg-black flex flex-col">
+      {/* Minimal Top Bar */}
+      <div className="h-12 bg-[#0a0a0a] border-b border-white/5 flex items-center justify-between px-4 flex-shrink-0">
+        <div className="flex items-center gap-3">
+          <a href="/vendor/dashboard" className="text-white/50 hover:text-white text-xs transition-colors">
             ← Back
           </a>
-          <div className="w-px h-6 bg-white/10" />
-          <div className="flex items-center gap-3">
-            <h1 className="text-white font-semibold text-sm">Storefront Editor</h1>
-            {/* Page Title Badge */}
-            <div className="bg-white/10 px-3 py-1 rounded text-xs text-white/80 font-medium capitalize">
-              {selectedPage} Page
-            </div>
-          </div>
-        </div>
-        
-        <div className="flex items-center gap-2">
-          {/* Page Selector */}
+          <div className="w-px h-4 bg-white/10" />
           <select
             value={selectedPage}
             onChange={(e) => setSelectedPage(e.target.value)}
-            className="bg-black border border-white/20 text-white px-3 py-1.5 rounded text-sm font-medium hover:border-white/40 transition-colors"
+            className="bg-transparent border-0 text-white text-sm font-medium focus:outline-none cursor-pointer hover:text-white/80 transition-colors"
           >
             {pages.map(page => (
-              <option key={page.id} value={page.id}>{page.name}</option>
+              <option key={page.id} value={page.id} className="bg-[#1a1a1a]">{page.name}</option>
             ))}
           </select>
-
-          <div className="w-px h-6 bg-white/10" />
-
+        </div>
+        
+        <div className="flex items-center gap-4">
           {/* Device Toggle */}
-          <div className="flex gap-1 bg-black rounded p-0.5 border border-white/20">
+          <div className="flex gap-0.5 bg-white/5 rounded-md p-0.5">
             <button
               onClick={() => setPreviewDevice('desktop')}
-              className={`px-2.5 py-1.5 rounded text-xs transition-all font-medium ${
+              className={`p-2 rounded transition-all ${
                 previewDevice === 'desktop'
-                  ? 'bg-white text-black'
-                  : 'text-white/60 hover:text-white'
+                  ? 'bg-white/10 text-white'
+                  : 'text-white/40 hover:text-white/70'
               }`}
               title="Desktop"
-            >
-              <Monitor size={14} />
-            </button>
-            <button
-              onClick={() => setPreviewDevice('tablet')}
-              className={`px-2.5 py-1.5 rounded text-xs transition-all font-medium ${
-                previewDevice === 'tablet'
-                  ? 'bg-white text-black'
-                  : 'text-white/60 hover:text-white'
-              }`}
-              title="Tablet"
             >
               <Monitor size={13} />
             </button>
             <button
               onClick={() => setPreviewDevice('mobile')}
-              className={`px-2.5 py-1.5 rounded text-xs transition-all font-medium ${
+              className={`p-2 rounded transition-all ${
                 previewDevice === 'mobile'
-                  ? 'bg-white text-black'
-                  : 'text-white/60 hover:text-white'
+                  ? 'bg-white/10 text-white'
+                  : 'text-white/40 hover:text-white/70'
               }`}
               title="Mobile"
             >
-              <Smartphone size={14} />
+              <Smartphone size={13} />
             </button>
           </div>
 
-          {/* Auto-save Status */}
-          <div className="text-xs text-white/50 flex items-center gap-2">
+          {/* Status */}
+          <div className="text-[10px] text-white/40 flex items-center gap-1.5 min-w-[60px]">
             {saving ? (
               <>
-                <Loader2 size={12} className="animate-spin" />
-                Saving...
+                <Loader2 size={10} className="animate-spin" />
+                <span>Saving</span>
               </>
             ) : hasUnsavedChanges ? (
               <>
-                <span className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></span>
-                Unsaved
+                <span className="w-1.5 h-1.5 bg-yellow-500 rounded-full animate-pulse"></span>
+                <span>Unsaved</span>
               </>
             ) : lastSaved ? (
               <>
-                <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                Saved
+                <span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
+                <span>Saved</span>
               </>
             ) : null}
           </div>
@@ -634,46 +612,46 @@ export default function LiveEditorV2() {
 
       {/* Main Content */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Left Sidebar - Editor */}
-        <div className="w-[400px] bg-[#1a1a1a] border-r border-white/10 flex flex-col overflow-hidden flex-shrink-0">
-          {/* Header */}
-          <div className="p-4 border-b border-white/10 bg-[#141414] flex-shrink-0">
-            <h3 className="text-white/90 text-sm font-semibold">Page Sections</h3>
-            <p className="text-white/40 text-xs mt-0.5">{sections.length} sections on this page</p>
+        {/* Left Sidebar - Compact */}
+        <div className="w-[320px] bg-[#0a0a0a] border-r border-white/5 flex flex-col overflow-hidden flex-shrink-0">
+          {/* Compact Header */}
+          <div className="p-3 border-b border-white/5 bg-[#0a0a0a] flex-shrink-0">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-white/90 text-xs font-semibold uppercase tracking-wider">Sections</h3>
+              <span className="text-white/30 text-[10px]">{sections.length}</span>
+            </div>
+            <button 
+              onClick={() => setShowSectionLibrary(true)}
+              className="flex items-center gap-1.5 text-white bg-white/5 hover:bg-white/10 px-3 py-2 rounded text-xs font-medium transition-colors border border-white/10 w-full justify-center"
+            >
+              <Plus size={12} />
+              Add Section
+            </button>
           </div>
 
           {/* Content */}
           <div className="flex-1 overflow-y-auto">
-            <div className="p-4">
-              <div className="flex items-center justify-between mb-4">
-                <button 
-                  onClick={() => setShowSectionLibrary(true)}
-                  className="flex items-center gap-1.5 text-white bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded text-xs font-medium transition-colors border border-white/20 w-full justify-center"
-                >
-                  <Plus size={14} />
-                  Add Section
-                </button>
-              </div>
-                
-                {loading ? (
-                  <div className="text-white/40 text-sm text-center py-12">
-                    <Loader2 className="animate-spin mx-auto mb-3" size={24} />
-                    Loading sections...
+            <div className="p-2">
+              
+              {loading ? (
+                <div className="text-white/40 text-xs text-center py-8">
+                  <Loader2 className="animate-spin mx-auto mb-2" size={16} />
+                  Loading...
+                </div>
+              ) : sections.length === 0 ? (
+                <div className="text-center py-8 px-3">
+                  <div className="w-12 h-12 bg-white/5 rounded-lg flex items-center justify-center mx-auto mb-3">
+                    <Layout size={18} className="text-white/20" />
                   </div>
-                ) : sections.length === 0 ? (
-                  <div className="text-center py-12 px-4">
-                    <div className="w-16 h-16 bg-white/5 rounded-lg flex items-center justify-center mx-auto mb-4">
-                      <Layout size={24} className="text-white/30" />
-                    </div>
-                    <p className="text-white/50 text-sm mb-4">No sections on this page</p>
-                    <button 
-                      onClick={() => setShowSectionLibrary(true)}
-                      className="text-white text-xs font-medium hover:underline"
-                    >
-                      Add your first section
-                    </button>
-                  </div>
-                ) : (
+                  <p className="text-white/40 text-xs mb-3">No sections</p>
+                  <button 
+                    onClick={() => setShowSectionLibrary(true)}
+                    className="text-white/60 text-[10px] font-medium hover:text-white transition-colors"
+                  >
+                    Add first section
+                  </button>
+                </div>
+              ) : (
                   <DragDropContext onDragEnd={onDragEnd}>
                     <Droppable droppableId="sections">
                       {(provided) => (
