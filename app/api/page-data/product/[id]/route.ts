@@ -14,50 +14,41 @@ export async function GET(
     const { id } = params;
     const supabase = getServiceSupabase();
     
-    // Get product with ALL related data + pricing tiers in parallel
-    const [productResult, pricingResult] = await Promise.all([
-      supabase
-        .from('products')
-        .select(`
-          *,
-          vendor:vendors(
-            id,
-            store_name,
-            slug,
-            logo_url,
-            state,
-            city
-          ),
-          product_categories(
-            category:categories(id, name, slug)
-          ),
-          inventory(
-            id,
-            quantity,
-            location_id,
-            stock_status,
-            low_stock_threshold,
-            location:locations(id, name, city, state)
-          )
-        `)
-        .eq('id', id)
-        .single(),
-      
-      supabase
-        .from('product_pricing_assignments')
-        .select(`
-          product_id,
-          price_overrides,
-          blueprint:pricing_tier_blueprints(
-            id,
-            name,
-            price_breaks
-          )
-        `)
-        .eq('product_id', id)
-        .eq('is_active', true)
-        .single()
-    ]);
+    // Try to find by UUID first, then by slug
+    let productQuery = supabase
+      .from('products')
+      .select(`
+        *,
+        vendor:vendors(
+          id,
+          store_name,
+          slug,
+          logo_url,
+          state,
+          city
+        ),
+        product_categories(
+          category:categories(id, name, slug)
+        ),
+        inventory(
+          id,
+          quantity,
+          location_id,
+          stock_status,
+          low_stock_threshold,
+          location:locations(id, name, city, state)
+        )
+      `);
+    
+    // Check if id looks like UUID or is a slug
+    if (id.includes('-') && id.length === 36) {
+      productQuery = productQuery.eq('id', id);
+    } else {
+      productQuery = productQuery.eq('slug', id);
+    }
+    
+    // Get product first
+    const productResult = await productQuery.single();
     
     if (productResult.error) throw productResult.error;
     if (!productResult.data) {
@@ -68,6 +59,22 @@ export async function GET(
     }
     
     const p = productResult.data;
+    
+    // Now get pricing tiers using the actual product UUID
+    const pricingResult = await supabase
+      .from('product_pricing_assignments')
+      .select(`
+        product_id,
+        price_overrides,
+        blueprint:pricing_tier_blueprints(
+          id,
+          name,
+          price_breaks
+        )
+      `)
+      .eq('product_id', p.id)
+      .eq('is_active', true)
+      .single();
     
     // Get related products from same vendor with inventory
     const relatedResult = await supabase
