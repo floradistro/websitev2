@@ -416,23 +416,48 @@ export default function LiveEditorV2() {
         {/* Dynamic Editors Based on Section Type */}
         {section_key === 'hero' && (
           <>
-            <EditorField label="Headline" value={content_data.headline || ''} onChange={(v) => updateSectionContent('headline', v)} />
-            <EditorField label="Subheadline" value={content_data.subheadline || ''} onChange={(v) => updateSectionContent('subheadline', v)} multiline />
-            <EditorField label="Primary Button Text" value={content_data.cta_primary?.text || ''} onChange={(v) => updateNestedContent('cta_primary.text', v)} />
-            <EditorField label="Primary Button Link" value={content_data.cta_primary?.link || ''} onChange={(v) => updateNestedContent('cta_primary.link', v)} />
-            <EditorField label="Secondary Button Text" value={content_data.cta_secondary?.text || ''} onChange={(v) => updateNestedContent('cta_secondary.text', v)} />
-            <ColorPicker label="Background Color" value={content_data.background_color || '#000000'} onChange={(v) => updateSectionContent('background_color', v)} />
-            <SliderField label="Overlay Opacity" value={content_data.overlay_opacity || 0.6} min={0} max={1} step={0.1} onChange={(v) => updateSectionContent('overlay_opacity', v)} />
+            <div className="space-y-3">
+              <div className="text-[10px] uppercase tracking-wider text-[#52525b] font-semibold mb-2">Content</div>
+              <EditorField label="Headline" value={content_data.headline || ''} onChange={(v) => updateSectionContent('headline', v)} placeholder="Your bold headline..." />
+              <EditorField label="Subheadline" value={content_data.subheadline || ''} onChange={(v) => updateSectionContent('subheadline', v)} multiline placeholder="Supporting text that describes your offer..." />
+            </div>
+
+            <div className="h-px bg-[#27272a] my-4"></div>
+
+            <div className="space-y-3">
+              <div className="text-[10px] uppercase tracking-wider text-[#52525b] font-semibold mb-2">Call to Action</div>
+              <div className="grid grid-cols-2 gap-2">
+                <EditorField label="Primary Text" value={content_data.cta_primary?.text || ''} onChange={(v) => updateNestedContent('cta_primary.text', v)} placeholder="Shop Now" />
+                <EditorField label="Primary Link" value={content_data.cta_primary?.link || ''} onChange={(v) => updateNestedContent('cta_primary.link', v)} placeholder="/shop" />
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <EditorField label="Secondary Text" value={content_data.cta_secondary?.text || ''} onChange={(v) => updateNestedContent('cta_secondary.text', v)} placeholder="Learn More" />
+                <EditorField label="Secondary Link" value={content_data.cta_secondary?.link || ''} onChange={(v) => updateNestedContent('cta_secondary.link', v)} placeholder="/about" />
+              </div>
+            </div>
+
+            <div className="h-px bg-[#27272a] my-4"></div>
+
+            <div className="space-y-3">
+              <div className="text-[10px] uppercase tracking-wider text-[#52525b] font-semibold mb-2">Style</div>
+              <ColorPicker label="Background Color" value={content_data.background_color || '#000000'} onChange={(v) => updateSectionContent('background_color', v)} />
+              <SliderField label="Overlay Opacity" value={content_data.overlay_opacity || 0.6} min={0} max={1} step={0.1} onChange={(v) => updateSectionContent('overlay_opacity', v)} />
+            </div>
           </>
         )}
 
         {section_key === 'process' && (
           <>
-            <EditorField label="Headline" value={content_data.headline || ''} onChange={(v) => updateSectionContent('headline', v)} />
-            <EditorField label="Subheadline" value={content_data.subheadline || ''} onChange={(v) => updateSectionContent('subheadline', v)} />
-            <ColorPicker label="Background Color" value={content_data.background_color || '#0a0a0a'} onChange={(v) => updateSectionContent('background_color', v)} />
+            <div className="space-y-3">
+              <div className="text-[10px] uppercase tracking-wider text-[#52525b] font-semibold mb-2">Content</div>
+              <EditorField label="Headline" value={content_data.headline || ''} onChange={(v) => updateSectionContent('headline', v)} placeholder="How it works..." />
+              <EditorField label="Subheadline" value={content_data.subheadline || ''} onChange={(v) => updateSectionContent('subheadline', v)} placeholder="Simple process..." />
+            </div>
+
+            <div className="h-px bg-[#27272a] my-4"></div>
+
             <ArrayEditor 
-              label="Steps" 
+              label="Process Steps" 
               items={content_data.steps || []}
               onChange={(items) => updateSectionContent('steps', items)}
               renderItem={(item, index, onChange) => (
@@ -442,49 +467,85 @@ export default function LiveEditorV2() {
                     value={item.title}
                     onChange={(e) => onChange({ ...item, title: e.target.value })}
                     placeholder="Step title"
-                    className="w-full bg-black border border-white/20 text-white px-3 py-2 rounded text-sm"
+                    className="w-full bg-[#0a0a0a] border border-[#27272a] text-white px-2.5 py-2 rounded text-xs focus:border-[#3f3f46] transition-all"
                   />
                   <textarea
                     value={item.description}
                     onChange={(e) => onChange({ ...item, description: e.target.value })}
-                    placeholder="Step description"
+                    placeholder="Description"
                     rows={2}
-                    className="w-full bg-black border border-white/20 text-white px-3 py-2 rounded text-sm"
+                    className="w-full bg-[#0a0a0a] border border-[#27272a] text-white px-2.5 py-2 rounded text-xs focus:border-[#3f3f46] transition-all resize-none"
                   />
                 </div>
               )}
             />
+
+            <div className="h-px bg-[#27272a] my-4"></div>
+
+            <div className="space-y-3">
+              <div className="text-[10px] uppercase tracking-wider text-[#52525b] font-semibold mb-2">Style</div>
+              <ColorPicker label="Background Color" value={content_data.background_color || '#0a0a0a'} onChange={(v) => updateSectionContent('background_color', v)} />
+            </div>
           </>
         )}
 
         {section_key === 'about_story' && (
           <>
-            <EditorField label="Headline" value={content_data.headline || ''} onChange={(v) => updateSectionContent('headline', v)} />
+            <div className="space-y-3">
+              <div className="text-[10px] uppercase tracking-wider text-[#52525b] font-semibold mb-2">Content</div>
+              <EditorField label="Headline" value={content_data.headline || ''} onChange={(v) => updateSectionContent('headline', v)} placeholder="Our story..." />
+            </div>
+
+            <div className="h-px bg-[#27272a] my-4"></div>
+
             <ArrayEditor 
-              label="Paragraphs" 
+              label="Story Paragraphs" 
               items={content_data.paragraphs || []}
               onChange={(items) => updateSectionContent('paragraphs', items)}
               renderItem={(item, index, onChange) => (
                 <textarea
                   value={item}
                   onChange={(e) => onChange(e.target.value)}
-                  placeholder={`Paragraph ${index + 1}`}
-                  rows={3}
-                  className="w-full bg-black border border-white/20 text-white px-3 py-2 rounded text-sm"
+                  placeholder={`Tell your story...`}
+                  rows={2}
+                  className="w-full bg-[#0a0a0a] border border-[#27272a] text-white px-2.5 py-2 rounded text-xs focus:border-[#3f3f46] transition-all resize-none leading-relaxed"
                 />
               )}
             />
-            <ColorPicker label="Background Color" value={content_data.background_color || '#000000'} onChange={(v) => updateSectionContent('background_color', v)} />
+
+            <div className="h-px bg-[#27272a] my-4"></div>
+
+            <div className="space-y-3">
+              <div className="text-[10px] uppercase tracking-wider text-[#52525b] font-semibold mb-2">Style</div>
+              <ColorPicker label="Background Color" value={content_data.background_color || '#000000'} onChange={(v) => updateSectionContent('background_color', v)} />
+            </div>
           </>
         )}
 
         {section_key === 'cta' && (
           <>
-            <EditorField label="Headline" value={content_data.headline || ''} onChange={(v) => updateSectionContent('headline', v)} />
-            <EditorField label="Subheadline" value={content_data.subheadline || ''} onChange={(v) => updateSectionContent('subheadline', v)} multiline />
-            <EditorField label="Button Text" value={content_data.cta_button?.text || ''} onChange={(v) => updateNestedContent('cta_button.text', v)} />
-            <EditorField label="Button Link" value={content_data.cta_button?.link || ''} onChange={(v) => updateNestedContent('cta_button.link', v)} />
-            <ColorPicker label="Background Color" value={content_data.background_color || '#000000'} onChange={(v) => updateSectionContent('background_color', v)} />
+            <div className="space-y-3">
+              <div className="text-[10px] uppercase tracking-wider text-[#52525b] font-semibold mb-2">Content</div>
+              <EditorField label="Headline" value={content_data.headline || ''} onChange={(v) => updateSectionContent('headline', v)} placeholder="Ready to start?" />
+              <EditorField label="Subheadline" value={content_data.subheadline || ''} onChange={(v) => updateSectionContent('subheadline', v)} multiline placeholder="Join thousands of customers..." />
+            </div>
+
+            <div className="h-px bg-[#27272a] my-4"></div>
+
+            <div className="space-y-3">
+              <div className="text-[10px] uppercase tracking-wider text-[#52525b] font-semibold mb-2">Button</div>
+              <div className="grid grid-cols-2 gap-2">
+                <EditorField label="Text" value={content_data.cta_button?.text || ''} onChange={(v) => updateNestedContent('cta_button.text', v)} placeholder="Shop Now" />
+                <EditorField label="Link" value={content_data.cta_button?.link || ''} onChange={(v) => updateNestedContent('cta_button.link', v)} placeholder="/shop" />
+              </div>
+            </div>
+
+            <div className="h-px bg-[#27272a] my-4"></div>
+
+            <div className="space-y-3">
+              <div className="text-[10px] uppercase tracking-wider text-[#52525b] font-semibold mb-2">Style</div>
+              <ColorPicker label="Background Color" value={content_data.background_color || '#000000'} onChange={(v) => updateSectionContent('background_color', v)} />
+            </div>
           </>
         )}
 
@@ -820,24 +881,28 @@ export default function LiveEditorV2() {
   );
 }
 
-// Helper Components - Compact & Modern
-function EditorField({ label, value, onChange, multiline = false }: any) {
+// Helper Components - VSCode/Vercel Style
+function EditorField({ label, value, onChange, multiline = false, placeholder = '' }: any) {
   return (
-    <div>
-      <label className="text-white/50 text-[10px] block mb-1.5 font-medium">{label}</label>
+    <div className="group">
+      <label className="text-[#a1a1aa] text-[11px] block mb-1.5 font-medium group-focus-within:text-white/70 transition-colors">
+        {label}
+      </label>
       {multiline ? (
         <textarea
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          rows={2}
-          className="w-full bg-white/5 border border-white/10 text-white px-2.5 py-2 rounded text-xs focus:border-white/30 focus:bg-white/10 transition-all resize-none"
+          placeholder={placeholder}
+          rows={3}
+          className="w-full bg-[#18181b] border border-[#27272a] text-white px-3 py-2.5 rounded-md text-[13px] leading-relaxed focus:border-[#3f3f46] focus:bg-[#1c1c1f] transition-all resize-none font-normal placeholder:text-[#52525b]"
         />
       ) : (
         <input
           type="text"
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="w-full bg-white/5 border border-white/10 text-white px-2.5 py-2 rounded text-xs focus:border-white/30 focus:bg-white/10 transition-all"
+          placeholder={placeholder}
+          className="w-full bg-[#18181b] border border-[#27272a] text-white px-3 py-2.5 rounded-md text-[13px] focus:border-[#3f3f46] focus:bg-[#1c1c1f] transition-all font-normal placeholder:text-[#52525b]"
         />
       )}
     </div>
@@ -846,20 +911,28 @@ function EditorField({ label, value, onChange, multiline = false }: any) {
 
 function ColorPicker({ label, value, onChange }: any) {
   return (
-    <div>
-      <label className="text-white/50 text-[10px] block mb-1.5 font-medium">{label}</label>
+    <div className="group">
+      <label className="text-[#a1a1aa] text-[11px] block mb-1.5 font-medium group-focus-within:text-white/70 transition-colors">
+        {label}
+      </label>
       <div className="flex gap-2">
-        <input
-          type="color"
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          className="w-12 h-9 rounded cursor-pointer border border-white/10 bg-white/5"
-        />
+        <div className="relative">
+          <input
+            type="color"
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            className="w-10 h-10 rounded-md cursor-pointer border border-[#27272a] bg-[#18181b] opacity-0 absolute inset-0"
+          />
+          <div 
+            className="w-10 h-10 rounded-md border border-[#27272a] pointer-events-none"
+            style={{ backgroundColor: value }}
+          />
+        </div>
         <input
           type="text"
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="flex-1 bg-white/5 border border-white/10 text-white px-2.5 py-2 rounded text-xs font-mono focus:border-white/30 focus:bg-white/10 transition-all"
+          className="flex-1 bg-[#18181b] border border-[#27272a] text-white px-3 py-2.5 rounded-md text-[13px] font-mono focus:border-[#3f3f46] focus:bg-[#1c1c1f] transition-all uppercase"
           placeholder="#000000"
         />
       </div>
@@ -869,10 +942,12 @@ function ColorPicker({ label, value, onChange }: any) {
 
 function SliderField({ label, value, min, max, step, onChange }: any) {
   return (
-    <div>
-      <div className="flex items-center justify-between mb-1.5">
-        <label className="text-white/50 text-[10px] font-medium">{label}</label>
-        <span className="text-white/40 text-[10px]">{(value * 100).toFixed(0)}%</span>
+    <div className="group">
+      <div className="flex items-center justify-between mb-2">
+        <label className="text-[#a1a1aa] text-[11px] font-medium group-hover:text-white/70 transition-colors">{label}</label>
+        <span className="text-white/60 text-[11px] font-mono bg-[#18181b] px-2 py-0.5 rounded border border-[#27272a]">
+          {(value * 100).toFixed(0)}%
+        </span>
       </div>
       <input
         type="range"
@@ -881,7 +956,10 @@ function SliderField({ label, value, min, max, step, onChange }: any) {
         step={step}
         value={value}
         onChange={(e) => onChange(parseFloat(e.target.value))}
-        className="w-full accent-white h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer"
+        className="w-full h-2 bg-[#27272a] rounded-lg appearance-none cursor-pointer slider-modern"
+        style={{
+          background: `linear-gradient(to right, white 0%, white ${value * 100}%, #27272a ${value * 100}%, #27272a 100%)`
+        }}
       />
     </div>
   );
@@ -902,28 +980,29 @@ function ArrayEditor({ label, items, onChange, renderItem }: any) {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-1.5">
-        <label className="text-white/50 text-[10px] font-medium">
-          {label} ({items.length})
+      <div className="flex items-center justify-between mb-2">
+        <label className="text-[#a1a1aa] text-[11px] font-medium">
+          {label}
+          <span className="text-[#52525b] ml-1.5">({items.length})</span>
         </label>
         <button
           onClick={addItem}
-          className="text-white/50 hover:text-white text-[10px] flex items-center gap-1 bg-white/5 hover:bg-white/10 px-1.5 py-0.5 rounded transition-colors"
+          className="text-[#71717a] hover:text-white text-[11px] flex items-center gap-1 bg-[#18181b] hover:bg-[#27272a] px-2 py-1 rounded border border-[#27272a] hover:border-[#3f3f46] transition-all"
         >
-          <Plus size={10} />
+          <Plus size={11} />
           Add
         </button>
       </div>
-      <div className="space-y-1.5 max-h-48 overflow-y-auto">
+      <div className="space-y-2 max-h-64 overflow-y-auto pr-1 custom-scrollbar">
         {items.map((item: any, index: number) => (
-          <div key={index} className="bg-white/5 border border-white/10 p-2 rounded">
-            <div className="flex items-center justify-between mb-1.5">
-              <span className="text-white/30 text-[9px] font-medium">#{index + 1}</span>
+          <div key={index} className="bg-[#18181b] border border-[#27272a] p-2.5 rounded-md hover:border-[#3f3f46] transition-colors group">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[#71717a] text-[10px] font-medium">Item {index + 1}</span>
               <button
                 onClick={() => removeItem(index)}
-                className="text-white/30 hover:text-red-400 p-0.5 rounded hover:bg-red-500/10 transition-colors"
+                className="text-[#52525b] hover:text-red-400 p-1 rounded hover:bg-red-500/10 transition-all opacity-0 group-hover:opacity-100"
               >
-                <Trash2 size={10} />
+                <Trash2 size={11} />
               </button>
             </div>
             {renderItem(item, index, (newItem: any) => updateItem(index, newItem))}
