@@ -40,7 +40,7 @@ export default async function ShippingPage() {
                 <div className="absolute inset-0 bg-white/5 rounded-full blur-xl animate-pulse" style={{ animationDuration: '3s' }} />
                 <img 
                   src={vendor.logo_url} 
-                  alt=Our Store
+                  alt={vendor.store_name}
                   className="relative w-full h-full object-contain drop-shadow-xl opacity-60 hover:opacity-100 hover:scale-110 transition-all duration-500"
                 />
               </div>
