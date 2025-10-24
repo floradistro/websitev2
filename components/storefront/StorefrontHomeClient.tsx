@@ -1,6 +1,7 @@
 "use client";
 
 import { memo } from "react";
+import { usePathname } from "next/navigation";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { ArrowRight, Store, Truck, Shield, Package, CheckCircle } from "lucide-react";
@@ -36,12 +37,12 @@ export function StorefrontHomeClient({
   productFieldsMap,
   locations = [],
 }: StorefrontHomeClientProps) {
-  // Determine base path based on current URL
-  // Custom domains: '' (routes at root like floradistro.com/shop)
-  // Localhost: '/storefront' (routes like localhost:3000/storefront/shop)
-  const basePath = typeof window !== 'undefined' && window.location.hostname.includes('localhost') 
-    ? '/storefront' 
-    : '';
+  const pathname = usePathname();
+  
+  // Determine base path based on current path
+  // If we're under /storefront, use '/storefront' prefix
+  // Otherwise (custom domains), use '' (root)
+  const basePath = pathname?.startsWith('/storefront') ? '/storefront' : '';
   
   return (
     <div 

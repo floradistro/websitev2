@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ShoppingBag, Menu, X, Search, User, ArrowRight, ChevronDown, Flower2, Droplets, Cookie, Wind } from 'lucide-react';
@@ -19,15 +20,14 @@ export function StorefrontHeader({ vendor }: StorefrontHeaderProps) {
   const [searchOpen, setSearchOpen] = useState(false);
   const [productsDropdownOpen, setProductsDropdownOpen] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
-  
-  // Determine base path based on current URL
-  // Custom domains: '' (routes at root like floradistro.com/shop)
-  // Localhost: '/storefront' (routes like localhost:3000/storefront/shop)
-  const basePath = typeof window !== 'undefined' && window.location.hostname.includes('localhost') 
-    ? '/storefront' 
-    : '';
   const [lastScrollY, setLastScrollY] = useState(0);
   const { itemCount, items, total } = useCart();
+  const pathname = usePathname();
+  
+  // Determine base path based on current path
+  // If we're under /storefront, use '/storefront' prefix
+  // Otherwise (custom domains), use '' (root)
+  const basePath = pathname?.startsWith('/storefront') ? '/storefront' : '';
 
   useEffect(() => {
     const controlHeader = () => {
