@@ -121,11 +121,18 @@ export async function middleware(request: NextRequest) {
         .single();
 
       if (vendor && !vendorError) {
-        // Subdomain storefront found
-        const url = request.nextUrl.clone();
-        url.pathname = `/storefront${pathname}`;
+        // Subdomain storefront found - redirect to /storefront
+        if (!pathname.startsWith('/storefront')) {
+          const url = request.nextUrl.clone();
+          url.pathname = `/storefront${pathname}`;
+          const redirect = NextResponse.redirect(url);
+          redirect.headers.set('x-vendor-id', vendor.id);
+          redirect.headers.set('x-is-subdomain', 'true');
+          return redirect;
+        }
         
-        const response = NextResponse.rewrite(url);
+        // Already on /storefront, just pass vendor ID
+        const response = NextResponse.next();
         response.headers.set('x-vendor-id', vendor.id);
         response.headers.set('x-is-subdomain', 'true');
         response.headers.set('X-Frame-Options', 'SAMEORIGIN');
