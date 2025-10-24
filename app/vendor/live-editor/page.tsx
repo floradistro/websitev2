@@ -605,8 +605,74 @@ export default function LiveEditorV2() {
           </>
         )}
 
+        {section_key === 'shop_header' && (
+          <>
+            <div className="space-y-2">
+              <EditorField label="Page Title" value={content_data.title || ''} onChange={(v) => updateContent('title', v)} placeholder="Shop" />
+              <EditorField label="Subtitle" value={content_data.subtitle || ''} onChange={(v) => updateContent('subtitle', v)} placeholder="Browse our collection..." />
+            </div>
+          </>
+        )}
+
+        {section_key === 'shop_config' && (
+          <>
+            <div className="space-y-2">
+              <div>
+                <label className="text-white/40 text-[11px] block mb-1 font-normal">Grid Columns</label>
+                <select
+                  value={content_data.grid_columns || 3}
+                  onChange={(e) => updateContent('grid_columns', parseInt(e.target.value))}
+                  className="w-full bg-black border border-white/10 text-white px-2 py-1.5 rounded text-[13px] focus:outline-none focus:border-white/30 transition-all"
+                >
+                  <option value={2}>2 Columns</option>
+                  <option value={3}>3 Columns</option>
+                  <option value={4}>4 Columns</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-white/40 text-[11px] block mb-1 font-normal">Card Style</label>
+                <select
+                  value={content_data.card_style || 'card'}
+                  onChange={(e) => updateContent('card_style', e.target.value)}
+                  className="w-full bg-black border border-white/10 text-white px-2 py-1.5 rounded text-[13px] focus:outline-none focus:border-white/30 transition-all"
+                >
+                  <option value="minimal">Minimal</option>
+                  <option value="card">Card</option>
+                  <option value="bordered">Bordered</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-white/40 text-[11px] block mb-1 font-normal">Corner Radius</label>
+                <select
+                  value={content_data.corner_radius || 'lg'}
+                  onChange={(e) => updateContent('corner_radius', e.target.value)}
+                  className="w-full bg-black border border-white/10 text-white px-2 py-1.5 rounded text-[13px] focus:outline-none focus:border-white/30 transition-all"
+                >
+                  <option value="none">None</option>
+                  <option value="sm">Small</option>
+                  <option value="md">Medium</option>
+                  <option value="lg">Large</option>
+                  <option value="xl">Extra Large</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-white/40 text-[11px] block mb-1 font-normal">Image Aspect</label>
+                <select
+                  value={content_data.image_aspect || 'square'}
+                  onChange={(e) => updateContent('image_aspect', e.target.value)}
+                  className="w-full bg-black border border-white/10 text-white px-2 py-1.5 rounded text-[13px] focus:outline-none focus:border-white/30 transition-all"
+                >
+                  <option value="square">Square (1:1)</option>
+                  <option value="portrait">Portrait (3:4)</option>
+                  <option value="landscape">Landscape (4:3)</option>
+                </select>
+              </div>
+            </div>
+          </>
+        )}
+
         {/* Fallback JSON Editor */}
-        {!['hero', 'process', 'about_story', 'cta'].includes(section_key) && (
+        {!['hero', 'process', 'about_story', 'cta', 'shop_header', 'shop_config'].includes(section_key) && (
           <div>
             <label className="text-white/40 text-[11px] block mb-1 font-normal">Section Data</label>
             <textarea

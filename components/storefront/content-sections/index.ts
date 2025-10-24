@@ -15,5 +15,8 @@ export { FAQItemsSection } from './FAQItemsSection';
 export { LocationsSection } from './LocationsSection';
 export { FeaturedProductsSection } from './FeaturedProductsSection';
 export { ShippingBadgesSection } from './ShippingBadgesSection';
+export { FooterSection } from './FooterSection';
+export { ShopHeaderSection } from './ShopHeaderSection';
+export { ShopConfigSection } from './ShopConfigSection';
 export { ProductGridSection } from './ProductGridSection';
 

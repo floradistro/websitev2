@@ -19,7 +19,7 @@ export default async function ReturnsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-black flex flex-col">
+    <div className="min-h-screen bg-black">
       {/* Breadcrumb */}
       <div className="sticky top-0 z-20 border-b border-white/10 bg-black">
         <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-10 py-3">
@@ -32,7 +32,7 @@ export default async function ReturnsPage() {
       </div>
 
       {/* Content */}
-      <div className="max-w-4xl mx-auto px-6 py-16 flex-1">
+      <div className="max-w-4xl mx-auto px-6 py-16">
         <div className="bg-black rounded-[32px] border border-white/10 p-8 md:p-12">
           {/* Animated Logo Header */}
           {vendor.logo_url && (

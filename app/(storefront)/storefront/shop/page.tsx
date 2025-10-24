@@ -84,6 +84,13 @@ export default async function StorefrontShopPage({ searchParams }: { searchParam
     notFound();
   }
 
+  // Load shop configuration from database
+  const { getVendorPageSections } = await import('@/lib/storefront/content-api');
+  const shopSections = await getVendorPageSections(vendorId, 'shop');
+  
+  const shopHeaderSection = shopSections.find(s => s.section_key === 'shop_header');
+  const shopConfigSection = shopSections.find(s => s.section_key === 'shop_config');
+
   // Check if in preview mode (live editor) - show sections + products
   const params = await searchParams;
   if (params.preview === 'true') {
@@ -93,9 +100,13 @@ export default async function StorefrontShopPage({ searchParams }: { searchParam
         <div className="-mt-[44px]">
           <UniversalPageRenderer vendor={vendor} pageType="shop" />
         </div>
-        {/* Shop products below */}
+        {/* Shop products below with editable config */}
         <div className="relative z-10">
-          <StorefrontShopClient vendorId={vendorId} />
+          <StorefrontShopClient 
+            vendorId={vendorId}
+            config={shopConfigSection?.content_data}
+            header={shopHeaderSection?.content_data}
+          />
         </div>
       </>
     );
@@ -132,7 +143,11 @@ export default async function StorefrontShopPage({ searchParams }: { searchParam
         </>
       )}
 
-      <StorefrontShopClient vendorId={vendorId} />
+      <StorefrontShopClient 
+        vendorId={vendorId}
+        config={shopConfigSection?.content_data}
+        header={shopHeaderSection?.content_data}
+      />
     </div>
   );
 }

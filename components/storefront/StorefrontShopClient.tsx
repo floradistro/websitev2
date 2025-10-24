@@ -7,9 +7,22 @@ import StorefrontProductCard from "./StorefrontProductCard";
 
 interface StorefrontShopClientProps {
   vendorId: string;
+  config?: {
+    grid_columns?: number;
+    card_style?: string;
+    corner_radius?: string;
+    image_aspect?: string;
+    show_categories?: boolean;
+    show_location_filter?: boolean;
+    show_sort?: boolean;
+  };
+  header?: {
+    title?: string;
+    subtitle?: string;
+  };
 }
 
-export function StorefrontShopClient({ vendorId }: StorefrontShopClientProps) {
+export function StorefrontShopClient({ vendorId, config, header }: StorefrontShopClientProps) {
   const [loading, setLoading] = useState(true);
   const [allProducts, setAllProducts] = useState<any[]>([]);
   const [locations, setLocations] = useState<any[]>([]);
@@ -184,6 +197,12 @@ export function StorefrontShopClient({ vendorId }: StorefrontShopClientProps) {
   // Get selected category name for breadcrumb
   const selectedCategoryName = categories.find(c => c.slug === selectedCategory)?.name;
 
+  // Apply config settings
+  const gridCols = config?.grid_columns || 3;
+  const gridClass = gridCols === 2 ? 'grid-cols-1 md:grid-cols-2' :
+                    gridCols === 4 ? 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4' :
+                    'grid-cols-2 md:grid-cols-3'; // default 3
+
   return (
     <>
       {/* Breadcrumb Navigation */}
@@ -215,11 +234,13 @@ export function StorefrontShopClient({ vendorId }: StorefrontShopClientProps) {
 
       <div className="relative z-10 max-w-7xl mx-auto px-0 sm:px-6 lg:px-10 py-16">
       <div className="mb-12 px-6 sm:px-0">
-        {/* Title */}
+        {/* Editable Title */}
         <div className="mb-6">
-          <h1 className="text-5xl md:text-7xl font-bold text-white mb-2 uppercase tracking-[-0.03em]">Shop All</h1>
-          <p className="text-xl text-neutral-400 font-light tracking-wide">
-            {filteredProducts.length} {filteredProducts.length === 1 ? 'Product' : 'Products'}
+          <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold text-white mb-2 uppercase tracking-[-0.03em]">
+            {header?.title || 'Shop All'}
+          </h1>
+          <p className="text-lg sm:text-xl text-neutral-400 font-light tracking-wide">
+            {header?.subtitle || `${filteredProducts.length} ${filteredProducts.length === 1 ? 'Product' : 'Products'}`}
           </p>
         </div>
 
@@ -346,7 +367,8 @@ export function StorefrontShopClient({ vendorId }: StorefrontShopClientProps) {
           <p className="text-white/60 text-lg font-light">No products available at the moment.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-px">
+        {/* Editable Grid */}
+        <div className={`grid gap-px ${gridClass}`}>
           {filteredProducts.map((product: any) => (
             <StorefrontProductCard 
               key={product.id} 

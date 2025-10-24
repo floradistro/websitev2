@@ -215,6 +215,58 @@ export const SECTION_LIBRARY: SectionTemplate[] = [
       show_filters: true,
       columns: 3
     }
+  },
+  {
+    key: 'footer',
+    name: 'Footer',
+    description: 'Site footer with links, social, and contact info',
+    icon: '',
+    category: 'content',
+    pageTypes: ['global'],
+    defaultContent: {
+      tagline: 'Your tagline here',
+      show_social: true,
+      show_links: true,
+      copyright_text: '© 2025 Your Store. All rights reserved.'
+    }
+  },
+  {
+    key: 'shop_header',
+    name: 'Shop Page Header',
+    description: 'Title and subtitle for the shop page',
+    icon: '',
+    category: 'content',
+    pageTypes: ['shop'],
+    defaultContent: {
+      title: 'Shop',
+      subtitle: 'Browse our complete collection',
+      show_filters: true,
+      show_category_bar: true,
+      show_location_filter: true,
+      show_sort: true
+    }
+  },
+  {
+    key: 'shop_config',
+    name: 'Shop Layout Settings',
+    description: 'Configure product grid, cards, and filters',
+    icon: '',
+    category: 'settings',
+    pageTypes: ['shop'],
+    defaultContent: {
+      grid_columns: 3,
+      card_style: 'card',
+      show_quick_add: true,
+      show_stock_badge: true,
+      show_pricing_tiers: true,
+      image_aspect: 'square',
+      corner_radius: 'lg',
+      show_categories: true,
+      show_location_filter: true,
+      show_sort: true,
+      page_title: 'Shop All Products',
+      page_subtitle: 'Premium quality, delivered fresh'
+    }
   }
 ];
 
