@@ -31,8 +31,8 @@ export const DEFAULT_CONTENT_TEMPLATE = {
           { icon: 'package', title: 'Order', description: 'Secure checkout' },
           { icon: 'truck', title: 'Receive', description: 'Fast delivery' }
         ],
-        background_color: '#ffffff',
-        text_color: '#000000'
+        background_color: '#000000',
+        text_color: '#FFFFFF'
       }
     },
     {
@@ -67,7 +67,7 @@ export const DEFAULT_CONTENT_TEMPLATE = {
         show_count: true,
         max_display: 6,
         layout: 'grid',
-        background_color: '#ffffff'
+        background_color: '#000000'
       }
     },
     {
@@ -96,7 +96,7 @@ export const DEFAULT_CONTENT_TEMPLATE = {
           { icon: 'truck', title: 'Free Shipping', description: 'On orders over $50' },
           { icon: 'shield', title: 'Secure Checkout', description: 'Safe and encrypted' }
         ],
-        background_color: '#ffffff'
+        background_color: '#000000'
       }
     }
   ],
@@ -123,7 +123,7 @@ export const DEFAULT_CONTENT_TEMPLATE = {
           'Explain what makes your business special and why customers should choose you.',
           'Share your values, mission, and vision for the future.'
         ],
-        background_color: '#ffffff'
+        background_color: '#000000'
       }
     },
     {
@@ -152,7 +152,7 @@ export const DEFAULT_CONTENT_TEMPLATE = {
           { number: '24/7', label: 'Support' },
           { number: '5★', label: 'Rated' }
         ],
-        background_color: '#ffffff'
+        background_color: '#000000'
       }
     },
     {
@@ -190,7 +190,7 @@ export const DEFAULT_CONTENT_TEMPLATE = {
         custom_hours: 'Add your business hours',
         show_locations: true,
         show_social: true,
-        background_color: '#ffffff'
+        background_color: '#000000'
       }
     }
   ],
@@ -208,7 +208,7 @@ export const DEFAULT_CONTENT_TEMPLATE = {
           { question: 'How can I track my order?', answer: 'You will receive a tracking number via email once your order ships.' },
           { question: 'Do you offer customer support?', answer: 'Yes, our support team is available via email and phone during business hours.' }
         ],
-        background_color: '#ffffff'
+        background_color: '#000000'
       }
     }
   ],
