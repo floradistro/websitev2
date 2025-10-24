@@ -541,56 +541,122 @@ export default function LiveEditorV2() {
     // Render appropriate editor for this section type
     if (section_key === 'shop_config') {
       return (
-        <div className="space-y-2">
-          <div>
-            <label className="text-white/40 text-[11px] block mb-1 font-normal">Grid Columns</label>
-            <select
-              value={content_data.grid_columns || 3}
-              onChange={(e) => updateContent('grid_columns', parseInt(e.target.value))}
-              className="w-full bg-black border border-white/10 text-white px-2 py-1.5 rounded text-[13px] focus:outline-none focus:border-white/30 transition-all"
-            >
-              <option value={2}>2 Columns</option>
-              <option value={3}>3 Columns</option>
-              <option value={4}>4 Columns</option>
-            </select>
+        <div className="space-y-3">
+          {/* Page Header */}
+          <div className="space-y-2 pb-2 border-b border-white/5">
+            <label className="text-white/60 text-[10px] uppercase tracking-wider block font-medium">Page Header</label>
+            <EditorField 
+              label="Page Title" 
+              value={content_data.page_title || 'Shop All'} 
+              onChange={(v) => updateContent('page_title', v)} 
+              placeholder="Shop All" 
+            />
+            <EditorField 
+              label="Page Subtitle" 
+              value={content_data.page_subtitle || ''} 
+              onChange={(v) => updateContent('page_subtitle', v)} 
+              placeholder="Browse our complete collection" 
+            />
           </div>
-          <div>
-            <label className="text-white/40 text-[11px] block mb-1 font-normal">Card Style</label>
-            <select
-              value={content_data.card_style || 'card'}
-              onChange={(e) => updateContent('card_style', e.target.value)}
-              className="w-full bg-black border border-white/10 text-white px-2 py-1.5 rounded text-[13px] focus:outline-none focus:border-white/30 transition-all"
-            >
-              <option value="minimal">Minimal</option>
-              <option value="card">Card</option>
-              <option value="bordered">Bordered</option>
-            </select>
+
+          {/* Layout Settings */}
+          <div className="space-y-2 pb-2 border-b border-white/5">
+            <label className="text-white/60 text-[10px] uppercase tracking-wider block font-medium">Layout</label>
+            <div>
+              <label className="text-white/40 text-[11px] block mb-1 font-normal">Grid Columns</label>
+              <select
+                value={content_data.grid_columns || 3}
+                onChange={(e) => updateContent('grid_columns', parseInt(e.target.value))}
+                className="w-full bg-black border border-white/10 text-white px-2 py-1.5 rounded text-[13px] focus:outline-none focus:border-white/30 transition-all"
+              >
+                <option value={2}>2 Columns</option>
+                <option value={3}>3 Columns</option>
+                <option value={4}>4 Columns</option>
+              </select>
+            </div>
           </div>
-          <div>
-            <label className="text-white/40 text-[11px] block mb-1 font-normal">Corner Radius</label>
-            <select
-              value={content_data.corner_radius || 'lg'}
-              onChange={(e) => updateContent('corner_radius', e.target.value)}
-              className="w-full bg-black border border-white/10 text-white px-2 py-1.5 rounded text-[13px] focus:outline-none focus:border-white/30 transition-all"
-            >
-              <option value="none">None</option>
-              <option value="sm">Small</option>
-              <option value="md">Medium</option>
-              <option value="lg">Large</option>
-              <option value="xl">Extra Large</option>
-            </select>
+
+          {/* Product Card Style */}
+          <div className="space-y-2 pb-2 border-b border-white/5">
+            <label className="text-white/60 text-[10px] uppercase tracking-wider block font-medium">Card Style</label>
+            <div>
+              <label className="text-white/40 text-[11px] block mb-1 font-normal">Card Style</label>
+              <select
+                value={content_data.card_style || 'card'}
+                onChange={(e) => updateContent('card_style', e.target.value)}
+                className="w-full bg-black border border-white/10 text-white px-2 py-1.5 rounded text-[13px] focus:outline-none focus:border-white/30 transition-all"
+              >
+                <option value="minimal">Minimal</option>
+                <option value="card">Card</option>
+                <option value="bordered">Bordered</option>
+              </select>
+            </div>
+            <div>
+              <label className="text-white/40 text-[11px] block mb-1 font-normal">Corner Radius</label>
+              <select
+                value={content_data.corner_radius || 'lg'}
+                onChange={(e) => updateContent('corner_radius', e.target.value)}
+                className="w-full bg-black border border-white/10 text-white px-2 py-1.5 rounded text-[13px] focus:outline-none focus:border-white/30 transition-all"
+              >
+                <option value="none">None</option>
+                <option value="sm">Small</option>
+                <option value="md">Medium</option>
+                <option value="lg">Large</option>
+                <option value="xl">Extra Large</option>
+              </select>
+            </div>
+            <div>
+              <label className="text-white/40 text-[11px] block mb-1 font-normal">Image Aspect</label>
+              <select
+                value={content_data.image_aspect || 'square'}
+                onChange={(e) => updateContent('image_aspect', e.target.value)}
+                className="w-full bg-black border border-white/10 text-white px-2 py-1.5 rounded text-[13px] focus:outline-none focus:border-white/30 transition-all"
+              >
+                <option value="square">Square (1:1)</option>
+                <option value="portrait">Portrait (3:4)</option>
+                <option value="landscape">Landscape (4:3)</option>
+              </select>
+            </div>
           </div>
-          <div>
-            <label className="text-white/40 text-[11px] block mb-1 font-normal">Image Aspect</label>
-            <select
-              value={content_data.image_aspect || 'square'}
-              onChange={(e) => updateContent('image_aspect', e.target.value)}
-              className="w-full bg-black border border-white/10 text-white px-2 py-1.5 rounded text-[13px] focus:outline-none focus:border-white/30 transition-all"
-            >
-              <option value="square">Square (1:1)</option>
-              <option value="portrait">Portrait (3:4)</option>
-              <option value="landscape">Landscape (4:3)</option>
-            </select>
+
+          {/* Product Card Features */}
+          <div className="space-y-2 pb-2 border-b border-white/5">
+            <label className="text-white/60 text-[10px] uppercase tracking-wider block font-medium">Card Features</label>
+            <ToggleField 
+              label="Show Quick Add Button" 
+              value={content_data.show_quick_add !== false} 
+              onChange={(v) => updateContent('show_quick_add', v)} 
+            />
+            <ToggleField 
+              label="Show Stock Badge" 
+              value={content_data.show_stock_badge !== false} 
+              onChange={(v) => updateContent('show_stock_badge', v)} 
+            />
+            <ToggleField 
+              label="Show Pricing Tiers" 
+              value={content_data.show_pricing_tiers !== false} 
+              onChange={(v) => updateContent('show_pricing_tiers', v)} 
+            />
+          </div>
+
+          {/* Filters & Navigation */}
+          <div className="space-y-2">
+            <label className="text-white/60 text-[10px] uppercase tracking-wider block font-medium">Filters & Nav</label>
+            <ToggleField 
+              label="Show Categories" 
+              value={content_data.show_categories !== false} 
+              onChange={(v) => updateContent('show_categories', v)} 
+            />
+            <ToggleField 
+              label="Show Location Filter" 
+              value={content_data.show_location_filter !== false} 
+              onChange={(v) => updateContent('show_location_filter', v)} 
+            />
+            <ToggleField 
+              label="Show Sort Dropdown" 
+              value={content_data.show_sort !== false} 
+              onChange={(v) => updateContent('show_sort', v)} 
+            />
           </div>
         </div>
       );
@@ -611,6 +677,46 @@ export default function LiveEditorV2() {
           </div>
           <ColorPicker label="Background" value={content_data.background_color || '#000000'} onChange={(v) => updateContent('background_color', v)} />
           <SliderField label="Overlay" value={content_data.overlay_opacity || 0.6} min={0} max={1} step={0.1} onChange={(v) => updateContent('overlay_opacity', v)} />
+          
+          {/* Custom Fields (Vendor-Added) */}
+          {customFieldsCache['hero']?.length > 0 && (
+            <div className="mt-4 pt-4 border-t border-purple-500/20">
+              <div className="text-xs text-purple-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                <span>Custom Fields</span>
+                <span className="bg-purple-500/20 px-1.5 py-0.5 rounded text-[10px]">
+                  {customFieldsCache['hero'].length}
+                </span>
+              </div>
+              {customFieldsCache['hero'].map((customField: any) => {
+                const fieldDef = customField.field_definition;
+                const fieldId = customField.field_id;
+                
+                if (fieldDef.type === 'text') {
+                  return (
+                    <EditorField 
+                      key={fieldId}
+                      label={`${fieldDef.label} 🔧`}
+                      value={content_data[fieldId] || ''}
+                      onChange={(v) => updateContent(fieldId, v)}
+                      placeholder={fieldDef.placeholder}
+                    />
+                  );
+                }
+                return null;
+              })}
+            </div>
+          )}
+
+          {/* Add Custom Field Button */}
+          <div className="mt-4 pt-4 border-t border-white/10">
+            <AddCustomFieldButton 
+              sectionKey="hero" 
+              vendorId={vendor?.id || localStorage.getItem('vendor_id') || ''} 
+              onFieldAdded={() => {
+                loadCustomFields(); // Reload to show new field
+              }} 
+            />
+          </div>
         </div>
       );
     }

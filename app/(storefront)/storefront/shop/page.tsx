@@ -3,6 +3,8 @@ import Link from 'next/link';
 import { getVendorFromHeaders, getVendorStorefront } from '@/lib/storefront/get-vendor';
 import { StorefrontShopClient } from '@/components/storefront/StorefrontShopClient';
 import { UniversalPageRenderer } from '@/components/storefront/UniversalPageRenderer';
+import { LiveEditingProvider } from '@/components/storefront/LiveEditingProvider';
+import { StorefrontShopClientWrapper } from '@/components/storefront/StorefrontShopClientWrapper';
 import { getServiceSupabase } from '@/lib/supabase/client';
 import { notFound } from 'next/navigation';
 
@@ -99,7 +101,7 @@ export default async function StorefrontShopPage({ searchParams }: { searchParam
     );
     
     return (
-      <>
+      <LiveEditingProvider initialSections={shopSections} isPreviewMode={true}>
         {/* Only render sections container if there are visible sections */}
         {visibleShopSections.length > 0 && (
           <div className="-mt-[44px]">
@@ -108,12 +110,8 @@ export default async function StorefrontShopPage({ searchParams }: { searchParam
         )}
         
         {/* Shop products with editable config - starts right after header if no sections */}
-        <StorefrontShopClient 
-          key={JSON.stringify(shopConfigSection?.content_data)}
-          vendorId={vendorId}
-          config={shopConfigSection?.content_data}
-        />
-      </>
+        <StorefrontShopClientWrapper vendorId={vendorId} />
+      </LiveEditingProvider>
     );
   }
 

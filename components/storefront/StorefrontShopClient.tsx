@@ -232,16 +232,22 @@ export function StorefrontShopClient({ vendorId, config }: StorefrontShopClientP
       <div className="mb-12 px-6 sm:px-0">
         {/* Title */}
         <div className="mb-6">
-          <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold text-white mb-2 uppercase tracking-[-0.03em]">Shop All</h1>
-          <p className="text-lg sm:text-xl text-neutral-400 font-light tracking-wide">
-            {filteredProducts.length} {filteredProducts.length === 1 ? 'Product' : 'Products'}
-          </p>
+          <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold text-white mb-2 uppercase tracking-[-0.03em]">
+            {config?.page_title || 'Shop All'}
+          </h1>
+          {(config?.page_subtitle || filteredProducts.length > 0) && (
+            <p className="text-lg sm:text-xl text-neutral-400 font-light tracking-wide">
+              {config?.page_subtitle || `${filteredProducts.length} ${filteredProducts.length === 1 ? 'Product' : 'Products'}`}
+            </p>
+          )}
         </div>
 
         {/* Filter Bar - Location & Sort */}
-        <div className="flex items-center gap-3 mb-8 max-w-xl">
-          {/* Location Dropdown */}
-          <div className="relative flex-1 min-w-0" ref={locationDropdownRef}>
+        {(config?.show_location_filter !== false || config?.show_sort !== false) && (
+          <div className="flex items-center gap-3 mb-8 max-w-xl">
+            {/* Location Dropdown */}
+            {config?.show_location_filter !== false && (
+              <div className="relative flex-1 min-w-0" ref={locationDropdownRef}>
             <button
               onClick={() => setIsLocationOpen(!isLocationOpen)}
               className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white/5 border border-white/20 hover:border-white rounded-full text-xs uppercase tracking-wider text-white hover:bg-white/10 transition-all cursor-pointer"
@@ -310,10 +316,12 @@ export function StorefrontShopClient({ vendorId, config }: StorefrontShopClientP
                 </div>
               </div>
             )}
-          </div>
+              </div>
+            )}
 
-          {/* Sort Dropdown */}
-          <select
+            {/* Sort Dropdown */}
+            {config?.show_sort !== false && (
+              <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
             className="flex-1 min-w-0 px-4 py-2.5 bg-white/5 border border-white/20 rounded-full text-xs uppercase tracking-wider text-white hover:bg-white/10 transition-all cursor-pointer focus:outline-none focus:border-white appearance-none text-center"
@@ -322,11 +330,13 @@ export function StorefrontShopClient({ vendorId, config }: StorefrontShopClientP
             <option value="name">A-Z</option>
             <option value="price-asc">Low-High</option>
             <option value="price-desc">High-Low</option>
-          </select>
-        </div>
+              </select>
+            )}
+          </div>
+        )}
 
         {/* Category Tabs */}
-        {categories.length > 0 && (
+        {config?.show_categories !== false && categories.length > 0 && (
           <nav className="flex items-center gap-4 overflow-x-auto scrollbar-hide -mx-6 px-6 sm:mx-0 sm:px-0">
             <button 
               onClick={() => setSelectedCategory(null)}
