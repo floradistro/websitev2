@@ -8,6 +8,8 @@ import { SECTION_LIBRARY, getSectionsForPage, SectionTemplate } from '@/lib/stor
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { AddCustomFieldButton } from '@/components/storefront/AddCustomFieldButton';
 import { FieldLibraryPanel } from '@/components/vendor/FieldLibraryPanel';
+import { CategoryPickerFieldInline } from '@/components/fields/inline/CategoryPickerInline';
+import { ProductPickerFieldInline } from '@/components/fields/inline/ProductPickerInline';
 
 interface ContentSection {
   id: string;
@@ -543,6 +545,17 @@ export default function LiveEditorV2() {
     if (section_key === 'shop_config') {
       return (
         <div className="space-y-3">
+          {/* Device Mode Indicator */}
+          <div className="p-2 bg-blue-500/10 border border-blue-500/20 rounded">
+            <div className="flex items-center gap-2 text-[10px] text-blue-300/90">
+              {previewDevice === 'desktop' ? <Monitor size={12} /> : <Smartphone size={12} />}
+              <div className="flex-1">
+                <div className="font-medium">Editing {previewDevice === 'desktop' ? 'Desktop' : 'Mobile'} View</div>
+                <div className="text-[9px] text-blue-300/60">Switch preview to configure both layouts</div>
+              </div>
+            </div>
+          </div>
+          
           {/* Page Header */}
           <div className="space-y-2 pb-2 border-b border-white/5">
             <label className="text-white/60 text-[10px] uppercase tracking-wider block font-medium">Page Header</label>
@@ -560,32 +573,44 @@ export default function LiveEditorV2() {
             />
           </div>
 
-          {/* Layout Settings */}
+          {/* Layout Settings - Device Aware */}
           <div className="space-y-2 pb-2 border-b border-white/5">
-            <label className="text-white/60 text-[10px] uppercase tracking-wider block font-medium">Layout</label>
-            <div>
-              <label className="text-white/40 text-[11px] block mb-1 font-normal">Desktop Columns</label>
-              <select
-                value={content_data.grid_columns || 3}
-                onChange={(e) => updateContent('grid_columns', parseInt(e.target.value))}
-                className="w-full bg-black border border-white/10 text-white px-2 py-1.5 rounded text-[13px] focus:outline-none focus:border-white/30 transition-all"
-              >
-                <option value={2}>2 Columns</option>
-                <option value={3}>3 Columns</option>
-                <option value={4}>4 Columns</option>
-              </select>
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-white/60 text-[10px] uppercase tracking-wider font-medium">Layout</label>
+              <div className="flex items-center gap-1 text-[9px] text-white/40">
+                {previewDevice === 'desktop' ? <Monitor size={10} /> : <Smartphone size={10} />}
+                <span className="uppercase tracking-wider">{previewDevice}</span>
+              </div>
             </div>
-            <div>
-              <label className="text-white/40 text-[11px] block mb-1 font-normal">Mobile Columns</label>
-              <select
-                value={content_data.grid_columns_mobile || 2}
-                onChange={(e) => updateContent('grid_columns_mobile', parseInt(e.target.value))}
-                className="w-full bg-black border border-white/10 text-white px-2 py-1.5 rounded text-[13px] focus:outline-none focus:border-white/30 transition-all"
-              >
-                <option value={1}>1 Column</option>
-                <option value={2}>2 Columns</option>
-              </select>
-            </div>
+            
+            {/* Show Desktop OR Mobile settings based on preview device */}
+            {previewDevice === 'desktop' ? (
+              <div>
+                <label className="text-white/40 text-[11px] block mb-1 font-normal">Columns</label>
+                <select
+                  value={content_data.grid_columns || 3}
+                  onChange={(e) => updateContent('grid_columns', parseInt(e.target.value))}
+                  className="w-full bg-black border border-white/10 text-white px-2 py-1.5 rounded text-[13px] focus:outline-none focus:border-white/30 transition-all"
+                >
+                  <option value={2}>2 Columns</option>
+                  <option value={3}>3 Columns</option>
+                  <option value={4}>4 Columns</option>
+                </select>
+              </div>
+            ) : (
+              <div>
+                <label className="text-white/40 text-[11px] block mb-1 font-normal">Columns</label>
+                <select
+                  value={content_data.grid_columns_mobile || 2}
+                  onChange={(e) => updateContent('grid_columns_mobile', parseInt(e.target.value))}
+                  className="w-full bg-black border border-white/10 text-white px-2 py-1.5 rounded text-[13px] focus:outline-none focus:border-white/30 transition-all"
+                >
+                  <option value={1}>1 Column</option>
+                  <option value={2}>2 Columns</option>
+                </select>
+              </div>
+            )}
+            
             <div>
               <label className="text-white/40 text-[11px] block mb-1 font-normal">Gap Between Cards</label>
               <select
@@ -600,14 +625,18 @@ export default function LiveEditorV2() {
                 <option value="xl">Extra Large (32px)</option>
               </select>
             </div>
-            <div className="mt-2 p-2 bg-white/5 rounded text-[10px] text-white/50 leading-relaxed">
-              💡 For edge-to-edge images: Set Gap="None", Card Padding="None", Image Inset="None"
-            </div>
           </div>
 
           {/* Card Container */}
           <div className="space-y-2 pb-2 border-b border-white/5">
-            <label className="text-white/60 text-[10px] uppercase tracking-wider block font-medium">Card Container</label>
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-white/60 text-[10px] uppercase tracking-wider font-medium">Card Container</label>
+              <span className="text-[9px] text-white/30 flex items-center gap-1">
+                <Monitor size={9} />
+                <Smartphone size={9} />
+                All Devices
+              </span>
+            </div>
             <ColorPicker 
               label="Background" 
               value={content_data.card_bg || '#000000'} 
@@ -671,7 +700,14 @@ export default function LiveEditorV2() {
 
           {/* Product Image */}
           <div className="space-y-2 pb-2 border-b border-white/5">
-            <label className="text-white/60 text-[10px] uppercase tracking-wider block font-medium">Product Image</label>
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-white/60 text-[10px] uppercase tracking-wider font-medium">Product Image</label>
+              <div className="flex items-center gap-1 text-[8px] text-white/30 uppercase tracking-wider">
+                <Monitor size={9} />
+                <Smartphone size={9} />
+                Both
+              </div>
+            </div>
             <div>
               <label className="text-white/40 text-[11px] block mb-1 font-normal">Aspect Ratio</label>
               <select
@@ -789,7 +825,14 @@ export default function LiveEditorV2() {
 
           {/* Product Info */}
           <div className="space-y-2 pb-2 border-b border-white/5">
-            <label className="text-white/60 text-[10px] uppercase tracking-wider block font-medium">Product Info</label>
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-white/60 text-[10px] uppercase tracking-wider font-medium">Product Info</label>
+              <div className="flex items-center gap-1 text-[8px] text-white/30 uppercase tracking-wider">
+                <Monitor size={9} />
+                <Smartphone size={9} />
+                Both
+              </div>
+            </div>
             <ColorPicker 
               label="Background" 
               value={content_data.info_bg || '#000000'} 
@@ -832,7 +875,14 @@ export default function LiveEditorV2() {
 
           {/* Product Card Display */}
           <div className="space-y-2 pb-2 border-b border-white/5">
-            <label className="text-white/60 text-[10px] uppercase tracking-wider block font-medium">Card Display</label>
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-white/60 text-[10px] uppercase tracking-wider font-medium">Card Display</label>
+              <div className="flex items-center gap-1 text-[8px] text-white/30 uppercase tracking-wider">
+                <Monitor size={9} />
+                <Smartphone size={9} />
+                Both
+              </div>
+            </div>
             <CheckboxField 
               label="Quick Add Button" 
               value={content_data.show_quick_add !== false} 
@@ -862,7 +912,14 @@ export default function LiveEditorV2() {
 
           {/* Filters & Navigation */}
           <div className="space-y-2">
-            <label className="text-white/60 text-[10px] uppercase tracking-wider block font-medium">Page Controls</label>
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-white/60 text-[10px] uppercase tracking-wider font-medium">Page Controls</label>
+              <div className="flex items-center gap-1 text-[8px] text-white/30 uppercase tracking-wider">
+                <Monitor size={9} />
+                <Smartphone size={9} />
+                Both
+              </div>
+            </div>
             <CheckboxField 
               label="Category Tabs" 
               value={content_data.show_categories !== false} 
@@ -974,10 +1031,31 @@ export default function LiveEditorV2() {
                       />
                     </div>
                   );
+                } else if (fieldDef.type === 'category_picker') {
+                  // Category Picker - Full UI
+                  return (
+                    <CategoryPickerFieldInline
+                      key={fieldId}
+                      label={`${fieldDef.label} 🔧`}
+                      value={content_data[fieldId] || []}
+                      onChange={(v) => updateContent(fieldId, v)}
+                    />
+                  );
+                } else if (fieldDef.type === 'product_picker') {
+                  // Product Picker - Full UI
+                  return (
+                    <ProductPickerFieldInline
+                      key={fieldId}
+                      label={`${fieldDef.label} 🔧`}
+                      value={content_data[fieldId] || []}
+                      onChange={(v) => updateContent(fieldId, v)}
+                      vendorId={vendor?.id || localStorage.getItem('vendor_id') || ''}
+                    />
+                  );
                 } else {
-                  // Complex types (category_picker, product_picker, etc.)
+                  // Other complex types - JSON fallback
                   const currentValue = content_data[fieldId];
-                  const hasValue = currentValue && (Array.isArray(currentValue) ? currentValue.length > 0 : Object.keys(currentValue).length > 0);
+                  const hasValue = currentValue && (Array.isArray(currentValue) ? currentValue.length > 0 : typeof currentValue === 'object' ? Object.keys(currentValue).length > 0 : !!currentValue);
                   
                   return (
                     <div key={fieldId} className="mb-3 p-3 bg-purple-500/10 border border-purple-500/20 rounded">
@@ -993,56 +1071,23 @@ export default function LiveEditorV2() {
                         )}
                       </div>
                       
-                      {/* Show friendly message for complex types */}
-                      {fieldDef.type === 'category_picker' && (
-                        <div className="bg-black/50 border border-white/10 rounded p-2 mb-2">
-                          <div className="text-white/60 text-[10px] mb-1">
-                            {hasValue 
-                              ? `${Array.isArray(currentValue) ? currentValue.length : 0} categories selected`
-                              : 'No categories selected'}
-                          </div>
-                          {hasValue && Array.isArray(currentValue) && (
-                            <div className="text-white/40 text-[9px] font-mono">
-                              IDs: {currentValue.join(', ')}
-                            </div>
-                          )}
-                        </div>
-                      )}
-                      
-                      {fieldDef.type === 'product_picker' && (
-                        <div className="bg-black/50 border border-white/10 rounded p-2 mb-2">
-                          <div className="text-white/60 text-[10px] mb-1">
-                            {hasValue 
-                              ? `${Array.isArray(currentValue) ? currentValue.length : 0} products selected`
-                              : 'No products selected'}
-                          </div>
-                        </div>
-                      )}
-                      
-                      {/* JSON editor for direct editing */}
                       <details className="mt-2">
                         <summary className="text-white/40 text-[10px] cursor-pointer hover:text-white/60">
-                          Advanced: Edit JSON Value
+                          Edit Value (JSON)
                         </summary>
                         <textarea
-                          value={JSON.stringify(content_data[fieldId] || [], null, 2)}
+                          value={JSON.stringify(content_data[fieldId] || null, null, 2)}
                           onChange={(e) => {
                             try {
                               const parsed = JSON.parse(e.target.value);
                               updateContent(fieldId, parsed);
                             } catch (err) {
-                              // Invalid JSON, ignore
+                              // Invalid JSON
                             }
                           }}
                           rows={4}
                           className="w-full bg-black border border-white/10 text-white font-mono text-[10px] resize-none mt-2 p-2 rounded"
-                          placeholder={`Enter ${fieldDef.type} value as JSON array`}
                         />
-                        <p className="text-white/30 text-[9px] mt-1">
-                          {fieldDef.type === 'category_picker' && 'Example: ["category-id-1", "category-id-2"]'}
-                          {fieldDef.type === 'product_picker' && 'Example: ["product-id-1", "product-id-2"]'}
-                          {!['category_picker', 'product_picker'].includes(fieldDef.type) && 'Enter value as valid JSON'}
-                        </p>
                       </details>
                     </div>
                   );
