@@ -32,15 +32,23 @@ export async function GET(
     monitor.recordCacheAccess('product-detail', false);
     const supabase = getServiceSupabase();
     
-    // Fetch basic product data first (much faster)
-    const { data, error } = await supabase
+    // Try to find product by UUID id first, then by slug if that fails
+    let query = supabase
       .from('products')
       .select(`
         *,
         vendor:vendors(id, store_name, slug, email, phone)
-      `)
-      .eq('id', id)
-      .single();
+      `);
+    
+    // Check if id looks like a UUID (contains hyphens and is 36 chars)
+    if (id.includes('-') && id.length === 36) {
+      query = query.eq('id', id);
+    } else {
+      // Try slug match
+      query = query.eq('slug', id);
+    }
+    
+    const { data, error } = await query.single();
     
     if (error) {
       endTimer();

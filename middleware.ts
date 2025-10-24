@@ -47,6 +47,11 @@ export async function middleware(request: NextRequest) {
     
     if (vendorSlug) {
       try {
+        if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+          console.error('❌ CRITICAL: Missing Supabase env vars in middleware');
+          return NextResponse.next();
+        }
+        
         const supabase = createClient(
           process.env.NEXT_PUBLIC_SUPABASE_URL!,
           process.env.SUPABASE_SERVICE_ROLE_KEY!

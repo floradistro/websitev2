@@ -15,7 +15,7 @@ interface ProductsCarouselProps {
 
 export default function ProductsCarousel({ products, locations, productFieldsMap, inventoryMap, vendorSlug }: ProductsCarouselProps) {
   const pathname = usePathname();
-  const isStorefront = pathname?.startsWith('/storefront');
+  const isStorefront = vendorSlug && pathname?.startsWith('/storefront');
 
   return (
     <HorizontalScroll className="flex overflow-x-auto overflow-y-visible gap-1 sm:gap-3 scrollbar-hide snap-x snap-mandatory py-2 px-1 sm:px-0 -mx-1 sm:mx-0">
