@@ -26,6 +26,8 @@ interface StorefrontProductDetailProps {
 }
 
 export function StorefrontProductDetail({ productSlug, vendorId }: StorefrontProductDetailProps) {
+  console.log('🔴 StorefrontProductDetail MOUNTED with:', { productSlug, vendorId });
+  
   const [selectedPrice, setSelectedPrice] = useState<number | null>(null);
   const [selectedQuantity, setSelectedQuantity] = useState<number>(1);
   const [selectedTierName, setSelectedTierName] = useState<string | null>(null);
@@ -37,6 +39,7 @@ export function StorefrontProductDetail({ productSlug, vendorId }: StorefrontPro
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
 
   // Fetch product using Yacht Club API
+  console.log('🔴 Fetching from /api/page-data/products');
   const { data, error, isLoading } = useSWR(
     `/api/page-data/products`,
     fetcher,
@@ -46,6 +49,8 @@ export function StorefrontProductDetail({ productSlug, vendorId }: StorefrontPro
       dedupingInterval: 60000,
     }
   );
+  
+  console.log('🔴 SWR State:', { isLoading, hasData: !!data, hasError: !!error });
 
   const product = data?.success 
     ? data.data.products.find((p: any) => 
