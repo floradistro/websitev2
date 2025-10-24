@@ -75,10 +75,6 @@ export function UniversalPageRenderer({
   
   const basePath = `/storefront`;
 
-  console.log(`🎨 UniversalPageRenderer: ${pageType}, ${pageSections.length} sections, liveMode=${isLiveEditMode}`);
-  console.log('📦 Locations data:', locations?.slice(0, 1));
-  console.log('📦 Products data:', products?.slice(0, 1));
-
   return (
     <div className="min-h-screen relative overflow-hidden">
       {/* UHD Gradient Background - iOS 26 */}

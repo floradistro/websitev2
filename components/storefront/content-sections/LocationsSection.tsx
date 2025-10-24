@@ -13,9 +13,6 @@ interface LocationsSectionProps {
 export function LocationsSection({ content, locations = [], vendor }: LocationsSectionProps) {
   const retailLocations = locations.filter((loc: any) => loc.type === 'retail');
 
-  console.log('🏪 LocationsSection - locations count:', locations.length);
-  console.log('🏪 LocationsSection - first location:', retailLocations[0]);
-
   if (retailLocations.length === 0) return null;
   
   // Ensure content is valid

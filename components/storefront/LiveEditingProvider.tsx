@@ -42,9 +42,6 @@ export function LiveEditingProvider({ children, initialSections, isPreviewMode =
     setIsLiveEditMode(inIframe && previewParam === 'true');
 
     if (inIframe && previewParam === 'true') {
-      console.log('🎨 Live edit mode enabled - listening for updates');
-      console.log('📊 Initial sections:', initialSections.length);
-
       // Listen for messages from parent editor window
       const handleMessage = (event: MessageEvent) => {
         // Security: Verify message is from same origin
@@ -54,22 +51,18 @@ export function LiveEditingProvider({ children, initialSections, isPreviewMode =
 
         switch (type) {
           case 'UPDATE_SECTION':
-            console.log('📝 Updating section:', data.section_key, data.field, '=', data.value);
             updateSection(data.section_key, data.field, data.value);
             break;
 
           case 'UPDATE_SECTION_FULL':
-            console.log('📝 Full section update:', data.section_key);
             updateSectionFull(data.section_key, data.content_data);
             break;
 
           case 'TOGGLE_SECTION':
-            console.log('👁️ Toggle section:', data.section_key);
             toggleSectionVisibility(data.section_key, data.is_enabled);
             break;
 
           case 'RELOAD_SECTIONS':
-            console.log('🔄 Reloading all sections:', data.sections?.length);
             setSections(data.sections);
             break;
 
@@ -96,7 +89,6 @@ export function LiveEditingProvider({ children, initialSections, isPreviewMode =
         
         if (pageType !== currentPage) {
           currentPage = pageType;
-          console.log('📍 Detected page change to:', pageType);
           window.parent.postMessage({ 
             type: 'PAGE_CHANGED', 
             page: pageType 

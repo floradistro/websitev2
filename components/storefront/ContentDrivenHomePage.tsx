@@ -204,6 +204,7 @@ export async function ContentDrivenHomePage({
             
             <ProductsCarousel
               products={products}
+              locations={locations}
               inventoryMap={inventoryMap}
               productFieldsMap={productFieldsMap}
             />

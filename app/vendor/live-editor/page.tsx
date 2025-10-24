@@ -47,6 +47,39 @@ export default function LiveEditorV2() {
     }
   }, [selectedPage, vendor]);
 
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Cmd+S / Ctrl+S - Manual save
+      if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+        e.preventDefault();
+        if (hasUnsavedChanges) {
+          saveAllChanges();
+        }
+      }
+      
+      // Delete key - Delete selected section
+      if (e.key === 'Delete' && selectedSection && !e.target.matches('input, textarea')) {
+        e.preventDefault();
+        deleteSection(selectedSection.id);
+      }
+      
+      // Cmd+D / Ctrl+D - Duplicate selected section
+      if ((e.metaKey || e.ctrlKey) && e.key === 'd' && selectedSection) {
+        e.preventDefault();
+        duplicateSection(selectedSection.id);
+      }
+
+      // Escape - Close modals
+      if (e.key === 'Escape') {
+        setShowSectionLibrary(false);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedSection, hasUnsavedChanges, showSectionLibrary]);
+
   function updatePreviewPage() {
     const iframe = document.getElementById('preview-iframe') as HTMLIFrameElement;
     if (iframe && vendor) {
