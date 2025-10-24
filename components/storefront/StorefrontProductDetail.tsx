@@ -88,13 +88,14 @@ export function StorefrontProductDetail({ productSlug, vendorId }: StorefrontPro
   const inventory = product?.inventory || [];
   
   // Debug logging for pricing tiers
-  console.log('Product detail page - Full product data:', {
-    productName: product?.name,
-    pricingTiers,
-    tiersCount: pricingTiers.length,
-    hasProduct: !!product,
-    productKeys: product ? Object.keys(product) : []
-  });
+  console.log('========== STOREFRONT PRODUCT DETAIL DEBUG ==========');
+  console.log('1. Product found:', !!product);
+  console.log('2. Product name:', product?.name);
+  console.log('3. Raw pricing_tiers from product:', product?.pricing_tiers);
+  console.log('4. Parsed pricingTiers variable:', pricingTiers);
+  console.log('5. Pricing tiers count:', pricingTiers.length);
+  console.log('6. Product has these keys:', product ? Object.keys(product).filter(k => k.includes('pric') || k.includes('tier')) : []);
+  console.log('====================================================');
 
   const inWishlist = product ? isInWishlist(product.id) : false;
 
