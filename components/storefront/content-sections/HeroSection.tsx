@@ -74,6 +74,26 @@ export function HeroSection({ content, templateStyle = 'minimalist', basePath = 
       />
       
       <div className={style.content} style={{ color: textColor }}>
+        {/* Render custom badge if vendor added it */}
+        {content.promotional_badge && (
+          <div className="absolute top-4 right-4 bg-white text-black px-4 py-2 rounded-full text-sm font-bold uppercase tracking-wider animate-pulse">
+            {content.promotional_badge}
+          </div>
+        )}
+
+        {/* Render custom video background if vendor added it */}
+        {content.video_background && (
+          <video 
+            autoPlay 
+            loop 
+            muted 
+            playsInline 
+            className="absolute inset-0 w-full h-full object-cover -z-10"
+          >
+            <source src={content.video_background} type="video/mp4" />
+          </video>
+        )}
+        
         <h1 className={style.headline}>
           {typeof content.headline === 'string' ? content.headline : 'Welcome'}
         </h1>
@@ -99,6 +119,21 @@ export function HeroSection({ content, templateStyle = 'minimalist', basePath = 
             </Link>
           )}
         </div>
+
+        {/* Render any OTHER custom fields generically */}
+        {Object.entries(content).map(([key, value]) => {
+          // Skip known base fields
+          const baseFields = ['headline', 'subheadline', 'cta_primary', 'cta_secondary', 'background_color', 'text_color', 'background_type', 'overlay_opacity', 'promotional_badge', 'video_background'];
+          if (baseFields.includes(key) || !value) return null;
+          
+          // Render unknown custom fields as simple text overlays
+          return (
+            <div key={key} className="mt-4 text-sm text-white/80 bg-white/10 backdrop-blur px-4 py-2 rounded">
+              <span className="font-semibold">Custom: </span>
+              {String(value)}
+            </div>
+          );
+        })}
       </div>
     </div>
   );
