@@ -208,18 +208,18 @@ export function AddFieldFromLibraryModal({ fieldType, onClose, onAdd }: AddField
 
   return (
     <div className="fixed inset-0 bg-black/95 z-[9999] flex items-center justify-center p-4">
-      <div className="bg-[#0a0a0a] border border-white/10 rounded-lg max-w-3xl w-full max-h-[90vh] flex flex-col">
+      <div className="bg-[#1e1e1e] border border-[#3e3e3e] rounded max-w-3xl w-full max-h-[90vh] flex flex-col shadow-2xl">
         {/* Header */}
-        <div className="p-4 border-b border-white/10 flex items-center justify-between">
+        <div className="p-4 border-b border-[#3e3e3e] flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <span className="text-3xl">{fieldType.icon}</span>
+            <span className="text-2xl">{fieldType.icon}</span>
             <div>
-              <h3 className="text-white font-semibold">{fieldType.name}</h3>
-              <p className="text-white/60 text-xs">{fieldType.description}</p>
+              <h3 className="text-[#cccccc] font-medium text-sm">{fieldType.name}</h3>
+              <p className="text-[#858585] text-xs">{fieldType.description}</p>
             </div>
           </div>
-          <button onClick={onClose} className="text-white/60 hover:text-white">
-            <X size={20} />
+          <button onClick={onClose} className="text-[#858585] hover:text-[#cccccc] transition-colors">
+            <X size={18} />
           </button>
         </div>
 

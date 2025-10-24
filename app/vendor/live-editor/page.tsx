@@ -143,9 +143,8 @@ export default function LiveEditorV2() {
           pageUrl = `/storefront/shop?vendor=${vendor.slug}&preview=true`;
           break;
         case 'product':
-          // Show first product for preview - use a real product slug
-          // For Flora Distro we'll use 'prime-runts', but this will work for any vendor's first product
-          pageUrl = `/storefront/products/prime-runts?vendor=${vendor.slug}&preview=true`;
+          // Show first product for preview
+          pageUrl = `/storefront/products/unicorn-cherry?vendor=${vendor.slug}&preview=true`;
           break;
         case 'about':
           pageUrl = `/storefront/about?vendor=${vendor.slug}&preview=true`;

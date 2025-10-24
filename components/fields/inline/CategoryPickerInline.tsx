@@ -59,7 +59,7 @@ export function CategoryPickerFieldInline({ label, value = [], onChange }: { lab
       {selectedCategories.length > 0 && (
         <div className="flex flex-wrap gap-1 mb-1">
           {selectedCategories.map(cat => (
-            <span key={cat.id} className="inline-flex items-center gap-1 bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded text-[10px]">
+            <span key={cat.id} className="inline-flex items-center gap-1 bg-[#007acc]/20 text-[#4fc1ff] px-2 py-0.5 rounded text-[10px] border border-[#007acc]/30">
               {cat.name}
               <button
                 onClick={(e) => {
@@ -94,7 +94,7 @@ export function CategoryPickerFieldInline({ label, value = [], onChange }: { lab
 
       {/* Dropdown picker */}
       {showPicker && (
-        <div className="mt-1 bg-black border border-white/10 rounded max-h-48 overflow-y-auto">
+        <div className="mt-1 bg-[#252526] border border-[#3e3e3e] rounded max-h-48 overflow-y-auto shadow-lg">
           {loading ? (
             <div className="p-3 text-center text-white/40 text-xs">Loading...</div>
           ) : categories.length === 0 ? (
@@ -114,11 +114,11 @@ export function CategoryPickerFieldInline({ label, value = [], onChange }: { lab
                       }
                     }}
                     className={`flex items-center gap-2 px-2 py-1.5 rounded cursor-pointer text-xs ${
-                      isSelected ? 'bg-purple-500/20 text-purple-300' : 'text-white/70 hover:bg-white/5'
+                      isSelected ? 'bg-[#007acc]/20 text-[#4fc1ff]' : 'text-[#cccccc] hover:bg-[#2a2d2e]'
                     }`}
                   >
                     <div className={`w-3 h-3 rounded border flex items-center justify-center ${
-                      isSelected ? 'bg-purple-500 border-purple-500' : 'border-white/20'
+                      isSelected ? 'bg-[#007acc] border-[#007acc]' : 'border-[#3e3e3e]'
                     }`}>
                       {isSelected && <Check size={8} className="text-white" />}
                     </div>

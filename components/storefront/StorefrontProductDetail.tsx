@@ -69,17 +69,9 @@ export function StorefrontProductDetail({ productSlug, vendorId, config = {} }: 
   );
 
   const product = data?.success 
-    ? data.data.products.find((p: any) => {
-        const matchesVendor = p.vendor_id === vendorId;
-        const matchesSlug = p.slug === productSlug || p.id === productSlug;
-        console.log('🔍 Product check:', { 
-          name: p.name, 
-          slug: p.slug, 
-          vendorMatch: matchesVendor, 
-          slugMatch: matchesSlug 
-        });
-        return matchesVendor && matchesSlug;
-      })
+    ? data.data.products.find((p: any) => 
+        p.vendor_id === vendorId && (p.slug === productSlug || p.id === productSlug)
+      )
     : null;
 
   const locations = data?.success ? data.data.locations : [];
@@ -114,14 +106,6 @@ export function StorefrontProductDetail({ productSlug, vendorId, config = {} }: 
   const pricingTiers = product?.pricing_tiers || [];
   const inventory = product?.inventory || [];
 
-  // Client-side only logging for pricing tiers
-  useEffect(() => {
-    if (product) {
-      console.log('📊 Product loaded:', product.name);
-      console.log('📊 Pricing tiers:', product.pricing_tiers);
-      console.log('📊 Tiers count:', pricingTiers.length);
-    }
-  }, [product, pricingTiers.length]);
 
   const inWishlist = product ? isInWishlist(product.id) : false;
 
@@ -180,12 +164,10 @@ export function StorefrontProductDetail({ productSlug, vendorId, config = {} }: 
   }
 
   if (!product) {
-    console.error('❌ Product not found:', { productSlug, vendorId, totalProducts: allProducts.length });
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-center">
-          <p className="text-white/60 text-lg font-light mb-4">Product not found: {productSlug}</p>
-          <p className="text-white/40 text-sm mb-4">Vendor ID: {vendorId}</p>
+          <p className="text-white/60 text-lg font-light mb-4">Product not found</p>
           <Link href={`/storefront/shop?vendor=${vendor?.slug || 'shop'}`} className="text-white underline">
             Back to Shop
           </Link>
