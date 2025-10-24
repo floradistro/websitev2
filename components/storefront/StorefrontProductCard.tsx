@@ -10,9 +10,17 @@ interface StorefrontProductCardProps {
   product: any;
   vendorSlug?: string;
   locations?: any[];
+  config?: {
+    card_style?: string;
+    corner_radius?: string;
+    image_aspect?: string;
+    show_quick_add?: boolean;
+    show_stock_badge?: boolean;
+    show_pricing_tiers?: boolean;
+  };
 }
 
-function StorefrontProductCard({ product, vendorSlug, locations = [] }: StorefrontProductCardProps) {
+function StorefrontProductCard({ product, vendorSlug, locations = [], config = {} }: StorefrontProductCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
   
@@ -116,7 +124,8 @@ function StorefrontProductCard({ product, vendorSlug, locations = [] }: Storefro
   const getPriceDisplay = () => {
     const pricingTiers = product.pricingTiers || [];
     
-    if (pricingTiers.length > 0) {
+    // Only show pricing tiers if config allows it
+    if (config.show_pricing_tiers !== false && pricingTiers.length > 0) {
       const prices = pricingTiers.map((t: any) => parseFloat(t.price));
       const minPrice = Math.min(...prices);
       const maxPrice = Math.max(...prices);
@@ -183,16 +192,34 @@ function StorefrontProductCard({ product, vendorSlug, locations = [] }: Storefro
   };
 
   const stockInfo = getStockLocations();
+  
+  // Apply config settings
+  const imageAspect = config.image_aspect || 'square';
+  const aspectClass = imageAspect === 'portrait' ? 'aspect-[3/4]' :
+                      imageAspect === 'landscape' ? 'aspect-[4/3]' :
+                      'aspect-square';
+  
+  const cornerRadius = config.corner_radius || 'lg';
+  const radiusClass = cornerRadius === 'none' ? 'rounded-none' :
+                      cornerRadius === 'sm' ? 'rounded-sm' :
+                      cornerRadius === 'md' ? 'rounded-md' :
+                      cornerRadius === 'xl' ? 'rounded-xl' :
+                      'rounded-lg';
+  
+  const cardStyle = config.card_style || 'card';
+  const cardStyleClass = cardStyle === 'minimal' ? 'bg-transparent' :
+                         cardStyle === 'bordered' ? 'bg-black/20 border border-white/10 p-4' :
+                         'bg-black/10 p-2';
 
   return (
     <Link 
       href={productUrl}
-      className="group block"
+      className={`group block ${cardStyleClass} ${radiusClass} transition-all hover:bg-black/20`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
       {/* Product Image Container */}
-      <div className="relative aspect-[4/5] bg-black overflow-hidden mb-4">
+      <div className={`relative ${aspectClass} bg-black overflow-hidden mb-4 ${radiusClass}`}>
         {/* Subtle Picture Frame */}
         <div className="absolute inset-0 pointer-events-none z-20 rounded-t-[20px] sm:rounded-t-[32px] overflow-hidden">
           {/* Inner shadow frame */}
@@ -242,28 +269,30 @@ function StorefrontProductCard({ product, vendorSlug, locations = [] }: Storefro
         </button>
 
         {/* Badges Overlay - Top Left */}
-        <div className="absolute top-2 left-2 flex flex-col gap-1 z-20">
-          {/* New Arrival Badge */}
-          {product.date_created && new Date(product.date_created).getTime() > Date.now() - 7 * 24 * 60 * 60 * 1000 && (
-            <div className="bg-black border border-white/30 text-white px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider">
-              New
-            </div>
-          )}
-          
-          {/* Best Seller Badge */}
-          {product.total_sales && product.total_sales > 10 && (
-            <div className="bg-black border border-white/30 text-white px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider">
-              Popular
-            </div>
-          )}
-          
-          {/* Low Stock Badge */}
-          {stockInfo.inStock && product.total_stock && product.total_stock <= 5 && product.total_stock > 0 && (
-            <div className="bg-red-600/90 text-white px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider">
-              Only {product.total_stock} Left
-            </div>
-          )}
-        </div>
+        {config.show_stock_badge !== false && (
+          <div className="absolute top-2 left-2 flex flex-col gap-1 z-20">
+            {/* New Arrival Badge */}
+            {product.date_created && new Date(product.date_created).getTime() > Date.now() - 7 * 24 * 60 * 60 * 1000 && (
+              <div className="bg-black border border-white/30 text-white px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider">
+                New
+              </div>
+            )}
+            
+            {/* Best Seller Badge */}
+            {product.total_sales && product.total_sales > 10 && (
+              <div className="bg-black border border-white/30 text-white px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider">
+                Popular
+              </div>
+            )}
+            
+            {/* Low Stock Badge */}
+            {stockInfo.inStock && product.total_stock && product.total_stock <= 5 && product.total_stock > 0 && (
+              <div className="bg-red-600/90 text-white px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider">
+                Only {product.total_stock} Left
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Hover Overlay - Desktop */}
         <div className={`hidden md:flex absolute inset-0 items-center justify-center transition-all duration-500 bg-black/60 backdrop-blur-xl ${
@@ -273,6 +302,19 @@ function StorefrontProductCard({ product, vendorSlug, locations = [] }: Storefro
             <div className="bg-white text-black px-6 py-3 text-xs uppercase tracking-[0.2em] font-medium rounded-full shadow-lg">
               View Product
             </div>
+            {config.show_quick_add !== false && stockInfo.inStock && (
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  // Quick add functionality would go here
+                  alert('Quick Add - Coming soon!');
+                }}
+                className="bg-black/80 text-white border border-white/20 px-6 py-2 text-xs uppercase tracking-[0.2em] font-medium rounded-full shadow-lg hover:bg-white hover:text-black transition-all"
+              >
+                Quick Add
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -288,27 +330,31 @@ function StorefrontProductCard({ product, vendorSlug, locations = [] }: Storefro
         </h3>
         
         {/* Stock Status with Locations - Right after name */}
-        {stockInfo.inStock ? (
-          <div className="flex items-center gap-1.5">
-            <div className="w-2 h-2 rounded-full bg-green-500 flex-shrink-0"></div>
-            <div className="flex flex-col">
-              <span className="text-[11px] uppercase tracking-wider text-neutral-400">
-                In Stock
-              </span>
-              {!stockInfo.showGenericStock && stockInfo.locations.length > 0 && (
-                <span className="text-[11px] tracking-wider text-neutral-500">
-                  {stockInfo.count} {stockInfo.count === 1 ? 'location' : 'locations'}
+        {config.show_stock_badge !== false && (
+          <>
+            {stockInfo.inStock ? (
+              <div className="flex items-center gap-1.5">
+                <div className="w-2 h-2 rounded-full bg-green-500 flex-shrink-0"></div>
+                <div className="flex flex-col">
+                  <span className="text-[11px] uppercase tracking-wider text-neutral-400">
+                    In Stock
+                  </span>
+                  {!stockInfo.showGenericStock && stockInfo.locations.length > 0 && (
+                    <span className="text-[11px] tracking-wider text-neutral-500">
+                      {stockInfo.count} {stockInfo.count === 1 ? 'location' : 'locations'}
+                    </span>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center gap-1.5">
+                <div className="w-2 h-2 rounded-full bg-red-500/60 flex-shrink-0"></div>
+                <span className="text-[11px] uppercase tracking-wider text-neutral-400">
+                  Out of Stock
                 </span>
-              )}
-            </div>
-          </div>
-        ) : (
-          <div className="flex items-center gap-1.5">
-            <div className="w-2 h-2 rounded-full bg-red-500/60 flex-shrink-0"></div>
-            <span className="text-[11px] uppercase tracking-wider text-neutral-400">
-              Out of Stock
-            </span>
-          </div>
+              </div>
+            )}
+          </>
         )}
         
         {/* Product Fields - Stacked vertically */}

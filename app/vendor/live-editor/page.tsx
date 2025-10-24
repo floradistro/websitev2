@@ -70,7 +70,7 @@ export default function LiveEditorV2() {
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [previewKey, setPreviewKey] = useState(0);
   const [iframeReady, setIframeReady] = useState(false);
-  const [activeTab, setActiveTab] = useState<'sections' | 'design' | 'settings'>('sections');
+  const [activeTab, setActiveTab] = useState<'sections' | 'design' | 'settings' | 'fields'>('sections');
   const [showSectionLibrary, setShowSectionLibrary] = useState(false);
   const [expandedCategories, setExpandedCategories] = useState<string[]>(['hero', 'content', 'features']);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
@@ -1148,16 +1148,89 @@ export default function LiveEditorV2() {
                   Loading...
                 </div>
               ) : (
-                <button 
-                  onClick={() => setShowSectionLibrary(true)}
-                  className="flex items-center gap-1.5 text-white/50 hover:text-white hover:bg-white/5 px-2 py-1.5 rounded text-[11px] transition-colors w-full mb-1"
-                >
-                  <Plus size={12} />
-                  Add Section
-                </button>
+                <>
+                  <button 
+                    onClick={() => setShowSectionLibrary(true)}
+                    className="flex items-center gap-1.5 text-white/50 hover:text-white hover:bg-white/5 px-2 py-1.5 rounded text-[11px] transition-colors w-full mb-1"
+                  >
+                    <Plus size={12} />
+                    Add Section
+                  </button>
+                  <button 
+                    onClick={() => setActiveTab(activeTab === 'fields' ? 'sections' : 'fields')}
+                    className="flex items-center gap-1.5 text-purple-400 hover:text-purple-300 hover:bg-purple-500/10 px-2 py-1.5 rounded text-[11px] transition-colors w-full mb-1"
+                  >
+                    <Settings size={12} />
+                    {activeTab === 'fields' ? 'Back to Sections' : 'Manage Custom Fields'}
+                  </button>
+                </>
               )}
               
-              {!loading && sections.length > 0 && (
+              {/* Fields Manager Tab */}
+              {activeTab === 'fields' && (
+                <div className="p-3">
+                  <div className="mb-4">
+                    <h3 className="text-white/80 text-xs font-semibold mb-2">Custom Fields</h3>
+                    <p className="text-white/40 text-[10px] leading-relaxed">
+                      Extend sections with custom fields unique to your store
+                    </p>
+                  </div>
+
+                  {Object.keys(customFieldsCache).length === 0 ? (
+                    <div className="text-center py-8">
+                      <Settings className="mx-auto mb-3 text-white/20" size={32} />
+                      <p className="text-white/40 text-xs mb-4">No custom fields yet</p>
+                      <p className="text-white/30 text-[10px] mb-4">
+                        Add custom fields to sections using the + button when editing
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {Object.entries(customFieldsCache).map(([sectionKey, fields]: [string, any]) => (
+                        <div key={sectionKey} className="bg-white/5 rounded p-2">
+                          <div className="text-white/60 text-[10px] uppercase tracking-wider mb-2 font-semibold">
+                            {sectionKey}
+                          </div>
+                          <div className="space-y-1.5">
+                            {fields.map((field: any) => (
+                              <div key={field.id} className="flex items-center justify-between bg-black/50 rounded px-2 py-1.5">
+                                <div className="flex-1">
+                                  <div className="text-white text-xs">{field.field_definition.label}</div>
+                                  <div className="text-white/30 text-[10px] font-mono">{field.field_id}</div>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <span className="text-purple-400 text-[9px] bg-purple-500/20 px-1.5 py-0.5 rounded">
+                                    {field.field_definition.type}
+                                  </span>
+                                  <button
+                                    onClick={async () => {
+                                      if (confirm('Delete this custom field?')) {
+                                        const vendorId = localStorage.getItem('vendor_id');
+                                        const response = await fetch(`/api/vendor/custom-fields?id=${field.id}`, {
+                                          method: 'DELETE',
+                                          headers: { 'x-vendor-id': vendorId! }
+                                        });
+                                        if (response.ok) {
+                                          loadCustomFields();
+                                        }
+                                      }
+                                    }}
+                                    className="text-red-400 hover:text-red-300 p-1"
+                                  >
+                                    <Trash2 size={10} />
+                                  </button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+              
+              {!loading && sections.length > 0 && activeTab === 'sections' && (
                   <DragDropContext onDragEnd={onDragEnd}>
                     <Droppable droppableId="sections">
                       {(provided) => (
@@ -1456,6 +1529,28 @@ function ArrayEditor({ label, items, onChange, renderItem }: any) {
           </div>
         ))}
       </div>
+    </div>
+  );
+}
+
+function ToggleField({ label, value, onChange }: any) {
+  return (
+    <div className="flex items-center justify-between">
+      <label className="text-white/40 text-[11px] font-normal">
+        {label}
+      </label>
+      <button
+        onClick={() => onChange(!value)}
+        className={`relative w-9 h-5 rounded-full transition-all duration-200 ${
+          value ? 'bg-white' : 'bg-white/10'
+        }`}
+      >
+        <div
+          className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full transition-all duration-200 ${
+            value ? 'translate-x-4 bg-black' : 'translate-x-0 bg-white/40'
+          }`}
+        />
+      </button>
     </div>
   );
 }

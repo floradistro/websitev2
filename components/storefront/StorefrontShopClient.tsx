@@ -378,6 +378,7 @@ export function StorefrontShopClient({ vendorId, config }: StorefrontShopClientP
               product={product}
               vendorSlug={vendorSlug}
               locations={locations}
+              config={config}
             />
           ))}
         </div>
