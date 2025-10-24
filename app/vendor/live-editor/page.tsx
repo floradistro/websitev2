@@ -35,6 +35,7 @@ export default function LiveEditorV2() {
 
   const pages = [
     { id: 'home', name: 'Home' },
+    { id: 'shop', name: 'Shop' },
     { id: 'about', name: 'About' },
     { id: 'contact', name: 'Contact' },
     { id: 'faq', name: 'FAQ' },

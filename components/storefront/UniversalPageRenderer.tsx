@@ -15,7 +15,8 @@ import {
   FAQItemsSection,
   LocationsSection,
   FeaturedProductsSection,
-  ShippingBadgesSection
+  ShippingBadgesSection,
+  FooterSection
 } from './content-sections';
 import { VendorStorefront } from '@/lib/storefront/get-vendor';
 
@@ -45,6 +46,7 @@ const SECTION_COMPONENTS: Record<string, any> = {
   locations: LocationsSection,
   featured_products: FeaturedProductsSection,
   shipping_badges: ShippingBadgesSection,
+  footer: FooterSection,
 };
 
 /**

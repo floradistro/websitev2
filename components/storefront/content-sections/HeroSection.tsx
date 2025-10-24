@@ -29,7 +29,7 @@ export function HeroSection({ content, templateStyle = 'minimalist', basePath = 
   // Template-specific styling
   const styles = {
     minimalist: {
-      container: 'relative min-h-[85vh] flex items-center justify-center px-4 sm:px-6 overflow-hidden bg-black',
+      container: 'relative min-h-[80vh] flex items-center justify-center px-4 sm:px-6 py-20 overflow-hidden bg-black',
       content: 'relative z-10 max-w-5xl mx-auto text-center',
       headline: 'text-4xl sm:text-6xl md:text-8xl lg:text-[120px] font-bold text-white mb-6 sm:mb-8 leading-[0.95] tracking-[-0.04em] uppercase',
       subheadline: 'text-sm sm:text-lg md:text-xl text-neutral-400 leading-relaxed mb-8 sm:mb-12 max-w-xl mx-auto font-medium tracking-wide px-4',
