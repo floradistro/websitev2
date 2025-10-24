@@ -658,7 +658,7 @@ export default function LiveEditorV2() {
                         <div
                           {...provided.droppableProps}
                           ref={provided.innerRef}
-                          className="space-y-2"
+                          className="space-y-1.5"
                         >
                           {sections.map((section, index) => {
                             const meta = SECTION_LIBRARY.find(s => s.key === section.section_key);
@@ -669,24 +669,24 @@ export default function LiveEditorV2() {
                                     ref={provided.innerRef}
                                     {...provided.draggableProps}
                                     onClick={() => setSelectedSection(section)}
-                                    className={`group p-3 border rounded-lg cursor-pointer transition-all ${
+                                    className={`group p-2.5 border rounded cursor-pointer transition-all ${
                                       selectedSection?.id === section.id
-                                        ? 'bg-white/10 border-white/30'
-                                        : 'bg-white/5 border-white/10 hover:bg-white/[0.07] hover:border-white/20'
-                                    } ${snapshot.isDragging ? 'shadow-xl' : ''}`}
+                                        ? 'bg-white/10 border-white/20'
+                                        : 'bg-white/[0.02] border-white/5 hover:bg-white/5 hover:border-white/10'
+                                    } ${snapshot.isDragging ? 'shadow-lg' : ''}`}
                                   >
-                                    <div className="flex items-center gap-2">
+                                    <div className="flex items-center gap-1.5">
                                       <div
                                         {...provided.dragHandleProps}
-                                        className="text-white/20 hover:text-white/50 cursor-grab active:cursor-grabbing"
+                                        className="text-white/15 hover:text-white/40 cursor-grab active:cursor-grabbing"
                                       >
-                                        <GripVertical size={14} />
+                                        <GripVertical size={12} />
                                       </div>
                                       <div className="flex-1 min-w-0">
-                                        <div className="text-white text-xs font-medium capitalize truncate">
+                                        <div className="text-white text-[11px] font-medium capitalize truncate">
                                           {section.section_key.replace(/_/g, ' ')}
                                         </div>
-                                        <div className="text-white/30 text-[10px] truncate mt-0.5">
+                                        <div className="text-white/25 text-[9px] truncate mt-0.5 leading-tight">
                                           {section.content_data.headline || section.content_data.title || '—'}
                                         </div>
                                       </div>
@@ -696,30 +696,30 @@ export default function LiveEditorV2() {
                                             e.stopPropagation();
                                             duplicateSection(section.id);
                                           }}
-                                          className="text-white/30 hover:text-white p-1 rounded hover:bg-white/10 transition-colors"
+                                          className="text-white/25 hover:text-white p-0.5 rounded hover:bg-white/10 transition-colors"
                                           title="Duplicate"
                                         >
-                                          <Plus size={12} />
+                                          <Plus size={11} />
                                         </button>
                                         <button
                                           onClick={(e) => {
                                             e.stopPropagation();
                                             toggleSection(section.id);
                                           }}
-                                          className="text-white/30 hover:text-white p-1 rounded hover:bg-white/10 transition-colors"
+                                          className="text-white/25 hover:text-white p-0.5 rounded hover:bg-white/10 transition-colors"
                                           title={section.is_enabled ? 'Hide' : 'Show'}
                                         >
-                                          {section.is_enabled ? <Eye size={12} /> : <EyeOff size={12} />}
+                                          {section.is_enabled ? <Eye size={11} /> : <EyeOff size={11} />}
                                         </button>
                                         <button
                                           onClick={(e) => {
                                             e.stopPropagation();
                                             deleteSection(section.id);
                                           }}
-                                          className="text-white/30 hover:text-red-400 p-1 rounded hover:bg-red-500/10 transition-colors"
+                                          className="text-white/25 hover:text-red-400 p-0.5 rounded hover:bg-red-500/10 transition-colors"
                                           title="Delete"
                                         >
-                                          <Trash2 size={12} />
+                                          <Trash2 size={11} />
                                         </button>
                                       </div>
                                     </div>
@@ -737,30 +737,31 @@ export default function LiveEditorV2() {
 
               {/* Section Editor */}
               {selectedSection && (
-                <div className="mt-6 pt-6 border-t border-white/10">
-                  <h4 className="text-white text-xs font-semibold mb-4 uppercase tracking-wider text-white/70">
-                    Edit {selectedSection.section_key.replace(/_/g, ' ')}
+                <div className="mt-4 pt-4 border-t border-white/5">
+                  <h4 className="text-white/60 text-[10px] font-semibold mb-3 uppercase tracking-wider px-1">
+                    {selectedSection.section_key.replace(/_/g, ' ')}
                   </h4>
-                  {renderSectionEditor()}
+                  <div className="px-1">
+                    {renderSectionEditor()}
+                  </div>
                 </div>
               )}
             </div>
           </div>
         </div>
 
-        {/* Right Side - Preview */}
-        <div className="flex-1 flex flex-col bg-neutral-900 overflow-hidden">
-          <div className="flex-1 p-6 flex items-center justify-center overflow-hidden">
+        {/* Right Side - Edge-to-Edge Preview */}
+        <div className="flex-1 flex flex-col bg-[#0a0a0a] overflow-hidden">
+          <div className={`flex-1 flex items-center justify-center overflow-hidden ${previewDevice === 'desktop' ? 'p-0' : 'p-8'}`}>
             <div 
-              className={`bg-white shadow-2xl shadow-black/50 overflow-hidden transition-all duration-300 ${
+              className={`bg-white overflow-hidden transition-all duration-300 ${
                 previewDevice === 'mobile' 
-                  ? 'w-[393px] h-[852px] rounded-[3.5rem] border-[16px] border-[#1d1d1f]' 
-                  : previewDevice === 'tablet'
-                  ? 'w-[820px] h-[1180px] rounded-[2.5rem] border-[14px] border-[#1d1d1f]'
-                  : 'w-full h-full rounded-lg'
+                  ? 'w-[430px] h-[932px] rounded-[3.75rem] border-[18px] border-[#1d1d1f] shadow-2xl' 
+                  : 'w-full h-full'
               }`}
               style={previewDevice === 'mobile' ? {
-                boxShadow: '0 0 0 2px #2d2d2f, 0 25px 50px -12px rgba(0, 0, 0, 0.8)'
+                boxShadow: '0 0 0 3px #2d2d2f, 0 30px 60px -15px rgba(0, 0, 0, 0.9)',
+                transform: 'scale(0.95)'
               } : {}}
             >
               <iframe
@@ -824,24 +825,24 @@ export default function LiveEditorV2() {
   );
 }
 
-// Helper Components
+// Helper Components - Compact & Modern
 function EditorField({ label, value, onChange, multiline = false }: any) {
   return (
     <div>
-      <label className="text-white/80 text-xs block mb-2 uppercase tracking-wider font-medium">{label}</label>
+      <label className="text-white/50 text-[10px] block mb-1.5 font-medium">{label}</label>
       {multiline ? (
         <textarea
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          rows={3}
-          className="w-full bg-black border border-white/20 text-white px-3 py-2 rounded focus:border-white/40 transition-colors text-sm"
+          rows={2}
+          className="w-full bg-white/5 border border-white/10 text-white px-2.5 py-2 rounded text-xs focus:border-white/30 focus:bg-white/10 transition-all resize-none"
         />
       ) : (
         <input
           type="text"
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="w-full bg-black border border-white/20 text-white px-3 py-2 rounded focus:border-white/40 transition-colors text-sm"
+          className="w-full bg-white/5 border border-white/10 text-white px-2.5 py-2 rounded text-xs focus:border-white/30 focus:bg-white/10 transition-all"
         />
       )}
     </div>
@@ -851,19 +852,19 @@ function EditorField({ label, value, onChange, multiline = false }: any) {
 function ColorPicker({ label, value, onChange }: any) {
   return (
     <div>
-      <label className="text-white/80 text-xs block mb-2 uppercase tracking-wider font-medium">{label}</label>
+      <label className="text-white/50 text-[10px] block mb-1.5 font-medium">{label}</label>
       <div className="flex gap-2">
         <input
           type="color"
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="w-16 h-10 rounded cursor-pointer border border-white/20 bg-black"
+          className="w-12 h-9 rounded cursor-pointer border border-white/10 bg-white/5"
         />
         <input
           type="text"
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="flex-1 bg-black border border-white/20 text-white px-3 py-2 rounded text-sm font-mono focus:border-white/40 transition-colors"
+          className="flex-1 bg-white/5 border border-white/10 text-white px-2.5 py-2 rounded text-xs font-mono focus:border-white/30 focus:bg-white/10 transition-all"
           placeholder="#000000"
         />
       </div>
@@ -874,9 +875,10 @@ function ColorPicker({ label, value, onChange }: any) {
 function SliderField({ label, value, min, max, step, onChange }: any) {
   return (
     <div>
-      <label className="text-white/80 text-xs block mb-2 uppercase tracking-wider font-medium">
-        {label}: {(value * 100).toFixed(0)}%
-      </label>
+      <div className="flex items-center justify-between mb-1.5">
+        <label className="text-white/50 text-[10px] font-medium">{label}</label>
+        <span className="text-white/40 text-[10px]">{(value * 100).toFixed(0)}%</span>
+      </div>
       <input
         type="range"
         min={min}
@@ -884,7 +886,7 @@ function SliderField({ label, value, min, max, step, onChange }: any) {
         step={step}
         value={value}
         onChange={(e) => onChange(parseFloat(e.target.value))}
-        className="w-full accent-white h-2 bg-white/10 rounded-lg appearance-none cursor-pointer"
+        className="w-full accent-white h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer"
       />
     </div>
   );
