@@ -35,24 +35,72 @@ function StorefrontProductCard({ product, vendorSlug, locations = [] }: Storefro
     }
   };
 
-  // Get display fields
+  // Get display fields - same logic as main ProductCard
   const getDisplayFields = () => {
     if (!product.fields) return [];
     
     const fields = product.fields;
     const displayFields: Array<{ label: string; value: string }> = [];
     
+    // Field configuration with proper labels (only real fields)
     const fieldConfig: { [key: string]: string } = {
+      // Flower fields
       'strain_type': 'Type',
-      'thc': 'THC',
-      'cbd': 'CBD',
-      'terpenes': 'Terps',
-      'flavor_profile': 'Flavor',
+      'lineage': 'Lineage',
+      'nose': 'Nose',
+      'terpene_profile': 'Terpenes',
+      'terpenes': 'Terpenes',
+      'effects': 'Effects',
+      'effect': 'Effects',
+      // Vape fields
+      'hardware_type': 'Hardware',
+      'oil_type': 'Oil',
+      'capacity': 'Capacity',
+      // Edible fields
+      'dosage_per_serving': 'Dosage',
+      'servings_per_package': 'Servings',
+      'total_dosage': 'Total',
+      // Concentrate fields
+      'extract_type': 'Type',
+      'extraction_method': 'Method',
     };
     
-    Object.entries(fieldConfig).forEach(([key, label]) => {
-      if (fields[key] && fields[key] !== '' && fields[key] !== 'N/A') {
-        displayFields.push({ label, value: fields[key] });
+    // Iterate through all fields with consistent sorting
+    const sortedKeys = Object.keys(fields).sort();
+    
+    sortedKeys.forEach((key) => {
+      const value = fields[key];
+      const label = fieldConfig[key];
+      
+      // Only show fields we have labels for
+      if (!label) return;
+      
+      // Check if we already added this label
+      const existingField = displayFields.find(f => f.label === label);
+      if (!existingField && value !== null && value !== undefined) {
+        let displayValue: string;
+        
+        // Handle arrays (terpenes, effects, etc.)
+        if (Array.isArray(value)) {
+          displayValue = value.length > 0 ? value.join(', ') : '—';
+        } 
+        // Handle numbers
+        else if (typeof value === 'number') {
+          displayValue = String(value);
+        }
+        // Handle strings
+        else if (typeof value === 'string') {
+          displayValue = value.trim() !== '' ? value : '—';
+        }
+        // Handle other types
+        else {
+          displayValue = String(value);
+        }
+        
+        // Only add if not empty dash
+        if (displayValue !== '—' && displayValue.trim() !== '') {
+          displayFields.push({ label, value: displayValue });
+        }
       }
     });
     
@@ -60,6 +108,17 @@ function StorefrontProductCard({ product, vendorSlug, locations = [] }: Storefro
   };
 
   const displayFields = getDisplayFields();
+  
+  // Debug logging
+  if (product.name === "Tiger Runtz") {
+    console.log('Tiger Runtz product data:', {
+      fields: product.fields,
+      pricingTiers: product.pricingTiers,
+      inventory: product.inventory,
+      total_stock: product.total_stock,
+      displayFields
+    });
+  }
 
   // Get price display
   const getPriceDisplay = () => {
