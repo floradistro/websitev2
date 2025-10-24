@@ -706,13 +706,28 @@ export default function LiveEditorV2() {
               </select>
             </div>
             <div>
+              <label className="text-white/40 text-[11px] block mb-1 font-normal">Horizontal Inset</label>
+              <select
+                value={content_data.image_inset || 'none'}
+                onChange={(e) => updateContent('image_inset', e.target.value)}
+                className="w-full bg-black border border-white/10 text-white px-2 py-1.5 rounded text-[13px] focus:outline-none focus:border-white/30 transition-all"
+              >
+                <option value="none">None (Edge-to-Edge)</option>
+                <option value="xs">Extra Small (2px)</option>
+                <option value="sm">Small (4px)</option>
+                <option value="md">Medium (8px)</option>
+                <option value="lg">Large (12px)</option>
+                <option value="xl">Extra Large (16px)</option>
+              </select>
+            </div>
+            <div>
               <label className="text-white/40 text-[11px] block mb-1 font-normal">Spacing Below</label>
               <select
                 value={content_data.image_spacing || 'md'}
                 onChange={(e) => updateContent('image_spacing', e.target.value)}
                 className="w-full bg-black border border-white/10 text-white px-2 py-1.5 rounded text-[13px] focus:outline-none focus:border-white/30 transition-all"
               >
-                <option value="none">None (Edge-to-Edge)</option>
+                <option value="none">None</option>
                 <option value="xs">Extra Small (2px)</option>
                 <option value="sm">Small (4px)</option>
                 <option value="md">Medium (16px)</option>
@@ -1364,25 +1379,43 @@ export default function LiveEditorV2() {
                   <FieldLibraryPanel
                     customFields={Object.values(customFieldsCache).flat()}
                     onAddField={async (sectionKey, fieldConfig) => {
-                      // Handle adding field
-                      console.log('Add field:', sectionKey, fieldConfig);
+                      // This gets called from AddFieldFromLibraryModal - field already added via API
+                      console.log('✅ Field added successfully:', sectionKey, fieldConfig);
+                      await loadCustomFields(); // Reload to show new field
+                      setActiveTab('sections'); // Return to sections view
                     }}
                     onEditField={async (fieldId, updates) => {
-                      // Handle editing field
                       const vendorId = localStorage.getItem('vendor_id');
-                      // Update API call would go here
-                      console.log('Edit field:', fieldId, updates);
-                      loadCustomFields();
+                      try {
+                        const response = await fetch(`/api/vendor/custom-fields/${fieldId}`, {
+                          method: 'PATCH',
+                          headers: {
+                            'Content-Type': 'application/json',
+                            'x-vendor-id': vendorId!
+                          },
+                          body: JSON.stringify({ updates })
+                        });
+                        if (response.ok) {
+                          await loadCustomFields();
+                          alert('✅ Field updated!');
+                        } else {
+                          alert('Failed to update field');
+                        }
+                      } catch (error) {
+                        console.error('Error updating field:', error);
+                        alert('Failed to update field');
+                      }
                     }}
                     onDeleteField={async (fieldId) => {
-                      if (confirm('Delete this custom field?')) {
+                      if (confirm('Delete this custom field? Values will be preserved but field won\'t be editable.')) {
                         const vendorId = localStorage.getItem('vendor_id');
                         const response = await fetch(`/api/vendor/custom-fields?id=${fieldId}`, {
                           method: 'DELETE',
                           headers: { 'x-vendor-id': vendorId! }
                         });
                         if (response.ok) {
-                          loadCustomFields();
+                          await loadCustomFields();
+                          alert('✅ Field deleted');
                         }
                       }
                     }}
