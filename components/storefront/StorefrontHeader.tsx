@@ -19,6 +19,9 @@ export function StorefrontHeader({ vendor }: StorefrontHeaderProps) {
   const [searchOpen, setSearchOpen] = useState(false);
   const [productsDropdownOpen, setProductsDropdownOpen] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
+  
+  // Determine base path (storefront root is always at current domain root for custom domains)
+  const basePath = '';
   const [lastScrollY, setLastScrollY] = useState(0);
   const { itemCount, items, total } = useCart();
 
@@ -80,7 +83,7 @@ export function StorefrontHeader({ vendor }: StorefrontHeaderProps) {
             </button>
 
             {/* Logo */}
-            <Link href="/" className="absolute left-1/2 -translate-x-1/2 lg:relative lg:left-auto lg:translate-x-0 flex items-center gap-2 hover:opacity-80 transition-opacity">
+            <Link href={basePath || "/"} className="absolute left-1/2 -translate-x-1/2 lg:relative lg:left-auto lg:translate-x-0 flex items-center gap-2 hover:opacity-80 transition-opacity">
               {vendor.logo_url ? (
                 <div className="relative w-10 h-10 lg:w-16 lg:h-16">
                   <Image 
@@ -113,7 +116,7 @@ export function StorefrontHeader({ vendor }: StorefrontHeaderProps) {
                 onMouseLeave={() => setProductsDropdownOpen(false)}
               >
                 <Link
-                  href="/shop"
+                  href={`${basePath}/shop`}
                   className="nav-link text-white/80 hover:text-white transition-colors flex items-center gap-1.5"
                 >
                   <span>Shop</span>
@@ -132,19 +135,19 @@ export function StorefrontHeader({ vendor }: StorefrontHeaderProps) {
                         <div className="col-span-2 p-8">
                           <p className="text-[10px] text-white/40 uppercase tracking-[0.2em] mb-6 font-light">Shop by Category</p>
                           <div className="grid grid-cols-2 gap-1">
-                            <Link href="/shop?category=flower" className="flex items-center gap-3 px-4 py-3 text-white/70 hover:text-white hover:bg-white/5 transition-all group">
+                            <Link href={`${basePath}/shop?category=flower`} className="flex items-center gap-3 px-4 py-3 text-white/70 hover:text-white hover:bg-white/5 transition-all group">
                               <Flower2 size={16} className="text-white/40 group-hover:text-white transition-colors" />
                               <div className="text-sm font-light uppercase tracking-wider">Flower</div>
                             </Link>
-                            <Link href="/shop?category=concentrate" className="flex items-center gap-3 px-4 py-3 text-white/70 hover:text-white hover:bg-white/5 transition-all group">
+                            <Link href={`${basePath}/shop?category=concentrate`} className="flex items-center gap-3 px-4 py-3 text-white/70 hover:text-white hover:bg-white/5 transition-all group">
                               <Droplets size={16} className="text-white/40 group-hover:text-white transition-colors" />
                               <div className="text-sm font-light uppercase tracking-wider">Concentrate</div>
                             </Link>
-                            <Link href="/shop?category=edibles" className="flex items-center gap-3 px-4 py-3 text-white/70 hover:text-white hover:bg-white/5 transition-all group">
+                            <Link href={`${basePath}/shop?category=edibles`} className="flex items-center gap-3 px-4 py-3 text-white/70 hover:text-white hover:bg-white/5 transition-all group">
                               <Cookie size={16} className="text-white/40 group-hover:text-white transition-colors" />
                               <div className="text-sm font-light uppercase tracking-wider">Edibles</div>
                             </Link>
-                            <Link href="/shop?category=vape" className="flex items-center gap-3 px-4 py-3 text-white/70 hover:text-white hover:bg-white/5 transition-all group">
+                            <Link href={`${basePath}/shop?category=vape`} className="flex items-center gap-3 px-4 py-3 text-white/70 hover:text-white hover:bg-white/5 transition-all group">
                               <Wind size={16} className="text-white/40 group-hover:text-white transition-colors" />
                               <div className="text-sm font-light uppercase tracking-wider">Vape</div>
                             </Link>
@@ -156,10 +159,10 @@ export function StorefrontHeader({ vendor }: StorefrontHeaderProps) {
                 )}
               </div>
               
-              <Link href="/about" className="nav-link text-white/80 hover:text-white transition-colors">
+              <Link href={`${basePath}/about`} className="nav-link text-white/80 hover:text-white transition-colors">
                 About
               </Link>
-              <Link href="/contact" className="nav-link text-white/80 hover:text-white transition-colors">
+              <Link href={`${basePath}/contact`} className="nav-link text-white/80 hover:text-white transition-colors">
                 Contact
               </Link>
             </nav>
@@ -212,7 +215,7 @@ export function StorefrontHeader({ vendor }: StorefrontHeaderProps) {
                 <X size={18} />
               </button>
               
-              <Link href="/" className="block" onClick={() => setMobileMenuOpen(false)}>
+              <Link href={basePath || "/"} className="block" onClick={() => setMobileMenuOpen(false)}>
                 <div className="flex items-center gap-2.5 mb-2">
                   {vendor.logo_url ? (
                     <div className="w-10 h-10 rounded-full overflow-hidden border border-white/10">
@@ -235,25 +238,25 @@ export function StorefrontHeader({ vendor }: StorefrontHeaderProps) {
             <nav className="flex-1 overflow-y-auto px-4 py-4">
               <div className="flex flex-col space-y-4">
                 <div className="space-y-0.5">
-                  <Link href="/" className="group block py-2.5 text-white/90 hover:text-white transition-all" onClick={() => setMobileMenuOpen(false)}>
+                  <Link href={basePath || "/"} className="group block py-2.5 text-white/90 hover:text-white transition-all" onClick={() => setMobileMenuOpen(false)}>
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-light tracking-wide">Home</span>
                       <ArrowRight size={12} className="opacity-0 group-hover:opacity-50 transition-all" />
                     </div>
                   </Link>
-                  <Link href="/shop" className="group block py-2.5 text-white/90 hover:text-white transition-all" onClick={() => setMobileMenuOpen(false)}>
+                  <Link href={`${basePath}/shop`} className="group block py-2.5 text-white/90 hover:text-white transition-all" onClick={() => setMobileMenuOpen(false)}>
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-light tracking-wide">Shop</span>
                       <ArrowRight size={12} className="opacity-0 group-hover:opacity-50 transition-all" />
                     </div>
                   </Link>
-                  <Link href="/about" className="group block py-2.5 text-white/90 hover:text-white transition-all" onClick={() => setMobileMenuOpen(false)}>
+                  <Link href={`${basePath}/about`} className="group block py-2.5 text-white/90 hover:text-white transition-all" onClick={() => setMobileMenuOpen(false)}>
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-light tracking-wide">About</span>
                       <ArrowRight size={12} className="opacity-0 group-hover:opacity-50 transition-all" />
                     </div>
                   </Link>
-                  <Link href="/contact" className="group block py-2.5 text-white/90 hover:text-white transition-all" onClick={() => setMobileMenuOpen(false)}>
+                  <Link href={`${basePath}/contact`} className="group block py-2.5 text-white/90 hover:text-white transition-all" onClick={() => setMobileMenuOpen(false)}>
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-light tracking-wide">Contact</span>
                       <ArrowRight size={12} className="opacity-0 group-hover:opacity-50 transition-all" />

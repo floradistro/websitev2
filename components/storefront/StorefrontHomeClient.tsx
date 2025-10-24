@@ -36,6 +36,9 @@ export function StorefrontHomeClient({
   productFieldsMap,
   locations = [],
 }: StorefrontHomeClientProps) {
+  // For custom domains, links are at root. For main site, they're at /storefront
+  const basePath = '';
+  
   return (
     <div 
       className="bg-[#2a2a2a] overflow-x-hidden w-full max-w-full relative"
@@ -72,7 +75,7 @@ export function StorefrontHomeClient({
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 opacity-0 animate-fadeInUp animation-delay-600">
             <Link 
-              href="/test-storefront/shop"
+              href={`${basePath}/shop`}
               className="group inline-flex items-center gap-3 bg-white text-black px-10 py-4 text-xs uppercase tracking-[0.25em] hover:bg-white/90 transition-all duration-300 font-medium"
             >
               <span>Explore Collection</span>
@@ -80,7 +83,7 @@ export function StorefrontHomeClient({
             </Link>
             
             <Link 
-              href="/test-storefront/about"
+              href={`${basePath}/about`}
               className="inline-flex items-center gap-3 bg-white/10 backdrop-blur-sm border border-white/20 text-white px-10 py-4 text-xs uppercase tracking-[0.25em] hover:bg-white/15 hover:border-white/30 transition-all duration-300 font-medium"
             >
               <span>Our Story</span>
@@ -108,7 +111,7 @@ export function StorefrontHomeClient({
             {vendor.store_description || `Premium cannabis products curated for you.`}
           </p>
           <Link 
-            href="/test-storefront/shop"
+            href={`${basePath}/shop`}
             className="group inline-flex items-center gap-3 bg-white/10 backdrop-blur-sm border border-white/20 text-white px-10 py-4 text-xs uppercase tracking-[0.25em] hover:bg-white/15 hover:border-white/30 transition-all duration-300 font-medium"
           >
             <Store size={16} />
@@ -183,7 +186,7 @@ export function StorefrontHomeClient({
 
           <div className="px-4 sm:px-6 mt-12 text-center relative z-10">
             <Link
-              href="/test-storefront/shop"
+              href={`${basePath}/shop`}
               className="inline-flex items-center gap-3 bg-white text-black px-10 py-4 text-xs uppercase tracking-[0.25em] hover:bg-white/90 transition-all duration-300 font-medium"
             >
               <span>View Full Collection</span>
@@ -209,7 +212,7 @@ export function StorefrontHomeClient({
               {vendor.store_description}
             </p>
             <Link
-              href="/test-storefront/about"
+              href={`${basePath}/about`}
               className="inline-flex items-center gap-3 mt-12 bg-white/10 backdrop-blur-sm border border-white/20 text-white px-10 py-4 text-xs uppercase tracking-[0.25em] hover:bg-white/15 hover:border-white/30 transition-all duration-300 font-medium"
             >
               <span>Learn More</span>

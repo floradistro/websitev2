@@ -9,7 +9,7 @@ export default function ConditionalLayout({ children }: { children: React.ReactN
   const pathname = usePathname();
   const isVendorPortal = pathname?.startsWith('/vendor');
   const isAdminPortal = pathname?.startsWith('/admin');
-  const isStorefront = pathname?.startsWith('/storefront') || pathname?.startsWith('/test-storefront');
+  const isStorefront = pathname?.startsWith('/storefront');
   const hideNavigation = isVendorPortal || isAdminPortal || isStorefront;
 
   return (

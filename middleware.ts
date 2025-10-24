@@ -15,7 +15,6 @@ export async function middleware(request: NextRequest) {
   // - Admin routes
   // - Vendor portal routes
   // - Next.js internals
-  // - Test storefront route
   if (
     pathname.startsWith('/_next') ||
     pathname.startsWith('/api') ||
@@ -25,9 +24,7 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith('/register') ||
     pathname.startsWith('/dashboard') ||
     pathname.startsWith('/test-storefront') ||
-    pathname.includes('.') ||
-    domain.includes('localhost') ||
-    domain.includes('127.0.0.1')
+    pathname.includes('.')
   ) {
     const response = NextResponse.next();
     response.headers.set('X-Frame-Options', 'SAMEORIGIN');
@@ -44,6 +41,35 @@ export async function middleware(request: NextRequest) {
     return response;
   }
 
+  // LOCAL TESTING: Check if accessing /storefront on localhost with ?vendor param
+  if ((domain.includes('localhost') || domain.includes('127.0.0.1')) && pathname.startsWith('/storefront')) {
+    const vendorSlug = request.nextUrl.searchParams.get('vendor') || 'flora-distro'; // Default to flora-distro for local testing
+    
+    try {
+      const supabase = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!
+      );
+      
+      const { data: vendor } = await supabase
+        .from('vendors')
+        .select('id, status')
+        .eq('slug', vendorSlug)
+        .eq('status', 'active')
+        .single();
+        
+      if (vendor) {
+        const response = NextResponse.next();
+        response.headers.set('x-vendor-id', vendor.id);
+        response.headers.set('x-is-local-test', 'true');
+        console.log(`🧪 Local storefront test - Vendor: ${vendorSlug} (${vendor.id})`);
+        return response;
+      }
+    } catch (error) {
+      console.error('Local vendor lookup error:', error);
+    }
+  }
+  
   // Check if this is a custom vendor domain
   try {
     console.log('🔍 Middleware - Checking domain:', domain);
