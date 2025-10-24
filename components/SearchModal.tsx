@@ -2,19 +2,24 @@
 
 import { useState, useEffect } from "react";
 import { X, Search as SearchIcon } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import Image from "next/image";
 
 interface SearchModalProps {
   isOpen: boolean;
   onClose: () => void;
+  vendorId?: string; // If set, only show this vendor's products
 }
 
-export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
+export default function SearchModal({ isOpen, onClose, vendorId }: SearchModalProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const router = useRouter();
+  const pathname = usePathname();
+  
+  // Determine base path for storefront routes
+  const basePath = pathname?.startsWith('/storefront') ? '/storefront' : '';
 
   useEffect(() => {
     if (isOpen) {
@@ -97,7 +102,14 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
       );
       if (response.ok) {
         const data = await response.json();
-        setSearchResults(data.products || []);
+        let products = data.products || [];
+        
+        // Filter by vendor if vendorId is provided (storefront mode)
+        if (vendorId) {
+          products = products.filter((p: any) => p.vendor_id === vendorId);
+        }
+        
+        setSearchResults(products);
       }
     } catch (error) {
       console.error("Search error:", error);
@@ -108,7 +120,9 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
   };
 
   const handleProductClick = (productId: number) => {
-    router.push(`/products/${productId}`);
+    // Use appropriate route based on context
+    const route = basePath ? `${basePath}/products/${productId}` : `/products/${productId}`;
+    router.push(route);
     onClose();
   };
 
@@ -270,7 +284,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
             <div className="grid grid-cols-2 gap-2">
               <button
                 onClick={() => {
-                  router.push("/products?category=flower");
+                  router.push(`${basePath}/shop?category=flower`);
                   onClose();
                 }}
                 className="px-3 sm:px-4 py-2.5 sm:py-3 bg-white/5 hover:bg-white/10 text-sm sm:text-base text-white/80 transition-smooth rounded-sm click-feedback hover-lift"
@@ -279,7 +293,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
               </button>
               <button
                 onClick={() => {
-                  router.push("/products?category=concentrate");
+                  router.push(`${basePath}/shop?category=concentrate`);
                   onClose();
                 }}
                 className="px-3 sm:px-4 py-2.5 sm:py-3 bg-white/5 hover:bg-white/10 text-sm sm:text-base text-white/80 transition-smooth rounded-sm click-feedback hover-lift"
@@ -288,7 +302,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
               </button>
               <button
                 onClick={() => {
-                  router.push("/products?category=edibles");
+                  router.push(`${basePath}/shop?category=edibles`);
                   onClose();
                 }}
                 className="px-3 sm:px-4 py-2.5 sm:py-3 bg-white/5 hover:bg-white/10 text-sm sm:text-base text-white/80 transition-smooth rounded-sm click-feedback hover-lift"
@@ -297,7 +311,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
               </button>
               <button
                 onClick={() => {
-                  router.push("/products?category=vape");
+                  router.push(`${basePath}/shop?category=vape`);
                   onClose();
                 }}
                 className="px-3 sm:px-4 py-2.5 sm:py-3 bg-white/5 hover:bg-white/10 text-sm sm:text-base text-white/80 transition-smooth rounded-sm click-feedback hover-lift"

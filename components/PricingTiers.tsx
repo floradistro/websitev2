@@ -54,7 +54,7 @@ export default function PricingTiers({
               onPriceSelect(price, tier.qty, getUnitLabel(tier));
             }
           }}
-          className="w-full appearance-none bg-transparent border border-white/20 px-3 py-3 pr-7 text-sm font-normal text-white hover:border-white/40 hover:bg-white/5 focus:border-white focus:outline-none transition-all duration-300 cursor-pointer uppercase tracking-[0.1em] rounded-sm"
+          className="w-full appearance-none bg-transparent border border-white/20 rounded-full px-4 py-3 pr-8 text-sm font-normal text-white hover:border-white/40 hover:bg-white/5 focus:border-white focus:outline-none transition-all duration-300 cursor-pointer uppercase tracking-[0.1em]"
           style={{
             colorScheme: 'dark'
           }}

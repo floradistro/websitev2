@@ -39,6 +39,16 @@ export default async function StorefrontLayout({
 }: {
   children: React.ReactNode;
 }) {
+  // Check if template preview mode (blank slate)
+  const headersList = await headers();
+  const tenantType = headersList.get('x-tenant-type');
+  
+  // If template preview, just pass children (no vendor required)
+  if (tenantType === 'template-preview') {
+    return <>{children}</>;
+  }
+  
+  // For vendor mode, validate vendor exists
   const vendorId = await getVendorFromHeaders();
 
   if (!vendorId) {
@@ -51,9 +61,8 @@ export default async function StorefrontLayout({
     notFound();
   }
 
-  // REMOVED: Root layout now handles vendor html/body rendering
+  // Root layout handles vendor html/body rendering
   // This layout just passes through children
-  // Root layout detects x-tenant-type=vendor and renders complete vendor layout
   return <>{children}</>;
 }
 

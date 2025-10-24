@@ -123,14 +123,22 @@ export async function getStorefrontTheme(vendorId: string): Promise<StorefrontTh
   }
 }
 
-export async function getVendorLocations() {
+export async function getVendorLocations(vendorId?: string) {
   try {
     const supabase = getServiceSupabase();
     
-    const { data: locations, error } = await supabase
+    let query = supabase
       .from('locations')
-      .select('id, name, city, state')
+      .select('id, name, slug, type, address_line1, address_line2, city, state, zip, phone, email, is_active')
+      .eq('is_active', true)
       .order('name', { ascending: true });
+    
+    // If vendorId provided, filter by vendor
+    if (vendorId) {
+      query = query.eq('vendor_id', vendorId);
+    }
+
+    const { data: locations, error } = await query;
 
     if (error) {
       console.error('Error fetching locations:', error);
@@ -251,7 +259,7 @@ export async function getVendorProducts(vendorId: string, limit?: number) {
     }
 
     // Map products to format expected by ProductCard
-    const products = (productsResult.data || []).map((p: any) => {
+    const products = (productsResult.data || []).map((p: any, index: number) => {
       // Extract blueprint fields (handle both array and object)
       const fields: { [key: string]: any } = {};
       const blueprintFields = p.blueprint_fields || {};
@@ -264,18 +272,26 @@ export async function getVendorProducts(vendorId: string, limit?: number) {
           }
         });
       } 
-      // If it's an object (new format), use it directly
+      // If it's an object (new format), use it directly but serialize arrays properly
       else if (typeof blueprintFields === 'object' && blueprintFields !== null) {
-        Object.assign(fields, blueprintFields);
+        // Deep clone to ensure arrays are serialized correctly for Next.js
+        Object.keys(blueprintFields).forEach(key => {
+          const value = blueprintFields[key];
+          // Ensure arrays are properly cloned for Next.js serialization
+          fields[key] = Array.isArray(value) ? [...value] : value;
+        });
       }
       
       // Calculate actual stock from inventory
       const totalStock = p.inventory?.reduce((sum: number, inv: any) => sum + (inv.quantity || 0), 0) || 0;
       const actualStockStatus = totalStock > 0 ? 'instock' : 'outofstock';
       
+      // Ensure fields are JSON serializable by doing a round-trip
+      const serializedFields = JSON.parse(JSON.stringify(fields));
+      
       return {
         ...p,
-        fields: fields,
+        fields: serializedFields,
         pricingTiers: pricingTiers, // Apply vendor pricing to all products
         total_stock: totalStock,
         stock_status: actualStockStatus,
@@ -287,6 +303,53 @@ export async function getVendorProducts(vendorId: string, limit?: number) {
     return products;
   } catch (error) {
     console.error('Error in getVendorProducts:', error);
+    return [];
+  }
+}
+
+export async function getVendorReviews(vendorId: string, limit: number = 6) {
+  try {
+    const supabase = getServiceSupabase();
+    
+    // Get vendor's product IDs
+    const { data: products } = await supabase
+      .from('products')
+      .select('id')
+      .eq('vendor_id', vendorId)
+      .eq('status', 'published');
+    
+    const productIds = products?.map(p => p.id) || [];
+    
+    if (productIds.length === 0) {
+      return [];
+    }
+    
+    // Fetch approved reviews for vendor's products
+    const { data: reviews, error } = await supabase
+      .from('product_reviews')
+      .select(`
+        id,
+        rating,
+        title,
+        review_text,
+        verified_purchase,
+        created_at,
+        customer:customer_id(first_name, last_name),
+        product:product_id(name)
+      `)
+      .in('product_id', productIds)
+      .eq('status', 'approved')
+      .order('created_at', { ascending: false })
+      .limit(limit);
+    
+    if (error) {
+      console.error('Error fetching vendor reviews:', error);
+      return [];
+    }
+    
+    return reviews || [];
+  } catch (error) {
+    console.error('Error in getVendorReviews:', error);
     return [];
   }
 }

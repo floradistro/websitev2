@@ -6,7 +6,7 @@ import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 
 interface ProductCardProps {
   product: any;
@@ -31,6 +31,10 @@ function ProductCard({ product, index, locations, pricingTiers = [], productFiel
   const { addToCart } = useCart();
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
   const router = useRouter();
+  const pathname = usePathname();
+  
+  // Detect if we're in storefront mode
+  const isStorefront = pathname?.startsWith('/storefront');
   
   const inWishlist = isInWishlist(product.id);
   
@@ -99,9 +103,6 @@ function ProductCard({ product, index, locations, pricingTiers = [], productFiel
       'terpenes': 'Terpenes',
       'effects': 'Effects',
       'effect': 'Effects',
-      'thca_percentage': 'THCa %',
-      'delta_9_percentage': 'Δ9 %',
-      'delta9_percentage': 'Δ9 %',
       // Vape fields
       'hardware_type': 'Hardware',
       'oil_type': 'Oil',
@@ -110,9 +111,6 @@ function ProductCard({ product, index, locations, pricingTiers = [], productFiel
       'dosage_per_serving': 'Dosage',
       'servings_per_package': 'Servings',
       'total_dosage': 'Total',
-      'ingredients': 'Ingredients',
-      'allergens': 'Allergens',
-      'dietary': 'Dietary',
       // Concentrate fields
       'extract_type': 'Type',
       'extraction_method': 'Method',
@@ -154,7 +152,7 @@ function ProductCard({ product, index, locations, pricingTiers = [], productFiel
       }
     });
     
-    return displayFields.slice(0, 5); // Limit to 5 fields for card display
+    return displayFields; // Show all available fields
   };
 
   const displayFields = getDisplayFields();
@@ -195,26 +193,62 @@ function ProductCard({ product, index, locations, pricingTiers = [], productFiel
   };
 
   const handleCardClick = () => {
-    // Use UUID for Supabase product detail route
-    router.push(`/products/${product.uuid || product.id}`);
+    const productId = product.slug || product.uuid || product.id;
+    
+    if (isStorefront) {
+      // Get current vendor param from URL to maintain context
+      const searchParams = new URLSearchParams(window.location.search);
+      const vendor = searchParams.get('vendor');
+      const url = vendor ? `/storefront/products/${productId}?vendor=${vendor}` : `/storefront/products/${productId}`;
+      router.push(url);
+    } else {
+      router.push(`/products/${productId}`);
+    }
   };
 
   const handleQuickBuy = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    router.push(`/products/${product.id}`);
+    const productId = product.slug || product.id;
+    
+    if (isStorefront) {
+      const searchParams = new URLSearchParams(window.location.search);
+      const vendor = searchParams.get('vendor');
+      const url = vendor ? `/storefront/products/${productId}?vendor=${vendor}` : `/storefront/products/${productId}`;
+      router.push(url);
+    } else {
+      router.push(`/products/${productId}`);
+    }
   };
 
   const handlePickup = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    router.push(`/products/${product.id}?type=pickup`);
+    const productId = product.slug || product.id;
+    
+    if (isStorefront) {
+      const searchParams = new URLSearchParams(window.location.search);
+      const vendor = searchParams.get('vendor');
+      const url = vendor ? `/storefront/products/${productId}?vendor=${vendor}&type=pickup` : `/storefront/products/${productId}?type=pickup`;
+      router.push(url);
+    } else {
+      router.push(`/products/${productId}?type=pickup`);
+    }
   };
 
   const handleDelivery = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    router.push(`/products/${product.id}?type=delivery`);
+    const productId = product.slug || product.id;
+    
+    if (isStorefront) {
+      const searchParams = new URLSearchParams(window.location.search);
+      const vendor = searchParams.get('vendor');
+      const url = vendor ? `/storefront/products/${productId}?vendor=${vendor}&type=delivery` : `/storefront/products/${productId}?type=delivery`;
+      router.push(url);
+    } else {
+      router.push(`/products/${productId}?type=delivery`);
+    }
   };
 
   const handleWishlistToggle = (e: React.MouseEvent) => {
@@ -292,7 +326,17 @@ function ProductCard({ product, index, locations, pricingTiers = [], productFiel
 
   return (
     <div
-      className={`group flex flex-col relative bg-[#3a3a3a] md:hover:bg-[#404040] active:bg-[#454545] cursor-pointer md:hover:shadow-2xl md:hover:-translate-y-1 border border-transparent md:hover:border-white/10 transition-none md:transition-all md:duration-300 ${!stockInfo.inStock ? 'opacity-75' : ''}`}
+      className={`group flex flex-col relative cursor-pointer md:hover:shadow-2xl md:hover:-translate-y-1 transition-none md:transition-all md:duration-300 ${!stockInfo.inStock ? 'opacity-75' : ''} ${
+        isStorefront 
+          ? 'bg-black/80 backdrop-blur-xl hover:bg-black/90 rounded-[20px] sm:rounded-[32px] hover:shadow-2xl hover:shadow-white/10 overflow-hidden' 
+          : 'bg-[#3a3a3a] md:hover:bg-[#404040] active:bg-[#454545] border border-transparent md:hover:border-white/10'
+      }`}
+      style={{
+        animation: `fadeInUp 0.6s ease-out ${index * 0.05}s both`,
+        backgroundImage: isStorefront 
+          ? 'radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.01) 0%, transparent 50%), radial-gradient(circle at 0% 100%, rgba(255, 255, 255, 0.008) 0%, transparent 50%)'
+          : undefined
+      }}
       onMouseEnter={(e) => {
         if (window.innerWidth >= 768) {
           setIsHovered(true);
@@ -310,12 +354,20 @@ function ProductCard({ product, index, locations, pricingTiers = [], productFiel
           handleCardClick();
         }
       }}
-      style={{
-        animation: `fadeInUp 0.6s ease-out ${index * 0.05}s both`,
-      }}
     >
       {/* Product Image Container */}
-      <div className="relative aspect-[4/5] overflow-hidden bg-[#2a2a2a] md:transition-all md:duration-500">
+      <div className={`relative aspect-[4/5] overflow-hidden md:transition-all md:duration-500 ${
+        isStorefront ? 'bg-black/20 rounded-t-[20px] sm:rounded-t-[32px]' : 'bg-[#2a2a2a]'
+      }`}>
+        {/* Subtle Picture Frame */}
+        {isStorefront && (
+          <div className="absolute inset-0 pointer-events-none z-20 rounded-t-[20px] sm:rounded-t-[32px] overflow-hidden">
+            {/* Inner shadow frame */}
+            <div className="absolute inset-0 shadow-[inset_0_0_40px_rgba(0,0,0,0.7)]" />
+            {/* Thick transparent border glow */}
+            <div className="absolute inset-[12px] rounded-[8px] sm:rounded-[20px] border-[8px] border-white/[0.03] shadow-[0_0_15px_rgba(255,255,255,0.04)]" />
+          </div>
+        )}
         {product.images?.[0] ? (
           <>
             {/* Main Image - Optimized with Next.js Image */}
@@ -364,17 +416,15 @@ function ProductCard({ product, index, locations, pricingTiers = [], productFiel
         {/* Wishlist Heart - Top Right */}
         <button
           onClick={handleWishlistToggle}
-          className={`absolute top-2 right-2 z-10 w-9 h-9 rounded-full flex items-center justify-center transition-all duration-300 ${
-            inWishlist 
-              ? "bg-white text-black" 
-              : "bg-black/40 backdrop-blur-sm text-white hover:bg-black/60"
-          }`}
+          className="absolute top-2 right-2 z-10 p-2 transition-all duration-300 hover:scale-110"
           aria-label={inWishlist ? "Remove from wishlist" : "Add to wishlist"}
         >
           <Heart 
-            size={16} 
+            size={20} 
             className={`transition-all duration-300 ${
-              inWishlist ? "fill-black" : "fill-none"
+              inWishlist 
+                ? "fill-white text-white drop-shadow-lg" 
+                : "fill-none text-white drop-shadow-lg hover:fill-white/50"
             }`}
             strokeWidth={2}
           />
@@ -405,13 +455,17 @@ function ProductCard({ product, index, locations, pricingTiers = [], productFiel
         </div>
 
         {/* Quick Actions Overlay - Desktop */}
-        <div className={`hidden md:flex absolute inset-0 bg-black/40 backdrop-blur-[3px] items-center justify-center transition-all duration-500 ${
-          isHovered ? 'opacity-100' : 'opacity-0 pointer-events-none'
-        }`}>
+        <div className={`hidden md:flex absolute inset-0 items-center justify-center transition-all duration-500 ${
+          isStorefront ? 'bg-black/60 backdrop-blur-xl' : 'bg-black/40 backdrop-blur-[3px]'
+        } ${isHovered ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
           <div className="flex flex-col items-center gap-2 transform translate-y-3 group-hover:translate-y-0 transition-transform duration-500">
             <button
               onClick={handleQuickBuy}
-              className="interactive-button flex items-center gap-2 bg-black border border-white/20 text-white px-6 py-3 text-xs uppercase tracking-[0.2em] hover:bg-white hover:text-black active:bg-white active:text-black hover:border-white font-medium touch-target"
+              className={`interactive-button flex items-center gap-2 text-white px-6 py-3 text-xs uppercase tracking-[0.2em] font-medium touch-target ${
+                isStorefront 
+                  ? 'bg-white text-black hover:bg-neutral-100 rounded-full shadow-lg'
+                  : 'bg-black border border-white/20 hover:bg-white hover:text-black active:bg-white active:text-black hover:border-white'
+              }`}
               style={{ minHeight: '44px' }}
             >
               <ShoppingBag size={12} strokeWidth={1.5} />
@@ -421,7 +475,11 @@ function ProductCard({ product, index, locations, pricingTiers = [], productFiel
             <div className="flex items-center gap-2">
               <button
                 onClick={handlePickup}
-                className="interactive-button flex items-center gap-1.5 bg-black border border-white/20 text-white px-4 py-3 hover:bg-white hover:text-black active:bg-white active:text-black hover:border-white text-[10px] uppercase tracking-[0.15em] font-medium touch-target"
+                className={`interactive-button flex items-center gap-1.5 px-4 py-3 text-[10px] uppercase tracking-[0.15em] font-medium touch-target ${
+                  isStorefront
+                    ? 'bg-white/10 backdrop-blur-xl border border-white/20 text-white hover:bg-white/20 rounded-full'
+                    : 'bg-black border border-white/20 text-white hover:bg-white hover:text-black active:bg-white active:text-black hover:border-white'
+                }`}
                 style={{ minHeight: '44px' }}
               >
                 <Store size={11} strokeWidth={1.5} />
@@ -430,7 +488,11 @@ function ProductCard({ product, index, locations, pricingTiers = [], productFiel
               
               <button
                 onClick={handleDelivery}
-                className="interactive-button flex items-center gap-1.5 bg-black border border-white/20 text-white px-4 py-3 hover:bg-white hover:text-black active:bg-white active:text-black hover:border-white text-[10px] uppercase tracking-[0.15em] font-medium touch-target"
+                className={`interactive-button flex items-center gap-1.5 px-4 py-3 text-[10px] uppercase tracking-[0.15em] font-medium touch-target ${
+                  isStorefront
+                    ? 'bg-white/10 backdrop-blur-xl border border-white/20 text-white hover:bg-white/20 rounded-full'
+                    : 'bg-black border border-white/20 text-white hover:bg-white hover:text-black active:bg-white active:text-black hover:border-white'
+                }`}
                 style={{ minHeight: '44px' }}
               >
                 <Truck size={11} strokeWidth={1.5} />
@@ -443,14 +505,21 @@ function ProductCard({ product, index, locations, pricingTiers = [], productFiel
       </div>
 
       {/* Product Info */}
-      <div className="flex flex-col flex-1 px-3 py-4">
-        <div className="space-y-3">
-          <h3 className="text-xs uppercase tracking-[0.12em] font-normal text-white line-clamp-2 leading-relaxed transition-all duration-300">
+      <div className="flex flex-col flex-1 px-0 sm:px-3 py-4">
+        <div className="space-y-3 px-3 sm:px-0">
+          <h3 
+            className={`text-sm uppercase tracking-[0.12em] line-clamp-2 leading-relaxed transition-all duration-300 text-white ${
+              isStorefront ? '' : 'font-semibold'
+            }`}
+            style={isStorefront ? { fontWeight: 900 } : undefined}
+          >
             {product.name}
           </h3>
           
           {/* Price */}
-          <p className="text-sm font-medium text-white tracking-wide transition-all duration-300 group-hover:text-white/80">
+          <p className={`text-sm font-medium tracking-wide transition-all duration-300 ${
+            isStorefront ? 'text-white' : 'text-white group-hover:text-white/80'
+          }`}>
             {getPriceDisplay()}
           </p>
           
@@ -459,11 +528,15 @@ function ProductCard({ product, index, locations, pricingTiers = [], productFiel
             <div className="flex items-center gap-1.5">
               <div className="w-2 h-2 rounded-full bg-green-500 flex-shrink-0"></div>
               <div className="flex flex-col">
-                <span className="text-[11px] uppercase tracking-wider text-white/60">
+                <span className={`text-[11px] uppercase tracking-wider ${
+                  isStorefront ? 'text-neutral-400' : 'text-white/60'
+                }`}>
                   In Stock
                 </span>
                 {!stockInfo.showGenericStock && stockInfo.locations.length > 0 && (
-                  <span className="text-[11px] tracking-wider text-white/60">
+                  <span className={`text-[11px] tracking-wider ${
+                    isStorefront ? 'text-neutral-500' : 'text-white/60'
+                  }`}>
                     {stockInfo.locations.map((loc: any) => loc.name).join(', ')}
                   </span>
                 )}
@@ -473,15 +546,19 @@ function ProductCard({ product, index, locations, pricingTiers = [], productFiel
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-1.5">
                 <div className="w-2 h-2 rounded-full bg-red-500/60 flex-shrink-0"></div>
-                <span className="text-[11px] uppercase tracking-wider text-white/40">Out of Stock</span>
+                <span className={`text-[11px] uppercase tracking-wider ${
+                  isStorefront ? 'text-neutral-400' : 'text-white/40'
+                }`}>Out of Stock</span>
               </div>
-              <span className="text-[10px] text-white/30 ml-3.5">Check back soon</span>
+              <span className={`text-[10px] ml-3.5 ${
+                isStorefront ? 'text-neutral-500' : 'text-white/30'
+              }`}>Check back soon</span>
             </div>
           )}
           
           {/* Blueprint Fields */}
           {displayFields.length > 0 && (
-            <div className="space-y-1.5 pt-2 border-t border-white/10">
+            <div className="space-y-1.5 pt-2">
               {displayFields.map((field, idx) => (
                 <div key={idx} className="flex items-center justify-between gap-2">
                   <span className="uppercase tracking-[0.12em] font-medium text-white/60 text-[10px] whitespace-nowrap">
@@ -498,13 +575,13 @@ function ProductCard({ product, index, locations, pricingTiers = [], productFiel
         
         {/* Pricing Tier Selector - Always at bottom */}
         {tiers.length > 0 && (
-          <div className="space-y-2 pt-3 mt-auto border-t border-white/10">
+          <div className="space-y-2 pt-3 mt-auto border-t border-white/10 px-3 sm:px-0">
             <div className="relative">
                 <select
                 value={selectedTierIndex ?? ""}
                 onChange={handleTierSelect}
                 onClick={(e) => e.stopPropagation()}
-                className="w-full appearance-none bg-transparent border border-white/20 px-3 py-2.5 md:py-2 pr-7 text-[11px] font-normal text-white hover:border-white/40 hover:bg-white/5 focus:border-white focus:outline-none transition-smooth cursor-pointer touch-manipulation uppercase tracking-[0.1em] focus-elegant"
+                className="w-full appearance-none bg-transparent border border-white/20 rounded-full px-3 py-2.5 md:py-2 pr-7 text-[11px] font-normal text-white hover:border-white/40 hover:bg-white/5 focus:border-white focus:outline-none transition-smooth cursor-pointer touch-manipulation uppercase tracking-[0.1em] focus-elegant"
                 style={{ minHeight: '40px' }}
               >
                 <option value="">Select Quantity</option>
@@ -538,7 +615,7 @@ function ProductCard({ product, index, locations, pricingTiers = [], productFiel
                   e.stopPropagation();
                   handleAddToCart(e);
                 }}
-                className="interactive-button w-full bg-black border border-white/20 text-white px-3 py-3 text-[10px] uppercase tracking-[0.15em] hover:bg-white hover:text-black active:bg-white active:text-black hover:border-white font-medium flex items-center justify-center gap-2 animate-fadeIn touch-manipulation hover:shadow-lg touch-target"
+                className="interactive-button w-full bg-black border border-white/20 rounded-full text-white px-3 py-3 text-[10px] uppercase tracking-[0.15em] hover:bg-white hover:text-black active:bg-white active:text-black hover:border-white font-medium flex items-center justify-center gap-2 animate-fadeIn touch-manipulation hover:shadow-lg touch-target"
                 style={{ minHeight: '44px' }}
               >
                 <ShoppingBag size={13} strokeWidth={2} />

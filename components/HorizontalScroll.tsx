@@ -62,12 +62,12 @@ export default function HorizontalScroll({ children, className = "" }: Horizonta
   };
 
   return (
-    <div className="relative group">
+    <div className="relative group overflow-visible">
       {/* Left Arrow - Desktop Only */}
       {canScrollLeft && (
         <button
           onClick={() => scroll('left')}
-          className="hidden md:flex absolute left-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 items-center justify-center bg-white/90 backdrop-blur-sm shadow-lg hover:bg-white transition-all duration-200 opacity-0 group-hover:opacity-100"
+          className="hidden md:flex absolute left-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 items-center justify-center bg-white/90 backdrop-blur-sm shadow-lg hover:bg-white transition-all duration-200 opacity-0 group-hover:opacity-100 rounded-full"
           aria-label="Scroll left"
         >
           <ChevronLeft size={20} strokeWidth={1.5} />
@@ -83,7 +83,7 @@ export default function HorizontalScroll({ children, className = "" }: Horizonta
       {canScrollRight && (
         <button
           onClick={() => scroll('right')}
-          className="hidden md:flex absolute right-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 items-center justify-center bg-white/90 backdrop-blur-sm shadow-lg hover:bg-white transition-all duration-200 opacity-0 group-hover:opacity-100"
+          className="hidden md:flex absolute right-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 items-center justify-center bg-white/90 backdrop-blur-sm shadow-lg hover:bg-white transition-all duration-200 opacity-0 group-hover:opacity-100 rounded-full"
           aria-label="Scroll right"
         >
           <ChevronRight size={20} strokeWidth={1.5} />

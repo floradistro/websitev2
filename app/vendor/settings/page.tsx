@@ -20,6 +20,7 @@ export default function VendorSettings() {
     state: '',
     zip: '',
     taxId: '',
+    siteHidden: false,
   });
 
   // Fetch real vendor settings from database
@@ -55,6 +56,7 @@ export default function VendorSettings() {
           state: vendor.state || '',
           zip: vendor.zip || '',
           taxId: vendor.tax_id || '',
+          siteHidden: vendor.site_hidden || false,
         });
       }
     } catch (err) {
@@ -96,6 +98,7 @@ export default function VendorSettings() {
           state: settings.state,
           zip: settings.zip,
           tax_id: settings.taxId,
+          site_hidden: settings.siteHidden,
         })
         .eq('id', vendorId);
 
@@ -289,6 +292,35 @@ export default function VendorSettings() {
                   className="w-full bg-transparent lg:bg-[#1a1a1a] border-0 lg:border border-white/5 text-white placeholder-white/40 px-0 lg:px-4 py-0 lg:py-3 focus:outline-none focus:border-white/10 transition-colors text-base lg:text-sm"
                 />
               </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Storefront Visibility */}
+        <div className="bg-[#1a1a1a] lg:border border-t border-white/5 lg:p-6 mt-0 lg:mt-6">
+          <h2 className="text-white font-medium px-4 lg:px-0 py-4 lg:py-0 lg:mb-6 text-sm lg:text-base uppercase lg:normal-case tracking-wider lg:tracking-normal opacity-60 lg:opacity-100">Storefront Visibility</h2>
+          
+          <div className="px-4 lg:px-0 py-4 lg:py-0">
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <label className="block text-white font-medium mb-1">Hide Storefront</label>
+                <p className="text-white/60 text-xs lg:text-sm">
+                  When enabled, your storefront will show a coming soon page instead of products
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSettings({...settings, siteHidden: !settings.siteHidden})}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                  settings.siteHidden ? 'bg-white' : 'bg-white/20'
+                }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-black transition-transform ${
+                    settings.siteHidden ? 'translate-x-6' : 'translate-x-1'
+                  }`}
+                />
+              </button>
             </div>
           </div>
         </div>

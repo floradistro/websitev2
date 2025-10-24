@@ -34,7 +34,7 @@ export default function LabResults({ metaData, attributes }: LabResultsProps) {
       href={coaUrl}
       target="_blank"
       rel="noopener noreferrer"
-      className="block border border-white/20 hover:border-white/40 transition-all duration-300 p-3 group"
+      className="block border border-white/20 bg-white/5 backdrop-blur-xl hover:border-white/40 hover:bg-white/[0.08] transition-all duration-300 p-4 rounded-[20px] group"
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">

@@ -107,17 +107,20 @@ export default function FloraFields({ metaData, fields: blueprintFields }: Flora
   }
 
   return (
-    <div className="space-y-1.5 pt-2 border-t border-white/10">
-      {fields.map((field, idx) => (
-        <div key={field.key} className="flex items-center justify-between gap-2">
-          <span className="uppercase tracking-[0.12em] font-medium text-white/60 text-[10px] sm:text-xs whitespace-nowrap">
-            {field.label}
-          </span>
-          <span className="text-xs sm:text-sm tracking-wide text-white/90 font-normal text-right truncate">
-            {field.value}
-          </span>
-        </div>
-      ))}
+    <div className="border border-white/10 bg-white/5 backdrop-blur-xl rounded-[24px] p-6">
+      <h3 className="text-xs uppercase tracking-wider font-semibold mb-4 text-white/60">Product Details</h3>
+      <div className="space-y-3">
+        {fields.map((field, idx) => (
+          <div key={field.key} className="flex items-center justify-between gap-3">
+            <span className="uppercase tracking-[0.12em] font-medium text-white/60 text-xs whitespace-nowrap">
+              {field.label}
+            </span>
+            <span className="text-sm tracking-wide text-white font-normal text-right truncate">
+              {field.value}
+            </span>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

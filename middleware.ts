@@ -41,34 +41,50 @@ export async function middleware(request: NextRequest) {
     return response;
   }
 
-  // LOCAL TESTING: Check if accessing /storefront or has ?vendor param
+  // LOCAL TESTING: Check for ?vendor param on /storefront
   if ((domain.includes('localhost') || domain.includes('127.0.0.1')) && pathname.startsWith('/storefront')) {
-    const vendorSlug = request.nextUrl.searchParams.get('vendor') || 'flora-distro';
+    const vendorSlug = request.nextUrl.searchParams.get('vendor');
     
-    try {
-      const supabase = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_ROLE_KEY!
-      );
-      
-      const { data: vendor } = await supabase
-        .from('vendors')
-        .select('id, status')
-        .eq('slug', vendorSlug)
-        .eq('status', 'active')
-        .single();
+    if (vendorSlug) {
+      try {
+        const supabase = createClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.SUPABASE_SERVICE_ROLE_KEY!
+        );
         
-      if (vendor) {
-        const response = NextResponse.next();
-        response.headers.set('x-vendor-id', vendor.id);
-        response.headers.set('x-tenant-type', 'vendor');
-        response.headers.set('x-is-local-test', 'true');
-        console.log(`🧪 Local storefront test - Vendor: ${vendorSlug} (${vendor.id})`);
-        return response;
+        const { data: vendor } = await supabase
+          .from('vendors')
+          .select('id, status, site_hidden')
+          .eq('slug', vendorSlug)
+          .eq('status', 'active')
+          .single();
+          
+        if (vendor) {
+          // Check if site is hidden and redirect to coming soon (unless already on that page)
+          if (vendor.site_hidden && !pathname.includes('/coming-soon')) {
+            const url = request.nextUrl.clone();
+            url.pathname = '/storefront/coming-soon';
+            url.searchParams.set('vendor', vendorSlug);
+            return NextResponse.redirect(url);
+          }
+          
+          const response = NextResponse.next();
+          response.headers.set('x-vendor-id', vendor.id);
+          response.headers.set('x-tenant-type', 'vendor');
+          response.headers.set('x-is-local-test', 'true');
+          console.log(`🧪 Local vendor test - ${vendorSlug} → ${vendor.id}`);
+          return response;
+        }
+      } catch (error) {
+        console.error('Local vendor lookup error:', error);
       }
-    } catch (error) {
-      console.error('Local vendor lookup error:', error);
     }
+    
+    // No vendor param = blank template mode
+    const response = NextResponse.next();
+    response.headers.set('x-tenant-type', 'template-preview');
+    console.log('📋 Blank template preview mode');
+    return response;
   }
   
   // Check if this is a custom vendor domain
@@ -92,6 +108,20 @@ export async function middleware(request: NextRequest) {
     console.log('📊 Domain lookup result:', { domainRecord, domainError });
 
     if (domainRecord && !domainError) {
+      // Get vendor to check if site is hidden
+      const { data: vendor } = await supabase
+        .from('vendors')
+        .select('site_hidden')
+        .eq('id', domainRecord.vendor_id)
+        .single();
+        
+      // Check if site is hidden and redirect to coming soon
+      if (vendor?.site_hidden && !pathname.includes('/coming-soon')) {
+        const url = request.nextUrl.clone();
+        url.pathname = '/storefront/coming-soon';
+        return NextResponse.redirect(url);
+      }
+      
       // Custom domain found - rewrite to /storefront AND inject tenant context
       console.log('✅ Custom domain detected! Vendor ID:', domainRecord.vendor_id);
       console.log('🔀 Rewriting to /storefront/* + injecting tenant context');
@@ -117,12 +147,19 @@ export async function middleware(request: NextRequest) {
     if (domain.includes('.') && !domain.startsWith('www')) {
       const { data: vendor, error: vendorError } = await supabase
         .from('vendors')
-        .select('id, status')
+        .select('id, status, site_hidden')
         .eq('slug', subdomain)
         .eq('status', 'active')
         .single();
 
       if (vendor && !vendorError) {
+        // Check if site is hidden and redirect to coming soon
+        if (vendor.site_hidden && !pathname.includes('/coming-soon')) {
+          const url = request.nextUrl.clone();
+          url.pathname = '/storefront/coming-soon';
+          return NextResponse.redirect(url);
+        }
+        
         // Subdomain storefront found - redirect to /storefront
         if (!pathname.startsWith('/storefront')) {
           const url = request.nextUrl.clone();

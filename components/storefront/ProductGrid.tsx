@@ -32,7 +32,7 @@ export function ProductGrid({ products, locations }: ProductGridProps) {
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-px">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-1 sm:gap-4 px-1 sm:px-0">
       {products.map((product, index) => {
         // Map product to format expected by main ProductCard
         const imageUrl = product.images?.[0] || (product as any).featured_image_storage;

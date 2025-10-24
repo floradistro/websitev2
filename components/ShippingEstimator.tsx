@@ -234,7 +234,7 @@ export default function ShippingEstimator({
             }}
             onKeyPress={handleKeyPress}
             placeholder="Enter ZIP code"
-            className="w-full bg-white/5 border border-white/10 rounded px-4 py-2.5 text-base text-white placeholder:text-white/30 focus:outline-none focus:border-white/30 focus:bg-white/10 active:bg-white/10 transition-colors"
+            className="w-full bg-white/5 border border-white/10 rounded-full px-4 py-2.5 text-base text-white placeholder:text-white/30 focus:outline-none focus:border-white/30 focus:bg-white/10 active:bg-white/10 transition-colors"
             style={{ WebkitTapHighlightColor: 'transparent' }}
             maxLength={5}
           />
@@ -248,7 +248,7 @@ export default function ShippingEstimator({
           type="button"
           onClick={calculateShipping}
           disabled={loading || !validateZipCode(zipCode)}
-          className="w-full sm:w-auto px-4 sm:px-6 py-2.5 bg-white text-black font-medium uppercase tracking-wider rounded hover:bg-white/90 active:bg-white/80 active:scale-[0.98] disabled:bg-white/20 disabled:text-white/40 disabled:cursor-not-allowed transition-all whitespace-nowrap"
+          className="w-full sm:w-auto px-4 sm:px-6 py-2.5 bg-white text-black font-medium uppercase tracking-wider rounded-full hover:bg-white/90 active:bg-white/80 active:scale-[0.98] disabled:bg-white/20 disabled:text-white/40 disabled:cursor-not-allowed transition-all whitespace-nowrap"
           style={{ fontSize: '16px', WebkitTapHighlightColor: 'transparent' }}
         >
           {loading ? (
@@ -268,7 +268,7 @@ export default function ShippingEstimator({
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded px-3 py-2"
+          className="text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded-full px-4 py-2"
         >
           {error}
         </motion.div>
@@ -290,11 +290,11 @@ export default function ShippingEstimator({
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: index * 0.1 }}
-                className="bg-white/5 border border-white/10 rounded p-4 hover:bg-white/[0.07] hover:border-white/20 transition-all group"
+                className="bg-white/5 border border-white/10 rounded-[24px] p-4 hover:bg-white/[0.07] hover:border-white/20 transition-all group"
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-start gap-3 flex-1">
-                    <div className="px-2 py-1 bg-white/10 border border-white/20 rounded text-[10px] font-medium tracking-wider text-white/80 mt-0.5">
+                    <div className="px-2 py-1 bg-white/10 border border-white/20 rounded-full text-[10px] font-medium tracking-wider text-white/80 mt-0.5">
                       {getShippingSpeed(rate.method_id)}
                     </div>
                     <div className="space-y-1">

@@ -86,8 +86,8 @@ export default async function RootLayout({
   const tenantType = headersList.get('x-tenant-type');
   const vendorId = headersList.get('x-vendor-id');
   
-  // If VENDOR tenant, render complete vendor layout (Shopify-style)
-  if (tenantType === 'vendor' && vendorId) {
+  // If VENDOR tenant OR template preview, render vendor layout
+  if ((tenantType === 'vendor' || tenantType === 'template-preview') && vendorId) {
     const { getVendorStorefront } = await import('@/lib/storefront/get-vendor');
     const { StorefrontHeader } = await import('@/components/storefront/StorefrontHeader');
     const { StorefrontFooter } = await import('@/components/storefront/StorefrontFooter');
@@ -95,11 +95,11 @@ export default async function RootLayout({
     
     const vendor = await getVendorStorefront(vendorId);
     
-    if (!vendor) {
+    if (!vendor && tenantType === 'vendor') {
       return (
         <html lang="en">
           <body>
-            <div className="flex items-center justify-center min-h-screen">
+            <div className="flex items-center justify-center min-h-screen bg-[#1a1a1a] text-white">
               <p>Vendor not found</p>
             </div>
           </body>
@@ -107,12 +107,50 @@ export default async function RootLayout({
       );
     }
     
+    // Template preview mode (no vendor selected)
+    if (!vendor && tenantType === 'template-preview') {
+      // Render minimal blank template layout
+      return (
+        <html lang="en" data-scroll-behavior="smooth" className="overflow-x-hidden" suppressHydrationWarning>
+          <head>
+            <title>Vendor Storefront Template</title>
+          </head>
+          <body
+            className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col overflow-x-hidden min-h-screen`}
+            style={{ backgroundColor: '#1a1a1a' }}
+            suppressHydrationWarning
+          >
+            <Providers>
+              <LoadingBar />
+              <div className="storefront-container bg-[#1a1a1a] min-h-screen">
+                <header className="sticky top-0 bg-black text-white z-50 border-b border-white/10">
+                  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-center">
+                    <span className="text-sm uppercase tracking-wider text-white/40">Blank Template</span>
+                  </div>
+                </header>
+                <main className="storefront-main">
+                  {children}
+                </main>
+                <footer className="bg-black border-t border-white/10 py-8">
+                  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                    <p className="text-white/30 text-xs">Template Preview</p>
+                  </div>
+                </footer>
+              </div>
+              <NotificationToast />
+            </Providers>
+          </body>
+        </html>
+      );
+    }
+    
     // Render COMPLETE vendor layout - NO Yacht Club wrapper!
-    return (
-      <html lang="en" data-scroll-behavior="smooth" className="overflow-x-hidden" suppressHydrationWarning>
-        <head>
-          <title>{vendor.store_name} - Premium Cannabis</title>
-          <meta name="description" content={vendor.store_description || `Shop premium cannabis products from ${vendor.store_name}`} />
+    if (vendor) {
+      return (
+        <html lang="en" data-scroll-behavior="smooth" className="overflow-x-hidden" suppressHydrationWarning>
+          <head>
+            <title>{vendor.store_name} - Premium Cannabis</title>
+            <meta name="description" content={vendor.store_description || `Shop premium cannabis products from ${vendor.store_name}`} />
         </head>
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col overflow-x-hidden min-h-screen`}
@@ -140,7 +178,8 @@ export default async function RootLayout({
           </Providers>
         </body>
       </html>
-    );
+      );
+    }
   }
   
   // Render Yacht Club marketplace layout

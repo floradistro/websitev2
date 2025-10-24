@@ -44,7 +44,7 @@ export default function ProductReviews({ reviews }: ProductReviewsProps) {
   };
 
   return (
-    <div className="border border-white/20 p-4">
+    <div className="border border-white/20 bg-white/5 backdrop-blur-xl rounded-[24px] p-6">
       {/* Header */}
       <div className="flex items-center justify-between mb-4 pb-3 border-b border-white/10">
         <div className="flex items-center gap-2">

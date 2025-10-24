@@ -14,9 +14,9 @@ export default function CategorySection({ categories }: CategorySectionProps) {
   // FLOWER CATEGORY
   if (categorySlug.includes('flower') || categorySlug.includes('bud')) {
     return (
-      <div className="space-y-px pt-6 mt-6">
+      <div className="space-y-3 pt-6 mt-6">
         <div 
-          className="relative group/feature border border-white/10 p-4 bg-[#1a1a1a] hover:border-white/20 hover:bg-[#202020] transition-all duration-500 overflow-hidden"
+          className="relative group/feature border border-white/10 rounded-[20px] p-5 bg-white/5 backdrop-blur-xl hover:border-white/20 hover:bg-white/[0.08] transition-all duration-500 overflow-hidden"
           style={{ animation: 'fadeIn 0.8s ease-out 0.1s both' }}
         >
           <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/5 to-white/0 opacity-0 group-hover/feature:opacity-100 transition-opacity duration-700" 
@@ -37,7 +37,7 @@ export default function CategorySection({ categories }: CategorySectionProps) {
         </div>
 
         <div 
-          className="relative group/feature border border-white/10 p-4 bg-[#1a1a1a] hover:border-white/20 hover:bg-[#202020] transition-all duration-500 overflow-hidden"
+          className="relative group/feature border border-white/10 rounded-[20px] p-5 bg-white/5 backdrop-blur-xl hover:border-white/20 hover:bg-white/[0.08] transition-all duration-500 overflow-hidden"
           style={{ animation: 'fadeIn 0.8s ease-out 0.2s both' }}
         >
           <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/5 to-white/0 opacity-0 group-hover/feature:opacity-100 transition-opacity duration-700" 
@@ -58,7 +58,7 @@ export default function CategorySection({ categories }: CategorySectionProps) {
         </div>
 
         <div 
-          className="relative group/feature border border-white/10 p-4 bg-[#1a1a1a] hover:border-white/20 hover:bg-[#202020] transition-all duration-500 overflow-hidden"
+          className="relative group/feature border border-white/10 rounded-[20px] p-5 bg-white/5 backdrop-blur-xl hover:border-white/20 hover:bg-white/[0.08] transition-all duration-500 overflow-hidden"
           style={{ animation: 'fadeIn 0.8s ease-out 0.3s both' }}
         >
           <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/5 to-white/0 opacity-0 group-hover/feature:opacity-100 transition-opacity duration-700" 
@@ -84,9 +84,9 @@ export default function CategorySection({ categories }: CategorySectionProps) {
   // CONCENTRATES CATEGORY
   if (categorySlug.includes('concentrate') || categorySlug.includes('extract') || categorySlug.includes('dab') || categorySlug.includes('wax') || categorySlug.includes('shatter')) {
     return (
-      <div className="space-y-px pt-6 mt-6">
+      <div className="space-y-3 pt-6 mt-6">
         <div 
-          className="relative group/feature border border-white/10 p-4 bg-[#1a1a1a] hover:border-white/20 hover:bg-[#202020] transition-all duration-500 overflow-hidden"
+          className="relative group/feature border border-white/10 rounded-[20px] p-5 bg-white/5 backdrop-blur-xl hover:border-white/20 hover:bg-white/[0.08] transition-all duration-500 overflow-hidden"
           style={{ animation: 'fadeIn 0.8s ease-out 0.1s both' }}
         >
           <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/5 to-white/0 opacity-0 group-hover/feature:opacity-100 transition-opacity duration-700" 
@@ -107,7 +107,7 @@ export default function CategorySection({ categories }: CategorySectionProps) {
         </div>
 
         <div 
-          className="relative group/feature border border-white/10 p-4 bg-[#1a1a1a] hover:border-white/20 hover:bg-[#202020] transition-all duration-500 overflow-hidden"
+          className="relative group/feature border border-white/10 rounded-[20px] p-5 bg-white/5 backdrop-blur-xl hover:border-white/20 hover:bg-white/[0.08] transition-all duration-500 overflow-hidden"
           style={{ animation: 'fadeIn 0.8s ease-out 0.2s both' }}
         >
           <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/5 to-white/0 opacity-0 group-hover/feature:opacity-100 transition-opacity duration-700" 
@@ -128,7 +128,7 @@ export default function CategorySection({ categories }: CategorySectionProps) {
         </div>
 
         <div 
-          className="relative group/feature border border-white/10 p-4 bg-[#1a1a1a] hover:border-white/20 hover:bg-[#202020] transition-all duration-500 overflow-hidden"
+          className="relative group/feature border border-white/10 rounded-[20px] p-5 bg-white/5 backdrop-blur-xl hover:border-white/20 hover:bg-white/[0.08] transition-all duration-500 overflow-hidden"
           style={{ animation: 'fadeIn 0.8s ease-out 0.3s both' }}
         >
           <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/5 to-white/0 opacity-0 group-hover/feature:opacity-100 transition-opacity duration-700" 
@@ -154,9 +154,9 @@ export default function CategorySection({ categories }: CategorySectionProps) {
   // EDIBLES CATEGORY
   if (categorySlug.includes('edible') || categorySlug.includes('gummies') || categorySlug.includes('chocolate')) {
     return (
-      <div className="space-y-px pt-6 mt-6">
+      <div className="space-y-3 pt-6 mt-6">
         <div 
-          className="relative group/feature border border-white/10 p-4 bg-[#1a1a1a] hover:border-white/20 hover:bg-[#202020] transition-all duration-500 overflow-hidden"
+          className="relative group/feature border border-white/10 rounded-[20px] p-5 bg-white/5 backdrop-blur-xl hover:border-white/20 hover:bg-white/[0.08] transition-all duration-500 overflow-hidden"
           style={{ animation: 'fadeIn 0.8s ease-out 0.1s both' }}
         >
           <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/5 to-white/0 opacity-0 group-hover/feature:opacity-100 transition-opacity duration-700" 
@@ -177,7 +177,7 @@ export default function CategorySection({ categories }: CategorySectionProps) {
         </div>
 
         <div 
-          className="relative group/feature border border-white/10 p-4 bg-[#1a1a1a] hover:border-white/20 hover:bg-[#202020] transition-all duration-500 overflow-hidden"
+          className="relative group/feature border border-white/10 rounded-[20px] p-5 bg-white/5 backdrop-blur-xl hover:border-white/20 hover:bg-white/[0.08] transition-all duration-500 overflow-hidden"
           style={{ animation: 'fadeIn 0.8s ease-out 0.2s both' }}
         >
           <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/5 to-white/0 opacity-0 group-hover/feature:opacity-100 transition-opacity duration-700" 
@@ -198,7 +198,7 @@ export default function CategorySection({ categories }: CategorySectionProps) {
         </div>
 
         <div 
-          className="relative group/feature border border-white/10 p-4 bg-[#1a1a1a] hover:border-white/20 hover:bg-[#202020] transition-all duration-500 overflow-hidden"
+          className="relative group/feature border border-white/10 rounded-[20px] p-5 bg-white/5 backdrop-blur-xl hover:border-white/20 hover:bg-white/[0.08] transition-all duration-500 overflow-hidden"
           style={{ animation: 'fadeIn 0.8s ease-out 0.3s both' }}
         >
           <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/5 to-white/0 opacity-0 group-hover/feature:opacity-100 transition-opacity duration-700" 

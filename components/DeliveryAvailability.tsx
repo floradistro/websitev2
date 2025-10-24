@@ -229,25 +229,25 @@ export default function DeliveryAvailability({
   const isInStock = locationsWithStock.length > 0 || stockStatus === "in_stock";
 
   return (
-    <div id="delivery-section" className="space-y-2">
+    <div id="delivery-section" className="space-y-3">
       {/* Tabs */}
-      <div className="flex border border-white/20">
+      <div className="flex gap-3">
         <button
           onClick={() => setSelectedTab("delivery")}
-          className={`flex-1 py-3 text-xs font-medium uppercase tracking-[0.15em] transition-all duration-300 ${
+          className={`flex-1 py-3 text-xs font-medium uppercase tracking-wider transition-all duration-300 rounded-full ${
             selectedTab === "delivery"
-              ? "bg-black text-white border-white/40"
-              : "text-white/60 hover:bg-white/5"
+              ? "bg-white text-black"
+              : "bg-white/10 text-white border border-white/20 hover:bg-white/20"
           }`}
         >
           Delivery
         </button>
         <button
           onClick={() => setSelectedTab("pickup")}
-          className={`flex-1 py-3 text-xs font-medium uppercase tracking-[0.15em] transition-all duration-300 border-l border-white/20 ${
+          className={`flex-1 py-3 text-xs font-medium uppercase tracking-wider transition-all duration-300 rounded-full ${
             selectedTab === "pickup"
-              ? "bg-black text-white border-white/40"
-              : "text-white/60 hover:bg-white/5"
+              ? "bg-white text-black"
+              : "bg-white/10 text-white border border-white/20 hover:bg-white/20"
           }`}
         >
           Pickup
@@ -256,7 +256,7 @@ export default function DeliveryAvailability({
 
       {/* Delivery Tab */}
       {selectedTab === "delivery" && (
-        <div className={`border border-white/20 p-4 animate-fadeIn space-y-3 relative ${isDropdownOpen ? 'min-h-[400px]' : ''}`}>
+        <div className={`border border-white/20 rounded-[24px] p-6 animate-fadeIn space-y-3 relative ${isDropdownOpen ? 'min-h-[400px]' : ''}`}>
           {isInStock ? (
             <>
               {/* Selected Location with Distance and Change Button */}
@@ -386,7 +386,7 @@ export default function DeliveryAvailability({
 
       {/* Pickup Tab */}
       {selectedTab === "pickup" && (
-        <div className={`border border-white/20 p-4 animate-fadeIn space-y-3 relative ${isDropdownOpen ? 'min-h-[400px]' : ''}`}>
+        <div className={`border border-white/20 rounded-[24px] p-6 animate-fadeIn space-y-3 relative ${isDropdownOpen ? 'min-h-[400px]' : ''}`}>
           {locationsWithStock.length > 0 ? (
             <>
               {/* Selected Store Display with Distance and Change Button */}
