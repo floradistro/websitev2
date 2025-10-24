@@ -17,6 +17,48 @@ interface ContentSection {
 }
 
 export default function LiveEditorV2() {
+  // Add custom scrollbar styles
+  useEffect(() => {
+    const style = document.createElement('style');
+    style.textContent = `
+      .custom-scrollbar::-webkit-scrollbar {
+        width: 6px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #27272a;
+        border-radius: 3px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: #3f3f46;
+      }
+      .slider-modern::-webkit-slider-thumb {
+        appearance: none;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: white;
+        cursor: pointer;
+        border: 2px solid #0a0a0a;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+      }
+      .slider-modern::-moz-range-thumb {
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: white;
+        cursor: pointer;
+        border: 2px solid #0a0a0a;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+      }
+    `;
+    document.head.appendChild(style);
+    return () => {
+      document.head.removeChild(style);
+    };
+  }, []);
   const { vendor } = useVendorAuth();
   const [selectedPage, setSelectedPage] = useState('home');
   const [sections, setSections] = useState<ContentSection[]>([]);
@@ -552,7 +594,7 @@ export default function LiveEditorV2() {
         {/* Fallback JSON Editor */}
         {!['hero', 'process', 'about_story', 'cta'].includes(section_key) && (
           <div>
-            <label className="text-white/80 text-xs block mb-2 uppercase tracking-wider">Content (JSON)</label>
+            <div className="text-[10px] uppercase tracking-wider text-[#52525b] font-semibold mb-2">Raw Data</div>
             <textarea
               value={JSON.stringify(content_data, null, 2)}
               onChange={(e) => {
@@ -567,9 +609,10 @@ export default function LiveEditorV2() {
                   // Invalid JSON
                 }
               }}
-              rows={12}
-              className="w-full bg-black border border-white/20 text-white px-3 py-2 rounded font-mono text-xs"
+              rows={10}
+              className="w-full bg-[#18181b] border border-[#27272a] text-white px-3 py-2.5 rounded-md font-mono text-[11px] leading-relaxed focus:border-[#3f3f46] transition-all resize-none"
             />
+            <p className="text-[#52525b] text-[9px] mt-1.5">Edit JSON data for this section</p>
           </div>
         )}
       </div>
@@ -691,7 +734,7 @@ export default function LiveEditorV2() {
           </div>
 
           {/* Content */}
-          <div className="flex-1 overflow-y-auto">
+          <div className="flex-1 overflow-y-auto custom-scrollbar">
             <div className="p-2">
               
               {loading ? (

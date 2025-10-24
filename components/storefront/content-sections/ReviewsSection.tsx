@@ -22,8 +22,20 @@ interface ReviewsSectionProps {
 }
 
 export function ReviewsSection({ content, reviews, templateStyle = 'minimalist' }: ReviewsSectionProps) {
-  // Transform reviews to handle nested objects from database
-  const transformedReviews = reviews.map((review: any) => ({
+  // Default placeholder reviews (if vendor has none)
+  const defaultReviews = [
+    { rating: 5, quote: "Excellent quality and fast delivery. Highly recommend!", customer_name: "Sarah M.", product: "Sample Product" },
+    { rating: 5, quote: "Great service and products. Will definitely order again.", customer_name: "Michael R.", product: "Sample Product" },
+    { rating: 5, quote: "Very satisfied with my purchase. Professional and reliable.", customer_name: "Jessica L.", product: "Sample Product" },
+    { rating: 5, quote: "Top-notch quality. Exceeded my expectations.", customer_name: "David K.", product: "Sample Product" },
+    { rating: 5, quote: "Fast shipping and excellent customer service.", customer_name: "Amanda P.", product: "Sample Product" },
+    { rating: 5, quote: "Best products I've found. Will be a repeat customer.", customer_name: "Chris T.", product: "Sample Product" }
+  ];
+
+  // Transform reviews to handle nested objects from database, or use defaults if empty
+  const reviewsToUse = reviews && reviews.length > 0 ? reviews : defaultReviews;
+  
+  const transformedReviews = reviewsToUse.map((review: any) => ({
     rating: review.rating || 5,
     quote: review.review_text || review.quote || review.title || '',
     customer_name: review.customer_name || 
