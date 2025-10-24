@@ -277,6 +277,25 @@ export const DEFAULT_CONTENT_TEMPLATE = {
         ]
       }
     }
+  ],
+  shop: [
+    {
+      section_key: 'footer',
+      section_order: 1,
+      is_enabled: true,
+      content_data: {
+        compliance_text: 'All products comply with applicable regulations.',
+        restricted_states: 'Shipping restrictions may apply in certain states.',
+        show_powered_by: false,
+        custom_footer_text: '© 2025 [Store Name]. All rights reserved.',
+        footer_links: [
+          { title: 'Privacy Policy', url: '/privacy' },
+          { title: 'Terms of Service', url: '/terms' },
+          { title: 'Shipping', url: '/shipping' },
+          { title: 'Returns', url: '/returns' }
+        ]
+      }
+    }
   ]
 };
 

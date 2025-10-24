@@ -83,6 +83,20 @@ export async function initializeVendorContent(vendorId: string, vendorName: stri
       });
     });
     
+    // Shop page sections
+    if (personalizedContent.shop) {
+      personalizedContent.shop.forEach((section: any) => {
+        sectionsToInsert.push({
+          vendor_id: vendorId,
+          page_type: 'shop',
+          section_key: section.section_key,
+          section_order: section.section_order,
+          is_enabled: section.is_enabled,
+          content_data: section.content_data,
+        });
+      });
+    }
+    
     // Insert all sections
     const { data: insertedSections, error: insertError } = await supabase
       .from('vendor_storefront_sections')
