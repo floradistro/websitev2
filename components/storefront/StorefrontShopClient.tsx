@@ -11,9 +11,33 @@ interface StorefrontShopClientProps {
     page_title?: string;
     page_subtitle?: string;
     grid_columns?: number;
-    card_style?: string;
-    corner_radius?: string;
+    grid_gap?: string;
+    
+    // Card Container
+    card_bg?: string;
+    card_padding?: string;
+    card_radius?: string;
+    card_border_width?: string;
+    card_border_color?: string;
+    card_hover_bg?: string;
+    
+    // Image
     image_aspect?: string;
+    image_bg?: string;
+    image_fit?: string;
+    image_radius?: string;
+    image_border_width?: string;
+    image_border_color?: string;
+    
+    // Info Section
+    info_bg?: string;
+    info_padding?: string;
+    name_color?: string;
+    price_color?: string;
+    field_label_color?: string;
+    field_value_color?: string;
+    
+    // Display Options
     show_quick_add?: boolean;
     show_stock_badge?: boolean;
     show_pricing_tiers?: boolean;
@@ -205,6 +229,13 @@ export function StorefrontShopClient({ vendorId, config }: StorefrontShopClientP
   const gridClass = gridCols === 2 ? 'grid-cols-1 md:grid-cols-2' :
                     gridCols === 4 ? 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4' :
                     'grid-cols-2 md:grid-cols-3'; // default 3
+  
+  const gridGap = config?.grid_gap || 'md';
+  const gapClass = gridGap === 'none' ? 'gap-0' :
+                   gridGap === 'sm' ? 'gap-2' :
+                   gridGap === 'md' ? 'gap-4' :
+                   gridGap === 'lg' ? 'gap-6' :
+                   gridGap === 'xl' ? 'gap-8' : 'gap-4';
 
   return (
     <>
@@ -378,7 +409,7 @@ export function StorefrontShopClient({ vendorId, config }: StorefrontShopClientP
           <p className="text-white/60 text-lg font-light">No products available at the moment.</p>
         </div>
       ) : (
-        <div className={`grid gap-px ${gridClass}`}>
+        <div className={`grid ${gapClass} ${gridClass}`}>
           {filteredProducts.map((product: any) => (
             <StorefrontProductCard 
               key={product.id} 

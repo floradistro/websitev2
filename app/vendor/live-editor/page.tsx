@@ -575,28 +575,35 @@ export default function LiveEditorV2() {
                 <option value={4}>4 Columns</option>
               </select>
             </div>
-          </div>
-
-          {/* Product Card Style */}
-          <div className="space-y-2 pb-2 border-b border-white/5">
-            <label className="text-white/60 text-[10px] uppercase tracking-wider block font-medium">Card Style</label>
             <div>
-              <label className="text-white/40 text-[11px] block mb-1 font-normal">Card Style</label>
+              <label className="text-white/40 text-[11px] block mb-1 font-normal">Gap Size</label>
               <select
-                value={content_data.card_style || 'card'}
-                onChange={(e) => updateContent('card_style', e.target.value)}
+                value={content_data.grid_gap || 'md'}
+                onChange={(e) => updateContent('grid_gap', e.target.value)}
                 className="w-full bg-black border border-white/10 text-white px-2 py-1.5 rounded text-[13px] focus:outline-none focus:border-white/30 transition-all"
               >
-                <option value="minimal">Minimal</option>
-                <option value="card">Card</option>
-                <option value="bordered">Bordered</option>
+                <option value="none">None</option>
+                <option value="sm">Small</option>
+                <option value="md">Medium</option>
+                <option value="lg">Large</option>
+                <option value="xl">Extra Large</option>
               </select>
             </div>
+          </div>
+
+          {/* Card Container */}
+          <div className="space-y-2 pb-2 border-b border-white/5">
+            <label className="text-white/60 text-[10px] uppercase tracking-wider block font-medium">Card Container</label>
+            <ColorPicker 
+              label="Background" 
+              value={content_data.card_bg || 'transparent'} 
+              onChange={(v) => updateContent('card_bg', v)} 
+            />
             <div>
-              <label className="text-white/40 text-[11px] block mb-1 font-normal">Corner Radius</label>
+              <label className="text-white/40 text-[11px] block mb-1 font-normal">Padding</label>
               <select
-                value={content_data.corner_radius || 'lg'}
-                onChange={(e) => updateContent('corner_radius', e.target.value)}
+                value={content_data.card_padding || 'md'}
+                onChange={(e) => updateContent('card_padding', e.target.value)}
                 className="w-full bg-black border border-white/10 text-white px-2 py-1.5 rounded text-[13px] focus:outline-none focus:border-white/30 transition-all"
               >
                 <option value="none">None</option>
@@ -607,7 +614,52 @@ export default function LiveEditorV2() {
               </select>
             </div>
             <div>
-              <label className="text-white/40 text-[11px] block mb-1 font-normal">Image Aspect</label>
+              <label className="text-white/40 text-[11px] block mb-1 font-normal">Corner Radius</label>
+              <select
+                value={content_data.card_radius || 'lg'}
+                onChange={(e) => updateContent('card_radius', e.target.value)}
+                className="w-full bg-black border border-white/10 text-white px-2 py-1.5 rounded text-[13px] focus:outline-none focus:border-white/30 transition-all"
+              >
+                <option value="none">None</option>
+                <option value="sm">Small (4px)</option>
+                <option value="md">Medium (8px)</option>
+                <option value="lg">Large (12px)</option>
+                <option value="xl">Extra Large (16px)</option>
+                <option value="2xl">2XL (24px)</option>
+              </select>
+            </div>
+            <div>
+              <label className="text-white/40 text-[11px] block mb-1 font-normal">Border Width</label>
+              <select
+                value={content_data.card_border_width || '0'}
+                onChange={(e) => updateContent('card_border_width', e.target.value)}
+                className="w-full bg-black border border-white/10 text-white px-2 py-1.5 rounded text-[13px] focus:outline-none focus:border-white/30 transition-all"
+              >
+                <option value="0">None</option>
+                <option value="1">1px</option>
+                <option value="2">2px</option>
+                <option value="4">4px</option>
+              </select>
+            </div>
+            {content_data.card_border_width !== '0' && (
+              <ColorPicker 
+                label="Border Color" 
+                value={content_data.card_border_color || '#ffffff'} 
+                onChange={(v) => updateContent('card_border_color', v)} 
+              />
+            )}
+            <ColorPicker 
+              label="Hover Background" 
+              value={content_data.card_hover_bg || 'transparent'} 
+              onChange={(v) => updateContent('card_hover_bg', v)} 
+            />
+          </div>
+
+          {/* Product Image */}
+          <div className="space-y-2 pb-2 border-b border-white/5">
+            <label className="text-white/60 text-[10px] uppercase tracking-wider block font-medium">Product Image</label>
+            <div>
+              <label className="text-white/40 text-[11px] block mb-1 font-normal">Aspect Ratio</label>
               <select
                 value={content_data.image_aspect || 'square'}
                 onChange={(e) => updateContent('image_aspect', e.target.value)}
@@ -616,8 +668,106 @@ export default function LiveEditorV2() {
                 <option value="square">Square (1:1)</option>
                 <option value="portrait">Portrait (3:4)</option>
                 <option value="landscape">Landscape (4:3)</option>
+                <option value="wide">Wide (16:9)</option>
               </select>
             </div>
+            <ColorPicker 
+              label="Background" 
+              value={content_data.image_bg || '#000000'} 
+              onChange={(v) => updateContent('image_bg', v)} 
+            />
+            <div>
+              <label className="text-white/40 text-[11px] block mb-1 font-normal">Object Fit</label>
+              <select
+                value={content_data.image_fit || 'contain'}
+                onChange={(e) => updateContent('image_fit', e.target.value)}
+                className="w-full bg-black border border-white/10 text-white px-2 py-1.5 rounded text-[13px] focus:outline-none focus:border-white/30 transition-all"
+              >
+                <option value="contain">Contain</option>
+                <option value="cover">Cover</option>
+                <option value="fill">Fill</option>
+                <option value="none">None</option>
+              </select>
+            </div>
+            <div>
+              <label className="text-white/40 text-[11px] block mb-1 font-normal">Corner Radius</label>
+              <select
+                value={content_data.image_radius || 'lg'}
+                onChange={(e) => updateContent('image_radius', e.target.value)}
+                className="w-full bg-black border border-white/10 text-white px-2 py-1.5 rounded text-[13px] focus:outline-none focus:border-white/30 transition-all"
+              >
+                <option value="none">None</option>
+                <option value="sm">Small</option>
+                <option value="md">Medium</option>
+                <option value="lg">Large</option>
+                <option value="xl">Extra Large</option>
+                <option value="2xl">2XL</option>
+              </select>
+            </div>
+            <div>
+              <label className="text-white/40 text-[11px] block mb-1 font-normal">Border Width</label>
+              <select
+                value={content_data.image_border_width || '0'}
+                onChange={(e) => updateContent('image_border_width', e.target.value)}
+                className="w-full bg-black border border-white/10 text-white px-2 py-1.5 rounded text-[13px] focus:outline-none focus:border-white/30 transition-all"
+              >
+                <option value="0">None</option>
+                <option value="1">1px</option>
+                <option value="2">2px</option>
+                <option value="4">4px</option>
+                <option value="8">8px</option>
+              </select>
+            </div>
+            {content_data.image_border_width !== '0' && (
+              <ColorPicker 
+                label="Border Color" 
+                value={content_data.image_border_color || '#ffffff'} 
+                onChange={(v) => updateContent('image_border_color', v)} 
+              />
+            )}
+          </div>
+
+          {/* Product Info */}
+          <div className="space-y-2 pb-2 border-b border-white/5">
+            <label className="text-white/60 text-[10px] uppercase tracking-wider block font-medium">Product Info</label>
+            <ColorPicker 
+              label="Background" 
+              value={content_data.info_bg || 'transparent'} 
+              onChange={(v) => updateContent('info_bg', v)} 
+            />
+            <div>
+              <label className="text-white/40 text-[11px] block mb-1 font-normal">Padding</label>
+              <select
+                value={content_data.info_padding || 'md'}
+                onChange={(e) => updateContent('info_padding', e.target.value)}
+                className="w-full bg-black border border-white/10 text-white px-2 py-1.5 rounded text-[13px] focus:outline-none focus:border-white/30 transition-all"
+              >
+                <option value="none">None</option>
+                <option value="sm">Small</option>
+                <option value="md">Medium</option>
+                <option value="lg">Large</option>
+              </select>
+            </div>
+            <ColorPicker 
+              label="Product Name" 
+              value={content_data.name_color || '#ffffff'} 
+              onChange={(v) => updateContent('name_color', v)} 
+            />
+            <ColorPicker 
+              label="Price Color" 
+              value={content_data.price_color || '#ffffff'} 
+              onChange={(v) => updateContent('price_color', v)} 
+            />
+            <ColorPicker 
+              label="Field Labels" 
+              value={content_data.field_label_color || '#737373'} 
+              onChange={(v) => updateContent('field_label_color', v)} 
+            />
+            <ColorPicker 
+              label="Field Values" 
+              value={content_data.field_value_color || '#a3a3a3'} 
+              onChange={(v) => updateContent('field_value_color', v)} 
+            />
           </div>
 
           {/* Product Card Display */}

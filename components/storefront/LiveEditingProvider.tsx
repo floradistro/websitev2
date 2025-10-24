@@ -116,7 +116,6 @@ export function LiveEditingProvider({ children, initialSections, isPreviewMode =
   }, []);
 
   function updateSection(sectionKey: string, field: string, value: any) {
-    console.log('📡 LiveEditingProvider updateSection:', { sectionKey, field, value });
     setSections((prevSections) =>
       prevSections.map((section) => {
         if (section.section_key === sectionKey) {
@@ -133,15 +132,12 @@ export function LiveEditingProvider({ children, initialSections, isPreviewMode =
             
             current[keys[keys.length - 1]] = value;
             
-            console.log('✅ Updated section (nested):', sectionKey, newContentData);
             return { ...section, content_data: newContentData };
           } else {
-            const updated = {
+            return {
               ...section,
               content_data: { ...section.content_data, [field]: value },
             };
-            console.log('✅ Updated section:', sectionKey, updated.content_data);
-            return updated;
           }
         }
         return section;

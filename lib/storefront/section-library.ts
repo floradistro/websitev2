@@ -238,12 +238,39 @@ export const SECTION_LIBRARY: SectionTemplate[] = [
     category: 'settings',
     pageTypes: ['shop'],
     defaultContent: {
+      // Page Header
       page_title: 'Shop All Products',
       page_subtitle: 'Premium quality, delivered fresh',
+      
+      // Layout
       grid_columns: 3,
-      card_style: 'card',
-      corner_radius: 'lg',
+      grid_gap: 'md',
+      
+      // Card Container
+      card_bg: 'transparent',
+      card_padding: 'md',
+      card_radius: 'lg',
+      card_border_width: '0',
+      card_border_color: '#ffffff',
+      card_hover_bg: 'transparent',
+      
+      // Product Image
       image_aspect: 'square',
+      image_bg: '#000000',
+      image_fit: 'contain',
+      image_radius: 'lg',
+      image_border_width: '0',
+      image_border_color: '#ffffff',
+      
+      // Product Info
+      info_bg: 'transparent',
+      info_padding: 'md',
+      name_color: '#ffffff',
+      price_color: '#ffffff',
+      field_label_color: '#737373',
+      field_value_color: '#a3a3a3',
+      
+      // Display Options
       show_quick_add: true,
       show_stock_badge: true,
       show_pricing_tiers: true,

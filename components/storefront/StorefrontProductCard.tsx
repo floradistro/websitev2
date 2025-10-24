@@ -11,9 +11,31 @@ interface StorefrontProductCardProps {
   vendorSlug?: string;
   locations?: any[];
   config?: {
-    card_style?: string;
-    corner_radius?: string;
+    // Card Container
+    card_bg?: string;
+    card_padding?: string;
+    card_radius?: string;
+    card_border_width?: string;
+    card_border_color?: string;
+    card_hover_bg?: string;
+    
+    // Image
     image_aspect?: string;
+    image_bg?: string;
+    image_fit?: string;
+    image_radius?: string;
+    image_border_width?: string;
+    image_border_color?: string;
+    
+    // Info Section
+    info_bg?: string;
+    info_padding?: string;
+    name_color?: string;
+    price_color?: string;
+    field_label_color?: string;
+    field_value_color?: string;
+    
+    // Display Options
     show_quick_add?: boolean;
     show_stock_badge?: boolean;
     show_pricing_tiers?: boolean;
@@ -195,33 +217,95 @@ function StorefrontProductCard({ product, vendorSlug, locations = [], config = {
 
   const stockInfo = getStockLocations();
   
-  // Apply config settings
+  // Apply config settings - Card Container
+  const cardPadding = config.card_padding || 'md';
+  const cardPaddingClass = cardPadding === 'none' ? '' :
+                           cardPadding === 'sm' ? 'p-2' :
+                           cardPadding === 'md' ? 'p-3' :
+                           cardPadding === 'lg' ? 'p-4' :
+                           cardPadding === 'xl' ? 'p-6' : 'p-3';
+  
+  const cardRadius = config.card_radius || 'lg';
+  const cardRadiusClass = cardRadius === 'none' ? 'rounded-none' :
+                          cardRadius === 'sm' ? 'rounded' :
+                          cardRadius === 'md' ? 'rounded-lg' :
+                          cardRadius === 'lg' ? 'rounded-xl' :
+                          cardRadius === 'xl' ? 'rounded-2xl' :
+                          cardRadius === '2xl' ? 'rounded-3xl' : 'rounded-xl';
+  
+  const cardBorderWidth = config.card_border_width || '0';
+  const cardBorderClass = cardBorderWidth === '0' ? '' :
+                          cardBorderWidth === '1' ? 'border' :
+                          cardBorderWidth === '2' ? 'border-2' :
+                          'border-4';
+  
+  // Image settings
   const imageAspect = config.image_aspect || 'square';
-  const aspectClass = imageAspect === 'portrait' ? 'aspect-[3/4]' :
-                      imageAspect === 'landscape' ? 'aspect-[4/3]' :
-                      'aspect-square';
+  const imageAspectClass = imageAspect === 'portrait' ? 'aspect-[3/4]' :
+                           imageAspect === 'landscape' ? 'aspect-[4/3]' :
+                           imageAspect === 'wide' ? 'aspect-[16/9]' :
+                           'aspect-square';
   
-  const cornerRadius = config.corner_radius || 'lg';
-  const radiusClass = cornerRadius === 'none' ? 'rounded-none' :
-                      cornerRadius === 'sm' ? 'rounded-sm' :
-                      cornerRadius === 'md' ? 'rounded-md' :
-                      cornerRadius === 'xl' ? 'rounded-xl' :
-                      'rounded-lg';
+  const imageFit = config.image_fit || 'contain';
+  const imageFitClass = imageFit === 'cover' ? 'object-cover' :
+                        imageFit === 'fill' ? 'object-fill' :
+                        imageFit === 'none' ? 'object-none' :
+                        'object-contain';
   
-  const cardStyle = config.card_style || 'card';
-  const cardStyleClass = cardStyle === 'minimal' ? 'bg-transparent' :
-                         cardStyle === 'bordered' ? 'bg-black/20 border border-white/10 p-4' :
-                         'bg-black/10 p-2';
+  const imageRadius = config.image_radius || 'lg';
+  const imageRadiusClass = imageRadius === 'none' ? 'rounded-none' :
+                           imageRadius === 'sm' ? 'rounded' :
+                           imageRadius === 'md' ? 'rounded-lg' :
+                           imageRadius === 'lg' ? 'rounded-xl' :
+                           imageRadius === 'xl' ? 'rounded-2xl' :
+                           imageRadius === '2xl' ? 'rounded-3xl' : 'rounded-xl';
+  
+  const imageBorderWidth = config.image_border_width || '0';
+  const imageBorderClass = imageBorderWidth === '0' ? '' :
+                           imageBorderWidth === '1' ? 'border' :
+                           imageBorderWidth === '2' ? 'border-2' :
+                           imageBorderWidth === '4' ? 'border-4' :
+                           'border-8';
+  
+  // Info section
+  const infoPadding = config.info_padding || 'md';
+  const infoPaddingClass = infoPadding === 'none' ? '' :
+                           infoPadding === 'sm' ? 'px-2 space-y-1' :
+                           infoPadding === 'md' ? 'px-3 space-y-2' :
+                           'px-4 space-y-3';
+  
+  // Build inline styles
+  const cardStyle: React.CSSProperties = {
+    backgroundColor: config.card_bg && config.card_bg !== 'transparent' ? config.card_bg : undefined,
+    borderColor: config.card_border_color || undefined,
+  };
+  
+  const cardHoverStyle: React.CSSProperties = config.card_hover_bg && config.card_hover_bg !== 'transparent' ? {
+    backgroundColor: config.card_hover_bg,
+  } : {};
+  
+  const imageStyle: React.CSSProperties = {
+    backgroundColor: config.image_bg || '#000000',
+    borderColor: config.image_border_color || undefined,
+  };
+  
+  const infoStyle: React.CSSProperties = {
+    backgroundColor: config.info_bg && config.info_bg !== 'transparent' ? config.info_bg : undefined,
+  };
 
   return (
     <Link 
       href={productUrl}
-      className={`group block ${cardStyleClass} ${radiusClass} transition-all hover:bg-black/20`}
+      className={`group block ${cardPaddingClass} ${cardRadiusClass} ${cardBorderClass} transition-all`}
+      style={cardStyle}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
       {/* Product Image Container */}
-      <div className={`relative ${aspectClass} bg-black overflow-hidden mb-4 ${radiusClass}`}>
+      <div 
+        className={`relative ${imageAspectClass} overflow-hidden mb-4 ${imageRadiusClass} ${imageBorderClass}`}
+        style={imageStyle}
+      >
         {/* Subtle Picture Frame */}
         <div className="absolute inset-0 pointer-events-none z-20 rounded-t-[20px] sm:rounded-t-[32px] overflow-hidden">
           {/* Inner shadow frame */}
@@ -236,7 +320,7 @@ function StorefrontProductCard({ product, vendorSlug, locations = [], config = {
             alt={product.name}
             fill
             sizes="(max-width: 640px) 85vw, (max-width: 768px) 45vw, (max-width: 1024px) 32vw, 23vw"
-            className="object-contain transition-all duration-700 ease-out group-hover:scale-105"
+            className={`${imageFitClass} transition-all duration-700 ease-out group-hover:scale-105`}
             loading="lazy"
             quality={85}
           />
@@ -247,7 +331,7 @@ function StorefrontProductCard({ product, vendorSlug, locations = [], config = {
               alt="Yacht Club"
               fill
               sizes="(max-width: 640px) 85vw, (max-width: 768px) 45vw, (max-width: 1024px) 32vw, 23vw"
-              className="object-contain opacity-10 transition-opacity duration-500 group-hover:opacity-15"
+              className={`${imageFitClass} opacity-10 transition-opacity duration-500 group-hover:opacity-15`}
               loading="lazy"
             />
           </div>
@@ -324,11 +408,11 @@ function StorefrontProductCard({ product, vendorSlug, locations = [], config = {
       </div>
 
       {/* Product Info */}
-      <div className="flex flex-col px-3 space-y-2">
+      <div className={`flex flex-col ${infoPaddingClass}`} style={infoStyle}>
         {/* Product Name */}
         <h3 
-          className="text-sm uppercase tracking-[0.12em] line-clamp-2 leading-relaxed transition-all duration-300 text-white"
-          style={{ fontWeight: 900 }}
+          className="text-sm uppercase tracking-[0.12em] line-clamp-2 leading-relaxed transition-all duration-300"
+          style={{ fontWeight: 900, color: config.name_color || '#ffffff' }}
         >
           {product.name}
         </h3>
@@ -366,15 +450,15 @@ function StorefrontProductCard({ product, vendorSlug, locations = [], config = {
           <div className="flex flex-col gap-1">
             {displayFields.map((field, idx) => (
               <div key={idx} className="flex items-start gap-1.5 text-[10px]">
-                <span className="text-neutral-500 uppercase tracking-wider whitespace-nowrap">{field.label}:</span>
-                <span className="text-neutral-400 font-medium leading-tight">{field.value}</span>
+                <span className="uppercase tracking-wider whitespace-nowrap" style={{ color: config.field_label_color || '#737373' }}>{field.label}:</span>
+                <span className="font-medium leading-tight" style={{ color: config.field_value_color || '#a3a3a3' }}>{field.value}</span>
               </div>
             ))}
           </div>
         )}
         
         {/* Price */}
-        <p className="text-sm font-medium tracking-wide text-white">
+        <p className="text-sm font-medium tracking-wide" style={{ color: config.price_color || '#ffffff' }}>
           {getPriceDisplay()}
         </p>
       </div>
