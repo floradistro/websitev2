@@ -28,6 +28,7 @@ export default function ProductsCarousel({ products, locations, productFieldsMap
             <StorefrontProductCard 
               product={product}
               vendorSlug={vendorSlug}
+              locations={locations}
             />
           ) : (
             <ProductCard 

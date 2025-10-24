@@ -9,9 +9,10 @@ import Link from "next/link";
 interface StorefrontProductCardProps {
   product: any;
   vendorSlug?: string;
+  locations?: any[];
 }
 
-function StorefrontProductCard({ product, vendorSlug }: StorefrontProductCardProps) {
+function StorefrontProductCard({ product, vendorSlug, locations = [] }: StorefrontProductCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
   
@@ -33,6 +34,32 @@ function StorefrontProductCard({ product, vendorSlug }: StorefrontProductCardPro
       });
     }
   };
+
+  // Get display fields
+  const getDisplayFields = () => {
+    if (!product.fields) return [];
+    
+    const fields = product.fields;
+    const displayFields: Array<{ label: string; value: string }> = [];
+    
+    const fieldConfig: { [key: string]: string } = {
+      'strain_type': 'Type',
+      'thc': 'THC',
+      'cbd': 'CBD',
+      'terpenes': 'Terps',
+      'flavor_profile': 'Flavor',
+    };
+    
+    Object.entries(fieldConfig).forEach(([key, label]) => {
+      if (fields[key] && fields[key] !== '' && fields[key] !== 'N/A') {
+        displayFields.push({ label, value: fields[key] });
+      }
+    });
+    
+    return displayFields.slice(0, 3);
+  };
+
+  const displayFields = getDisplayFields();
 
   // Get price display
   const getPriceDisplay = () => {
@@ -58,8 +85,53 @@ function StorefrontProductCard({ product, vendorSlug }: StorefrontProductCardPro
     ? `/storefront/products/${product.slug || product.id}?vendor=${vendorSlug}`
     : `/storefront/products/${product.slug || product.id}`;
 
-  // Get stock status
-  const isInStock = product.stock_status === "instock" || product.total_stock > 0;
+  // Get stock locations
+  const getStockLocations = () => {
+    const totalStockFromProduct = parseFloat(product.total_stock || product.stock_quantity || 0);
+    const inventory = product.inventory || [];
+    
+    if (!inventory || inventory.length === 0) {
+      return { 
+        inStock: totalStockFromProduct > 0 || product.stock_status === 'instock', 
+        locations: [], 
+        count: 0,
+        showGenericStock: totalStockFromProduct > 0
+      };
+    }
+    
+    const activeLocations = locations.filter((loc: any) => 
+      loc.is_active === "1" || loc.is_active === 1 || loc.is_active === true
+    );
+    
+    const stockLocations: any[] = [];
+    
+    inventory.forEach((inv: any) => {
+      const qty = parseFloat(inv.quantity || 0);
+      
+      if (qty > 0) {
+        const location = activeLocations.find((loc: any) => 
+          String(loc.id) === String(inv.location_id)
+        );
+        
+        if (location) {
+          stockLocations.push({
+            id: location.id,
+            name: location.name || location.location_name,
+            quantity: qty
+          });
+        }
+      }
+    });
+    
+    return {
+      inStock: stockLocations.length > 0 || totalStockFromProduct > 0,
+      locations: stockLocations,
+      count: stockLocations.length,
+      showGenericStock: stockLocations.length === 0 && totalStockFromProduct > 0
+    };
+  };
+
+  const stockInfo = getStockLocations();
 
   return (
     <Link 
@@ -135,7 +207,7 @@ function StorefrontProductCard({ product, vendorSlug }: StorefrontProductCardPro
           )}
           
           {/* Low Stock Badge */}
-          {isInStock && product.total_stock && product.total_stock <= 5 && product.total_stock > 0 && (
+          {stockInfo.inStock && product.total_stock && product.total_stock <= 5 && product.total_stock > 0 && (
             <div className="bg-red-600/90 text-white px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider">
               Only {product.total_stock} Left
             </div>
@@ -164,18 +236,37 @@ function StorefrontProductCard({ product, vendorSlug }: StorefrontProductCardPro
           {product.name}
         </h3>
         
+        {/* Product Fields - Display top 3 */}
+        {displayFields.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {displayFields.map((field, idx) => (
+              <div key={idx} className="flex items-center gap-1 text-[10px]">
+                <span className="text-neutral-500 uppercase tracking-wider">{field.label}:</span>
+                <span className="text-neutral-400 font-medium">{field.value}</span>
+              </div>
+            ))}
+          </div>
+        )}
+        
         {/* Price */}
         <p className="text-sm font-medium tracking-wide text-white">
           {getPriceDisplay()}
         </p>
         
-        {/* Stock Status */}
-        {isInStock ? (
+        {/* Stock Status with Locations */}
+        {stockInfo.inStock ? (
           <div className="flex items-center gap-1.5">
             <div className="w-2 h-2 rounded-full bg-green-500 flex-shrink-0"></div>
-            <span className="text-[11px] uppercase tracking-wider text-neutral-400">
-              In Stock
-            </span>
+            <div className="flex flex-col">
+              <span className="text-[11px] uppercase tracking-wider text-neutral-400">
+                In Stock
+              </span>
+              {!stockInfo.showGenericStock && stockInfo.locations.length > 0 && (
+                <span className="text-[11px] tracking-wider text-neutral-500">
+                  {stockInfo.count} {stockInfo.count === 1 ? 'location' : 'locations'}
+                </span>
+              )}
+            </div>
           </div>
         ) : (
           <div className="flex items-center gap-1.5">

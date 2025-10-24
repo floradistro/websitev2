@@ -352,6 +352,7 @@ export function StorefrontShopClient({ vendorId }: StorefrontShopClientProps) {
               key={product.id} 
               product={product}
               vendorSlug={vendorSlug}
+              locations={locations}
             />
           ))}
         </div>
