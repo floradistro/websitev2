@@ -55,11 +55,7 @@ export function ProductGrid({ products, locations }: ProductGridProps) {
           <ProductCard 
             key={product.id} 
             product={mappedProduct}
-            index={index}
             locations={locations}
-            pricingTiers={product.pricingTiers || []}
-            productFields={{ fields: product.fields || {} }}
-            inventory={product.inventory || []}
           />
         );
       })}

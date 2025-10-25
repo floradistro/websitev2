@@ -134,7 +134,7 @@ export function Text({
     isEditingRef.current = true;
   };
   
-  const handleBlur = (e: React.FocusEvent<HTMLDivElement>) => {
+  const handleBlur = (e: React.FocusEvent<HTMLElement>) => {
     isEditingRef.current = false;
     if (onInlineEdit && isPreviewMode) {
       const newContent = e.currentTarget.textContent || '';
@@ -144,7 +144,7 @@ export function Text({
     }
   };
   
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLElement>) => {
     if (e.key === 'Escape') {
       e.currentTarget.blur();
     }

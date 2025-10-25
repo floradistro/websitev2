@@ -5,28 +5,7 @@
 
 import dynamic from 'next/dynamic';
 
-// Animation components - load on demand
-export const ProductGridAnimation = dynamic(() => import('@/components/ProductGridAnimation'), {
-  ssr: false,
-  loading: () => null,
-});
-
-export const GlobalAnimation = dynamic(() => import('@/components/GlobalAnimation'), {
-  ssr: false,
-  loading: () => null,
-});
-
-export const GrowRoomAnimation = dynamic(() => import('@/components/GrowRoomAnimation'), {
-  ssr: false,
-  loading: () => null,
-});
-
 export const VendorWhaleAnimation = dynamic(() => import('@/components/VendorWhaleAnimation'), {
-  ssr: false,
-  loading: () => null,
-});
-
-export const DeliveryAnimation = dynamic(() => import('@/components/DeliveryAnimation'), {
   ssr: false,
   loading: () => null,
 });
