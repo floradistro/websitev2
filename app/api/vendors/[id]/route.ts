@@ -3,11 +3,11 @@ import { getServiceSupabase } from '@/lib/supabase/client';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const supabase = getServiceSupabase();
-    const vendorId = params.id;
+    const { id: vendorId } = await params;
 
     if (!vendorId) {
       return NextResponse.json(
