@@ -37,8 +37,8 @@ export async function GET(request: NextRequest) {
     if (revenueError) throw revenueError;
 
     // Calculate revenue metrics
-    const totalRevenue = revenueData?.reduce((sum, item) => sum + parseFloat(item.line_total || '0'), 0) || 0;
-    const totalOrders = new Set(revenueData?.map(item => item.orders?.created_at)).size || 0;
+    const totalRevenue = revenueData?.reduce((sum, item: any) => sum + parseFloat(item.line_total || '0'), 0) || 0;
+    const totalOrders = new Set(revenueData?.map((item: any) => item.orders?.created_at)).size || 0;
     const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
 
     // Get products with cost data
