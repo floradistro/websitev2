@@ -1,3 +1,5 @@
+'use client';
+
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft, Code, Globe, Zap, Shield } from "lucide-react";
@@ -30,6 +32,18 @@ export default function AboutPage() {
       {/* Hero Section */}
       <section className="pt-32 pb-20 px-4">
         <div className="max-w-4xl mx-auto text-center">
+          <div className="mb-8 flex justify-center">
+            <div className="relative">
+              <Image 
+                src="/yacht-club-logo.png" 
+                alt="WhaleTools" 
+                width={80} 
+                height={80}
+                className="object-contain opacity-90 logo-breathe"
+              />
+              <div className="absolute inset-0 logo-glow"></div>
+            </div>
+          </div>
           <h1 className="text-5xl md:text-7xl font-light mb-6 tracking-tight">
             About WhaleTools
           </h1>
@@ -38,6 +52,25 @@ export default function AboutPage() {
             Enterprise-grade multi-tenant commerce platform built for scale, speed, and reliability.
           </p>
         </div>
+
+        <style jsx>{`
+          @keyframes breathe {
+            0%, 100% { opacity: 0.9; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.02); }
+          }
+          @keyframes glow-pulse {
+            0%, 100% { opacity: 0; }
+            50% { opacity: 0.15; }
+          }
+          .logo-breathe {
+            animation: breathe 4s ease-in-out infinite;
+          }
+          .logo-glow {
+            background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+            animation: glow-pulse 4s ease-in-out infinite;
+            pointer-events: none;
+          }
+        `}</style>
       </section>
 
       {/* Mission */}

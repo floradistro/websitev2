@@ -3,8 +3,8 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Store, Shield, Zap, Globe, BarChart3, Palette, Users, TrendingUp, Activity } from "lucide-react";
-import { AreaChart, Area, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { ArrowRight, Store, Shield, Zap, Globe, BarChart3, Palette } from "lucide-react";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts';
 import dynamic from 'next/dynamic';
 
 const LogoAnimation = dynamic(() => import('@/components/LogoAnimation'), {
@@ -20,17 +20,6 @@ export default function HomePage() {
     transactions: 0,
     response: 0
   });
-
-  // Performance data
-  const performanceData = [
-    { time: '00:00', requests: 120, latency: 45 },
-    { time: '04:00', requests: 85, latency: 38 },
-    { time: '08:00', requests: 240, latency: 52 },
-    { time: '12:00', requests: 380, latency: 48 },
-    { time: '16:00', requests: 420, latency: 42 },
-    { time: '20:00', requests: 290, latency: 39 },
-    { time: '23:59', requests: 150, latency: 41 }
-  ];
 
   const growthData = [
     { month: 'Jan', vendors: 12 },
@@ -132,7 +121,7 @@ export default function HomePage() {
               />
               <span className="text-xl font-light tracking-tight">WhaleTools</span>
             </div>
-            <div className="flex items-center gap-6">
+            <div className="hidden md:flex items-center gap-6">
               <Link 
                 href="/about" 
                 className="text-sm text-white/60 hover:text-white transition-colors tracking-wide"
@@ -156,6 +145,14 @@ export default function HomePage() {
                 className="bg-white text-black px-6 py-2 rounded-full text-sm font-medium uppercase tracking-wider hover:bg-white/90 transition-all"
               >
                 Get Started
+              </Link>
+            </div>
+            <div className="flex md:hidden">
+              <Link 
+                href="/vendor/login" 
+                className="bg-white text-black px-4 py-2 rounded-full text-xs font-medium uppercase tracking-wider hover:bg-white/90 transition-all"
+              >
+                Start
               </Link>
             </div>
           </div>
@@ -284,166 +281,73 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Real-time Stats */}
+      {/* Stats Section */}
       <section className="py-20 px-4 relative z-10">
-        <div className="max-w-7xl mx-auto">
-          <div className="mb-12 fade-in text-center">
-            <h2 className="text-2xl font-thin text-white/90 tracking-tight mb-3">Platform Performance</h2>
-            <p className="text-white/40 text-xs font-light tracking-wide uppercase">Live Metrics · Updated in Real-Time</p>
-          </div>
-
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-12">
-            {/* Active Storefronts */}
-            <div className="minimal-glass subtle-glow p-6 hover:bg-white/[0.03] transition-all duration-300 group fade-in">
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-white/40 text-[11px] uppercase tracking-[0.2em] font-light">Storefronts</span>
-                <Store size={16} className="text-white/20 group-hover:text-white/30 transition-all duration-300" strokeWidth={1.5} />
-              </div>
-              <div className="text-3xl font-thin text-white/90 mb-2">
+        <div className="max-w-6xl mx-auto">
+          {/* Minimal Stats Grid */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-white/5 mb-20">
+            <div className="bg-black p-8 md:p-12 border border-white/5">
+              <div className="text-4xl md:text-5xl font-light text-white/90 mb-2">
                 {animatedStats.storefronts}
               </div>
-              <div className="text-white/30 text-[10px] font-light tracking-wider uppercase">Active Now</div>
+              <div className="text-white/30 text-xs uppercase tracking-[0.2em]">Storefronts</div>
             </div>
 
-            {/* Uptime */}
-            <div className="minimal-glass subtle-glow p-6 hover:bg-white/[0.03] transition-all duration-300 group fade-in" style={{ animationDelay: '0.1s' }}>
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-white/40 text-[11px] uppercase tracking-[0.2em] font-light">Uptime</span>
-                <Activity size={16} className="text-white/20 group-hover:text-white/30 transition-all duration-300" strokeWidth={1.5} />
-              </div>
-              <div className="text-3xl font-thin text-white/90 mb-2">
+            <div className="bg-black p-8 md:p-12 border border-white/5">
+              <div className="text-4xl md:text-5xl font-light text-white/90 mb-2">
                 {animatedStats.uptime}%
               </div>
-              <div className="text-white/30 text-[10px] font-light tracking-wider uppercase">Last 30 Days</div>
+              <div className="text-white/30 text-xs uppercase tracking-[0.2em]">Uptime</div>
             </div>
 
-            {/* Transactions */}
-            <div className="minimal-glass subtle-glow p-6 hover:bg-white/[0.03] transition-all duration-300 group fade-in" style={{ animationDelay: '0.2s' }}>
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-white/40 text-[11px] uppercase tracking-[0.2em] font-light">Transactions</span>
-                <TrendingUp size={16} className="text-white/20 group-hover:text-white/30 transition-all duration-300" strokeWidth={1.5} />
-              </div>
-              <div className="text-3xl font-thin text-white/90 mb-2">
+            <div className="bg-black p-8 md:p-12 border border-white/5">
+              <div className="text-4xl md:text-5xl font-light text-white/90 mb-2">
                 {animatedStats.transactions.toLocaleString()}
               </div>
-              <div className="text-white/30 text-[10px] font-light tracking-wider uppercase">Per Hour</div>
+              <div className="text-white/30 text-xs uppercase tracking-[0.2em]">Orders</div>
             </div>
 
-            {/* Response Time */}
-            <div className="minimal-glass subtle-glow p-6 hover:bg-white/[0.03] transition-all duration-300 group fade-in" style={{ animationDelay: '0.3s' }}>
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-white/40 text-[11px] uppercase tracking-[0.2em] font-light">Response</span>
-                <Zap size={16} className="text-white/20 group-hover:text-white/30 transition-all duration-300" strokeWidth={1.5} />
-              </div>
-              <div className="text-3xl font-thin text-white/90 mb-2">
+            <div className="bg-black p-8 md:p-12 border border-white/5">
+              <div className="text-4xl md:text-5xl font-light text-white/90 mb-2">
                 {animatedStats.response}ms
               </div>
-              <div className="text-white/30 text-[10px] font-light tracking-wider uppercase">Avg Latency</div>
+              <div className="text-white/30 text-xs uppercase tracking-[0.2em]">Response</div>
             </div>
           </div>
 
-          {/* Performance Charts */}
-          <div className="grid lg:grid-cols-2 gap-3">
-            {/* Request Volume Chart */}
-            <div className="minimal-glass subtle-glow p-6 fade-in" style={{ animationDelay: '0.4s' }}>
-              <div className="flex items-center justify-between mb-6">
-                <div>
-                  <h3 className="text-white/40 text-[11px] font-light tracking-[0.2em] uppercase mb-2">Request Volume</h3>
-                  <p className="text-white/30 text-[10px] font-light">24 HOUR CYCLE</p>
-                </div>
-                <div className="w-1 h-1 bg-white/20 rounded-full" />
-              </div>
-              <div className="h-64">
-                {mounted && (
-                  <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={performanceData}>
-                      <defs>
-                        <linearGradient id="requestGradient" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.3} />
-                          <stop offset="50%" stopColor="#a855f7" stopOpacity={0.2} />
-                          <stop offset="100%" stopColor="#0ea5e9" stopOpacity={0} />
-                        </linearGradient>
-                      </defs>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" vertical={false} />
-                      <XAxis 
-                        dataKey="time" 
-                        stroke="#ffffff40" 
-                        style={{ fontSize: '11px' }}
-                        tickLine={false}
-                      />
-                      <YAxis 
-                        stroke="#ffffff40" 
-                        style={{ fontSize: '11px' }}
-                        tickLine={false}
-                      />
-                      <Tooltip 
-                        contentStyle={{ 
-                          backgroundColor: '#000000', 
-                          border: '1px solid rgba(255,255,255,0.1)',
-                          borderRadius: '0px',
-                          fontSize: '12px'
-                        }}
-                        labelStyle={{ color: '#ffffff80' }}
-                      />
-                      <Area 
-                        type="monotone" 
-                        dataKey="requests" 
-                        stroke="#3b82f6" 
-                        strokeWidth={2}
-                        fill="url(#requestGradient)"
-                      />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                )}
-              </div>
+          {/* Single Monochrome Chart */}
+          <div className="border border-white/10 bg-white/[0.01]">
+            <div className="p-6 border-b border-white/10">
+              <h3 className="text-white/40 text-xs font-light tracking-[0.2em] uppercase">Growth</h3>
             </div>
-
-            {/* Vendor Growth Chart */}
-            <div className="minimal-glass subtle-glow p-6 fade-in" style={{ animationDelay: '0.5s' }}>
-              <div className="flex items-center justify-between mb-6">
-                <div>
-                  <h3 className="text-white/40 text-[11px] font-light tracking-[0.2em] uppercase mb-2">Vendor Growth</h3>
-                  <p className="text-white/30 text-[10px] font-light">LAST 6 MONTHS</p>
-                </div>
-                <div className="w-1 h-1 bg-white/20 rounded-full" />
-              </div>
-              <div className="h-64">
-                {mounted && (
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={growthData}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" vertical={false} />
-                      <XAxis 
-                        dataKey="month" 
-                        stroke="#ffffff40" 
-                        style={{ fontSize: '11px' }}
-                        tickLine={false}
-                      />
-                      <YAxis 
-                        stroke="#ffffff40" 
-                        style={{ fontSize: '11px' }}
-                        tickLine={false}
-                      />
-                      <Tooltip 
-                        contentStyle={{ 
-                          backgroundColor: '#000000', 
-                          border: '1px solid rgba(255,255,255,0.1)',
-                          borderRadius: '0px',
-                          fontSize: '12px'
-                        }}
-                        labelStyle={{ color: '#ffffff80' }}
-                      />
-                      <Line 
-                        type="monotone" 
-                        dataKey="vendors" 
-                        stroke="#a855f7" 
-                        strokeWidth={2}
-                        dot={{ fill: '#a855f7', r: 4 }}
-                        activeDot={{ r: 6, fill: '#a855f7' }}
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
-                )}
-              </div>
+            <div className="p-6 h-64">
+              {mounted && (
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={growthData}>
+                    <CartesianGrid strokeDasharray="1 1" stroke="#ffffff08" vertical={false} />
+                    <XAxis 
+                      dataKey="month" 
+                      stroke="#ffffff20" 
+                      style={{ fontSize: '10px' }}
+                      tickLine={false}
+                      axisLine={false}
+                    />
+                    <YAxis 
+                      stroke="#ffffff20" 
+                      style={{ fontSize: '10px' }}
+                      tickLine={false}
+                      axisLine={false}
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="vendors" 
+                      stroke="#ffffff" 
+                      strokeWidth={1}
+                      dot={false}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              )}
             </div>
           </div>
         </div>

@@ -1,3 +1,5 @@
+'use client';
+
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft } from "lucide-react";
@@ -30,11 +32,42 @@ export default function TermsPage() {
       {/* Content */}
       <section className="pt-32 pb-20 px-4">
         <div className="max-w-4xl mx-auto">
-          <h1 className="text-5xl md:text-7xl font-light mb-6 tracking-tight">
+          <div className="mb-8 flex justify-center md:justify-start">
+            <div className="relative">
+              <Image 
+                src="/yacht-club-logo.png" 
+                alt="WhaleTools" 
+                width={60} 
+                height={60}
+                className="object-contain opacity-90 logo-breathe"
+              />
+              <div className="absolute inset-0 logo-glow"></div>
+            </div>
+          </div>
+          <h1 className="text-5xl md:text-7xl font-light mb-6 tracking-tight text-center md:text-left">
             Terms of Service
           </h1>
-          <div className="h-[1px] w-32 bg-gradient-to-r from-transparent via-white/30 to-transparent mb-8"></div>
-          <p className="text-white/50 mb-12">Last updated: October 25, 2025</p>
+          <div className="h-[1px] w-32 bg-gradient-to-r from-transparent via-white/30 to-transparent mb-8 mx-auto md:mx-0"></div>
+          <p className="text-white/50 mb-12 text-center md:text-left">Last updated: October 25, 2025</p>
+
+          <style jsx>{`
+            @keyframes breathe {
+              0%, 100% { opacity: 0.9; transform: scale(1); }
+              50% { opacity: 1; transform: scale(1.02); }
+            }
+            @keyframes glow-pulse {
+              0%, 100% { opacity: 0; }
+              50% { opacity: 0.15; }
+            }
+            .logo-breathe {
+              animation: breathe 4s ease-in-out infinite;
+            }
+            .logo-glow {
+              background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+              animation: glow-pulse 4s ease-in-out infinite;
+              pointer-events: none;
+            }
+          `}</style>
 
           <div className="space-y-12 text-white/60 leading-relaxed">
             {/* Section 1 */}
