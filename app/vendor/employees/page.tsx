@@ -326,17 +326,17 @@ export default function VendorEmployees() {
 
       {/* Employees List */}
       {loading ? (
-        <div className="bg-[#111111] border border-white/10 p-12 text-center">
+        <div className="bg-black border border-white/10 p-12 text-center">
           <div className="text-white/40 text-sm">Loading...</div>
         </div>
       ) : employees.length === 0 ? (
-        <div className="bg-[#111111] border border-white/10 p-12 text-center">
+        <div className="bg-black border border-white/10 p-12 text-center">
           <Users size={32} className="text-white/20 mx-auto mb-3" />
           <div className="text-white/60 text-sm mb-2">No employees found</div>
           <div className="text-white/40 text-xs">Add your first employee to get started</div>
         </div>
       ) : (
-        <div className="bg-[#111111] border border-white/10">
+        <div className="bg-black border border-white/10">
           {employees.map((employee, index) => (
             <div
               key={employee.id}
@@ -347,7 +347,7 @@ export default function VendorEmployees() {
               {/* Mobile Layout */}
               <div className="lg:hidden space-y-3">
                 <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 bg-white/5 flex items-center justify-center flex-shrink-0 rounded">
+                  <div className="w-10 h-10 bg-white/5 flex items-center justify-center flex-shrink-0 rounded-[14px]">
                     <Users size={18} className="text-white/40" />
                   </div>
                   <div className="flex-1 min-w-0">
@@ -491,7 +491,7 @@ export default function VendorEmployees() {
                 type="text"
                 value={newEmployee.first_name}
                 onChange={(e) => setNewEmployee({ ...newEmployee, first_name: e.target.value })}
-                className="w-full bg-[#111111] border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
+                className="w-full bg-black border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
               />
             </div>
             <div>
@@ -500,7 +500,7 @@ export default function VendorEmployees() {
                 type="text"
                 value={newEmployee.last_name}
                 onChange={(e) => setNewEmployee({ ...newEmployee, last_name: e.target.value })}
-                className="w-full bg-[#111111] border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
+                className="w-full bg-black border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
               />
             </div>
           </div>
@@ -511,7 +511,7 @@ export default function VendorEmployees() {
               type="email"
               value={newEmployee.email}
               onChange={(e) => setNewEmployee({ ...newEmployee, email: e.target.value })}
-              className="w-full bg-[#111111] border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
+              className="w-full bg-black border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
             />
           </div>
 
@@ -522,7 +522,7 @@ export default function VendorEmployees() {
                 type="tel"
                 value={newEmployee.phone}
                 onChange={(e) => setNewEmployee({ ...newEmployee, phone: e.target.value })}
-                className="w-full bg-[#111111] border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
+                className="w-full bg-black border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
               />
             </div>
             <div>
@@ -531,7 +531,7 @@ export default function VendorEmployees() {
                 type="text"
                 value={newEmployee.employee_id}
                 onChange={(e) => setNewEmployee({ ...newEmployee, employee_id: e.target.value })}
-                className="w-full bg-[#111111] border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
+                className="w-full bg-black border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
               />
             </div>
           </div>
@@ -541,7 +541,7 @@ export default function VendorEmployees() {
             <select
               value={newEmployee.role}
               onChange={(e) => setNewEmployee({ ...newEmployee, role: e.target.value })}
-              className="w-full bg-[#111111] border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
+              className="w-full bg-black border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
             >
               {VENDOR_ROLES.map(role => (
                 <option key={role.value} value={role.value}>
@@ -581,7 +581,7 @@ export default function VendorEmployees() {
                   type="text"
                   value={editingEmployee.first_name || ''}
                   onChange={(e) => setEditingEmployee({ ...editingEmployee, first_name: e.target.value })}
-                  className="w-full bg-[#111111] border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
+                  className="w-full bg-black border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
                 />
               </div>
               <div>
@@ -590,7 +590,7 @@ export default function VendorEmployees() {
                   type="text"
                   value={editingEmployee.last_name || ''}
                   onChange={(e) => setEditingEmployee({ ...editingEmployee, last_name: e.target.value })}
-                  className="w-full bg-[#111111] border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
+                  className="w-full bg-black border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
                 />
               </div>
             </div>
@@ -601,7 +601,7 @@ export default function VendorEmployees() {
                 type="tel"
                 value={editingEmployee.phone || ''}
                 onChange={(e) => setEditingEmployee({ ...editingEmployee, phone: e.target.value })}
-                className="w-full bg-[#111111] border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
+                className="w-full bg-black border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
               />
             </div>
 
@@ -611,7 +611,7 @@ export default function VendorEmployees() {
                 <select
                   value={editingEmployee.role}
                   onChange={(e) => setEditingEmployee({ ...editingEmployee, role: e.target.value })}
-                  className="w-full bg-[#111111] border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
+                  className="w-full bg-black border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
                 >
                   {VENDOR_ROLES.map(role => (
                     <option key={role.value} value={role.value}>
@@ -626,7 +626,7 @@ export default function VendorEmployees() {
                   type="text"
                   value={editingEmployee.employee_id || ''}
                   onChange={(e) => setEditingEmployee({ ...editingEmployee, employee_id: e.target.value })}
-                  className="w-full bg-[#111111] border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
+                  className="w-full bg-black border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
                 />
               </div>
             </div>

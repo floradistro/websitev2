@@ -35,7 +35,7 @@ export default function VendorLogin() {
   }
 
   return (
-    <div className="bg-[#1a1a1a] flex flex-col" style={{ minHeight: '100vh' }}>
+    <div className="bg-black flex flex-col" style={{ minHeight: '100vh' }}>
       {/* PWA Safe Area Spacer */}
       <div 
         className="fixed top-0 left-0 right-0 bg-black z-[130] pointer-events-none"
@@ -44,7 +44,7 @@ export default function VendorLogin() {
       
       {/* Breadcrumb Navigation */}
       <div 
-        className="border-b border-white/10 relative z-10 sticky bg-[#1a1a1a]"
+        className="border-b border-white/10 relative z-10 sticky bg-black"
         style={{ top: 'env(safe-area-inset-top, 0px)' }}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
@@ -83,7 +83,7 @@ export default function VendorLogin() {
         </div>
 
         {/* Login Form */}
-        <div className="bg-[#2a2a2a] border border-white/10 p-8">
+        <div className="bg-white/5 border border-white/10 p-8">
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Error Message */}
             {error && (

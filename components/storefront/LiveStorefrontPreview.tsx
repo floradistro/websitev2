@@ -2,7 +2,7 @@
 
 import { HeroSection, ProcessSection, AboutStorySection } from './content-sections';
 import { VendorStorefront } from '@/lib/storefront/get-vendor';
-import ProductsCarousel from '@/components/ProductsCarousel';
+// import ProductsCarousel from '@/components/ProductsCarousel'; // Component doesn't exist
 import { StorefrontHeader } from './StorefrontHeader';
 import { StorefrontFooter } from './StorefrontFooter';
 import { CartProvider } from '@/context/CartContext';

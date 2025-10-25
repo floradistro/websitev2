@@ -1,15 +1,15 @@
 import { headers } from 'next/headers';
 import { getVendorFromHeaders, getVendorStorefront } from '@/lib/storefront/get-vendor';
-import { getTemplateComponents } from '@/lib/storefront/template-loader';
 import { StorefrontThemeProvider } from '@/components/storefront/ThemeProvider';
 import { PreservePreviewMode } from '@/components/storefront/PreservePreviewMode';
-import { LiveEditingProvider } from '@/components/storefront/LiveEditingProvider';
 import { CartProvider } from "@/context/CartContext";
 import { AuthProvider } from "@/context/AuthContext";
 import { WishlistProvider } from "@/context/WishlistContext";
 import LoadingBar from "@/components/LoadingBar";
 import NotificationToast from "@/components/NotificationToast";
 import { notFound } from 'next/navigation';
+import { getServiceSupabase } from '@/lib/supabase/client';
+import { ComponentBasedPageRenderer } from '@/components/storefront/ComponentBasedPageRenderer';
 import '@/app/globals.css';
 import './storefront.css';
 
@@ -60,36 +60,84 @@ export default async function StorefrontLayout({
     notFound();
   }
 
-  // Load template components based on vendor's template_id
-  const templateId = vendor.template_id || 'default';
-  const { Header, Footer } = getTemplateComponents(templateId);
+  // Fetch header and footer sections from component registry
+  const supabase = getServiceSupabase();
+  
+  // Get header section
+  const { data: headerSections } = await supabase
+    .from('vendor_storefront_sections')
+    .select('*')
+    .eq('vendor_id', vendor.id)
+    .eq('section_key', 'header')
+    .eq('page_type', 'all')
+    .eq('is_enabled', true);
+  
+  // Get footer section
+  const { data: footerSections } = await supabase
+    .from('vendor_storefront_sections')
+    .select('*')
+    .eq('vendor_id', vendor.id)
+    .eq('section_key', 'footer')
+    .eq('page_type', 'all')
+    .eq('is_enabled', true);
+  
+  // Get header component instances
+  const headerSectionIds = headerSections?.map(s => s.id) || [];
+  const { data: headerInstances } = headerSectionIds.length > 0 ? await supabase
+    .from('vendor_component_instances')
+    .select('*')
+    .eq('vendor_id', vendor.id)
+    .in('section_id', headerSectionIds)
+    .eq('is_enabled', true)
+    .order('position_order') : { data: [] };
+  
+  // Get footer component instances
+  const footerSectionIds = footerSections?.map(s => s.id) || [];
+  const { data: footerInstances } = footerSectionIds.length > 0 ? await supabase
+    .from('vendor_component_instances')
+    .select('*')
+    .eq('vendor_id', vendor.id)
+    .in('section_id', footerSectionIds)
+    .eq('is_enabled', true)
+    .order('position_order') : { data: [] };
 
-  // Fetch ALL content sections for live editing (across all pages)
-  const { getVendorPageSections } = await import('@/lib/storefront/content-api');
-  const allSections = await Promise.all([
-    getVendorPageSections(vendorId, 'home'),
-    getVendorPageSections(vendorId, 'about'),
-    getVendorPageSections(vendorId, 'contact'),
-    getVendorPageSections(vendorId, 'faq'),
-    getVendorPageSections(vendorId, 'global'),
-  ]).then(results => results.flat());
-
-  // Render complete vendor storefront with database-driven customization
+  // Component Registry Architecture - All pages use ComponentBasedPageRenderer
   return (
     <AuthProvider>
       <WishlistProvider>
         <CartProvider>
-          <LiveEditingProvider initialSections={allSections} isPreviewMode={true}>
-            <StorefrontThemeProvider vendor={vendor}>
-              <PreservePreviewMode />
-              <div className="storefront-container bg-black min-h-screen">
-                <Header vendor={vendor} />
-                <main className="storefront-main">
-                  {children}
-                </main>
-              </div>
-            </StorefrontThemeProvider>
-          </LiveEditingProvider>
+          <StorefrontThemeProvider vendor={vendor}>
+            <PreservePreviewMode />
+            <LoadingBar />
+            <NotificationToast />
+            <div className="storefront-container bg-black min-h-screen">
+              {/* Header from Component Registry */}
+              {headerSections && headerSections.length > 0 && (
+                <ComponentBasedPageRenderer
+                  vendor={vendor}
+                  pageType="all"
+                  sections={headerSections}
+                  componentInstances={headerInstances || []}
+                  isPreview={false}
+                />
+              )}
+              
+              <main className="storefront-main">
+                {children}
+              </main>
+              
+              {/* Footer from Component Registry */}
+              {footerSections && footerSections.length > 0 && (
+                <ComponentBasedPageRenderer
+                  vendor={vendor}
+                  pageType="all"
+                  sections={footerSections}
+                  componentInstances={footerInstances || []}
+                  isPreview={false}
+                />
+              )}
+            </div>
+          </StorefrontThemeProvider>
         </CartProvider>
       </WishlistProvider>
     </AuthProvider>

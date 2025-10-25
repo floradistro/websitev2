@@ -42,7 +42,6 @@ export async function fetchWithRetry<T>(
         ? delayMs * Math.pow(2, attempt)
         : delayMs;
 
-      console.log(`Retry attempt ${attempt + 1}/${maxRetries} after ${delay}ms...`);
       await new Promise(resolve => setTimeout(resolve, delay));
     }
   }

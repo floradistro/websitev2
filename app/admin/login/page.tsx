@@ -50,7 +50,7 @@ export default function AdminLogin() {
           <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-white/[0.02] rounded-lg blur-xl" />
           <div className="relative bg-gradient-to-br from-black/50 to-black/30 backdrop-blur-2xl border border-white/10 p-10 rounded-lg shadow-2xl">
             {error && (
-              <div className="mb-6 bg-gradient-to-r from-white/10 to-white/5 border border-white/20 p-4 flex items-start gap-3 rounded">
+              <div className="mb-6 bg-gradient-to-r from-white/10 to-white/5 border border-white/20 p-4 flex items-start gap-3 rounded-[14px]">
                 <AlertCircle size={18} className="text-white/70 flex-shrink-0 mt-0.5" strokeWidth={1.5} />
                 <p className="text-white/60 text-sm font-light">{error}</p>
               </div>
@@ -67,7 +67,7 @@ export default function AdminLogin() {
                   onChange={(e) => setUsername(e.target.value)}
                   placeholder="admin"
                   autoComplete="username"
-                  className="w-full bg-black/40 border border-white/10 text-white px-5 py-4 focus:outline-none focus:border-white/30 focus:bg-black/60 transition-all duration-300 rounded font-light placeholder:text-white/20 backdrop-blur-sm"
+                  className="w-full bg-black/40 border border-white/10 text-white px-5 py-4 focus:outline-none focus:border-white/30 focus:bg-black/60 transition-all duration-300 rounded-[14px] font-light placeholder:text-white/20 backdrop-blur-sm"
                   required
                 />
               </div>
@@ -81,7 +81,7 @@ export default function AdminLogin() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   autoComplete="current-password"
-                  className="w-full bg-black/40 border border-white/10 text-white px-5 py-4 focus:outline-none focus:border-white/30 focus:bg-black/60 transition-all duration-300 rounded font-light placeholder:text-white/20 backdrop-blur-sm"
+                  className="w-full bg-black/40 border border-white/10 text-white px-5 py-4 focus:outline-none focus:border-white/30 focus:bg-black/60 transition-all duration-300 rounded-[14px] font-light placeholder:text-white/20 backdrop-blur-sm"
                   required
                 />
               </div>
@@ -89,7 +89,7 @@ export default function AdminLogin() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-gradient-to-r from-white/15 to-white/10 hover:from-white/20 hover:to-white/15 text-white border border-white/20 hover:border-white/30 px-6 py-4 text-xs font-light uppercase tracking-[0.2em] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed rounded shadow-lg hover:shadow-[0_0_30px_rgba(255,255,255,0.1)] mt-8"
+                className="w-full bg-gradient-to-r from-white/15 to-white/10 hover:from-white/20 hover:to-white/15 text-white border border-white/20 hover:border-white/30 px-6 py-4 text-xs font-light uppercase tracking-[0.2em] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed rounded-[14px] shadow-lg hover:shadow-[0_0_30px_rgba(255,255,255,0.1)] mt-8"
               >
                 {loading ? (
                   <span className="flex items-center justify-center gap-2">

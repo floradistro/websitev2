@@ -1,4 +1,4 @@
-import ProductCard from '../ProductCard'; // Use main ProductCard component
+import ProductCard from './StorefrontProductCard'; // Use storefront ProductCard component
 
 interface Product {
   id: string;

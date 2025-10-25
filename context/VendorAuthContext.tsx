@@ -36,8 +36,10 @@ export function VendorAuthProvider({ children }: { children: React.ReactNode }) 
 
   // Load vendor from localStorage on mount first
   useEffect(() => {
+    let mounted = true;
+    
     const savedVendor = localStorage.getItem('vendor_user');
-    if (savedVendor) {
+    if (savedVendor && mounted) {
       try {
         const vendorData = JSON.parse(savedVendor);
         setVendor(vendorData);
@@ -48,7 +50,18 @@ export function VendorAuthProvider({ children }: { children: React.ReactNode }) 
         localStorage.removeItem('vendor_user');
       }
     }
-    checkAuth();
+    
+    async function checkAuthSafe() {
+      if (mounted) {
+        await checkAuth();
+      }
+    }
+    
+    checkAuthSafe();
+    
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   async function checkAuth() {

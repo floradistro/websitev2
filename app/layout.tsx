@@ -1,13 +1,14 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { Suspense } from "react";
 import "./globals.css";
 import "./(storefront)/storefront.css";
 import NotificationToast from "@/components/NotificationToast";
 import LoadingBar from "@/components/LoadingBar";
 import Providers from "./providers";
 
-// Prevent static generation errors
-export const dynamic = 'force-dynamic';
+// Enable static optimization for better performance
+export const dynamic = 'auto';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,33 +31,33 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'),
-  title: "Yacht Club | Premium Marketplace",
-  description: "Shop premium cannabis products including flower, concentrates, edibles, vapes, and beverages. Direct from our facilities with next-day regional delivery. Farm Bill compliant.",
+  title: "WhaleTools | Multi-Tenant Commerce Platform",
+  description: "Enterprise-grade multi-tenant commerce platform. Build, manage, and scale unlimited vendor storefronts with visual builders, custom domains, and advanced analytics.",
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
-    title: 'Yacht Club',
+    title: 'WhaleTools',
     startupImage: '/yacht-club-logo.png',
   },
   openGraph: {
-    title: "Yacht Club | Premium Marketplace",
-    description: "Premium cannabis products with fast shipping. Direct sourcing, volume pricing, always fresh.",
+    title: "WhaleTools | Multi-Tenant Commerce Platform",
+    description: "Enterprise-grade multi-tenant commerce platform. Build, manage, and scale unlimited vendor storefronts.",
     type: "website",
-    siteName: "Yacht Club",
+    siteName: "WhaleTools",
     images: [
       {
         url: '/api/og-image',
         width: 1200,
         height: 630,
-        alt: 'Yacht Club',
+        alt: 'WhaleTools',
       }
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Yacht Club | Premium Marketplace",
-    description: "Premium cannabis products with fast shipping.",
+    title: "WhaleTools | Multi-Tenant Commerce Platform",
+    description: "Enterprise-grade platform for unlimited vendor storefronts.",
     images: ['/api/og-image'],
   },
   icons: {
@@ -83,19 +84,21 @@ export default function RootLayout({
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <meta name="apple-mobile-web-app-title" content="Yacht Club" />
+        <meta name="apple-mobile-web-app-title" content="WhaleTools" />
         <link rel="apple-touch-icon" href="/yacht-club-logo.png" />
         <link rel="apple-touch-startup-image" href="/yacht-club-logo.png" />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col overflow-x-hidden min-h-screen`}
         style={{ 
-          backgroundColor: '#1a1a1a' 
+          backgroundColor: '#000000' 
         }}
         suppressHydrationWarning
       >
         <Providers>
-          <LoadingBar />
+          <Suspense fallback={null}>
+            <LoadingBar />
+          </Suspense>
           {children}
           <NotificationToast />
         </Providers>

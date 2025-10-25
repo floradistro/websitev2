@@ -22,7 +22,7 @@ interface ProductDetailProps {
   product: Product;
 }
 
-export function ProductDetail({ product }: ProductDetailProps) {
+export default function ProductDetail({ product }: ProductDetailProps) {
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
 

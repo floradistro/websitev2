@@ -118,14 +118,14 @@ export default function BulkWholesalePricing() {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Search products..."
-                className="w-full bg-white/5 border border-white/10 rounded pl-10 pr-4 py-2 text-white placeholder-white/40 focus:outline-none focus:border-white/30"
+                className="w-full bg-white/5 border border-white/10 rounded-[14px] pl-10 pr-4 py-2 text-white placeholder-white/40 focus:outline-none focus:border-white/30"
               />
             </div>
 
             <select
               value={filter}
               onChange={(e) => setFilter(e.target.value as any)}
-              className="bg-white/5 border border-white/10 rounded px-4 py-2 text-white focus:outline-none focus:border-white/30"
+              className="bg-white/5 border border-white/10 rounded-[14px] px-4 py-2 text-white focus:outline-none focus:border-white/30"
             >
               <option value="all">All Products</option>
               <option value="wholesale">Wholesale Only</option>
@@ -194,7 +194,7 @@ export default function BulkWholesalePricing() {
                     </td>
                     <td className="px-4 py-3 text-center">
                       {product.tier_count && product.tier_count > 0 ? (
-                        <span className="inline-flex items-center gap-1 px-2 py-1 bg-purple-500/20 text-purple-400 rounded text-xs">
+                        <span className="inline-flex items-center gap-1 px-2 py-1 bg-purple-500/20 text-purple-400 rounded-[14px] text-xs">
                           <Award size={12} />
                           {product.tier_count}
                         </span>
@@ -204,15 +204,15 @@ export default function BulkWholesalePricing() {
                     </td>
                     <td className="px-4 py-3 text-center">
                       {product.wholesale_only ? (
-                        <span className="inline-flex items-center gap-1 px-2 py-1 bg-blue-500/20 text-blue-400 rounded text-xs">
+                        <span className="inline-flex items-center gap-1 px-2 py-1 bg-blue-500/20 text-blue-400 rounded-[14px] text-xs">
                           Wholesale
                         </span>
                       ) : product.is_wholesale ? (
-                        <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-500/20 text-green-400 rounded text-xs">
+                        <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-500/20 text-green-400 rounded-[14px] text-xs">
                           Both
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 px-2 py-1 bg-white/10 text-white/60 rounded text-xs">
+                        <span className="inline-flex items-center gap-1 px-2 py-1 bg-white/10 text-white/60 rounded-[14px] text-xs">
                           Retail
                         </span>
                       )}
@@ -220,7 +220,7 @@ export default function BulkWholesalePricing() {
                     <td className="px-4 py-3 text-right">
                       <button
                         onClick={() => router.push(`/admin/products/${product.id}/wholesale-pricing`)}
-                        className="inline-flex items-center gap-2 px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded text-sm transition-all"
+                        className="inline-flex items-center gap-2 px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-[14px] text-sm transition-all"
                       >
                         <Edit2 size={14} />
                         Edit Pricing

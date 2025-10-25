@@ -267,12 +267,12 @@ export default function VendorBranding() {
           {/* Left Column - Settings */}
           <div className="space-y-6">
             {/* Brand Logo */}
-            <div className="bg-[#1a1a1a] border border-white/5 p-6">
+            <div className="bg-black border border-white/5 p-6">
               <h2 className="text-white font-medium mb-4">Brand Logo</h2>
               
               <div className="space-y-4">
                 {logoPreview && (
-                  <div className="relative w-32 h-32 bg-white/5 border border-white/10 rounded overflow-hidden">
+                  <div className="relative w-32 h-32 bg-white/5 border border-white/10 rounded-[14px] overflow-hidden">
                     <img src={logoPreview} alt="Brand Logo" className="w-full h-full object-contain p-2" />
                     <button
                       type="button"
@@ -280,7 +280,7 @@ export default function VendorBranding() {
                         setLogoPreview('');
                         setLogoFile(null);
                       }}
-                      className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded hover:bg-red-600"
+                      className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-[14px] hover:bg-red-600"
                     >
                       <X size={16} />
                     </button>
@@ -288,7 +288,7 @@ export default function VendorBranding() {
                 )}
                 
                 <label className="block cursor-pointer">
-                  <div className="border-2 border-dashed border-white/10 p-6 text-center hover:border-white/20 transition-colors bg-[#0a0a0a]">
+                  <div className="border-2 border-dashed border-white/10 p-6 text-center hover:border-white/20 transition-colors bg-black/98">
                     <Upload size={24} className="text-white/40 mx-auto mb-2" />
                     <div className="text-white/80 text-sm">Upload Brand Logo</div>
                     <div className="text-white/40 text-xs mt-1">PNG, JPG, WEBP • Max 10MB</div>
@@ -304,12 +304,12 @@ export default function VendorBranding() {
             </div>
 
             {/* Hero Banner */}
-            <div className="bg-[#1a1a1a] border border-white/5 p-6">
+            <div className="bg-black border border-white/5 p-6">
               <h2 className="text-white font-medium mb-4">Hero Banner</h2>
               
               <div className="space-y-4">
                 {bannerPreview && (
-                  <div className="relative w-full h-48 bg-white/5 border border-white/10 rounded overflow-hidden">
+                  <div className="relative w-full h-48 bg-white/5 border border-white/10 rounded-[14px] overflow-hidden">
                     <img src={bannerPreview} alt="Banner" className="w-full h-full object-cover" />
                     <button
                       type="button"
@@ -317,7 +317,7 @@ export default function VendorBranding() {
                         setBannerPreview('');
                         setBannerFile(null);
                       }}
-                      className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded hover:bg-red-600"
+                      className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-[14px] hover:bg-red-600"
                     >
                       <X size={16} />
                     </button>
@@ -325,7 +325,7 @@ export default function VendorBranding() {
                 )}
                 
                 <label className="block cursor-pointer">
-                  <div className="border-2 border-dashed border-white/10 p-6 text-center hover:border-white/20 transition-colors bg-[#0a0a0a]">
+                  <div className="border-2 border-dashed border-white/10 p-6 text-center hover:border-white/20 transition-colors bg-black/98">
                     <Upload size={24} className="text-white/40 mx-auto mb-2" />
                     <div className="text-white/80 text-sm">Upload Hero Banner</div>
                     <div className="text-white/40 text-xs mt-1">1920x600px recommended • Max 10MB</div>
@@ -341,7 +341,7 @@ export default function VendorBranding() {
             </div>
 
             {/* Store Information */}
-            <div className="bg-[#1a1a1a] border border-white/5 p-6">
+            <div className="bg-black border border-white/5 p-6">
               <h2 className="text-white font-medium mb-4">Store Information</h2>
               
               <div className="space-y-4">
@@ -352,7 +352,7 @@ export default function VendorBranding() {
                     value={branding.tagline}
                     onChange={(e) => setBranding({ ...branding, tagline: e.target.value })}
                     placeholder="Your brand's tagline"
-                    className="w-full bg-[#0a0a0a] border border-white/5 text-white px-4 py-2 focus:outline-none focus:border-white/20"
+                    className="w-full bg-black/98 border border-white/5 text-white px-4 py-2 focus:outline-none focus:border-white/20"
                   />
                 </div>
 
@@ -363,14 +363,14 @@ export default function VendorBranding() {
                     onChange={(e) => setBranding({ ...branding, about: e.target.value })}
                     placeholder="Tell customers about your brand..."
                     rows={4}
-                    className="w-full bg-[#0a0a0a] border border-white/5 text-white px-4 py-2 focus:outline-none focus:border-white/20 resize-none"
+                    className="w-full bg-black/98 border border-white/5 text-white px-4 py-2 focus:outline-none focus:border-white/20 resize-none"
                   />
                 </div>
               </div>
             </div>
 
             {/* Typography */}
-            <div className="bg-[#1a1a1a] border border-white/5 p-6">
+            <div className="bg-black border border-white/5 p-6">
               <h2 className="text-white font-medium mb-4">Typography</h2>
               
               <div>
@@ -378,7 +378,7 @@ export default function VendorBranding() {
                 <select
                   value={branding.customFont}
                   onChange={(e) => setBranding({ ...branding, customFont: e.target.value })}
-                  className="w-full bg-[#0a0a0a] border border-white/5 text-white px-4 py-2 focus:outline-none focus:border-white/20"
+                  className="w-full bg-black/98 border border-white/5 text-white px-4 py-2 focus:outline-none focus:border-white/20"
                 >
                   {fontOptions.map(font => (
                     <option key={font} value={font}>{font}</option>
@@ -388,7 +388,7 @@ export default function VendorBranding() {
             </div>
 
             {/* Brand Colors */}
-            <div className="bg-[#1a1a1a] border border-white/5 p-6">
+            <div className="bg-black border border-white/5 p-6">
               <h2 className="text-white font-medium mb-4">Brand Colors</h2>
               
               <div className="grid grid-cols-2 gap-4">
@@ -405,7 +405,7 @@ export default function VendorBranding() {
                       type="text"
                       value={branding.primaryColor}
                       onChange={(e) => setBranding({ ...branding, primaryColor: e.target.value })}
-                      className="flex-1 bg-[#0a0a0a] border border-white/5 text-white px-3 py-2 text-sm focus:outline-none focus:border-white/20"
+                      className="flex-1 bg-black/98 border border-white/5 text-white px-3 py-2 text-sm focus:outline-none focus:border-white/20"
                     />
                   </div>
                 </div>
@@ -423,7 +423,7 @@ export default function VendorBranding() {
                       type="text"
                       value={branding.secondaryColor}
                       onChange={(e) => setBranding({ ...branding, secondaryColor: e.target.value })}
-                      className="flex-1 bg-[#0a0a0a] border border-white/5 text-white px-3 py-2 text-sm focus:outline-none focus:border-white/20"
+                      className="flex-1 bg-black/98 border border-white/5 text-white px-3 py-2 text-sm focus:outline-none focus:border-white/20"
                     />
                   </div>
                 </div>
@@ -441,7 +441,7 @@ export default function VendorBranding() {
                       type="text"
                       value={branding.accentColor}
                       onChange={(e) => setBranding({ ...branding, accentColor: e.target.value })}
-                      className="flex-1 bg-[#0a0a0a] border border-white/5 text-white px-3 py-2 text-sm focus:outline-none focus:border-white/20"
+                      className="flex-1 bg-black/98 border border-white/5 text-white px-3 py-2 text-sm focus:outline-none focus:border-white/20"
                     />
                   </div>
                 </div>
@@ -459,7 +459,7 @@ export default function VendorBranding() {
                       type="text"
                       value={branding.textColor}
                       onChange={(e) => setBranding({ ...branding, textColor: e.target.value })}
-                      className="flex-1 bg-[#0a0a0a] border border-white/5 text-white px-3 py-2 text-sm focus:outline-none focus:border-white/20"
+                      className="flex-1 bg-black/98 border border-white/5 text-white px-3 py-2 text-sm focus:outline-none focus:border-white/20"
                     />
                   </div>
                 </div>
@@ -467,7 +467,7 @@ export default function VendorBranding() {
             </div>
 
             {/* Social Links */}
-            <div className="bg-[#1a1a1a] border border-white/5 p-6">
+            <div className="bg-black border border-white/5 p-6">
               <h2 className="text-white font-medium mb-4">Social Media</h2>
               
               <div className="space-y-4">
@@ -478,7 +478,7 @@ export default function VendorBranding() {
                     value={branding.website}
                     onChange={(e) => setBranding({ ...branding, website: e.target.value })}
                     placeholder="https://yourbrand.com"
-                    className="w-full bg-[#0a0a0a] border border-white/5 text-white px-4 py-2 focus:outline-none focus:border-white/20"
+                    className="w-full bg-black/98 border border-white/5 text-white px-4 py-2 focus:outline-none focus:border-white/20"
                   />
                 </div>
 
@@ -489,7 +489,7 @@ export default function VendorBranding() {
                     value={branding.instagram}
                     onChange={(e) => setBranding({ ...branding, instagram: e.target.value })}
                     placeholder="@yourbrand"
-                    className="w-full bg-[#0a0a0a] border border-white/5 text-white px-4 py-2 focus:outline-none focus:border-white/20"
+                    className="w-full bg-black/98 border border-white/5 text-white px-4 py-2 focus:outline-none focus:border-white/20"
                   />
                 </div>
 
@@ -500,7 +500,7 @@ export default function VendorBranding() {
                     value={branding.facebook}
                     onChange={(e) => setBranding({ ...branding, facebook: e.target.value })}
                     placeholder="yourbrand"
-                    className="w-full bg-[#0a0a0a] border border-white/5 text-white px-4 py-2 focus:outline-none focus:border-white/20"
+                    className="w-full bg-black/98 border border-white/5 text-white px-4 py-2 focus:outline-none focus:border-white/20"
                   />
                 </div>
               </div>
@@ -545,7 +545,7 @@ export default function VendorBranding() {
 
           {/* Right Column - Preview */}
           <div className="lg:sticky lg:top-8 h-fit">
-            <div className="bg-[#1a1a1a] border border-white/5 overflow-hidden">
+            <div className="bg-black border border-white/5 overflow-hidden">
               <div className="border-b border-white/5 p-4">
                 <h3 className="text-white/90 text-xs uppercase tracking-wider">Storefront Preview</h3>
               </div>

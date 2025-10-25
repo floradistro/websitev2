@@ -372,7 +372,7 @@ export default function FieldGroupsPage() {
 
             <div className="space-y-4">
               {fieldGroups.map((group) => (
-                <div key={group.id} className="bg-[#111111] border border-white/10">
+                <div key={group.id} className="bg-black border border-white/10">
                   <div className="p-4 flex items-center justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-1">
@@ -468,7 +468,7 @@ export default function FieldGroupsPage() {
 
             <div className="space-y-4">
               {assignments.map((assignment) => (
-                <div key={assignment.id} className="bg-[#111111] border border-white/10 p-4">
+                <div key={assignment.id} className="bg-black border border-white/10 p-4">
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
@@ -517,7 +517,7 @@ export default function FieldGroupsPage() {
       {/* Field Group Editor Modal */}
       {showGroupEditor && editingGroup && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-          <div className="bg-[#111111] border border-white/10 w-full max-w-4xl max-h-[95vh] flex flex-col">
+          <div className="bg-black border border-white/10 w-full max-w-4xl max-h-[95vh] flex flex-col">
             <div className="p-6 border-b border-white/10 flex items-center justify-between flex-shrink-0">
               <h2 className="text-xl font-bold">
                 {editingGroup.id ? 'Edit Field Group' : 'New Field Group'}
@@ -777,7 +777,7 @@ export default function FieldGroupsPage() {
       {/* Assignment Modal */}
       {showAssignmentModal && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-          <div className="bg-[#111111] border border-white/10 w-full max-w-md max-h-[95vh] flex flex-col">
+          <div className="bg-black border border-white/10 w-full max-w-md max-h-[95vh] flex flex-col">
             <div className="p-6 border-b border-white/10 flex items-center justify-between flex-shrink-0">
               <h2 className="text-xl font-bold">Assign Field Group</h2>
               <button

@@ -64,8 +64,6 @@ export async function middleware(request: NextRequest) {
 
   // Check if this is a custom vendor domain
   try {
-    console.log('🔍 Middleware - Checking domain:', domain);
-    
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -79,8 +77,6 @@ export async function middleware(request: NextRequest) {
       .eq('verified', true)
       .eq('is_active', true)
       .single();
-
-    console.log('📊 Domain lookup result:', { domainRecord, domainError });
 
     if (domainRecord && !domainError) {
       // Get vendor to check if site is hidden
@@ -98,8 +94,6 @@ export async function middleware(request: NextRequest) {
       }
       
       // Custom domain found - rewrite to /storefront AND inject tenant context
-      console.log('✅ Custom domain detected! Vendor ID:', domainRecord.vendor_id);
-      console.log('🔀 Rewriting to /storefront/* + injecting tenant context');
       
       const url = request.nextUrl.clone();
       // Only prepend /storefront if not already there
@@ -116,8 +110,6 @@ export async function middleware(request: NextRequest) {
       response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
       
       return response;
-    } else {
-      console.log('❌ No custom domain match found');
     }
 
     // Check if this is a subdomain storefront (vendor-slug.yachtclub.com)
@@ -160,7 +152,7 @@ export async function middleware(request: NextRequest) {
       }
     }
   } catch (error) {
-    console.error('Middleware error:', error);
+    // Silent fail - continue to default routing
   }
 
   // VENDOR PARAM: Check for ?vendor param on /storefront (fallback for testing/preview)
@@ -196,11 +188,10 @@ export async function middleware(request: NextRequest) {
           response.headers.set('X-Frame-Options', 'SAMEORIGIN');
           response.headers.set('X-Content-Type-Options', 'nosniff');
           response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
-          console.log(`✅ Vendor param - ${vendorSlug} → ${vendor.id}`);
           return response;
         }
       } catch (error) {
-        console.error('Vendor param lookup error:', error);
+        // Silent fail
       }
     }
     
@@ -210,10 +201,20 @@ export async function middleware(request: NextRequest) {
     response.headers.set('X-Frame-Options', 'SAMEORIGIN');
     response.headers.set('X-Content-Type-Options', 'nosniff');
     response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
-    console.log('📋 Blank template preview mode');
     return response;
   }
 
+  // WhaleTools platform landing page (root domain only)
+  if (isYachtClubDomain && pathname === '/') {
+    const response = NextResponse.next();
+    response.headers.set('x-tenant-type', 'whaletools');
+    response.headers.set('X-Frame-Options', 'SAMEORIGIN');
+    response.headers.set('X-Content-Type-Options', 'nosniff');
+    response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+    
+    return response;
+  }
+  
   // Default: Continue to main Yacht Club marketplace
   const response = NextResponse.next();
   response.headers.set('x-tenant-type', 'marketplace');
@@ -221,7 +222,6 @@ export async function middleware(request: NextRequest) {
   response.headers.set('X-Content-Type-Options', 'nosniff');
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
   
-  console.log('🏪 Marketplace request');
   return response;
 }
 

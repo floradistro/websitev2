@@ -15,10 +15,11 @@ import { CodeEditorField } from '@/components/fields/CodeEditorField';
 
 export interface FieldSchema {
   id: string;
-  type: 'text' | 'textarea' | 'rich_text' | 'number' | 'color' | 'select' | 'boolean' | 'image' | 'url' | 'icon_picker' | 'array' | 'product_picker' | 'category_picker';
+  type: 'text' | 'textarea' | 'rich_text' | 'number' | 'color' | 'select' | 'boolean' | 'image' | 'url' | 'icon_picker' | 'array' | 'product_picker' | 'category_picker' | 'pricing_display' | 'location_picker' | 'code_editor' | string;
   label: string;
   placeholder?: string;
   default?: any;
+  default_value?: any;
   required?: boolean;
   min?: number;
   max?: number;
@@ -28,6 +29,7 @@ export interface FieldSchema {
   options?: string[] | { value: string; label: string }[];
   depends_on?: Record<string, any>; // Conditional visibility
   item_schema?: Record<string, any>; // For array fields
+  [key: string]: any; // Allow additional properties for extended field types
 }
 
 interface FieldRendererProps {
@@ -224,7 +226,7 @@ export function FieldRenderer({ field, value, onChange, allValues = {} }: FieldR
           onChange={onChange}
           vendorId={allValues.vendor_id || ''}
           maxSelections={field.max_items}
-          filter={field.filter}
+          filter={(field as any).filter}
           label={field.label}
         />
       );
@@ -234,8 +236,8 @@ export function FieldRenderer({ field, value, onChange, allValues = {} }: FieldR
         <CategoryPickerField
           value={currentValue || []}
           onChange={onChange}
-          multiSelect={field.multi_select !== false}
-          showProductCount={field.show_product_count !== false}
+          multiSelect={(field as any).multi_select !== false}
+          showProductCount={(field as any).show_product_count !== false}
           label={field.label}
         />
       );

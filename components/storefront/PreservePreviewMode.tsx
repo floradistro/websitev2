@@ -1,23 +1,20 @@
 "use client";
 
 import { useEffect } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 
 /**
  * Preserves preview=true parameter on all navigation
  * Ensures live editing stays active when clicking links
- * Uses Next.js router for smooth client-side navigation
  */
 export function PreservePreviewMode() {
   const searchParams = useSearchParams();
-  const router = useRouter();
   const isPreview = searchParams?.get('preview') === 'true';
 
   useEffect(() => {
     if (!isPreview) return;
 
-    // Get current vendor from URL
-    const currentVendor = searchParams?.get('vendor');
+    console.log('🔗 Preview mode: Intercepting all navigation to preserve preview parameter');
 
     // Intercept all link clicks
     const handleClick = (e: MouseEvent) => {
@@ -32,20 +29,11 @@ export function PreservePreviewMode() {
           // Add preview=true if not present
           if (!url.searchParams.has('preview')) {
             url.searchParams.set('preview', 'true');
+            
+            // Prevent default and navigate with preview param
+            e.preventDefault();
+            window.location.href = url.toString();
           }
-          
-          // Add vendor parameter if not present
-          if (currentVendor && !url.searchParams.has('vendor')) {
-            url.searchParams.set('vendor', currentVendor);
-          }
-          
-          // Prevent default and use Next.js router for client-side navigation
-          e.preventDefault();
-          
-          const newPath = url.pathname + url.search;
-          
-          // Use router.push for smooth client-side navigation
-          router.push(newPath);
         }
       }
     };
@@ -55,9 +43,17 @@ export function PreservePreviewMode() {
     return () => {
       document.removeEventListener('click', handleClick, true);
     };
-  }, [isPreview, searchParams, router]);
+  }, [isPreview]);
 
-  // No visual indicator - preview mode works silently
+  // Visual indicator for preview mode
+  if (isPreview) {
+    return (
+      <div className="fixed top-0 left-0 right-0 bg-purple-600 text-white text-center py-1 text-xs z-[9999] pointer-events-none">
+        🎨 Preview Mode - You're viewing a draft
+      </div>
+    );
+  }
+
   return null;
 }
 

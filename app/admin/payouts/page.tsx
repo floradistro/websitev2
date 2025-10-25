@@ -80,7 +80,7 @@ export default function AdminPayouts() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <div className="bg-[#111111] border border-white/10 p-5">
+        <div className="bg-black border border-white/10 p-5">
           <div className="flex items-center justify-between mb-3">
             <span className="text-white/50 text-xs uppercase tracking-wider">Pending</span>
             <Clock size={18} className="text-white/30" />
@@ -91,7 +91,7 @@ export default function AdminPayouts() {
           <div className="text-white/30 text-xs">Awaiting payment</div>
         </div>
 
-        <div className="bg-[#111111] border border-white/10 p-5">
+        <div className="bg-black border border-white/10 p-5">
           <div className="flex items-center justify-between mb-3">
             <span className="text-white/50 text-xs uppercase tracking-wider">Processing</span>
             <DollarSign size={18} className="text-white/30" />
@@ -102,7 +102,7 @@ export default function AdminPayouts() {
           <div className="text-white/30 text-xs">In progress</div>
         </div>
 
-        <div className="bg-[#111111] border border-white/10 p-5">
+        <div className="bg-black border border-white/10 p-5">
           <div className="flex items-center justify-between mb-3">
             <span className="text-white/50 text-xs uppercase tracking-wider">Completed</span>
             <CheckCircle size={18} className="text-white/30" />
@@ -113,7 +113,7 @@ export default function AdminPayouts() {
           <div className="text-white/30 text-xs">This period</div>
         </div>
 
-        <div className="bg-[#111111] border border-white/10 p-5">
+        <div className="bg-black border border-white/10 p-5">
           <div className="flex items-center justify-between mb-3">
             <span className="text-white/50 text-xs uppercase tracking-wider">Total</span>
             <DollarSign size={18} className="text-white/30" />
@@ -132,7 +132,7 @@ export default function AdminPayouts() {
           className={`px-4 py-2 text-xs uppercase tracking-wider transition-all ${
             filterStatus === 'all'
               ? 'bg-white text-black'
-              : 'bg-[#111111] text-white/60 hover:text-white border border-white/10 hover:border-white/20'
+              : 'bg-black text-white/60 hover:text-white border border-white/10 hover:border-white/20'
           }`}
         >
           All
@@ -142,7 +142,7 @@ export default function AdminPayouts() {
           className={`px-4 py-2 text-xs uppercase tracking-wider transition-all ${
             filterStatus === 'pending'
               ? 'bg-white/10 text-white border border-white'
-              : 'bg-[#111111] text-white/60 hover:text-white border border-white/10 hover:border-white/20'
+              : 'bg-black text-white/60 hover:text-white border border-white/10 hover:border-white/20'
           }`}
         >
           Pending
@@ -152,7 +152,7 @@ export default function AdminPayouts() {
           className={`px-4 py-2 text-xs uppercase tracking-wider transition-all ${
             filterStatus === 'completed'
               ? 'bg-white/10 text-white border border-white'
-              : 'bg-[#111111] text-white/60 hover:text-white border border-white/10 hover:border-white/20'
+              : 'bg-black text-white/60 hover:text-white border border-white/10 hover:border-white/20'
           }`}
         >
           Completed
@@ -162,17 +162,17 @@ export default function AdminPayouts() {
       {/* Payouts List */}
       <div className="grid gap-4">
         {loading ? (
-          <div className="bg-[#111111] border border-white/10 p-12 text-center text-white/60">
+          <div className="bg-black border border-white/10 p-12 text-center text-white/60">
             Loading payouts...
           </div>
         ) : filteredPayouts.length === 0 ? (
-          <div className="bg-[#111111] border border-white/10 p-12 text-center text-white/60">
+          <div className="bg-black border border-white/10 p-12 text-center text-white/60">
             No payout data available yet
           </div>
         ) : filteredPayouts.map((payout) => (
           <div
             key={payout.id}
-            className="bg-[#111111] border border-white/10 hover:border-white/20 transition-all group"
+            className="bg-black border border-white/10 hover:border-white/20 transition-all group"
           >
             <div className="p-6">
               <div className="flex items-start gap-6">

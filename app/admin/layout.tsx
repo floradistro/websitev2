@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { 
   Home, Package, Store, Settings, LogOut, Users, CheckSquare, 
-  FileText, DollarSign, BarChart3, Menu, X, MapPin, Globe, FolderTree, Layers, ShoppingBag, Activity 
+  FileText, DollarSign, BarChart3, Menu, X, MapPin, Globe, FolderTree, Layers, ShoppingBag, Activity, FileCode 
 } from 'lucide-react';
 import { showConfirm } from '@/components/NotificationToast';
 import AdminProtectedRoute from '@/components/AdminProtectedRoute';
@@ -60,6 +60,7 @@ export default function AdminLayout({
 
   const navItems = [
     { href: '/admin/dashboard', icon: Home, label: 'Overview' },
+    { href: '/admin/platform-editor', icon: FileCode, label: 'Yacht Club Editor' },
     { href: '/admin/orders', icon: ShoppingBag, label: 'Transactions' },
     { href: '/admin/products', icon: Package, label: 'Catalog' },
     { href: '/admin/categories', icon: FolderTree, label: 'Collections' },
@@ -111,7 +112,7 @@ export default function AdminLayout({
         body {
           overflow-x: hidden;
           max-width: 100vw;
-          background: linear-gradient(to bottom, #000000, #0a0a0a);
+          background: #000000;
         }
         * {
           box-sizing: border-box;
@@ -184,28 +185,25 @@ export default function AdminLayout({
 
       {/* PWA Safe Area Spacer */}
       <div 
-        className="fixed top-0 left-0 right-0 z-[120] pointer-events-none"
+        className="fixed top-0 left-0 right-0 z-[120] pointer-events-none bg-black"
         style={{ 
-          height: 'env(safe-area-inset-top, 0px)',
-          background: 'linear-gradient(to bottom, #000000, transparent)'
+          height: 'env(safe-area-inset-top, 0px)'
         }}
       />
 
       {/* Mobile Top Bar */}
       <nav 
-        className={`lg:hidden sticky z-[110] border-b border-white/5 transition-all duration-500 ${
+        className={`lg:hidden sticky z-[110] border-b border-white/5 transition-all duration-500 bg-black/95 backdrop-blur-xl ${
           isVisible ? 'translate-y-0' : '-translate-y-full'
         }`}
         style={{ 
-          top: 'env(safe-area-inset-top, 0px)',
-          background: 'linear-gradient(135deg, rgba(10,10,10,0.98), rgba(0,0,0,0.95))',
-          backdropFilter: 'blur(20px)'
+          top: 'env(safe-area-inset-top, 0px)'
         }}
       >
         <div className="flex items-center justify-between h-14 px-4">
           <button 
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-2 -ml-2 text-white/70 hover:text-white transition-all duration-300 hover:bg-white/5 rounded"
+            className="p-2 -ml-2 text-white/70 hover:text-white transition-all duration-300 hover:bg-white/5 rounded-[14px]"
           >
             <Menu size={20} strokeWidth={1.5} />
           </button>
@@ -214,7 +212,7 @@ export default function AdminLayout({
             <h1 className="text-sm font-light text-white tracking-[0.2em] uppercase">{currentPage}</h1>
           </div>
 
-          <Link href="/admin/dashboard" className="w-9 h-9 bg-gradient-to-br from-white/8 to-white/3 rounded flex items-center justify-center overflow-hidden border border-white/5 transition-all duration-300 hover:border-white/20 luxury-glow">
+          <Link href="/admin/dashboard" className="w-9 h-9 bg-gradient-to-br from-white/8 to-white/3 rounded-[12px] flex items-center justify-center overflow-hidden border border-white/5 transition-all duration-300 hover:border-white/20 luxury-glow">
             <img src="/yacht-club-logo.png" alt="Yacht Master" className="w-full h-full object-contain p-1" />
           </Link>
         </div>
@@ -224,26 +222,23 @@ export default function AdminLayout({
       {mobileMenuOpen && (
         <div className="lg:hidden fixed inset-0 z-[150] bg-black/80 backdrop-blur-md" onClick={() => setMobileMenuOpen(false)}>
           <div 
-            className="absolute left-0 top-0 bottom-0 w-[280px] border-r border-white/5 flex flex-col shadow-2xl"
+            className="absolute left-0 top-0 bottom-0 w-[280px] border-r border-white/5 flex flex-col shadow-2xl bg-black/98 backdrop-blur-xl"
             onClick={(e) => e.stopPropagation()}
             style={{ 
-              paddingTop: 'env(safe-area-inset-top, 0px)',
-              background: 'linear-gradient(135deg, rgba(10,10,10,0.98), rgba(0,0,0,0.95))',
-              backdropFilter: 'blur(20px)'
+              paddingTop: 'env(safe-area-inset-top, 0px)'
             }}
           >
             <div 
-              className="absolute top-0 left-0 right-0 pointer-events-none"
+              className="absolute top-0 left-0 right-0 pointer-events-none bg-black"
               style={{ 
                 height: 'env(safe-area-inset-top, 0px)', 
-                marginTop: 'calc(-1 * env(safe-area-inset-top, 0px))',
-                background: 'linear-gradient(to bottom, #000000, transparent)'
+                marginTop: 'calc(-1 * env(safe-area-inset-top, 0px))'
               }}
             />
             
             <div className="flex items-center justify-between p-5 border-b border-white/5 relative z-10">
               <Link href="/admin/dashboard" className="flex items-center gap-3 group" onClick={() => setMobileMenuOpen(false)}>
-                <div className="w-11 h-11 bg-gradient-to-br from-white/10 to-white/5 rounded flex items-center justify-center overflow-hidden border border-white/10 transition-all duration-300 group-hover:border-white/20 luxury-glow">
+                <div className="w-11 h-11 bg-gradient-to-br from-white/10 to-white/5 rounded-[14px] flex items-center justify-center overflow-hidden border border-white/10 transition-all duration-300 group-hover:border-white/20 luxury-glow">
                   <img src="/yacht-club-logo.png" alt="Yacht Master" className="w-full h-full object-contain p-1" />
                 </div>
                 <div>
@@ -253,7 +248,7 @@ export default function AdminLayout({
               </Link>
               <button 
                 onClick={() => setMobileMenuOpen(false)}
-                className="p-2 text-white/50 hover:text-white transition-all duration-300 hover:bg-white/5 rounded"
+                className="p-2 text-white/50 hover:text-white transition-all duration-300 hover:bg-white/5 rounded-[10px]"
               >
                 <X size={18} strokeWidth={1.5} />
               </button>
@@ -268,7 +263,7 @@ export default function AdminLayout({
                     key={item.href}
                     href={item.href}
                     onClick={() => setMobileMenuOpen(false)}
-                    className={`flex items-center justify-between px-4 py-3 mb-1 rounded transition-all duration-300 border ${
+                    className={`flex items-center justify-between px-4 py-3 mb-1 rounded-[14px] transition-all duration-300 border ${
                       active 
                         ? 'bg-gradient-to-r from-white/10 to-white/5 text-white border-white/20 shadow-lg' 
                         : 'text-white/50 hover:text-white/80 border-transparent hover:bg-white/5 hover:border-white/10'
@@ -287,7 +282,7 @@ export default function AdminLayout({
             <div className="p-4 border-t border-white/5 relative z-10" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 1rem)' }}>
               <Link 
                 href="/" 
-                className="flex items-center justify-center gap-2 w-full px-4 py-3 text-white/50 text-xs uppercase tracking-wider border border-white/10 rounded transition-all duration-300 hover:bg-white/5 hover:border-white/20 hover:text-white/70 mb-2"
+                className="flex items-center justify-center gap-2 w-full px-4 py-3 text-white/50 text-xs uppercase tracking-wider border border-white/10 rounded-[14px] transition-all duration-300 hover:bg-white/5 hover:border-white/20 hover:text-white/70 mb-2"
               >
                 Back to Store
               </Link>
@@ -296,7 +291,7 @@ export default function AdminLayout({
                   setMobileMenuOpen(false);
                   handleLogout();
                 }}
-                className="w-full px-4 py-3 bg-gradient-to-r from-white/10 to-white/5 text-white/70 text-xs uppercase tracking-wider border border-white/10 rounded transition-all duration-300 hover:border-white/20 hover:text-white flex items-center justify-center gap-2"
+                className="w-full px-4 py-3 bg-gradient-to-r from-white/10 to-white/5 text-white/70 text-xs uppercase tracking-wider border border-white/10 rounded-[14px] transition-all duration-300 hover:border-white/20 hover:text-white flex items-center justify-center gap-2"
               >
                 <LogOut size={14} strokeWidth={1.5} />
                 Sign Out
@@ -308,17 +303,15 @@ export default function AdminLayout({
 
       {/* Desktop Header - Fixed */}
       <nav 
-        className="hidden lg:block border-b border-white/5 fixed top-0 left-0 right-0 z-[110] luxury-glow"
+        className="hidden lg:block border-b border-white/5 fixed top-0 left-0 right-0 z-[110] luxury-glow bg-black/95 backdrop-blur-xl"
         style={{ 
-          paddingTop: 'env(safe-area-inset-top, 0px)',
-          background: 'linear-gradient(135deg, rgba(10,10,10,0.98), rgba(0,0,0,0.95))',
-          backdropFilter: 'blur(20px)'
+          paddingTop: 'env(safe-area-inset-top, 0px)'
         }}
       >
         <div className="w-full px-6 xl:px-8">
           <div className="flex justify-between items-center h-20">
             <Link href="/admin/dashboard" className="flex items-center gap-4 group">
-              <div className="w-12 h-12 bg-gradient-to-br from-white/10 to-white/5 rounded flex items-center justify-center overflow-hidden border border-white/10 transition-all duration-300 group-hover:border-white/30 group-hover:shadow-[0_0_20px_rgba(255,255,255,0.1)]">
+              <div className="w-12 h-12 bg-gradient-to-br from-white/10 to-white/5 rounded-[16px] flex items-center justify-center overflow-hidden border border-white/10 transition-all duration-300 group-hover:border-white/30 group-hover:shadow-[0_0_20px_rgba(255,255,255,0.1)]">
                 <img src="/yacht-club-logo.png" alt="Yacht Master" className="w-full h-full object-contain p-1.5" />
               </div>
               <div>
@@ -346,19 +339,16 @@ export default function AdminLayout({
         </div>
       </nav>
 
-      <div className="fixed inset-0" style={{ 
+      <div className="fixed inset-0 bg-black" style={{ 
         top: 'calc(80px + env(safe-area-inset-top, 0px))',
-        paddingBottom: 'env(safe-area-inset-bottom)',
-        background: 'linear-gradient(to bottom, #000000, #0a0a0a)' 
+        paddingBottom: 'env(safe-area-inset-bottom)'
       }}>
         {/* Desktop Sidebar - Fixed */}
         <aside 
-          className="hidden lg:block w-72 border-r border-white/5 fixed left-0 bottom-0 overflow-y-auto"
+          className="hidden lg:block w-72 border-r border-white/5 fixed left-0 bottom-0 overflow-y-auto bg-black/98 backdrop-blur-xl"
           style={{ 
             top: 'calc(80px + env(safe-area-inset-top, 0px))',
-            bottom: 'env(safe-area-inset-bottom)',
-            background: 'linear-gradient(to bottom, rgba(0,0,0,0.98), rgba(10,10,10,0.95))',
-            backdropFilter: 'blur(20px)'
+            bottom: 'env(safe-area-inset-bottom)'
           }}
         >
           <nav className="p-4 space-y-1 pb-8">
@@ -369,7 +359,7 @@ export default function AdminLayout({
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`group flex items-center gap-3 px-5 py-3 transition-all duration-300 border rounded ${
+                  className={`group flex items-center gap-3 px-5 py-3 transition-all duration-300 border rounded-[14px] ${
                     active
                       ? 'text-white bg-gradient-to-r from-white/10 to-white/5 border-white/20 shadow-lg'
                       : 'text-white/40 hover:text-white/70 hover:bg-white/5 border-transparent hover:border-white/10'
@@ -394,10 +384,9 @@ export default function AdminLayout({
 
       {/* Mobile Bottom Navigation */}
       <nav 
-        className="lg:hidden fixed bottom-0 left-0 right-0 border-t border-white/5 backdrop-blur-2xl z-[120] luxury-glow" 
+        className="lg:hidden fixed bottom-0 left-0 right-0 border-t border-white/5 backdrop-blur-2xl z-[120] luxury-glow bg-black/98" 
         style={{ 
-          paddingBottom: 'env(safe-area-inset-bottom)',
-          background: 'linear-gradient(to top, rgba(0,0,0,0.98), rgba(10,10,10,0.95))'
+          paddingBottom: 'env(safe-area-inset-bottom)'
         }}
       >
         <div className="flex items-center justify-around px-2 pt-2 pb-1">
@@ -413,7 +402,7 @@ export default function AdminLayout({
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex flex-col items-center justify-center gap-1 py-2 px-3 rounded transition-all duration-300 min-w-[64px] ${
+                className={`flex flex-col items-center justify-center gap-1 py-2 px-3 rounded-[12px] transition-all duration-300 min-w-[64px] ${
                   active 
                     ? 'text-white' 
                     : 'text-white/30 hover:text-white/60'

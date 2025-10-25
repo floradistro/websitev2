@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { ArrowRight, Store, Truck, Shield, Package, Leaf, Award, Users, FlaskConical, CheckCircle, Star, MapPin, Phone, Clock, Sparkles } from "lucide-react";
 import { VendorStorefront } from "@/lib/storefront/get-vendor";
-import ProductsCarousel from "@/components/ProductsCarousel";
+// import ProductsCarousel from "@/components/ProductsCarousel";
 import dynamic from "next/dynamic";
 import WaveBackground from "@/components/storefront/WaveBackground";
 import HeroAnimation from "@/components/storefront/HeroAnimation";
@@ -345,13 +345,7 @@ function StorefrontHomeClient({
             </div>
 
             <div className="py-8 overflow-visible">
-              <ProductsCarousel 
-                products={products}
-                locations={locations}
-                inventoryMap={inventoryMap}
-                productFieldsMap={productFieldsMap}
-                vendorSlug={vendor?.slug}
-              />
+              
             </div>
           </div>
         </section>

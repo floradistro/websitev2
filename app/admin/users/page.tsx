@@ -293,14 +293,6 @@ export default function AdminUsers() {
   }
 
   async function openLocationAssignment(user: User) {
-    console.log('Opening location assignment for user:', {
-      id: user.id,
-      email: user.email,
-      role: user.role,
-      vendor_id: user.vendor_id,
-      full_user: user
-    });
-    
     setAssigningLocationsUser(user);
     
     // Load current location assignments
@@ -452,7 +444,7 @@ export default function AdminUsers() {
               {/* Mobile Layout */}
               <div className="lg:hidden space-y-3">
                 <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 bg-white/5 flex items-center justify-center flex-shrink-0 rounded">
+                  <div className="w-10 h-10 bg-white/5 flex items-center justify-center flex-shrink-0 rounded-[14px]">
                     <Users size={18} className="text-white/40" />
                   </div>
                   <div className="flex-1 min-w-0">
@@ -607,7 +599,7 @@ export default function AdminUsers() {
                 type="text"
                 value={newUser.first_name}
                 onChange={(e) => setNewUser({ ...newUser, first_name: e.target.value })}
-                className="w-full bg-[#111111] border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
+                className="w-full bg-black border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
               />
             </div>
             <div>
@@ -616,7 +608,7 @@ export default function AdminUsers() {
                 type="text"
                 value={newUser.last_name}
                 onChange={(e) => setNewUser({ ...newUser, last_name: e.target.value })}
-                className="w-full bg-[#111111] border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
+                className="w-full bg-black border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
               />
             </div>
           </div>
@@ -627,7 +619,7 @@ export default function AdminUsers() {
               type="email"
               value={newUser.email}
               onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
-              className="w-full bg-[#111111] border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
+              className="w-full bg-black border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
             />
           </div>
 
@@ -638,7 +630,7 @@ export default function AdminUsers() {
                 type="tel"
                 value={newUser.phone}
                 onChange={(e) => setNewUser({ ...newUser, phone: e.target.value })}
-                className="w-full bg-[#111111] border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
+                className="w-full bg-black border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
               />
             </div>
             <div>
@@ -647,7 +639,7 @@ export default function AdminUsers() {
                 type="text"
                 value={newUser.employee_id}
                 onChange={(e) => setNewUser({ ...newUser, employee_id: e.target.value })}
-                className="w-full bg-[#111111] border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
+                className="w-full bg-black border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
               />
             </div>
           </div>
@@ -658,7 +650,7 @@ export default function AdminUsers() {
               <select
                 value={newUser.role}
                 onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}
-                className="w-full bg-[#111111] border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
+                className="w-full bg-black border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
               >
                 {ROLES.map(role => (
                   <option key={role.value} value={role.value}>
@@ -672,7 +664,7 @@ export default function AdminUsers() {
               <select
                 value={newUser.vendor_id}
                 onChange={(e) => setNewUser({ ...newUser, vendor_id: e.target.value })}
-                className="w-full bg-[#111111] border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
+                className="w-full bg-black border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
               >
                 <option value="">Admin (No Vendor)</option>
                 {vendors.map(vendor => (
@@ -795,7 +787,7 @@ export default function AdminUsers() {
                     .map(location => (
                       <div
                         key={location.id}
-                        className="bg-[#111111] border border-white/10 p-4 hover:bg-white/5 transition-colors"
+                        className="bg-black border border-white/10 p-4 hover:bg-white/5 transition-colors"
                       >
                         <div className="flex items-start gap-3">
                           <input
@@ -864,7 +856,7 @@ export default function AdminUsers() {
                   type="text"
                   value={editingUser.first_name || ''}
                   onChange={(e) => setEditingUser({ ...editingUser, first_name: e.target.value })}
-                  className="w-full bg-[#111111] border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
+                  className="w-full bg-black border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
                 />
               </div>
               <div>
@@ -873,7 +865,7 @@ export default function AdminUsers() {
                   type="text"
                   value={editingUser.last_name || ''}
                   onChange={(e) => setEditingUser({ ...editingUser, last_name: e.target.value })}
-                  className="w-full bg-[#111111] border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
+                  className="w-full bg-black border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
                 />
               </div>
             </div>
@@ -884,7 +876,7 @@ export default function AdminUsers() {
                 type="tel"
                 value={editingUser.phone || ''}
                 onChange={(e) => setEditingUser({ ...editingUser, phone: e.target.value })}
-                className="w-full bg-[#111111] border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
+                className="w-full bg-black border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
               />
             </div>
 
@@ -894,7 +886,7 @@ export default function AdminUsers() {
                 <select
                   value={editingUser.role}
                   onChange={(e) => setEditingUser({ ...editingUser, role: e.target.value })}
-                  className="w-full bg-[#111111] border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
+                  className="w-full bg-black border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
                 >
                   {ROLES.map(role => (
                     <option key={role.value} value={role.value}>
@@ -909,7 +901,7 @@ export default function AdminUsers() {
                   type="text"
                   value={editingUser.employee_id || ''}
                   onChange={(e) => setEditingUser({ ...editingUser, employee_id: e.target.value })}
-                  className="w-full bg-[#111111] border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
+                  className="w-full bg-black border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
                 />
               </div>
             </div>
@@ -919,7 +911,7 @@ export default function AdminUsers() {
               <select
                 value={editingUser.vendor_id || ''}
                 onChange={(e) => setEditingUser({ ...editingUser, vendor_id: e.target.value })}
-                className="w-full bg-[#111111] border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
+                className="w-full bg-black border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
               >
                 <option value="">No Vendor (Admin User)</option>
                 {vendors.map(vendor => (

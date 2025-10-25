@@ -8,7 +8,7 @@ export interface SectionTemplate {
   name: string;
   description: string;
   icon: string;
-  category: 'hero' | 'content' | 'features' | 'social' | 'cta';
+  category: 'hero' | 'content' | 'features' | 'social' | 'cta' | 'settings' | string;
   defaultContent: any;
   pageTypes: string[]; // Which pages can use this section
 }
@@ -239,16 +239,46 @@ export const SECTION_LIBRARY: SectionTemplate[] = [
     pageTypes: ['product'],
     defaultContent: {
       // Layout
-      layout_style: 'split',  // split, stacked, gallery-left
-      gallery_size: 'large',  // small, medium, large
+      layout_style: 'split',
+      gallery_size: 'large',
       
-      // Gallery
-      gallery_thumbnails: true,
+      // Main Gallery
+      gallery_aspect: 'portrait',
+      gallery_bg: '#000000',
+      gallery_fit: 'contain',
+      gallery_radius: 'none',
+      gallery_border_width: '0',
+      gallery_border_color: '#ffffff',
+      gallery_padding: 'none',
       gallery_zoom: true,
-      gallery_autoplay: false,
-      gallery_columns: 4,
       
-      // Sections Visibility
+      // Thumbnails
+      gallery_thumbnails: true,
+      gallery_columns: 4,
+      thumbnail_gap: 'sm',
+      thumbnail_border_width: '1',
+      thumbnail_border_color: '#ffffff',
+      thumbnail_active_color: '#ffffff',
+      
+      // Info Section
+      info_section_bg: '#000000',
+      info_section_padding: 'lg',
+      section_spacing: 'md',
+      
+      // Content Cards
+      content_radius: 'xl',
+      card_bg: '#0a0a0a',
+      card_border_width: '1',
+      card_border_color: '#ffffff',
+      card_padding: 'md',
+      
+      // Buttons
+      button_cart_bg: '#ffffff',
+      button_cart_text: '#000000',
+      button_secondary_border: '#ffffff',
+      button_radius: 'full',
+      
+      // Section Visibility
       show_pricing_tiers: true,
       show_product_fields: true,
       show_delivery_options: true,

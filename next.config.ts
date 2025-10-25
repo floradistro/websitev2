@@ -44,7 +44,8 @@ const nextConfig: NextConfig = {
   
   // Optimize chunks
   experimental: {
-    optimizePackageImports: ['lucide-react', 'framer-motion'],
+    optimizePackageImports: ['lucide-react', 'framer-motion', 'recharts', '@supabase/supabase-js', 'react-window'],
+    optimizeCss: true,
     // Turbo disabled for stability - use webpack instead
     // turbo: {
     //   rules: {
@@ -54,6 +55,86 @@ const nextConfig: NextConfig = {
     //     },
     //   },
     // },
+  },
+  
+  // Webpack optimization for production
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      // Split chunks for better caching
+      config.optimization = {
+        ...config.optimization,
+        splitChunks: {
+          chunks: 'all',
+          cacheGroups: {
+            default: false,
+            vendors: false,
+            // Vendor chunk for node_modules
+            vendor: {
+              name: 'vendor',
+              chunks: 'all',
+              test: /node_modules/,
+              priority: 20,
+            },
+            // Common chunk for shared components
+            common: {
+              name: 'common',
+              minChunks: 2,
+              chunks: 'async',
+              priority: 10,
+              reuseExistingChunk: true,
+              enforce: true,
+            },
+            // Heavy libraries get their own chunks
+            react: {
+              test: /[\\/]node_modules[\\/](react|react-dom|scheduler)[\\/]/,
+              name: 'react',
+              chunks: 'all',
+              priority: 30,
+            },
+            three: {
+              test: /[\\/]node_modules[\\/](@react-three|three)[\\/]/,
+              name: 'three',
+              chunks: 'async',
+              priority: 25,
+            },
+            charts: {
+              test: /[\\/]node_modules[\\/]recharts[\\/]/,
+              name: 'charts',
+              chunks: 'async',
+              priority: 25,
+            },
+            // Admin dashboard routes
+            adminRoutes: {
+              test: /[\\/]app[\\/]admin[\\/]/,
+              name: 'admin-dashboard',
+              chunks: 'async',
+              priority: 15,
+              minChunks: 2,
+              reuseExistingChunk: true,
+            },
+            // Vendor dashboard routes
+            vendorRoutes: {
+              test: /[\\/]app[\\/]vendor[\\/]/,
+              name: 'vendor-dashboard',
+              chunks: 'async',
+              priority: 15,
+              minChunks: 2,
+              reuseExistingChunk: true,
+            },
+            // Storefront routes
+            storefrontRoutes: {
+              test: /[\\/]app[\\/]\(storefront\)[\\/]/,
+              name: 'storefront',
+              chunks: 'async',
+              priority: 15,
+              minChunks: 2,
+              reuseExistingChunk: true,
+            },
+          },
+        },
+      };
+    }
+    return config;
   },
   
   // Headers for caching and performance

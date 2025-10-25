@@ -196,7 +196,7 @@ export default function FieldsManagerPage() {
       {/* Add Field Modal */}
       {showAddModal && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-          <div className="bg-[#1a1a1a] border border-white/10 rounded-lg max-w-2xl w-full p-6">
+          <div className="bg-black border border-white/10 rounded-lg max-w-2xl w-full p-6">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold text-white">Add Custom Field</h2>
               <button onClick={() => setShowAddModal(false)} className="text-white/60 hover:text-white">
@@ -211,7 +211,7 @@ export default function FieldsManagerPage() {
                 <select
                   value={newField.section_key}
                   onChange={(e) => setNewField({ ...newField, section_key: e.target.value })}
-                  className="w-full bg-[#0a0a0a] border border-white/10 rounded px-4 py-2 text-white"
+                  className="w-full bg-black/98 border border-white/10 rounded-[14px] px-4 py-2 text-white"
                 >
                   <option value="hero">Hero</option>
                   <option value="process">Process Steps</option>
@@ -234,7 +234,7 @@ export default function FieldsManagerPage() {
                   value={newField.field_id}
                   onChange={(e) => setNewField({ ...newField, field_id: e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '_') })}
                   placeholder="promotional_badge"
-                  className="w-full bg-[#0a0a0a] border border-white/10 rounded px-4 py-2 text-white font-mono"
+                  className="w-full bg-black/98 border border-white/10 rounded-[14px] px-4 py-2 text-white font-mono"
                 />
                 <p className="text-white/40 text-xs mt-1">Lowercase, underscores only (e.g., promo_badge, video_url)</p>
               </div>
@@ -249,7 +249,7 @@ export default function FieldsManagerPage() {
                   value={newField.label}
                   onChange={(e) => setNewField({ ...newField, label: e.target.value })}
                   placeholder="Promotional Badge"
-                  className="w-full bg-[#0a0a0a] border border-white/10 rounded px-4 py-2 text-white"
+                  className="w-full bg-black/98 border border-white/10 rounded-[14px] px-4 py-2 text-white"
                 />
                 <p className="text-white/40 text-xs mt-1">What users see in the editor</p>
               </div>
@@ -260,7 +260,7 @@ export default function FieldsManagerPage() {
                 <select
                   value={newField.type}
                   onChange={(e) => setNewField({ ...newField, type: e.target.value })}
-                  className="w-full bg-[#0a0a0a] border border-white/10 rounded px-4 py-2 text-white"
+                  className="w-full bg-black/98 border border-white/10 rounded-[14px] px-4 py-2 text-white"
                 >
                   {FIELD_TYPES.map((type) => (
                     <option key={type.value} value={type.value}>{type.label}</option>
@@ -276,7 +276,7 @@ export default function FieldsManagerPage() {
                   value={newField.placeholder}
                   onChange={(e) => setNewField({ ...newField, placeholder: e.target.value })}
                   placeholder="e.g., Enter text here..."
-                  className="w-full bg-[#0a0a0a] border border-white/10 rounded px-4 py-2 text-white"
+                  className="w-full bg-black/98 border border-white/10 rounded-[14px] px-4 py-2 text-white"
                 />
               </div>
 
@@ -288,7 +288,7 @@ export default function FieldsManagerPage() {
                   onChange={(e) => setNewField({ ...newField, helper_text: e.target.value })}
                   placeholder="Explain what this field does..."
                   rows={2}
-                  className="w-full bg-[#0a0a0a] border border-white/10 rounded px-4 py-2 text-white"
+                  className="w-full bg-black/98 border border-white/10 rounded-[14px] px-4 py-2 text-white"
                 />
               </div>
 
@@ -330,7 +330,7 @@ export default function FieldsManagerPage() {
           <p className="text-white/60 mt-4">Loading custom fields...</p>
         </div>
       ) : Object.keys(fieldsBySection).length === 0 ? (
-        <div className="bg-[#1a1a1a] border border-white/10 rounded-lg p-12 text-center">
+        <div className="bg-black border border-white/10 rounded-lg p-12 text-center">
           <Sparkles className="text-white/40 mx-auto mb-4" size={48} />
           <h3 className="text-white font-semibold mb-2">No custom fields yet</h3>
           <p className="text-white/60 mb-6">
@@ -347,19 +347,19 @@ export default function FieldsManagerPage() {
       ) : (
         <div className="space-y-6">
           {Object.entries(fieldsBySection).map(([sectionKey, fields]) => (
-            <div key={sectionKey} className="bg-[#1a1a1a] border border-white/10 rounded-lg p-6">
+            <div key={sectionKey} className="bg-black border border-white/10 rounded-lg p-6">
               <h3 className="text-white font-semibold mb-4 text-lg capitalize">
                 {sectionKey === 'global' ? '🌐 Global (All Sections)' : `${sectionKey} Section`}
               </h3>
               
               <div className="space-y-3">
                 {fields.map((field) => (
-                  <div key={field.id} className="bg-[#0a0a0a] border border-white/10 rounded-lg p-4">
+                  <div key={field.id} className="bg-black/98 border border-white/10 rounded-lg p-4">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-2">
                           <h4 className="text-white font-medium">{field.field_definition.label}</h4>
-                          <span className="bg-purple-500/20 text-purple-400 px-2 py-0.5 rounded text-xs">
+                          <span className="bg-purple-500/20 text-purple-400 px-2 py-0.5 rounded-[14px] text-xs">
                             {field.field_definition.type}
                           </span>
                         </div>

@@ -1,12 +1,12 @@
 import { headers } from 'next/headers';
 import Link from 'next/link';
-import { getVendorFromHeaders, getVendorStorefront, getVendorProducts, getVendorLocations, getVendorReviews } from '@/lib/storefront/get-vendor';
-import { LiveEditingProvider } from '@/components/storefront/LiveEditingProvider';
-import { StorefrontHomeWithLiveEdit } from '@/components/storefront/StorefrontHomeWithLiveEdit';
-import { UniversalPageRenderer } from '@/components/storefront/UniversalPageRenderer';
+import { getVendorFromHeaders, getVendorStorefront } from '@/lib/storefront/get-vendor';
 import { getServiceSupabase } from '@/lib/supabase/client';
 import { notFound } from 'next/navigation';
 import { getVendorSectionsWithInit } from '@/lib/storefront/init-vendor-content';
+import { ComponentBasedPageRenderer } from '@/components/storefront/ComponentBasedPageRenderer';
+
+export const dynamic = 'force-dynamic';
 
 export default async function StorefrontHomePage({ searchParams }: { searchParams: Promise<{ vendor?: string; preview?: string }> }) {
   // Check if template preview mode (no vendor)
@@ -51,134 +51,61 @@ export default async function StorefrontHomePage({ searchParams }: { searchParam
                       {vendor.store_name}
                     </h3>
                     {vendor.store_tagline && (
-                      <p className="text-sm text-neutral-400 font-light">{vendor.store_tagline}</p>
+                      <p className="text-sm text-neutral-500 mt-0.5 line-clamp-1">
+                        {vendor.store_tagline}
+                      </p>
                     )}
                   </div>
                 </div>
-                <p className="text-sm text-neutral-400 font-semibold flex items-center gap-2 group-hover:gap-3 transition-all">
-                  Click to preview
-                  <span className="text-white">→</span>
-                </p>
               </Link>
             ))}
-          </div>
-
-          <div className="mt-16 text-center">
-            <p className="text-sm text-neutral-600 font-medium tracking-wide">
-              Using same components as Yacht Club marketplace
-            </p>
           </div>
         </div>
       </div>
     );
   }
+
+  // Regular vendor storefront
+  const params = await searchParams;
+  const isPreview = params.preview === 'true';
   
   const vendorId = await getVendorFromHeaders();
-
+  
   if (!vendorId) {
     notFound();
   }
 
-  const [vendor, allProducts, locations, reviews] = await Promise.all([
-    getVendorStorefront(vendorId),
-    getVendorProducts(vendorId, 12), // Limit to 12 featured products for home page
-    getVendorLocations(vendorId),
-    getVendorReviews(vendorId, 6) // Fetch 6 recent reviews
-  ]);
-
+  // Get vendor data
+  const vendor = await getVendorStorefront(vendorId);
+  
   if (!vendor) {
     notFound();
   }
 
-  // Auto-initialize default content if vendor has none (Shopify-style)
-  const homeSections = await getVendorSectionsWithInit(vendorId, vendor.store_name, 'home');
-
-  // Products now come pre-formatted from getVendorProducts with:
-  // - fields (from blueprint_fields)
-  // - pricingTiers (from vendor_pricing_configs)
-  // - inventory (with location data)
-  // - proper stock calculation
+  // Get sections
+  const sections = await getVendorSectionsWithInit(vendor.id, vendor.store_name || vendor.slug, 'home');
+  const supabase = getServiceSupabase();
+  const sectionIds = sections.map((s: any) => s.id);
   
-  // Map to format expected by StorefrontHomeClient
-  const products = allProducts.map((p: any) => {
-    const imageUrl = p.featured_image_storage || (p.image_gallery_storage && p.image_gallery_storage[0]);
-    
-    return {
-      id: p.id,
-      uuid: p.id,
-      name: p.name,
-      slug: p.slug || p.id,
-      price: p.price || 0,
-      regular_price: p.regular_price || 0,
-      sale_price: p.sale_price,
-      images: imageUrl ? [{ src: imageUrl, id: 0, name: p.name }] : [],
-      categories: p.categories || [],
-      stock_status: p.stock_status,
-      stock_quantity: p.stock_quantity,
-      total_stock: p.total_stock,
-      inventory: p.inventory || [],
-      fields: p.fields || {},
-      pricingTiers: p.pricingTiers || [],
-    };
-  });
+  // Get component instances from database
+  const { data: dbComponentInstances } = await supabase
+    .from('vendor_component_instances')
+    .select('*')
+    .eq('vendor_id', vendor.id)
+    .in('section_id', sectionIds)
+    .order('position_order');
 
-  // Build inventory map and product fields map
-  const inventoryMap: { [key: string]: any[] } = {};
-  const productFieldsMap: { [key: string]: any } = {};
-  
-  products.forEach((p: any) => {
-    inventoryMap[p.id] = p.inventory;
-    productFieldsMap[p.id] = { fields: p.fields };
-  });
+  // Use database instances
+  const componentInstances = dbComponentInstances || [];
 
-  // Check if in preview mode (live editor)
-  const params = await searchParams;
-  if (params.preview === 'true') {
-    return (
-      <LiveEditingProvider initialSections={homeSections} isPreviewMode={true}>
-        <UniversalPageRenderer
-          vendor={vendor}
-          pageType="home"
-          products={products}
-          inventoryMap={inventoryMap}
-          productFieldsMap={productFieldsMap}
-          locations={locations}
-          reviews={reviews}
-        />
-      </LiveEditingProvider>
-    );
-  }
-
-  // Normal mode - if vendor has sections, use UniversalPageRenderer (content-driven)
-  // If no sections (shouldn't happen now with auto-init), fallback to old component
-  if (homeSections && homeSections.length > 0) {
-    return (
-      <LiveEditingProvider initialSections={homeSections} isPreviewMode={false}>
-        <UniversalPageRenderer
-          vendor={vendor}
-          pageType="home"
-          products={products}
-          inventoryMap={inventoryMap}
-          productFieldsMap={productFieldsMap}
-          locations={locations}
-          reviews={reviews}
-        />
-      </LiveEditingProvider>
-    );
-  }
-
-  // Fallback to old hardcoded component (should rarely happen now)
+  // Component Registry rendering
   return (
-    <LiveEditingProvider initialSections={[]} isPreviewMode={false}>
-      <StorefrontHomeWithLiveEdit 
-        vendor={vendor}
-        products={products}
-        inventoryMap={inventoryMap}
-        productFieldsMap={productFieldsMap}
-        locations={locations}
-        reviews={reviews}
-      />
-    </LiveEditingProvider>
+    <ComponentBasedPageRenderer
+      vendor={vendor}
+      pageType="home"
+      sections={sections}
+      componentInstances={componentInstances}
+      isPreview={isPreview}
+    />
   );
 }
-

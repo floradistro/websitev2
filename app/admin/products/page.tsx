@@ -32,7 +32,6 @@ export default function AdminProducts() {
       // Use admin API to get ALL products from ALL vendors
       const response = await fetch('/api/admin/products?limit=500&with_wholesale=true');
       const data = await response.json();
-      console.log('Loaded products:', data.products?.length, 'Total:', data.pagination?.total);
       setProducts(data.products || []);
       setLoading(false);
     } catch (error) {
@@ -360,7 +359,7 @@ export default function AdminProducts() {
                     onChange={() => toggleSelect(product.id)}
                     className="mt-1 flex-shrink-0"
                   />
-                  <div className="w-10 h-10 bg-white/5 flex items-center justify-center flex-shrink-0 relative overflow-hidden rounded">
+                  <div className="w-10 h-10 bg-white/5 flex items-center justify-center flex-shrink-0 relative overflow-hidden rounded-[14px]">
                     {product.vendor?.logo_url ? (
                       <img 
                         src={product.vendor.logo_url} 
@@ -417,7 +416,7 @@ export default function AdminProducts() {
                   onChange={() => toggleSelect(product.id)}
                   className="flex-shrink-0"
                 />
-                <div className="w-8 h-8 bg-white/5 flex items-center justify-center flex-shrink-0 relative overflow-hidden rounded">
+                <div className="w-8 h-8 bg-white/5 flex items-center justify-center flex-shrink-0 relative overflow-hidden rounded-[14px]">
                   {product.vendor?.logo_url ? (
                     <img 
                       src={product.vendor.logo_url} 

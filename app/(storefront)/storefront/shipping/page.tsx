@@ -3,7 +3,6 @@ import { getVendorFromHeaders, getVendorStorefront } from '@/lib/storefront/get-
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { Package, Clock, MapPin, DollarSign } from 'lucide-react';
-import Footer from '@/components/storefront/templates/default/Footer';
 
 export default async function ShippingPage() {
   const vendorId = await getVendorFromHeaders();
@@ -136,8 +135,6 @@ export default async function ShippingPage() {
         </div>
       </div>
       
-      {/* Footer */}
-      <Footer vendor={vendor} />
     </div>
   );
 }

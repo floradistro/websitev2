@@ -68,8 +68,6 @@ export default function AdminVendors() {
   }
 
   async function createVendor() {
-    console.log('Creating vendor...', newVendor);
-    
     if (!newVendor.store_name || !newVendor.email || !newVendor.username || !newVendor.password) {
       showNotification({
         type: 'error',
@@ -80,10 +78,7 @@ export default function AdminVendors() {
     }
 
     try {
-      console.log('Sending request to create vendor...');
       const response = await axios.post(`/api/admin/create-vendor-supabase`, newVendor);
-
-      console.log('Vendor creation response:', response.data);
 
       if (response.data.success) {
         showNotification({
@@ -331,7 +326,7 @@ export default function AdminVendors() {
               {/* Mobile Layout */}
               <div className="lg:hidden">
                 <div className="flex items-start gap-3 mb-3">
-                  <div className="w-10 h-10 bg-white/5 flex items-center justify-center flex-shrink-0 rounded overflow-hidden relative">
+                  <div className="w-10 h-10 bg-white/5 flex items-center justify-center flex-shrink-0 rounded-[14px] overflow-hidden relative">
                     {vendor.logo_url ? (
                       <img 
                         src={vendor.logo_url} 
@@ -408,7 +403,7 @@ export default function AdminVendors() {
 
               {/* Desktop Layout */}
               <div className="hidden lg:flex items-center gap-4">
-                <div className="w-8 h-8 bg-white/5 flex items-center justify-center flex-shrink-0 rounded overflow-hidden relative">
+                <div className="w-8 h-8 bg-white/5 flex items-center justify-center flex-shrink-0 rounded-[14px] overflow-hidden relative">
                   {vendor.logo_url ? (
                     <img 
                       src={vendor.logo_url} 
@@ -496,7 +491,7 @@ export default function AdminVendors() {
               type="text"
               value={newVendor.store_name}
               onChange={(e) => setNewVendor({ ...newVendor, store_name: e.target.value })}
-              className="w-full bg-[#111111] border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
+              className="w-full bg-black border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
             />
           </div>
           <div>
@@ -505,7 +500,7 @@ export default function AdminVendors() {
               type="email"
               value={newVendor.email}
               onChange={(e) => setNewVendor({ ...newVendor, email: e.target.value })}
-              className="w-full bg-[#111111] border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
+              className="w-full bg-black border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
             />
           </div>
           <div>
@@ -514,7 +509,7 @@ export default function AdminVendors() {
               type="text"
               value={newVendor.username}
               onChange={(e) => setNewVendor({ ...newVendor, username: e.target.value })}
-              className="w-full bg-[#111111] border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
+              className="w-full bg-black border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
             />
           </div>
           <div>
@@ -523,7 +518,7 @@ export default function AdminVendors() {
               type="password"
               value={newVendor.password}
               onChange={(e) => setNewVendor({ ...newVendor, password: e.target.value })}
-              className="w-full bg-[#111111] border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
+              className="w-full bg-black border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
             />
           </div>
         </div>

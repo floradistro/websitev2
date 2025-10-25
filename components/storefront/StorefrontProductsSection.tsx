@@ -4,16 +4,17 @@ import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 
-const ProductsCarousel = dynamic(() => import("@/components/ProductsCarousel"), {
-  ssr: false,
-  loading: () => (
-    <div className="flex gap-4 px-4 animate-pulse">
-      {[...Array(4)].map((_, i) => (
-        <div key={i} className="flex-shrink-0 w-[300px] h-[400px] bg-[#3a3a3a]" />
-      ))}
-    </div>
-  ),
-});
+// ProductsCarousel component doesn't exist - removed
+// const ProductsCarousel = dynamic(() => import("@/components/ProductsCarousel"), {
+//   ssr: false,
+//   loading: () => (
+//     <div className="flex gap-4 px-4 animate-pulse">
+//       {[...Array(4)].map((_, i) => (
+//         <div key={i} className="flex-shrink-0 w-[300px] h-[400px] bg-[#3a3a3a]" />
+//       ))}
+//     </div>
+//   ),
+// });
 
 interface StorefrontProductsSectionProps {
   products: any[];
@@ -50,12 +51,7 @@ export function StorefrontProductsSection({ products }: StorefrontProductsSectio
       </div>
 
       <div className="relative z-10">
-        <ProductsCarousel 
-          products={mappedProducts}
-          locations={[]}
-          inventoryMap={{}}
-          productFieldsMap={{}}
-        />
+        
       </div>
       
       <div className="text-center mt-12">

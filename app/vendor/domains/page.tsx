@@ -216,7 +216,7 @@ export default function VendorDomainsPage() {
       {/* Add Domain Modal */}
       {showAddDomain && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-          <div className="bg-[#1a1a1a] border border-white/10 rounded-lg max-w-lg w-full p-6">
+          <div className="bg-black border border-white/10 rounded-lg max-w-lg w-full p-6">
             <h2 className="text-2xl font-bold text-white mb-4">Add Custom Domain</h2>
             
             <div className="mb-6">
@@ -226,7 +226,7 @@ export default function VendorDomainsPage() {
                 value={newDomain}
                 onChange={(e) => setNewDomain(e.target.value)}
                 placeholder="example.com"
-                className="w-full bg-[#0a0a0a] border border-white/10 rounded-lg px-4 py-3 text-white"
+                className="w-full bg-black/98 border border-white/10 rounded-lg px-4 py-3 text-white"
                 autoFocus
               />
               <p className="text-white/40 text-sm mt-2">
@@ -255,7 +255,7 @@ export default function VendorDomainsPage() {
       )}
 
       {/* Default Platform Domain */}
-      <div className="bg-[#1a1a1a] border border-white/10 rounded-lg p-6 mb-6">
+      <div className="bg-black border border-white/10 rounded-lg p-6 mb-6">
         <div className="flex items-start justify-between">
           <div className="flex items-start gap-4">
             <div className="bg-white/5 p-3 rounded-lg">
@@ -264,7 +264,7 @@ export default function VendorDomainsPage() {
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <h3 className="text-white font-semibold">{platformDomain}</h3>
-                <span className="bg-white/10 text-white/80 px-2 py-0.5 rounded text-xs">
+                <span className="bg-white/10 text-white/80 px-2 py-0.5 rounded-[14px] text-xs">
                   Platform Domain
                 </span>
               </div>
@@ -289,7 +289,7 @@ export default function VendorDomainsPage() {
           <p className="text-white/60 mt-4">Loading domains...</p>
         </div>
       ) : domains.length === 0 ? (
-        <div className="bg-[#1a1a1a] border border-white/10 rounded-lg p-12 text-center">
+        <div className="bg-black border border-white/10 rounded-lg p-12 text-center">
           <Globe className="text-white/40 mx-auto mb-4" size={48} />
           <h3 className="text-white font-semibold mb-2">No custom domains yet</h3>
           <p className="text-white/60 mb-6">
@@ -306,7 +306,7 @@ export default function VendorDomainsPage() {
       ) : (
         <div className="space-y-4">
           {domains.map((domain) => (
-            <div key={domain.id} className="bg-[#1a1a1a] border border-white/10 rounded-lg p-6">
+            <div key={domain.id} className="bg-black border border-white/10 rounded-lg p-6">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-start gap-4 flex-1">
                   <div className={`p-3 rounded-lg ${domain.verified ? 'bg-green-500/10' : 'bg-yellow-500/10'}`}>
@@ -319,11 +319,11 @@ export default function VendorDomainsPage() {
                         <Star className="text-yellow-500 fill-yellow-500" size={16} />
                       )}
                       {domain.verified ? (
-                        <span className="bg-green-500/20 text-green-500 px-2 py-0.5 rounded text-xs flex items-center gap-1">
+                        <span className="bg-green-500/20 text-green-500 px-2 py-0.5 rounded-[14px] text-xs flex items-center gap-1">
                           <Check size={12} /> Verified
                         </span>
                       ) : (
-                        <span className="bg-yellow-500/20 text-yellow-500 px-2 py-0.5 rounded text-xs flex items-center gap-1">
+                        <span className="bg-yellow-500/20 text-yellow-500 px-2 py-0.5 rounded-[14px] text-xs flex items-center gap-1">
                           <AlertCircle size={12} /> Pending Verification
                         </span>
                       )}
@@ -343,12 +343,12 @@ export default function VendorDomainsPage() {
               </div>
 
               {!domain.verified && (
-                <div className="bg-[#0a0a0a] border border-white/5 rounded-lg p-4 mb-4">
+                <div className="bg-black/98 border border-white/5 rounded-lg p-4 mb-4">
                   <h4 className="text-white font-medium mb-3">DNS Configuration</h4>
                   <p className="text-white/60 text-sm mb-3">
                     Add a CNAME record to your DNS provider:
                   </p>
-                  <div className="bg-black/50 border border-white/10 rounded p-3 font-mono text-sm mb-3">
+                  <div className="bg-black/50 border border-white/10 rounded-[14px] p-3 font-mono text-sm mb-3">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-white/60">Type:</span>
                       <span className="text-white">CNAME</span>

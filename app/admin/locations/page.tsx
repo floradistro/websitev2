@@ -339,7 +339,7 @@ export default function AdminLocations() {
                   className="w-full px-4 lg:px-6 py-4 flex items-center justify-between hover:bg-white/[0.02] transition-all duration-300"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-white/5 flex items-center justify-center flex-shrink-0 rounded overflow-hidden relative">
+                    <div className="w-10 h-10 bg-white/5 flex items-center justify-center flex-shrink-0 rounded-[14px] overflow-hidden relative">
                       {group.vendor.logo_url ? (
                         <img 
                           src={group.vendor.logo_url} 
@@ -373,7 +373,7 @@ export default function AdminLocations() {
                         {/* Mobile Layout - Fully Stacked */}
                         <div className="lg:hidden space-y-3">
                           <div className="flex items-start gap-3">
-                            <div className="w-8 h-8 bg-white/5 flex items-center justify-center flex-shrink-0 rounded">
+                            <div className="w-8 h-8 bg-white/5 flex items-center justify-center flex-shrink-0 rounded-[14px]">
                               <MapPin size={16} className="text-white/40" />
                             </div>
                             <div className="flex-1 min-w-0">
@@ -382,14 +382,14 @@ export default function AdminLocations() {
                                 {location.is_primary && <Star size={12} className="text-yellow-500 fill-yellow-500" />}
                               </div>
                               <div className="flex items-center gap-2 text-xs">
-                                <span className="text-white/60 capitalize px-2 py-0.5 bg-white/5 rounded">{location.type}</span>
+                                <span className="text-white/60 capitalize px-2 py-0.5 bg-white/5 rounded-[14px]">{location.type}</span>
                                 {location.is_active ? (
-                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 text-white/60 border border-white/10 rounded">
+                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 text-white/60 border border-white/10 rounded-[14px]">
                                     <CheckCircle size={10} />
                                     Active
                                   </span>
                                 ) : (
-                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 text-white/40 border border-white/10 rounded">
+                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 text-white/40 border border-white/10 rounded-[14px]">
                                     <XCircle size={10} />
                                     Inactive
                                   </span>
@@ -410,20 +410,20 @@ export default function AdminLocations() {
                           <div className="flex gap-2 pl-10">
                             <button
                               onClick={() => openEditModal(location)}
-                              className="flex-1 p-2.5 text-white/60 hover:text-white hover:bg-white/10 transition-all rounded border border-white/10 text-xs"
+                              className="flex-1 p-2.5 text-white/60 hover:text-white hover:bg-white/10 transition-all rounded-[14px] border border-white/10 text-xs"
                             >
                               Edit
                             </button>
                             <button
                               onClick={() => toggleStatus(location.id, location.is_active)}
-                              className="flex-1 p-2.5 text-white/60 hover:text-white hover:bg-white/10 transition-all rounded border border-white/10 text-xs"
+                              className="flex-1 p-2.5 text-white/60 hover:text-white hover:bg-white/10 transition-all rounded-[14px] border border-white/10 text-xs"
                             >
                               {location.is_active ? 'Deactivate' : 'Activate'}
                             </button>
                             {!location.is_primary && (
                               <button
                                 onClick={() => deleteLocation(location.id, location.name)}
-                                className="p-2.5 px-4 text-red-500/60 hover:text-red-500 hover:bg-red-500/10 transition-all rounded border border-red-500/20 text-xs"
+                                className="p-2.5 px-4 text-red-500/60 hover:text-red-500 hover:bg-red-500/10 transition-all rounded-[14px] border border-red-500/20 text-xs"
                               >
                                 Delete
                               </button>
@@ -508,7 +508,7 @@ export default function AdminLocations() {
             <select
               value={newLocation.vendor_id}
               onChange={(e) => setNewLocation({ ...newLocation, vendor_id: e.target.value })}
-              className="w-full bg-[#111111] border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
+              className="w-full bg-black border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
             >
               <option value="">Select a vendor</option>
               {vendors.map((vendor) => (
@@ -526,7 +526,7 @@ export default function AdminLocations() {
                 type="text"
                 value={newLocation.name}
                 onChange={(e) => setNewLocation({ ...newLocation, name: e.target.value })}
-                className="w-full bg-[#111111] border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
+                className="w-full bg-black border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
               />
             </div>
             <div>
@@ -534,7 +534,7 @@ export default function AdminLocations() {
               <select
                 value={newLocation.type}
                 onChange={(e) => setNewLocation({ ...newLocation, type: e.target.value as any })}
-                className="w-full bg-[#111111] border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
+                className="w-full bg-black border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
               >
                 <option value="retail">Retail</option>
                 <option value="warehouse">Warehouse</option>
@@ -550,7 +550,7 @@ export default function AdminLocations() {
               type="text"
               value={newLocation.address_line1}
               onChange={(e) => setNewLocation({ ...newLocation, address_line1: e.target.value })}
-              className="w-full bg-[#111111] border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
+              className="w-full bg-black border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
             />
           </div>
           
@@ -561,7 +561,7 @@ export default function AdminLocations() {
                 type="text"
                 value={newLocation.city}
                 onChange={(e) => setNewLocation({ ...newLocation, city: e.target.value })}
-                className="w-full bg-[#111111] border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
+                className="w-full bg-black border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
               />
             </div>
             <div>
@@ -570,7 +570,7 @@ export default function AdminLocations() {
                 type="text"
                 value={newLocation.state}
                 onChange={(e) => setNewLocation({ ...newLocation, state: e.target.value })}
-                className="w-full bg-[#111111] border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
+                className="w-full bg-black border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
               />
             </div>
             <div>
@@ -579,7 +579,7 @@ export default function AdminLocations() {
                 type="text"
                 value={newLocation.zip}
                 onChange={(e) => setNewLocation({ ...newLocation, zip: e.target.value })}
-                className="w-full bg-[#111111] border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
+                className="w-full bg-black border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
               />
             </div>
           </div>
@@ -608,7 +608,7 @@ export default function AdminLocations() {
                   type="text"
                   value={editingLocation.name}
                   onChange={(e) => setEditingLocation({ ...editingLocation, name: e.target.value })}
-                  className="w-full bg-[#111111] border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
+                  className="w-full bg-black border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
                 />
               </div>
               <div>
@@ -616,7 +616,7 @@ export default function AdminLocations() {
                 <select
                   value={editingLocation.type}
                   onChange={(e) => setEditingLocation({ ...editingLocation, type: e.target.value as any })}
-                  className="w-full bg-[#111111] border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
+                  className="w-full bg-black border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
                 >
                   <option value="retail">Retail</option>
                   <option value="warehouse">Warehouse</option>
@@ -632,7 +632,7 @@ export default function AdminLocations() {
                 type="text"
                 value={editingLocation.address_line1 || ''}
                 onChange={(e) => setEditingLocation({ ...editingLocation, address_line1: e.target.value })}
-                className="w-full bg-[#111111] border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
+                className="w-full bg-black border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
               />
             </div>
             
@@ -643,7 +643,7 @@ export default function AdminLocations() {
                   type="text"
                   value={editingLocation.city || ''}
                   onChange={(e) => setEditingLocation({ ...editingLocation, city: e.target.value })}
-                  className="w-full bg-[#111111] border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
+                  className="w-full bg-black border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
                 />
               </div>
               <div>
@@ -652,7 +652,7 @@ export default function AdminLocations() {
                   type="text"
                   value={editingLocation.state || ''}
                   onChange={(e) => setEditingLocation({ ...editingLocation, state: e.target.value })}
-                  className="w-full bg-[#111111] border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
+                  className="w-full bg-black border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
                 />
               </div>
               <div>
@@ -661,7 +661,7 @@ export default function AdminLocations() {
                   type="text"
                   value={editingLocation.zip || ''}
                   onChange={(e) => setEditingLocation({ ...editingLocation, zip: e.target.value })}
-                  className="w-full bg-[#111111] border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
+                  className="w-full bg-black border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
                 />
               </div>
             </div>

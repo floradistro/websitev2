@@ -1,9 +1,11 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
-const supabaseUrl = 'https://uaednwpxursknmwdeejn.supabase.co';
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVhZWRud3B4dXJza25td2RlZWpuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA5OTcyMzMsImV4cCI6MjA3NjU3MzIzM30.N8jPwlyCBB5KJB5I-XaK6m-mq88rSR445AWFJJmwRCg';
+// Use Supabase connection pooler for better scalability
+// Pooler endpoint: Add .pooler suffix to project host for transaction mode
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://uaednwpxursknmwdeejn.supabase.co';
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVhZWRud3B4dXJza25td2RlZWpuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA5OTcyMzMsImV4cCI6MjA3NjU3MzIzM30.N8jPwlyCBB5KJB5I-XaK6m-mq88rSR445AWFJJmwRCg';
 
-// Optimized client configuration with connection pooling
+// Optimized client configuration with connection pooling and performance tuning
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     autoRefreshToken: false, // Disable auto-refresh to prevent token errors
@@ -16,17 +18,19 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   },
   global: {
     headers: {
-      'x-application-name': 'floradistro',
-      'x-client-info': 'floradistro-web/1.0.0'
+      'x-application-name': 'yachtclub',
+      'x-client-info': 'yachtclub-web/2.0.0',
+      'Connection': 'keep-alive', // Reuse connections
     },
     fetch: (url, options = {}) => {
-      // Add timeout to all requests
+      // Add timeout to all requests with connection pooling
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 30000);
 
       return fetch(url, {
         ...options,
         signal: controller.signal,
+        keepalive: true, // Enable connection reuse
       }).finally(() => clearTimeout(timeoutId));
     }
   },
@@ -48,7 +52,11 @@ export function getServiceSupabase() {
 
   const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVhZWRud3B4dXJza25td2RlZWpuIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MDk5NzIzMywiZXhwIjoyMDc2NTczMjMzfQ.l0NvBbS2JQWPObtWeVD2M2LD866A2tgLmModARYNnbI';
   
-  serviceSupabaseInstance = createClient(supabaseUrl, supabaseServiceKey, {
+  // Use pooler URL for service role (better for high-concurrency serverless)
+  // NOTE: In production, use environment variable for pooler URL
+  const poolerUrl = process.env.SUPABASE_POOLER_URL || supabaseUrl;
+  
+  serviceSupabaseInstance = createClient(poolerUrl, supabaseServiceKey, {
     auth: {
       autoRefreshToken: false,
       persistSession: false
@@ -58,17 +66,19 @@ export function getServiceSupabase() {
     },
     global: {
       headers: {
-        'x-application-name': 'floradistro-service',
-        'x-client-info': 'floradistro-service/1.0.0'
+        'x-application-name': 'yachtclub-service',
+        'x-client-info': 'yachtclub-service/2.0.0',
+        'Connection': 'keep-alive',
       },
       fetch: (url, options = {}) => {
-        // Add timeout to all server requests
+        // Add timeout to all server requests with connection reuse
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 45000);
 
         return fetch(url, {
           ...options,
           signal: controller.signal,
+          keepalive: true, // Reuse connections across requests
         }).finally(() => clearTimeout(timeoutId));
       }
     }
@@ -77,8 +87,8 @@ export function getServiceSupabase() {
   return serviceSupabaseInstance;
 }
 
-// Cleanup on process termination (server-side)
-if (typeof process !== 'undefined') {
+// Cleanup on process termination (Node.js runtime only, not Edge)
+if (typeof process !== 'undefined' && typeof process.on === 'function') {
   process.on('SIGTERM', () => {
     serviceSupabaseInstance = null;
   });

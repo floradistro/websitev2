@@ -374,7 +374,7 @@ export default function AdminPricingTiers() {
       </div>
 
       {/* Quick Templates */}
-      <div className="bg-[#111111] border border-white/10 p-6 mb-6 -mx-4 lg:mx-0">
+      <div className="bg-black border border-white/10 p-6 mb-6 -mx-4 lg:mx-0">
         <h3 className="text-white font-medium text-sm mb-4 uppercase tracking-wider">Quick Start Templates</h3>
         <p className="text-white/50 text-xs mb-4">Create a pricing blueprint from a simple template</p>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
@@ -438,7 +438,7 @@ export default function AdminPricingTiers() {
           <p className="text-white/60 text-sm">Loading pricing blueprints...</p>
         </div>
       ) : blueprints.length === 0 ? (
-        <div className="text-center py-12 bg-[#111111] border border-white/10 -mx-4 lg:mx-0">
+        <div className="text-center py-12 bg-black border border-white/10 -mx-4 lg:mx-0">
           <DollarSign size={48} className="text-white/20 mx-auto mb-4" />
           <p className="text-white/60 mb-4">No pricing blueprints found</p>
           <button
@@ -454,7 +454,7 @@ export default function AdminPricingTiers() {
           {blueprints.map((blueprint) => (
             <div 
               key={blueprint.id} 
-              className="bg-[#111111] border border-white/10 overflow-hidden -mx-4 lg:mx-0"
+              className="bg-black border border-white/10 overflow-hidden -mx-4 lg:mx-0"
             >
               {/* Header */}
               <div 
@@ -525,7 +525,7 @@ export default function AdminPricingTiers() {
                       blueprint.price_breaks
                         .sort((a, b) => a.sort_order - b.sort_order)
                         .map((brk, index) => (
-                          <div key={index} className="bg-[#111111] border border-white/10 p-4 flex items-center justify-between">
+                          <div key={index} className="bg-black border border-white/10 p-4 flex items-center justify-between">
                             <div className="flex-1">
                               <div className="flex items-center gap-3 mb-1">
                                 <span className="text-white/40 text-xs">#{brk.sort_order}</span>
@@ -806,7 +806,7 @@ export default function AdminPricingTiers() {
             <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
               <button
                 onClick={() => setShowBlueprintModal(false)}
-                className="px-5 py-2.5 bg-[#111111] text-white border border-white/10 text-xs uppercase tracking-wider hover:bg-white/5 transition-all"
+                className="px-5 py-2.5 bg-black text-white border border-white/10 text-xs uppercase tracking-wider hover:bg-white/5 transition-all"
               >
                 Cancel
               </button>

@@ -1,0 +1,43 @@
+ ⚠ Profiling is enabled. Note: This may affect performance.
+   ▲ Next.js 15.5.5
+   - Environments: .env.local
+   - Experiments (use with caution):
+     ✓ optimizeCss
+     · optimizePackageImports
+
+   Creating an optimized production build ...
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (118kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+ ⚠ Compiled with warnings in 19.0s
+
+./node_modules/@supabase/realtime-js/dist/module/lib/websocket-factory.js
+A Node.js API is used (process.versions at line: 32) which is not supported in the Edge Runtime.
+Learn more: https://nextjs.org/docs/api-reference/edge-runtime
+
+Import trace for requested module:
+./node_modules/@supabase/realtime-js/dist/module/lib/websocket-factory.js
+./node_modules/@supabase/realtime-js/dist/module/index.js
+./node_modules/@supabase/supabase-js/dist/module/index.js
+__barrel_optimize__?names=createClient!=!./node_modules/@supabase/supabase-js/dist/module/index.js
+
+./node_modules/@supabase/supabase-js/dist/module/index.js
+A Node.js API is used (process.version at line: 23) which is not supported in the Edge Runtime.
+Learn more: https://nextjs.org/docs/api-reference/edge-runtime
+
+Import trace for requested module:
+./node_modules/@supabase/supabase-js/dist/module/index.js
+__barrel_optimize__?names=createClient!=!./node_modules/@supabase/supabase-js/dist/module/index.js
+
+   Linting and checking validity of types ...
+Failed to compile.
+
+./lib/lazy-components.ts:10:8
+Type error: Left side of comma operator is unused and has no side effects.
+
+[0m [90m  8 |[39m [90m// Animation components - load on demand[39m
+ [90m  9 |[39m [90m// export const ProductGridAnimation = dynamic(() => import('@/components/ProductGridAnimation'), {[39m
+[31m[1m>[22m[39m[90m 10 |[39m   ssr[33m:[39m [36mfalse[39m[33m,[39m
+ [90m    |[39m        [31m[1m^[22m[39m
+ [90m 11 |[39m   loading[33m:[39m () [33m=>[39m [36mnull[39m[33m,[39m
+ [90m 12 |[39m })[33m;[39m
+ [90m 13 |[39m[0m
+Next.js build worker exited with code: 1 and signal: null

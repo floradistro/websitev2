@@ -194,7 +194,7 @@ export default function CostPlusPricingPage() {
       </div>
 
       {/* Example Cost (for preview only) */}
-      <div className="bg-[#1a1a1a] border border-white/5 p-6 mb-6">
+      <div className="bg-black border border-white/5 p-6 mb-6">
         <h2 className="text-white font-medium mb-4 flex items-center gap-2">
           <Calculator size={20} className="text-white/60" />
           Preview Calculator
@@ -214,7 +214,7 @@ export default function CostPlusPricingPage() {
                 value={exampleCost}
                 onChange={(e) => setExampleCost(e.target.value)}
                 placeholder="1000.00"
-                className="w-full bg-white/5 border border-white/10 text-white placeholder-white/40 pl-8 pr-4 py-3 rounded focus:outline-none focus:border-white/20"
+                className="w-full bg-white/5 border border-white/10 text-white placeholder-white/40 pl-8 pr-4 py-3 rounded-[14px] focus:outline-none focus:border-white/20"
               />
             </div>
             <p className="text-white/40 text-xs mt-1">
@@ -229,7 +229,7 @@ export default function CostPlusPricingPage() {
             <select
               value={costUnit}
               onChange={(e) => setCostUnit(e.target.value as 'pound' | 'ounce' | 'gram')}
-              className="w-full bg-white/5 border border-white/10 text-white px-4 py-3 rounded focus:outline-none focus:border-white/20"
+              className="w-full bg-white/5 border border-white/10 text-white px-4 py-3 rounded-[14px] focus:outline-none focus:border-white/20"
             >
               <option value="pound">Per Pound (lb)</option>
               <option value="ounce">Per Ounce (oz)</option>
@@ -243,7 +243,7 @@ export default function CostPlusPricingPage() {
       </div>
 
       {/* Markup Tiers */}
-      <div className="bg-[#1a1a1a] border border-white/5 p-6 mb-6">
+      <div className="bg-black border border-white/5 p-6 mb-6">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-white font-medium flex items-center gap-2">
             <DollarSign size={20} className="text-white/60" />
@@ -302,7 +302,7 @@ export default function CostPlusPricingPage() {
                       step="0.1"
                       value={tier.min_quantity}
                       onChange={(e) => updateTier(index, { min_quantity: parseFloat(e.target.value) })}
-                      className="w-full bg-white/5 border border-white/10 text-white px-3 py-2 text-sm rounded focus:outline-none focus:border-white/20"
+                      className="w-full bg-white/5 border border-white/10 text-white px-3 py-2 text-sm rounded-[14px] focus:outline-none focus:border-white/20"
                     />
                   </div>
 
@@ -312,7 +312,7 @@ export default function CostPlusPricingPage() {
                     <select
                       value={tier.min_quantity_unit}
                       onChange={(e) => updateTier(index, { min_quantity_unit: e.target.value })}
-                      className="w-full bg-white/5 border border-white/10 text-white px-3 py-2 text-sm rounded focus:outline-none focus:border-white/20"
+                      className="w-full bg-white/5 border border-white/10 text-white px-3 py-2 text-sm rounded-[14px] focus:outline-none focus:border-white/20"
                     >
                       <option value="pound">Pounds</option>
                       <option value="ounce">Ounces</option>
@@ -361,7 +361,7 @@ export default function CostPlusPricingPage() {
                         step={tier.markup_type === 'flat' ? '1' : '0.1'}
                         value={tier.markup_value}
                         onChange={(e) => updateTier(index, { markup_value: parseFloat(e.target.value) || 0 })}
-                        className={`w-full bg-white/5 border border-white/10 text-white px-3 py-2 text-sm rounded focus:outline-none focus:border-white/20 ${
+                        className={`w-full bg-white/5 border border-white/10 text-white px-3 py-2 text-sm rounded-[14px] focus:outline-none focus:border-white/20 ${
                           tier.markup_type === 'flat' ? 'pl-7' : ''
                         }`}
                       />
@@ -415,7 +415,7 @@ export default function CostPlusPricingPage() {
       </div>
 
       {/* Preview / Summary */}
-      <div className="bg-[#1a1a1a] border border-white/5 p-6 mb-6">
+      <div className="bg-black border border-white/5 p-6 mb-6">
         <h2 className="text-white font-medium mb-4">Pricing Summary</h2>
         
         <div className="space-y-3">

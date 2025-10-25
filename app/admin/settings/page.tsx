@@ -18,7 +18,6 @@ export default function AdminSettings() {
   });
 
   const handleSave = () => {
-    console.log('Saving settings:', settings);
     alert('Settings saved successfully!');
   };
 
@@ -58,7 +57,7 @@ export default function AdminSettings() {
       {/* Settings Sections */}
       <div className="grid gap-6">
         {/* General Settings */}
-        <div className="bg-[#111111] border border-white/10 p-4 lg:p-6 -mx-4 lg:mx-0">
+        <div className="bg-black border border-white/10 p-4 lg:p-6 -mx-4 lg:mx-0">
           <div className="flex items-center gap-3 mb-6">
             <Globe size={20} className="text-white/50" />
             <h2 className="text-white font-medium text-lg">General Settings</h2>
@@ -92,7 +91,7 @@ export default function AdminSettings() {
         </div>
 
         {/* Financial Settings */}
-        <div className="bg-[#111111] border border-white/10 p-4 lg:p-6 -mx-4 lg:mx-0">
+        <div className="bg-black border border-white/10 p-4 lg:p-6 -mx-4 lg:mx-0">
           <div className="flex items-center gap-3 mb-6">
             <DollarSign size={20} className="text-white/50" />
             <h2 className="text-white font-medium text-lg">Financial Settings</h2>
@@ -154,7 +153,7 @@ export default function AdminSettings() {
         </div>
 
         {/* Product Settings */}
-        <div className="bg-[#111111] border border-white/10 p-4 lg:p-6 -mx-4 lg:mx-0">
+        <div className="bg-black border border-white/10 p-4 lg:p-6 -mx-4 lg:mx-0">
           <div className="flex items-center gap-3 mb-6">
             <Package size={20} className="text-white/50" />
             <h2 className="text-white font-medium text-lg">Product Settings</h2>
@@ -177,7 +176,7 @@ export default function AdminSettings() {
         </div>
 
         {/* Notification Settings */}
-        <div className="bg-[#111111] border border-white/10 p-4 lg:p-6 -mx-4 lg:mx-0">
+        <div className="bg-black border border-white/10 p-4 lg:p-6 -mx-4 lg:mx-0">
           <div className="flex items-center gap-3 mb-6">
             <Bell size={20} className="text-white/50" />
             <h2 className="text-white font-medium text-lg">Notification Settings</h2>
@@ -226,7 +225,7 @@ export default function AdminSettings() {
         </div>
 
         {/* Email Settings */}
-        <div className="bg-[#111111] border border-white/10 p-4 lg:p-6 -mx-4 lg:mx-0">
+        <div className="bg-black border border-white/10 p-4 lg:p-6 -mx-4 lg:mx-0">
           <div className="flex items-center gap-3 mb-6">
             <Mail size={20} className="text-white/50" />
             <h2 className="text-white font-medium text-lg">Email Settings</h2>

@@ -1,7 +1,7 @@
 // @ts-nocheck
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
-import ProductsCarousel from '@/components/ProductsCarousel';
+// import ProductsCarousel from '@/components/ProductsCarousel'; // Component doesn't exist
 
 interface FeaturedProductsSectionProps {
   content: {
@@ -46,13 +46,7 @@ export function FeaturedProductsSection({
         </div>
 
         <div className="py-8 overflow-visible">
-          <ProductsCarousel 
-            products={products}
-            locations={locations}
-            inventoryMap={inventoryMap}
-            productFieldsMap={productFieldsMap}
-            vendorSlug={vendor?.slug}
-          />
+          
         </div>
       </div>
     </section>

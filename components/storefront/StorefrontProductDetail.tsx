@@ -16,7 +16,7 @@ import FloraFields from "@/components/FloraFields";
 import LabResults from "@/components/LabResults";
 import ProductReviews from "@/components/ProductReviews";
 import CategorySection from "@/components/CategorySection";
-import ProductsCarousel from "@/components/ProductsCarousel";
+// import ProductsCarousel from "@/components/ProductsCarousel";
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -600,27 +600,8 @@ export function StorefrontProductDetail({ productSlug, vendorId, config = {} }: 
               </h2>
             </div>
             <div className="py-8 overflow-visible">
-              <ProductsCarousel 
-                products={relatedProducts.map((p: any) => ({
-                  ...p,
-                  images: p.featured_image_storage 
-                    ? [{ src: p.featured_image_storage, id: 0, name: p.name }]
-                    : p.images || []
-                }))}
-                locations={locations}
-                inventoryMap={relatedProducts.reduce((acc: any, p: any) => {
-                  acc[p.id] = p.inventory || [];
-                  return acc;
-                }, {})}
-                productFieldsMap={relatedProducts.reduce((acc: any, p: any) => {
-                  acc[p.id] = {
-                    fields: p.fields || {},
-                    pricingTiers: p.pricing_tiers || []
-                  };
-                  return acc;
-                }, {})}
-                vendorSlug={vendor?.slug}
-              />
+              {/* ProductsCarousel component removed */}
+              <div className="text-white/40">Related products will be displayed here</div>
             </div>
           </div>
         </section>

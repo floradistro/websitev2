@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Package, Plus, AlertCircle, CheckCircle, XCircle, TrendingUp, DollarSign, AlertTriangle, Bell, Calendar, ArrowUpRight, ArrowDownRight, FileText, MessageSquare, Store, Image } from 'lucide-react';
+import { Package, Plus, AlertCircle, CheckCircle, XCircle, TrendingUp, DollarSign, AlertTriangle, Bell, Calendar, ArrowUpRight, ArrowDownRight, FileText, MessageSquare, Store, Image, FileCode, Palette } from 'lucide-react';
 import { useVendorAuth } from '@/context/VendorAuthContext';
 import VendorProfitWidget from '@/components/VendorProfitWidget';
 import axios from 'axios';
@@ -94,12 +94,9 @@ export default function VendorDashboard() {
         // Get vendor ID from localStorage
         const vendorId = localStorage.getItem('vendor_id');
         if (!vendorId) {
-          console.error('❌ No vendor ID found');
           setLoading(false);
           return;
         }
-
-        console.log('🔵 Loading dashboard via bulk endpoint for vendor:', vendorId);
 
         // Use bulk endpoint - gets branding + dashboard data in ONE call
         const response = await axios.get('/api/page-data/vendor-dashboard', {
@@ -113,8 +110,6 @@ export default function VendorDashboard() {
         }
         
         const data = response.data.data;
-        
-        console.log(`✅ Vendor dashboard loaded in ${response.data.meta.responseTime}`);
         
         // Set vendor branding
         if (data.vendor) {
@@ -197,7 +192,9 @@ export default function VendorDashboard() {
 
         setLoading(false);
       } catch (error) {
-        console.error('❌ Error loading dashboard:', error);
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Error loading dashboard:', error);
+        }
         setLoading(false);
       }
   }
@@ -232,7 +229,7 @@ export default function VendorDashboard() {
     };
 
     return (
-      <span className={`px-2 py-1 text-xs font-medium uppercase tracking-wider border rounded ${styles[status as keyof typeof styles] || styles.draft}`}>
+      <span className={`px-2 py-1 text-xs font-medium uppercase tracking-wider border rounded-[14px] ${styles[status as keyof typeof styles] || styles.draft}`}>
         {status}
       </span>
     );
@@ -250,190 +247,164 @@ export default function VendorDashboard() {
   };
 
   return (
-    <div className="w-full max-w-full animate-fadeIn overflow-x-hidden px-4 lg:px-0">
-      {/* Welcome Header with Logo */}
-      <div className="mb-8">
-        <div className="flex items-center gap-4 mb-4">
-          {vendorLogo ? (
-            <div className="w-16 h-16 bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden flex-shrink-0">
-              <img 
-                src={vendorLogo} 
-                alt={vendor?.store_name || 'Vendor'} 
-                className="w-full h-full object-cover"
-              />
-            </div>
-          ) : (
-            <div className="w-16 h-16 bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0">
-              <Store size={28} className="text-white/30" />
-            </div>
-          )}
-          <div className="flex-1 min-w-0">
-            <h1 className="text-3xl text-white mb-1 font-light tracking-tight">
-              {vendor?.store_name || 'Vendor Dashboard'}
-            </h1>
-            <p className="text-white/50 text-sm">
-              {vendorBranding?.store_tagline || 'Manage your products, inventory, and orders'}
-            </p>
-          </div>
-        </div>
+    <div className="w-full px-4 lg:px-0">
+      <style jsx>{`
+        @keyframes fade-in {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in {
+          animation: fade-in 0.6s ease-out;
+        }
+        .minimal-glass {
+          background: rgba(255, 255, 255, 0.02);
+          backdrop-filter: blur(20px);
+          border: 1px solid rgba(255, 255, 255, 0.05);
+          border-radius: 20px;
+        }
+        .subtle-glow {
+          box-shadow: 0 0 30px rgba(255, 255, 255, 0.02);
+        }
+      `}</style>
+
+      {/* Header */}
+      <div className="mb-12 fade-in">
+        <h1 className="text-3xl font-thin text-white/90 tracking-tight mb-2">
+          {vendor?.store_name || 'Dashboard'}
+        </h1>
+        <p className="text-white/40 text-xs font-light tracking-wide">
+          {vendorBranding?.store_tagline?.toUpperCase() || 'VENDOR PORTAL'} · {new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }).toUpperCase()}
+        </p>
       </div>
 
-      {/* Stats Grid - Modernized */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      {/* Key Metrics */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
         {/* Live Products */}
-        <div className="bg-[#111111] border border-white/10 p-5 hover:border-white/20 transition-all group">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-white/50 text-xs uppercase tracking-wider">Live Products</span>
-            <Package size={18} className="text-white/30 group-hover:text-white/50 transition-colors" />
+        <div className="minimal-glass subtle-glow p-6 hover:bg-white/[0.03] transition-all duration-300 group fade-in">
+          <div className="flex items-center justify-between mb-4">
+            <span className="text-white/40 text-[11px] uppercase tracking-[0.2em] font-light">Live Products</span>
+            <Package size={16} className="text-white/20 group-hover:text-white/30 transition-all duration-300" strokeWidth={1.5} />
           </div>
-          <div className="text-2xl font-light text-white mb-1">
+          <div className="text-3xl font-thin text-white/90 mb-2">
             {loading ? '—' : stats.approved}
           </div>
-          <div className="text-white/30 text-xs">Currently selling</div>
+          <div className="text-white/30 text-[10px] font-light tracking-wider uppercase">Currently Selling</div>
         </div>
 
         {/* Pending Review */}
-        <div className="bg-[#111111] border border-white/10 p-5 hover:border-white/20 transition-all group">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-white/50 text-xs uppercase tracking-wider">Pending Review</span>
-            <AlertCircle size={18} className="text-white/30 group-hover:text-white/50 transition-colors" />
+        <div className="minimal-glass subtle-glow p-6 hover:bg-white/[0.03] transition-all duration-300 group fade-in" style={{ animationDelay: '0.1s' }}>
+          <div className="flex items-center justify-between mb-4">
+            <span className="text-white/40 text-[11px] uppercase tracking-[0.2em] font-light">Pending Review</span>
+            <AlertCircle size={16} className="text-white/20 group-hover:text-white/30 transition-all duration-300" strokeWidth={1.5} />
           </div>
-          <div className="text-2xl font-light text-white mb-1">
+          <div className="text-3xl font-thin text-white/90 mb-2">
             {loading ? '—' : stats.pending}
           </div>
-          <div className="text-white/30 text-xs">Awaiting approval</div>
+          <div className="text-white/30 text-[10px] font-light tracking-wider uppercase">Awaiting Approval</div>
         </div>
 
         {/* Sales (30 Days) */}
-        <div className="bg-[#111111] border border-white/10 p-5 hover:border-white/20 transition-all group">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-white/50 text-xs uppercase tracking-wider">Sales (30d)</span>
-            <DollarSign size={18} className="text-white/30 group-hover:text-white/50 transition-colors" />
+        <div className="minimal-glass subtle-glow p-6 hover:bg-white/[0.03] transition-all duration-300 group fade-in" style={{ animationDelay: '0.2s' }}>
+          <div className="flex items-center justify-between mb-4">
+            <span className="text-white/40 text-[11px] uppercase tracking-[0.2em] font-light">Revenue (30d)</span>
+            <DollarSign size={16} className="text-white/20 group-hover:text-white/30 transition-all duration-300" strokeWidth={1.5} />
           </div>
-          <div className="text-2xl font-light text-white mb-1">
-            {loading ? '—' : `$${stats.totalSales30d.toLocaleString()}`}
+          <div className="text-3xl font-thin text-white/90 mb-2">
+            ${loading ? '—' : stats.totalSales30d.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </div>
-          <div className="text-white/30 text-xs">Revenue this month</div>
+          <div className="text-white/30 text-[10px] font-light tracking-wider uppercase">This Month</div>
         </div>
 
         {/* Low Stock */}
-        <div className="bg-[#111111] border border-white/10 p-5 hover:border-white/20 transition-all group">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-white/50 text-xs uppercase tracking-wider">Low Stock</span>
-            <AlertTriangle size={18} className="text-white/30 group-hover:text-white/50 transition-colors" />
+        <div className="minimal-glass subtle-glow p-6 hover:bg-white/[0.03] transition-all duration-300 group fade-in" style={{ animationDelay: '0.3s' }}>
+          <div className="flex items-center justify-between mb-4">
+            <span className="text-white/40 text-[11px] uppercase tracking-[0.2em] font-light">Low Stock</span>
+            <AlertTriangle size={16} className="text-white/20 group-hover:text-white/30 transition-all duration-300" strokeWidth={1.5} />
           </div>
-          <div className="text-2xl font-light text-white mb-1">
+          <div className="text-3xl font-thin text-white/90 mb-2">
             {loading ? '—' : stats.lowStock}
           </div>
-          <div className="text-white/30 text-xs">
-            {stats.lowStock > 0 ? (
-              <span className="text-yellow-500">Need restocking</span>
-            ) : (
-              'All stocked'
-            )}
+          <div className="text-white/30 text-[10px] font-light tracking-wider uppercase">
+            {stats.lowStock > 0 ? 'Need Restocking' : 'All Stocked'}
           </div>
         </div>
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-2 lg:grid-cols-6 gap-0 lg:gap-6 mb-0 lg:mb-8 border-b lg:border-b-0 border-white/5" style={{ animation: 'fadeInUp 0.6s ease-out 0.2s both' }}>
+      <div className="grid grid-cols-2 lg:grid-cols-6 gap-3 mb-8 fade-in" style={{ animationDelay: '0.4s' }}>
         <Link
           href="/vendor/products/new"
-          className="group bg-transparent active:bg-white/5 lg:hover:bg-black border-r border-b lg:border border-white/10 lg:hover:border-white/20 p-5 lg:p-6 transition-all duration-300 relative overflow-hidden min-h-[100px] lg:min-h-0"
+          className="group minimal-glass hover:bg-white/[0.03] p-6 transition-all duration-300 relative overflow-hidden flex items-center gap-4"
         >
-          <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-          <div className="relative flex flex-col lg:flex-row items-center justify-center lg:justify-start gap-2 lg:gap-4 h-full">
-            <div className="w-10 h-10 lg:w-12 lg:h-12 bg-black group-hover:bg-white/10 flex items-center justify-center transition-all duration-300 flex-shrink-0">
-              <Plus size={18} className="lg:hidden text-white/60 group-hover:text-white transition-colors duration-300" />
-              <Plus size={24} className="hidden lg:block text-white/60 group-hover:text-white transition-colors duration-300" />
-            </div>
-            <div className="text-white/80 group-hover:text-white text-xs lg:text-base font-medium transition-colors duration-300 text-center lg:text-left">Add Product</div>
+          <div className="w-10 h-10 bg-gradient-to-br from-white/10 to-white/5 flex items-center justify-center transition-all duration-300 group-hover:scale-110 border border-white/10">
+            <Plus size={20} className="text-white/60 group-hover:text-white transition-colors duration-300" strokeWidth={1.5} />
           </div>
+          <div className="text-white/80 group-hover:text-white text-xs uppercase tracking-[0.15em] font-light transition-colors duration-300">Add Product</div>
         </Link>
 
         <Link
           href="/vendor/products"
-          className="group bg-transparent active:bg-white/5 lg:hover:bg-black border-b lg:border border-white/10 lg:hover:border-white/20 p-5 lg:p-6 transition-all duration-300 relative overflow-hidden min-h-[100px] lg:min-h-0"
+          className="group minimal-glass hover:bg-white/[0.03] p-6 transition-all duration-300 flex items-center gap-4"
         >
-          <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-          <div className="relative flex flex-col lg:flex-row items-center justify-center lg:justify-start gap-2 lg:gap-4 h-full">
-            <div className="w-10 h-10 lg:w-12 lg:h-12 bg-black group-hover:bg-white/10 flex items-center justify-center transition-all duration-300 flex-shrink-0">
-              <Package size={18} className="lg:hidden text-white/60 group-hover:text-white transition-colors duration-300" />
-              <Package size={24} className="hidden lg:block text-white/60 group-hover:text-white transition-colors duration-300" />
-            </div>
-            <div className="text-white/80 group-hover:text-white text-xs lg:text-base font-medium transition-colors duration-300 text-center lg:text-left">My Products</div>
+          <div className="w-10 h-10 bg-gradient-to-br from-white/10 to-white/5 rounded-[12px] flex items-center justify-center transition-all duration-300 group-hover:scale-110 border border-white/10">
+            <Package size={20} className="text-white/60 group-hover:text-white transition-colors duration-300" strokeWidth={1.5} />
           </div>
+          <div className="text-white/80 group-hover:text-white text-xs uppercase tracking-[0.15em] font-light transition-colors duration-300">My Products</div>
         </Link>
 
         <Link
           href="/vendor/inventory"
-          className="group bg-transparent active:bg-white/5 lg:hover:bg-black border-r border-b lg:border border-white/10 lg:hover:border-white/20 p-5 lg:p-6 transition-all duration-300 relative overflow-hidden min-h-[100px] lg:min-h-0"
+          className="group minimal-glass hover:bg-white/[0.03] p-6 transition-all duration-300 flex items-center gap-4"
         >
-          <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-          <div className="relative flex flex-col lg:flex-row items-center justify-center lg:justify-start gap-2 lg:gap-4 h-full">
-            <div className="w-10 h-10 lg:w-12 lg:h-12 bg-black group-hover:bg-white/10 flex items-center justify-center transition-all duration-300 flex-shrink-0">
-              <TrendingUp size={18} className="lg:hidden text-white/60 group-hover:text-white transition-colors duration-300" />
-              <TrendingUp size={24} className="hidden lg:block text-white/60 group-hover:text-white transition-colors duration-300" />
-            </div>
-            <div className="text-white/80 group-hover:text-white text-xs lg:text-base font-medium transition-colors duration-300 text-center lg:text-left">Inventory</div>
+          <div className="w-10 h-10 bg-gradient-to-br from-white/10 to-white/5 rounded-[12px] flex items-center justify-center transition-all duration-300 group-hover:scale-110 border border-white/10">
+            <TrendingUp size={20} className="text-white/60 group-hover:text-white transition-colors duration-300" strokeWidth={1.5} />
           </div>
+          <div className="text-white/80 group-hover:text-white text-xs uppercase tracking-[0.15em] font-light transition-colors duration-300">Inventory</div>
         </Link>
 
         <Link
           href="/vendor/media-library"
-          className="group bg-transparent active:bg-white/5 lg:hover:bg-black border-b lg:border border-white/10 lg:hover:border-white/20 p-5 lg:p-6 transition-all duration-300 relative overflow-hidden min-h-[100px] lg:min-h-0"
+          className="group minimal-glass hover:bg-white/[0.03] p-6 transition-all duration-300 flex items-center gap-4"
         >
-          <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-          <div className="relative flex flex-col lg:flex-row items-center justify-center lg:justify-start gap-2 lg:gap-4 h-full">
-            <div className="w-10 h-10 lg:w-12 lg:h-12 bg-black group-hover:bg-white/10 flex items-center justify-center transition-all duration-300 flex-shrink-0">
-              <Image size={18} className="lg:hidden text-white/60 group-hover:text-white transition-colors duration-300" />
-              <Image size={24} className="hidden lg:block text-white/60 group-hover:text-white transition-colors duration-300" />
-            </div>
-            <div className="text-white/80 group-hover:text-white text-xs lg:text-base font-medium transition-colors duration-300 text-center lg:text-left">Media</div>
+          <div className="w-10 h-10 bg-gradient-to-br from-white/10 to-white/5 rounded-[12px] flex items-center justify-center transition-all duration-300 group-hover:scale-110 border border-white/10">
+            <Image size={20} className="text-white/60 group-hover:text-white transition-colors duration-300" strokeWidth={1.5} />
           </div>
+          <div className="text-white/80 group-hover:text-white text-xs uppercase tracking-[0.15em] font-light transition-colors duration-300">Media</div>
         </Link>
 
         <Link
           href="/vendor/branding"
-          className="group bg-transparent active:bg-white/5 lg:hover:bg-black border-r border-b lg:border border-white/10 lg:hover:border-white/20 p-5 lg:p-6 transition-all duration-300 relative overflow-hidden min-h-[100px] lg:min-h-0"
+          className="group minimal-glass hover:bg-white/[0.03] p-6 transition-all duration-300 flex items-center gap-4"
         >
-          <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-          <div className="relative flex flex-col lg:flex-row items-center justify-center lg:justify-start gap-2 lg:gap-4 h-full">
-            <div className="w-10 h-10 lg:w-12 lg:h-12 bg-black group-hover:bg-white/10 flex items-center justify-center transition-all duration-300 flex-shrink-0">
-              <Package size={18} className="lg:hidden text-white/60 group-hover:text-white transition-colors duration-300" />
-              <Package size={24} className="hidden lg:block text-white/60 group-hover:text-white transition-colors duration-300" />
-            </div>
-            <div className="text-white/80 group-hover:text-white text-xs lg:text-base font-medium transition-colors duration-300 text-center lg:text-left">Branding</div>
+          <div className="w-10 h-10 bg-gradient-to-br from-white/10 to-white/5 rounded-[12px] flex items-center justify-center transition-all duration-300 group-hover:scale-110 border border-white/10">
+            <Palette size={20} className="text-white/60 group-hover:text-white transition-colors duration-300" strokeWidth={1.5} />
           </div>
+          <div className="text-white/80 group-hover:text-white text-xs uppercase tracking-[0.15em] font-light transition-colors duration-300">Branding</div>
         </Link>
 
         <Link
-          href="/vendor/live-editor"
-          className="group bg-transparent active:bg-white/5 lg:hover:bg-black border-b lg:border border-white/10 lg:hover:border-white/20 p-5 lg:p-6 transition-all duration-300 relative overflow-hidden min-h-[100px] lg:min-h-0 col-span-2 md:col-span-1"
+          href="/vendor/component-editor"
+          className="group minimal-glass hover:bg-white/[0.03] p-6 transition-all duration-300 flex items-center gap-4 col-span-2 lg:col-span-1"
         >
-          <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-          <div className="relative flex flex-col lg:flex-row items-center justify-center lg:justify-start gap-2 lg:gap-4 h-full">
-            <div className="w-10 h-10 lg:w-12 lg:h-12 bg-black group-hover:bg-white/10 flex items-center justify-center transition-all duration-300 flex-shrink-0">
-              <Store size={18} className="lg:hidden text-white/60 group-hover:text-white transition-colors duration-300" />
-              <Store size={24} className="hidden lg:block text-white/60 group-hover:text-white transition-colors duration-300" />
-            </div>
-            <div className="text-white/80 group-hover:text-white text-xs lg:text-base font-medium transition-colors duration-300 text-center lg:text-left">Live Editor</div>
+          <div className="w-10 h-10 bg-gradient-to-br from-white/10 to-white/5 rounded-[12px] flex items-center justify-center transition-all duration-300 group-hover:scale-110 border border-white/10">
+            <FileCode size={20} className="text-white/60 group-hover:text-white transition-colors duration-300" strokeWidth={1.5} />
           </div>
+          <div className="text-white/80 group-hover:text-white text-xs uppercase tracking-[0.15em] font-light transition-colors duration-300">Editor</div>
         </Link>
       </div>
 
       {/* Action Items */}
-      <div className="mb-0 lg:mb-6" style={{ animation: 'fadeInUp 0.6s ease-out 0.3s both' }}>
-        <div className="bg-[#1a1a1a] lg:border border-white/5">
-          <div className="border-b border-white/5 px-4 lg:p-4 py-3">
-            <h2 className="text-white/90 text-xs lg:text-sm uppercase tracking-wider font-light">Action Items</h2>
+      <div className="mb-8 fade-in" style={{ animationDelay: '0.5s' }}>
+        <div className="minimal-glass">
+          <div className="border-b border-white/5 p-6">
+            <h2 className="text-white/40 text-[11px] font-light tracking-[0.2em] uppercase">Action Items</h2>
           </div>
           <div className="divide-y divide-white/5">
             {actionItems.map((item) => (
               <Link
                 key={item.id}
                 href={item.link}
-                className="flex items-center justify-between px-4 lg:p-4 py-3 active:bg-white/5 lg:hover:bg-[#303030] transition-all group"
+                className="flex items-center justify-between p-6 hover:bg-white/[0.02] transition-all group"
               >
                 <div className="flex items-center gap-3">
                   {item.type === 'warning' ? (
@@ -451,15 +422,15 @@ export default function VendorDashboard() {
       </div>
 
       {/* 2-Column Layout */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-0 xl:gap-8 mb-0 lg:mb-8" style={{ animation: 'fadeInUp 0.6s ease-out 0.4s both' }}>
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-0 xl:gap-3 mb-8 fade-in" style={{ animationDelay: '0.6s' }}>
         {/* Left Column - 2/3 width */}
-        <div className="xl:col-span-2 space-y-0 lg:space-y-6">
+        <div className="xl:col-span-2 space-y-3">
           {/* Sales Chart */}
-          <div className="bg-[#1a1a1a] lg:border border-t border-white/5">
-            <div className="border-b border-white/5 px-4 lg:px-8 py-4 lg:py-6 flex justify-between items-center">
+          <div className="minimal-glass">
+            <div className="border-b border-white/5 p-6 flex justify-between items-center">
               <div>
-                <h2 className="text-white/90 text-sm uppercase tracking-wider font-light">Sales Trend</h2>
-                <p className="text-white/50 text-xs mt-1">Last 18 days</p>
+                <h2 className="text-white/40 text-[11px] font-light tracking-[0.2em] uppercase mb-2">Sales Trend</h2>
+                <p className="text-white/30 text-[10px] font-light">LAST 18 DAYS</p>
               </div>
               {salesData.length > 0 && (
                 <div className="flex items-center gap-2">
@@ -468,7 +439,7 @@ export default function VendorDashboard() {
                 </div>
               )}
             </div>
-            <div className="px-4 lg:px-8 py-4 lg:py-6">
+            <div className="p-6">
               {/* Simple Bar Chart */}
               <div className="flex items-end justify-between gap-1 lg:gap-2 h-32 lg:h-48">
                 {salesData.length > 0 ? (
@@ -507,13 +478,13 @@ export default function VendorDashboard() {
           </div>
 
           {/* Top Products */}
-          <div className="bg-[#1a1a1a] lg:border border-t lg:border-t-0 border-white/5">
-            <div className="border-b border-white/5 px-4 lg:px-8 py-4 lg:py-6">
-              <h2 className="text-white/90 text-sm uppercase tracking-wider font-light">Top Performing Products</h2>
+          <div className="minimal-glass">
+            <div className="border-b border-white/5 p-6">
+              <h2 className="text-white/40 text-[11px] font-light tracking-[0.2em] uppercase">Top Performing Products</h2>
             </div>
             <div className="divide-y divide-white/5">
               {topProducts.map((product, index) => (
-                <div key={product.id} className="px-4 lg:p-4 py-3 active:bg-white/5 lg:hover:bg-[#303030] transition-all flex items-center gap-4">
+                <div key={product.id} className="p-6 hover:bg-white/[0.02] transition-all flex items-center gap-4">
                   <div className="w-8 h-8 bg-white/5 flex items-center justify-center text-white/40 text-sm font-medium">
                     #{index + 1}
                   </div>
@@ -529,25 +500,25 @@ export default function VendorDashboard() {
             </div>
           </div>
           {/* Recent Product Submissions */}
-          <div className="bg-[#1a1a1a] lg:border border-t lg:border-t-0 border-white/5">
-            <div className="border-b border-white/5 px-4 lg:px-8 py-4 lg:py-6 flex justify-between items-center">
-              <h2 className="text-white/90 text-sm uppercase tracking-wider font-light">Recent Product Submissions</h2>
+          <div className="minimal-glass">
+            <div className="border-b border-white/5 p-6 flex justify-between items-center">
+              <h2 className="text-white/40 text-[11px] font-light tracking-[0.2em] uppercase">Recent Product Submissions</h2>
               <Link href="/vendor/products" className="text-white/60 hover:text-white text-xs uppercase tracking-wider transition-colors">
                 View All
               </Link>
             </div>
             <div className="divide-y divide-white/10">
               {loading ? (
-                <div className="p-12 text-center text-white/60">Loading...</div>
+                <div className="p-12 text-center text-white/40 text-xs">Loading...</div>
               ) : recentProducts.length === 0 ? (
-                <div className="p-12 text-center text-white/60">
+                <div className="p-12 text-center text-white/40 text-xs">
                   No products yet. Add your first product to get started!
                 </div>
               ) : (
                 recentProducts.map((product) => (
-                  <div key={product.id} className="px-4 lg:px-8 py-3 lg:py-4 active:bg-white/5 lg:hover:bg-white/5 transition-colors">
+                  <div key={product.id} className="p-6 hover:bg-white/[0.02] transition-all">
                     <div className="flex items-center gap-4">
-                      <div className="w-16 h-16 bg-[#2a2a2a] border border-white/10 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                      <div className="w-16 h-16 bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0 overflow-hidden">
                         {product.image ? (
                           <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
                         ) : (
@@ -579,14 +550,14 @@ export default function VendorDashboard() {
 
           {/* Low Inventory Warnings */}
           {lowStockItems.length > 0 && (
-            <div className="bg-[#1a1a1a] lg:border border-t lg:border-t-0 border-red-500/10">
-              <div className="border-b border-white/5 px-4 lg:px-8 py-4 lg:py-6 flex items-center gap-3">
-                <AlertTriangle size={18} className="text-red-500" strokeWidth={1.5} />
-                <h2 className="text-white/90 text-sm uppercase tracking-wider font-light">Low Inventory Warnings</h2>
+            <div className="minimal-glass border-red-500/10">
+              <div className="border-b border-white/5 p-6 flex items-center gap-3">
+                <AlertTriangle size={16} className="text-red-500" strokeWidth={1.5} />
+                <h2 className="text-white/40 text-[11px] font-light tracking-[0.2em] uppercase">Low Inventory Warnings</h2>
               </div>
               <div className="divide-y divide-white/5">
                 {lowStockItems.map((item) => (
-                  <div key={item.id} className="px-4 lg:p-4 py-3 active:bg-white/5 lg:hover:bg-white/5 transition-colors">
+                  <div key={item.id} className="p-6 hover:bg-white/[0.02] transition-all">
                     <div className="flex items-center justify-between">
                       <div>
                         <div className="text-white font-medium mb-1">{item.name}</div>
@@ -609,16 +580,16 @@ export default function VendorDashboard() {
         </div>
 
         {/* Right Column - 1/3 width */}
-        <div className="space-y-6">
+        <div className="space-y-3">
           {/* Profit Margin Widget */}
           <VendorProfitWidget />
 
           {/* Payout Summary */}
-          <div className="bg-[#1a1a1a] lg:border border-t lg:border-t-0 border-white/5">
-            <div className="border-b border-white/5 px-4 lg:p-6 py-4">
-              <h2 className="text-white/90 text-sm uppercase tracking-wider font-light">Payout Summary</h2>
+          <div className="minimal-glass">
+            <div className="border-b border-white/5 p-6">
+              <h2 className="text-white/40 text-[11px] font-light tracking-[0.2em] uppercase">Payout Summary</h2>
             </div>
-            <div className="px-4 lg:p-6 py-4 space-y-4">
+            <div className="p-6 space-y-4">
               {/* Pending Earnings */}
               <div>
                 <div className="text-white/60 text-xs mb-2">Pending Earnings</div>
@@ -641,7 +612,7 @@ export default function VendorDashboard() {
 
               <Link
                 href="/vendor/payouts"
-                className="block w-full text-center px-4 py-2.5 bg-black text-white border border-white/20 hover:bg-white hover:text-black hover:border-white text-xs uppercase tracking-wider transition-all duration-300 mt-4"
+                className="block w-full text-center px-4 py-2.5 bg-gradient-to-r from-white/10 to-white/5 text-white/70 border border-white/10 hover:border-white/20 hover:text-white rounded-[14px] text-xs uppercase tracking-wider transition-all duration-300 mt-4"
               >
                 View Payout History
               </Link>
@@ -649,20 +620,20 @@ export default function VendorDashboard() {
           </div>
 
           {/* Vendor Notices */}
-          <div className="bg-[#1a1a1a] lg:border border-t lg:border-t-0 border-white/5">
-            <div className="border-b border-white/5 px-4 lg:p-6 py-4">
-              <h2 className="text-white/90 text-sm uppercase tracking-wider font-light">Notices</h2>
+          <div className="minimal-glass">
+            <div className="border-b border-white/5 p-6">
+              <h2 className="text-white/40 text-[11px] font-light tracking-[0.2em] uppercase">Notices</h2>
             </div>
             <div className="divide-y divide-white/5">
               {loading ? (
-                <div className="p-6 text-center text-white/60 text-sm">Loading...</div>
+                <div className="p-6 text-center text-white/40 text-xs">Loading...</div>
               ) : notices.length === 0 ? (
-                <div className="p-6 text-center text-white/60 text-sm">
+                <div className="p-6 text-center text-white/40 text-xs">
                   No new notices
                 </div>
               ) : (
                 notices.map((notice) => (
-                  <div key={notice.id} className="px-4 lg:p-4 py-3 active:bg-white/5 lg:hover:bg-white/5 transition-colors">
+                  <div key={notice.id} className="p-6 hover:bg-white/[0.02] transition-all">
                     <div className="flex gap-3">
                       <div className="flex-shrink-0 mt-0.5">
                         {getNoticeIcon(notice.type)}

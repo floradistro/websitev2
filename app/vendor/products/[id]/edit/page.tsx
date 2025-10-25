@@ -347,7 +347,7 @@ export default function EditProduct() {
   if (loading) {
     return (
       <div className="lg:max-w-4xl lg:mx-auto px-4 lg:px-0 py-6 lg:py-0">
-        <div className="bg-[#1a1a1a] lg:border border-white/5 p-12 text-center text-white/60">
+        <div className="bg-black lg:border border-white/5 p-12 text-center text-white/60">
           Loading product...
         </div>
       </div>
@@ -406,7 +406,7 @@ export default function EditProduct() {
 
       <form onSubmit={handleSubmit} className="space-y-0 lg:space-y-6">
         {/* Basic Information */}
-        <div className="bg-[#1a1a1a] lg:border border-t border-white/5 p-4 lg:p-6 -mx-4 lg:mx-0">
+        <div className="bg-black lg:border border-t border-white/5 p-4 lg:p-6 -mx-4 lg:mx-0">
           <h2 className="text-white font-medium mb-6">Basic Information</h2>
           
           <div className="space-y-4">
@@ -420,7 +420,7 @@ export default function EditProduct() {
                 value={product.name}
                 onChange={(e) => setProduct({...product, name: e.target.value})}
                 placeholder="e.g., Blue Dream"
-                className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors text-base"
+                className="w-full bg-black border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors text-base"
               />
             </div>
 
@@ -434,7 +434,7 @@ export default function EditProduct() {
                 value={product.description}
                 onChange={(e) => setProduct({...product, description: e.target.value})}
                 placeholder="Describe your product..."
-                className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors resize-none text-base"
+                className="w-full bg-black border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors resize-none text-base"
               />
             </div>
 
@@ -446,7 +446,7 @@ export default function EditProduct() {
                 required
                 value={product.category}
                 onChange={(e) => setProduct({...product, category: e.target.value})}
-                className="w-full bg-[#1a1a1a] border border-white/5 text-white px-4 py-3 focus:outline-none focus:border-white/10 transition-colors text-base"
+                className="w-full bg-black border border-white/5 text-white px-4 py-3 focus:outline-none focus:border-white/10 transition-colors text-base"
               >
                 <option value="">Select category</option>
                 <option value="Flower">Flower</option>
@@ -470,7 +470,7 @@ export default function EditProduct() {
                   value={product.cost_price}
                   onChange={(e) => setProduct({...product, cost_price: e.target.value})}
                   placeholder="10.00"
-                  className="w-full bg-white/5 border border-white/10 text-white placeholder-white/40 pl-8 pr-4 py-3 rounded focus:outline-none focus:border-white/20 text-base"
+                  className="w-full bg-white/5 border border-white/10 text-white placeholder-white/40 pl-8 pr-4 py-3 rounded-[14px] focus:outline-none focus:border-white/20 text-base"
                 />
               </div>
               <p className="text-white/40 text-xs mt-1">
@@ -492,7 +492,7 @@ export default function EditProduct() {
                   value={product.price}
                   onChange={(e) => setProduct({...product, price: e.target.value})}
                   placeholder="14.99"
-                  className="w-full bg-white/5 border border-white/10 text-white placeholder-white/40 pl-8 pr-4 py-3 rounded focus:outline-none focus:border-white/20 text-base"
+                  className="w-full bg-white/5 border border-white/10 text-white placeholder-white/40 pl-8 pr-4 py-3 rounded-[14px] focus:outline-none focus:border-white/20 text-base"
                 />
               </div>
               
@@ -527,7 +527,7 @@ export default function EditProduct() {
         </div>
 
         {/* Lab Results / COA */}
-        <div className="bg-[#1a1a1a] lg:border border-t border-white/5 p-4 lg:p-6 -mx-4 lg:mx-0">
+        <div className="bg-black lg:border border-t border-white/5 p-4 lg:p-6 -mx-4 lg:mx-0">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-white font-medium">Certificates of Analysis (COA)</h2>
             <Link 
@@ -693,7 +693,7 @@ export default function EditProduct() {
                   value={coaForm.product_name_on_coa}
                   onChange={(e) => setCoaForm(prev => ({ ...prev, product_name_on_coa: e.target.value }))}
                   placeholder="e.g., Blue Dream (as written on COA)"
-                  className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-3 py-2 text-sm focus:outline-none focus:border-white/10"
+                  className="w-full bg-black border border-white/5 text-white placeholder-white/40 px-3 py-2 text-sm focus:outline-none focus:border-white/10"
                 />
               </div>
 
@@ -704,7 +704,7 @@ export default function EditProduct() {
                   value={coaForm.lab_name}
                   onChange={(e) => setCoaForm(prev => ({ ...prev, lab_name: e.target.value }))}
                   placeholder="e.g., Quantix Analytics"
-                  className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-3 py-2 text-sm focus:outline-none focus:border-white/10"
+                  className="w-full bg-black border border-white/5 text-white placeholder-white/40 px-3 py-2 text-sm focus:outline-none focus:border-white/10"
                 />
               </div>
 
@@ -715,7 +715,7 @@ export default function EditProduct() {
                   value={coaForm.batch_number}
                   onChange={(e) => setCoaForm(prev => ({ ...prev, batch_number: e.target.value }))}
                   placeholder="e.g., BATCH-2025-001"
-                  className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-3 py-2 text-sm focus:outline-none focus:border-white/10"
+                  className="w-full bg-black border border-white/5 text-white placeholder-white/40 px-3 py-2 text-sm focus:outline-none focus:border-white/10"
                 />
               </div>
 
@@ -725,7 +725,7 @@ export default function EditProduct() {
                     type="date"
                     value={coaForm.test_date}
                     onChange={(e) => setCoaForm(prev => ({ ...prev, test_date: e.target.value }))}
-                    className="w-full bg-[#1a1a1a] border border-white/5 text-white px-3 py-2 text-sm focus:outline-none focus:border-white/10"
+                    className="w-full bg-black border border-white/5 text-white px-3 py-2 text-sm focus:outline-none focus:border-white/10"
                   />
                 </div>
 
@@ -735,7 +735,7 @@ export default function EditProduct() {
                     type="date"
                     value={coaForm.expiry_date}
                     onChange={(e) => setCoaForm(prev => ({ ...prev, expiry_date: e.target.value }))}
-                    className="w-full bg-[#1a1a1a] border border-white/5 text-white px-3 py-2 text-sm focus:outline-none focus:border-white/10"
+                    className="w-full bg-black border border-white/5 text-white px-3 py-2 text-sm focus:outline-none focus:border-white/10"
                   />
                 </div>
               </div>
@@ -752,7 +752,7 @@ export default function EditProduct() {
                       value={coaForm.thc}
                       onChange={(e) => setCoaForm(prev => ({ ...prev, thc: e.target.value }))}
                       placeholder="22.5"
-                      className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-2 py-2 text-sm focus:outline-none focus:border-white/10"
+                      className="w-full bg-black border border-white/5 text-white placeholder-white/40 px-2 py-2 text-sm focus:outline-none focus:border-white/10"
                     />
                   </div>
 
@@ -764,7 +764,7 @@ export default function EditProduct() {
                       value={coaForm.cbd}
                       onChange={(e) => setCoaForm(prev => ({ ...prev, cbd: e.target.value }))}
                       placeholder="0.5"
-                      className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-2 py-2 text-sm focus:outline-none focus:border-white/10"
+                      className="w-full bg-black border border-white/5 text-white placeholder-white/40 px-2 py-2 text-sm focus:outline-none focus:border-white/10"
                     />
                   </div>
 
@@ -776,7 +776,7 @@ export default function EditProduct() {
                       value={coaForm.thca}
                       onChange={(e) => setCoaForm(prev => ({ ...prev, thca: e.target.value }))}
                       placeholder="1.2"
-                      className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-2 py-2 text-sm focus:outline-none focus:border-white/10"
+                      className="w-full bg-black border border-white/5 text-white placeholder-white/40 px-2 py-2 text-sm focus:outline-none focus:border-white/10"
                     />
                   </div>
 
@@ -788,7 +788,7 @@ export default function EditProduct() {
                       value={coaForm.cbda}
                       onChange={(e) => setCoaForm(prev => ({ ...prev, cbda: e.target.value }))}
                       placeholder="0.3"
-                      className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-2 py-2 text-sm focus:outline-none focus:border-white/10"
+                      className="w-full bg-black border border-white/5 text-white placeholder-white/40 px-2 py-2 text-sm focus:outline-none focus:border-white/10"
                     />
                   </div>
 
@@ -800,7 +800,7 @@ export default function EditProduct() {
                       value={coaForm.cbg}
                       onChange={(e) => setCoaForm(prev => ({ ...prev, cbg: e.target.value }))}
                       placeholder="0.8"
-                      className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-2 py-2 text-sm focus:outline-none focus:border-white/10"
+                      className="w-full bg-black border border-white/5 text-white placeholder-white/40 px-2 py-2 text-sm focus:outline-none focus:border-white/10"
                     />
                   </div>
 
@@ -812,7 +812,7 @@ export default function EditProduct() {
                       value={coaForm.cbn}
                       onChange={(e) => setCoaForm(prev => ({ ...prev, cbn: e.target.value }))}
                       placeholder="0.2"
-                      className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-2 py-2 text-sm focus:outline-none focus:border-white/10"
+                      className="w-full bg-black border border-white/5 text-white placeholder-white/40 px-2 py-2 text-sm focus:outline-none focus:border-white/10"
                     />
                   </div>
 
@@ -824,7 +824,7 @@ export default function EditProduct() {
                       value={coaForm.total_cannabinoids}
                       onChange={(e) => setCoaForm(prev => ({ ...prev, total_cannabinoids: e.target.value }))}
                       placeholder="25.0"
-                      className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-2 py-2 text-sm focus:outline-none focus:border-white/10"
+                      className="w-full bg-black border border-white/5 text-white placeholder-white/40 px-2 py-2 text-sm focus:outline-none focus:border-white/10"
                     />
                   </div>
 
@@ -836,7 +836,7 @@ export default function EditProduct() {
                       value={coaForm.total_terpenes}
                       onChange={(e) => setCoaForm(prev => ({ ...prev, total_terpenes: e.target.value }))}
                       placeholder="2.5"
-                      className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-2 py-2 text-sm focus:outline-none focus:border-white/10"
+                      className="w-full bg-black border border-white/5 text-white placeholder-white/40 px-2 py-2 text-sm focus:outline-none focus:border-white/10"
                     />
                   </div>
                 </div>
@@ -876,7 +876,7 @@ export default function EditProduct() {
         </div>
 
         {/* Strain Details */}
-        <div className="bg-[#1a1a1a] lg:border border-t border-white/5 p-4 lg:p-6 -mx-4 lg:mx-0">
+        <div className="bg-black lg:border border-t border-white/5 p-4 lg:p-6 -mx-4 lg:mx-0">
           <h2 className="text-white font-medium mb-6">Strain Details</h2>
           
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -889,7 +889,7 @@ export default function EditProduct() {
                   value={product.thc_percentage}
                   onChange={(e) => setProduct({...product, thc_percentage: e.target.value})}
                   placeholder="24.5"
-                  className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors text-base"
+                  className="w-full bg-black border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors text-base"
                 />
                 <span className="absolute right-4 top-1/2 -translate-y-1/2 text-white/60">%</span>
               </div>
@@ -904,7 +904,7 @@ export default function EditProduct() {
                   value={product.cbd_percentage}
                   onChange={(e) => setProduct({...product, cbd_percentage: e.target.value})}
                   placeholder="0.5"
-                  className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors text-base"
+                  className="w-full bg-black border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors text-base"
                 />
                 <span className="absolute right-4 top-1/2 -translate-y-1/2 text-white/60">%</span>
               </div>
@@ -915,7 +915,7 @@ export default function EditProduct() {
               <select
                 value={product.strain_type}
                 onChange={(e) => setProduct({...product, strain_type: e.target.value})}
-                className="w-full bg-[#1a1a1a] border border-white/5 text-white px-4 py-3 focus:outline-none focus:border-white/10 transition-colors text-base"
+                className="w-full bg-black border border-white/5 text-white px-4 py-3 focus:outline-none focus:border-white/10 transition-colors text-base"
               >
                 <option value="">Select type</option>
                 <option value="indica">Indica</option>
@@ -932,7 +932,7 @@ export default function EditProduct() {
                 value={product.quantity}
                 onChange={(e) => setProduct({...product, quantity: e.target.value})}
                 placeholder="100"
-                className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors text-base"
+                className="w-full bg-black border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors text-base"
                 disabled={product.status === 'approved'}
               />
               {product.status === 'approved' && (
@@ -947,7 +947,7 @@ export default function EditProduct() {
                 value={product.lineage}
                 onChange={(e) => setProduct({...product, lineage: e.target.value})}
                 placeholder="e.g., Blueberry × Haze"
-                className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors text-base"
+                className="w-full bg-black border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors text-base"
               />
             </div>
 
@@ -958,7 +958,7 @@ export default function EditProduct() {
                 value={product.terpenes}
                 onChange={(e) => setProduct({...product, terpenes: e.target.value})}
                 placeholder="e.g., Myrcene, Pinene, Caryophyllene"
-                className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors text-base"
+                className="w-full bg-black border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors text-base"
               />
             </div>
 
@@ -969,7 +969,7 @@ export default function EditProduct() {
                 value={product.effects}
                 onChange={(e) => setProduct({...product, effects: e.target.value})}
                 placeholder="e.g., Relaxed, Creative, Euphoric"
-                className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors text-base"
+                className="w-full bg-black border border-white/5 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/10 transition-colors text-base"
               />
             </div>
           </div>
@@ -997,7 +997,7 @@ export default function EditProduct() {
       {/* COA Library Modal */}
       {showCoaLibrary && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setShowCoaLibrary(false)}>
-          <div className="bg-[#1a1a1a] border border-white/10 max-w-3xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-black border border-white/10 max-w-3xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             {/* Header */}
             <div className="border-b border-white/5 p-6">
               <div className="flex justify-between items-start">

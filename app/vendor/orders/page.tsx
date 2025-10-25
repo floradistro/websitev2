@@ -95,64 +95,74 @@ export default function VendorOrders() {
   const totalCommission = filteredOrders.reduce((sum, order) => sum + order.commission, 0);
 
   return (
-    <div className="w-full max-w-full animate-fadeIn px-4 lg:px-0 py-6 lg:py-0 overflow-x-hidden">
+    <div className="w-full px-4 lg:px-0">
+      <style jsx>{`
+        @keyframes fade-in {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in {
+          animation: fade-in 0.6s ease-out;
+        }
+        .minimal-glass {
+          background: rgba(255, 255, 255, 0.02);
+          backdrop-filter: blur(20px);
+          border: 1px solid rgba(255, 255, 255, 0.05);
+          border-radius: 20px;
+        }
+        .subtle-glow {
+          box-shadow: 0 0 30px rgba(255, 255, 255, 0.02);
+        }
+      `}</style>
+
       {/* Header */}
-      <div className="mb-6 lg:mb-8" style={{ animation: 'fadeInUp 0.5s ease-out' }}>
-        <h1 className="text-2xl lg:text-3xl font-light text-white mb-2 tracking-tight">
+      <div className="mb-12 fade-in">
+        <h1 className="text-3xl font-thin text-white/90 tracking-tight mb-2">
           Orders & Sales
         </h1>
-        <p className="text-white/60 text-xs lg:text-sm">
-          Track orders containing your products and commission earnings
+        <p className="text-white/40 text-xs font-light tracking-wide">
+          TRACK ORDERS · COMMISSION EARNINGS
         </p>
       </div>
 
       {/* Summary Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 lg:gap-4 mb-6" style={{ animation: 'fadeInUp 0.6s ease-out 0.1s both' }}>
-        <div className="bg-[#1a1a1a] border border-white/5 p-6 hover:border-white/10 hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
-          <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-          <div className="relative">
-            <div className="flex items-center justify-between mb-4">
-              <div className="text-white/60 text-xs uppercase tracking-wider">Total Orders</div>
-              <Package size={20} className="text-white/40" />
-            </div>
-            <div className="text-3xl font-light text-white mb-1">
-              {loading ? '—' : filteredOrders.length}
-            </div>
-            <div className="text-white/40 text-xs">Orders with your products</div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-8">
+        <div className="minimal-glass subtle-glow p-6 hover:bg-white/[0.03] transition-all duration-300 group fade-in">
+          <div className="flex items-center justify-between mb-4">
+            <span className="text-white/40 text-[11px] uppercase tracking-[0.2em] font-light">Total Orders</span>
+            <Package size={16} className="text-white/20 group-hover:text-white/30 transition-all duration-300" strokeWidth={1.5} />
           </div>
+          <div className="text-3xl font-thin text-white/90 mb-2">
+            {loading ? '—' : filteredOrders.length}
+          </div>
+          <div className="text-white/30 text-[10px] font-light tracking-wider uppercase">With Your Products</div>
         </div>
 
-        <div className="bg-[#1a1a1a] border border-white/5 p-6 hover:border-white/10 hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
-          <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-          <div className="relative">
-            <div className="flex items-center justify-between mb-4">
-              <div className="text-white/60 text-xs uppercase tracking-wider">Gross Revenue</div>
-              <DollarSign size={20} className="text-white/40" />
-            </div>
-            <div className="text-3xl font-light text-white mb-1">
-              {loading ? '—' : `$${totalRevenue.toFixed(2)}`}
-            </div>
-            <div className="text-white/40 text-xs">Before commission</div>
+        <div className="minimal-glass subtle-glow p-6 hover:bg-white/[0.03] transition-all duration-300 group fade-in" style={{ animationDelay: '0.1s' }}>
+          <div className="flex items-center justify-between mb-4">
+            <span className="text-white/40 text-[11px] uppercase tracking-[0.2em] font-light">Gross Revenue</span>
+            <DollarSign size={16} className="text-white/20 group-hover:text-white/30 transition-all duration-300" strokeWidth={1.5} />
           </div>
+          <div className="text-3xl font-thin text-white/90 mb-2">
+            ${loading ? '—' : totalRevenue.toFixed(2)}
+          </div>
+          <div className="text-white/30 text-[10px] font-light tracking-wider uppercase">Before Commission</div>
         </div>
 
-        <div className="bg-[#1a1a1a] border border-white/5 p-6 hover:border-white/10 hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
-          <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-          <div className="relative">
-            <div className="flex items-center justify-between mb-4">
-              <div className="text-white/60 text-xs uppercase tracking-wider">Your Earnings</div>
-              <DollarSign size={20} className="text-white/40" />
-            </div>
-            <div className="text-3xl font-light text-white mb-1">
-              {loading ? '—' : `$${(totalRevenue - totalCommission).toFixed(2)}`}
-            </div>
-            <div className="text-white/40 text-xs">After 15% commission</div>
+        <div className="minimal-glass subtle-glow p-6 hover:bg-white/[0.03] transition-all duration-300 group fade-in" style={{ animationDelay: '0.2s' }}>
+          <div className="flex items-center justify-between mb-4">
+            <span className="text-white/40 text-[11px] uppercase tracking-[0.2em] font-light">Your Earnings</span>
+            <DollarSign size={16} className="text-white/20 group-hover:text-white/30 transition-all duration-300" strokeWidth={1.5} />
           </div>
+          <div className="text-3xl font-thin text-white/90 mb-2">
+            ${loading ? '—' : (totalRevenue - totalCommission).toFixed(2)}
+          </div>
+          <div className="text-white/30 text-[10px] font-light tracking-wider uppercase">After Commission</div>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="bg-[#1a1a1a] lg:border border-t border-b border-white/5 p-4 mb-6 -mx-4 lg:mx-0" style={{ animation: 'fadeInUp 0.6s ease-out 0.2s both' }}>
+      <div className="minimal-glass p-6 mb-8 fade-in" style={{ animationDelay: '0.3s' }}>
         <div className="flex flex-col lg:flex-row gap-3 lg:gap-4">
           {/* Search */}
           <div className="flex-1 relative">
@@ -162,7 +172,7 @@ export default function VendorOrders() {
               placeholder="Search by customer name or order number..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 pl-10 pr-4 py-3 focus:outline-none focus:border-white/10 transition-colors text-base"
+              className="w-full bg-black/20 border border-white/10 text-white placeholder-white/30 pl-10 pr-4 py-3 focus:outline-none focus:border-white/30 transition-all rounded-[14px] text-base"
             />
           </div>
 
@@ -170,30 +180,30 @@ export default function VendorOrders() {
           <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 lg:mx-0 lg:px-0 lg:pb-0 scrollbar-hide">
             <button
               onClick={() => setStatusFilter('all')}
-              className={`px-4 py-2 text-xs uppercase tracking-wider transition-all whitespace-nowrap ${
+              className={`px-4 py-2 text-xs uppercase tracking-wider transition-all whitespace-nowrap rounded-[14px] ${
                 statusFilter === 'all'
-                  ? 'bg-white text-black border border-white'
-                  : 'bg-[#1a1a1a] text-white/60 hover:text-white border border-white/5 hover:border-white/10'
+                  ? 'bg-gradient-to-r from-white/10 to-white/5 text-white border-white/20 border'
+                  : 'bg-black/20 text-white/50 border border-white/10 hover:border-white/20 hover:text-white/70'
               }`}
             >
               All
             </button>
             <button
               onClick={() => setStatusFilter('completed')}
-              className={`px-4 py-2 text-xs uppercase tracking-wider transition-all whitespace-nowrap ${
+              className={`px-4 py-2 text-xs uppercase tracking-wider transition-all whitespace-nowrap rounded-[14px] ${
                 statusFilter === 'completed'
-                  ? 'bg-white/10 text-white border border-white/20'
-                  : 'bg-[#1a1a1a] text-white/60 hover:text-white border border-white/5 hover:border-white/10'
+                  ? 'bg-gradient-to-r from-white/10 to-white/5 text-white border border-white/20'
+                  : 'bg-black/20 text-white/50 border border-white/10 hover:border-white/20 hover:text-white/70'
               }`}
             >
               Completed
             </button>
             <button
               onClick={() => setStatusFilter('processing')}
-              className={`px-4 py-2 text-xs uppercase tracking-wider transition-all whitespace-nowrap ${
+              className={`px-4 py-2 text-xs uppercase tracking-wider transition-all whitespace-nowrap rounded-[14px] ${
                 statusFilter === 'processing'
-                  ? 'bg-white/10 text-white border border-white/20'
-                  : 'bg-[#1a1a1a] text-white/60 hover:text-white border border-white/5 hover:border-white/10'
+                  ? 'bg-gradient-to-r from-white/10 to-white/5 text-white border border-white/20'
+                  : 'bg-black/20 text-white/50 border border-white/10 hover:border-white/20 hover:text-white/70'
               }`}
             >
               Processing
@@ -204,11 +214,11 @@ export default function VendorOrders() {
 
       {/* Orders Table */}
       {loading ? (
-        <div className="bg-[#1a1a1a] lg:border border-white/5 p-12">
-          <div className="text-center text-white/60">Loading orders...</div>
+        <div className="minimal-glass p-12 text-center">
+          <div className="text-white/40 text-xs">Loading orders...</div>
         </div>
       ) : filteredOrders.length === 0 ? (
-        <div className="bg-[#1a1a1a] lg:border border-white/5 p-12">
+        <div className="minimal-glass p-12">
           <div className="text-center">
             <Package size={48} className="text-white/20 mx-auto mb-4" />
             <div className="text-white/60">No orders found</div>
@@ -222,7 +232,7 @@ export default function VendorOrders() {
               <div
                 key={order.id}
                 onClick={() => setSelectedOrder(order)}
-                className="px-4 py-3 active:bg-white/5 transition-all bg-[#1a1a1a]"
+                className="px-4 py-3 hover:bg-white/[0.02] transition-all bg-black"
               >
                 <div className="flex items-center justify-between mb-2">
                   <div>
@@ -240,9 +250,9 @@ export default function VendorOrders() {
           </div>
 
           {/* Desktop Table View */}
-          <div className="hidden lg:block bg-[#1a1a1a] border border-white/5 overflow-hidden" style={{ animation: 'fadeInUp 0.6s ease-out 0.3s both' }}>
+          <div className="hidden lg:block minimal-glass overflow-hidden fade-in" style={{ animationDelay: '0.4s' }}>
           <table className="w-full">
-            <thead className="border-b border-white/5 bg-[#1a1a1a]">
+            <thead className="border-b border-white/5 bg-black/40">
               <tr>
                 <th className="text-left text-xs font-medium text-white/60 uppercase tracking-wider p-4">Order</th>
                 <th className="text-left text-xs font-medium text-white/60 uppercase tracking-wider p-4">Date</th>
@@ -256,7 +266,7 @@ export default function VendorOrders() {
             </thead>
             <tbody className="divide-y divide-white/5">
               {filteredOrders.map((order) => (
-                <tr key={order.id} className="hover:bg-[#303030] transition-all group">
+                <tr key={order.id} className="hover:bg-white/[0.02] transition-all group">
                   <td className="p-4">
                     <div className="flex items-center gap-2">
                       <Package size={16} className="text-white/40" />
@@ -307,7 +317,7 @@ export default function VendorOrders() {
       {/* Order Detail Modal */}
       {selectedOrder && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setSelectedOrder(null)}>
-          <div className="bg-[#1a1a1a] border border-white/10 max-w-2xl w-full p-6 animate-fadeIn" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-black/95 backdrop-blur-xl border border-white/10 rounded-[20px] max-w-2xl w-full p-6 animate-fadeIn" onClick={(e) => e.stopPropagation()}>
             <div className="flex justify-between items-start mb-6">
               <div>
                 <h2 className="text-xl font-light text-white mb-1">Order {selectedOrder.orderNumber}</h2>
@@ -328,7 +338,7 @@ export default function VendorOrders() {
               <h3 className="text-xs uppercase tracking-wider text-white/60 mb-3">Order Items</h3>
               <div className="space-y-2">
                 {selectedOrder.items.map((item, idx) => (
-                  <div key={idx} className="flex justify-between items-center p-3 bg-white/5 border border-white/5">
+                  <div key={idx} className="flex justify-between items-center p-3 bg-white/5 border border-white/5 rounded-[12px]">
                     <div>
                       <div className="text-white text-sm">{item.productName}</div>
                       <div className="text-white/60 text-xs">Qty: {item.quantity}</div>

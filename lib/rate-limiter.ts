@@ -4,7 +4,7 @@
  * Enterprise-grade rate limiting
  */
 
-interface RateLimitConfig {
+export interface RateLimitConfig {
   windowMs: number;      // Time window in milliseconds
   maxRequests: number;   // Max requests per window
   message?: string;      // Custom error message
@@ -55,7 +55,6 @@ export class RateLimiter {
       const blockUntil = oldestRequest + config.windowMs;
       this.blockedUntil.set(identifier, blockUntil);
       
-      console.warn(`🚫 Rate limit exceeded for ${identifier}: ${requestTimes.length}/${config.maxRequests} requests`);
       return false;
     }
     

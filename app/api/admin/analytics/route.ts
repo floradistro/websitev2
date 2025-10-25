@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
     // Fetch real orders
     const { data: orders, error: ordersError } = await supabase
       .from('orders')
-      .select('id, total, status, created_at')
+      .select('id, total_amount, status, created_at')
       .gte('created_at', startDate.toISOString())
       .eq('status', 'completed');
 
@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
     }
 
     const totalOrders = orders?.length || 0;
-    const totalRevenue = orders?.reduce((sum, o) => sum + parseFloat(o.total || '0'), 0) || 0;
+    const totalRevenue = orders?.reduce((sum, o) => sum + parseFloat(o.total_amount || '0'), 0) || 0;
     const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
 
     // Group revenue by week
@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
       const weekStart = new Date(date.getFullYear(), date.getMonth(), date.getDate() - date.getDay());
       const weekKey = weekStart.toISOString().split('T')[0];
       
-      revenueByWeek[weekKey] = (revenueByWeek[weekKey] || 0) + parseFloat(order.total || '0');
+      revenueByWeek[weekKey] = (revenueByWeek[weekKey] || 0) + parseFloat(order.total_amount || '0');
     });
 
     const revenueData = Object.entries(revenueByWeek)

@@ -145,7 +145,7 @@ export default function VendorLabResults() {
 
       {/* Summary Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4 mb-6" style={{ animation: 'fadeInUp 0.6s ease-out 0.1s both' }}>
-        <div className="bg-[#1a1a1a] border border-white/5 p-4 lg:p-6 active:bg-white/5 lg:hover:border-white/10 lg:hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+        <div className="bg-black border border-white/5 p-4 lg:p-6 active:bg-white/5 lg:hover:border-white/10 lg:hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
           <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
           <div className="relative">
             <div className="flex items-center justify-between mb-2 lg:mb-4">
@@ -158,7 +158,7 @@ export default function VendorLabResults() {
           </div>
         </div>
 
-        <div className="bg-[#1a1a1a] border border-white/5 p-6 hover:border-white/10 hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+        <div className="bg-black border border-white/5 p-6 hover:border-white/10 hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
           <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
           <div className="relative">
             <div className="flex items-center justify-between mb-4">
@@ -170,7 +170,7 @@ export default function VendorLabResults() {
           </div>
         </div>
 
-        <div className="bg-[#1a1a1a] border border-white/5 p-6 hover:border-white/10 hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+        <div className="bg-black border border-white/5 p-6 hover:border-white/10 hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
           <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
           <div className="relative">
             <div className="flex items-center justify-between mb-4">
@@ -182,7 +182,7 @@ export default function VendorLabResults() {
           </div>
         </div>
 
-        <div className="bg-[#1a1a1a] border border-white/5 p-6 hover:border-white/10 hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+        <div className="bg-black border border-white/5 p-6 hover:border-white/10 hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
           <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
           <div className="relative">
             <div className="flex items-center justify-between mb-4">
@@ -196,7 +196,7 @@ export default function VendorLabResults() {
       </div>
 
       {/* Filters */}
-      <div className="bg-[#1a1a1a] lg:border border-t border-b border-white/5 p-4 mb-6 -mx-4 lg:mx-0" style={{ animation: 'fadeInUp 0.6s ease-out 0.2s both' }}>
+      <div className="bg-black lg:border border-t border-b border-white/5 p-4 mb-6 -mx-4 lg:mx-0" style={{ animation: 'fadeInUp 0.6s ease-out 0.2s both' }}>
         <div className="flex flex-col lg:flex-row gap-3 lg:gap-4">
           {/* Search */}
           <div className="flex-1 relative">
@@ -206,7 +206,7 @@ export default function VendorLabResults() {
               placeholder="Search by product name or COA number..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 pl-10 pr-4 py-3 focus:outline-none focus:border-white/10 transition-colors text-base"
+              className="w-full bg-black border border-white/5 text-white placeholder-white/40 pl-10 pr-4 py-3 focus:outline-none focus:border-white/10 transition-colors text-base"
             />
           </div>
 
@@ -217,7 +217,7 @@ export default function VendorLabResults() {
               className={`px-4 py-2 text-xs uppercase tracking-wider transition-all whitespace-nowrap ${
                 statusFilter === 'all'
                   ? 'bg-white text-black border border-white'
-                  : 'bg-[#1a1a1a] text-white/60 hover:text-white border border-white/5 hover:border-white/10'
+                  : 'bg-black text-white/60 hover:text-white border border-white/5 hover:border-white/10'
               }`}
             >
               All
@@ -227,7 +227,7 @@ export default function VendorLabResults() {
               className={`px-4 py-2 text-xs uppercase tracking-wider transition-all whitespace-nowrap ${
                 statusFilter === 'approved'
                   ? 'bg-white/10 text-white border border-white/20'
-                  : 'bg-[#1a1a1a] text-white/60 hover:text-white border border-white/5 hover:border-white/10'
+                  : 'bg-black text-white/60 hover:text-white border border-white/5 hover:border-white/10'
               }`}
             >
               Approved
@@ -237,7 +237,7 @@ export default function VendorLabResults() {
               className={`px-4 py-2 text-xs uppercase tracking-wider transition-all whitespace-nowrap ${
                 statusFilter === 'pending'
                   ? 'bg-white/10 text-white border border-white/20'
-                  : 'bg-[#1a1a1a] text-white/60 hover:text-white border border-white/5 hover:border-white/10'
+                  : 'bg-black text-white/60 hover:text-white border border-white/5 hover:border-white/10'
               }`}
             >
               Pending
@@ -247,7 +247,7 @@ export default function VendorLabResults() {
               className={`px-4 py-2 text-xs uppercase tracking-wider transition-all whitespace-nowrap ${
                 statusFilter === 'expired'
                   ? 'bg-red-500/10 text-red-500 border border-red-500/20'
-                  : 'bg-[#1a1a1a] text-white/60 hover:text-white border border-white/5 hover:border-white/10'
+                  : 'bg-black text-white/60 hover:text-white border border-white/5 hover:border-white/10'
               }`}
             >
               Expired
@@ -258,11 +258,11 @@ export default function VendorLabResults() {
 
       {/* COAs Table */}
       {loading ? (
-        <div className="bg-[#1a1a1a] lg:border border-white/5 p-12">
+        <div className="bg-black lg:border border-white/5 p-12">
           <div className="text-center text-white/60">Loading lab results...</div>
         </div>
       ) : filteredCOAs.length === 0 ? (
-        <div className="bg-[#1a1a1a] lg:border border-white/5 p-12">
+        <div className="bg-black lg:border border-white/5 p-12">
           <div className="text-center">
             <FileText size={48} className="text-white/20 mx-auto mb-4" />
             <div className="text-white/60 mb-4">No lab results found</div>
@@ -276,7 +276,7 @@ export default function VendorLabResults() {
             {filteredCOAs.map((coa) => (
               <div
                 key={coa.id}
-                className="px-4 py-3 bg-[#1a1a1a]"
+                className="px-4 py-3 bg-black"
               >
                 <div className="flex gap-3 mb-2">
                   {coa.productImage && (
@@ -335,9 +335,9 @@ export default function VendorLabResults() {
           </div>
 
           {/* Desktop Table View */}
-          <div className="hidden lg:block bg-[#1a1a1a] border border-white/5 overflow-hidden" style={{ animation: 'fadeInUp 0.6s ease-out 0.3s both' }}>
+          <div className="hidden lg:block bg-black border border-white/5 overflow-hidden" style={{ animation: 'fadeInUp 0.6s ease-out 0.3s both' }}>
           <table className="w-full">
-            <thead className="border-b border-white/5 bg-[#1a1a1a]">
+            <thead className="border-b border-white/5 bg-black">
               <tr>
                 <th className="text-left text-xs font-medium text-white/60 uppercase tracking-wider p-4">Product</th>
                 <th className="text-left text-xs font-medium text-white/60 uppercase tracking-wider p-4">COA Number</th>
@@ -350,7 +350,7 @@ export default function VendorLabResults() {
             </thead>
             <tbody className="divide-y divide-white/5">
               {filteredCOAs.map((coa) => (
-                <tr key={coa.id} className="hover:bg-[#303030] transition-all group">
+                <tr key={coa.id} className="hover:bg-white/[0.02] transition-all group">
                   <td className="p-4">
                     <Link 
                       href={`/vendor/products/${coa.productId}/edit`}
@@ -432,7 +432,7 @@ export default function VendorLabResults() {
       {/* COA Detail Modal */}
       {selectedCOA && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setSelectedCOA(null)}>
-          <div className="bg-[#1a1a1a] border border-white/10 max-w-3xl w-full max-h-[90vh] overflow-y-auto animate-fadeIn" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-black border border-white/10 max-w-3xl w-full max-h-[90vh] overflow-y-auto animate-fadeIn" onClick={(e) => e.stopPropagation()}>
             {/* Header */}
             <div className="border-b border-white/5 p-6">
               <div className="flex justify-between items-start">

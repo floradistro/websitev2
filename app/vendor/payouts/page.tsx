@@ -74,20 +74,39 @@ export default function VendorPayouts() {
   const avgPayout = totalPaid / payouts.filter(p => p.status === 'completed').length || 0;
 
   return (
-    <div className="w-full max-w-full animate-fadeIn px-4 lg:px-0 py-6 lg:py-0 overflow-x-hidden">
+    <div className="w-full px-4 lg:px-0">
+      <style jsx>{`
+        @keyframes fade-in {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in {
+          animation: fade-in 0.6s ease-out;
+        }
+        .minimal-glass {
+          background: rgba(255, 255, 255, 0.02);
+          backdrop-filter: blur(20px);
+          border: 1px solid rgba(255, 255, 255, 0.05);
+          border-radius: 20px;
+        }
+        .subtle-glow {
+          box-shadow: 0 0 30px rgba(255, 255, 255, 0.02);
+        }
+      `}</style>
+
       {/* Header */}
-      <div className="mb-6 lg:mb-8" style={{ animation: 'fadeInUp 0.5s ease-out' }}>
-        <h1 className="text-2xl lg:text-3xl font-light text-white mb-2 tracking-tight">
+      <div className="mb-12 fade-in">
+        <h1 className="text-3xl font-thin text-white/90 tracking-tight mb-2">
           Payout History
         </h1>
-        <p className="text-white/60 text-xs lg:text-sm">
-          Track your earnings and payment history
+        <p className="text-white/40 text-xs font-light tracking-wide">
+          PAYMENT HISTORY · TRACK EARNINGS
         </p>
       </div>
 
       {/* Summary Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 lg:gap-4 mb-6" style={{ animation: 'fadeInUp 0.6s ease-out 0.1s both' }}>
-        <div className="bg-[#1a1a1a] border border-white/5 p-6 hover:border-white/10 hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+        <div className="bg-black border border-white/5 p-6 hover:border-white/10 hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
           <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
           <div className="relative">
             <div className="flex items-center justify-between mb-4">
@@ -101,7 +120,7 @@ export default function VendorPayouts() {
           </div>
         </div>
 
-        <div className="bg-[#1a1a1a] border border-white/5 p-6 hover:border-white/10 hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+        <div className="bg-black border border-white/5 p-6 hover:border-white/10 hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
           <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
           <div className="relative">
             <div className="flex items-center justify-between mb-4">
@@ -115,7 +134,7 @@ export default function VendorPayouts() {
           </div>
         </div>
 
-        <div className="bg-[#1a1a1a] border border-white/5 p-6 hover:border-white/10 hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+        <div className="bg-black border border-white/5 p-6 hover:border-white/10 hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
           <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
           <div className="relative">
             <div className="flex items-center justify-between mb-4">
@@ -132,7 +151,7 @@ export default function VendorPayouts() {
 
       {/* Payout Table */}
       {loading ? (
-        <div className="bg-[#1a1a1a] lg:border border-white/5 p-12">
+        <div className="bg-black lg:border border-white/5 p-12">
           <div className="text-center text-white/60">Loading payout history...</div>
         </div>
       ) : (
@@ -140,7 +159,7 @@ export default function VendorPayouts() {
           {/* Mobile List View */}
           <div className="lg:hidden divide-y divide-white/5 -mx-4" style={{ animation: 'fadeInUp 0.6s ease-out 0.2s both' }}>
             {payouts.map((payout) => (
-              <div key={payout.id} className="px-4 py-4 active:bg-white/5 transition-all bg-[#1a1a1a]">
+              <div key={payout.id} className="px-4 py-4 active:bg-white/5 transition-all bg-black">
                 <div className="flex items-start justify-between mb-3">
                   <div>
                     <div className="text-white text-sm font-medium mb-1">{payout.period}</div>
@@ -173,9 +192,9 @@ export default function VendorPayouts() {
           </div>
 
           {/* Desktop Table View */}
-          <div className="hidden lg:block bg-[#1a1a1a] border border-white/5 overflow-x-auto" style={{ animation: 'fadeInUp 0.6s ease-out 0.2s both' }}>
+          <div className="hidden lg:block bg-black border border-white/5 overflow-x-auto" style={{ animation: 'fadeInUp 0.6s ease-out 0.2s both' }}>
           <table className="w-full">
-            <thead className="border-b border-white/5 bg-[#1a1a1a]">
+            <thead className="border-b border-white/5 bg-black">
               <tr>
                 <th className="text-left text-xs font-medium text-white/60 uppercase tracking-wider p-4">Payout #</th>
                 <th className="text-left text-xs font-medium text-white/60 uppercase tracking-wider p-4">Period</th>
@@ -189,7 +208,7 @@ export default function VendorPayouts() {
             </thead>
             <tbody className="divide-y divide-white/5">
               {payouts.map((payout) => (
-                <tr key={payout.id} className="hover:bg-[#303030] transition-all">
+                <tr key={payout.id} className="hover:bg-white/[0.02] transition-all">
                   <td className="p-4">
                     <span className="text-white font-mono text-sm">{payout.payoutNumber}</span>
                   </td>

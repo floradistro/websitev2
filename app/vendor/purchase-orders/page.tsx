@@ -402,7 +402,7 @@ export default function VendorPurchaseOrders() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 mb-6">
-        <div className="bg-[#111111] border border-white/10 p-4">
+        <div className="bg-black border border-white/10 p-4">
           <div className="flex items-center gap-2 mb-2">
             <FileText size={14} className="text-white/40" />
             <span className="text-white/40 text-[10px] uppercase tracking-wider">Total POs</span>
@@ -410,7 +410,7 @@ export default function VendorPurchaseOrders() {
           <div className="text-xl text-white font-light">{stats.total}</div>
         </div>
         
-        <div className="bg-[#111111] border border-white/10 p-4">
+        <div className="bg-black border border-white/10 p-4">
           <div className="flex items-center gap-2 mb-2">
             <Edit2 size={14} className="text-gray-500" />
             <span className="text-white/40 text-[10px] uppercase tracking-wider">Draft</span>
@@ -418,7 +418,7 @@ export default function VendorPurchaseOrders() {
           <div className="text-xl text-gray-500 font-light">{stats.draft}</div>
         </div>
         
-        <div className="bg-[#111111] border border-white/10 p-4">
+        <div className="bg-black border border-white/10 p-4">
           <div className="flex items-center gap-2 mb-2">
             <Truck size={14} className="text-yellow-500" />
             <span className="text-white/40 text-[10px] uppercase tracking-wider">In Transit</span>
@@ -426,7 +426,7 @@ export default function VendorPurchaseOrders() {
           <div className="text-xl text-yellow-500 font-light">{stats.in_transit}</div>
         </div>
         
-        <div className="bg-[#111111] border border-white/10 p-4">
+        <div className="bg-black border border-white/10 p-4">
           <div className="flex items-center gap-2 mb-2">
             <CheckCircle size={14} className="text-green-500" />
             <span className="text-white/40 text-[10px] uppercase tracking-wider">Received</span>
@@ -434,7 +434,7 @@ export default function VendorPurchaseOrders() {
           <div className="text-xl text-green-500 font-light">{stats.received}</div>
         </div>
         
-        <div className="bg-[#111111] border border-white/10 p-4">
+        <div className="bg-black border border-white/10 p-4">
           <div className="flex items-center gap-2 mb-2">
             <DollarSign size={14} className="text-white/40" />
             <span className="text-white/40 text-[10px] uppercase tracking-wider">Total Value</span>
@@ -444,7 +444,7 @@ export default function VendorPurchaseOrders() {
       </div>
 
       {/* Filters */}
-      <div className="bg-[#111111] border border-white/10 p-4 mb-6">
+      <div className="bg-black border border-white/10 p-4 mb-6">
         <div className="flex flex-col lg:flex-row gap-3">
           <div className="relative flex-1">
             <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" />
@@ -453,14 +453,14 @@ export default function VendorPurchaseOrders() {
               placeholder="Search PO number or supplier..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-[#111111] border border-white/10 text-white placeholder-white/40 pl-10 pr-4 py-3 focus:outline-none focus:border-white/20 transition-colors text-sm"
+              className="w-full bg-black border border-white/10 text-white placeholder-white/40 pl-10 pr-4 py-3 focus:outline-none focus:border-white/20 transition-colors text-sm"
             />
           </div>
           
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="bg-[#111111] border border-white/10 text-white px-4 py-3 text-sm focus:outline-none focus:border-white/20"
+            className="bg-black border border-white/10 text-white px-4 py-3 text-sm focus:outline-none focus:border-white/20"
           >
             <option value="all">All Status</option>
             <option value="draft">Draft</option>
@@ -476,7 +476,7 @@ export default function VendorPurchaseOrders() {
 
       {/* Purchase Orders List */}
       {filteredPOs.length === 0 ? (
-        <div className="bg-[#111111] border border-white/10 p-12 text-center">
+        <div className="bg-black border border-white/10 p-12 text-center">
           <Package size={48} className="text-white/20 mx-auto mb-4" />
           <div className="text-white/60 mb-2">No purchase orders found</div>
           <div className="text-white/40 text-sm mb-4">Create your first purchase order to start restocking</div>
@@ -493,7 +493,7 @@ export default function VendorPurchaseOrders() {
           {filteredPOs.map((po) => (
             <div
               key={po.id}
-              className="bg-[#111111] border border-white/10 hover:border-white/20 transition-all"
+              className="bg-black border border-white/10 hover:border-white/20 transition-all"
             >
               <div className="p-6">
                 {/* Header */}
@@ -608,7 +608,7 @@ export default function VendorPurchaseOrders() {
               <select
                 value={selectedLocation}
                 onChange={(e) => setSelectedLocation(e.target.value)}
-                className="w-full bg-[#111111] border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20"
+                className="w-full bg-black border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20"
                 required
               >
                 <option value="">Select location...</option>
@@ -628,7 +628,7 @@ export default function VendorPurchaseOrders() {
                 type="date"
                 value={expectedDelivery}
                 onChange={(e) => setExpectedDelivery(e.target.value)}
-                className="w-full bg-[#111111] border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20"
+                className="w-full bg-black border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20"
               />
             </div>
           </div>
@@ -646,7 +646,7 @@ export default function VendorPurchaseOrders() {
                   value={supplierName}
                   onChange={(e) => setSupplierName(e.target.value)}
                   placeholder="Supplier name"
-                  className="w-full bg-[#111111] border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20"
+                  className="w-full bg-black border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20"
                 />
               </div>
               
@@ -659,7 +659,7 @@ export default function VendorPurchaseOrders() {
                   value={supplierEmail}
                   onChange={(e) => setSupplierEmail(e.target.value)}
                   placeholder="supplier@example.com"
-                  className="w-full bg-[#111111] border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20"
+                  className="w-full bg-black border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20"
                 />
               </div>
               
@@ -672,7 +672,7 @@ export default function VendorPurchaseOrders() {
                   value={supplierPhone}
                   onChange={(e) => setSupplierPhone(e.target.value)}
                   placeholder="(555) 123-4567"
-                  className="w-full bg-[#111111] border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20"
+                  className="w-full bg-black border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20"
                 />
               </div>
             </div>
@@ -691,12 +691,12 @@ export default function VendorPurchaseOrders() {
                   placeholder="Search products..."
                   value={productSearch}
                   onChange={(e) => setProductSearch(e.target.value)}
-                  className="bg-[#111111] border border-white/10 text-white placeholder-white/40 pl-9 pr-4 py-2 text-sm focus:outline-none focus:border-white/20"
+                  className="bg-black border border-white/10 text-white placeholder-white/40 pl-9 pr-4 py-2 text-sm focus:outline-none focus:border-white/20"
                 />
               </div>
             </div>
             
-            <div className="max-h-96 overflow-y-auto border border-white/10 bg-[#0a0a0a]">
+            <div className="max-h-96 overflow-y-auto border border-white/10 bg-black/98">
               {filteredProducts.length === 0 ? (
                 <div className="p-8 text-center text-white/40 text-sm">
                   No products found
@@ -746,7 +746,7 @@ export default function VendorPurchaseOrders() {
                                 min="0"
                                 value={selection.quantity}
                                 onChange={(e) => updateProductQuantity(product.id, parseFloat(e.target.value) || 0)}
-                                className="w-24 bg-[#111111] border border-white/10 text-white px-3 py-2 text-sm focus:outline-none focus:border-white/20"
+                                className="w-24 bg-black border border-white/10 text-white px-3 py-2 text-sm focus:outline-none focus:border-white/20"
                                 onClick={(e) => e.stopPropagation()}
                               />
                             </div>
@@ -758,7 +758,7 @@ export default function VendorPurchaseOrders() {
                                 min="0"
                                 value={selection.cost}
                                 onChange={(e) => updateProductCost(product.id, parseFloat(e.target.value) || 0)}
-                                className="w-24 bg-[#111111] border border-white/10 text-white px-3 py-2 text-sm focus:outline-none focus:border-white/20"
+                                className="w-24 bg-black border border-white/10 text-white px-3 py-2 text-sm focus:outline-none focus:border-white/20"
                                 onClick={(e) => e.stopPropagation()}
                               />
                             </div>
@@ -802,7 +802,7 @@ export default function VendorPurchaseOrders() {
               onChange={(e) => setPoNotes(e.target.value)}
               placeholder="Add any notes about this purchase order..."
               rows={3}
-              className="w-full bg-[#111111] border border-white/10 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/20 resize-none"
+              className="w-full bg-black border border-white/10 text-white placeholder-white/40 px-4 py-3 focus:outline-none focus:border-white/20 resize-none"
             />
           </div>
         </div>
@@ -913,7 +913,7 @@ export default function VendorPurchaseOrders() {
                       newMap.set(item.id, parseFloat(e.target.value) || 0);
                       setReceiveQuantities(newMap);
                     }}
-                    className="w-full bg-[#111111] border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20"
+                    className="w-full bg-black border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20"
                   />
                 </div>
               </div>

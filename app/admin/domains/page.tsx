@@ -132,14 +132,14 @@ export default function AdminDomainsPage() {
             placeholder="Search domains..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-[#111111] border border-white/10 text-white placeholder-white/40 pl-9 pr-4 py-2.5 focus:outline-none focus:border-white/20 transition-colors text-sm"
+            className="w-full bg-black border border-white/10 text-white placeholder-white/40 pl-9 pr-4 py-2.5 focus:outline-none focus:border-white/20 transition-colors text-sm"
           />
         </div>
         <div className="flex gap-2">
           <button
             onClick={() => setFilterStatus('all')}
             className={`px-4 py-2.5 text-xs uppercase tracking-wider transition-all ${
-              filterStatus === 'all' ? 'bg-white text-black' : 'bg-[#111111] text-white/60 hover:text-white border border-white/10'
+              filterStatus === 'all' ? 'bg-white text-black' : 'bg-black text-white/60 hover:text-white border border-white/10'
             }`}
           >
             All
@@ -147,7 +147,7 @@ export default function AdminDomainsPage() {
           <button
             onClick={() => setFilterStatus('verified')}
             className={`px-4 py-2.5 text-xs uppercase tracking-wider transition-all ${
-              filterStatus === 'verified' ? 'bg-white/10 text-white border border-white' : 'bg-[#111111] text-white/60 hover:text-white border border-white/10'
+              filterStatus === 'verified' ? 'bg-white/10 text-white border border-white' : 'bg-black text-white/60 hover:text-white border border-white/10'
             }`}
           >
             Verified
@@ -155,7 +155,7 @@ export default function AdminDomainsPage() {
           <button
             onClick={() => setFilterStatus('pending')}
             className={`px-4 py-2.5 text-xs uppercase tracking-wider transition-all ${
-              filterStatus === 'pending' ? 'bg-white/10 text-white border border-white' : 'bg-[#111111] text-white/60 hover:text-white border border-white/10'
+              filterStatus === 'pending' ? 'bg-white/10 text-white border border-white' : 'bg-black text-white/60 hover:text-white border border-white/10'
             }`}
           >
             Pending
@@ -165,16 +165,16 @@ export default function AdminDomainsPage() {
 
       {/* Domains List */}
       {loading ? (
-        <div className="bg-[#111111] border border-white/10 p-12 text-center -mx-4 lg:mx-0">
+        <div className="bg-black border border-white/10 p-12 text-center -mx-4 lg:mx-0">
           <div className="text-white/40 text-sm">Loading...</div>
         </div>
       ) : filteredDomains.length === 0 ? (
-        <div className="bg-[#111111] border border-white/10 p-12 text-center -mx-4 lg:mx-0">
+        <div className="bg-black border border-white/10 p-12 text-center -mx-4 lg:mx-0">
           <Globe className="text-white/20 mx-auto mb-3" size={32} />
           <div className="text-white/60 text-sm">No domains found</div>
         </div>
       ) : (
-        <div className="bg-[#111111] border border-white/10 -mx-4 lg:mx-0">
+        <div className="bg-black border border-white/10 -mx-4 lg:mx-0">
           {filteredDomains.map((domain, index) => (
             <div
               key={domain.id}
@@ -185,7 +185,7 @@ export default function AdminDomainsPage() {
               {/* Mobile Layout */}
               <div className="lg:hidden space-y-3">
                 <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 bg-white/5 flex items-center justify-center flex-shrink-0 rounded">
+                  <div className="w-10 h-10 bg-white/5 flex items-center justify-center flex-shrink-0 rounded-[14px]">
                     <Globe size={18} className="text-white/40" />
                   </div>
                   <div className="flex-1 min-w-0">
@@ -195,14 +195,14 @@ export default function AdminDomainsPage() {
                     </div>
                     <div className="text-white/40 text-xs mb-2">{domain.vendor.store_name}</div>
                     <div className="flex items-center gap-2 text-xs">
-                      <span className="text-white/60 uppercase px-2 py-0.5 bg-white/5 rounded">{domain.ssl_status}</span>
+                      <span className="text-white/60 uppercase px-2 py-0.5 bg-white/5 rounded-[14px]">{domain.ssl_status}</span>
                       {domain.verified ? (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 text-white/60 border border-white/10 rounded">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 text-white/60 border border-white/10 rounded-[14px]">
                           <Check size={10} />
                           Verified
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 text-white/40 border border-white/10 rounded">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 text-white/40 border border-white/10 rounded-[14px]">
                           <AlertCircle size={10} />
                           Pending
                         </span>
@@ -216,19 +216,19 @@ export default function AdminDomainsPage() {
                     href={`/vendors/${domain.vendor.slug}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex-1 p-2.5 text-white/60 hover:text-white hover:bg-white/10 transition-all rounded border border-white/10 text-xs text-center"
+                    className="flex-1 p-2.5 text-white/60 hover:text-white hover:bg-white/10 transition-all rounded-[14px] border border-white/10 text-xs text-center"
                   >
                     View Store
                   </a>
                   <button
                     onClick={() => handleToggleActive(domain.id, domain.is_active)}
-                    className="flex-1 p-2.5 text-white/60 hover:text-white hover:bg-white/10 transition-all rounded border border-white/10 text-xs"
+                    className="flex-1 p-2.5 text-white/60 hover:text-white hover:bg-white/10 transition-all rounded-[14px] border border-white/10 text-xs"
                   >
                     {domain.is_active ? 'Disable' : 'Enable'}
                   </button>
                   <button
                     onClick={() => handleDeleteDomain(domain.id, domain.domain, domain.vendor.store_name)}
-                    className="p-2.5 px-4 text-red-500/60 hover:text-red-500 hover:bg-red-500/10 transition-all rounded border border-red-500/20 text-xs"
+                    className="p-2.5 px-4 text-red-500/60 hover:text-red-500 hover:bg-red-500/10 transition-all rounded-[14px] border border-red-500/20 text-xs"
                   >
                     Delete
                   </button>

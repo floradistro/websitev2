@@ -5,6 +5,8 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { FlaskConical, Download, FileCheck, Calendar, CheckCircle } from 'lucide-react';
 
+export const dynamic = 'force-dynamic';
+
 export default async function LabResultsPage() {
   const vendorId = await getVendorFromHeaders();
 

@@ -97,23 +97,30 @@ export async function GET() {
       };
     });
 
-    return NextResponse.json({
-      success: true,
-      stats: {
-        totalProducts: productsCount.count || 0,
-        totalCustomers: customersCount.count || 0,
-        totalOrders: ordersData.count || 0,
-        totalRevenue: totalRevenue,
-        pendingProducts: pendingProductsData.data?.length || 0,
-        activeVendors: vendorsData.data?.filter((v: any) => v.status === 'active').length || 0,
-        pendingWholesaleApplications: wholesaleApps.data?.length || 0
+    return NextResponse.json(
+      {
+        success: true,
+        stats: {
+          totalProducts: productsCount.count || 0,
+          totalCustomers: customersCount.count || 0,
+          totalOrders: ordersData.count || 0,
+          totalRevenue: totalRevenue,
+          pendingProducts: pendingProductsData.data?.length || 0,
+          activeVendors: vendorsData.data?.filter((v: any) => v.status === 'active').length || 0,
+          pendingWholesaleApplications: wholesaleApps.data?.length || 0
+        },
+        charts: {
+          revenueByDay,
+          ordersByDay
+        },
+        timestamp: new Date().toISOString()
       },
-      charts: {
-        revenueByDay,
-        ordersByDay
-      },
-      timestamp: new Date().toISOString()
-    });
+      {
+        headers: {
+          'Cache-Control': 'private, max-age=30, stale-while-revalidate=60',
+        },
+      }
+    );
   } catch (error: any) {
     console.error('Dashboard stats error:', error);
     return NextResponse.json(

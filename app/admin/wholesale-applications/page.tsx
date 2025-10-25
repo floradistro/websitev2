@@ -1,5 +1,7 @@
 "use client";
 
+export const dynamic = 'force-dynamic';
+
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
@@ -159,7 +161,7 @@ export default function WholesaleApplicationsPage() {
     const Icon = badge.icon;
     
     return (
-      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium ${badge.color}`}>
+      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[14px] text-xs font-medium ${badge.color}`}>
         <Icon size={14} />
         {status.replace('_', ' ').toUpperCase()}
       </span>
@@ -183,7 +185,7 @@ export default function WholesaleApplicationsPage() {
             <select
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value)}
-              className="bg-white/5 border border-white/10 rounded px-4 py-2 text-white focus:outline-none focus:border-white/30"
+              className="bg-white/5 border border-white/10 rounded-[14px] px-4 py-2 text-white focus:outline-none focus:border-white/30"
             >
               <option value="all">All Applications</option>
               <option value="pending">Pending</option>
@@ -238,7 +240,7 @@ export default function WholesaleApplicationsPage() {
                       setReviewNotes("");
                       setRejectionReason("");
                     }}
-                    className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded text-sm font-medium transition-all"
+                    className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-[14px] text-sm font-medium transition-all"
                   >
                     Review
                   </button>
@@ -274,7 +276,7 @@ export default function WholesaleApplicationsPage() {
       {/* Review Modal */}
       {showModal && selectedApplication && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-[#1a1a1a] border border-white/20 rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-black border border-white/20 rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6 border-b border-white/10">
               <h2 className="text-2xl font-light">Review Application</h2>
               <p className="text-white/60 text-sm mt-1">{selectedApplication.business_name}</p>
@@ -391,7 +393,7 @@ export default function WholesaleApplicationsPage() {
                         value={reviewNotes}
                         onChange={(e) => setReviewNotes(e.target.value)}
                         placeholder="Add notes about this application..."
-                        className="w-full bg-white/5 border border-white/10 rounded p-3 text-white placeholder-white/40 focus:outline-none focus:border-white/30"
+                        className="w-full bg-white/5 border border-white/10 rounded-[14px] p-3 text-white placeholder-white/40 focus:outline-none focus:border-white/30"
                         rows={3}
                       />
                     </div>
@@ -400,7 +402,7 @@ export default function WholesaleApplicationsPage() {
                       <button
                         onClick={() => approveApplication(selectedApplication.id)}
                         disabled={actionLoading}
-                        className="flex-1 py-3 bg-green-600 hover:bg-green-700 text-white font-medium rounded transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                        className="flex-1 py-3 bg-green-600 hover:bg-green-700 text-white font-medium rounded-[14px] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                       >
                         <CheckCircle size={18} />
                         Approve Application
@@ -415,7 +417,7 @@ export default function WholesaleApplicationsPage() {
                           }
                         }}
                         disabled={actionLoading}
-                        className="flex-1 py-3 bg-red-600 hover:bg-red-700 text-white font-medium rounded transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                        className="flex-1 py-3 bg-red-600 hover:bg-red-700 text-white font-medium rounded-[14px] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                       >
                         <XCircle size={18} />
                         Reject Application
@@ -447,7 +449,7 @@ export default function WholesaleApplicationsPage() {
             <div className="p-6 border-t border-white/10">
               <button
                 onClick={() => setShowModal(false)}
-                className="w-full py-2 bg-white/10 hover:bg-white/20 text-white font-medium rounded transition-all"
+                className="w-full py-2 bg-white/10 hover:bg-white/20 text-white font-medium rounded-[14px] transition-all"
               >
                 Close
               </button>

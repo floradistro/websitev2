@@ -47,14 +47,11 @@ export default function VendorProducts() {
         }
 
         // Use bulk endpoint for faster loading
-        console.log('🔵 Loading vendor products via bulk endpoint...');
         const response = await axios.get('/api/page-data/vendor-products', {
           headers: {
             'x-vendor-id': vendorId
           }
         });
-        
-        console.log(`✅ Vendor products loaded in ${response.data.meta?.responseTime || 'N/A'}`);
         
         if (response.data && response.data.products) {
           // Products are already formatted by bulk endpoint
@@ -246,31 +243,49 @@ export default function VendorProducts() {
 
 
   return (
-    <div className="w-full max-w-full animate-fadeIn overflow-x-hidden">
+    <div className="w-full px-4 lg:px-0">
+      <style jsx>{`
+        @keyframes fade-in {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in {
+          animation: fade-in 0.6s ease-out;
+        }
+        .minimal-glass {
+          background: rgba(255, 255, 255, 0.02);
+          backdrop-filter: blur(20px);
+          border: 1px solid rgba(255, 255, 255, 0.05);
+          border-radius: 20px;
+        }
+        .subtle-glow {
+          box-shadow: 0 0 30px rgba(255, 255, 255, 0.02);
+        }
+      `}</style>
+
       {/* Header */}
-      <div className="flex justify-between items-center gap-4 px-4 lg:px-0 py-6 lg:py-0 lg:mb-8 border-b lg:border-b-0 border-white/5" style={{ animation: 'fadeInUp 0.5s ease-out' }}>
-        <div className="flex-1 min-w-0">
-          <h1 className="text-2xl lg:text-3xl font-light text-white mb-1 lg:mb-2 tracking-tight">
-            My Products
+      <div className="mb-12 fade-in flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-thin text-white/90 tracking-tight mb-2">
+            Product Catalog
           </h1>
-          <p className="text-white/60 text-xs lg:text-sm">
-            {filteredProducts.length} {filteredProducts.length === 1 ? 'product' : 'products'}
+          <p className="text-white/40 text-xs font-light tracking-wide">
+            {filteredProducts.length} {filteredProducts.length === 1 ? 'PRODUCT' : 'PRODUCTS'} · MANAGE INVENTORY
           </p>
         </div>
         <div className="flex items-center gap-2">
           <Link
             href="/vendor/pricing"
-            className="group flex items-center gap-1.5 lg:gap-2 bg-transparent border border-white/20 text-white/80 px-3 lg:px-4 py-3 lg:py-3 text-[10px] lg:text-xs font-medium uppercase tracking-[0.15em] lg:tracking-[0.2em] active:bg-white/10 lg:hover:bg-white/10 lg:hover:text-white lg:hover:border-white/30 transition-all duration-300 whitespace-nowrap min-h-[44px] lg:min-h-0"
+            className="group flex items-center gap-2 bg-gradient-to-r from-white/10 to-white/5 text-white/70 border border-white/10 hover:border-white/20 hover:text-white transition-all duration-300 rounded-[14px] px-4 py-3 text-xs uppercase tracking-wider font-light whitespace-nowrap"
           >
-            <DollarSign size={16} className="lg:w-4 lg:h-4 flex-shrink-0" />
+            <DollarSign size={14} strokeWidth={1.5} />
             <span className="hidden sm:inline">Pricing</span>
           </Link>
           <Link
             href="/vendor/products/new"
-            className="group flex items-center gap-1.5 lg:gap-2 bg-black border border-white/20 text-white px-3 lg:px-6 py-3 lg:py-3 text-[10px] lg:text-xs font-medium uppercase tracking-[0.15em] lg:tracking-[0.2em] active:bg-white active:text-black lg:hover:bg-white lg:hover:text-black lg:hover:border-white transition-all duration-300 whitespace-nowrap min-h-[44px] lg:min-h-0"
+            className="group flex items-center gap-2 bg-gradient-to-r from-white/10 to-white/5 text-white/70 border border-white/10 hover:border-white/20 hover:text-white transition-all duration-300 rounded-[14px] px-4 py-3 text-xs uppercase tracking-wider font-light whitespace-nowrap"
           >
-            <Plus size={16} className="lg:hidden flex-shrink-0" />
-            <Plus size={18} className="hidden lg:block group-hover:rotate-90 transition-transform duration-300 flex-shrink-0" />
+            <Plus size={14} strokeWidth={1.5} className="group-hover:rotate-90 transition-transform duration-300" />
             <span className="hidden sm:inline">Add Product</span>
             <span className="sm:hidden">Add</span>
           </Link>
@@ -279,7 +294,7 @@ export default function VendorProducts() {
 
       {/* Bulk Actions Toolbar */}
       {selectedIds.size > 0 && (
-        <div className="fixed bottom-0 left-0 right-0 lg:static bg-black lg:bg-[#1a1a1a] border-t lg:border border-white/20 lg:border-white/10 p-4 z-50 mb-0 lg:mb-4" style={{ animation: 'slideUp 0.3s ease-out' }}>
+        <div className="fixed bottom-0 left-0 right-0 lg:static bg-black/98 backdrop-blur-xl lg:bg-white/[0.02] lg:backdrop-filter lg:backdrop-blur-[20px] border-t lg:border border-white/20 lg:border-white/5 lg:rounded-[20px] p-4 z-50 mb-0 lg:mb-8" style={{ animation: 'slideUp 0.3s ease-out' }}>
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <span className="text-white font-medium">{selectedIds.size} selected</span>
@@ -292,7 +307,7 @@ export default function VendorProducts() {
             </div>
             <button
               onClick={handleAIAutofill}
-              className="flex items-center gap-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-3 font-medium hover:from-purple-700 hover:to-blue-700 transition-all"
+              className="flex items-center gap-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-3 font-medium hover:from-purple-700 hover:to-blue-700 transition-all rounded-[14px]"
             >
               <Sparkles className="w-4 h-4" />
               <span>AI Autofill Strain Data</span>
@@ -302,7 +317,7 @@ export default function VendorProducts() {
       )}
 
       {/* Filters */}
-      <div className="bg-[#1a1a1a] lg:border border-t border-b border-white/5 px-4 lg:p-4 py-3 lg:py-4 mb-0 lg:mb-6" style={{ animation: 'fadeInUp 0.6s ease-out 0.1s both' }}>
+      <div className="minimal-glass p-6 mb-8 fade-in" style={{ animationDelay: '0.1s' }}>
         <div className="flex flex-col lg:flex-row gap-3 lg:gap-4">
           {/* Search */}
           <div className="flex-1 relative">
@@ -312,7 +327,7 @@ export default function VendorProducts() {
               placeholder="Search products..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 pl-9 lg:pl-10 pr-4 py-2.5 lg:py-3 focus:outline-none focus:border-white/10 transition-colors text-sm lg:text-base"
+              className="w-full bg-black/20 border border-white/10 text-white placeholder-white/30 pl-9 lg:pl-10 pr-4 py-2.5 lg:py-3 focus:outline-none focus:border-white/30 transition-all rounded-[14px] text-sm lg:text-base"
             />
           </div>
 
@@ -320,20 +335,20 @@ export default function VendorProducts() {
           <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 lg:mx-0 lg:px-0 lg:pb-0 scrollbar-hide">
             <button
               onClick={() => setFilter('all')}
-              className={`flex-shrink-0 px-3 lg:px-4 py-2.5 lg:py-2 text-[10px] lg:text-xs uppercase tracking-wider transition-all whitespace-nowrap min-h-[44px] lg:min-h-0 ${
+              className={`flex-shrink-0 px-3 lg:px-4 py-2.5 lg:py-2 text-[10px] lg:text-xs uppercase tracking-wider transition-all whitespace-nowrap min-h-[44px] lg:min-h-0 rounded-[14px] ${
                 filter === 'all'
-                  ? 'bg-white text-black border border-white'
-                  : 'bg-[#1a1a1a] text-white/60 active:text-white lg:hover:text-white border border-white/5 active:border-white/10 lg:hover:border-white/10'
+                  ? 'bg-gradient-to-r from-white/10 to-white/5 text-white border-white/20 border'
+                  : 'bg-black/20 text-white/50 border border-white/10 hover:border-white/20 hover:text-white/70'
               }`}
             >
               All
             </button>
             <button
               onClick={() => setFilter('approved')}
-              className={`flex items-center gap-1 lg:gap-1.5 flex-shrink-0 px-2.5 lg:px-4 py-2.5 lg:py-2 text-[10px] lg:text-xs uppercase tracking-wider transition-all whitespace-nowrap border min-h-[44px] lg:min-h-0 ${
+              className={`flex items-center gap-1 lg:gap-1.5 flex-shrink-0 px-2.5 lg:px-4 py-2.5 lg:py-2 text-[10px] lg:text-xs uppercase tracking-wider transition-all whitespace-nowrap border min-h-[44px] lg:min-h-0 rounded-[14px] ${
                 filter === 'approved'
-                  ? 'border-green-500 text-green-500'
-                  : 'border-white/10 text-white/60 active:text-white active:border-white/20 lg:hover:text-white lg:hover:border-white/20'
+                  ? 'border-green-500 text-green-500 bg-green-500/10'
+                  : 'border-white/10 text-white/60 hover:text-white hover:border-white/20'
               }`}
             >
               <CheckCircle size={12} className="lg:w-3.5 lg:h-3.5" />
@@ -343,10 +358,10 @@ export default function VendorProducts() {
             </button>
             <button
               onClick={() => setFilter('pending')}
-              className={`flex items-center gap-1 lg:gap-1.5 flex-shrink-0 px-2.5 lg:px-4 py-2.5 lg:py-2 text-[10px] lg:text-xs uppercase tracking-wider transition-all whitespace-nowrap border min-h-[44px] lg:min-h-0 ${
+              className={`flex items-center gap-1 lg:gap-1.5 flex-shrink-0 px-2.5 lg:px-4 py-2.5 lg:py-2 text-[10px] lg:text-xs uppercase tracking-wider transition-all whitespace-nowrap border min-h-[44px] lg:min-h-0 rounded-[14px] ${
                 filter === 'pending'
-                  ? 'border-yellow-500 text-yellow-500'
-                  : 'border-white/10 text-white/60 active:text-white active:border-white/20 lg:hover:text-white lg:hover:border-white/20'
+                  ? 'border-yellow-500 text-yellow-500 bg-yellow-500/10'
+                  : 'border-white/10 text-white/60 hover:text-white hover:border-white/20'
               }`}
             >
               <AlertCircle size={12} className="lg:w-3.5 lg:h-3.5" />
@@ -356,10 +371,10 @@ export default function VendorProducts() {
             </button>
             <button
               onClick={() => setFilter('rejected')}
-              className={`flex items-center gap-1 lg:gap-1.5 flex-shrink-0 px-2.5 lg:px-4 py-2.5 lg:py-2 text-[10px] lg:text-xs uppercase tracking-wider transition-all whitespace-nowrap border min-h-[44px] lg:min-h-0 ${
+              className={`flex items-center gap-1 lg:gap-1.5 flex-shrink-0 px-2.5 lg:px-4 py-2.5 lg:py-2 text-[10px] lg:text-xs uppercase tracking-wider transition-all whitespace-nowrap border min-h-[44px] lg:min-h-0 rounded-[14px] ${
                 filter === 'rejected'
-                  ? 'border-red-500 text-red-500'
-                  : 'border-white/10 text-white/60 active:text-white active:border-white/20 lg:hover:text-white lg:hover:border-white/20'
+                  ? 'border-red-500 text-red-500 bg-red-500/10'
+                  : 'border-white/10 text-white/60 hover:text-white hover:border-white/20'
               }`}
             >
               <XCircle size={12} className="lg:w-3.5 lg:h-3.5" />
@@ -371,19 +386,19 @@ export default function VendorProducts() {
         </div>
       </div>
 
-      {/* Products Grid - Better Width Usage */}
+      {/* Products Grid */}
       {loading ? (
-        <div className="bg-[#1a1a1a] lg:border border-white/5 p-12 lg:p-16">
-          <div className="text-center text-white/60">Loading products...</div>
+        <div className="minimal-glass p-12 lg:p-16 text-center">
+          <div className="text-white/40 text-xs">Loading products...</div>
         </div>
       ) : filteredProducts.length === 0 ? (
-        <div className="bg-[#1a1a1a] lg:border border-white/5 p-12">
+        <div className="minimal-glass p-12">
           <div className="text-center">
             <Package size={48} className="text-white/20 mx-auto mb-4" />
             <div className="text-white/60 mb-4">No products found</div>
             <Link
               href="/vendor/products/new"
-              className="group inline-flex items-center gap-2 bg-black border border-white/20 text-white px-6 py-3 text-xs font-medium uppercase tracking-[0.2em] hover:bg-white hover:text-black hover:border-white transition-all duration-300"
+              className="group inline-flex items-center gap-2 bg-gradient-to-r from-white/10 to-white/5 text-white/70 border border-white/10 hover:border-white/20 hover:text-white transition-all duration-300 rounded-[14px] px-6 py-3 text-xs font-light uppercase tracking-[0.15em]"
             >
               <Plus size={18} className="group-hover:rotate-90 transition-transform duration-300" />
               Add Your First Product
@@ -397,15 +412,15 @@ export default function VendorProducts() {
             {filteredProducts.map((product) => (
               <div
                 key={product.id}
-                className="block active:bg-white/5 transition-all bg-[#1a1a1a] border-b border-white/5"
+                className="block hover:bg-white/[0.02] transition-all bg-black border-b border-white/5"
               >
                 <Link
                   href={product.status === 'approved' ? `/vendor/inventory?expand=${product.id}` : '#'}
                   className="flex gap-4 p-4"
                 >
-                  <div className="w-20 h-20 bg-white/5 rounded flex items-center justify-center flex-shrink-0">
-                    <Package size={28} className="text-white/40" />
-                  </div>
+                    <div className="w-20 h-20 bg-white/5 rounded-[16px] flex items-center justify-center flex-shrink-0">
+                      <Package size={28} className="text-white/40" />
+                    </div>
                   <div className="flex-1 min-w-0">
                     <div className="text-white text-base font-medium mb-2 leading-tight">{product.name}</div>
                     <div className="space-y-1.5 mb-3">
@@ -440,7 +455,7 @@ export default function VendorProducts() {
                       e.stopPropagation();
                       handleDeleteProduct(product.id.toString(), product.name);
                     }}
-                    className="flex items-center gap-2 text-red-500/60 active:text-red-500 text-sm transition-colors px-3 py-2 border border-red-500/20 active:border-red-500/40"
+                    className="flex items-center gap-2 text-red-500/60 hover:text-red-500 text-sm transition-colors px-3 py-2 border border-red-500/20 hover:border-red-500/40 rounded-[14px]"
                   >
                     <Trash2 size={14} />
                     <span className="uppercase tracking-wider text-xs">Delete</span>
@@ -451,16 +466,16 @@ export default function VendorProducts() {
           </div>
 
           {/* Desktop Table View */}
-          <div className="hidden lg:block bg-[#1a1a1a] border border-white/5 overflow-hidden">
+          <div className="hidden lg:block minimal-glass overflow-hidden fade-in" style={{ animationDelay: '0.2s' }}>
           <table className="w-full">
-            <thead className="border-b border-white/5 bg-[#1a1a1a]">
+            <thead className="border-b border-white/5 bg-black/40">
               <tr>
                 <th className="w-12 p-4">
                   <input
                     type="checkbox"
                     checked={selectedIds.size === filteredProducts.length && filteredProducts.length > 0}
                     onChange={toggleSelectAll}
-                    className="w-4 h-4 rounded border-white/20 bg-transparent"
+                    className="w-4 h-4 rounded-[14px] border-white/20 bg-transparent"
                   />
                 </th>
                 <th className="text-left text-xs font-medium text-white/60 uppercase tracking-wider p-4">Product</th>
@@ -476,18 +491,18 @@ export default function VendorProducts() {
               {filteredProducts.map((product) => {
                 const productKey = product.submissionId?.toString() || product.id.toString();
                 return (
-                <tr key={product.id} className="hover:bg-[#303030] transition-all">
+                <tr key={product.id} className="hover:bg-white/[0.02] transition-all">
                   <td className="p-4">
                     <input
                       type="checkbox"
                       checked={selectedIds.has(productKey)}
                       onChange={() => toggleSelection(productKey)}
-                      className="w-4 h-4 rounded border-white/20 bg-transparent"
+                      className="w-4 h-4 rounded-[14px] border-white/20 bg-transparent"
                     />
                   </td>
                   <td className="p-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 bg-white/5 rounded flex items-center justify-center">
+                      <div className="w-12 h-12 bg-white/5 rounded-[12px] flex items-center justify-center">
                         <Package size={20} className="text-white/40" />
                       </div>
                       <div>

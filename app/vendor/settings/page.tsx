@@ -128,14 +128,33 @@ export default function VendorSettings() {
   }
 
   return (
-    <div className="w-full max-w-5xl xl:max-w-6xl mx-auto animate-fadeIn overflow-x-hidden">
+    <div className="w-full px-4 lg:px-0">
+      <style jsx>{`
+        @keyframes fade-in {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in {
+          animation: fade-in 0.6s ease-out;
+        }
+        .minimal-glass {
+          background: rgba(255, 255, 255, 0.02);
+          backdrop-filter: blur(20px);
+          border: 1px solid rgba(255, 255, 255, 0.05);
+          border-radius: 20px;
+        }
+        .subtle-glow {
+          box-shadow: 0 0 30px rgba(255, 255, 255, 0.02);
+        }
+      `}</style>
+
       {/* Header */}
-      <div className="px-4 lg:px-0 py-6 lg:py-0 lg:mb-8 border-b lg:border-b-0 border-white/5" style={{ animation: 'fadeInUp 0.5s ease-out' }}>
-        <h1 className="text-2xl lg:text-3xl font-light text-white mb-1 lg:mb-2 tracking-tight">
+      <div className="mb-12 fade-in">
+        <h1 className="text-3xl font-thin text-white/90 tracking-tight mb-2">
           Vendor Settings
         </h1>
-        <p className="text-white/60 text-xs lg:text-sm">
-          Manage your vendor profile and contact information
+        <p className="text-white/40 text-xs font-light tracking-wide">
+          PROFILE & CONTACT INFORMATION
         </p>
       </div>
 
@@ -163,7 +182,7 @@ export default function VendorSettings() {
 
       <form onSubmit={handleSubmit} className="space-y-0 lg:space-y-6">
         {/* Company Information */}
-        <div className="bg-[#1a1a1a] lg:border border-t border-white/5 lg:p-6">
+        <div className="bg-black lg:border border-t border-white/5 lg:p-6">
           <h2 className="text-white font-medium px-4 lg:px-0 py-4 lg:py-0 lg:mb-6 text-sm lg:text-base uppercase lg:normal-case tracking-wider lg:tracking-normal opacity-60 lg:opacity-100">Company Information</h2>
           
           {/* iOS-style list on mobile, form on desktop */}
@@ -177,7 +196,7 @@ export default function VendorSettings() {
                 value={settings.companyName}
                 onChange={(e) => setSettings({...settings, companyName: e.target.value})}
                 placeholder="Your Company LLC"
-                className="w-full bg-transparent lg:bg-[#1a1a1a] border-0 lg:border border-white/5 text-white placeholder-white/40 px-0 lg:px-4 py-0 lg:py-3 focus:outline-none focus:border-white/10 transition-colors text-base lg:text-sm"
+                className="w-full bg-transparent lg:bg-black border-0 lg:border border-white/5 text-white placeholder-white/40 px-0 lg:px-4 py-0 lg:py-3 focus:outline-none focus:border-white/10 transition-colors text-base lg:text-sm"
               />
             </div>
 
@@ -190,7 +209,7 @@ export default function VendorSettings() {
                 value={settings.contactName}
                 onChange={(e) => setSettings({...settings, contactName: e.target.value})}
                 placeholder="John Doe"
-                className="w-full bg-transparent lg:bg-[#1a1a1a] border-0 lg:border border-white/5 text-white placeholder-white/40 px-0 lg:px-4 py-0 lg:py-3 focus:outline-none focus:border-white/10 transition-colors text-base lg:text-sm"
+                className="w-full bg-transparent lg:bg-black border-0 lg:border border-white/5 text-white placeholder-white/40 px-0 lg:px-4 py-0 lg:py-3 focus:outline-none focus:border-white/10 transition-colors text-base lg:text-sm"
               />
             </div>
 
@@ -203,7 +222,7 @@ export default function VendorSettings() {
                 value={settings.email}
                 onChange={(e) => setSettings({...settings, email: e.target.value})}
                 placeholder="contact@company.com"
-                className="w-full bg-transparent lg:bg-[#1a1a1a] border-0 lg:border border-white/5 text-white placeholder-white/40 px-0 lg:px-4 py-0 lg:py-3 focus:outline-none focus:border-white/10 transition-colors text-base lg:text-sm"
+                className="w-full bg-transparent lg:bg-black border-0 lg:border border-white/5 text-white placeholder-white/40 px-0 lg:px-4 py-0 lg:py-3 focus:outline-none focus:border-white/10 transition-colors text-base lg:text-sm"
               />
             </div>
 
@@ -216,7 +235,7 @@ export default function VendorSettings() {
                 value={settings.phone}
                 onChange={(e) => setSettings({...settings, phone: e.target.value})}
                 placeholder="(555) 123-4567"
-                className="w-full bg-transparent lg:bg-[#1a1a1a] border-0 lg:border border-white/5 text-white placeholder-white/40 px-0 lg:px-4 py-0 lg:py-3 focus:outline-none focus:border-white/10 transition-colors text-base lg:text-sm"
+                className="w-full bg-transparent lg:bg-black border-0 lg:border border-white/5 text-white placeholder-white/40 px-0 lg:px-4 py-0 lg:py-3 focus:outline-none focus:border-white/10 transition-colors text-base lg:text-sm"
               />
             </div>
 
@@ -229,14 +248,14 @@ export default function VendorSettings() {
                 value={settings.taxId}
                 onChange={(e) => setSettings({...settings, taxId: e.target.value})}
                 placeholder="XX-XXXXXXX"
-                className="w-full bg-transparent lg:bg-[#1a1a1a] border-0 lg:border border-white/5 text-white placeholder-white/40 px-0 lg:px-4 py-0 lg:py-3 focus:outline-none focus:border-white/10 transition-colors text-base lg:text-sm"
+                className="w-full bg-transparent lg:bg-black border-0 lg:border border-white/5 text-white placeholder-white/40 px-0 lg:px-4 py-0 lg:py-3 focus:outline-none focus:border-white/10 transition-colors text-base lg:text-sm"
               />
             </div>
           </div>
         </div>
 
         {/* Address */}
-        <div className="bg-[#1a1a1a] lg:border border-t border-white/5 lg:p-6 mt-0 lg:mt-6">
+        <div className="bg-black lg:border border-t border-white/5 lg:p-6 mt-0 lg:mt-6">
           <h2 className="text-white font-medium px-4 lg:px-0 py-4 lg:py-0 lg:mb-6 text-sm lg:text-base uppercase lg:normal-case tracking-wider lg:tracking-normal opacity-60 lg:opacity-100">Business Address</h2>
           
           <div className="lg:space-y-4 divide-y lg:divide-y-0 divide-white/5 border-t lg:border-t-0 border-white/5">
@@ -249,7 +268,7 @@ export default function VendorSettings() {
                 value={settings.address}
                 onChange={(e) => setSettings({...settings, address: e.target.value})}
                 placeholder="123 Main St"
-                className="w-full bg-transparent lg:bg-[#1a1a1a] border-0 lg:border border-white/5 text-white placeholder-white/40 px-0 lg:px-4 py-0 lg:py-3 focus:outline-none focus:border-white/10 transition-colors text-base lg:text-sm"
+                className="w-full bg-transparent lg:bg-black border-0 lg:border border-white/5 text-white placeholder-white/40 px-0 lg:px-4 py-0 lg:py-3 focus:outline-none focus:border-white/10 transition-colors text-base lg:text-sm"
               />
             </div>
 
@@ -263,7 +282,7 @@ export default function VendorSettings() {
                   value={settings.city}
                   onChange={(e) => setSettings({...settings, city: e.target.value})}
                   placeholder="Charlotte"
-                  className="w-full bg-transparent lg:bg-[#1a1a1a] border-0 lg:border border-white/5 text-white placeholder-white/40 px-0 lg:px-4 py-0 lg:py-3 focus:outline-none focus:border-white/10 transition-colors text-base lg:text-sm"
+                  className="w-full bg-transparent lg:bg-black border-0 lg:border border-white/5 text-white placeholder-white/40 px-0 lg:px-4 py-0 lg:py-3 focus:outline-none focus:border-white/10 transition-colors text-base lg:text-sm"
                 />
               </div>
 
@@ -276,7 +295,7 @@ export default function VendorSettings() {
                   value={settings.state}
                   onChange={(e) => setSettings({...settings, state: e.target.value})}
                   placeholder="NC"
-                  className="w-full bg-transparent lg:bg-[#1a1a1a] border-0 lg:border border-white/5 text-white placeholder-white/40 px-0 lg:px-4 py-0 lg:py-3 focus:outline-none focus:border-white/10 transition-colors text-base lg:text-sm"
+                  className="w-full bg-transparent lg:bg-black border-0 lg:border border-white/5 text-white placeholder-white/40 px-0 lg:px-4 py-0 lg:py-3 focus:outline-none focus:border-white/10 transition-colors text-base lg:text-sm"
                 />
               </div>
 
@@ -289,7 +308,7 @@ export default function VendorSettings() {
                   value={settings.zip}
                   onChange={(e) => setSettings({...settings, zip: e.target.value})}
                   placeholder="28202"
-                  className="w-full bg-transparent lg:bg-[#1a1a1a] border-0 lg:border border-white/5 text-white placeholder-white/40 px-0 lg:px-4 py-0 lg:py-3 focus:outline-none focus:border-white/10 transition-colors text-base lg:text-sm"
+                  className="w-full bg-transparent lg:bg-black border-0 lg:border border-white/5 text-white placeholder-white/40 px-0 lg:px-4 py-0 lg:py-3 focus:outline-none focus:border-white/10 transition-colors text-base lg:text-sm"
                 />
               </div>
             </div>
@@ -297,7 +316,7 @@ export default function VendorSettings() {
         </div>
 
         {/* Storefront Visibility */}
-        <div className="bg-[#1a1a1a] lg:border border-t border-white/5 lg:p-6 mt-0 lg:mt-6">
+        <div className="bg-black lg:border border-t border-white/5 lg:p-6 mt-0 lg:mt-6">
           <h2 className="text-white font-medium px-4 lg:px-0 py-4 lg:py-0 lg:mb-6 text-sm lg:text-base uppercase lg:normal-case tracking-wider lg:tracking-normal opacity-60 lg:opacity-100">Storefront Visibility</h2>
           
           <div className="px-4 lg:px-0 py-4 lg:py-0">

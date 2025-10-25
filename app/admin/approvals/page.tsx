@@ -50,16 +50,11 @@ export default function AdminApprovals() {
       setLoading(true);
       setError('');
       
-      console.log('🔵 Loading pending products...');
       const response = await axios.get('/api/admin/pending-products', { timeout: 10000 });
       
-      console.log('📦 Pending products response:', response.data);
-      
       if (response.data.success && Array.isArray(response.data.pending)) {
-        console.log('✅ Setting pending products:', response.data.pending.length);
         setPending(response.data.pending);
       } else {
-        console.log('⚠️ No pending array found');
         setPending([]);
       }
     } catch (err: any) {
@@ -69,8 +64,7 @@ export default function AdminApprovals() {
     } finally {
       loadingRef.current = false;
       setLoading(false);
-      console.log('✅ Loading complete');
-    }
+      }
   }
 
   async function approveProduct(submissionId: string): Promise<void> {
@@ -317,7 +311,7 @@ export default function AdminApprovals() {
                     className="mt-1 flex-shrink-0"
                   />
                   
-                  <div className="w-10 h-10 bg-white/5 flex items-center justify-center flex-shrink-0 relative overflow-hidden rounded">
+                  <div className="w-10 h-10 bg-white/5 flex items-center justify-center flex-shrink-0 relative overflow-hidden rounded-[14px]">
                     {product.featured_image ? (
                       <img src={product.featured_image} alt={product.product_name} className="w-full h-full object-cover" />
                     ) : (

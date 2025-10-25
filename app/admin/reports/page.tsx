@@ -79,7 +79,7 @@ export default function AdminReports() {
 
       {/* Quick Generate Cards */}
       <div className="grid lg:grid-cols-3 gap-4 mb-6 -mx-4 lg:mx-0">
-        <div className="bg-[#111111] border-0 lg:border border-white/10 p-6 hover:border-white/20 transition-all cursor-pointer group border-b lg:border-b-0 border-white/5">
+        <div className="bg-black border-0 lg:border border-white/10 p-6 hover:border-white/20 transition-all cursor-pointer group border-b lg:border-b-0 border-white/5">
           <div className="flex items-center justify-between mb-4">
             <TrendingUp size={24} className="text-white/30 group-hover:text-white/50 transition-colors" />
             <button className="text-white/60 hover:text-white text-xs transition-colors">
@@ -92,7 +92,7 @@ export default function AdminReports() {
           </p>
         </div>
 
-        <div className="bg-[#111111] border-0 lg:border border-white/10 p-6 hover:border-white/20 transition-all cursor-pointer group border-b lg:border-b-0 border-white/5">
+        <div className="bg-black border-0 lg:border border-white/10 p-6 hover:border-white/20 transition-all cursor-pointer group border-b lg:border-b-0 border-white/5">
           <div className="flex items-center justify-between mb-4">
             <Package size={24} className="text-white/30 group-hover:text-white/50 transition-colors" />
             <button className="text-white/60 hover:text-white text-xs transition-colors">
@@ -105,7 +105,7 @@ export default function AdminReports() {
           </p>
         </div>
 
-        <div className="bg-[#111111] border-0 lg:border border-white/10 p-6 hover:border-white/20 transition-all cursor-pointer group border-b lg:border-b-0 border-white/5">
+        <div className="bg-black border-0 lg:border border-white/10 p-6 hover:border-white/20 transition-all cursor-pointer group border-b lg:border-b-0 border-white/5">
           <div className="flex items-center justify-between mb-4">
             <Users size={24} className="text-white/30 group-hover:text-white/50 transition-colors" />
             <button className="text-white/60 hover:text-white text-xs transition-colors">
@@ -126,7 +126,7 @@ export default function AdminReports() {
           className={`px-4 py-2 text-xs uppercase tracking-wider transition-all ${
             selectedType === 'all'
               ? 'bg-white text-black'
-              : 'bg-[#111111] text-white/60 hover:text-white border border-white/10 hover:border-white/20'
+              : 'bg-black text-white/60 hover:text-white border border-white/10 hover:border-white/20'
           }`}
         >
           All Reports
@@ -136,7 +136,7 @@ export default function AdminReports() {
           className={`px-4 py-2 text-xs uppercase tracking-wider transition-all ${
             selectedType === 'sales'
               ? 'bg-white/10 text-white border border-white'
-              : 'bg-[#111111] text-white/60 hover:text-white border border-white/10 hover:border-white/20'
+              : 'bg-black text-white/60 hover:text-white border border-white/10 hover:border-white/20'
           }`}
         >
           Sales
@@ -146,7 +146,7 @@ export default function AdminReports() {
           className={`px-4 py-2 text-xs uppercase tracking-wider transition-all ${
             selectedType === 'inventory'
               ? 'bg-white/10 text-white border border-white'
-              : 'bg-[#111111] text-white/60 hover:text-white border border-white/10 hover:border-white/20'
+              : 'bg-black text-white/60 hover:text-white border border-white/10 hover:border-white/20'
           }`}
         >
           Inventory
@@ -156,7 +156,7 @@ export default function AdminReports() {
           className={`px-4 py-2 text-xs uppercase tracking-wider transition-all ${
             selectedType === 'vendors'
               ? 'bg-white/10 text-white border border-white'
-              : 'bg-[#111111] text-white/60 hover:text-white border border-white/10 hover:border-white/20'
+              : 'bg-black text-white/60 hover:text-white border border-white/10 hover:border-white/20'
           }`}
         >
           Vendors
@@ -168,7 +168,7 @@ export default function AdminReports() {
         {filteredReports.map((report) => (
           <div
             key={report.id}
-            className="bg-[#111111] border border-white/10 hover:border-white/20 transition-all group"
+            className="bg-black border border-white/10 hover:border-white/20 transition-all group"
           >
             <div className="p-6">
               <div className="flex items-start gap-6">

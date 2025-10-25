@@ -123,7 +123,7 @@ export default function AdminDashboard() {
       {stats.pendingProducts > 0 && (
         <Link 
           href="/admin/approvals"
-          className="block mb-8 minimal-glass hover:bg-white/[0.03] p-5 transition-all duration-300 group -mx-4 lg:mx-0 fade-in border-l-2 border-l-yellow-500/40"
+          className="block mb-8 bg-white/[0.02] backdrop-filter backdrop-blur-[20px] border border-white/5 rounded-[20px] hover:bg-white/[0.03] p-5 transition-all duration-300 group -mx-4 lg:mx-0 fade-in border-l-2 border-l-yellow-500/40"
         >
           <div className="flex items-center gap-4">
             <AlertCircle size={18} className="text-yellow-500/80 flex-shrink-0 animate-pulse" strokeWidth={1.5} />
@@ -146,7 +146,7 @@ export default function AdminDashboard() {
       ) : (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
           {/* Revenue */}
-          <div className="minimal-glass subtle-glow p-6 hover:bg-white/[0.03] transition-all duration-300 group fade-in">
+          <div className="bg-white/[0.02] backdrop-filter backdrop-blur-[20px] border border-white/5 rounded-[20px] shadow-[0_0_30px_rgba(255,255,255,0.02)] p-6 hover:bg-white/[0.03] transition-all duration-300 group fade-in">
             <div className="flex items-center justify-between mb-4">
               <span className="text-white/40 text-[11px] uppercase tracking-[0.2em] font-light">Revenue</span>
               <DollarSign size={16} className="text-white/20 group-hover:text-white/30 transition-all duration-300" strokeWidth={1.5} />
@@ -158,7 +158,7 @@ export default function AdminDashboard() {
           </div>
 
           {/* Orders */}
-          <div className="minimal-glass subtle-glow p-6 hover:bg-white/[0.03] transition-all duration-300 group fade-in" style={{ animationDelay: '0.1s' }}>
+          <div className="bg-white/[0.02] backdrop-filter backdrop-blur-[20px] border border-white/5 rounded-[20px] shadow-[0_0_30px_rgba(255,255,255,0.02)] p-6 hover:bg-white/[0.03] transition-all duration-300 group fade-in" style={{ animationDelay: '0.1s' }}>
             <div className="flex items-center justify-between mb-4">
               <span className="text-white/40 text-[11px] uppercase tracking-[0.2em] font-light">Orders</span>
               <ShoppingCart size={16} className="text-white/20 group-hover:text-white/30 transition-all duration-300" strokeWidth={1.5} />
@@ -170,7 +170,7 @@ export default function AdminDashboard() {
           </div>
 
           {/* Customers */}
-          <div className="minimal-glass subtle-glow p-6 hover:bg-white/[0.03] transition-all duration-300 group fade-in" style={{ animationDelay: '0.2s' }}>
+          <div className="bg-white/[0.02] backdrop-filter backdrop-blur-[20px] border border-white/5 rounded-[20px] shadow-[0_0_30px_rgba(255,255,255,0.02)] p-6 hover:bg-white/[0.03] transition-all duration-300 group fade-in" style={{ animationDelay: '0.2s' }}>
             <div className="flex items-center justify-between mb-4">
               <span className="text-white/40 text-[11px] uppercase tracking-[0.2em] font-light">Customers</span>
               <Users size={16} className="text-white/20 group-hover:text-white/30 transition-all duration-300" strokeWidth={1.5} />
@@ -182,7 +182,7 @@ export default function AdminDashboard() {
           </div>
 
           {/* Products */}
-          <div className="minimal-glass subtle-glow p-6 hover:bg-white/[0.03] transition-all duration-300 group fade-in" style={{ animationDelay: '0.3s' }}>
+          <div className="bg-white/[0.02] backdrop-filter backdrop-blur-[20px] border border-white/5 rounded-[20px] shadow-[0_0_30px_rgba(255,255,255,0.02)] p-6 hover:bg-white/[0.03] transition-all duration-300 group fade-in" style={{ animationDelay: '0.3s' }}>
             <div className="flex items-center justify-between mb-4">
               <span className="text-white/40 text-[11px] uppercase tracking-[0.2em] font-light">Products</span>
               <Package size={16} className="text-white/20 group-hover:text-white/30 transition-all duration-300" strokeWidth={1.5} />
@@ -204,7 +204,7 @@ export default function AdminDashboard() {
       ) : (
         <div className="grid lg:grid-cols-2 gap-3 mb-8">
           {/* Revenue Chart */}
-          <div className="minimal-glass subtle-glow p-6 fade-in" style={{ animationDelay: '0.4s' }}>
+          <div className="bg-white/[0.02] backdrop-filter backdrop-blur-[20px] border border-white/5 rounded-[20px] shadow-[0_0_30px_rgba(255,255,255,0.02)] p-6 fade-in" style={{ animationDelay: '0.4s' }}>
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h3 className="text-white/40 text-[11px] font-light tracking-[0.2em] uppercase mb-2">Revenue Trend</h3>
@@ -263,7 +263,7 @@ export default function AdminDashboard() {
         </div>
 
           {/* Orders Chart */}
-          <div className="minimal-glass subtle-glow p-6 fade-in" style={{ animationDelay: '0.5s' }}>
+          <div className="bg-white/[0.02] backdrop-filter backdrop-blur-[20px] border border-white/5 rounded-[20px] shadow-[0_0_30px_rgba(255,255,255,0.02)] p-6 fade-in" style={{ animationDelay: '0.5s' }}>
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h3 className="text-white/40 text-[11px] font-light tracking-[0.2em] uppercase mb-2">Order Volume</h3>
@@ -376,7 +376,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Quick Actions */}
-        <div className="minimal-glass subtle-glow p-6 fade-in" style={{ animationDelay: '0.7s' }}>
+        <div className="bg-white/[0.02] backdrop-filter backdrop-blur-[20px] border border-white/5 rounded-[20px] shadow-[0_0_30px_rgba(255,255,255,0.02)] p-6 fade-in" style={{ animationDelay: '0.7s' }}>
           <div className="mb-6">
             <h3 className="text-white/40 text-[11px] font-light tracking-[0.2em] uppercase mb-2">Quick Actions</h3>
             <p className="text-white/30 text-[10px] font-light">COMMON TASKS</p>
@@ -385,7 +385,7 @@ export default function AdminDashboard() {
           <div className="space-y-2">
             <Link 
               href="/admin/approvals"
-              className="block px-4 py-3 bg-black/20 hover:bg-white/[0.03] border border-white/10 hover:border-white/20 text-white text-xs font-light transition-all duration-300 group"
+              className="block px-4 py-3 bg-black/20 hover:bg-white/[0.03] border border-white/10 hover:border-white/20 text-white text-xs font-light transition-all duration-300 group rounded-[14px]"
             >
               <div className="flex items-center justify-between">
                 <span className="tracking-wide">Review Products</span>

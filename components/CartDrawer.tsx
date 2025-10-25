@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, memo, useCallback } from "react";
 import { X, Trash2, ArrowRight, Store, Truck, Plus, Minus, Edit3 } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import Link from "next/link";
@@ -11,9 +11,18 @@ interface CartDrawerProps {
   onClose: () => void;
 }
 
-export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
+function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
   const { items, removeFromCart, updateQuantity, total, itemCount } = useCart();
   const [editingItem, setEditingItem] = useState<number | null>(null);
+
+  // Memoize callbacks
+  const handleRemove = useCallback((productId: number) => {
+    removeFromCart(productId);
+  }, [removeFromCart]);
+
+  const handleUpdateQuantity = useCallback((productId: number, quantity: number) => {
+    updateQuantity(productId, quantity);
+  }, [updateQuantity]);
 
   useEffect(() => {
     if (isOpen) {
@@ -209,7 +218,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                           {item.name}
                         </h3>
                         <button
-                          onClick={() => removeFromCart(item.productId)}
+                          onClick={() => handleRemove(item.productId)}
                           className="p-2 hover:bg-red-500/10 active:bg-red-500/20 rounded-lg flex-shrink-0 transition-colors min-w-[36px] min-h-[36px] flex items-center justify-center"
                           type="button"
                           aria-label="Remove item"
@@ -240,7 +249,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                       <div className="flex items-center justify-between mt-auto">
                         <div className="flex items-center gap-2 bg-[#1a1a1a] rounded-full p-1">
                           <button
-                            onClick={() => updateQuantity(item.productId, Math.max(1, item.quantity - 1))}
+                            onClick={() => handleUpdateQuantity(item.productId, Math.max(1, item.quantity - 1))}
                             className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 active:bg-white/20 transition-colors"
                             type="button"
                             aria-label="Decrease quantity"
@@ -250,7 +259,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                           </button>
                           <span className="text-sm font-medium text-white min-w-[24px] text-center">{item.quantity}</span>
                           <button
-                            onClick={() => updateQuantity(item.productId, item.quantity + 1)}
+                            onClick={() => handleUpdateQuantity(item.productId, item.quantity + 1)}
                             className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 active:bg-white/20 transition-colors"
                             type="button"
                             aria-label="Increase quantity"
@@ -310,3 +319,6 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
     </div>
   );
 }
+
+// Memoize to prevent unnecessary re-renders
+export default memo(CartDrawer);

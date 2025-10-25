@@ -302,7 +302,7 @@ export default function CategoriesPage() {
 
       {/* Form */}
       {showForm && (
-        <div className="bg-[#111111] border border-white/10 p-6 mb-6">
+        <div className="bg-black border border-white/10 p-6 mb-6">
           <h2 className="text-white text-lg font-medium mb-4">
             {editingId ? 'Edit Category' : 'New Category'}
           </h2>
@@ -596,11 +596,11 @@ export default function CategoriesPage() {
       {/* Categories List */}
       <div className="space-y-4">
         {loading ? (
-          <div className="bg-[#111111] border border-white/10 p-12 text-center">
+          <div className="bg-black border border-white/10 p-12 text-center">
             <div className="text-white/40">Loading categories...</div>
           </div>
         ) : categories.length === 0 ? (
-          <div className="bg-[#111111] border border-white/10 p-12 text-center">
+          <div className="bg-black border border-white/10 p-12 text-center">
             <div className="text-white/40 mb-4">No categories yet</div>
             <button
               onClick={() => setShowForm(true)}
@@ -612,7 +612,7 @@ export default function CategoriesPage() {
         ) : (
           <>
             {/* Desktop Table */}
-            <div className="hidden lg:block bg-[#111111] border border-white/10 overflow-hidden">
+            <div className="hidden lg:block bg-black border border-white/10 overflow-hidden">
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-white/10">
@@ -800,7 +800,7 @@ export default function CategoriesPage() {
               {topLevelCategories.map((category) => (
                 <div key={category.id}>
                   {/* Parent Category Card */}
-                  <div className="bg-[#111111] border border-white/10 p-4">
+                  <div className="bg-black border border-white/10 p-4">
                     <div className="flex items-start gap-3 mb-3">
                       {category.image_url ? (
                         <img src={category.image_url} alt={category.name} className="w-16 h-16 object-cover bg-white/5" />
@@ -855,7 +855,7 @@ export default function CategoriesPage() {
 
                   {/* Child Categories */}
                   {getChildCategories(category.id).map((child) => (
-                    <div key={child.id} className="bg-[#111111] border border-white/10 p-4 ml-6">
+                    <div key={child.id} className="bg-black border border-white/10 p-4 ml-6">
                       <div className="flex items-start gap-3 mb-3">
                         <ChevronRight size={16} className="text-white/30 mt-1 flex-shrink-0" />
                         {child.image_url ? (

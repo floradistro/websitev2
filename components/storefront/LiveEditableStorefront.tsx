@@ -3,7 +3,7 @@
 import { useLiveEditing } from './LiveEditingProvider';
 import { HeroSection, ProcessSection, AboutStorySection } from './content-sections';
 import { VendorStorefront } from '@/lib/storefront/get-vendor';
-import ProductsCarousel from '@/components/ProductsCarousel';
+// import ProductsCarousel from '@/components/ProductsCarousel'; // Component doesn't exist
 
 interface LiveEditableStorefrontProps {
   vendor: VendorStorefront;

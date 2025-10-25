@@ -26,23 +26,19 @@ class QueryCache {
     monitor.recordCacheAccess(key, isHit);
     
     if (isHit) {
-      console.log(`✅ Cache HIT: ${key}`);
-    }
+      }
     return value;
   }
   
   set(key: string, value: any, ttl?: number): void {
-    console.log(`📝 Cache SET: ${key}`);
     this.cache.set(key, value, { ttl });
   }
   
   delete(key: string): void {
-    console.log(`🗑️  Cache DELETE: ${key}`);
     this.cache.delete(key);
   }
   
   clear(): void {
-    console.log('🧹 Cache CLEAR: All entries');
     this.cache.clear();
   }
   
@@ -56,8 +52,7 @@ class QueryCache {
         count++;
       }
     }
-    console.log(`🗑️  Cache INVALIDATE: ${count} entries matching pattern "${pattern}"`);
-  }
+    }
   
   // Get cache statistics
   getStats() {

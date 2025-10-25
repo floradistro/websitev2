@@ -23,6 +23,7 @@ export default function VendorReviews() {
   const [search, setSearch] = useState('');
   const [respondingTo, setRespondingTo] = useState<number | null>(null);
   const [responseText, setResponseText] = useState('');
+  const [filterRating, setFilterRating] = useState<number | null>(null);
 
   useEffect(() => {
     async function fetchReviews() {
@@ -105,20 +106,39 @@ export default function VendorReviews() {
   const needsResponse = reviews.filter(r => !r.response).length;
 
   return (
-    <div className="w-full max-w-full animate-fadeIn px-4 lg:px-0 py-6 lg:py-0 overflow-x-hidden">
+    <div className="w-full px-4 lg:px-0">
+      <style jsx>{`
+        @keyframes fade-in {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in {
+          animation: fade-in 0.6s ease-out;
+        }
+        .minimal-glass {
+          background: rgba(255, 255, 255, 0.02);
+          backdrop-filter: blur(20px);
+          border: 1px solid rgba(255, 255, 255, 0.05);
+          border-radius: 20px;
+        }
+        .subtle-glow {
+          box-shadow: 0 0 30px rgba(255, 255, 255, 0.02);
+        }
+      `}</style>
+
       {/* Header */}
-      <div className="mb-6 lg:mb-8" style={{ animation: 'fadeInUp 0.5s ease-out' }}>
-        <h1 className="text-2xl lg:text-3xl font-light text-white mb-2 tracking-tight">
+      <div className="mb-12 fade-in">
+        <h1 className="text-3xl font-thin text-white/90 tracking-tight mb-2">
           Customer Reviews
         </h1>
-        <p className="text-white/60 text-xs lg:text-sm">
-          Manage and respond to customer feedback
+        <p className="text-white/40 text-xs font-light tracking-wide">
+          MANAGE FEEDBACK · RESPOND TO CUSTOMERS
         </p>
       </div>
 
       {/* Summary Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 lg:gap-4 mb-6" style={{ animation: 'fadeInUp 0.6s ease-out 0.1s both' }}>
-        <div className="bg-[#1a1a1a] border border-white/5 p-6 hover:border-white/10 hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+        <div className="bg-black border border-white/5 p-6 hover:border-white/10 hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
           <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
           <div className="relative">
             <div className="flex items-center justify-between mb-4">
@@ -130,7 +150,7 @@ export default function VendorReviews() {
           </div>
         </div>
 
-        <div className="bg-[#1a1a1a] border border-white/5 p-6 hover:border-white/10 hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+        <div className="bg-black border border-white/5 p-6 hover:border-white/10 hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
           <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
           <div className="relative">
             <div className="flex items-center justify-between mb-4">
@@ -150,7 +170,7 @@ export default function VendorReviews() {
           </div>
         </div>
 
-        <div className="bg-[#1a1a1a] border border-white/5 p-6 hover:border-white/10 hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+        <div className="bg-black border border-white/5 p-6 hover:border-white/10 hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
           <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
           <div className="relative">
             <div className="flex items-center justify-between mb-4">
@@ -172,7 +192,7 @@ export default function VendorReviews() {
             placeholder="Search by product or customer name..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 pl-10 pr-4 py-3 focus:outline-none focus:border-white/10 transition-colors text-base"
+            className="w-full bg-black border border-white/5 text-white placeholder-white/40 pl-10 pr-4 py-3 focus:outline-none focus:border-white/10 transition-colors text-base"
           />
         </div>
       </div>
@@ -180,7 +200,7 @@ export default function VendorReviews() {
       {/* Reviews List */}
       <div className="space-y-0 lg:space-y-4 -mx-4 lg:mx-0" style={{ animation: 'fadeInUp 0.6s ease-out 0.3s both' }}>
         {filteredReviews.map((review) => (
-          <div key={review.id} className="bg-[#1a1a1a] lg:border border-t lg:border-t border-white/5 lg:hover:border-white/10 transition-all">
+          <div key={review.id} className="bg-black lg:border border-t lg:border-t border-white/5 lg:hover:border-white/10 transition-all">
             {/* Review Header */}
             <div className="px-4 lg:p-6 py-4 border-b border-white/5">
               <div className="flex justify-between items-start mb-3">
@@ -237,7 +257,7 @@ export default function VendorReviews() {
                   onChange={(e) => setResponseText(e.target.value)}
                   placeholder="Write your response..."
                   rows={3}
-                  className="w-full bg-[#1a1a1a] border border-white/5 text-white placeholder-white/40 px-4 py-3 mb-3 focus:outline-none focus:border-white/10 transition-colors resize-none text-base"
+                  className="w-full bg-black border border-white/5 text-white placeholder-white/40 px-4 py-3 mb-3 focus:outline-none focus:border-white/10 transition-colors resize-none text-base"
                   autoFocus
                 />
                 <div className="flex gap-2 justify-end">

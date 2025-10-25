@@ -1,12 +1,10 @@
 import { headers } from 'next/headers';
 import Link from 'next/link';
 import { getVendorFromHeaders, getVendorStorefront } from '@/lib/storefront/get-vendor';
-import { StorefrontShopClient } from '@/components/storefront/StorefrontShopClient';
-import { UniversalPageRenderer } from '@/components/storefront/UniversalPageRenderer';
-import { LiveEditingProvider } from '@/components/storefront/LiveEditingProvider';
-import { StorefrontShopClientWrapper } from '@/components/storefront/StorefrontShopClientWrapper';
 import { getServiceSupabase } from '@/lib/supabase/client';
 import { notFound } from 'next/navigation';
+import { getVendorSectionsWithInit } from '@/lib/storefront/init-vendor-content';
+import { ComponentBasedPageRenderer } from '@/components/storefront/ComponentBasedPageRenderer';
 
 export default async function StorefrontShopPage({ searchParams }: { searchParams: Promise<{ vendor?: string; preview?: string }> }) {
   // Check if template preview mode (no vendor)
@@ -15,7 +13,6 @@ export default async function StorefrontShopPage({ searchParams }: { searchParam
   
   // If blank template preview, show vendor list
   if (tenantType === 'template-preview') {
-    // Fetch all active vendors
     const supabase = getServiceSupabase();
     const { data: vendors } = await supabase
       .from('vendors')
@@ -25,7 +22,6 @@ export default async function StorefrontShopPage({ searchParams }: { searchParam
     
     return (
       <div className="min-h-screen relative overflow-hidden">
-        {/* UHD Gradient Background - iOS 26 */}
         <div className="fixed inset-0">
           <div className="absolute inset-0 bg-gradient-to-br from-[#0a0a0a] via-black to-[#141414]" />
           <div className="absolute inset-0 bg-gradient-to-tr from-neutral-950/50 via-transparent to-neutral-900/50" />
@@ -74,6 +70,10 @@ export default async function StorefrontShopPage({ searchParams }: { searchParam
     );
   }
   
+  // Regular shop page with Component Registry
+  const params = await searchParams;
+  const isPreview = params.preview === 'true';
+  
   const vendorId = await getVendorFromHeaders();
 
   if (!vendorId) {
@@ -86,71 +86,27 @@ export default async function StorefrontShopPage({ searchParams }: { searchParam
     notFound();
   }
 
-  // Load shop configuration from database
-  const { getVendorPageSections } = await import('@/lib/storefront/content-api');
-  const shopSections = await getVendorPageSections(vendorId, 'shop');
+  // Get sections for shop page
+  const sections = await getVendorSectionsWithInit(vendor.id, vendor.store_name || vendor.slug, 'shop');
+  const supabase = getServiceSupabase();
+  const sectionIds = sections.map((s: any) => s.id);
   
-  const shopConfigSection = shopSections.find(s => s.section_key === 'shop_config');
+  // Get component instances
+  const { data: componentInstances } = await supabase
+    .from('vendor_component_instances')
+    .select('*')
+    .eq('vendor_id', vendor.id)
+    .in('section_id', sectionIds)
+    .order('position_order');
 
-  // Check if in preview mode (live editor) - show sections + products
-  const params = await searchParams;
-  if (params.preview === 'true') {
-    // Filter to visible sections only
-    const visibleShopSections = shopSections.filter(s => 
-      s.section_key !== 'shop_config' && s.is_enabled !== false
-    );
-    
-    return (
-      <LiveEditingProvider initialSections={shopSections} isPreviewMode={true}>
-        {/* Only render sections container if there are visible sections */}
-        {visibleShopSections.length > 0 && (
-          <div className="-mt-[44px]">
-            <UniversalPageRenderer vendor={vendor} pageType="shop" />
-          </div>
-        )}
-        
-        {/* Shop products with editable config - starts right after header if no sections */}
-        <StorefrontShopClientWrapper vendorId={vendorId} />
-      </LiveEditingProvider>
-    );
-  }
-
-  // Use vendor's template_id for styling
-  const templateId = vendor.template_id || 'default';
-
+  // Component Registry rendering
   return (
-    <div className="min-h-screen relative overflow-hidden">
-      {/* UHD Gradient Background - iOS 26 (only for minimalist template) */}
-      {templateId === 'minimalist' && (
-        <>
-          <div className="fixed inset-0">
-            <div className="absolute inset-0 bg-gradient-to-br from-[#0a0a0a] via-black to-[#141414]" />
-            <div className="absolute inset-0 bg-gradient-to-tr from-neutral-950/50 via-transparent to-neutral-900/50" />
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,black_100%)]" />
-          </div>
-          
-          {/* Scattered Color Orbs - Maximum Spacing */}
-          <div className="fixed inset-0 pointer-events-none">
-            {/* Red orbs */}
-            <div className="absolute top-[3%] left-[2%] w-[80px] h-[80px] md:w-[280px] md:h-[280px] bg-red-500/[0.20] rounded-full blur-[25px] md:blur-[45px] animate-pulse" style={{ animationDuration: '9s' }} />
-            <div className="absolute bottom-[3%] right-[2%] w-[75px] h-[75px] md:w-[260px] md:h-[260px] bg-red-500/[0.18] rounded-full blur-[24px] md:blur-[42px] animate-pulse" style={{ animationDuration: '11s', animationDelay: '3s' }} />
-            
-            {/* Blue orbs */}
-            <div className="absolute top-[5%] right-[2%] w-[78px] h-[78px] md:w-[270px] md:h-[270px] bg-blue-500/[0.19] rounded-full blur-[25px] md:blur-[44px] animate-pulse" style={{ animationDuration: '10s', animationDelay: '1s' }} />
-            <div className="absolute bottom-[5%] left-[2%] w-[72px] h-[72px] md:w-[250px] md:h-[250px] bg-blue-500/[0.17] rounded-full blur-[24px] md:blur-[43px] animate-pulse" style={{ animationDuration: '12s', animationDelay: '5s' }} />
-            
-            {/* Yellow orbs */}
-            <div className="absolute top-[35%] right-[75%] w-[85px] h-[85px] md:w-[290px] md:h-[290px] bg-yellow-500/[0.10] rounded-full blur-[26px] md:blur-[46px] animate-pulse" style={{ animationDuration: '8s', animationDelay: '2s' }} />
-            <div className="absolute bottom-[35%] right-[15%] w-[76px] h-[76px] md:w-[265px] md:h-[265px] bg-yellow-500/[0.08] rounded-full blur-[25px] md:blur-[44px] animate-pulse" style={{ animationDuration: '13s', animationDelay: '4s' }} />
-          </div>
-        </>
-      )}
-
-      <StorefrontShopClient 
-        vendorId={vendorId}
-        config={shopConfigSection?.content_data}
-      />
-    </div>
+    <ComponentBasedPageRenderer
+      vendor={vendor}
+      pageType="shop"
+      sections={sections}
+      componentInstances={componentInstances || []}
+      isPreview={isPreview}
+    />
   );
 }
-

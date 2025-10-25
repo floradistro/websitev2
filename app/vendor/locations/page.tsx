@@ -114,20 +114,39 @@ export default function VendorLocations() {
   }
 
   return (
-    <div className="w-full animate-fadeIn px-4 lg:px-0">
+    <div className="w-full px-4 lg:px-0">
+      <style jsx>{`
+        @keyframes fade-in {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in {
+          animation: fade-in 0.6s ease-out;
+        }
+        .minimal-glass {
+          background: rgba(255, 255, 255, 0.02);
+          backdrop-filter: blur(20px);
+          border: 1px solid rgba(255, 255, 255, 0.05);
+          border-radius: 20px;
+        }
+        .subtle-glow {
+          box-shadow: 0 0 30px rgba(255, 255, 255, 0.02);
+        }
+      `}</style>
+
       {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-2xl lg:text-3xl text-white font-light tracking-tight mb-2">Locations</h1>
-        <p className="text-white/50 text-sm">{locations.length} location{locations.length !== 1 ? 's' : ''}</p>
+      <div className="mb-12 fade-in">
+        <h1 className="text-3xl font-thin text-white/90 tracking-tight mb-2">Locations</h1>
+        <p className="text-white/40 text-xs font-light tracking-wide">{locations.length} {locations.length === 1 ? 'LOCATION' : 'LOCATIONS'} · MULTI-SITE MANAGEMENT</p>
       </div>
 
       {/* Locations Grid */}
       {loading ? (
-        <div className="bg-[#111111] border border-white/10 p-12 text-center">
+        <div className="bg-black border border-white/10 p-12 text-center">
           <div className="text-white/40 text-sm">Loading locations...</div>
         </div>
       ) : locations.length === 0 ? (
-        <div className="bg-[#111111] border border-white/10 p-12 text-center">
+        <div className="bg-black border border-white/10 p-12 text-center">
           <MapPin size={32} className="text-white/20 mx-auto mb-3" />
           <div className="text-white/60 text-sm mb-2">No locations found</div>
           <div className="text-white/40 text-xs">Contact your administrator to add locations</div>
@@ -137,7 +156,7 @@ export default function VendorLocations() {
           {locations.map((location) => (
             <div
               key={location.id}
-              className="bg-[#111111] border border-white/10 hover:border-white/20 transition-all"
+              className="bg-black border border-white/10 hover:border-white/20 transition-all"
             >
               {/* Location Card */}
               <div className="p-6">
@@ -258,7 +277,7 @@ export default function VendorLocations() {
                 type="tel"
                 value={editingLocation.phone || ''}
                 onChange={(e) => setEditingLocation({ ...editingLocation, phone: e.target.value })}
-                className="w-full bg-[#111111] border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
+                className="w-full bg-black border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
                 placeholder="(555) 123-4567"
               />
             </div>
@@ -269,7 +288,7 @@ export default function VendorLocations() {
                 type="email"
                 value={editingLocation.email || ''}
                 onChange={(e) => setEditingLocation({ ...editingLocation, email: e.target.value })}
-                className="w-full bg-[#111111] border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
+                className="w-full bg-black border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
                 placeholder="location@example.com"
               />
             </div>

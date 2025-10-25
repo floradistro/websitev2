@@ -61,7 +61,7 @@ export function AddFieldFromLibraryModal({ fieldType, onClose, onAdd }: AddField
 
       const data = await response.json();
       if (data.success) {
-        onAdd(config.section_key, fieldDefinition);
+        onAdd('', fieldDefinition);  // section_key not needed for global fields
         alert('✅ Custom field added successfully!');
       } else {
         alert(data.error || 'Failed to add field');

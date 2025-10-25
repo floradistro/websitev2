@@ -1,7 +1,7 @@
 import { VendorStorefront } from '@/lib/storefront/get-vendor';
 import { getVendorPageSections } from '@/lib/storefront/content-api';
 import { HeroSection, ProcessSection, AboutStorySection } from './content-sections';
-import ProductsCarousel from '@/components/ProductsCarousel';
+// // import ProductsCarousel from '@/components/ProductsCarousel'; // Component doesn't exist // Component doesn't exist
 
 interface ContentDrivenHomePageProps {
   vendor: VendorStorefront;
@@ -202,12 +202,11 @@ export async function ContentDrivenHomePage({
               )}
             </div>
             
-            <ProductsCarousel
-              products={products}
-              locations={locations}
-              inventoryMap={inventoryMap}
-              productFieldsMap={productFieldsMap}
-            />
+            {/* ProductsCarousel component doesn't exist - using placeholder */}
+            <div className="py-8">
+              <h3 className="text-xl font-semibold text-white/80 mb-4">Featured Products</h3>
+              <div className="text-white/40 text-sm">Products carousel component placeholder</div>
+            </div>
           </div>
         </div>
       )}

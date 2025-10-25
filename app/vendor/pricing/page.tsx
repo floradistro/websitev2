@@ -359,11 +359,30 @@ export default function VendorPricingPage() {
 
   return (
     <div className="w-full px-4 lg:px-0">
+      <style jsx>{`
+        @keyframes fade-in {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in {
+          animation: fade-in 0.6s ease-out;
+        }
+        .minimal-glass {
+          background: rgba(255, 255, 255, 0.02);
+          backdrop-filter: blur(20px);
+          border: 1px solid rgba(255, 255, 255, 0.05);
+          border-radius: 20px;
+        }
+        .subtle-glow {
+          box-shadow: 0 0 30px rgba(255, 255, 255, 0.02);
+        }
+      `}</style>
+
       {/* Header */}
-      <div className="flex justify-between items-start gap-4 mb-8">
+      <div className="flex justify-between items-start gap-4 mb-12 fade-in">
         <div className="min-w-0">
-          <h1 className="text-2xl lg:text-3xl font-thin text-white/90 tracking-tight mb-2">
-            Pricing
+          <h1 className="text-3xl font-thin text-white/90 tracking-tight mb-2">
+            Pricing Configuration
           </h1>
           <p className="text-white/40 text-xs font-light tracking-wide">
             CONFIGURE YOUR PRICING · AUTO-APPLIES TO ALL PRODUCTS
@@ -371,16 +390,16 @@ export default function VendorPricingPage() {
         </div>
         <Link
           href="/vendor/cost-plus-pricing"
-          className="flex items-center gap-2 bg-gradient-to-r from-green-600 to-green-500 text-white px-4 py-2.5 text-xs font-medium uppercase tracking-wider hover:from-green-700 hover:to-green-600 transition-all whitespace-nowrap"
+          className="flex items-center gap-2 bg-gradient-to-r from-white/10 to-white/5 text-white/70 border border-white/10 hover:border-white/20 hover:text-white transition-all duration-300 rounded-[14px] px-4 py-3 text-xs font-light uppercase tracking-[0.15em] whitespace-nowrap"
         >
-          <Calculator size={16} />
-          <span className="hidden sm:inline">Cost-Plus Pricing</span>
+          <Calculator size={14} strokeWidth={1.5} />
+          <span className="hidden sm:inline">Cost-Plus</span>
           <span className="sm:hidden">Cost+</span>
         </Link>
       </div>
 
       {/* Info Banner */}
-      <div className="bg-white/5 border border-white/10 p-4 mb-6 -mx-4 lg:mx-0">
+      <div className="minimal-glass p-6 mb-8 fade-in" style={{ animationDelay: '0.1s' }}>
         <div className="flex gap-3">
           <AlertCircle size={20} className="text-white/60 flex-shrink-0 mt-0.5" />
           <div>
@@ -430,7 +449,7 @@ export default function VendorPricingPage() {
             const isWholesale = config.blueprint.slug.includes('wholesale');
             
             return (
-              <div key={config.id} className="bg-[#111111] border border-white/10 overflow-hidden -mx-4 lg:mx-0">
+              <div key={config.id} className="bg-black border border-white/10 overflow-hidden -mx-4 lg:mx-0">
                 {/* Header */}
                 <div className="p-6 border-b border-white/10">
                   <div className="flex items-start justify-between gap-4">
@@ -480,7 +499,7 @@ export default function VendorPricingPage() {
                         <select
                           value={displayUnits[config.id] || 'gram'}
                           onChange={(e) => setDisplayUnits(prev => ({ ...prev, [config.id]: e.target.value }))}
-                          className="w-full bg-[#0a0a0a] border border-white/10 text-white px-4 py-3 rounded focus:outline-none focus:border-white/30 text-sm"
+                          className="w-full bg-black/98 border border-white/10 text-white px-4 py-3 rounded-[14px] focus:outline-none focus:border-white/30 text-sm"
                         >
                           <optgroup label="Weight Units">
                             <option value="milligram">Milligrams (mg)</option>
@@ -584,7 +603,7 @@ export default function VendorPricingPage() {
                                       e.stopPropagation();
                                       toggleTierEnabled(config.id, priceBreak.break_id);
                                     }}
-                                    className="w-4 h-4 rounded border-white/20 cursor-pointer"
+                                    className="w-4 h-4 rounded-[14px] border-white/20 cursor-pointer"
                                   />
                                 </div>
                               </div>
@@ -598,7 +617,7 @@ export default function VendorPricingPage() {
                                   onChange={(e) => updateTier(config.id, priceBreak.break_id, { label: e.target.value })}
                                   placeholder="e.g., Bulk Tier"
                                   disabled={!tierEnabled}
-                                  className="w-full bg-white/5 border border-white/10 text-white placeholder-white/30 px-3 py-2 text-sm rounded focus:outline-none focus:border-white/30 disabled:opacity-50 disabled:cursor-not-allowed"
+                                  className="w-full bg-white/5 border border-white/10 text-white placeholder-white/30 px-3 py-2 text-sm rounded-[14px] focus:outline-none focus:border-white/30 disabled:opacity-50 disabled:cursor-not-allowed"
                                 />
                               </div>
 
@@ -613,7 +632,7 @@ export default function VendorPricingPage() {
                                       onChange={(e) => updateTier(config.id, priceBreak.break_id, { min_qty: parseInt(e.target.value) || 1 })}
                                       placeholder="1"
                                       disabled={!tierEnabled}
-                                      className="w-full bg-white/5 border border-white/10 text-white placeholder-white/30 px-3 py-2 text-sm rounded focus:outline-none focus:border-white/30 disabled:opacity-50 disabled:cursor-not-allowed"
+                                      className="w-full bg-white/5 border border-white/10 text-white placeholder-white/30 px-3 py-2 text-sm rounded-[14px] focus:outline-none focus:border-white/30 disabled:opacity-50 disabled:cursor-not-allowed"
                                     />
                                   </div>
                                   <div className="lg:col-span-2">
@@ -624,7 +643,7 @@ export default function VendorPricingPage() {
                                       onChange={(e) => updateTier(config.id, priceBreak.break_id, { max_qty: e.target.value ? parseInt(e.target.value) : null })}
                                       placeholder="∞"
                                       disabled={!tierEnabled}
-                                      className="w-full bg-white/5 border border-white/10 text-white placeholder-white/30 px-3 py-2 text-sm rounded focus:outline-none focus:border-white/30 disabled:opacity-50 disabled:cursor-not-allowed"
+                                      className="w-full bg-white/5 border border-white/10 text-white placeholder-white/30 px-3 py-2 text-sm rounded-[14px] focus:outline-none focus:border-white/30 disabled:opacity-50 disabled:cursor-not-allowed"
                                     />
                                   </div>
                                   <div className="lg:col-span-1">
@@ -685,7 +704,7 @@ export default function VendorPricingPage() {
                                     onChange={(e) => updatePrice(config.id, priceBreak.break_id, e.target.value)}
                                     placeholder="0.00"
                                     disabled={!tierEnabled}
-                                    className="w-full bg-white/5 border border-white/10 text-white placeholder-white/30 pl-7 pr-3 py-2.5 rounded focus:outline-none focus:border-white/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="w-full bg-white/5 border border-white/10 text-white placeholder-white/30 pl-7 pr-3 py-2.5 rounded-[14px] focus:outline-none focus:border-white/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                   />
                                 </div>
                               </div>
@@ -747,7 +766,7 @@ export default function VendorPricingPage() {
 
           {/* Available Blueprints to Enable */}
           {availableBlueprints.length > 0 && (
-            <div className="bg-[#111111] border border-white/10 p-6 -mx-4 lg:mx-0">
+            <div className="bg-black border border-white/10 p-6 -mx-4 lg:mx-0">
               <h3 className="text-white font-medium text-sm uppercase tracking-wider mb-4">
                 Add Pricing Structure
               </h3>
@@ -793,7 +812,7 @@ export default function VendorPricingPage() {
 
           {/* Empty State */}
           {configs.length === 0 && availableBlueprints.length === 0 && (
-            <div className="text-center py-12 bg-[#111111] border border-white/10 -mx-4 lg:mx-0">
+            <div className="text-center py-12 bg-black border border-white/10 -mx-4 lg:mx-0">
               <DollarSign size={48} className="text-white/20 mx-auto mb-4" />
               <p className="text-white/60 mb-2">No pricing structures available</p>
               <p className="text-white/40 text-sm">Contact support to set up your pricing</p>

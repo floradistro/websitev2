@@ -55,8 +55,7 @@ export const analytics = {
         });
       }
 
-      console.log("📊 Analytics: Add to Cart", product);
-    }
+      }
   },
 
   // Track remove from cart event
@@ -79,8 +78,7 @@ export const analytics = {
           },
         ],
       });
-      console.log("📊 Analytics: Remove from Cart", product);
-    }
+      }
   },
 
   // Track begin checkout event
@@ -99,8 +97,7 @@ export const analytics = {
           quantity: item.quantity,
         })),
       });
-      console.log("📊 Analytics: Begin Checkout", cart);
-    }
+      }
   },
 
   // Track purchase event
@@ -138,8 +135,7 @@ export const analytics = {
         });
       }
 
-      console.log("📊 Analytics: Purchase", order);
-    }
+      }
   },
 
   // Track product view
@@ -162,8 +158,7 @@ export const analytics = {
           },
         ],
       });
-      console.log("📊 Analytics: View Product", product);
-    }
+      }
   },
 
   // Track search
@@ -172,16 +167,14 @@ export const analytics = {
       window.gtag("event", "search", {
         search_term: searchTerm,
       });
-      console.log("📊 Analytics: Search", searchTerm);
-    }
+      }
   },
 
   // Custom event tracking
   event: (eventName: string, params?: any) => {
     if (typeof window !== "undefined" && window.gtag) {
       window.gtag("event", eventName, params);
-      console.log(`📊 Analytics: ${eventName}`, params);
-    }
+      }
   },
 };
 

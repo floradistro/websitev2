@@ -62,7 +62,7 @@ export function ProductPickerField({
         
         // Apply filters
         if (filter.min_stock) {
-          vendorProducts = vendorProducts.filter((p: any) => (p.total_stock || 0) >= filter.min_stock);
+          vendorProducts = vendorProducts.filter((p: any) => (p.total_stock || 0) >= (filter.min_stock || 0));
         }
         
         if (filter.categories && filter.categories.length > 0) {
