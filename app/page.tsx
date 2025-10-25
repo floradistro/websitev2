@@ -134,16 +134,22 @@ export default function HomePage() {
             </div>
             <div className="flex items-center gap-6">
               <Link 
-                href="/admin" 
+                href="/about" 
                 className="text-sm text-white/60 hover:text-white transition-colors tracking-wide"
               >
-                Admin
+                About
               </Link>
               <Link 
-                href="/vendor/login" 
+                href="/api-status" 
                 className="text-sm text-white/60 hover:text-white transition-colors tracking-wide"
               >
-                Vendor Portal
+                API
+              </Link>
+              <Link 
+                href="/partners" 
+                className="text-sm text-white/60 hover:text-white transition-colors tracking-wide"
+              >
+                Partners
               </Link>
               <Link 
                 href="/vendor/login" 
@@ -196,10 +202,10 @@ export default function HomePage() {
               <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
             </Link>
             <Link
-              href="/admin"
+              href="/api-status"
               className="inline-flex items-center gap-2 bg-white/5 border border-white/10 text-white px-8 py-4 rounded-full text-sm uppercase tracking-[0.2em] hover:bg-white/10 hover:border-white/30 font-medium transition-all"
             >
-              <span>Platform Admin</span>
+              <span>View API Status</span>
             </Link>
           </div>
         </div>
@@ -462,10 +468,10 @@ export default function HomePage() {
               <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
             </Link>
             <Link
-              href="/admin"
+              href="/partners"
               className="inline-flex items-center gap-2 bg-white/5 border border-white/10 text-white px-8 py-4 rounded-full text-sm uppercase tracking-[0.2em] hover:bg-white/10 hover:border-white/30 font-medium transition-all"
             >
-              <span>View Demo</span>
+              <span>Become a Partner</span>
             </Link>
           </div>
         </div>
@@ -486,14 +492,20 @@ export default function HomePage() {
               <span className="text-sm text-white/40">© 2025 WhaleTools. All rights reserved.</span>
             </div>
             <div className="flex items-center gap-8">
-              <Link href="/admin" className="text-sm text-white/40 hover:text-white transition-colors">
-                Admin
+              <Link href="/about" className="text-sm text-white/40 hover:text-white transition-colors">
+                About
               </Link>
-              <Link href="/vendor/login" className="text-sm text-white/40 hover:text-white transition-colors">
-                Vendors
+              <Link href="/partners" className="text-sm text-white/40 hover:text-white transition-colors">
+                Partners
               </Link>
-              <Link href="/admin/settings" className="text-sm text-white/40 hover:text-white transition-colors">
-                Documentation
+              <Link href="/api-status" className="text-sm text-white/40 hover:text-white transition-colors">
+                API
+              </Link>
+              <Link href="/privacy" className="text-sm text-white/40 hover:text-white transition-colors">
+                Privacy
+              </Link>
+              <Link href="/terms" className="text-sm text-white/40 hover:text-white transition-colors">
+                Terms
               </Link>
             </div>
           </div>

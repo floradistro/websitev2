@@ -891,6 +891,27 @@ textarea {
   animation: fadeIn 0.3s ease-out;
 }
 
+/* Syntax highlighting for code blocks - Cursor style */
+.prose code {
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+}
+
+/* JSON syntax highlighting */
+.prose pre code {
+  display: block;
+  color: #d4d4d4;
+}
+
+/* Property names */
+.prose pre code::before {
+  content: '';
+}
+
+/* Subtle syntax colors */
+.prose pre {
+  background: #0a0a0a !important;
+}
+
 /* Cursor-style subtle dark scrollbars */
 * {
   scrollbar-width: thin;

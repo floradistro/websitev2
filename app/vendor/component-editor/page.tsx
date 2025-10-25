@@ -254,7 +254,7 @@ function SortableComponentItem({ component, isSelected, onSelect }: SortableComp
     <div
       ref={setNodeRef}
       style={style}
-      className={`flex items-center gap-1 transition-colors group ${
+      className={`flex items-center gap-0.5 transition-colors group relative ${
         isSelected
           ? 'bg-blue-600/20 text-neutral-200 border-l-2 border-blue-600'
           : 'hover:bg-neutral-900/30 text-neutral-500'
@@ -263,19 +263,81 @@ function SortableComponentItem({ component, isSelected, onSelect }: SortableComp
       <button
         {...attributes}
         {...listeners}
-        className="p-1 text-neutral-700 hover:text-neutral-500 cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity"
+        className="p-1 text-neutral-700 hover:text-neutral-400 cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity"
         title="Drag to reorder"
       >
-        <GripVertical size={12} strokeWidth={2} />
+        <GripVertical size={11} strokeWidth={2} />
       </button>
       <button
         onClick={onSelect}
-        className="flex-1 text-left px-2 py-1.5 text-[11px] rounded-[14px]"
+        className="flex-1 text-left px-2 py-1.5 text-[11px] min-w-0"
       >
-        {component.component_key}
+        <span className="truncate block">{component.component_key}</span>
       </button>
+      
+      {/* Mini Tools - Cursor Style */}
+      <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity bg-black/90 rounded px-1">
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onSelect();
+          }}
+          className="p-0.5 text-neutral-600 hover:text-neutral-400 transition-colors"
+          title="Edit"
+        >
+          <Settings size={10} />
+        </button>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            // Duplicate component logic would go here
+            console.log('Duplicate:', component.id);
+          }}
+          className="p-0.5 text-neutral-600 hover:text-neutral-400 transition-colors"
+          title="Duplicate"
+        >
+          <Copy size={10} />
+        </button>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            if (confirm(`Delete ${component.component_key}?`)) {
+              // Call delete from parent
+              const event = new CustomEvent('deleteComponent', { detail: component.id });
+              window.dispatchEvent(event);
+            }
+          }}
+          className="p-0.5 text-neutral-600 hover:text-red-400 transition-colors"
+          title="Delete"
+        >
+          <Trash2 size={10} />
+        </button>
+      </div>
     </div>
   );
+}
+
+// Syntax highlighting for code blocks (Cursor style)
+function syntaxHighlight(code: string, lang: string): string {
+  if (lang === 'json') {
+    return code
+      .replace(/("(?:[^"\\]|\\.)*")\s*:/g, '<span style="color:#9CDCFE">$1</span>:') // Keys - light blue
+      .replace(/:\s*("(?:[^"\\]|\\.)*")/g, ': <span style="color:#CE9178">$1</span>') // String values - orange
+      .replace(/:\s*(\d+\.?\d*)/g, ': <span style="color:#B5CEA8">$1</span>') // Numbers - light green
+      .replace(/:\s*(true|false|null)/g, ': <span style="color:#569CD6">$1</span>') // Booleans - blue
+      .replace(/([{}[\],])/g, '<span style="color:#808080">$1</span>'); // Brackets - gray
+  }
+  
+  if (lang === 'typescript' || lang === 'javascript') {
+    return code
+      .replace(/\b(const|let|var|function|return|if|else|for|while|class|interface|type|import|export|from|async|await)\b/g, '<span style="color:#569CD6">$1</span>') // Keywords
+      .replace(/('(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*"|`(?:[^`\\]|\\.)*`)/g, '<span style="color:#CE9178">$1</span>') // Strings
+      .replace(/\/\/.*/g, '<span style="color:#6A9955">$&</span>') // Comments
+      .replace(/\b(\d+\.?\d*)\b/g, '<span style="color:#B5CEA8">$1</span>'); // Numbers
+  }
+  
+  // Default - subtle gray
+  return `<span style="color:#D4D4D4">${code}</span>`;
 }
 
 export default function ComponentEditor() {
@@ -375,6 +437,15 @@ export default function ComponentEditor() {
       loadData();
     }
   }, [selectedPage, vendor]);
+  
+  // Listen for delete events from mini tools
+  useEffect(() => {
+    const handleDelete = (e: any) => {
+      deleteComponent(e.detail);
+    };
+    window.addEventListener('deleteComponent', handleDelete);
+    return () => window.removeEventListener('deleteComponent', handleDelete);
+  }, [components]);
 
   // Listen for component selection from preview iframe
   useEffect(() => {
@@ -1405,27 +1476,45 @@ export default function ComponentEditor() {
             {rightPanelMode === 'properties' && (
               <>
             <div className="px-3 py-2 border-b border-[#1a1a1a] flex items-center justify-between">
-                  <span className="text-[10px] text-neutral-500 uppercase tracking-wider font-semibold">Component Settings</span>
-              {selectedComponent && (
+                  <span className="text-[10px] text-neutral-500 uppercase tracking-wider font-semibold">
+                    {selectedSection ? 'Section' : 'Component'}
+                  </span>
+                  {selectedComponent && (
                     <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => deleteComponent(selectedComponent.id)}
+                        className="px-2 py-1 bg-neutral-900 hover:bg-neutral-800 text-neutral-500 rounded text-[9px] transition-colors"
+                        title="Delete component"
+                      >
+                        Delete
+                      </button>
                       <button
                         onClick={() => {
                           setBottomPanel('suggestions');
                           generateAiSuggestions();
                         }}
-                        className="px-2 py-1 bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-500 rounded-[14px] text-[9px] transition-colors flex items-center gap-1"
-                        title="Get AI suggestions"
+                        className="px-2 py-1 bg-neutral-900 hover:bg-neutral-800 text-neutral-500 rounded text-[9px] transition-colors flex items-center gap-1"
+                        title="AI suggestions"
                       >
                         <Lightbulb size={10} />
-                        AI
                       </button>
-                <div className="flex items-center gap-1.5 text-[9px] text-green-400">
-                  <span className="w-1 h-1 bg-green-400 rounded-full"></span>
-                  <span>LIVE</span>
-                      </div>
+                    </div>
+                  )}
+                  {selectedSection && (
+                    <button
+                      onClick={async () => {
+                        const sectionComponents = getComponentsForSection(selectedSection.id);
+                        if (sectionComponents.length > 0 && confirm(`Delete all ${sectionComponents.length} components in "${selectedSection.section_key}"?`)) {
+                          sectionComponents.forEach(comp => deleteComponent(comp.id));
+                          setSelectedSection(null);
+                        }
+                      }}
+                      className="px-2 py-1 bg-neutral-900 hover:bg-neutral-800 text-neutral-500 rounded text-[9px] transition-colors"
+                    >
+                      Clear Section
+                    </button>
+                  )}
                 </div>
-              )}
-            </div>
 
                 <div className="flex-1 overflow-y-auto p-3">
                   {selectedSection ? (
@@ -1525,9 +1614,16 @@ export default function ComponentEditor() {
                           <div className="px-6 py-5">
                             {/* User/Assistant Label */}
                             <div className="text-[11px] text-neutral-600 mb-3 font-medium">
-                              {msg.role === 'user' ? 'You' : 'Claude'}
+                                  {msg.role === 'user' ? 'You' : 'Claude'}
                               {msg.streaming && (
-                                <span className="ml-3 text-neutral-700 font-normal">generating...</span>
+                                <span className="ml-3 text-neutral-700 font-normal flex items-center gap-2">
+                                  <span className="flex gap-0.5">
+                                    <span className="w-1 h-1 bg-neutral-600 rounded-full animate-bounce"></span>
+                                    <span className="w-1 h-1 bg-neutral-600 rounded-full animate-bounce" style={{animationDelay: '150ms'}}></span>
+                                    <span className="w-1 h-1 bg-neutral-600 rounded-full animate-bounce" style={{animationDelay: '300ms'}}></span>
+                                  </span>
+                                  generating
+                                </span>
                               )}
                             </div>
                             
@@ -1543,35 +1639,58 @@ export default function ComponentEditor() {
                                     code: ({node, className, children, ...props}: any) => {
                                       const match = /language-(\w+)/.exec(className || '');
                                       const inline = !className;
+                                      const lang = match?.[1] || 'code';
+                                      
                                       return !inline ? (
-                                        <div className="my-4 not-prose">
-                                          <div className="flex items-center justify-between h-8 px-3 bg-[#0d0d0d] border border-[#1a1a1a] rounded-t-md">
-                                            <span className="text-[10px] text-neutral-600 font-mono tracking-wide">{match?.[1] || 'code'}</span>
+                                        <div className="my-3 not-prose">
+                                          <div className="flex items-center justify-between h-9 px-4 bg-[#0a0a0a] border-b border-[#1a1a1a]">
+                                            <div className="flex items-center gap-2">
+                                              <div className="w-1.5 h-1.5 rounded-full bg-neutral-700"></div>
+                                              <span className="text-[11px] text-neutral-500 font-mono">{lang}</span>
+                                            </div>
                                             <button
-                                              onClick={() => navigator.clipboard.writeText(String(children))}
-                                              className="text-[10px] text-neutral-600 hover:text-neutral-400 transition-colors"
+                                              onClick={() => {
+                                                navigator.clipboard.writeText(String(children));
+                                              }}
+                                              className="px-2 py-1 text-[10px] text-neutral-600 hover:text-neutral-300 hover:bg-[#1a1a1a] rounded transition-colors"
                                             >
-                                              copy
+                                              Copy
                                             </button>
                                           </div>
-                                          <pre className="bg-[#0d0d0d] border-x border-b border-[#1a1a1a] rounded-b-md p-4 overflow-x-auto m-0">
-                                            <code className="text-[12px] font-mono text-neutral-400 leading-relaxed" {...props}>
-                                              {children}
-                                            </code>
+                                          <pre className="bg-[#0a0a0a] border-x border-b border-[#1a1a1a] p-4 overflow-x-auto m-0 rounded-b-md">
+                                            <code 
+                                              className="text-[12px] font-mono leading-[1.7] block"
+                                              dangerouslySetInnerHTML={{
+                                                __html: syntaxHighlight(String(children), lang)
+                                              }}
+                                            />
                                           </pre>
                                         </div>
                                       ) : (
-                                        <code className="bg-[#1a1a1a] px-1.5 py-0.5 rounded text-[12px] font-mono text-neutral-400" {...props}>
+                                        <code className="bg-[#1a1a1a] px-1.5 py-0.5 rounded text-[11px] font-mono text-neutral-400" {...props}>
                                           {children}
                                         </code>
                                       );
                                     },
-                                    ul: ({node, ...props}) => <ul className="text-neutral-300 space-y-2 my-3 ml-4" {...props} />,
-                                    ol: ({node, ...props}) => <ol className="text-neutral-300 space-y-2 my-3 ml-4" {...props} />,
-                                    li: ({node, ...props}) => <li className="text-neutral-300 leading-relaxed" {...props} />,
-                                    h3: ({node, ...props}) => <h3 className="text-[14px] font-medium text-white mt-5 mb-3" {...props} />,
-                                    strong: ({node, ...props}) => <strong className="font-medium text-white" {...props} />,
-                                    em: ({node, ...props}) => <em className="text-neutral-400" {...props} />,
+                                    ul: ({node, ...props}) => <ul className="text-neutral-300 space-y-1.5 my-3 ml-4 list-none" {...props} />,
+                                    ol: ({node, ...props}) => <ol className="text-neutral-300 space-y-1.5 my-3 ml-4 list-decimal" {...props} />,
+                                    li: ({node, children, ...props}) => (
+                                      <li className="text-neutral-300 leading-relaxed flex items-start gap-2" {...props}>
+                                        <span className="text-neutral-600 mt-1">→</span>
+                                        <span>{children}</span>
+                                      </li>
+                                    ),
+                                    h3: ({node, ...props}) => (
+                                      <h3 className="text-[13px] font-semibold text-white mt-6 mb-3 pb-2 flex items-center gap-2" {...props}>
+                                        <div className="w-1 h-1 rounded-full bg-neutral-600"></div>
+                                        {props.children}
+                                      </h3>
+                                    ),
+                                    h4: ({node, ...props}) => <h4 className="text-[12px] font-medium text-neutral-300 mt-4 mb-2" {...props} />,
+                                    strong: ({node, ...props}) => <strong className="font-semibold text-white" {...props} />,
+                                    em: ({node, ...props}) => <em className="text-neutral-400 not-italic" {...props} />,
+                                    blockquote: ({node, ...props}) => <blockquote className="border-l-2 border-neutral-700 pl-4 my-3 text-neutral-500" {...props} />,
+                                    hr: ({node, ...props}) => <hr className="border-t border-[#1a1a1a] my-4" {...props} />,
                                   }}
                                 >
                                   {msg.content}
@@ -1653,7 +1772,7 @@ export default function ComponentEditor() {
                         // Add streaming assistant message
                         setAiChatMessages(prev => [...prev, { role: 'assistant', content: '', streaming: true }]);
                         
-                        console.log('🚀 Starting Claude generation:', userMessage);
+                        console.log('🚀 Sending to Claude:', userMessage);
                         
                         try {
                           const response = await fetch('/api/ai/claude-code-gen', {
@@ -1671,37 +1790,54 @@ export default function ComponentEditor() {
                             }),
                           });
                           
-                          console.log('📡 Response status:', response.status, response.headers.get('content-type'));
+                          console.log('📡 Status:', response.status, 'Type:', response.headers.get('content-type'));
                           
-                          if (!response.body) {
-                            console.error('❌ No response body');
-                            throw new Error('No response body');
+                          if (!response.ok) {
+                            const errorText = await response.text();
+                            console.error('❌ API Error:', errorText);
+                            throw new Error(`API returned ${response.status}`);
                           }
                           
-                          console.log('📥 Starting to read stream...');
+                          if (!response.body) {
+                            throw new Error('No response body');
+                          }
                           
                           const reader = response.body.getReader();
                           const decoder = new TextDecoder();
                           let buffer = '';
+                          let eventCount = 0;
                           
                           while (true) {
                             const { done, value } = await reader.read();
                             if (done) {
-                              console.log('✅ Stream complete');
+                              console.log('✅ Stream done. Events:', eventCount);
                               break;
                             }
                             
-                            buffer += decoder.decode(value, { stream: true });
+                            const chunk = decoder.decode(value, { stream: true });
+                            buffer += chunk;
+                            
                             const lines = buffer.split('\n\n');
                             buffer = lines.pop() || '';
                             
                             for (const line of lines) {
-                              if (line.startsWith('data: ')) {
+                              if (line.trim().startsWith('data: ')) {
                                 try {
-                                  const data = JSON.parse(line.slice(6));
-                                  console.log('📨 Event:', data.type);
+                                  const jsonStr = line.slice(6).trim();
+                                  const data = JSON.parse(jsonStr);
+                                  eventCount++;
+                                  console.log(`📨 Event ${eventCount}:`, data.type, data.fullText?.length || 0, 'chars');
                                   
-                                  if (data.type === 'content') {
+                                  if (data.type === 'start' || data.type === 'thinking') {
+                                    setAiChatMessages(prev => {
+                                      const newMessages = [...prev];
+                                      const lastMsg = newMessages[newMessages.length - 1];
+                                      if (lastMsg?.role === 'assistant') {
+                                        lastMsg.content = data.message || 'Processing...';
+                                      }
+                                      return newMessages;
+                                    });
+                                  } else if (data.type === 'content') {
                                     setAiChatMessages(prev => {
                                       const newMessages = [...prev];
                                       const lastMsg = newMessages[newMessages.length - 1];
@@ -1785,7 +1921,7 @@ export default function ComponentEditor() {
                                               
                                               setAiChatMessages(prev => [...prev, {
                                                 role: 'assistant',
-                                                content: `**Saved ${data.components.length} component(s)**\n\nAdded to **${targetSection.section_key}** section\n\nComponents:\n${data.components.map((c: any) => `- ${c.component_key}`).join('\n')}\n\nCheck Explorer to see them marked as "new"`,
+                                                content: `### Generation Complete\n\n**Section:** ${targetSection.section_key}\n**Components Created:** ${data.components.length}\n\n**Summary:**\n${data.components.map((c: any, i: number) => `${i + 1}. **${c.component_key}** - ${c.reasoning || 'Component added'}`).join('\n')}\n\n**Actions Available:**\n→ Select any component in Explorer to edit\n→ Drag components to reorder\n→ Delete individual components\n→ View live preview above\n\nComponents are marked with "ai" badge for 10 seconds.`,
                                                 streaming: false
                                               }]);
                                               
@@ -1808,18 +1944,19 @@ export default function ComponentEditor() {
                             }
                           }
                         } catch (error: any) {
-                          console.error('Claude streaming error:', error);
+                          console.error('❌ Claude error:', error);
                           setAiChatMessages(prev => {
                             const newMessages = [...prev];
                             const lastMsg = newMessages[newMessages.length - 1];
-                            if (lastMsg.role === 'assistant') {
-                              lastMsg.content = `❌ Error: ${error.message}`;
+                            if (lastMsg?.role === 'assistant') {
+                              lastMsg.content = `**Error:** ${error.message}\n\nCheck browser console for details.`;
                               lastMsg.streaming = false;
                             }
                             return newMessages;
                           });
                         } finally {
                           setIsGenerating(false);
+                          console.log('🏁 Generation complete');
                         }
                       }}
                     >
