@@ -1,52 +1,58 @@
 "use client";
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { useVendorAuth } from '@/context/VendorAuthContext';
-import { Upload, Image as ImageIcon, Trash2, Copy, Check, Search, Grid, List, X, Scissors, Edit2, Palette, Sparkles, Wand2, Maximize2, Zap, Sun, CheckCircle } from 'lucide-react';
-import axios from 'axios';
-import { showNotification, showConfirm } from '@/components/NotificationToast';
-import ImageEditorModal from '@/components/ImageEditorModal';
-import ProcessingMonitor from '@/components/ProcessingMonitor';
+import { Upload } from 'lucide-react';
 
 interface MediaFile {
   id: string;
   name: string;
   url: string;
-  thumbnailUrl?: string;
-  previewUrl?: string;
   size: number;
   created_at: string;
-  updated_at: string;
 }
 
 export default function VendorMediaLibrary() {
   const { vendor, isAuthenticated, isLoading: authLoading } = useVendorAuth();
   const [files, setFiles] = useState<MediaFile[]>([]);
   const [loading, setLoading] = useState(true);
-  const [uploading, setUploading] = useState(false);
-  const [search, setSearch] = useState('');
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
-  const [selectedFiles, setSelectedFiles] = useState<Set<string>>(new Set());
-  const [dragActive, setDragActive] = useState(false);
-  const [removingBg, setRemovingBg] = useState(false);
-  const [bgRemovalProgress, setBgRemovalProgress] = useState<string>('');
-  const [editingFile, setEditingFile] = useState<string | null>(null);
-  const [editingName, setEditingName] = useState<string>('');
-  const [showBgPicker, setShowBgPicker] = useState<string | null>(null);
-  const [selectedBgColor, setSelectedBgColor] = useState<string>('#ffffff');
-  const [editorFile, setEditorFile] = useState<{ name: string; url: string } | null>(null);
-  const [showBulkEditor, setShowBulkEditor] = useState(false);
-  const [upscaling, setUpscaling] = useState(false);
-  const [upscaleProgress, setUpscaleProgress] = useState<string>('');
-  const [showUpscaleOptions, setShowUpscaleOptions] = useState<string | null>(null);
-  const [processingItems, setProcessingItems] = useState<any[]>([]);
-  const [showProcessingMonitor, setShowProcessingMonitor] = useState(false);
 
   useEffect(() => {
-    if (!authLoading && isAuthenticated) {
-      loadMedia();
+    if (!authLoading && isAuthenticated && vendor) {
+      setLoading(false);
     }
-  }, [authLoading, isAuthenticated]);
+  }, [authLoading, isAuthenticated, vendor]);
 
+  if (authLoading || loading) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-white/20 border-t-white rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-white/60 text-sm uppercase tracking-wider">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <p className="text-white/60">Please log in to access the media library.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-black p-8">
+      <div className="max-w-7xl mx-auto">
+        <h1 className="text-3xl font-bold text-white mb-8">Media Library</h1>
+        
+        <div className="bg-white/5 border border-white/10 rounded-lg p-12 text-center">
+          <Upload className="w-16 h-16 text-white/40 mx-auto mb-4" />
+          <h2 className="text-xl text-white/60 mb-2">Media Library Coming Soon</h2>
+          <p className="text-white/40">Upload and manage your product images here.</p>
+        </div>
+      </div>
+    </div>
+  );
 }
