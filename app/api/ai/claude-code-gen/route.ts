@@ -138,11 +138,14 @@ export async function POST(request: NextRequest) {
             // Parse final response
             const parsed = parseClaudeResponse(fullText, action);
             
+            // Get final message with usage stats
+            const finalMessage = await stream.finalMessage();
+            
             // Send completion event
             controller.enqueue(encoder.encode(`data: ${JSON.stringify({ 
               type: 'complete',
               ...parsed,
-              usage: stream.finalMessage().usage
+              usage: finalMessage.usage
             })}\n\n`));
             
             controller.close();
