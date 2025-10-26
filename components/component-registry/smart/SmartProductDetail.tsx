@@ -13,6 +13,7 @@ import Image from 'next/image';
 import { Heart, Share2, Check, FlaskConical } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
+import { useTemplateStyle } from '@/hooks/useTemplateStyle';
 
 export interface SmartProductDetailProps {
   productSlug?: string; // If not provided, extract from URL
@@ -66,6 +67,9 @@ export function SmartProductDetail({
 
   const { addToCart } = useCart();
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
+  
+  // Fetch template style from database
+  const templateStyle = useTemplateStyle(vendorId);
   
   // Get user's geolocation on mount
   useEffect(() => {
@@ -376,7 +380,10 @@ export function SmartProductDetail({
         {/* Mobile Layout - Matches Product Card Style */}
         <div className="lg:hidden relative bg-black">
           {/* Main Product Card Container */}
-          <div className="bg-[#0a0a0a] border-b border-white/5">
+          <div style={{ 
+            backgroundColor: templateStyle.color_palette.card_bg,
+            borderBottom: `1px solid ${templateStyle.color_palette.border}`
+          }}>
             
             {/* Gallery */}
             {showGallery && (
@@ -421,8 +428,15 @@ export function SmartProductDetail({
             
             {/* Product Info */}
             <div className="px-4 py-4 space-y-3">
-              {/* Product Name - Bold & Large */}
-              <h1 className="text-2xl sm:text-3xl uppercase tracking-[0.08em] text-white leading-tight" style={{ fontWeight: 900 }}>
+              {/* Product Name - Database-Driven */}
+              <h1 
+                className="uppercase text-white leading-tight"
+                style={{
+                  fontSize: templateStyle.typography.product_detail_name_mobile,
+                  fontWeight: templateStyle.typography.product_detail_name_weight,
+                  letterSpacing: '0.08em'
+                }}
+              >
                 {product.name}
               </h1>
               
