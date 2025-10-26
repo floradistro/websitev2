@@ -83,51 +83,6 @@ export function SmartProductDetail({
       );
     }
   }, []);
-  
-  // Calculate distances and sort locations when user location is available
-  useEffect(() => {
-    if (!userLocation || !inventory || inventory.length === 0) {
-      setLocationsWithDistance(
-        inventory
-          .filter((inv: any) => inv.quantity > 0 && inv.location?.name)
-          .map((inv: any) => ({ ...inv, distance: null }))
-      );
-      return;
-    }
-    
-    // Calculate distance using Haversine formula
-    const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
-      const R = 3959; // Earth's radius in miles
-      const dLat = (lat2 - lat1) * Math.PI / 180;
-      const dLon = (lon2 - lon1) * Math.PI / 180;
-      const a = 
-        Math.sin(dLat/2) * Math.sin(dLat/2) +
-        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-        Math.sin(dLon/2) * Math.sin(dLon/2);
-      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-      return R * c;
-    };
-    
-    const locationsWithDist = inventory
-      .filter((inv: any) => inv.quantity > 0 && inv.location?.name && inv.location?.latitude && inv.location?.longitude)
-      .map((inv: any) => {
-        const distance = calculateDistance(
-          userLocation.lat,
-          userLocation.lng,
-          parseFloat(inv.location.latitude),
-          parseFloat(inv.location.longitude)
-        );
-        return { ...inv, distance };
-      })
-      .sort((a, b) => (a.distance || 999) - (b.distance || 999));
-    
-    setLocationsWithDistance(locationsWithDist);
-    
-    // Auto-select nearest location for pickup
-    if (locationsWithDist.length > 0 && !pickupLocationId) {
-      setPickupLocationId(locationsWithDist[0].location.id);
-    }
-  }, [userLocation, inventory, pickupLocationId]);
 
   // Extract slug from URL if not provided
   const productSlug = propsSlug || pathname?.split('/').pop();
@@ -239,6 +194,58 @@ export function SmartProductDetail({
     setAddedToCart(true);
     setTimeout(() => setAddedToCart(false), 2000);
   };
+
+  // Calculate distances and sort locations when product is loaded
+  useEffect(() => {
+    if (!product || !product.inventory) {
+      setLocationsWithDistance([]);
+      return;
+    }
+    
+    const inventory = product.inventory || [];
+    
+    if (!userLocation || inventory.length === 0) {
+      setLocationsWithDistance(
+        inventory
+          .filter((inv: any) => inv.quantity > 0 && inv.location?.name)
+          .map((inv: any) => ({ ...inv, distance: null }))
+      );
+      return;
+    }
+    
+    // Calculate distance using Haversine formula
+    const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+      const R = 3959; // Earth's radius in miles
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLon = (lon2 - lon1) * Math.PI / 180;
+      const a = 
+        Math.sin(dLat/2) * Math.sin(dLat/2) +
+        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+        Math.sin(dLon/2) * Math.sin(dLon/2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+      return R * c;
+    };
+    
+    const locationsWithDist = inventory
+      .filter((inv: any) => inv.quantity > 0 && inv.location?.name && inv.location?.latitude && inv.location?.longitude)
+      .map((inv: any) => {
+        const distance = calculateDistance(
+          userLocation.lat,
+          userLocation.lng,
+          parseFloat(inv.location.latitude),
+          parseFloat(inv.location.longitude)
+        );
+        return { ...inv, distance };
+      })
+      .sort((a, b) => (a.distance || 999) - (b.distance || 999));
+    
+    setLocationsWithDistance(locationsWithDist);
+    
+    // Auto-select nearest location for pickup
+    if (locationsWithDist.length > 0 && !pickupLocationId) {
+      setPickupLocationId(locationsWithDist[0].location.id);
+    }
+  }, [userLocation, product, pickupLocationId]);
 
   // Debug logging
   useEffect(() => {
@@ -492,18 +499,17 @@ export function SmartProductDetail({
                   className="w-full bg-black border border-white/10 rounded-xl px-3 py-3 text-sm text-white focus:border-white/20 transition-all"
                 >
                   <option value="" className="bg-black">Choose location...</option>
-                  {(locationsWithDistance.length > 0 ? locationsWithDistance : inventory.filter((inv: any) => inv.quantity > 0 && inv.location?.name))
-                    .map((inv: any, idx: number) => (
-                      <option key={idx} value={inv.location.id} className="bg-black">
-                        {inv.location.name}
-                        {inv.distance !== null && inv.distance !== undefined ? ` (${inv.distance.toFixed(1)} mi)` : ''}
-                        {' · '}
-                        {inv.quantity} in stock
-                      </option>
-                    ))}
+                  {locationsWithDistance.map((inv: any, idx: number) => (
+                    <option key={idx} value={inv.location?.id} className="bg-black">
+                      {inv.location?.name || 'Unknown'}
+                      {inv.distance !== null && inv.distance !== undefined ? ` - ${inv.distance.toFixed(1)} mi away` : ''}
+                      {' - '}
+                      {inv.quantity} in stock
+                    </option>
+                  ))}
                 </select>
                 <div className="text-[9px] text-white/30 mt-2">
-                  {userLocation ? 'Sorted by distance from you' : 'Enable location for distance info'}
+                  {userLocation && locationsWithDistance.length > 0 ? 'Sorted by distance from you' : 'Select your pickup location'}
                 </div>
               </div>
             )}
