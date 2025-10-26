@@ -61,9 +61,73 @@ export function SmartProductDetail({
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [fulfillmentMethod, setFulfillmentMethod] = useState<'delivery' | 'pickup'>('delivery');
   const [pickupLocationId, setPickupLocationId] = useState<string>('');
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [locationsWithDistance, setLocationsWithDistance] = useState<any[]>([]);
 
   const { addToCart } = useCart();
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
+  
+  // Get user's geolocation on mount
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setUserLocation({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+          });
+        },
+        (error) => {
+          console.log('Geolocation not available');
+        }
+      );
+    }
+  }, []);
+  
+  // Calculate distances and sort locations when user location is available
+  useEffect(() => {
+    if (!userLocation || !inventory || inventory.length === 0) {
+      setLocationsWithDistance(
+        inventory
+          .filter((inv: any) => inv.quantity > 0 && inv.location?.name)
+          .map((inv: any) => ({ ...inv, distance: null }))
+      );
+      return;
+    }
+    
+    // Calculate distance using Haversine formula
+    const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+      const R = 3959; // Earth's radius in miles
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLon = (lon2 - lon1) * Math.PI / 180;
+      const a = 
+        Math.sin(dLat/2) * Math.sin(dLat/2) +
+        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+        Math.sin(dLon/2) * Math.sin(dLon/2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+      return R * c;
+    };
+    
+    const locationsWithDist = inventory
+      .filter((inv: any) => inv.quantity > 0 && inv.location?.name && inv.location?.latitude && inv.location?.longitude)
+      .map((inv: any) => {
+        const distance = calculateDistance(
+          userLocation.lat,
+          userLocation.lng,
+          parseFloat(inv.location.latitude),
+          parseFloat(inv.location.longitude)
+        );
+        return { ...inv, distance };
+      })
+      .sort((a, b) => (a.distance || 999) - (b.distance || 999));
+    
+    setLocationsWithDistance(locationsWithDist);
+    
+    // Auto-select nearest location for pickup
+    if (locationsWithDist.length > 0 && !pickupLocationId) {
+      setPickupLocationId(locationsWithDist[0].location.id);
+    }
+  }, [userLocation, inventory, pickupLocationId]);
 
   // Extract slug from URL if not provided
   const productSlug = propsSlug || pathname?.split('/').pop();
@@ -413,39 +477,34 @@ export function SmartProductDetail({
           {/* Additional Details Below - Minimal Cards */}
           <div className="px-4 py-6 space-y-4">
             
-            {/* Fulfillment Method - Delivery or Pickup */}
+            {/* Pickup Location Selector - Geo-Sorted */}
             {stockInfo.hasLocations && stockInfo.locationNames.length > 0 && (
               <div className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-4">
-                <div className="text-[10px] uppercase tracking-[0.15em] text-white/40 mb-3">Fulfillment</div>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="text-[10px] uppercase tracking-[0.15em] text-white/40">Pickup Location</div>
+                  {userLocation && locationsWithDistance.length > 0 && (
+                    <div className="text-[9px] uppercase tracking-wider text-green-500/60">Nearest First</div>
+                  )}
+                </div>
                 <select 
-                  value={fulfillmentMethod}
-                  onChange={(e) => setFulfillmentMethod(e.target.value as 'delivery' | 'pickup')}
+                  value={pickupLocationId}
+                  onChange={(e) => setPickupLocationId(e.target.value)}
                   className="w-full bg-black border border-white/10 rounded-xl px-3 py-3 text-sm text-white focus:border-white/20 transition-all"
                 >
-                  <option value="delivery" className="bg-black">🚚 Delivery</option>
-                  <option value="pickup" className="bg-black">📍 Pickup</option>
+                  <option value="" className="bg-black">Choose location...</option>
+                  {(locationsWithDistance.length > 0 ? locationsWithDistance : inventory.filter((inv: any) => inv.quantity > 0 && inv.location?.name))
+                    .map((inv: any, idx: number) => (
+                      <option key={idx} value={inv.location.id} className="bg-black">
+                        {inv.location.name}
+                        {inv.distance !== null && inv.distance !== undefined ? ` (${inv.distance.toFixed(1)} mi)` : ''}
+                        {' · '}
+                        {inv.quantity} in stock
+                      </option>
+                    ))}
                 </select>
-                
-                {/* Location selector - shown when pickup selected */}
-                {fulfillmentMethod === 'pickup' && (
-                  <div className="mt-3 pt-3 border-t border-white/10">
-                    <div className="text-[10px] uppercase tracking-[0.15em] text-white/40 mb-2">Select Location</div>
-                    <select 
-                      value={pickupLocationId}
-                      onChange={(e) => setPickupLocationId(e.target.value)}
-                      className="w-full bg-black border border-white/10 rounded-xl px-3 py-3 text-sm text-white focus:border-white/20 transition-all"
-                    >
-                      <option value="" className="bg-black">Choose a location...</option>
-                      {inventory
-                        .filter((inv: any) => inv.quantity > 0 && inv.location?.name)
-                        .map((inv: any, idx: number) => (
-                          <option key={idx} value={inv.location.id} className="bg-black">
-                            {inv.location.name} - {inv.quantity} in stock
-                          </option>
-                        ))}
-                    </select>
-                  </div>
-                )}
+                <div className="text-[9px] text-white/30 mt-2">
+                  {userLocation ? 'Sorted by distance from you' : 'Enable location for distance info'}
+                </div>
               </div>
             )}
             
