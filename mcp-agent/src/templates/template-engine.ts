@@ -137,20 +137,35 @@ function replacePlaceholders(text: string, vendorData: VendorData): string {
 }
 
 /**
- * Generate compliance page content
+ * Fetch compliance content from database
  */
-export function generateCompliancePages(vendorData: VendorData) {
-  // This stays here - just static content text
-  return {
-    privacy: `Privacy policy for ${vendorData.store_name}`,
-    terms: `Terms of service for ${vendorData.store_name}`,
-    cookies: `Cookie policy for ${vendorData.store_name}`,
-    returns: `Return policy for ${vendorData.store_name}`,
-  };
+export async function fetchComplianceContent(
+  templateId: string = 'b17045df-9bf8-4abe-8d5b-bfd09ed3ccd0',
+  contentType?: string
+) {
+  const supabase = getSupabaseClient();
+  
+  let query = supabase
+    .from('template_compliance_content')
+    .select('*')
+    .eq('template_id', templateId);
+  
+  if (contentType) {
+    query = query.eq('content_type', contentType);
+  }
+  
+  const { data, error } = await query.order('display_order');
+  
+  if (error) {
+    console.error('Error fetching compliance content:', error);
+    return [];
+  }
+  
+  return data || [];
 }
 
 /**
- * Add compliance sections
+ * Add compliance sections (reads from database)
  */
 export function addComplianceSections(design: AppliedTemplate, vendorData: VendorData): AppliedTemplate {
   // Already included in template from database
