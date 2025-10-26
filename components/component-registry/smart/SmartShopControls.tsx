@@ -126,11 +126,12 @@ export function SmartShopControls({
         <nav className="flex items-center gap-4 overflow-x-auto scrollbar-hide -mx-6 px-6 sm:mx-0 sm:px-0">
           <button 
             onClick={() => handleCategoryClick(null)}
-            className={`pb-3 px-2 whitespace-nowrap flex-shrink-0 uppercase tracking-[0.15em] text-sm transition-all ${
+            className={`pb-3 px-2 whitespace-nowrap flex-shrink-0 uppercase tracking-[0.12em] text-xs transition-all ${
               !selectedCategory 
-                ? 'border-b-2 border-white font-semibold text-white' 
-                : 'text-neutral-400 hover:text-white font-light'
+                ? 'border-b-2 border-white font-black text-white' 
+                : 'text-white/60 hover:text-white font-black'
             }`}
+            style={{ fontWeight: 900 }}
           >
             All
           </button>
@@ -138,11 +139,12 @@ export function SmartShopControls({
             <button
               key={category.slug}
               onClick={() => handleCategoryClick(category.slug)}
-              className={`pb-3 px-2 whitespace-nowrap flex-shrink-0 uppercase tracking-[0.15em] text-sm transition-all ${
+              className={`pb-3 px-2 whitespace-nowrap flex-shrink-0 uppercase tracking-[0.12em] text-xs transition-all ${
                 selectedCategory === category.slug 
-                  ? 'border-b-2 border-white font-semibold text-white' 
-                  : 'text-neutral-400 hover:text-white font-light'
+                  ? 'border-b-2 border-white font-black text-white' 
+                  : 'text-white/60 hover:text-white font-black'
               }`}
+              style={{ fontWeight: 900 }}
             >
               {category.name}
             </button>

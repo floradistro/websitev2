@@ -33,8 +33,8 @@ export function Badge({
   
   const variantClasses: Record<string, { solid: string; outline: string }> = {
     default: {
-      solid: 'bg-neutral-800 text-white border-neutral-700',
-      outline: 'bg-transparent text-neutral-300 border-neutral-700',
+      solid: 'bg-white/10 text-white border-white/5',
+      outline: 'bg-transparent text-white border-white/5',
     },
     success: {
       solid: 'bg-green-600 text-white border-green-500',
@@ -62,7 +62,7 @@ export function Badge({
   
   const baseClasses = [
     'inline-flex items-center justify-center',
-    'font-medium',
+    'font-black uppercase tracking-[0.08em]',
     'border',
     pill ? 'rounded-full' : 'rounded',
     sizeClasses[size],

@@ -105,17 +105,17 @@ export function Button({
   
   // Variant classes
   const variantClasses: Record<string, string> = {
-    primary: 'bg-white text-black hover:bg-neutral-100 border-transparent',
-    secondary: 'bg-black text-white hover:bg-neutral-900 border-white',
-    ghost: 'bg-transparent text-white hover:bg-white/10 border-transparent',
-    outline: 'bg-transparent text-white hover:bg-white hover:text-black border-white',
-    danger: 'bg-red-600 text-white hover:bg-red-700 border-transparent',
-    success: 'bg-green-600 text-white hover:bg-green-700 border-transparent',
+    primary: 'bg-white text-black hover:bg-white/90 active:bg-white/80 border-transparent',
+    secondary: 'bg-transparent text-white hover:bg-white/5 active:bg-white/10 border-white/5',
+    ghost: 'bg-transparent text-white hover:bg-white/5 active:bg-white/10 border-transparent',
+    outline: 'bg-transparent text-white hover:bg-white hover:text-black active:bg-white/90 border-white/10',
+    danger: 'bg-red-600/10 text-red-400 hover:bg-red-600/20 border-red-600/20',
+    success: 'bg-green-600/10 text-green-400 hover:bg-green-600/20 border-green-600/20',
   };
   
   const baseClasses = [
     'inline-flex items-center justify-center',
-    'font-medium',
+    'font-black uppercase tracking-[0.08em]',
     'rounded-2xl',
     'border-2',
     'transition-all duration-200',

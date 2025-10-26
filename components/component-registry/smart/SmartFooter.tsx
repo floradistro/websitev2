@@ -55,9 +55,9 @@ export default function SmartFooter({
   vendorSlug,
   vendorName,
   vendorLogo,
-  backgroundColor = 'bg-black/70 backdrop-blur-2xl',
-  textColor = 'text-neutral-400',
-  borderColor = 'border-white/10',
+  backgroundColor = 'bg-black',
+  textColor = 'text-white/60',
+  borderColor = 'border-white/5',
   columns = [
     {
       title: 'Company',
@@ -129,7 +129,7 @@ export default function SmartFooter({
         <div className={`grid grid-cols-2 md:grid-cols-${columns.length} gap-8 md:gap-12`}>
           {columns.map((column, colIndex) => (
             <div key={colIndex}>
-              <h3 className="text-xs uppercase tracking-wider font-semibold mb-4 text-white/80">
+              <h3 className="text-xs uppercase tracking-[0.12em] font-black mb-4 text-white" style={{ fontWeight: 900 }}>
                 {column.title}
               </h3>
               <ul className="space-y-2.5 text-sm">
@@ -137,7 +137,7 @@ export default function SmartFooter({
                   <li key={linkIndex}>
                     <Link 
                       href={getHref(link.href)} 
-                      className={`${textColor} hover:text-white transition-colors font-light`}
+                      className={`${textColor} hover:text-white transition-colors font-normal`}
                     >
                       {link.label}
                     </Link>
