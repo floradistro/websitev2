@@ -419,10 +419,10 @@ export function SmartProductDetail({
               </div>
             )}
             
-            {/* Product Info - Exactly Like Product Card */}
+            {/* Product Info */}
             <div className="px-4 py-4 space-y-3">
-              {/* Product Name */}
-              <h1 className="text-xs uppercase tracking-[0.12em] font-normal text-white line-clamp-2 leading-relaxed">
+              {/* Product Name - Bold & Large */}
+              <h1 className="text-2xl sm:text-3xl uppercase tracking-[0.08em] text-white leading-tight font-black">
                 {product.name}
               </h1>
               
