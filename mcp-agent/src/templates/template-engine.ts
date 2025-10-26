@@ -3,7 +3,7 @@
  * Reads templates from Supabase instead of hardcoded files
  */
 
-import { getSupabaseClient } from '../supabase-client';
+import { createClient } from '@supabase/supabase-js';
 
 export interface VendorData {
   id: string;
@@ -30,6 +30,17 @@ export interface AppliedTemplate {
     props: Record<string, any>;
     position_order: number;
   }>;
+}
+
+/**
+ * Get Supabase client
+ */
+function getSupabaseClient() {
+  const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://uaednwpxursknmwdeejn.supabase.co';
+  const supabaseKey = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || 
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVhZWRud3B4dXJza25td2RlZWpuIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MDk5NzIzMywiZXhwIjoyMDc2NTczMjMzfQ.l0NvBbS2JQWPObtWeVD2M2LD866A2tgLmModARYNnbI';
+  
+  return createClient(supabaseUrl, supabaseKey);
 }
 
 /**
