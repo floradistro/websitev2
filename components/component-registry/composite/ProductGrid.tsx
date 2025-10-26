@@ -31,6 +31,7 @@ export function ProductGrid({
   cardStyle = 'minimal',
   onQuickAdd,
   basePath = '/storefront/products',
+  vendorId,
   className = '',
 }: ProductGridProps) {
   
@@ -69,6 +70,7 @@ export function ProductGrid({
           cardStyle={cardStyle}
           onQuickAdd={onQuickAdd}
           basePath={basePath}
+          vendorId={vendorId}
         />
       ))}
     </div>

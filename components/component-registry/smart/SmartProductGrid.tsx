@@ -132,6 +132,7 @@ export function SmartProductGrid({
         showPrice={showPrice}
         showQuickAdd={showQuickAdd}
         cardStyle={cardStyle}
+        vendorId={vendorId}
       />
     </div>
   );

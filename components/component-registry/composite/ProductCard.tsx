@@ -10,6 +10,7 @@ import React, { useState, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Heart, ShoppingBag } from 'lucide-react';
 import NextImage from 'next/image';
+import { useTemplateStyle } from '@/hooks/useTemplateStyle';
 
 export interface ProductCardProps {
   product: {
@@ -39,6 +40,7 @@ export interface ProductCardProps {
   onQuickAdd?: (productId: string) => void;
   basePath?: string;
   className?: string;
+  vendorId?: string; // For template style fetching
 }
 
 export function ProductCard({
@@ -52,12 +54,16 @@ export function ProductCard({
   onQuickAdd,
   basePath = '/storefront/products',
   className = '',
+  vendorId,
 }: ProductCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [inWishlist, setInWishlist] = useState(false);
   const [selectedTierIndex, setSelectedTierIndex] = useState<number | null>(null);
   const [showAddToCart, setShowAddToCart] = useState(false);
   const stockRef = useRef<HTMLDivElement>(null);
+  
+  // Fetch template style from database
+  const templateStyle = useTemplateStyle(vendorId);
   
   // Preserve vendor params
   let productUrl = `${basePath}/${product.slug}`;
@@ -336,9 +342,16 @@ export function ProductCard({
       {/* Product Info */}
       <div className="flex flex-col flex-1 px-3 sm:px-4 py-3 sm:py-4">
         <div className="space-y-3">
-          {/* Product Name */}
+          {/* Product Name - Database-Driven Styling */}
           <a href={productUrl}>
-            <h3 className="text-xl sm:text-xs uppercase tracking-[0.1em] text-white line-clamp-2 leading-tight hover:text-white/80 transition-colors" style={{ fontWeight: 900 }}>
+            <h3 
+              className="uppercase text-white line-clamp-2 leading-tight hover:text-white/80 transition-colors"
+              style={{
+                fontSize: templateStyle.typography.product_card_name_mobile,
+                fontWeight: templateStyle.typography.product_card_name_weight,
+                letterSpacing: templateStyle.typography.product_card_name_tracking,
+              }}
+            >
               {product.name}
             </h3>
           </a>
