@@ -1197,19 +1197,6 @@ function ComponentEditorContent() {
             {!previewReady && (
               <div className="absolute inset-0 bg-black flex items-center justify-center z-50">
                 <div className="text-center">
-                  {vendor?.logo_url && (
-                    <div className="relative w-32 h-32 mb-6 mx-auto">
-                      {/* Animated glow */}
-                      <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-white/5 to-transparent rounded-full blur-3xl animate-pulse" style={{ animationDuration: '2s' }} />
-                      <div className="absolute inset-0 bg-gradient-to-tl from-white/15 to-transparent rounded-full blur-2xl animate-pulse" style={{ animationDuration: '1.5s', animationDelay: '0.5s' }} />
-                      <img 
-                        src={(vendor as any).logo_url} 
-                        alt={vendor.store_name}
-                        className="relative w-full h-full object-contain drop-shadow-2xl animate-pulse"
-                        style={{ animationDuration: '2s' }}
-                      />
-                    </div>
-                  )}
                   <div className="text-xs text-white/40 uppercase tracking-[0.2em] font-black">
                     Loading Preview...
                   </div>
