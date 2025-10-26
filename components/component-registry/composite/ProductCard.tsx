@@ -56,8 +56,6 @@ export function ProductCard({
 }: ProductCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [inWishlist, setInWishlist] = useState(false);
-  const [showTooltip, setShowTooltip] = useState(false);
-  const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
   const [selectedTierIndex, setSelectedTierIndex] = useState<number | null>(null);
   const [showAddToCart, setShowAddToCart] = useState(false);
   const stockRef = useRef<HTMLDivElement>(null);
@@ -190,17 +188,6 @@ export function ProductCard({
     return basePrice > 0 ? `$${basePrice.toFixed(0)}` : 'Contact for Pricing';
   };
   
-  // Update tooltip position when shown - position ABOVE stock text
-  useEffect(() => {
-    if (showTooltip && stockRef.current) {
-      const rect = stockRef.current.getBoundingClientRect();
-      // For fixed positioning, use viewport coordinates (no scrollY needed)
-      setTooltipPosition({
-        top: rect.top, // Viewport-relative top position
-        left: rect.left // Viewport-relative left position
-      });
-    }
-  }, [showTooltip]);
 
   // Get product fields (THC%, Strain, etc)
   const getDisplayFields = () => {
@@ -369,9 +356,7 @@ export function ProductCard({
             <div className="flex flex-col gap-0.5">
               <div 
                 ref={stockRef}
-                className="flex items-center gap-1.5 cursor-help"
-                onMouseEnter={() => stockInfo.count > 2 && setShowTooltip(true)}
-                onMouseLeave={() => setShowTooltip(false)}
+                className="flex items-center gap-1.5"
               >
                 <div className="w-2 h-2 rounded-full bg-green-500 flex-shrink-0"></div>
                 <span className="text-[11px] uppercase tracking-wider text-white/60 truncate">
@@ -379,8 +364,8 @@ export function ProductCard({
                 </span>
               </div>
               
-              {/* Always show location names on smaller displays */}
-              {stockInfo.count <= 2 && stockInfo.locations.length > 0 && (
+              {/* Always show location names */}
+              {stockInfo.locations.length > 0 && (
                 <span className="text-[10px] text-white/40 truncate ml-3.5">
                   {stockInfo.locations.map((loc: any) => loc.name).join(', ')}
                 </span>
@@ -475,31 +460,6 @@ export function ProductCard({
           </div>
         )}
       </div>
-      
-      {/* Tooltip Portal - Renders ABOVE stock text at document body level */}
-      {showTooltip && stockInfo.count > 2 && stockInfo.locations.length > 0 && typeof document !== 'undefined' && createPortal(
-        <div 
-          className="fixed z-[10000] pointer-events-none"
-          style={{
-            top: `${tooltipPosition.top}px`,
-            left: `${tooltipPosition.left}px`,
-            transform: 'translateY(calc(-100% - 8px))' // Move up by full height + 8px gap
-          }}
-        >
-          <div className="bg-black/95 border border-white/10 rounded-2xl px-4 py-3 shadow-2xl backdrop-blur-xl min-w-[220px] max-w-[280px]" style={{ animation: 'fadeIn 0.2s ease-out' }}>
-            <p className="text-[10px] uppercase tracking-wider text-white/40 mb-2.5 font-semibold">Available at:</p>
-            <div className="space-y-1.5 max-h-[200px] overflow-y-auto scrollbar-hide">
-              {stockInfo.locations.map((loc: any, idx: number) => (
-                <div key={idx} className="flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-green-500 flex-shrink-0"></div>
-                  <span className="text-[11px] text-white/90 font-light">{loc.name}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>,
-        document.body
-      )}
     </div>
   );
 }

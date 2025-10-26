@@ -369,10 +369,11 @@ export function SmartProductDetail({
                   <div className="flex items-center gap-1.5">
                     <div className="w-2 h-2 rounded-full bg-green-500 flex-shrink-0"></div>
                     <span className="text-[11px] uppercase tracking-wider text-white/60 truncate">
-                      {stockInfo.count === 1 ? 'In Stock' : `In Stock · ${stockInfo.count} locations`}
+                      In Stock
+                      {stockInfo.hasLocations && stockInfo.locationNames.length > 0 && ` · ${stockInfo.locationNames.length} locations`}
                     </span>
                   </div>
-                  {stockInfo.count <= 2 && stockInfo.locationNames.length > 0 && (
+                  {stockInfo.hasLocations && stockInfo.locationNames.length > 0 && (
                     <span className="text-[10px] text-white/40 truncate ml-3.5">
                       {stockInfo.locationNames.join(', ')}
                     </span>
