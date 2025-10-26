@@ -1,19 +1,21 @@
 # WhaleTools - Multi-Vendor Marketplace Platform
 
-Premium multi-vendor commerce platform with AI-powered storefront generation.
+Premium AI-powered multi-vendor commerce platform with living, adaptive storefronts.
 
 **Platform:** WhaleTools  
 **Master Vendor:** Yacht Club
 
-## 🚀 Quick Start
+---
 
-### Run Development Server
+## 🚀 **Quick Start**
+
+### **Run Development Server**
 ```bash
 npm run dev
 # Visit http://localhost:3000
 ```
 
-### Run AI Agent Server
+### **Run AI Agent Server**
 ```bash
 cd mcp-agent
 node -r dotenv/config dist/index.js
@@ -22,7 +24,26 @@ node -r dotenv/config dist/index.js
 
 ---
 
-## 🏗️ Architecture
+## 📚 **Documentation**
+
+**All documentation has been organized in the `/docs` folder:**
+
+👉 **[START HERE: Complete Documentation →](docs/README.md)**
+
+### **Quick Links:**
+- **[The Vision](docs/evolution/THE_VISION_SUMMARY.md)** - What we're building (⭐ Read this first)
+- **[Evolution Plan](docs/evolution/WHALETOOLS_EVOLUTION_PLAN.md)** - 6-month roadmap to living platform
+- **[Implementation Guide](docs/evolution/IMPLEMENTATION_GUIDE.md)** - Step-by-step execution
+- **[Master Index](docs/evolution/MASTER_INDEX.md)** - Complete documentation navigation
+
+### **For Developers:**
+- **[Smart Components Guide](docs/architecture/SMART_COMPONENT_GUIDE.md)** - Component system reference
+- **[Platform Architecture](docs/architecture/WHALETOOLS_PLATFORM.md)** - Technical overview
+- **[Setup Instructions](docs/guides/SETUP_INSTRUCTIONS.md)** - Initial setup
+
+---
+
+## 🏗️ **Architecture**
 
 ### **Main App** (Next.js 15)
 - **Vendor Portal**: `/vendor/*` - Dashboard, products, inventory, analytics
@@ -32,133 +53,165 @@ node -r dotenv/config dist/index.js
 
 ### **AI Agent** (Claude-powered)
 - **Location**: `mcp-agent/`
-- **Purpose**: Autonomous storefront generation
+- **Purpose**: Autonomous storefront generation & optimization
 - **Model**: Claude Sonnet 4.5 (latest)
-- **Port**: 3001
 
 ---
 
-## 🎨 Features
+## 🎨 **Key Features**
 
-### **For Vendors**:
+### **For Vendors:**
 - ✅ AI-generated storefronts (60 seconds)
-- ✅ Visual component editor
-- ✅ Product management
-- ✅ Inventory tracking
-- ✅ Order fulfillment
+- ✅ Component-based visual editor
+- ✅ Real-time layout optimization
+- ✅ Smart components with auto-configuration
 - ✅ Analytics dashboard
 
-### **For Customers**:
-- ✅ Beautiful vendor storefronts
-- ✅ Product browsing
-- ✅ Cart & checkout
-- ✅ Location finder
-- ✅ Reviews & ratings
+### **For Customers:**
+- ✅ Personalized storefronts (adaptive UI)
+- ✅ Fast performance (<100ms)
+- ✅ Progressive rendering
+- ✅ Real-time updates
 
-### **AI Capabilities**:
-- ✅ Professional copywriting
-- ✅ Brand-matched design
-- ✅ Smart component wiring
-- ✅ Edge case handling
-- ✅ Validation & testing
+### **AI Capabilities:**
+- ✅ Layout optimization (real-time)
+- ✅ Component generation (on-demand)
+- ✅ A/B testing (autonomous)
+- ✅ Sentiment analysis (adaptive)
+- ✅ Collective intelligence (cross-vendor learning)
 
 ---
 
-## 📊 Database
+## 📊 **Database**
 
-**Supabase PostgreSQL**:
+**Supabase PostgreSQL:**
+```bash
+# Direct access
+psql "postgresql://postgres:SelahEsco123!!@db.uaednwpxursknmwdeejn.supabase.co:5432/postgres"
+```
+
+**Key Tables:**
 - `vendors` - Vendor accounts
 - `products` - Product catalog
-- `vendor_storefront_sections` - Page sections
-- `vendor_component_instances` - Component configs
-- `orders` - Customer orders
-- `inventory` - Stock levels
+- `component_templates` - Component registry
+- `vendor_component_instances` - Per-vendor component configs
+- `page_sections` - Page structure
+- `smart_component_cache` - Performance caching
+
+**Key Vendor IDs:**
+- Flora Distro: `cd2e1122-d511-4edb-be5d-98ef274b4baf`
 
 ---
 
-## 🤖 AI Agent Setup
+## 🛠️ **Development**
 
-### **Environment Variables** (.env.local):
-```env
-ANTHROPIC_API_KEY=sk-ant-...
-MCP_AGENT_URL=http://localhost:3001
-MCP_AGENT_SECRET=yacht-club-secret-2025
+### **Component System:**
+```bash
+# Generate new smart component
+npm run generate:smart-component
+
+# Register component in database
+npm run db:register ComponentName
 ```
 
-### **Generate Storefront**:
-1. Visit `/vendor/onboard`
-2. Fill form (2 minutes)
-3. Click "Generate with AI"
-4. Wait 60 seconds
-5. Storefront is live!
-
----
-
-## 📁 Key Directories
-
+### **Directory Structure:**
 ```
-/app
-  /vendor        - Vendor portal pages
-  /admin         - Admin pages
-  /api           - API routes
-  /(storefront)  - Customer storefronts
+/app                    - Next.js pages
+  /(storefront)        - Customer storefronts
+  /vendor              - Vendor portal
+  /admin               - Admin dashboard
+  /api                 - API routes
 
-/components
-  /vendor        - Vendor dashboard components
-  /storefront    - Storefront components
-  /component-registry - Dynamic component system
+/components            - React components
+  /component-registry  - Dynamic component system
+    /smart             - Smart components (AI-powered)
+    /atomic            - Basic UI elements
+    /composite         - Composed components
 
-/lib
-  /supabase      - Database client
-  /component-registry - Component renderer
+/lib                   - Core utilities
+  /supabase            - Database client
+  /component-registry  - Component renderer
+  /ai                  - AI engines (layout, generation)
+  /matrix              - Advanced systems (quantum, neural)
 
-/mcp-agent       - AI agent service
-  /src
-    agent.ts     - Claude orchestration
-    validator.ts - Quality checks
-    index.ts     - Express server
+/docs                  - Documentation (organized)
+  /evolution           - Evolution plan & vision
+  /architecture        - Technical architecture
+  /guides              - How-to guides
+  /archive             - Historical docs
+
+/mcp-agent            - AI agent service
 ```
 
 ---
 
-## 🔑 API Keys Needed
+## 🎯 **The Vision**
+
+WhaleTools is evolving from a static platform into **the world's first living, AI-powered commerce organism.**
+
+### **What Makes It Special:**
+- **Living Components** - Adapt in real-time based on user behavior
+- **AI Layout Engine** - Automatically optimizes for conversions
+- **Quantum Rendering** - Tests multiple layouts, shows best one
+- **Section Portals** - Components morph like living organisms
+- **Collective Intelligence** - Every vendor makes the platform smarter
+
+### **6-Month Roadmap:**
+1. **Phase 1-2:** Foundation + Component Evolution
+2. **Phase 3:** AI Orchestration  
+3. **Phase 4:** Global Scale (edge, multi-region)
+4. **Phase 5:** Advanced AI
+5. **Phase 6:** The Matrix ✨
+
+**[Read the full vision →](docs/evolution/THE_VISION_SUMMARY.md)**
+
+---
+
+## 🔑 **API Keys Needed**
 
 1. **Anthropic** (https://console.anthropic.com/)
    - Model: Claude Sonnet 4.5
-   - Usage: AI storefront generation
+   - Usage: AI storefront generation & optimization
 
 2. **Supabase** (Already configured)
    - Database: PostgreSQL
    - Storage: File uploads
+   - Realtime: Component updates
+
+3. **Upstash Redis** (Optional - for Phase 1)
+   - Caching: Edge cache layer
+   - Performance: 50x faster cache hits
 
 ---
 
-## 🛠️ Development
+## 📖 **Additional Documentation**
 
-### **Component Editor**:
-- URL: `/vendor/component-editor`
-- Features: Drag & drop, live editing, visual editor
-- Fixed: Unified @dnd-kit system (6x faster)
+### **In `/docs` folder:**
+- Evolution plan (6 phases)
+- Implementation guide (week-by-week)
+- Architecture overview
+- Component system docs
+- Setup guides
+- API reference
 
-### **AI Generation**:
-- Endpoint: `POST /api/vendors/generate`
-- Agent: `http://localhost:3001/api/generate-storefront`
-- Time: ~60 seconds per storefront
-- Cost: ~$1.50 per generation
+### **Quick Commands:**
+```bash
+# Development
+npm run dev                          # Start dev server (port 3000)
+npm run build                        # Build for production
+npm run start                        # Start production server
+
+# Components
+npm run generate:smart-component     # Generate new component
+npm run db:register <ComponentName>  # Register in database
+
+# Database
+psql "postgresql://..." -c "SELECT ..." # Run SQL query
+```
 
 ---
 
-## 📖 Documentation
-
-- `AGENT_SETUP_COMPLETE.md` - AI agent setup guide
-- `AI_AGENT_SUCCESS.md` - Generation results
-- `SETUP_INSTRUCTIONS.md` - Deployment guide
-- `VENDOR_PAGES_RETHEME.md` - Vendor portal theme
-- `VENDOR_OPTIMIZATION_SUMMARY.md` - Performance optimizations
-
----
-
-## 🚢 Deployment
+## 🚢 **Deployment**
 
 ### **Main App** (Vercel):
 ```bash
@@ -169,41 +222,46 @@ git push origin main
 ### **AI Agent** (Railway):
 ```bash
 cd mcp-agent
-railway init
 railway up
-# Set environment variables in Railway dashboard
+# Set env vars in Railway dashboard
 ```
 
 ---
 
-## ✅ What's Working
+## ✅ **What's Working**
 
 - ✅ Multi-vendor storefronts
-- ✅ AI storefront generation (Claude Sonnet 4.5)
-- ✅ Component editor (drag & drop, live editing)
+- ✅ Component registry system (database-driven UI)
+- ✅ Smart components (auto-configured)
+- ✅ AI agent (Claude Sonnet 4.5)
 - ✅ Vendor dashboard
 - ✅ Product management
-- ✅ Inventory system
-- ✅ Order tracking
+- ✅ Real-time updates
 - ✅ Analytics
 
 ---
 
-## 🎯 Next Steps
+## 🎯 **Next Steps**
 
-1. Deploy AI agent to Railway
-2. Test onboarding with real vendors
-3. Add custom domain support
-4. Implement caching layer
-5. Scale to production
+1. **[Read the Vision](docs/evolution/THE_VISION_SUMMARY.md)** - Understand what we're building
+2. **[Review Evolution Plan](docs/evolution/WHALETOOLS_EVOLUTION_PLAN.md)** - See the roadmap
+3. **[Start Implementation](docs/evolution/IMPLEMENTATION_GUIDE.md)** - Begin Phase 1
+
+**Full documentation:** [docs/README.md](docs/README.md)
 
 ---
 
-## 📛 Branding Structure
+## 📛 **Branding Structure**
 
 **WhaleTools** is the platform infrastructure.  
 **Yacht Club** is the master vendor account (demo/reference implementation).  
 **Vendors** (like Flora Distro) create their own branded storefronts on WhaleTools.
 
-Built with Next.js 15, Supabase, and Claude AI.
+[Learn more about platform naming →](docs/architecture/PLATFORM_NAMING.md)
+
+---
+
+**Built with Next.js 15, Supabase, Claude AI, and TypeScript.**
+
+**WhaleTools: The future of multi-vendor e-commerce.** 🐋⚡
 

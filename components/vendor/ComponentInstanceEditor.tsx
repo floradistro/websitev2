@@ -94,10 +94,178 @@ export function ComponentInstanceEditor({
     }
   };
   
+  // Smart component prop schemas
+  const SMART_COMPONENT_PROPS: Record<string, Array<{key: string, label: string, type: string, description?: string}>> = {
+    smart_hero: [
+      { key: 'headline', label: 'Headline', type: 'text', description: 'Override vendor name (optional)' },
+      { key: 'tagline', label: 'Tagline', type: 'textarea' },
+      { key: 'ctaText', label: 'Button Text', type: 'text' },
+      { key: 'ctaLink', label: 'Button Link', type: 'text' },
+      { key: 'showLogo', label: 'Show Logo', type: 'boolean' },
+    ],
+    smart_features: [
+      { key: 'headline', label: 'Headline', type: 'text' },
+      { key: 'subheadline', label: 'Subheadline', type: 'text' },
+      { key: 'features', label: 'Features', type: 'json', description: 'Array of {icon, title, description}' },
+      { key: 'columns', label: 'Columns', type: 'number' },
+    ],
+    smart_faq: [
+      { key: 'headline', label: 'Headline', type: 'text' },
+      { key: 'subheadline', label: 'Subheadline', type: 'text' },
+      { key: 'faqs', label: 'FAQ Items', type: 'json', description: 'Array of {question, answer}' },
+    ],
+    smart_product_grid: [
+      { key: 'headline', label: 'Headline', type: 'text' },
+      { key: 'subheadline', label: 'Subheadline', type: 'text' },
+      { key: 'maxProducts', label: 'Max Products', type: 'number' },
+      { key: 'columns', label: 'Columns', type: 'number' },
+    ],
+    smart_about: [
+      { key: 'headline', label: 'Headline', type: 'text' },
+      { key: 'subheadline', label: 'Subheadline', type: 'text' },
+      { key: 'mission', label: 'Mission', type: 'textarea' },
+      { key: 'story', label: 'Story', type: 'textarea' },
+      { key: 'values', label: 'Values', type: 'json', description: 'Array of {title, description}' },
+    ],
+    smart_contact: [
+      { key: 'headline', label: 'Headline', type: 'text' },
+      { key: 'subheadline', label: 'Subheadline', type: 'text' },
+      { key: 'email', label: 'Email', type: 'text' },
+      { key: 'phone', label: 'Phone', type: 'text' },
+      { key: 'hours', label: 'Hours', type: 'text' },
+    ],
+    smart_legal_page: [
+      { key: 'headline', label: 'Headline', type: 'text' },
+      { key: 'pageType', label: 'Page Type', type: 'select', description: 'privacy, terms, or cookies' },
+      { key: 'lastUpdated', label: 'Last Updated', type: 'text' },
+    ],
+    smart_shipping: [
+      { key: 'headline', label: 'Headline', type: 'text' },
+      { key: 'subheadline', label: 'Subheadline', type: 'text' },
+    ],
+    smart_returns: [
+      { key: 'headline', label: 'Headline', type: 'text' },
+      { key: 'subheadline', label: 'Subheadline', type: 'text' },
+    ],
+    smart_lab_results: [
+      { key: 'headline', label: 'Headline', type: 'text' },
+      { key: 'subheadline', label: 'Subheadline', type: 'text' },
+    ],
+  };
+  
   // Render editors based on component type
   const renderPropEditors = () => {
     const { component_key, props } = instance;
     
+    // If it's a smart component, use the schema
+    if (component_key.startsWith('smart_') && SMART_COMPONENT_PROPS[component_key]) {
+      const schema = SMART_COMPONENT_PROPS[component_key];
+      
+      return (
+        <div className="space-y-4">
+          {/* Smart Component Badge - WhaleTools Monochrome */}
+          <div className="bg-white/5 border border-white/10 rounded-2xl p-3">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-1.5 h-1.5 bg-white/40 rounded-full" />
+              <span className="text-[10px] font-black uppercase tracking-[0.15em] text-white" style={{ fontWeight: 900 }}>
+                SMART COMPONENT
+              </span>
+            </div>
+            <p className="text-[9px] text-white/40 leading-relaxed uppercase tracking-wider">
+              Auto-receives: <span className="text-white/60 font-mono">vendorId, vendorName, vendorLogo</span>
+            </p>
+          </div>
+          
+          {/* Editable Props */}
+          {schema.map(field => (
+            <div key={field.key}>
+              <label className="block text-[9px] text-white/40 uppercase tracking-[0.15em] mb-2 font-black" style={{ fontWeight: 900 }}>
+                {field.label}
+              </label>
+              {field.description && (
+                <p className="text-[8px] text-white/30 mb-2 uppercase tracking-wider">{field.description}</p>
+              )}
+              
+              {field.type === 'text' && (
+                <input
+                  type="text"
+                  value={props[field.key] || ''}
+                  onChange={(e) => handlePropChange(field.key, e.target.value)}
+                  className="w-full bg-black border border-white/10 text-white px-3 py-2 text-xs rounded-xl focus:outline-none focus:border-white/20 hover:bg-white/5 transition-all"
+                  placeholder={`ENTER ${field.label.toUpperCase()}...`}
+                />
+              )}
+              
+              {field.type === 'textarea' && (
+                <textarea
+                  value={props[field.key] || ''}
+                  onChange={(e) => handlePropChange(field.key, e.target.value)}
+                  rows={3}
+                  className="w-full bg-black border border-white/10 text-white px-3 py-2 text-xs rounded-xl focus:outline-none focus:border-white/20 hover:bg-white/5 transition-all resize-none"
+                  placeholder={`ENTER ${field.label.toUpperCase()}...`}
+                />
+              )}
+              
+              {field.type === 'number' && (
+                <input
+                  type="number"
+                  value={props[field.key] || 0}
+                  onChange={(e) => handlePropChange(field.key, parseInt(e.target.value))}
+                  className="w-full bg-black border border-white/10 text-white px-3 py-2 text-xs rounded-xl focus:outline-none focus:border-white/20 hover:bg-white/5 transition-all"
+                />
+              )}
+              
+              {field.type === 'boolean' && (
+                <label className="flex items-center gap-3 cursor-pointer bg-white/5 border border-white/10 rounded-xl px-3 py-2 hover:bg-white/10 transition-all">
+                  <input
+                    type="checkbox"
+                    checked={props[field.key] || false}
+                    onChange={(e) => handlePropChange(field.key, e.target.checked)}
+                    className="w-4 h-4 bg-black border-white/20 rounded"
+                  />
+                  <span className="text-[10px] text-white/60 uppercase tracking-wider font-black" style={{ fontWeight: 900 }}>
+                    {props[field.key] ? 'ENABLED' : 'DISABLED'}
+                  </span>
+                </label>
+              )}
+              
+              {field.type === 'json' && (
+                <textarea
+                  value={JSON.stringify(props[field.key] || [], null, 2)}
+                  onChange={(e) => {
+                    try {
+                      const parsed = JSON.parse(e.target.value);
+                      handlePropChange(field.key, parsed);
+                    } catch (err) {
+                      // Invalid JSON, don't update
+                    }
+                  }}
+                  rows={6}
+                  className="w-full bg-black border border-white/10 text-white/80 px-3 py-2 text-[10px] font-mono rounded-xl focus:outline-none focus:border-white/20 hover:bg-white/5 transition-all resize-none"
+                  placeholder="JSON ARRAY..."
+                />
+              )}
+              
+              {field.type === 'select' && field.key === 'pageType' && (
+                <select
+                  value={props[field.key] || ''}
+                  onChange={(e) => handlePropChange(field.key, e.target.value)}
+                  className="w-full bg-black border border-white/10 text-white px-3 py-2 text-[10px] uppercase tracking-wider font-black rounded-xl focus:outline-none focus:border-white/20 hover:bg-white/5 transition-all cursor-pointer"
+                  style={{ fontWeight: 900 }}
+                >
+                  <option value="">SELECT TYPE...</option>
+                  <option value="privacy">PRIVACY POLICY</option>
+                  <option value="terms">TERMS OF SERVICE</option>
+                  <option value="cookies">COOKIE POLICY</option>
+                </select>
+              )}
+            </div>
+          ))}
+        </div>
+      );
+    }
+    
+    // Fallback for legacy/atomic components (shouldn't be used anymore)
     // Image/Logo component
     if (component_key === 'image') {
       return (
@@ -258,7 +426,7 @@ export function ComponentInstanceEditor({
               disabled={!!contentBinding}
             />
             {contentBinding && (
-              <p className="text-[9px] text-blue-400 mt-1">🔗 Bound to: {contentBinding}</p>
+              <p className="text-[9px] text-white/60 mt-1 uppercase tracking-wider">Bound to: {contentBinding}</p>
             )}
           </div>
           
@@ -535,7 +703,7 @@ export function ComponentInstanceEditor({
               <label className="block text-[9px] text-neutral-600">Select Specific Products</label>
               <button
                 onClick={() => setShowProductSelector(!showProductSelector)}
-                className="text-[9px] text-blue-400 hover:text-neutral-500"
+                className="text-[9px] text-white/60 hover:text-white uppercase tracking-wider"
               >
                 {showProductSelector ? 'Hide' : 'Show'} Selector
               </button>
@@ -562,7 +730,7 @@ export function ComponentInstanceEditor({
               <label className="block text-[9px] text-neutral-600">Filter by Categories</label>
               <button
                 onClick={() => setShowCategorySelector(!showCategorySelector)}
-                className="text-[9px] text-blue-400 hover:text-neutral-500"
+                className="text-[9px] text-white/60 hover:text-white uppercase tracking-wider"
               >
                 {showCategorySelector ? 'Hide' : 'Show'} Selector
               </button>
@@ -711,7 +879,7 @@ export function ComponentInstanceEditor({
               <label className="block text-[9px] text-neutral-600">Select Specific Locations</label>
               <button
                 onClick={() => setShowLocationSelector(!showLocationSelector)}
-                className="text-[9px] text-blue-400 hover:text-neutral-500"
+                className="text-[9px] text-white/60 hover:text-white uppercase tracking-wider"
               >
                 {showLocationSelector ? 'Hide' : 'Show'} Selector
               </button>
@@ -1147,19 +1315,57 @@ export function ComponentInstanceEditor({
   };
   
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="pb-3 border-b border-[#1a1a1a]">
-        <div className="flex items-center justify-between mb-1">
-          <h4 className="text-[9px] text-neutral-600 uppercase tracking-wider">{instance.component_key}</h4>
+    <div className="space-y-4">
+      {/* Header - WhaleTools Monochrome */}
+      <div className="pb-3 border-b border-white/10">
+        <div className="flex items-center justify-between mb-2">
+          <h4 className="text-[11px] text-white font-black uppercase tracking-[0.15em]" style={{ fontWeight: 900 }}>
+            {instance.component_key.replace('smart_', '')}
+          </h4>
           <button
             onClick={onDelete}
-            className="text-[9px] text-neutral-600 hover:text-neutral-400 transition-colors"
+            className="text-[9px] text-white/40 hover:text-white hover:bg-white/10 transition-all px-2 py-1 rounded-lg uppercase tracking-wider font-black"
+            style={{ fontWeight: 900 }}
           >
-            Delete
+            DELETE
           </button>
         </div>
-        <p className="text-[9px] text-neutral-700">Order: {instance.position_order}</p>
+        <p className="text-[9px] text-white/40 uppercase tracking-wider">Position: #{instance.position_order}</p>
+        
+        {/* Current Values Summary - WhaleTools Monochrome */}
+        {Object.keys(instance.props).length > 0 && (
+          <div className="bg-black border border-white/10 rounded-2xl p-3 mt-3">
+            <div className="text-[9px] text-white/40 uppercase tracking-[0.15em] mb-2 font-black" style={{ fontWeight: 900 }}>
+              CURRENT VALUES
+            </div>
+            <div className="space-y-1.5">
+              {Object.entries(instance.props).slice(0, 4).map(([key, value]) => (
+                <div key={key} className="flex items-start gap-2">
+                  <span className="text-[10px] text-white/40 font-mono flex-shrink-0 min-w-[70px] uppercase tracking-wider">{key}:</span>
+                  <span className="text-[10px] text-white/60 break-all flex-1">
+                    {typeof value === 'string' 
+                      ? value.length > 35 ? `"${value.slice(0, 35)}..."` : `"${value}"`
+                      : typeof value === 'boolean'
+                        ? value ? 'TRUE' : 'FALSE'
+                        : typeof value === 'number'
+                          ? value
+                          : typeof value === 'object' && Array.isArray(value)
+                            ? `[${value.length}]`
+                            : typeof value === 'object'
+                              ? <span className="text-white/60">{'{...}'}</span>
+                              : String(value)
+                    }
+                  </span>
+                </div>
+              ))}
+              {Object.keys(instance.props).length > 4 && (
+                <div className="text-[8px] text-white/20 mt-1 text-center pt-2 border-t border-white/5 uppercase tracking-wider">
+                  +{Object.keys(instance.props).length - 4} MORE
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
       
       {/* Property Editors */}

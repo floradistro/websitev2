@@ -237,7 +237,7 @@ export function SmartHeader({
                     {/* Dropdown Menu */}
                     {isShopLink && productsDropdownOpen && (
                       <div 
-                        className="absolute top-full left-1/2 -translate-x-1/2 pt-3 w-[280px] z-[9999]"
+                        className="absolute top-full left-1/2 -translate-x-1/2 pt-3 w-[280px] z-[200]"
                         onMouseEnter={() => setProductsDropdownOpen(true)}
                         onMouseLeave={() => setProductsDropdownOpen(false)}
                       >

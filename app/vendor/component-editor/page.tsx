@@ -65,16 +65,26 @@ type BottomPanel = 'code' | 'suggestions' | null;
 type DragType = 'section' | 'component';
 
 const COMPONENT_TYPES = [
-  { key: 'text', label: 'Text', icon: '📝', category: 'Basic' },
-  { key: 'image', label: 'Image/Logo', icon: '🖼️', category: 'Basic' },
-  { key: 'button', label: 'Button', icon: '🔘', category: 'Basic' },
-  { key: 'spacer', label: 'Spacer', icon: '↕️', category: 'Basic' },
-  { key: 'icon', label: 'Icon', icon: '✨', category: 'Basic' },
-  { key: 'divider', label: 'Divider', icon: '➖', category: 'Basic' },
-  { key: 'smart_product_grid', label: 'Product Grid', icon: '▦', category: 'Smart' },
-  { key: 'smart_product_detail', label: 'Product Detail', icon: '🏷️', category: 'Smart' },
-  { key: 'smart_locations', label: 'Locations', icon: '📍', category: 'Smart' },
-  { key: 'smart_reviews', label: 'Reviews', icon: '⭐', category: 'Smart' },
+  // Smart Components (ALL 19) - WhaleTools Monochrome Theme
+  { key: 'smart_hero', label: 'Hero Section', category: 'Content' },
+  { key: 'smart_features', label: 'Features Grid', category: 'Content' },
+  { key: 'smart_product_grid', label: 'Product Grid', category: 'Products' },
+  { key: 'smart_product_detail', label: 'Product Detail', category: 'Products' },
+  { key: 'smart_shop_controls', label: 'Shop Controls', category: 'Products' },
+  { key: 'smart_product_showcase', label: 'Product Showcase', category: 'Products' },
+  { key: 'smart_faq', label: 'FAQ Section', category: 'Content' },
+  { key: 'smart_about', label: 'About Page', category: 'Content' },
+  { key: 'smart_contact', label: 'Contact Page', category: 'Content' },
+  { key: 'smart_legal_page', label: 'Legal Page', category: 'Content' },
+  { key: 'smart_shipping', label: 'Shipping Info', category: 'Content' },
+  { key: 'smart_returns', label: 'Returns Policy', category: 'Content' },
+  { key: 'smart_lab_results', label: 'Lab Results', category: 'Content' },
+  { key: 'smart_location_map', label: 'Location Map', category: 'Location' },
+  { key: 'smart_testimonials', label: 'Testimonials', category: 'Social' },
+  { key: 'smart_category_nav', label: 'Category Navigation', category: 'Navigation' },
+  { key: 'smart_stats_counter', label: 'Stats Counter', category: 'Content' },
+  { key: 'smart_header', label: 'Header', category: 'Layout' },
+  { key: 'smart_footer', label: 'Footer', category: 'Layout' },
 ];
 
 // Sortable Section Item
@@ -131,54 +141,46 @@ function SortableSectionItem({
       style={style} 
       className={`mb-0.5 ${isDragging ? 'z-50 shadow-2xl' : ''}`}
     >
-      <div className={`flex items-center group transition-all rounded ${
+      <div className={`flex items-center group transition-all rounded-xl ${
         isDragging 
-          ? 'bg-blue-600/30 border border-blue-500' 
+          ? 'bg-white/10 border border-white/20' 
           : isTargetForAi 
-            ? 'bg-neutral-900/50 border-l-2 border-neutral-600' 
+            ? 'bg-white/5 border-l-2 border-white/40' 
             : hasNewComponents 
-              ? 'border-l-2 border-neutral-700' 
-              : 'hover:bg-neutral-900/20'
+              ? 'border-l-2 border-white/20' 
+              : 'hover:bg-white/5'
       }`}>
       <button
         {...attributes}
         {...listeners}
-          className="p-1 text-neutral-500 hover:text-neutral-300 cursor-grab active:cursor-grabbing transition-opacity disabled:opacity-30 disabled:cursor-not-allowed"
+        className="p-2 text-white/30 hover:text-white/60 cursor-grab active:cursor-grabbing transition-all disabled:opacity-30 disabled:cursor-not-allowed"
         title="Drag section to reorder"
-          disabled={isDragDisabled}
+        disabled={isDragDisabled}
       >
-        <GripVertical size={12} strokeWidth={2.5} className="text-neutral-600" />
+        <GripVertical size={12} strokeWidth={2.5} />
       </button>
-        <button
-          onClick={onToggle}
-          onDoubleClick={onSetAiTarget}
-          className="flex-1 flex items-center justify-between px-2 py-1 hover:bg-neutral-900/30 transition-colors"
-          title="Click to expand, double-click to edit section"
-        >
-          <div className="flex items-center gap-1.5">
-            {isExpanded ? <ChevronDown size={11} className="text-neutral-600" /> : <ChevronRight size={11} className="text-neutral-600" />}
-            <span className="text-[11px] text-neutral-400 font-medium">{section.section_key}</span>
-            {hasNewComponents && (
-              <span className="text-[8px] text-neutral-600 bg-neutral-900 px-1.5 py-0.5 rounded">new</span>
-            )}
-          </div>
-          <span className="text-[10px] text-neutral-700">{componentCount}</span>
-        </button>
-                        <button
-                          onClick={onSetAiTarget}
-                          className={`p-1 text-neutral-600 hover:text-neutral-400 opacity-0 group-hover:opacity-100 transition-all ${isTargetForAi ? 'opacity-100 text-neutral-400' : ''}`}
-                          title="Set as AI target"
-                        >
-                          <Sparkles size={11} />
-                        </button>
-                        <button
-                          onClick={onAddComponent}
-                          className="p-1 text-neutral-600 hover:text-neutral-400 opacity-0 group-hover:opacity-100 transition-all"
-                          title="Add component"
-                        >
-                          <Plus size={11} />
-                        </button>
-                      </div>
+      <button
+        onClick={onToggle}
+        onDoubleClick={onSetAiTarget}
+        className="flex-1 flex items-center justify-between px-3 py-2 hover:bg-white/5 transition-all rounded-xl"
+        title="Click to expand, double-click to edit section"
+      >
+        <div className="flex items-center gap-2">
+          {isExpanded ? <ChevronDown size={11} strokeWidth={2.5} className="text-white/40" /> : <ChevronRight size={11} strokeWidth={2.5} className="text-white/40" />}
+          <span className="text-[10px] text-white/60 uppercase tracking-wide font-black" style={{ fontWeight: 900 }}>
+            {section.section_key}
+          </span>
+        </div>
+        <span className="text-[9px] text-white/30 bg-white/5 px-1.5 py-0.5 rounded">{componentCount}</span>
+      </button>
+      <button
+        onClick={onAddComponent}
+        className="p-1.5 text-white/30 hover:text-white hover:bg-white/10 opacity-0 group-hover:opacity-100 transition-all rounded-lg mr-1"
+        title="Add component"
+      >
+        <Plus size={11} strokeWidth={2.5} />
+      </button>
+    </div>
                       {children}
                     </div>
                   );
@@ -233,25 +235,28 @@ function SortableComponentItem({
         isDragging ? 'z-50 shadow-xl bg-blue-600/20 rounded' : ''
       }`}
     >
-      <div className={`flex items-center gap-1 pl-3 pr-1 py-1.5 hover:bg-neutral-900/40 cursor-pointer transition-colors rounded-sm ${
-        isSelected ? 'bg-neutral-900 border-l-2 border-blue-500' : ''
-      } ${isDragging ? 'bg-blue-600/20 border border-blue-500' : ''}`}>
+      <div className={`flex items-center gap-2 px-2 py-2 hover:bg-white/5 cursor-pointer transition-all rounded-xl ${
+        isSelected ? 'bg-white/10 border-l-2 border-white' : ''
+      } ${isDragging ? 'bg-white/10 border border-white/20' : ''}`}>
         <button
           {...attributes}
           {...listeners}
-          className="p-0.5 text-neutral-600 hover:text-neutral-400 cursor-grab active:cursor-grabbing disabled:opacity-30 disabled:cursor-not-allowed"
+          className="p-1 text-white/30 hover:text-white/60 cursor-grab active:cursor-grabbing disabled:opacity-30 disabled:cursor-not-allowed"
           title="Drag to reorder"
           disabled={isDragDisabled}
           onClick={(e) => e.stopPropagation()}
         >
-          <GripVertical size={10} />
+          <GripVertical size={10} strokeWidth={2.5} />
         </button>
         <div onClick={onSelect} className="flex-1 flex items-center gap-2 min-w-0">
-          <span className="text-xs text-neutral-400 font-medium truncate">
-            {component.component_key}
+          <div className="w-1 h-1 bg-white/30 rounded-full" />
+          <span className="text-[10px] text-white/60 uppercase tracking-wide font-black truncate" style={{ fontWeight: 900 }}>
+            {component.component_key.replace('smart_', '')}
           </span>
           {!component.is_enabled && (
-            <span className="text-[8px] text-neutral-600 bg-neutral-900 px-1 py-0.5 rounded">hidden</span>
+            <span className="text-[8px] text-white/30 bg-white/5 px-1.5 py-0.5 rounded uppercase tracking-wider">
+              hidden
+            </span>
           )}
         </div>
         <button
@@ -259,10 +264,10 @@ function SortableComponentItem({
             e.stopPropagation();
             onDelete();
           }}
-          className="p-0.5 text-neutral-700 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"
+          className="p-1 text-white/30 hover:text-red-400 hover:bg-red-500/10 opacity-0 group-hover:opacity-100 transition-all rounded-lg"
           title="Delete component"
         >
-          <Trash2 size={10} />
+          <Trash2 size={10} strokeWidth={2.5} />
         </button>
       </div>
                     </div>
@@ -336,9 +341,14 @@ function ComponentEditorContent() {
   const [sections, setSections] = useState<Section[]>([]);
   const [components, setComponents] = useState<ComponentInstance[]>([]);
   const [selectedPage, setSelectedPage] = useState('home');
-  const [selectedComponent, setSelectedComponent] = useState<ComponentInstance | null>(null);
-  const [selectedSection, setSelectedSection] = useState<Section | null>(null);
+  const [selectedComponentId, setSelectedComponentId] = useState<string | null>(null);
+  const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null);
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
+  const [previewReady, setPreviewReady] = useState(false);
+  
+  // Derive selected component/section from IDs (single source of truth)
+  const selectedComponent = selectedComponentId ? components.find(c => c.id === selectedComponentId) : null;
+  const selectedSection = selectedSectionId ? sections.find(s => s.id === selectedSectionId) : null;
   
   const [leftPanel, setLeftPanel] = useState<LeftPanel>('explorer');
   const [rightPanelMode, setRightPanelMode] = useState<'properties' | 'section'>('properties');
@@ -394,11 +404,23 @@ function ComponentEditorContent() {
       const { type, payload } = event.data;
       
       switch (type) {
+        case 'PREVIEW_READY':
+          console.log('✅ Preview ready');
+          setPreviewReady(true);
+          // Sync current components to preview
+          if (previewRef.current?.contentWindow && components.length > 0) {
+            previewRef.current.contentWindow.postMessage({
+              type: 'UPDATE_COMPONENTS',
+              payload: { components }
+            }, '*');
+          }
+          break;
+          
         case 'COMPONENT_SELECTED':
           const component = components.find(c => c.id === payload.componentId);
           if (component) {
-            setSelectedComponent(component);
-            setSelectedSection(null);
+            setSelectedComponentId(payload.componentId);
+            setSelectedSectionId(null);
             setRightPanelMode('properties');
             
             // Expand the section containing this component
@@ -417,8 +439,8 @@ function ComponentEditorContent() {
         case 'SECTION_SELECTED':
           const section = sections.find(s => s.id === payload.sectionId);
           if (section) {
-            setSelectedSection(section);
-            setSelectedComponent(null);
+            setSelectedSectionId(payload.sectionId);
+            setSelectedComponentId(null);
             setRightPanelMode('section');
             
             // Expand this section
@@ -454,7 +476,7 @@ function ComponentEditorContent() {
     
     switch (action) {
       case 'edit':
-        setSelectedComponent(component);
+        setSelectedComponentId(componentId);
         setRightPanelMode('properties');
         break;
       case 'delete':
@@ -475,11 +497,11 @@ function ComponentEditorContent() {
     
     switch (action) {
       case 'edit':
-        setSelectedSection(section);
+        setSelectedSectionId(sectionId);
         setRightPanelMode('section');
         break;
       case 'add':
-        setSelectedSection(section);
+        setSelectedSectionId(sectionId);
         setRightPanelMode('properties');
         break;
     }
@@ -744,9 +766,19 @@ function ComponentEditorContent() {
       const data = await res.json();
       
       if (data.success) {
-        setComponents([...components, data.component]);
-        setSelectedComponent(data.component);
+        const newComponents = [...components, data.component];
+        setComponents(newComponents);
+        setSelectedComponentId(data.component.id);
+        setSelectedSectionId(null);
         setRightPanelMode('properties');
+        
+        // Send to preview
+        if (previewReady && previewRef.current?.contentWindow) {
+          previewRef.current.contentWindow.postMessage({
+            type: 'UPDATE_COMPONENTS',
+            payload: { components: newComponents }
+          }, '*');
+        }
       }
     } catch (error) {
       console.error('Error adding component:', error);
@@ -762,12 +794,12 @@ function ComponentEditorContent() {
       const updatedComponents = components.filter(c => c.id !== componentId);
       setComponents(updatedComponents);
       
-      if (selectedComponent?.id === componentId) {
-        setSelectedComponent(null);
+      if (selectedComponentId === componentId) {
+        setSelectedComponentId(null);
       }
       
       // Update preview immediately
-      if (previewRef.current?.contentWindow) {
+      if (previewReady && previewRef.current?.contentWindow) {
         previewRef.current.contentWindow.postMessage({
           type: 'UPDATE_COMPONENTS',
           payload: { components: updatedComponents }
@@ -808,40 +840,64 @@ function ComponentEditorContent() {
       const data = await res.json();
       
       if (data.success) {
-        setSections([...sections, data.section]);
+        const newSections = [...sections, data.section];
+        setSections(newSections);
         setExpandedSections(new Set([...expandedSections, data.section.id]));
+        setSelectedSectionId(data.section.id);
+        setRightPanelMode('section');
       }
     } catch (error) {
       console.error('Error adding section:', error);
     }
   }
 
+  // Debounced preview update
+  const debouncedPreviewUpdate = useRef<NodeJS.Timeout | null>(null);
+  
   function updateComponent(componentId: string, updates: Partial<ComponentInstance>) {
+    // Update components array immediately (optimistic)
     const updatedComponents = components.map(c => 
       c.id === componentId ? { ...c, ...updates } : c
     );
     
     setComponents(updatedComponents);
-    
-    if (selectedComponent?.id === componentId) {
-      setSelectedComponent({ ...selectedComponent, ...updates });
-    }
-    
     setHasChanges(true);
     
-    // Send live update to preview iframe
-    if (previewRef.current?.contentWindow) {
-      previewRef.current.contentWindow.postMessage({
-        type: 'UPDATE_COMPONENT',
-        payload: {
-          componentId,
-          updates,
-          allComponents: updatedComponents
-        }
-      }, '*');
+    // Debounce preview update (prevent spam)
+    if (debouncedPreviewUpdate.current) {
+      clearTimeout(debouncedPreviewUpdate.current);
     }
+    
+    debouncedPreviewUpdate.current = setTimeout(() => {
+      if (previewReady && previewRef.current?.contentWindow) {
+        previewRef.current.contentWindow.postMessage({
+          type: 'UPDATE_COMPONENT',
+          payload: {
+            componentId,
+            updates,
+            allComponents: updatedComponents
+          }
+        }, '*');
+      }
+    }, 150); // 150ms debounce for smooth typing
   }
 
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Cmd+S or Ctrl+S to save
+      if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+        e.preventDefault();
+        if (hasChanges) {
+          saveChanges();
+        }
+      }
+    };
+    
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [hasChanges]);
+  
   // Show loading state
   if (isLoading) {
     return (
@@ -863,107 +919,132 @@ function ComponentEditorContent() {
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
-      <div className="h-screen bg-[#0a0a0a] text-neutral-200 flex flex-col overflow-hidden">
-        {/* Top Bar */}
-        <div className="h-12 bg-[#0d0d0d] border-b border-[#1a1a1a] flex items-center justify-between px-4">
-          <div className="flex items-center gap-3">
-        <div className="flex items-center gap-2">
-              <Store size={14} className="text-neutral-600" />
-              <span className="text-[11px] text-neutral-500 font-medium">{vendor.store_name}</span>
-        </div>
-            <div className="h-3 w-px bg-neutral-800" />
+      <div className="h-screen bg-black text-white flex flex-col overflow-hidden">
+        {/* Top Bar - WhaleTools Luxury */}
+        <div className="h-14 bg-black border-b border-white/5 flex items-center justify-between px-6">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-1 h-6 bg-white/20 rounded-full" />
+              <span className="text-xs text-white font-black uppercase tracking-[0.15em]" style={{ fontWeight: 900 }}>
+                {vendor.store_name}
+              </span>
+            </div>
+            <div className="h-4 w-px bg-white/10" />
             <select
               value={selectedPage}
               onChange={(e) => setSelectedPage(e.target.value)}
-              className="bg-transparent border-none text-[11px] text-neutral-400 focus:outline-none cursor-pointer"
+              className="bg-[#0a0a0a] border border-white/5 rounded-lg px-3 py-1.5 text-[10px] text-white/60 uppercase tracking-wider font-black focus:outline-none focus:border-white/10 cursor-pointer hover:bg-white/5 transition-all"
+              style={{ fontWeight: 900 }}
             >
-              <option value="home">Home</option>
-              <option value="about">About</option>
-              <option value="contact">Contact</option>
+              <option value="home">HOME</option>
+              <option value="shop">SHOP</option>
+              <option value="about">ABOUT</option>
+              <option value="contact">CONTACT</option>
               <option value="faq">FAQ</option>
-              <option value="shop">Shop</option>
-              <option value="product">Product</option>
+              <option value="lab-results">LAB RESULTS</option>
+              <option value="shipping">SHIPPING</option>
+              <option value="returns">RETURNS</option>
+              <option value="privacy">PRIVACY</option>
+              <option value="terms">TERMS</option>
             </select>
           </div>
 
-          <div className="flex items-center gap-2">
-            <div className="flex bg-[#0a0a0a] rounded overflow-hidden">
-            <button
+          <div className="flex items-center gap-3">
+            <div className="flex bg-[#0a0a0a] border border-white/5 rounded-2xl overflow-hidden">
+              <button
                 onClick={() => setDevice('desktop')}
-                className={`p-1.5 ${device === 'desktop' ? 'bg-neutral-800 text-neutral-300' : 'text-neutral-600 hover:text-neutral-400'}`}
+                className={`px-3 py-2 text-[10px] uppercase tracking-wider font-black transition-all ${
+                  device === 'desktop' 
+                    ? 'bg-white/10 text-white' 
+                    : 'text-white/40 hover:text-white/60'
+                }`}
+                style={{ fontWeight: 900 }}
                 title="Desktop view"
               >
-                <Monitor size={14} />
-            </button>
-          <button
+                <Monitor size={14} strokeWidth={2.5} />
+              </button>
+              <div className="w-px bg-white/5" />
+              <button
                 onClick={() => setDevice('mobile')}
-                className={`p-1.5 ${device === 'mobile' ? 'bg-neutral-800 text-neutral-300' : 'text-neutral-600 hover:text-neutral-400'}`}
+                className={`px-3 py-2 text-[10px] uppercase tracking-wider font-black transition-all ${
+                  device === 'mobile' 
+                    ? 'bg-white/10 text-white' 
+                    : 'text-white/40 hover:text-white/60'
+                }`}
+                style={{ fontWeight: 900 }}
                 title="Mobile view"
               >
-                <Smartphone size={14} />
-          </button>
+                <Smartphone size={14} strokeWidth={2.5} />
+              </button>
             </div>
             
-          <button
-            onClick={saveChanges}
+            <button
+              onClick={saveChanges}
               disabled={!hasChanges || isSaving}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-[11px] font-medium transition-all ${
-              hasChanges
-                  ? 'bg-neutral-800 hover:bg-neutral-700 text-neutral-200' 
-                  : 'bg-neutral-900 text-neutral-600 cursor-not-allowed'
-            }`}
-          >
-              <Save size={12} />
-              <span>{isSaving ? 'Saving...' : hasChanges ? 'Save Changes' : 'No Changes'}</span>
-          </button>
-        </div>
+              className={`flex items-center gap-2 px-4 py-2 rounded-2xl text-[10px] uppercase tracking-[0.15em] font-black transition-all ${
+                hasChanges
+                  ? 'bg-white text-black hover:bg-white/90 shadow-xl shadow-white/10' 
+                  : 'bg-white/5 text-white/20 cursor-not-allowed'
+              }`}
+              style={{ fontWeight: 900 }}
+              title={hasChanges ? 'Save changes (Cmd+S)' : 'No changes to save'}
+            >
+              <Save size={14} strokeWidth={2.5} />
+              <span>{isSaving ? 'SAVING' : hasChanges ? 'SAVE' : 'SAVED'}</span>
+            </button>
+          </div>
       </div>
 
         {/* Main Content */}
       <div className="flex-1 flex overflow-hidden">
-          {/* Left Sidebar */}
-          <div className="w-60 bg-[#0d0d0d] border-r border-[#1a1a1a] flex flex-col">
+          {/* Left Sidebar - WhaleTools Luxury */}
+          <div className="w-64 bg-[#0a0a0a] border-r border-white/5 flex flex-col">
             {/* Panel Tabs */}
-          <div className="flex border-b border-[#1a1a1a]">
+            <div className="flex border-b border-white/5">
               <button
                 onClick={() => setLeftPanel('explorer')}
-                className={`flex-1 flex items-center justify-center gap-1 py-2 text-[10px] ${
+                className={`flex-1 flex items-center justify-center gap-2 py-3 text-[9px] uppercase tracking-[0.15em] font-black transition-all ${
                   leftPanel === 'explorer' 
-                    ? 'bg-[#0a0a0a] text-neutral-300 border-b-2 border-neutral-600' 
-                    : 'text-neutral-600 hover:text-neutral-400'
+                    ? 'bg-black text-white border-b-2 border-white' 
+                    : 'text-white/40 hover:text-white/60'
                 }`}
+                style={{ fontWeight: 900 }}
               >
-                <Layers size={11} />
-                <span>Layers</span>
+                <Layers size={12} strokeWidth={2.5} />
+                <span>LAYERS</span>
               </button>
+              <div className="w-px bg-white/5" />
               <button
                 onClick={() => setLeftPanel('library')}
-                className={`flex-1 flex items-center justify-center gap-1 py-2 text-[10px] ${
+                className={`flex-1 flex items-center justify-center gap-2 py-3 text-[9px] uppercase tracking-[0.15em] font-black transition-all ${
                   leftPanel === 'library' 
-                    ? 'bg-[#0a0a0a] text-neutral-300 border-b-2 border-neutral-600' 
-                    : 'text-neutral-600 hover:text-neutral-400'
+                    ? 'bg-black text-white border-b-2 border-white' 
+                    : 'text-white/40 hover:text-white/60'
                 }`}
+                style={{ fontWeight: 900 }}
               >
-                <Box size={11} />
-                <span>Library</span>
+                <Box size={12} strokeWidth={2.5} />
+                <span>LIBRARY</span>
               </button>
-          </div>
+            </div>
 
             {/* Panel Content */}
             <div className="flex-1 overflow-y-auto">
               {/* Explorer/Layers */}
             {leftPanel === 'explorer' && (
               <>
-                  <div className="flex items-center justify-between px-3 py-2 border-b border-[#1a1a1a]">
-                    <span className="text-[10px] text-neutral-500 uppercase tracking-wider font-semibold">Sections</span>
-                      <button
+                  <div className="flex items-center justify-between px-4 py-3 border-b border-white/5 bg-black">
+                    <span className="text-[9px] text-white/40 uppercase tracking-[0.2em] font-black" style={{ fontWeight: 900 }}>
+                      SECTIONS
+                    </span>
+                    <button
                       onClick={addSection}
-                      className="text-neutral-600 hover:text-neutral-400"
+                      className="p-1.5 text-white/40 hover:text-white hover:bg-white/10 rounded-lg transition-all"
                       title="Add section"
-                      >
-                        <Plus size={12} />
-                      </button>
-                </div>
+                    >
+                      <Plus size={12} strokeWidth={2.5} />
+                    </button>
+                  </div>
 
                   <SortableContext
                     items={sections.map(s => s.id)}
@@ -979,9 +1060,8 @@ function ComponentEditorContent() {
                         );
 
                         return (
-                          <div data-sidebar-section-id={section.id}>
+                          <div key={section.id} data-sidebar-section-id={section.id}>
                             <SortableSectionItem
-                              key={section.id}
                               section={section}
                               isExpanded={isExpanded}
                               componentCount={sectionComponents.length}
@@ -1008,12 +1088,14 @@ function ComponentEditorContent() {
                                 }
                               }}
                               onAddComponent={() => {
-                                setSelectedSection(section);
-                                setRightPanelMode('properties');
+                                setSelectedSectionId(section.id);
+                                setSelectedComponentId(null);
+                                setRightPanelMode('section');
                               }}
                               onSetAiTarget={() => {
                                 setTargetSectionForAi(section.id);
-                                setSelectedSection(section);
+                                setSelectedSectionId(section.id);
+                                setSelectedComponentId(null);
                                 setRightPanelMode('section');
                               }}
                             >
@@ -1033,14 +1115,14 @@ function ComponentEditorContent() {
                                           isNewlyGenerated={isNewlyGenerated}
                                           isDragDisabled={isDragging && dragType !== 'component'}
                                           onSelect={() => {
-                                            setSelectedComponent(comp);
-                                            setSelectedSection(null);
+                                            setSelectedComponentId(comp.id);
+                                            setSelectedSectionId(null);
                                             setRightPanelMode('properties');
                                             
                                             // Notify preview to highlight this component
-                                            if (previewRef.current?.contentWindow) {
+                                            if (previewReady && previewRef.current?.contentWindow) {
                                               previewRef.current.contentWindow.postMessage({
-                                                type: 'HIGHLIGHT_COMPONENT',
+                                                type: 'SELECT_COMPONENT',
                                                 payload: { componentId: comp.id }
                                               }, '*');
                                             }
@@ -1062,36 +1144,47 @@ function ComponentEditorContent() {
               </>
             )}
 
-            {/* Library */}
+            {/* Library - WhaleTools Luxury */}
             {leftPanel === 'library' && (
-              <div className="px-3 py-2">
-                <div className="mb-3">
-                  <span className="text-[10px] text-neutral-500 uppercase tracking-wider font-semibold">Components</span>
+              <div className="px-4 py-4">
+                <div className="mb-4">
+                  <span className="text-[9px] text-white/40 uppercase tracking-[0.2em] font-black" style={{ fontWeight: 900 }}>
+                    COMPONENTS
+                  </span>
                 </div>
-                <div className="space-y-4">
-                    {['Basic', 'Smart'].map(category => (
-                    <div key={category}>
-                      <div className="text-[9px] text-neutral-600 uppercase tracking-wider mb-2 font-semibold">{category}</div>
-                      <div className="space-y-0.5">
-                        {COMPONENT_TYPES.filter(t => t.category === category).map(type => (
-                          <button
-                            key={type.key}
-                            onClick={() => {
+                <div className="space-y-6">
+                  {['Layout', 'Content', 'Products', 'Navigation', 'Location', 'Social'].map(category => {
+                    const categoryComponents = COMPONENT_TYPES.filter(t => t.category === category);
+                    if (categoryComponents.length === 0) return null;
+                    
+                    return (
+                      <div key={category}>
+                        <div className="text-[8px] text-white/30 uppercase tracking-[0.2em] mb-2 font-black" style={{ fontWeight: 900 }}>
+                          {category}
+                        </div>
+                        <div className="space-y-1">
+                          {categoryComponents.map(type => (
+                            <button
+                              key={type.key}
+                              onClick={() => {
                                 if (selectedSection) {
                                   addComponent(selectedSection.id, type.key);
                                 } else if (sections.length > 0) {
                                   addComponent(sections[0].id, type.key);
                                 }
                               }}
-                              className="w-full flex items-center gap-2 px-2 py-1.5 hover:bg-neutral-900/40 rounded transition-colors text-left"
-                          >
-                            <span className="text-sm">{type.icon}</span>
-                              <span className="text-[11px] text-neutral-400">{type.label}</span>
-                          </button>
-                        ))}
+                              className="w-full flex items-center gap-2 px-3 py-2 bg-[#0d0d0d] border border-white/5 hover:border-white/10 hover:bg-white/5 rounded-2xl transition-all text-left group"
+                            >
+                              <div className="w-1.5 h-1.5 bg-white/20 rounded-full group-hover:bg-white/40 transition-colors" />
+                              <span className="text-[10px] text-white/60 uppercase tracking-wide font-black group-hover:text-white transition-colors" style={{ fontWeight: 900 }}>
+                                {type.label}
+                              </span>
+                            </button>
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -1099,53 +1192,84 @@ function ComponentEditorContent() {
                       </div>
 
           {/* Center - Preview */}
-          <div className="flex-1 bg-[#0a0a0a] flex items-center justify-center p-4 overflow-hidden">
-            <div className={`bg-white rounded-lg shadow-2xl overflow-hidden ${
+          <div className="flex-1 bg-[#0a0a0a] flex items-center justify-center p-4 overflow-hidden relative">
+            {/* Loading Screen */}
+            {!previewReady && (
+              <div className="absolute inset-0 bg-black flex items-center justify-center z-50">
+                <div className="text-center">
+                  {vendor.logo_url && (
+                    <div className="relative w-32 h-32 mb-6 mx-auto">
+                      {/* Animated glow */}
+                      <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-white/5 to-transparent rounded-full blur-3xl animate-pulse" style={{ animationDuration: '2s' }} />
+                      <div className="absolute inset-0 bg-gradient-to-tl from-white/15 to-transparent rounded-full blur-2xl animate-pulse" style={{ animationDuration: '1.5s', animationDelay: '0.5s' }} />
+                      <img 
+                        src={vendor.logo_url} 
+                        alt={vendor.store_name}
+                        className="relative w-full h-full object-contain drop-shadow-2xl animate-pulse"
+                        style={{ animationDuration: '2s' }}
+                      />
+                    </div>
+                  )}
+                  <div className="text-xs text-white/40 uppercase tracking-[0.2em] font-black">
+                    Loading Preview...
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            <div className={`bg-black rounded-lg shadow-2xl overflow-hidden ${
               device === 'desktop' ? 'w-full h-full max-w-7xl' : 'w-[375px] h-[667px]'
-            }`}>
+            } ${!previewReady ? 'opacity-0' : 'opacity-100 transition-opacity duration-500'}`}>
               <iframe
                 ref={previewRef}
-                src={`/storefront?vendor=${vendor.slug}${selectedPage !== 'home' ? `&page=${selectedPage}` : ''}&editor=true`}
-                className="w-full h-full border-none"
+                src={`/storefront${selectedPage === 'shop' ? '/shop' : selectedPage === 'about' ? '/about' : selectedPage === 'contact' ? '/contact' : selectedPage === 'faq' ? '/faq' : ''}?vendor=${vendor.slug}&preview=true`}
+                className="w-full h-full border-none bg-black"
                 title="Preview"
               />
             </div>
           </div>
 
-          {/* Right Sidebar - Properties */}
-          <div className="w-80 bg-[#0d0d0d] border-l border-[#1a1a1a] flex flex-col">
-            <div className="flex items-center justify-between px-3 py-2.5 border-b border-[#1a1a1a]">
-                  <span className="text-[10px] text-neutral-500 uppercase tracking-wider font-semibold">
-                {rightPanelMode === 'properties' ? 'Properties' : 'Section'}
-                  </span>
-                  {selectedComponent && (
-                      <button
-                  onClick={() => setSelectedComponent(null)}
-                  className="text-neutral-600 hover:text-neutral-400"
-                >
-                  <X size={14} />
-                    </button>
-                  )}
+          {/* Right Sidebar - Properties - WhaleTools Luxury */}
+          <div className="w-80 bg-[#0a0a0a] border-l border-white/5 flex flex-col">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-white/5 bg-black">
+              <span className="text-[9px] text-white/40 uppercase tracking-[0.2em] font-black" style={{ fontWeight: 900 }}>
+                {rightPanelMode === 'properties' ? 'PROPERTIES' : 'SECTION'}
+              </span>
+              {selectedComponent && (
+                <div className="flex items-center gap-2">
+                  <div className="text-[8px] text-white/60 bg-white/5 px-2 py-1 rounded-lg uppercase tracking-wider font-black" style={{ fontWeight: 900 }}>
+                    #{selectedComponent.position_order}
+                  </div>
+                  <button
+                    onClick={() => setSelectedComponentId(null)}
+                    className="p-1 text-white/40 hover:text-white hover:bg-white/10 rounded-lg transition-all"
+                  >
+                    <X size={14} strokeWidth={2.5} />
+                  </button>
+                </div>
+              )}
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-3">
               {selectedComponent && rightPanelMode === 'properties' ? (
                 <ComponentInstanceEditor
                   instance={selectedComponent}
-                  onUpdate={(updates) => updateComponent(selectedComponent.id, updates)}
-                  onDelete={() => deleteComponent(selectedComponent.id)}
+                      onUpdate={(updates) => selectedComponent && updateComponent(selectedComponent.id, updates)}
+                      onDelete={() => selectedComponent && deleteComponent(selectedComponent.id)}
                 />
               ) : selectedSection && rightPanelMode === 'section' ? (
                     <SectionEditor
                       section={selectedSection}
                   onUpdate={(updates) => {
-                    setSections(sections.map(s => 
-                      s.id === selectedSection.id ? { ...s, ...updates } : s
-                    ));
-                    setHasChanges(true);
-                      }}
+                    if (selectedSection) {
+                      setSections(sections.map(s => 
+                        s.id === selectedSection.id ? { ...s, ...updates } : s
+                      ));
+                      setHasChanges(true);
+                    }
+                  }}
                       onDelete={async () => {
-                    if (confirm('Delete this section and all its components?')) {
+                    if (selectedSection && confirm('Delete this section and all its components?')) {
                           try {
                         await fetch(`/api/vendor/content/sections/${selectedSection.id}`, {
                               method: 'DELETE',
@@ -1155,23 +1279,29 @@ function ComponentEditorContent() {
                             
                         setSections(sections.filter(s => s.id !== selectedSection.id));
                         setComponents(components.filter(c => c.section_id !== selectedSection.id));
-                              setSelectedSection(null);
+                        setSelectedSectionId(null);
                           } catch (error) {
                         console.error('Error deleting section:', error);
                       }
                     }
                   }}
                   onClose={() => {
-                    setSelectedSection(null);
+                    setSelectedSectionId(null);
                     setRightPanelMode('properties');
                   }}
                     />
                   ) : (
                 <div className="flex flex-col items-center justify-center h-full text-center px-4">
-                  <Box size={32} className="text-neutral-700 mb-3" />
-                  <p className="text-[11px] text-neutral-600 mb-1">No component selected</p>
-                  <p className="text-[10px] text-neutral-700">Select a component from the layers panel or add one from the library</p>
-                    </div>
+                  <div className="w-16 h-16 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center mb-4">
+                    <Box size={24} className="text-white/20" strokeWidth={2} />
+                  </div>
+                  <p className="text-[10px] text-white/40 uppercase tracking-[0.15em] font-black mb-2" style={{ fontWeight: 900 }}>
+                    NO SELECTION
+                  </p>
+                  <p className="text-[9px] text-white/20 max-w-[200px] leading-relaxed">
+                    Select a component from layers or add from library
+                  </p>
+                </div>
                   )}
                 </div>
                         </div>

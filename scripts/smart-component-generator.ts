@@ -310,5 +310,6 @@ Example component names:
   generateComponent(exampleConfig);
 }
 
-export { generateComponent, ComponentConfig, PropDefinition };
+export { generateComponent };
+export type { ComponentConfig, PropDefinition };
 

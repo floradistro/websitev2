@@ -8,7 +8,7 @@
     "build": "next build",
     "start": "next start -p 3000",
     "postinstall": "echo 'Install complete'",
-    "generate:smart-component": "ts-node scripts/smart-component-generator.ts",
+    "generate:smart-component": "npx tsx scripts/smart-component-generator.ts",
     "db:register": "ts-node scripts/register-component.ts"
   },
   "dependencies": {
@@ -58,7 +58,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
+    "@types/node": "^20.19.23",
     "@types/p5": "^1.7.6",
     "@types/pg": "^8.15.5",
     "@types/react": "^19",
@@ -68,6 +68,7 @@
     "node-fetch": "^2.7.0",
     "pg": "^8.16.3",
     "tailwindcss": "^4",
+    "ts-node": "^10.9.2",
     "tsx": "^4.20.6",
     "typescript": "^5"
   }
