@@ -15,7 +15,7 @@ export default function PartnersPage() {
             <Link href="/" className="flex items-center gap-4">
               <Image 
                 src="/yacht-club-logo.png" 
-                alt="Yacht Club" 
+                alt="WhaleTools" 
                 width={40} 
                 height={40}
                 className="object-contain"
@@ -90,7 +90,7 @@ export default function PartnersPage() {
             <div className="mb-8">
               <Image 
                 src="/yacht-club-logo.png" 
-                alt="Yacht Club" 
+                alt="WhaleTools" 
                 width={80} 
                 height={80}
                 className="object-contain mx-auto opacity-40"
@@ -183,7 +183,7 @@ export default function PartnersPage() {
             <div className="mb-8">
               <Image 
                 src="/yacht-club-logo.png" 
-                alt="Yacht Club" 
+                alt="WhaleTools" 
                 width={100} 
                 height={100}
                 className="object-contain mx-auto"
@@ -213,13 +213,13 @@ export default function PartnersPage() {
             <div className="flex items-center gap-4">
               <Image 
                 src="/yacht-club-logo.png" 
-                alt="Yacht Club" 
+                alt="WhaleTools" 
                 width={32} 
                 height={32}
                 className="object-contain opacity-60"
               />
               <span className="text-xs uppercase tracking-[0.12em] text-white/40 font-black" style={{ fontWeight: 900 }}>
-                © 2025 Yacht Club
+                © 2025 WhaleTools
               </span>
             </div>
             <div className="flex flex-wrap items-center justify-center gap-8">

@@ -31,7 +31,7 @@ export default function HomePage() {
                 height={40}
                 className="object-contain"
               />
-              <span className="text-xl font-black uppercase tracking-[0.08em]" style={{ fontWeight: 900 }}>Yacht Club</span>
+              <span className="text-xl font-black uppercase tracking-[0.08em]" style={{ fontWeight: 900 }}>WhaleTools</span>
             </div>
             <div className="hidden md:flex items-center gap-8">
               <Link 
@@ -351,7 +351,7 @@ export default function HomePage() {
                 className="object-contain opacity-60"
               />
               <span className="text-xs uppercase tracking-[0.12em] text-white/40 font-black" style={{ fontWeight: 900 }}>
-                © 2025 Yacht Club
+                © 2025 WhaleTools
               </span>
             </div>
             <div className="flex flex-wrap items-center justify-center gap-8">

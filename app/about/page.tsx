@@ -20,7 +20,7 @@ export default function AboutPage() {
                 height={40}
                 className="object-contain"
               />
-              <span className="text-xl font-black uppercase tracking-[0.08em]" style={{ fontWeight: 900 }}>Yacht Club</span>
+              <span className="text-xl font-black uppercase tracking-[0.08em]" style={{ fontWeight: 900 }}>WhaleTools</span>
             </Link>
             <Link href="/" className="flex items-center gap-2 text-xs uppercase tracking-[0.12em] font-black text-white/60 hover:text-white transition-colors" style={{ fontWeight: 900 }}>
               <ArrowLeft size={14} />
@@ -215,7 +215,7 @@ export default function AboutPage() {
                 className="object-contain opacity-60"
               />
               <span className="text-xs uppercase tracking-[0.12em] text-white/40 font-black" style={{ fontWeight: 900 }}>
-                © 2025 Yacht Club
+                © 2025 WhaleTools
               </span>
             </div>
             <div className="flex flex-wrap items-center justify-center gap-8">
