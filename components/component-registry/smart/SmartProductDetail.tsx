@@ -422,7 +422,7 @@ export function SmartProductDetail({
             {/* Product Info */}
             <div className="px-4 py-4 space-y-3">
               {/* Product Name - Bold & Large */}
-              <h1 className="text-2xl sm:text-3xl uppercase tracking-[0.08em] text-white leading-tight font-black">
+              <h1 className="text-2xl sm:text-3xl uppercase tracking-[0.08em] text-white leading-tight" style={{ fontWeight: 900 }}>
                 {product.name}
               </h1>
               
