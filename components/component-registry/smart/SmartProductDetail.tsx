@@ -237,7 +237,7 @@ export function SmartProductDetail({
         );
         return { ...inv, distance };
       })
-      .sort((a, b) => (a.distance || 999) - (b.distance || 999));
+      .sort((a: any, b: any) => (a.distance || 999) - (b.distance || 999));
     
     setLocationsWithDistance(locationsWithDist);
     
