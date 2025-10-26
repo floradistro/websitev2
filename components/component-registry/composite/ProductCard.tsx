@@ -338,7 +338,7 @@ export function ProductCard({
         <div className="space-y-3">
           {/* Product Name */}
           <a href={productUrl}>
-            <h3 className="text-xs uppercase tracking-[0.12em] text-white line-clamp-2 leading-relaxed hover:text-white/80 transition-colors" style={{ fontWeight: 900 }}>
+            <h3 className="text-sm sm:text-xs uppercase tracking-[0.12em] text-white line-clamp-2 leading-relaxed hover:text-white/80 transition-colors" style={{ fontWeight: 900 }}>
               {product.name}
             </h3>
           </a>
