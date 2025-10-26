@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft, Code, Globe, Zap, Shield } from "lucide-react";
+import { motion } from 'framer-motion';
 
 export default function AboutPage() {
   return (
@@ -32,7 +33,12 @@ export default function AboutPage() {
       {/* Hero Section */}
       <section className="pt-32 pb-20 px-4">
         <div className="max-w-4xl mx-auto text-center">
-          <div className="mb-8 flex justify-center">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+            className="mb-8 flex justify-center"
+          >
             <div className="relative">
               <Image 
                 src="/yacht-club-logo.png" 
@@ -43,14 +49,31 @@ export default function AboutPage() {
               />
               <div className="absolute inset-0 logo-glow"></div>
             </div>
-          </div>
-          <h1 className="text-5xl md:text-7xl font-light mb-6 tracking-tight">
-            About WhaleTools
-          </h1>
-          <div className="h-[1px] w-32 bg-gradient-to-r from-transparent via-white/30 to-transparent mx-auto mb-8"></div>
-          <p className="text-xl text-white/50 font-light leading-relaxed max-w-2xl mx-auto">
-            Enterprise-grade multi-tenant commerce platform built for scale, speed, and reliability.
-          </p>
+          </motion.div>
+          <motion.h1 
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+            className="text-5xl md:text-7xl font-light mb-6 tracking-tight"
+          >
+            Business infrastructure
+            <br />
+            <span className="text-white/60">that generates itself.</span>
+          </motion.h1>
+          <motion.div 
+            initial={{ scaleX: 0 }}
+            animate={{ scaleX: 1 }}
+            transition={{ duration: 0.8, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
+            className="h-[1px] w-32 bg-gradient-to-r from-transparent via-white/30 to-transparent mx-auto mb-8"
+          />
+          <motion.p 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6, delay: 0.6 }}
+            className="text-xl text-white/50 font-light leading-relaxed max-w-2xl mx-auto"
+          >
+            From retail operations to wholesale networks. AI builds the entire stack.
+          </motion.p>
         </div>
 
         <style jsx>{`
@@ -73,104 +96,152 @@ export default function AboutPage() {
         `}</style>
       </section>
 
-      {/* Mission */}
+      {/* What We Build */}
       <section className="py-20 px-4">
         <div className="max-w-4xl mx-auto">
-          <div className="border border-white/10 p-12">
-            <h2 className="text-3xl font-light mb-6 tracking-tight">Our Mission</h2>
-            <p className="text-white/60 text-lg leading-relaxed mb-6">
-              WhaleTools exists to democratize enterprise commerce infrastructure. We believe that powerful, scalable e-commerce tools shouldn't be exclusive to Fortune 500 companies.
-            </p>
-            <p className="text-white/60 text-lg leading-relaxed">
-              Our platform empowers partners to build, deploy, and scale unlimited storefronts with the same infrastructure powering the world's largest online retailers.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* Core Values */}
-      <section className="py-20 px-4">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl font-light mb-12 text-center tracking-tight">Core Values</h2>
-          <div className="grid md:grid-cols-2 gap-px bg-white/5">
-            <div className="bg-black p-10 border border-white/10">
-              <Code className="text-white/40 mb-4" size={32} strokeWidth={1} />
-              <h3 className="text-xl font-light mb-3">Developer First</h3>
-              <p className="text-white/50 text-sm leading-relaxed">
-                Built with modern technologies and best practices. Clean APIs, comprehensive documentation, and developer-friendly tools.
-              </p>
-            </div>
-            <div className="bg-black p-10 border border-white/10">
-              <Zap className="text-white/40 mb-4" size={32} strokeWidth={1} />
-              <h3 className="text-xl font-light mb-3">Performance Obsessed</h3>
-              <p className="text-white/50 text-sm leading-relaxed">
-                Every millisecond matters. Edge caching, optimized queries, and smart code splitting ensure lightning-fast experiences.
-              </p>
-            </div>
-            <div className="bg-black p-10 border border-white/10">
-              <Shield className="text-white/40 mb-4" size={32} strokeWidth={1} />
-              <h3 className="text-xl font-light mb-3">Security by Default</h3>
-              <p className="text-white/50 text-sm leading-relaxed">
-                Bank-level encryption, complete tenant isolation, and rigorous security audits. Your data is sacred.
-              </p>
-            </div>
-            <div className="bg-black p-10 border border-white/10">
-              <Globe className="text-white/40 mb-4" size={32} strokeWidth={1} />
-              <h3 className="text-xl font-light mb-3">Built to Scale</h3>
-              <p className="text-white/50 text-sm leading-relaxed">
-                From one storefront to ten thousand. Our infrastructure scales seamlessly with your business growth.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Technology Stack */}
-      <section className="py-20 px-4">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-3xl font-light mb-12 text-center tracking-tight">Technology Stack</h2>
-          <div className="border border-white/10 p-12">
+          <motion.div 
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            className="border border-white/10 p-12"
+          >
+            <h2 className="text-3xl font-light mb-8 tracking-tight">Complete business systems</h2>
             <div className="space-y-6">
               <div>
-                <h3 className="text-sm text-white/40 uppercase tracking-wider mb-2">Frontend</h3>
-                <p className="text-white/70">Next.js 14, React 18, TypeScript, Tailwind CSS</p>
+                <p className="text-white text-lg leading-relaxed mb-2">Retail operations</p>
+                <p className="text-white/40 text-sm">Storefronts, POS terminals, inventory across locations, employee dashboards.</p>
               </div>
               <div className="h-[1px] bg-white/5"></div>
               <div>
-                <h3 className="text-sm text-white/40 uppercase tracking-wider mb-2">Backend</h3>
-                <p className="text-white/70">Node.js, Supabase (PostgreSQL), Edge Functions</p>
+                <p className="text-white text-lg leading-relaxed mb-2">Wholesale infrastructure</p>
+                <p className="text-white/40 text-sm">B2B portals, bulk ordering, distributor networks, commission tracking.</p>
               </div>
               <div className="h-[1px] bg-white/5"></div>
               <div>
-                <h3 className="text-sm text-white/40 uppercase tracking-wider mb-2">Infrastructure</h3>
-                <p className="text-white/70">Vercel Edge Network, Cloudflare CDN, Redis Caching</p>
-              </div>
-              <div className="h-[1px] bg-white/5"></div>
-              <div>
-                <h3 className="text-sm text-white/40 uppercase tracking-wider mb-2">Security</h3>
-                <p className="text-white/70">SSL/TLS Encryption, Row Level Security, OAuth 2.0</p>
+                <p className="text-white text-lg leading-relaxed mb-2">Multi-tenant platforms</p>
+                <p className="text-white/40 text-sm">Infinite isolated tenants. Each gets their own complete ecosystem.</p>
               </div>
             </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* The Revelation */}
+      <section className="py-20 px-4">
+        <div className="max-w-4xl mx-auto">
+          <motion.div 
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            whileHover={{ scale: 1.02 }}
+            className="border border-white/10 p-16 text-center transition-all duration-500 hover:border-white/20"
+          >
+            <motion.h2 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8, delay: 0.3 }}
+              className="text-4xl md:text-5xl font-light mb-8 tracking-tight leading-tight"
+            >
+              Components that understand
+              <br />
+              <span className="text-white/60">tenant isolation.</span>
+            </motion.h2>
+            <motion.p 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.5 }}
+              className="text-white/40 text-lg"
+            >
+              Each component automatically scopes to its tenant. No manual configuration. No data leaks.
+            </motion.p>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* The Pattern */}
+      <section className="py-20 px-4">
+        <div className="max-w-3xl mx-auto">
+          <div className="space-y-8 text-center">
+            {[
+              { type: 'text', content: 'AI understands your prompt' },
+              { type: 'arrow', content: '↓' },
+              { type: 'text', content: 'Generates component architecture' },
+              { type: 'arrow', content: '↓' },
+              { type: 'text', content: 'Components auto-fetch tenant data' },
+              { type: 'arrow', content: '↓' },
+              { type: 'text', content: 'Live app in 20 seconds' }
+            ].map((item, i) => (
+              item.type === 'arrow' ? (
+                <motion.div 
+                  key={i}
+                  initial={{ opacity: 0 }}
+                  whileInView={{ opacity: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.4, delay: i * 0.15 }}
+                  className="text-white/40 text-sm"
+                >
+                  {item.content}
+                </motion.div>
+              ) : (
+                <motion.div 
+                  key={i}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.6, delay: i * 0.15, ease: [0.16, 1, 0.3, 1] }}
+                  whileHover={{ scale: 1.05, borderColor: "rgba(255,255,255,0.2)" }}
+                  className="border border-white/10 p-8 transition-all duration-300"
+                >
+                  {item.type === 'code' ? (
+                    <code className="text-white/70 text-sm">{item.content}</code>
+                  ) : (
+                    <p className="text-white/60">{item.content}</p>
+                  )}
+                </motion.div>
+              )
+            ))}
           </div>
         </div>
       </section>
+
+
+      {/* The Difference */}
+      <section className="py-20 px-4">
+        <div className="max-w-4xl mx-auto text-center">
+          <p className="text-white/40 text-sm uppercase tracking-[0.3em] mb-12">
+            How it's different
+          </p>
+          <div className="space-y-8">
+            <p className="text-white/60 text-xl font-light">
+              Traditional: weeks of development, custom code for each tenant.
+            </p>
+            <p className="text-white/60 text-xl font-light">
+              AI builders: generate once, can't update without regenerating.
+            </p>
+            <p className="text-white text-xl font-light">
+              WhaleTools: generate instantly, update in real-time from database.
+            </p>
+          </div>
+        </div>
+      </section>
+
 
       {/* CTA */}
       <section className="py-20 px-4">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-4xl font-light mb-8 tracking-tight">Ready to Get Started?</h2>
-          <div className="flex items-center justify-center gap-4">
+          <h2 className="text-4xl font-light mb-8 tracking-tight">
+            Request access
+          </h2>
+          <div className="flex items-center justify-center gap-4 flex-wrap">
             <Link
               href="/vendor/login"
               className="bg-white text-black px-8 py-4 rounded-full text-sm uppercase tracking-[0.2em] hover:bg-white/90 font-medium transition-all"
             >
-              Become a Partner
-            </Link>
-            <Link
-              href="/api-status"
-              className="bg-white/5 border border-white/10 text-white px-8 py-4 rounded-full text-sm uppercase tracking-[0.2em] hover:bg-white/10 font-medium transition-all"
-            >
-              View API Status
+              Get Started
             </Link>
           </div>
         </div>

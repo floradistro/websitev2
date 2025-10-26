@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Store, Shield, Zap, Globe, BarChart3, Palette } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts';
 import dynamic from 'next/dynamic';
+import { motion, useInView, useScroll, useTransform } from 'framer-motion';
 
 const LogoAnimation = dynamic(() => import('@/components/LogoAnimation'), {
   ssr: false,
@@ -14,12 +15,43 @@ const LogoAnimation = dynamic(() => import('@/components/LogoAnimation'), {
 
 export default function HomePage() {
   const [mounted, setMounted] = useState(false);
+  const [countdown, setCountdown] = useState(20);
+  const [visibleLines, setVisibleLines] = useState(0);
   const [animatedStats, setAnimatedStats] = useState({
     storefronts: 0,
     uptime: 0,
     transactions: 0,
     response: 0
   });
+
+  const fullCode = [
+    { text: "import", type: "keyword", rest: " { generateEcosystem } from '@whaletools/ai';" },
+    { text: "", type: "empty" },
+    { text: "const", type: "keyword", rest: " config = {" },
+    { text: "  ", type: "code", key: "vendor", value: "'acme-corp'" },
+    { text: "  ", type: "code", key: "type", value: "'marketplace'" },
+    { text: "  ", type: "code", key: "tenants", value: "1000" },
+    { text: "  ", type: "code", key: "features", value: "['pos', 'wholesale', 'analytics']" },
+    { text: "};", type: "code" },
+    { text: "", type: "empty" },
+    { text: "const", type: "keyword", rest: " result = await generateEcosystem(config);" },
+    { text: "", type: "empty" },
+    { text: "// Generated ecosystem:", type: "comment" },
+    { text: "// → Public storefronts", type: "comment" },
+    { text: "// → Vendor dashboards", type: "comment" },
+    { text: "// → POS terminals", type: "comment" },
+    { text: "// → Inventory management", type: "comment" },
+    { text: "// → Wholesale portals", type: "comment" },
+    { text: "// → Analytics platform", type: "comment" },
+    { text: "", type: "empty" },
+    { text: "// Stats:", type: "comment" },
+    { text: "// - 299 components", type: "comment" },
+    { text: "// - 13 pages per tenant", type: "comment" },
+    { text: "// - 186 API endpoints", type: "comment" },
+    { text: "// - Multi-tenant isolation", type: "comment" },
+    { text: "", type: "empty" },
+    { text: "console", type: "keyword2", rest: ".log(result.status); // 'deployed'" },
+  ];
 
   const growthData = [
     { month: 'Jan', vendors: 12 },
@@ -53,13 +85,35 @@ export default function HomePage() {
       if (step >= steps) clearInterval(timer);
     }, interval);
     
-    return () => clearInterval(timer);
-  }, []);
+    // Countdown timer
+    const countdownTimer = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          setVisibleLines(0); // Reset code when countdown resets
+          return 20;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    
+    // Code generation (synced with countdown) - faster
+    const codeTimer = setInterval(() => {
+      const elapsed = 20 - countdown;
+      const linesToShow = Math.min(Math.floor(elapsed * 1.3), fullCode.length);
+      setVisibleLines(linesToShow);
+    }, 100);
+    
+    return () => {
+      clearInterval(timer);
+      clearInterval(countdownTimer);
+      clearInterval(codeTimer);
+    };
+  }, [countdown]);
 
   return (
     <div className="min-h-screen bg-black text-white relative">
-      {/* Subtle Pattern Background */}
-      <div className="pattern-bg"></div>
+        {/* Subtle Pattern Background */}
+        <div className="pattern-bg"></div>
       
       <style jsx>{`
         @keyframes fade-in {
@@ -163,7 +217,12 @@ export default function HomePage() {
       <section className="relative pt-32 pb-20 px-4 overflow-hidden z-10">
         <div className="absolute inset-0 bg-gradient-to-b from-white/[0.02] to-transparent pointer-events-none"></div>
         <div className="max-w-5xl mx-auto text-center relative z-10">
-          <div className="mb-12 flex justify-center relative">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+            className="mb-12 flex justify-center relative"
+          >
             {/* Animated Background */}
             <div className="absolute inset-0 flex items-center justify-center" style={{ width: '800px', height: '800px', left: '50%', top: '50%', transform: 'translate(-50%, -50%)' }}>
               <LogoAnimation />
@@ -179,176 +238,298 @@ export default function HomePage() {
                 priority
               />
             </div>
-          </div>
-          <h1 className="text-5xl md:text-7xl font-light mb-6 tracking-tight leading-tight">
-            Multi-Tenant
+          </motion.div>
+          
+          <motion.h1 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+            className="text-5xl md:text-7xl font-light mb-6 tracking-tight leading-tight"
+          >
+            Generate entire
             <br />
-            <span className="text-white/60">Commerce Platform</span>
-          </h1>
-          <div className="h-[1px] w-32 bg-gradient-to-r from-transparent via-white/30 to-transparent mx-auto mb-8"></div>
-          <p className="text-xl md:text-2xl text-white/50 font-light leading-relaxed max-w-3xl mx-auto mb-12">
-            Build, manage, and scale unlimited vendor storefronts with enterprise-grade tools.
-            <br />One platform. Infinite possibilities.
-          </p>
-          <div className="flex items-center justify-center gap-4">
+            <span className="text-white/60">business ecosystems.</span>
+          </motion.h1>
+          
+          <motion.div 
+            initial={{ scaleX: 0 }}
+            animate={{ scaleX: 1 }}
+            transition={{ duration: 0.8, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
+            className="h-[1px] w-32 bg-gradient-to-r from-transparent via-white/30 to-transparent mx-auto mb-8"
+          />
+          
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.6, ease: [0.16, 1, 0.3, 1] }}
+            className="text-xl md:text-2xl text-white/50 font-light leading-relaxed max-w-3xl mx-auto mb-12"
+          >
+            AI builds the entire stack. Storefronts, inventory, POS, analytics. Everything.
+          </motion.p>
+          
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            className="flex items-center justify-center gap-4"
+          >
             <Link
               href="/vendor/login"
-              className="group inline-flex items-center gap-2 bg-white text-black px-8 py-4 rounded-full text-sm uppercase tracking-[0.2em] hover:bg-white/90 font-medium transition-all"
+              className="group inline-flex items-center gap-2 bg-white text-black px-8 py-4 rounded-full text-sm uppercase tracking-[0.2em] hover:bg-white/90 font-medium transition-all duration-300 hover:scale-105"
             >
               <span>Start Building</span>
               <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
             </Link>
             <Link
               href="/api-status"
-              className="inline-flex items-center gap-2 bg-white/5 border border-white/10 text-white px-8 py-4 rounded-full text-sm uppercase tracking-[0.2em] hover:bg-white/10 hover:border-white/30 font-medium transition-all"
+              className="inline-flex items-center gap-2 bg-white/5 border border-white/10 text-white px-8 py-4 rounded-full text-sm uppercase tracking-[0.2em] hover:bg-white/10 hover:border-white/30 font-medium transition-all duration-300 hover:scale-105"
             >
               <span>View API Status</span>
             </Link>
-          </div>
+          </motion.div>
         </div>
       </section>
 
-      {/* Features Grid */}
+      {/* How It Works */}
       <section className="py-20 px-4 relative z-10">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-px bg-white/5">
-            {/* Feature 1 */}
-            <div className="bg-black p-12 border border-white/5 hover:border-white/20 transition-all group">
-              <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mb-6 border border-white/10 group-hover:bg-white/10 transition-all">
-                <Store className="text-white/60" size={24} />
-              </div>
-              <h3 className="text-lg font-light text-white mb-3 uppercase tracking-wider">Vendor Storefronts</h3>
-              <p className="text-white/40 text-sm leading-relaxed">
-                Unlimited multi-tenant storefronts with custom domains, themes, and complete branding control.
-              </p>
-            </div>
+        <div className="max-w-4xl mx-auto text-center">
+          <motion.div 
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            className="border border-white/10 bg-white/[0.01] p-16 hover:border-white/20 transition-colors duration-500"
+          >
+            <motion.h2 
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 1, delay: 0.3 }}
+              className="text-3xl md:text-5xl font-light mb-12 tracking-tight"
+            >
+              <motion.span
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: 0.4 }}
+                className="block"
+              >
+                Public storefronts.
+              </motion.span>
+              <motion.span
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: 0.6 }}
+                className="text-white/60 block"
+              >
+                Internal dashboards.
+              </motion.span>
+              <motion.span
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: 0.8 }}
+                className="text-white/40 block"
+              >
+                Complete infrastructure.
+              </motion.span>
+            </motion.h2>
+            <motion.p 
+              initial={{ opacity: 0, scale: 0.8 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 1 }}
+              className="text-white/30 text-sm uppercase tracking-[0.3em]"
+            >
+              All generated instantly
+            </motion.p>
+          </motion.div>
+        </div>
+      </section>
 
-            {/* Feature 2 */}
-            <div className="bg-black p-12 border border-white/5 hover:border-white/20 transition-all group">
-              <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mb-6 border border-white/10 group-hover:bg-white/10 transition-all">
-                <Palette className="text-white/60" size={24} />
-              </div>
-              <h3 className="text-lg font-light text-white mb-3 uppercase tracking-wider">Visual Builder</h3>
-              <p className="text-white/40 text-sm leading-relaxed">
-                Drag-and-drop component system. Build stunning storefronts without code.
-              </p>
-            </div>
+      {/* The Secret */}
+      <section className="py-20 px-4 relative z-10">
+        <div className="max-w-4xl mx-auto">
+          <motion.div 
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            whileHover={{ scale: 1.02 }}
+            className="border border-white/10 bg-white/[0.01] p-12 md:p-16 transition-all duration-500 hover:border-white/20"
+          >
+            <motion.h2 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8, delay: 0.3 }}
+              className="text-3xl md:text-5xl font-light mb-8 tracking-tight text-center leading-tight"
+            >
+              Not just websites.
+              <br />
+              <span className="text-white/60">Entire operating systems.</span>
+            </motion.h2>
+            <motion.p 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.5 }}
+              className="text-white/40 text-center text-lg"
+            >
+              E-commerce. Inventory. POS. Wholesale. Analytics. Customer portals. Employee tools. All generated, all connected.
+            </motion.p>
+          </motion.div>
+        </div>
+      </section>
 
-            {/* Feature 3 */}
-            <div className="bg-black p-12 border border-white/5 hover:border-white/20 transition-all group">
-              <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mb-6 border border-white/10 group-hover:bg-white/10 transition-all">
-                <Shield className="text-white/60" size={24} />
-              </div>
-              <h3 className="text-lg font-light text-white mb-3 uppercase tracking-wider">Enterprise Security</h3>
-              <p className="text-white/40 text-sm leading-relaxed">
-                Bank-level encryption, role-based access, and complete data isolation per tenant.
-              </p>
-            </div>
-
-            {/* Feature 4 */}
-            <div className="bg-black p-12 border border-white/5 hover:border-white/20 transition-all group">
-              <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mb-6 border border-white/10 group-hover:bg-white/10 transition-all">
-                <Zap className="text-white/60" size={24} />
-              </div>
-              <h3 className="text-lg font-light text-white mb-3 uppercase tracking-wider">Lightning Fast</h3>
-              <p className="text-white/40 text-sm leading-relaxed">
-                Optimized performance with edge caching, lazy loading, and smart code splitting.
-              </p>
-            </div>
-
-            {/* Feature 5 */}
-            <div className="bg-black p-12 border border-white/5 hover:border-white/20 transition-all group">
-              <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mb-6 border border-white/10 group-hover:bg-white/10 transition-all">
-                <Globe className="text-white/60" size={24} />
-              </div>
-              <h3 className="text-lg font-light text-white mb-3 uppercase tracking-wider">Custom Domains</h3>
-              <p className="text-white/40 text-sm leading-relaxed">
-                Full white-label support. Connect any domain with automatic SSL and DNS management.
-              </p>
-            </div>
-
-            {/* Feature 6 */}
-            <div className="bg-black p-12 border border-white/5 hover:border-white/20 transition-all group">
-              <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mb-6 border border-white/10 group-hover:bg-white/10 transition-all">
-                <BarChart3 className="text-white/60" size={24} />
-              </div>
-              <h3 className="text-lg font-light text-white mb-3 uppercase tracking-wider">Advanced Analytics</h3>
-              <p className="text-white/40 text-sm leading-relaxed">
-                Real-time metrics, conversion tracking, and comprehensive reporting dashboards.
-              </p>
-            </div>
+      {/* Capabilities */}
+      <section className="py-20 px-4 relative z-10">
+        <div className="max-w-4xl mx-auto">
+          <div className="space-y-1 text-center">
+            {[
+              "Multi-vendor marketplaces",
+              "Point-of-sale systems",
+              "Inventory management",
+              "Wholesale platforms",
+              "Analytics dashboards",
+              "Customer loyalty programs",
+              "Employee portals",
+              "TV menu displays"
+            ].map((item, i) => (
+              <motion.p
+                key={item}
+                initial={{ opacity: 0, x: -20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ 
+                  duration: 0.5, 
+                  delay: i * 0.08,
+                  ease: [0.16, 1, 0.3, 1]
+                }}
+                whileHover={{ 
+                  x: 10, 
+                  color: "rgba(255,255,255,1)",
+                  transition: { duration: 0.2 }
+                }}
+                className="text-white/60 text-lg font-light cursor-default"
+              >
+                {item}
+              </motion.p>
+            ))}
           </div>
         </div>
       </section>
 
       {/* Stats Section */}
-      <section className="py-20 px-4 relative z-10">
-        <div className="max-w-6xl mx-auto">
+      <section className="py-20 px-4 relative z-10 overflow-visible">
+        <div className="max-w-6xl mx-auto relative">
+          
+          {/* Floating Code Generation - Inside Stats Section */}
+          {mounted && visibleLines > 0 && (
+            <div className="absolute bottom-0 right-0 hidden lg:block pointer-events-none">
+              <div className="font-mono text-[13px] leading-[1.6] text-right flex flex-col-reverse" style={{ fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace' }}>
+                {visibleLines < fullCode.length && visibleLines > 0 && (
+                  <motion.span
+                    animate={{ opacity: [0.4, 1, 0.4] }}
+                    transition={{ duration: 0.8, repeat: Infinity, ease: "easeInOut" }}
+                    className="inline-block w-[2px] h-4 bg-[#C586C0] ml-1 align-middle"
+                  />
+                )}
+                {fullCode.slice(0, visibleLines).reverse().map((line, i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, x: 15 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ 
+                      duration: 0.3, 
+                      ease: [0.16, 1, 0.3, 1] 
+                    }}
+                  >
+                    {line.type === 'comment' ? (
+                      <span className="text-[#6A9955] italic">
+                        {line.text}
+                      </span>
+                    ) : line.type === 'success' ? (
+                      <span className="text-[#4EC9B0]">
+                        {line.text}
+                      </span>
+                    ) : line.type === 'empty' ? (
+                      <div className="h-[1.6em]">&nbsp;</div>
+                    ) : line.type === 'keyword' ? (
+                      <>
+                        <span className="text-[#C586C0]">
+                          {line.text}
+                        </span>
+                        <span className="text-[#D4D4D4]">
+                          {line.rest}
+                        </span>
+                      </>
+                    ) : line.type === 'keyword2' ? (
+                      <>
+                        <span className="text-[#DCDCAA]">
+                          {line.text}
+                        </span>
+                        <span className="text-[#D4D4D4]">
+                          {line.rest}
+                        </span>
+                      </>
+                    ) : line.key ? (
+                      <>
+                        <span className="text-[#D4D4D4]">{line.text}</span>
+                        <span className="text-[#9CDCFE]">
+                          {line.key}
+                        </span>
+                        <span className="text-[#D4D4D4]">: </span>
+                        <span className="text-[#CE9178]">
+                          {line.value}
+                        </span>
+                        <span className="text-[#D4D4D4]">,</span>
+                      </>
+                    ) : (
+                      <span className="text-[#D4D4D4]">{line.text}</span>
+                    )}
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          )}
+          
           {/* Minimal Stats Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-white/5 mb-20">
-            <div className="bg-black p-8 md:p-12 border border-white/5">
-              <div className="text-4xl md:text-5xl font-light text-white/90 mb-2">
-                {animatedStats.storefronts}
-              </div>
-              <div className="text-white/30 text-xs uppercase tracking-[0.2em]">Storefronts</div>
-            </div>
-
-            <div className="bg-black p-8 md:p-12 border border-white/5">
-              <div className="text-4xl md:text-5xl font-light text-white/90 mb-2">
-                {animatedStats.uptime}%
-              </div>
-              <div className="text-white/30 text-xs uppercase tracking-[0.2em]">Uptime</div>
-            </div>
-
-            <div className="bg-black p-8 md:p-12 border border-white/5">
-              <div className="text-4xl md:text-5xl font-light text-white/90 mb-2">
-                {animatedStats.transactions.toLocaleString()}
-              </div>
-              <div className="text-white/30 text-xs uppercase tracking-[0.2em]">Orders</div>
-            </div>
-
-            <div className="bg-black p-8 md:p-12 border border-white/5">
-              <div className="text-4xl md:text-5xl font-light text-white/90 mb-2">
-                {animatedStats.response}ms
-              </div>
-              <div className="text-white/30 text-xs uppercase tracking-[0.2em]">Response</div>
-            </div>
-          </div>
-
-          {/* Single Monochrome Chart */}
-          <div className="border border-white/10 bg-white/[0.01]">
-            <div className="p-6 border-b border-white/10">
-              <h3 className="text-white/40 text-xs font-light tracking-[0.2em] uppercase">Growth</h3>
-            </div>
-            <div className="p-6 h-64">
-              {mounted && (
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={growthData}>
-                    <CartesianGrid strokeDasharray="1 1" stroke="#ffffff08" vertical={false} />
-                    <XAxis 
-                      dataKey="month" 
-                      stroke="#ffffff20" 
-                      style={{ fontSize: '10px' }}
-                      tickLine={false}
-                      axisLine={false}
-                    />
-                    <YAxis 
-                      stroke="#ffffff20" 
-                      style={{ fontSize: '10px' }}
-                      tickLine={false}
-                      axisLine={false}
-                    />
-                    <Line 
-                      type="monotone" 
-                      dataKey="vendors" 
-                      stroke="#ffffff" 
-                      strokeWidth={1}
-                      dot={false}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              )}
-            </div>
+          <div className="text-center space-y-12">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.5 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ 
+                duration: 1.2, 
+                ease: [0.16, 1, 0.3, 1],
+                scale: {
+                  type: "spring",
+                  stiffness: 100,
+                  damping: 15
+                }
+              }}
+            >
+              <motion.div 
+                key={countdown}
+                initial={{ scale: 1.2, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+                className="text-6xl md:text-8xl font-light text-white/90 mb-4"
+              >
+                {countdown}
+              </motion.div>
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: 0.5 }}
+                className="text-white/40 text-sm tracking-[0.3em] uppercase"
+              >
+                seconds
+              </motion.div>
+            </motion.div>
           </div>
         </div>
       </section>
@@ -356,28 +537,47 @@ export default function HomePage() {
       {/* CTA Section */}
       <section className="py-32 px-4 relative z-10">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-4xl md:text-6xl font-light text-white mb-8 tracking-tight">
-            Ready to Scale?
-          </h2>
-          <div className="h-[1px] w-32 bg-gradient-to-r from-transparent via-white/30 to-transparent mx-auto mb-8"></div>
-          <p className="text-xl text-white/50 font-light mb-12 max-w-2xl mx-auto leading-relaxed">
-            Join the platform trusted by enterprise merchants to power their multi-tenant commerce operations.
-          </p>
-          <div className="flex items-center justify-center gap-4">
+          <motion.h2 
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            className="text-4xl md:text-6xl font-light text-white mb-12 tracking-tight leading-tight"
+          >
+            <span className="text-white/60">{countdown} seconds</span>
+            <br />
+            from idea to deployed.
+          </motion.h2>
+          <motion.p 
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+            className="text-white/30 text-sm uppercase tracking-[0.3em] mb-12"
+          >
+            No designer. No developer.
+          </motion.p>
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.5 }}
+            className="flex items-center justify-center gap-4"
+          >
             <Link
               href="/vendor/login"
-              className="group inline-flex items-center gap-2 bg-white text-black px-8 py-4 rounded-full text-sm uppercase tracking-[0.2em] hover:bg-white/90 font-medium transition-all"
+              className="group inline-flex items-center gap-2 bg-white text-black px-8 py-4 rounded-full text-sm uppercase tracking-[0.2em] hover:bg-white/90 font-medium transition-all duration-300 hover:scale-105"
             >
               <span>Create Account</span>
               <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
             </Link>
             <Link
               href="/partners"
-              className="inline-flex items-center gap-2 bg-white/5 border border-white/10 text-white px-8 py-4 rounded-full text-sm uppercase tracking-[0.2em] hover:bg-white/10 hover:border-white/30 font-medium transition-all"
+              className="inline-flex items-center gap-2 bg-white/5 border border-white/10 text-white px-8 py-4 rounded-full text-sm uppercase tracking-[0.2em] hover:bg-white/10 hover:border-white/30 font-medium transition-all duration-300 hover:scale-105"
             >
               <span>Become a Partner</span>
             </Link>
-          </div>
+          </motion.div>
         </div>
       </section>
 

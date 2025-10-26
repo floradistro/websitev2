@@ -36,6 +36,7 @@ export function SmartProductGrid({
   className = '',
 }: SmartProductGridProps) {
   const [products, setProducts] = useState<any[]>([]);
+  const [locations, setLocations] = useState<any[]>([]);
   const [isClient, setIsClient] = useState(false);
   
   // Hydration fix
@@ -51,19 +52,37 @@ export function SmartProductGrid({
     
     async function loadProducts() {
       try {
-        let url = `/api/products?vendor_id=${vendorId}&limit=${maxProducts}`;
-        
-        if (selectedProductIds.length > 0) {
-          url += `&product_ids=${selectedProductIds.join(',')}`;
-        } else if (selectedCategoryIds.length > 0) {
-          url += `&category_ids=${selectedCategoryIds.join(',')}`;
-        }
-        
-        const res = await fetch(url, { cache: 'no-store' });
+        // Fetch products using page-data endpoint (includes locations)
+        const res = await fetch('/api/page-data/products', { cache: 'no-store' });
         
         if (res.ok) {
-          const data = await res.json();
-          setProducts(data.products || []);
+          const result = await res.json();
+          
+          if (result.success) {
+            // Filter to this vendor's products
+            const allProducts = result.data.products || [];
+            let vendorProducts = allProducts.filter((p: any) => p.vendor_id === vendorId);
+            
+            // Apply category filter if specified
+            if (selectedCategoryIds.length > 0) {
+              vendorProducts = vendorProducts.filter((p: any) =>
+                p.categories?.some((cat: any) => selectedCategoryIds.includes(cat.id))
+              );
+            }
+            
+            // Apply product ID filter if specified
+            if (selectedProductIds.length > 0) {
+              vendorProducts = vendorProducts.filter((p: any) =>
+                selectedProductIds.includes(p.id)
+              );
+            }
+            
+            // Limit results
+            vendorProducts = vendorProducts.slice(0, maxProducts);
+            
+            setProducts(vendorProducts);
+            setLocations(result.data.locations || []);
+          }
         }
       } catch (err) {
         if (process.env.NODE_ENV === 'development') {
@@ -76,17 +95,25 @@ export function SmartProductGrid({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isClient, vendorId, JSON.stringify(selectedProductIds), JSON.stringify(selectedCategoryIds), maxProducts]);
   
-  // Keep showing placeholder until we have data (no disappearing)
-  if (!isClient || (products.length === 0 && !isClient)) {
-    return <div className={className} style={{ minHeight: '400px' }} />;
+  // Show loading state while hydrating
+  if (!isClient) {
+    return (
+      <div className={className} style={{ minHeight: '400px' }}>
+        <div className="text-center py-12 text-white/40">Loading products...</div>
+      </div>
+    );
   }
   
-  // After client-side, if still no products after trying to load, show nothing
-  // But ONLY if we've actually tried to fetch (isClient is true)
-  if (isClient && products.length === 0) {
-    // Don't return null immediately - products might still be loading
-    // Just return empty container
-    return <div className={className} />;
+  // After client-side, if no products, show message
+  if (products.length === 0) {
+    return (
+      <div className={className}>
+        <div className="text-center py-12">
+          <p className="text-white/60 text-lg">No products available</p>
+          <p className="text-white/40 text-sm mt-2">Check back soon for new arrivals</p>
+        </div>
+      </div>
+    );
   }
   
   return (
@@ -100,6 +127,7 @@ export function SmartProductGrid({
       
       <ProductGrid
         products={products}
+        locations={locations}
         columns={columns}
         showPrice={showPrice}
         showQuickAdd={showQuickAdd}

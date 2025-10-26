@@ -116,7 +116,7 @@ export function Button({
   const baseClasses = [
     'inline-flex items-center justify-center',
     'font-medium',
-    'rounded-full',
+    'rounded-2xl',
     'border-2',
     'transition-all duration-200',
     'focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-black',

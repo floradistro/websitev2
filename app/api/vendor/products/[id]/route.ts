@@ -1,178 +1,214 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServiceSupabase } from '@/lib/supabase/client';
 
-/**
- * PUT - Update vendor product
- * Handles cost_price and dual unit system
- */
+export const dynamic = 'force-dynamic';
+
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+  try {
+    const vendorId = request.headers.get('x-vendor-id');
+    
+    if (!vendorId) {
+      return NextResponse.json(
+        { success: false, error: 'Vendor ID required' },
+        { status: 401 }
+      );
+    }
+    
+    const productId = id;
+    const supabase = getServiceSupabase();
+    
+    // Get product with all details
+    const { data: product, error: productError } = await supabase
+      .from('products')
+      .select(`
+        id,
+        name,
+        sku,
+        price,
+        cost_price,
+        description,
+        status,
+        stock_quantity,
+        blueprint_fields,
+        featured_image_storage,
+        product_categories(
+          category:categories(name)
+        )
+      `)
+      .eq('id', productId)
+      .eq('vendor_id', vendorId)
+      .single();
+
+    if (productError || !product) {
+      return NextResponse.json(
+        { success: false, error: 'Product not found' },
+        { status: 404 }
+      );
+    }
+
+    // Get COAs
+    const { data: coas } = await supabase
+      .from('vendor_coas')
+      .select('*')
+      .eq('product_id', productId)
+      .eq('vendor_id', vendorId);
+
+    // Get pricing tiers
+    const { data: pricing } = await supabase
+      .from('pricing_tiers')
+      .select('*')
+      .eq('product_id', productId);
+
+    // Extract custom fields - handle both formats
+    const custom_fields: any = {};
+    if (product.blueprint_fields && Array.isArray(product.blueprint_fields)) {
+      product.blueprint_fields.forEach((field: any) => {
+        if (field) {
+          // Handle both field_name/field_value and label/value formats
+          const name = field.field_name || field.label || '';
+          const value = field.field_value || field.value || '';
+          
+          if (name && value) {
+            custom_fields[name.toLowerCase().replace(/\s+/g, '_')] = value;
+          }
+        }
+      });
+    }
+
+    // Get images
+    const images: string[] = [];
+    if (product.featured_image_storage) {
+      const publicUrl = `https://uaednwpxursknmwdeejn.supabase.co/storage/v1/object/public/vendor-product-images/${product.featured_image_storage}`;
+      images.push(publicUrl);
+    }
+
+    return NextResponse.json({
+      success: true,
+      product: {
+        id: product.id,
+        name: product.name,
+        sku: product.sku || '',
+        category: (product.product_categories?.[0]?.category as any)?.name || '',
+        price: parseFloat(product.price) || 0,
+        cost_price: product.cost_price ? parseFloat(product.cost_price) : null,
+        description: product.description || '',
+        status: product.status || 'pending',
+        stock_quantity: parseFloat(product.stock_quantity) || 0,
+        custom_fields,
+        coas: (coas || []).map(coa => ({
+          id: coa.id,
+          file_name: coa.file_name,
+          file_url: coa.file_url,
+          lab_name: coa.lab_name,
+          test_date: coa.test_date,
+          batch_number: coa.batch_number,
+          test_results: coa.test_results,
+          is_verified: coa.is_verified || false
+        })),
+        pricing_tiers: (pricing || []).map(tier => ({
+          id: tier.id,
+          label: tier.label || tier.tier_name,
+          quantity: tier.quantity,
+          unit: tier.unit || 'g',
+          price: tier.price,
+          min_quantity: tier.min_quantity,
+          max_quantity: tier.max_quantity
+        })),
+        images
+      }
+    });
+  } catch (error: any) {
+    console.error('Product GET error:', error);
+    return NextResponse.json(
+      { success: false, error: error.message || 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
-    const { id: productId } = await params;
     const vendorId = request.headers.get('x-vendor-id');
     
     if (!vendorId) {
-      return NextResponse.json({ 
-        success: false, 
-        error: 'Not authenticated' 
-      }, { status: 401 });
+      return NextResponse.json(
+        { success: false, error: 'Vendor ID required' },
+        { status: 401 }
+      );
     }
-
-    const updateData = await request.json();
+    
+    const productId = id;
+    const body = await request.json();
+    
     const supabase = getServiceSupabase();
-
-    // Verify this product belongs to this vendor
-    const { data: existingProduct, error: checkError } = await supabase
+    
+    // Verify ownership
+    const { data: existing, error: fetchError } = await supabase
       .from('products')
-      .select('id, vendor_id, name')
+      .select('id, vendor_id')
       .eq('id', productId)
-      .eq('vendor_id', vendorId)
       .single();
-
-    if (checkError || !existingProduct) {
-      return NextResponse.json({
-        success: false,
-        error: 'Product not found or access denied'
-      }, { status: 404 });
+    
+    if (fetchError || !existing || existing.vendor_id !== vendorId) {
+      return NextResponse.json(
+        { success: false, error: 'Product not found or unauthorized' },
+        { status: 404 }
+      );
     }
 
-    console.log('🔵 Updating product:', existingProduct.name);
-
-    // Prepare update payload
-    const productUpdate: any = {
+    // Build update data
+    const updateData: any = {
       updated_at: new Date().toISOString()
     };
+    
+    if (body.name) updateData.name = body.name;
+    if (body.sku !== undefined) updateData.sku = body.sku;
+    if (body.description !== undefined) updateData.description = body.description;
+    if (body.price !== undefined) updateData.price = body.price;
+    if (body.cost_price !== undefined) updateData.cost_price = body.cost_price;
 
-    // Only update fields that are provided
-    if (updateData.name !== undefined) productUpdate.name = updateData.name;
-    if (updateData.description !== undefined) productUpdate.description = updateData.description;
-    if (updateData.price !== undefined) productUpdate.regular_price = updateData.price ? parseFloat(updateData.price) : null;
-    if (updateData.cost_price !== undefined) productUpdate.cost_price = updateData.cost_price ? parseFloat(updateData.cost_price) : null;
-    if (updateData.quantity !== undefined) productUpdate.stock_quantity = updateData.quantity ? parseFloat(updateData.quantity) : null;
-
-    // Build meta_data object for custom fields
-    const meta_data: any = {};
-    if (updateData.thc_percentage !== undefined) meta_data.thc_percentage = updateData.thc_percentage;
-    if (updateData.cbd_percentage !== undefined) meta_data.cbd_percentage = updateData.cbd_percentage;
-    if (updateData.strain_type !== undefined) meta_data.strain_type = updateData.strain_type;
-    if (updateData.lineage !== undefined) meta_data.lineage = updateData.lineage;
-    if (updateData.terpenes !== undefined) meta_data.terpenes = updateData.terpenes;
-    if (updateData.effects !== undefined) meta_data.effects = updateData.effects;
-    if (updateData.nose !== undefined) meta_data.nose = updateData.nose;
-    if (updateData.taste !== undefined) meta_data.taste = updateData.taste;
-
-    if (Object.keys(meta_data).length > 0) {
-      productUpdate.meta_data = meta_data;
-    }
-
-    // Handle category if provided
-    if (updateData.category) {
-      // Category could be ID or name, handle both
-      if (updateData.category.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
-        // It's a UUID
-        productUpdate.primary_category_id = updateData.category;
-      } else {
-        // It's a name, find the category ID
-        const { data: category } = await supabase
-          .from('categories')
-          .select('id')
-          .eq('name', updateData.category)
-          .single();
-        
-        if (category) {
-          productUpdate.primary_category_id = category.id;
-        }
-      }
+    // Update custom fields
+    if (body.custom_fields) {
+      const fieldsArray = Object.entries(body.custom_fields).map(([field_name, field_value]) => ({
+        field_name,
+        field_value
+      }));
+      updateData.blueprint_fields = fieldsArray;
     }
 
     // Update product
-    const { data: updatedProduct, error: updateError } = await supabase
+    const { data: updated, error: updateError } = await supabase
       .from('products')
-      .update(productUpdate)
+      .update(updateData)
       .eq('id', productId)
-      .eq('vendor_id', vendorId)
       .select()
       .single();
-
+    
     if (updateError) {
-      console.error('❌ Failed to update product:', updateError);
-      return NextResponse.json({
-        success: false,
-        error: updateError.message
-      }, { status: 500 });
-    }
-
-    console.log('✅ Product updated successfully:', updatedProduct.name);
-    
-    // Log cost change if cost_price was updated
-    if (updateData.cost_price) {
-      console.log(`💰 Cost price updated: $${updateData.cost_price} (Margin will be auto-calculated)`);
+      console.error('Update error:', updateError);
+      return NextResponse.json(
+        { success: false, error: updateError.message },
+        { status: 500 }
+      );
     }
 
     return NextResponse.json({
       success: true,
-      product: updatedProduct,
-      message: 'Product updated successfully'
+      product: updated
     });
-
   } catch (error: any) {
-    console.error('❌ Update product error:', error);
-    return NextResponse.json({
-      success: false,
-      error: error.message || 'Failed to update product'
-    }, { status: 500 });
-  }
-}
-
-/**
- * DELETE - Delete vendor product
- */
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    const { id: productId } = await params;
-    const vendorId = request.headers.get('x-vendor-id');
-    
-    if (!vendorId) {
-      return NextResponse.json({ 
-        success: false, 
-        error: 'Not authenticated' 
-      }, { status: 401 });
-    }
-
-    const supabase = getServiceSupabase();
-
-    // Delete product (only if belongs to vendor)
-    const { error } = await supabase
-      .from('products')
-      .delete()
-      .eq('id', productId)
-      .eq('vendor_id', vendorId);
-
-    if (error) {
-      console.error('❌ Failed to delete product:', error);
-      return NextResponse.json({
-        success: false,
-        error: error.message
-      }, { status: 500 });
-    }
-
-    console.log('✅ Product deleted:', productId);
-
-    return NextResponse.json({
-      success: true,
-      message: 'Product deleted successfully'
-    });
-
-  } catch (error: any) {
-    console.error('❌ Delete product error:', error);
-    return NextResponse.json({
-      success: false,
-      error: error.message || 'Failed to delete product'
-    }, { status: 500 });
+    console.error('Product PUT error:', error);
+    return NextResponse.json(
+      { success: false, error: error.message || 'Internal server error' },
+      { status: 500 }
+    );
   }
 }

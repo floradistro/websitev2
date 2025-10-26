@@ -56,10 +56,23 @@ export function ComponentBasedPageRenderer({
         return;
       }
       
-      // Handle component updates
+      // Handle component updates (bulk)
       if (event.data.type === 'UPDATE_COMPONENTS') {
         const { components, updatedId } = event.data.payload;
         setComponentInstances(components);
+      }
+      
+      // Handle single component update (live editing)
+      if (event.data.type === 'UPDATE_COMPONENT') {
+        const { componentId, updates, allComponents } = event.data.payload;
+        if (allComponents) {
+          setComponentInstances(allComponents);
+        } else {
+          // Fallback: update just the one component
+          setComponentInstances(prev => 
+            prev.map(c => c.id === componentId ? { ...c, ...updates } : c)
+          );
+        }
       }
       
       // Handle component selection from parent editor
@@ -150,6 +163,8 @@ export function ComponentBasedPageRenderer({
         return 'bg-black';
       case 'product_detail_config':
         return 'bg-black';
+      case 'product_detail':
+        return ''; // SmartProductDetail handles its own background
       default:
         return 'bg-black';
     }
@@ -191,12 +206,25 @@ export function ComponentBasedPageRenderer({
         return 'space-y-6';
     }
   };
+
+  const getSectionPadding = (sectionKey: string) => {
+    switch (sectionKey) {
+      case 'shop_controls':
+        return 'pt-8 pb-6 px-4 md:px-8 lg:px-12'; // Tight spacing for filters
+      case 'shop_grid':
+        return 'pt-2 pb-12 px-4 md:px-8 lg:px-12'; // Minimal top padding, product grid right under filters
+      case 'shop_hero':
+        return 'py-12 px-4 md:px-8 lg:px-12'; // Less padding for shop hero
+      default:
+        return 'py-16 px-4 md:px-8 lg:px-12'; // Default padding
+    }
+  };
   
   // Check if this is a layout section (header/footer)
   const isOnlyLayoutSections = activeSections.every(s => s.section_key === 'header' || s.section_key === 'footer');
   
   return (
-    <div className={`${!isOnlyLayoutSections ? 'min-h-screen' : ''} relative overflow-hidden`}>
+    <div className={`${!isOnlyLayoutSections ? 'min-h-screen' : ''} relative`}>
       {/* Background gradient */}
       {!isOnlyLayoutSections && (
         <div className="absolute inset-0 bg-gradient-to-b from-black via-neutral-950 to-black pointer-events-none" />
@@ -211,8 +239,8 @@ export function ComponentBasedPageRenderer({
             return null;
           }
           
-          // Header and footer sections render without padding/container
-          const isLayoutSection = section.section_key === 'header' || section.section_key === 'footer';
+          // Header, footer, and product_detail sections render without padding/container
+          const isLayoutSection = section.section_key === 'header' || section.section_key === 'footer' || section.section_key === 'product_detail';
           
           if (isLayoutSection) {
             return (
@@ -228,6 +256,10 @@ export function ComponentBasedPageRenderer({
                   isPreviewMode={isPreview}
                   onComponentSelect={handleComponentSelect}
                   selectedComponentId={selectedComponentId || undefined}
+                  vendorId={vendor.id}
+                  vendorSlug={vendor.slug}
+                  vendorName={vendor.store_name || vendor.slug}
+                  vendorLogo={vendor.logo_url}
                 />
               </section>
             );
@@ -239,7 +271,7 @@ export function ComponentBasedPageRenderer({
               data-section-id={section.id}
               data-section-key={section.section_key}
               data-page-type={pageType}
-              className={`py-16 px-4 md:px-8 lg:px-12 ${getSectionStyle(section.section_key)}`}
+              className={`${getSectionPadding(section.section_key)} ${getSectionStyle(section.section_key)}`}
             >
               <div className="max-w-7xl mx-auto">
                 <div className={getSectionLayout(section.section_key)}>
@@ -248,6 +280,10 @@ export function ComponentBasedPageRenderer({
                     isPreviewMode={isPreview}
                     onComponentSelect={handleComponentSelect}
                     selectedComponentId={selectedComponentId || undefined}
+                    vendorId={vendor.id}
+                    vendorSlug={vendor.slug}
+                    vendorName={vendor.store_name || vendor.slug}
+                    vendorLogo={vendor.logo_url}
                   />
                 </div>
               </div>

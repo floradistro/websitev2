@@ -1,71 +1,101 @@
 /**
- * Production-Safe Logger
- * Replaces console.log statements to reduce overhead in production
+ * Centralized Logger Utility
+ * Prevents console pollution in production
+ * TODO: Integrate with Sentry or similar monitoring service
  */
 
-const isDev = process.env.NODE_ENV === 'development';
+type LogLevel = 'error' | 'warn' | 'info' | 'debug';
 
-export const logger = {
-  /**
-   * Debug logs - only in development
-   */
-  log: isDev ? console.log.bind(console) : () => {},
-  
-  /**
-   * Errors - always logged
-   */
-  error: console.error.bind(console),
-  
-  /**
-   * Warnings - only in development
-   */
-  warn: isDev ? console.warn.bind(console) : () => {},
-  
-  /**
-   * Info - only in development
-   */
-  info: isDev ? console.info.bind(console) : () => {},
-  
-  /**
-   * Debug with context - only in development
-   */
-  debug: isDev 
-    ? (context: string, ...args: any[]) => {
-        console.log(`[${context}]`, ...args);
-      }
-    : () => {},
-};
+interface LogContext {
+  [key: string]: any;
+}
 
-/**
- * Sanitize sensitive data before logging
- */
-export function sanitize(data: any): any {
-  if (!data) return data;
+class Logger {
+  private isDevelopment = process.env.NODE_ENV === 'development';
   
-  const sensitive = ['password', 'token', 'secret', 'api_key', 'apiKey'];
-  const sanitized = { ...data };
-  
-  for (const key of Object.keys(sanitized)) {
-    if (sensitive.some(s => key.toLowerCase().includes(s))) {
-      sanitized[key] = '[REDACTED]';
+  /**
+   * Log error messages
+   * In production, this should send to monitoring service (Sentry)
+   */
+  error(message: string, error?: Error | unknown, context?: LogContext) {
+    if (this.isDevelopment) {
+      console.error(`[ERROR] ${message}`, error, context);
+    }
+    
+    // TODO: Send to Sentry in production
+    // if (!this.isDevelopment && typeof window !== 'undefined') {
+    //   Sentry.captureException(error, { extra: { message, ...context } });
+    // }
+  }
+
+  /**
+   * Log warning messages
+   */
+  warn(message: string, context?: LogContext) {
+    if (this.isDevelopment) {
+      console.warn(`[WARN] ${message}`, context);
     }
   }
-  
-  return sanitized;
-}
 
-/**
- * Log with performance timing
- */
-export function logWithTiming(label: string, fn: () => void) {
-  if (!isDev) {
-    fn();
-    return;
+  /**
+   * Log informational messages (development only)
+   */
+  info(message: string, context?: LogContext) {
+    if (this.isDevelopment) {
+      console.log(`[INFO] ${message}`, context);
+    }
   }
-  
-  const start = performance.now();
-  fn();
-  const duration = performance.now() - start;
-  console.log(`⏱️  ${label}: ${duration.toFixed(2)}ms`);
+
+  /**
+   * Log debug messages (development only)
+   */
+  debug(message: string, context?: LogContext) {
+    if (this.isDevelopment) {
+      console.log(`[DEBUG] ${message}`, context);
+    }
+  }
+
+  /**
+   * Log API errors with standardized format
+   */
+  apiError(endpoint: string, error: Error | unknown, statusCode?: number) {
+    const message = `API Error: ${endpoint}`;
+    const context = {
+      endpoint,
+      statusCode,
+      errorMessage: error instanceof Error ? error.message : 'Unknown error',
+    };
+    
+    this.error(message, error, context);
+  }
+
+  /**
+   * Log database errors
+   */
+  dbError(operation: string, error: Error | unknown, table?: string) {
+    const message = `Database Error: ${operation}`;
+    const context = {
+      operation,
+      table,
+      errorMessage: error instanceof Error ? error.message : 'Unknown error',
+    };
+    
+    this.error(message, error, context);
+  }
+
+  /**
+   * Performance measurement
+   */
+  measure(label: string, startTime: number) {
+    if (this.isDevelopment) {
+      const duration = Date.now() - startTime;
+      console.log(`[PERF] ${label}: ${duration}ms`);
+    }
+  }
 }
 
+// Export singleton instance
+export const logger = new Logger();
+
+// Export class for testing
+export default Logger;

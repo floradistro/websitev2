@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServiceSupabase } from '@/lib/supabase/client';
 
 /**
- * Reorder Sections
+ * Reorder Sections - Optimized Bulk Update
  * POST /api/vendor/content/reorder
  */
 export async function POST(request: NextRequest) {
@@ -18,18 +18,30 @@ export async function POST(request: NextRequest) {
     
     const supabase = getServiceSupabase();
     
-    // Update section orders in bulk
-    for (const section of sections) {
-      await supabase
-        .from('vendor_content_sections')
+    // Use Promise.all for parallel updates (much faster)
+    const updates = sections.map((section: any) =>
+      supabase
+        .from('vendor_storefront_sections')
         .update({ section_order: section.section_order })
         .eq('id', section.id)
-        .eq('vendor_id', vendorId);
+        .eq('vendor_id', vendorId)
+    );
+    
+    const results = await Promise.all(updates);
+    
+    // Check for errors
+    const errors = results.filter(r => r.error);
+    if (errors.length > 0) {
+      console.error('Reorder errors:', errors);
+      return NextResponse.json(
+        { success: false, error: 'Some updates failed' },
+        { status: 500 }
+      );
     }
     
     return NextResponse.json({
       success: true,
-      message: 'Section order updated',
+      message: `Updated ${sections.length} sections`,
     });
     
   } catch (error: any) {
@@ -40,4 +52,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-

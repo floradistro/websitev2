@@ -1,196 +1,123 @@
 import { NextRequest, NextResponse } from 'next/server';
-import axios from 'axios';
 import { getServiceSupabase } from '@/lib/supabase/client';
+
+export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {
     const vendorId = request.headers.get('x-vendor-id');
     
     if (!vendorId) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+      return NextResponse.json(
+        { success: false, error: 'Vendor ID required' },
+        { status: 401 }
+      );
     }
-
+    
     const supabase = getServiceSupabase();
     
-    // STEP 1: Get vendor's assigned locations
-    const { data: vendorLocations, error: locError } = await supabase
-      .from('locations')
-      .select('id')
-      .eq('vendor_id', vendorId)
-      .eq('is_active', true);
-
-    if (locError) {
-      console.error('Error fetching vendor locations:', locError);
-      return NextResponse.json({ error: locError.message }, { status: 500 });
-    }
-
-    if (!vendorLocations || vendorLocations.length === 0) {
-      // No locations assigned yet
-      return NextResponse.json({
-        success: true,
-        inventory: []
-      });
-    }
-
-    const locationIds = vendorLocations.map(loc => loc.id);
-
-    console.log('🔵 Vendor locations:', locationIds);
-
-    // STEP 2: Get ONLY vendor's inventory at their locations
-    const { data: inventory, error } = await supabase
-      .from('inventory')
-      .select(`
-        *,
-        location:location_id(id, name, city, state, type)
-      `)
-      .in('location_id', locationIds)
-      .eq('vendor_id', vendorId); // ONLY show vendor's own products
-
-    if (error) {
-      console.error('Error fetching inventory:', error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
-
-    console.log('🔵 Total inventory records at vendor locations:', inventory?.length || 0);
-
-    // Filter out invalid inventory records (product_id is NULL)
-    const validInventory = inventory?.filter(inv => inv.product_id !== null) || [];
-    const invalidCount = (inventory?.length || 0) - validInventory.length;
-    
-    if (invalidCount > 0) {
-      console.log(`⚠️  Filtered out ${invalidCount} invalid inventory records (null product_id)`);
-    }
-
-    // Get product names separately
-    const productIds = [...new Set(validInventory.map(inv => inv.product_id))];
-    const { data: products } = await supabase
+    // Get products with inventory
+    const { data: products, error: productsError } = await supabase
       .from('products')
-      .select('id, name, featured_image_storage, featured_image, price')
-      .in('id', productIds);
-    
-    const productMap = new Map(products?.map(p => [p.id, p]) || []);
-    
-    // Map to expected format for vendor UI (only valid inventory)
-    const mappedInventory = validInventory.map(inv => {
-      const product = productMap.get(inv.product_id);
-      const isVendorOwned = inv.vendor_id === vendorId;
-      
-      return {
-        id: inv.id,
-        inventory_id: inv.id, // UUID
-        product_id: inv.product_id,
-        product_name: product?.name || 'Unknown Product',
-        quantity: inv.quantity,
-        location_name: inv.location?.name || 'Unknown Location',
-        location_id: inv.location_id,
-        location_type: inv.location?.type || 'unknown',
-        stock_status: inv.stock_status,
-        unit_cost: inv.unit_cost,
-        average_cost: inv.average_cost,
-        available_quantity: inv.available_quantity,
-        reserved_quantity: inv.reserved_quantity,
-        image: product?.featured_image_storage || product?.featured_image || null,
-        price: product?.price || 0,
-        is_vendor_owned: isVendorOwned, // Flag to show if this is vendor's own inventory
-        vendor_id: inv.vendor_id
-      };
-    });
+      .select(`
+        id,
+        name,
+        sku,
+        price,
+        cost_price,
+        blueprint_fields,
+        product_categories(
+          category:categories(name)
+        )
+      `)
+      .eq('vendor_id', vendorId)
+      .order('name');
 
-    console.log('✅ Returning inventory:', mappedInventory.length, 'items');
-    console.log('🔵 Vendor-owned:', mappedInventory.filter(i => i.is_vendor_owned).length);
-    console.log('🔵 House inventory:', mappedInventory.filter(i => !i.is_vendor_owned).length);
+    if (productsError) throw productsError;
 
-    return NextResponse.json({
-      success: true,
-      inventory: mappedInventory
-    });
-
-  } catch (error: any) {
-    console.error('Get inventory error:', error.response?.data || error.message);
-    return NextResponse.json(
-      { error: error.message || 'Failed to fetch inventory' },
-      { status: error.response?.status || 500 }
-    );
-  }
-}
-
-export async function DELETE(request: NextRequest) {
-  try {
-    const vendorId = request.headers.get('x-vendor-id');
-    
-    if (!vendorId) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
-    }
-
-    const { searchParams } = new URL(request.url);
-    const inventoryId = searchParams.get('inventory_id');
-
-    if (!inventoryId) {
-      return NextResponse.json({ error: 'Inventory ID required' }, { status: 400 });
-    }
-
-    const supabase = getServiceSupabase();
-
-    // Verify the inventory record belongs to a location owned by this vendor
-    const { data: inventory, error: fetchError } = await supabase
+    // Get inventory
+    const { data: inventoryData, error: inventoryError } = await supabase
       .from('inventory')
       .select(`
         id,
         product_id,
         quantity,
-        location:location_id(id, vendor_id)
+        stock_status,
+        location_id,
+        location:locations(
+          id,
+          name,
+          city,
+          state
+        )
       `)
-      .eq('id', inventoryId)
-      .single();
+      .eq('vendor_id', vendorId);
 
-    if (fetchError || !inventory) {
-      return NextResponse.json({ error: 'Inventory record not found' }, { status: 404 });
-    }
+    if (inventoryError) throw inventoryError;
 
-    // Check if this location belongs to the vendor
-    const location = Array.isArray(inventory.location) ? inventory.location[0] : inventory.location;
-    if (location?.vendor_id !== vendorId) {
-      return NextResponse.json({ 
-        error: 'Not authorized to delete this inventory record' 
-      }, { status: 403 });
-    }
+    // Get locations
+    const { data: locations, error: locationsError } = await supabase
+      .from('locations')
+      .select('id, name, city, state, is_primary, is_active')
+      .eq('vendor_id', vendorId)
+      .eq('is_active', true)
+      .order('is_primary', { ascending: false });
 
-    // Create stock movement record before deletion (for audit trail)
-    await supabase
-      .from('stock_movements')
-      .insert({
-        inventory_id: inventoryId,
-        product_id: inventory.product_id,
-        movement_type: 'adjustment',
-        quantity: -inventory.quantity,
-        quantity_before: inventory.quantity,
-        quantity_after: 0,
-        reason: 'Inventory record deleted by vendor',
-        notes: 'Product removed from location inventory'
+    if (locationsError) throw locationsError;
+
+    // Map inventory to products
+    const inventory = (products || []).flatMap(product => {
+      const productInventory = (inventoryData || []).filter(
+        inv => inv.product_id === product.id
+      );
+
+      if (productInventory.length === 0) {
+        return [];
+      }
+
+      return productInventory.map(inv => {
+        // Extract flora fields
+        const floraFields: any = {};
+        if (product.blueprint_fields && Array.isArray(product.blueprint_fields)) {
+          product.blueprint_fields.forEach((field: any) => {
+            if (field && field.field_name && field.field_value) {
+              floraFields[field.field_name] = field.field_value;
+            }
+          });
+        }
+
+        // Determine stock status
+        let stock_status: 'in_stock' | 'low_stock' | 'out_of_stock' = 'out_of_stock';
+        if (inv.quantity > 10) stock_status = 'in_stock';
+        else if (inv.quantity > 0) stock_status = 'low_stock';
+
+        return {
+          id: `${inv.id}`,
+          product_id: product.id,
+          product_name: product.name,
+          sku: product.sku || '',
+          quantity: parseFloat(inv.quantity) || 0,
+          category_name: (product.product_categories?.[0]?.category as any)?.name || 'Uncategorized',
+          price: parseFloat(product.price) || 0,
+          cost_price: product.cost_price ? parseFloat(product.cost_price) : undefined,
+          stock_status,
+          location_id: inv.location_id || '',
+          location_name: (inv.location as any)?.name || 'Unknown',
+          flora_fields: Object.keys(floraFields).length > 0 ? floraFields : undefined,
+        };
       });
-
-    // Delete the inventory record
-    const { error: deleteError } = await supabase
-      .from('inventory')
-      .delete()
-      .eq('id', inventoryId);
-
-    if (deleteError) {
-      console.error('Error deleting inventory:', deleteError);
-      return NextResponse.json({ error: deleteError.message }, { status: 500 });
-    }
-
-    console.log('✅ Inventory record deleted:', inventoryId);
+    });
 
     return NextResponse.json({
       success: true,
-      message: 'Inventory record deleted successfully'
+      inventory,
+      locations: locations || [],
+      total: inventory.length,
     });
-
   } catch (error: any) {
-    console.error('Delete inventory error:', error);
+    console.error('Inventory API error:', error);
     return NextResponse.json(
-      { error: error.message || 'Failed to delete inventory' },
+      { success: false, error: error.message || 'Internal server error' },
       { status: 500 }
     );
   }

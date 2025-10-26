@@ -346,7 +346,7 @@ function StorefrontShopClient({ vendorId }: StorefrontShopClientProps) {
           <p className="text-white/60 text-lg font-light">No products available at the moment.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-px">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-px pt-8">
           {filteredProducts.map((product: any) => (
             <StorefrontProductCard 
               key={product.id} 

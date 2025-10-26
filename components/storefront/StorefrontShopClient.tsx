@@ -419,7 +419,7 @@ export function StorefrontShopClient({ vendorId, config }: StorefrontShopClientP
           <p className="text-white/60 text-lg font-light">No products available at the moment.</p>
         </div>
       ) : (
-        <div className={`grid ${gapClass} ${gridClass}`}>
+        <div className={`grid ${gapClass} ${gridClass} pt-8`}>
           {filteredProducts.map((product: any) => (
             <StorefrontProductCard 
               key={product.id} 

@@ -26,3 +26,4 @@ export type { SmartProductDetailProps } from './SmartProductDetail';
 
 export { default as SmartHeader } from './SmartHeader';
 export { default as SmartFooter } from './SmartFooter';
+export { SmartShopControls } from './SmartShopControls';

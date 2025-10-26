@@ -2,9 +2,25 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Package, Users, DollarSign, TrendingUp, AlertCircle, Store, Activity, ShoppingCart, Database, Cpu, HardDrive, Terminal, RefreshCw, Code, Zap, Eye, WifiOff, Wifi, Server, GitBranch, FileCode, Settings, Trash2, Play, Square } from 'lucide-react';
-import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import dynamic from 'next/dynamic';
+import { 
+  Package, Users, DollarSign, TrendingUp, AlertCircle, Store, Activity, 
+  ShoppingCart, Database, Cpu, HardDrive, Terminal, RefreshCw, Code, 
+  Zap, Eye, Wifi, Server, FileCode, Settings, Trash2 
+} from '@/lib/icons';
 import { StatsGridSkeleton, ChartSkeleton } from '@/components/AdminSkeleton';
+import { logger } from '@/lib/logger';
+
+// Lazy load charts - 45KB saved from initial bundle
+const AreaChart = dynamic(() => import('recharts').then(m => ({ default: m.AreaChart })), { ssr: false });
+const LineChart = dynamic(() => import('recharts').then(m => ({ default: m.LineChart })), { ssr: false });
+const Area = dynamic(() => import('recharts').then(m => ({ default: m.Area })), { ssr: false });
+const Line = dynamic(() => import('recharts').then(m => ({ default: m.Line })), { ssr: false });
+const XAxis = dynamic(() => import('recharts').then(m => ({ default: m.XAxis })), { ssr: false });
+const YAxis = dynamic(() => import('recharts').then(m => ({ default: m.YAxis })), { ssr: false });
+const CartesianGrid = dynamic(() => import('recharts').then(m => ({ default: m.CartesianGrid })), { ssr: false });
+const Tooltip = dynamic(() => import('recharts').then(m => ({ default: m.Tooltip })), { ssr: false });
+const ResponsiveContainer = dynamic(() => import('recharts').then(m => ({ default: m.ResponsiveContainer })), { ssr: false });
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState({
@@ -43,7 +59,7 @@ export default function AdminDashboard() {
         
         setLoading(false);
       } catch (error) {
-        console.error('Error loading stats:', error);
+        logger.error('Error loading stats:', error);
         setLoading(false);
       }
     }
@@ -83,32 +99,6 @@ export default function AdminDashboard() {
 
   return (
     <div className="w-full px-4 lg:px-0">
-      <style jsx>{`
-        @keyframes fade-in {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes subtle-pulse {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.8; }
-        }
-        @keyframes gentle-float {
-          0%, 100% { transform: translateY(0px); }
-          50% { transform: translateY(-3px); }
-        }
-        .fade-in {
-          animation: fade-in 0.6s ease-out;
-        }
-        .minimal-glass {
-          background: rgba(255, 255, 255, 0.02);
-          backdrop-filter: blur(20px);
-          border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-        .subtle-glow {
-          box-shadow: 0 0 30px rgba(255, 255, 255, 0.02);
-        }
-      `}</style>
-
       {/* Header */}
       <div className="mb-12 fade-in">
         <h1 className="text-3xl font-thin text-white/90 tracking-tight mb-2">
@@ -123,7 +113,7 @@ export default function AdminDashboard() {
       {stats.pendingProducts > 0 && (
         <Link 
           href="/admin/approvals"
-          className="block mb-8 bg-white/[0.02] backdrop-filter backdrop-blur-[20px] border border-white/5 rounded-[20px] hover:bg-white/[0.03] p-5 transition-all duration-300 group -mx-4 lg:mx-0 fade-in border-l-2 border-l-yellow-500/40"
+          className="block mb-8 bg-white/[0.02] backdrop-filter backdrop-blur-[20px] border border-white/5 rounded-[14px] hover:bg-white/[0.03] p-5 transition-all duration-300 group -mx-4 lg:mx-0 fade-in border-l-2 border-l-yellow-500/40"
         >
           <div className="flex items-center gap-4">
             <AlertCircle size={18} className="text-yellow-500/80 flex-shrink-0 animate-pulse" strokeWidth={1.5} />
@@ -146,7 +136,7 @@ export default function AdminDashboard() {
       ) : (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
           {/* Revenue */}
-          <div className="bg-white/[0.02] backdrop-filter backdrop-blur-[20px] border border-white/5 rounded-[20px] shadow-[0_0_30px_rgba(255,255,255,0.02)] p-6 hover:bg-white/[0.03] transition-all duration-300 group fade-in">
+          <div className="bg-white/[0.02] backdrop-filter backdrop-blur-[20px] border border-white/5 rounded-[14px] shadow-[0_0_30px_rgba(255,255,255,0.02)] p-6 hover:bg-white/[0.03] transition-all duration-300 group fade-in">
             <div className="flex items-center justify-between mb-4">
               <span className="text-white/40 text-[11px] uppercase tracking-[0.2em] font-light">Revenue</span>
               <DollarSign size={16} className="text-white/20 group-hover:text-white/30 transition-all duration-300" strokeWidth={1.5} />
@@ -158,7 +148,7 @@ export default function AdminDashboard() {
           </div>
 
           {/* Orders */}
-          <div className="bg-white/[0.02] backdrop-filter backdrop-blur-[20px] border border-white/5 rounded-[20px] shadow-[0_0_30px_rgba(255,255,255,0.02)] p-6 hover:bg-white/[0.03] transition-all duration-300 group fade-in" style={{ animationDelay: '0.1s' }}>
+          <div className="bg-white/[0.02] backdrop-filter backdrop-blur-[20px] border border-white/5 rounded-[14px] shadow-[0_0_30px_rgba(255,255,255,0.02)] p-6 hover:bg-white/[0.03] transition-all duration-300 group fade-in" style={{ animationDelay: '0.1s' }}>
             <div className="flex items-center justify-between mb-4">
               <span className="text-white/40 text-[11px] uppercase tracking-[0.2em] font-light">Orders</span>
               <ShoppingCart size={16} className="text-white/20 group-hover:text-white/30 transition-all duration-300" strokeWidth={1.5} />
@@ -170,7 +160,7 @@ export default function AdminDashboard() {
           </div>
 
           {/* Customers */}
-          <div className="bg-white/[0.02] backdrop-filter backdrop-blur-[20px] border border-white/5 rounded-[20px] shadow-[0_0_30px_rgba(255,255,255,0.02)] p-6 hover:bg-white/[0.03] transition-all duration-300 group fade-in" style={{ animationDelay: '0.2s' }}>
+          <div className="bg-white/[0.02] backdrop-filter backdrop-blur-[20px] border border-white/5 rounded-[14px] shadow-[0_0_30px_rgba(255,255,255,0.02)] p-6 hover:bg-white/[0.03] transition-all duration-300 group fade-in" style={{ animationDelay: '0.2s' }}>
             <div className="flex items-center justify-between mb-4">
               <span className="text-white/40 text-[11px] uppercase tracking-[0.2em] font-light">Customers</span>
               <Users size={16} className="text-white/20 group-hover:text-white/30 transition-all duration-300" strokeWidth={1.5} />
@@ -182,7 +172,7 @@ export default function AdminDashboard() {
           </div>
 
           {/* Products */}
-          <div className="bg-white/[0.02] backdrop-filter backdrop-blur-[20px] border border-white/5 rounded-[20px] shadow-[0_0_30px_rgba(255,255,255,0.02)] p-6 hover:bg-white/[0.03] transition-all duration-300 group fade-in" style={{ animationDelay: '0.3s' }}>
+          <div className="bg-white/[0.02] backdrop-filter backdrop-blur-[20px] border border-white/5 rounded-[14px] shadow-[0_0_30px_rgba(255,255,255,0.02)] p-6 hover:bg-white/[0.03] transition-all duration-300 group fade-in" style={{ animationDelay: '0.3s' }}>
             <div className="flex items-center justify-between mb-4">
               <span className="text-white/40 text-[11px] uppercase tracking-[0.2em] font-light">Products</span>
               <Package size={16} className="text-white/20 group-hover:text-white/30 transition-all duration-300" strokeWidth={1.5} />
@@ -204,7 +194,7 @@ export default function AdminDashboard() {
       ) : (
         <div className="grid lg:grid-cols-2 gap-3 mb-8">
           {/* Revenue Chart */}
-          <div className="bg-white/[0.02] backdrop-filter backdrop-blur-[20px] border border-white/5 rounded-[20px] shadow-[0_0_30px_rgba(255,255,255,0.02)] p-6 fade-in" style={{ animationDelay: '0.4s' }}>
+          <div className="bg-white/[0.02] backdrop-filter backdrop-blur-[20px] border border-white/5 rounded-[14px] shadow-[0_0_30px_rgba(255,255,255,0.02)] p-6 fade-in" style={{ animationDelay: '0.4s' }}>
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h3 className="text-white/40 text-[11px] font-light tracking-[0.2em] uppercase mb-2">Revenue Trend</h3>
@@ -263,7 +253,7 @@ export default function AdminDashboard() {
         </div>
 
           {/* Orders Chart */}
-          <div className="bg-white/[0.02] backdrop-filter backdrop-blur-[20px] border border-white/5 rounded-[20px] shadow-[0_0_30px_rgba(255,255,255,0.02)] p-6 fade-in" style={{ animationDelay: '0.5s' }}>
+          <div className="bg-white/[0.02] backdrop-filter backdrop-blur-[20px] border border-white/5 rounded-[14px] shadow-[0_0_30px_rgba(255,255,255,0.02)] p-6 fade-in" style={{ animationDelay: '0.5s' }}>
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h3 className="text-white/40 text-[11px] font-light tracking-[0.2em] uppercase mb-2">Order Volume</h3>
@@ -376,7 +366,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Quick Actions */}
-        <div className="bg-white/[0.02] backdrop-filter backdrop-blur-[20px] border border-white/5 rounded-[20px] shadow-[0_0_30px_rgba(255,255,255,0.02)] p-6 fade-in" style={{ animationDelay: '0.7s' }}>
+        <div className="bg-white/[0.02] backdrop-filter backdrop-blur-[20px] border border-white/5 rounded-[14px] shadow-[0_0_30px_rgba(255,255,255,0.02)] p-6 fade-in" style={{ animationDelay: '0.7s' }}>
           <div className="mb-6">
             <h3 className="text-white/40 text-[11px] font-light tracking-[0.2em] uppercase mb-2">Quick Actions</h3>
             <p className="text-white/30 text-[10px] font-light">COMMON TASKS</p>

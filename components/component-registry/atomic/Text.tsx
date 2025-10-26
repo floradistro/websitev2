@@ -8,12 +8,16 @@
 import React, { useRef, useEffect } from 'react';
 
 export interface TextProps {
-  content: string;
-  variant: 'headline' | 'subheadline' | 'paragraph' | 'label' | 'caption' | 'quote';
-  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl';
+  content?: string; // Old prop name
+  text?: string; // New prop name (AI uses this)
+  variant?: 'headline' | 'subheadline' | 'paragraph' | 'label' | 'caption' | 'quote';
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | 'xlarge' | '2xl' | '3xl' | '4xl' | 'small' | 'medium' | 'large';
   weight?: 'light' | 'normal' | 'medium' | 'semibold' | 'bold';
+  font_weight?: string; // AI uses this (300, 400, 500, 600)
   color?: string;
   align?: 'left' | 'center' | 'right';
+  alignment?: 'left' | 'center' | 'right'; // AI uses this
+  letter_spacing?: string; // AI uses this (0.05em, 0.1em, etc)
   className?: string;
   maxLines?: number; // Clamp text to N lines
   animate?: boolean;
@@ -23,12 +27,16 @@ export interface TextProps {
 }
 
 export function Text({
-  content,
-  variant,
-  size,
-  weight = 'normal',
+  content: contentProp,
+  text: textProp,
+  variant = 'paragraph',
+  size: sizeProp,
+  weight: weightProp,
+  font_weight,
   color,
-  align = 'left',
+  align: alignProp,
+  alignment,
+  letter_spacing,
   className = '',
   maxLines,
   animate = false,
@@ -36,6 +44,24 @@ export function Text({
   isSelected = false,
   onInlineEdit,
 }: TextProps) {
+  // Support both prop names
+  const content = contentProp || textProp || '';
+  const align = alignProp || alignment || 'left';
+  
+  // Map font_weight from AI (300, 400, 500, 600) to weight
+  const weight = weightProp || (font_weight === '300' ? 'light' : 
+                                  font_weight === '400' ? 'normal' :
+                                  font_weight === '500' ? 'medium' :
+                                  font_weight === '600' ? 'semibold' : 'normal');
+  
+  // Map AI size names to actual sizes
+  const sizeMap: Record<string, string> = {
+    'small': 'sm',
+    'medium': 'md',
+    'large': 'lg',
+    'xlarge': '3xl',
+  };
+  const size = sizeMap[sizeProp || ''] || sizeProp;
   const editableRef = useRef<HTMLDivElement>(null);
   
   // Default sizes per variant
@@ -92,7 +118,10 @@ export function Text({
     className,
   ].filter(Boolean).join(' ');
   
-  const style = color ? { color } : undefined;
+  const style = color || letter_spacing ? { 
+    color: color || undefined, 
+    letterSpacing: letter_spacing || undefined 
+  } : undefined;
   
   // Choose HTML element based on variant
   const Element = variant === 'headline' ? 'h1'

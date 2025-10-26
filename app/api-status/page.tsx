@@ -4,22 +4,32 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft } from "lucide-react";
+import { motion } from 'framer-motion';
 
 export default function ApiStatusPage() {
   const [mounted, setMounted] = useState(false);
   const [latency, setLatency] = useState(42);
   const [uptime, setUptime] = useState(99.9);
+  const [requestCount, setRequestCount] = useState(0);
 
   useEffect(() => {
     setMounted(true);
 
-    // Simulate live updates
+    // Simulate live updates (slower intervals for better performance)
     const interval = setInterval(() => {
       setLatency(prev => Math.max(20, Math.min(60, prev + (Math.random() - 0.5) * 5)));
       setUptime(prev => Math.min(100, prev + (Math.random() - 0.5) * 0.001));
     }, 3000);
+    
+    // Request counter (much slower for performance)
+    const counterInterval = setInterval(() => {
+      setRequestCount(prev => prev + Math.floor(Math.random() * 50) + 10);
+    }, 1000);
 
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      clearInterval(counterInterval);
+    };
   }, []);
 
   return (
@@ -48,113 +58,186 @@ export default function ApiStatusPage() {
 
       {/* Content */}
       <section className="pt-32 pb-20 px-4">
-        <div className="max-w-4xl mx-auto">
-          {/* Logo + Title */}
-          <div className="mb-20 text-center">
-            <div className="mb-8 flex justify-center">
-              <div className="relative">
-                <Image 
-                  src="/yacht-club-logo.png" 
-                  alt="WhaleTools" 
-                  width={80} 
-                  height={80}
-                  className="object-contain opacity-90 logo-breathe"
-                />
-                <div className="absolute inset-0 logo-glow"></div>
-              </div>
-            </div>
-            <h1 className="text-6xl md:text-8xl font-light mb-6 tracking-tight">
-              API
-            </h1>
-            <div className="flex items-center justify-center gap-2">
-              <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
-              <span className="text-sm text-white/40 uppercase tracking-[0.2em]">Operational</span>
-            </div>
-          </div>
-
-          <style jsx>{`
-            @keyframes breathe {
-              0%, 100% { opacity: 0.9; transform: scale(1); }
-              50% { opacity: 1; transform: scale(1.02); }
-            }
-            @keyframes glow-pulse {
-              0%, 100% { opacity: 0; }
-              50% { opacity: 0.15; }
-            }
-            .logo-breathe {
-              animation: breathe 4s ease-in-out infinite;
-            }
-            .logo-glow {
-              background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
-              animation: glow-pulse 4s ease-in-out infinite;
-              pointer-events: none;
-            }
-          `}</style>
-
-          {/* Metrics */}
-          <div className="grid grid-cols-2 gap-12 mb-20 max-w-2xl">
-            <div>
-              <div className="text-5xl font-light text-white/90 mb-2">
-                {mounted ? Math.round(latency) : '0'}
-                <span className="text-2xl text-white/40">ms</span>
-              </div>
-              <div className="text-white/30 text-xs uppercase tracking-[0.2em]">Latency</div>
-            </div>
-            <div>
-              <div className="text-5xl font-light text-white/90 mb-2">
-                {mounted ? uptime.toFixed(2) : '0.00'}
-                <span className="text-2xl text-white/40">%</span>
-              </div>
-              <div className="text-white/30 text-xs uppercase tracking-[0.2em]">Uptime</div>
-            </div>
-          </div>
-
-          {/* Endpoints */}
-          <div className="border-t border-white/10 pt-12">
-            <h2 className="text-2xl font-light mb-8 tracking-tight text-white/50">Endpoints</h2>
+        <div className="max-w-6xl mx-auto">
+          {/* Hero */}
+          <div className="mb-32 text-center">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.5 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ 
+                duration: 1.2, 
+                ease: [0.16, 1, 0.3, 1],
+                scale: { type: "spring", stiffness: 100, damping: 20 }
+              }}
+              className="mb-12 flex justify-center relative"
+            >
+              <div className="absolute inset-0 bg-white/5 blur-[100px] animate-pulse" />
+              <Image 
+                src="/yacht-club-logo.png" 
+                alt="WhaleTools" 
+                width={120} 
+                height={120}
+                className="object-contain opacity-90 relative z-10"
+                priority
+              />
+            </motion.div>
             
-            <div className="space-y-6">
-              <div className="flex items-center justify-between py-4 border-b border-white/5">
-                <span className="text-white/30 text-sm font-mono">/products</span>
-                <div className="flex items-center gap-4">
-                  <span className="text-white/20 text-xs uppercase tracking-wider">GET · POST</span>
-                  <div className="w-2 h-2 bg-white/20 rounded-full"></div>
+            <motion.h1 
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              className="text-6xl md:text-8xl font-light mb-8 tracking-tight"
+            >
+              186 endpoints.
+            </motion.h1>
+            
+            <motion.div 
+              initial={{ opacity: 0, scale: 0 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.6, delay: 0.6, type: "spring", stiffness: 200 }}
+              className="flex items-center justify-center gap-3"
+            >
+              <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+              <span className="text-sm text-white/40 uppercase tracking-[0.3em]">Live</span>
+            </motion.div>
+          </div>
+
+          {/* Live Metrics */}
+          <div className="grid md:grid-cols-3 gap-px bg-white/5 mb-32">
+            {[
+              { value: mounted ? Math.round(latency) : '42', unit: 'ms', label: 'Response', live: latency },
+              { value: mounted ? uptime.toFixed(2) : '99.90', unit: '%', label: 'Uptime', live: false },
+              { value: mounted ? requestCount.toLocaleString() : '0', unit: '', label: 'Requests', live: requestCount }
+            ].map((metric, i) => (
+              <motion.div
+                key={metric.label}
+                initial={{ opacity: 0, y: 60 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-100px" }}
+                transition={{ 
+                  duration: 1, 
+                  delay: i * 0.15,
+                  ease: [0.16, 1, 0.3, 1]
+                }}
+                whileHover={{ 
+                  scale: 1.05,
+                  borderColor: "rgba(255,255,255,0.2)",
+                  transition: { duration: 0.3 }
+                }}
+                className="bg-black p-12 border border-white/5 text-center group"
+              >
+                <motion.div 
+                  key={metric.label}
+                  initial={metric.live ? { scale: 1.2, opacity: 0 } : undefined}
+                  animate={metric.live ? { scale: 1, opacity: 1 } : undefined}
+                  transition={{ duration: 0.4, ease: "easeOut" }}
+                  className="text-5xl font-light text-white/90 mb-3 group-hover:text-white transition-colors"
+                >
+                  {metric.value}
+                  {metric.unit && <span className="text-xl text-white/40">{metric.unit}</span>}
+                </motion.div>
+                <div className="text-white/30 text-xs uppercase tracking-[0.3em] group-hover:text-white/50 transition-colors">
+                  {metric.label}
                 </div>
-              </div>
-              
-              <div className="flex items-center justify-between py-4 border-b border-white/5">
-                <span className="text-white/30 text-sm font-mono">/vendors</span>
-                <div className="flex items-center gap-4">
-                  <span className="text-white/20 text-xs uppercase tracking-wider">GET · PUT</span>
-                  <div className="w-2 h-2 bg-white/20 rounded-full"></div>
-                </div>
-              </div>
-              
-              <div className="flex items-center justify-between py-4 border-b border-white/5">
-                <span className="text-white/30 text-sm font-mono">/orders</span>
-                <div className="flex items-center gap-4">
-                  <span className="text-white/20 text-xs uppercase tracking-wider">POST</span>
-                  <div className="w-2 h-2 bg-white/20 rounded-full"></div>
-                </div>
-              </div>
-              
-              <div className="flex items-center justify-between py-4">
-                <span className="text-white/30 text-sm font-mono">/analytics</span>
-                <div className="flex items-center gap-4">
-                  <span className="text-white/20 text-xs uppercase tracking-wider">GET</span>
-                  <div className="w-2 h-2 bg-white/20 rounded-full"></div>
-                </div>
-              </div>
+              </motion.div>
+            ))}
+          </div>
+
+          {/* Capabilities */}
+          <div className="max-w-4xl mx-auto">
+            <motion.div
+              initial={{ opacity: 0, y: 60 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-150px" }}
+              transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+              whileHover={{ scale: 1.02, borderColor: "rgba(255,255,255,0.3)" }}
+              className="border border-white/10 p-16 text-center mb-20 relative overflow-hidden group"
+            >
+              <div className="absolute inset-0 bg-gradient-to-b from-white/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+              <motion.p 
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: 0.3 }}
+                className="text-white/40 text-sm uppercase tracking-[0.3em] mb-12 relative z-10"
+              >
+                Capabilities
+              </motion.p>
+              <motion.h2 
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.8, delay: 0.5 }}
+                className="text-4xl font-light mb-12 tracking-tight leading-tight relative z-10"
+              >
+                Generate. Deploy. Track.
+                <br />
+                <span className="text-white/60">Repeat infinitely.</span>
+              </motion.h2>
+            </motion.div>
+
+            {/* Categories - Flowing Grid */}
+            <div className="grid md:grid-cols-3 gap-px bg-white/5 mb-20">
+              {[
+                "Generation",
+                "Multi-tenant",
+                "Inventory",
+                "Orders",
+                "Analytics",
+                "POS",
+                "Wholesale",
+                "Payments",
+                "Real-time"
+              ].map((item, i) => (
+                <motion.div
+                  key={item}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true, margin: "-50px" }}
+                  transition={{ 
+                    duration: 0.6, 
+                    delay: i * 0.08,
+                    ease: [0.16, 1, 0.3, 1]
+                  }}
+                  whileHover={{ 
+                    scale: 1.05,
+                    borderColor: "rgba(255,255,255,0.3)",
+                    backgroundColor: "rgba(255,255,255,0.02)"
+                  }}
+                  className="bg-black p-8 border border-white/5 text-center cursor-default"
+                >
+                  <p className="text-white/60 text-sm font-light">
+                    {item}
+                  </p>
+                </motion.div>
+              ))}
             </div>
 
-            <div className="mt-12 text-center">
+            {/* Access */}
+            <motion.div
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+              className="border border-white/10 p-12 text-center relative overflow-hidden group"
+            >
+              <div className="absolute inset-0 bg-gradient-to-t from-white/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <motion.p 
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: 0.3 }}
+                className="text-white/40 text-sm mb-8 relative z-10"
+              >
+                Partnership required
+              </motion.p>
               <Link
                 href="/vendor/login"
-                className="inline-block text-white/30 hover:text-white text-sm transition-colors"
+                className="inline-flex items-center bg-white text-black px-8 py-4 rounded-full text-sm uppercase tracking-[0.2em] hover:bg-white/90 font-medium transition-all duration-300 hover:scale-105 relative z-10"
               >
-                Request Documentation
+                Request Access
               </Link>
-            </div>
+            </motion.div>
           </div>
         </div>
       </section>

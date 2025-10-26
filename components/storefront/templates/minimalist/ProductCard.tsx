@@ -45,13 +45,19 @@ function StorefrontProductCard({ product, vendorSlug, locations = [] }: Storefro
     // Field configuration with proper labels - ALL available fields from API
     const fieldConfig: { [key: string]: string } = {
       // Flower fields
+      'thca_percentage': 'THCA',
+      'delta9_percentage': 'Δ9',
+      'thc_content': 'THC',
+      'cbd_content': 'CBD',
       'strain_type': 'Type',
       'lineage': 'Lineage',
+      'genetics': 'Genetics',
       'nose': 'Nose',
       'terpene_profile': 'Terpenes',
       'terpenes': 'Terpenes',
       'effects': 'Effects',
       'effect': 'Effects',
+      'flavors': 'Flavors',
       // Vape fields
       'hardware_type': 'Hardware',
       'oil_type': 'Oil',

@@ -18,6 +18,9 @@ export interface ImageProps {
   className?: string;
   onClick?: () => void;
   loading?: 'lazy' | 'eager';
+  width?: number;  // Fixed width in pixels
+  height?: number; // Fixed height in pixels
+  object_fit?: 'contain' | 'cover'; // Alias for fit
 }
 
 export function Image({
@@ -32,7 +35,12 @@ export function Image({
   className = '',
   onClick,
   loading = 'lazy',
+  width,
+  height,
+  object_fit,
 }: ImageProps) {
+  // Use object_fit as alias for fit if provided
+  const actualFit = object_fit || fit;
   
   // Aspect ratio classes
   const aspectClasses: Record<string, string> = {
@@ -72,18 +80,52 @@ export function Image({
     full: 'rounded-full',
   };
   
+  // Validate image URL
+  const isValidUrl = src && !src.includes('example.com') && (src.startsWith('http') || src.startsWith('/'));
+  
+  // If explicit width/height are provided, render with fixed dimensions (hero logo mode)
+  if (width || height) {
+    const fixedWidth = width || height || 48;
+    const fixedHeight = height || width || 48;
+    const isHeroLogo = fixedWidth <= 100; // Small fixed-size images are hero logos
+    const isLargeHeroLogo = fixedWidth > 100; // Large hero logos (shop hero)
+    
+    return (
+      <div 
+        className={`relative flex items-center justify-center mx-auto flex-shrink-0 ${radiusClasses[radius]} ${isHeroLogo ? 'animate-breathe' : ''} ${isLargeHeroLogo ? 'animate-pulse-water water-background' : ''} ${className}`}
+        style={{ 
+          width: `${fixedWidth}px`, 
+          height: `${fixedHeight}px`,
+          maxWidth: `${fixedWidth}px`,
+          maxHeight: `${fixedHeight}px`,
+        }}
+      >
+        <NextImage
+          src={isValidUrl ? src : '/placeholder-product.png'}
+          alt={alt}
+          width={fixedWidth}
+          height={fixedHeight}
+          quality={quality}
+          priority={priority}
+          className={`${fitClasses[actualFit]} ${positionClasses[position]} ${isLargeHeroLogo ? 'logo-luxury-glow' : isHeroLogo ? 'drop-shadow-2xl' : ''} relative z-10`}
+          style={{ maxWidth: '100%', maxHeight: '100%' }}
+          onClick={onClick}
+          loading={loading}
+          unoptimized={!src.startsWith('http')}
+        />
+      </div>
+    );
+  }
+  
   const combinedClasses = [
     aspectClasses[aspect],
-    fitClasses[fit],
+    fitClasses[actualFit],
     positionClasses[position],
     radiusClasses[radius],
     'w-full',
     onClick ? 'cursor-pointer hover:opacity-90 transition-opacity' : '',
     className,
   ].filter(Boolean).join(' ');
-  
-  // Validate image URL
-  const isValidUrl = src && !src.includes('example.com') && (src.startsWith('http') || src.startsWith('/'));
   
   // Use Next.js Image for optimization (if valid URL)
   if (aspect !== 'auto' && isValidUrl) {
@@ -95,7 +137,7 @@ export function Image({
           fill
           quality={quality}
           priority={priority}
-          className={`${fitClasses[fit]} ${positionClasses[position]}`}
+          className={`${fitClasses[actualFit]} ${positionClasses[position]}`}
           onClick={onClick}
           loading={loading}
           unoptimized={!src.startsWith('http')}

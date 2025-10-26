@@ -9,8 +9,10 @@ const supabase = createClient(
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const vendorId = searchParams.get('vendor_id');
     const range = searchParams.get('range') || '30d';
+    
+    // Get vendor ID from header (consistent with other endpoints)
+    const vendorId = request.headers.get('x-vendor-id');
 
     if (!vendorId) {
       return NextResponse.json({ success: false, error: 'Vendor ID required' }, { status: 400 });
@@ -58,22 +60,26 @@ export async function GET(request: NextRequest) {
       ? productsData.reduce((sum, p) => sum + (parseFloat(p.margin_percentage || '0')), 0) / productsData.length 
       : 0;
 
-    // Get inventory data
+    // Get inventory data - correct column names
     const { data: inventoryData, error: inventoryError } = await supabase
       .from('inventory')
-      .select('stock_quantity, low_stock_amount')
+      .select('product_id, quantity, low_stock_threshold')
       .eq('vendor_id', vendorId);
 
     if (inventoryError) throw inventoryError;
 
-    const lowStockCount = inventoryData?.filter(i => i.stock_quantity < i.low_stock_amount).length || 0;
+    const lowStockCount = inventoryData?.filter(i => 
+      parseFloat(i.quantity) < parseFloat(i.low_stock_threshold || '0')
+    ).length || 0;
+    
     const stockValue = productsData?.reduce((sum, p) => {
-      const inventory = inventoryData?.find(i => i) || { stock_quantity: 0 };
-      return sum + (parseFloat(p.cost_price || '0') * inventory.stock_quantity);
+      const inventory = inventoryData?.find(i => i.product_id === p.id);
+      const qty = inventory ? parseFloat(inventory.quantity) : 0;
+      return sum + (parseFloat(p.cost_price || '0') * qty);
     }, 0) || 0;
 
     // Calculate turnover rate (simplified: sales_count / avg_stock)
-    const avgStock = inventoryData?.reduce((sum, i) => sum + i.stock_quantity, 0) / (inventoryData?.length || 1);
+    const avgStock = inventoryData?.reduce((sum, i) => sum + parseFloat(i.quantity), 0) / (inventoryData?.length || 1);
     const totalSales = productsData?.reduce((sum, p) => sum + p.sales_count, 0) || 0;
     const turnoverRate = avgStock > 0 ? totalSales / avgStock : 0;
 

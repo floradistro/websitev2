@@ -23,6 +23,7 @@ interface SmartFooterProps {
   vendorId: string;
   vendorSlug: string;
   vendorName: string;
+  vendorLogo?: string;
   
   // Styling
   backgroundColor?: string;
@@ -53,6 +54,7 @@ export default function SmartFooter({
   vendorId,
   vendorSlug,
   vendorName,
+  vendorLogo,
   backgroundColor = 'bg-black/70 backdrop-blur-2xl',
   textColor = 'text-neutral-400',
   borderColor = 'border-white/10',
@@ -149,16 +151,27 @@ export default function SmartFooter({
         {/* Legal Compliance */}
         {showLegalCompliance && (legalText1 || legalText2) && (
           <div className={`mt-12 pt-8 border-t ${borderColor}`}>
-            <div className="space-y-3 max-w-5xl">
-              {legalText1 && (
-                <p className="text-xs text-white/40 leading-relaxed font-light">
-                  {legalText1}
-                </p>
-              )}
-              {legalText2 && (
-                <p className="text-xs text-white/40 leading-relaxed font-light">
-                  {legalText2}
-                </p>
+            <div className="flex items-start justify-between gap-8">
+              <div className="space-y-3 max-w-5xl flex-1">
+                {legalText1 && (
+                  <p className="text-xs text-white/40 leading-relaxed font-light">
+                    {legalText1}
+                  </p>
+                )}
+                {legalText2 && (
+                  <p className="text-xs text-white/40 leading-relaxed font-light">
+                    {legalText2}
+                  </p>
+                )}
+              </div>
+              {vendorLogo && (
+                <div className="flex-shrink-0 hidden md:block">
+                  <img 
+                    src={vendorLogo} 
+                    alt={vendorName}
+                    className="w-24 h-24 object-contain opacity-40 hover:opacity-60 transition-opacity"
+                  />
+                </div>
               )}
             </div>
           </div>

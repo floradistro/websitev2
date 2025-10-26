@@ -1,165 +1,238 @@
 /**
- * Unified Design System for Yacht Club
- * Enterprise-grade luxury theme for Admin & Vendor dashboards
+ * UNIFIED DASHBOARD DESIGN SYSTEM
+ * Single source of truth for Admin + Vendor + any future dashboards
+ * 
+ * Usage:
+ * import { getTheme } from '@/lib/dashboard-theme';
+ * const theme = getTheme('admin'); // or 'vendor'
  */
 
-export const dashboardTheme = {
-  // Colors - Pure Black iOS 26 Style
-  colors: {
-    background: {
-      primary: '#000000',
-      secondary: '#000000',
-      card: 'rgba(255, 255, 255, 0.02)',
-      hover: 'rgba(255, 255, 255, 0.03)',
-    },
-    border: {
-      default: 'rgba(255, 255, 255, 0.05)',
-      hover: 'rgba(255, 255, 255, 0.1)',
-      active: 'rgba(255, 255, 255, 0.2)',
-    },
-    text: {
-      primary: 'rgba(255, 255, 255, 0.9)',
-      secondary: 'rgba(255, 255, 255, 0.6)',
-      tertiary: 'rgba(255, 255, 255, 0.4)',
-      muted: 'rgba(255, 255, 255, 0.3)',
+// Base theme - shared by all dashboards
+const baseTheme = {
+  // === LAYOUT ===
+  spacing: {
+    card: 'p-6',
+    cardSm: 'p-4',
+    cardLg: 'p-8',
+    gap: 'gap-3',
+    gapSm: 'gap-2',
+    gapLg: 'gap-4',
+  },
+  
+  // === BORDERS ===
+  borders: {
+    radius: {
+      sm: 'rounded-[8px]',
+      md: 'rounded-[12px]',
+      lg: 'rounded-[14px]',
+      xl: 'rounded-[16px]',
+      xxl: 'rounded-[20px]',
     },
   },
-
-  // Border Radius - iOS 26 Style
-  borderRadius: {
-    sm: '12px',
-    md: '16px',
-    lg: '20px',
-    xl: '24px',
-    card: '20px',
-    button: '14px',
+  
+  // === EFFECTS ===
+  effects: {
+    glass: 'backdrop-filter backdrop-blur-[20px]',
+    glow: 'shadow-[0_0_30px_rgba(255,255,255,0.02)]',
+    transition: 'transition-all duration-300',
   },
+};
 
-  // Typography
-  typography: {
-    heading: {
-      fontSize: '3xl',
-      fontWeight: 'thin',
-      letterSpacing: 'tight',
-      color: 'text-white/90',
-    },
-    subheading: {
-      fontSize: 'xs',
-      fontWeight: 'light',
-      letterSpacing: '0.2em',
-      textTransform: 'uppercase',
-      color: 'text-white/40',
-    },
-    body: {
-      fontSize: 'sm',
-      fontWeight: 'light',
-      color: 'text-white/80',
-    },
-  },
-
-  // Components - iOS 26 Rounded Style
-  components: {
-    card: {
-      base: 'backdrop-filter backdrop-blur-[20px] border transition-all duration-300 rounded-[20px]',
-      glass: 'bg-white/[0.02] border-white/5 hover:bg-white/[0.03] rounded-[20px]',
-      glow: 'shadow-[0_0_30px_rgba(255,255,255,0.02)]',
-    },
-    button: {
-      primary: 'bg-gradient-to-r from-white/10 to-white/5 text-white/70 border border-white/10 hover:border-white/20 hover:text-white transition-all duration-300 rounded-[14px]',
-      secondary: 'bg-black/20 hover:bg-white/[0.03] border border-white/10 hover:border-white/20 text-white text-xs font-light transition-all duration-300 rounded-[14px]',
-      danger: 'bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 hover:border-red-500/50 text-red-400 transition-all duration-300 rounded-[14px]',
-    },
-    input: {
-      base: 'bg-black/20 border border-white/10 focus:border-white/30 text-white placeholder:text-white/30 transition-all duration-300 rounded-[14px]',
-    },
-    sidebar: {
-      item: {
-        base: 'group flex items-center gap-3 px-5 py-3 transition-all duration-300 border rounded-[14px]',
-        active: 'text-white bg-gradient-to-r from-white/10 to-white/5 border-white/20 shadow-lg',
-        inactive: 'text-white/40 hover:text-white/70 hover:bg-white/5 border-transparent hover:border-white/10',
+// Theme variants
+const themes = {
+  vendor: {
+    name: 'Vendor Portal',
+    colors: {
+      bg: {
+        primary: 'bg-black',
+        card: 'bg-white/[0.02]',
+        cardHover: 'hover:bg-white/[0.03]',
+        input: 'bg-black/20',
+        button: 'bg-white/10',
+        buttonHover: 'hover:bg-white/20',
+      },
+      border: {
+        default: 'border-white/5',
+        hover: 'hover:border-white/20',
+        focus: 'focus:border-white/30',
+        active: 'border-white/20',
+      },
+      text: {
+        primary: 'text-white/90',
+        secondary: 'text-white/60',
+        muted: 'text-white/40',
+        disabled: 'text-white/30',
+        label: 'text-white/40',
+      },
+      status: {
+        success: 'text-green-500',
+        warning: 'text-yellow-500',
+        error: 'text-red-500',
+        info: 'text-blue-500',
       },
     },
-    stat: {
-      container: 'bg-white/[0.02] backdrop-filter backdrop-blur-[20px] border border-white/5 p-6 hover:bg-white/[0.03] transition-all duration-300 shadow-[0_0_30px_rgba(255,255,255,0.02)] rounded-[20px]',
+    typography: {
+      h1: 'text-3xl font-thin text-white/90 tracking-tight',
+      h2: 'text-2xl font-thin text-white/90',
+      h3: 'text-xl font-light text-white/80',
+      body: 'text-sm text-white/80',
+      bodySmall: 'text-xs text-white/70',
       label: 'text-white/40 text-[11px] uppercase tracking-[0.2em] font-light',
-      value: 'text-3xl font-thin text-white/90',
-      description: 'text-white/30 text-[10px] font-light tracking-wider uppercase',
+      sublabel: 'text-white/30 text-[10px] font-light tracking-wider uppercase',
+      stat: 'text-3xl font-thin text-white/90',
+      code: 'font-mono text-xs',
+    },
+    components: {
+      card: 'bg-white/[0.02] backdrop-filter backdrop-blur-[20px] border border-white/5 rounded-[14px]',
+      cardHeader: 'border-b border-white/5 p-6',
+      cardContent: 'p-6',
+      cardHover: 'hover:bg-white/[0.03] transition-all duration-300',
+      button: {
+        base: 'px-6 py-3 text-xs uppercase tracking-wider transition-all duration-300 rounded-[14px]',
+        primary: 'bg-white/10 text-white border border-white/20 hover:bg-white/20',
+        secondary: 'bg-white/5 text-white/70 border border-white/10 hover:bg-white/10',
+        danger: 'bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500/20',
+        ghost: 'text-white/60 hover:text-white hover:bg-white/5',
+      },
+      input: 'w-full bg-black/20 border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/30 transition-all rounded-[14px] text-sm',
+      badge: {
+        base: 'px-2 py-1 text-xs font-medium uppercase tracking-wider border rounded-[8px]',
+        approved: 'bg-white/5 text-white/60 border-white/10',
+        pending: 'bg-white/5 text-white/60 border-white/10',
+        rejected: 'bg-red-500/10 text-red-500 border-red-500/20',
+        draft: 'bg-white/5 text-white/60 border-white/10',
+      },
+      stat: 'bg-white/[0.02] backdrop-filter backdrop-blur-[20px] border border-white/5 rounded-[14px] shadow-[0_0_30px_rgba(255,255,255,0.02)] p-6 hover:bg-white/[0.03] transition-all duration-300 group',
+      action: 'group bg-white/[0.02] backdrop-filter backdrop-blur-[20px] border border-white/5 rounded-[14px] hover:bg-white/[0.03] p-6 transition-all duration-300 flex items-center gap-4',
     },
   },
-
-  // Animations
-  animations: {
-    fadeIn: 'fade-in 0.6s ease-out',
-    subtlePulse: 'subtle-pulse 3s ease-in-out infinite',
-    gentleFloat: 'gentle-float 6s ease-in-out infinite',
+  
+  admin: {
+    name: 'Admin Console',
+    colors: {
+      bg: {
+        primary: 'bg-black',
+        card: 'bg-white/[0.02]',
+        cardHover: 'hover:bg-white/[0.03]',
+        input: 'bg-black/20',
+        button: 'bg-white/10',
+        buttonHover: 'hover:bg-white/20',
+      },
+      border: {
+        default: 'border-white/5',
+        hover: 'hover:border-white/20',
+        focus: 'focus:border-white/30',
+        active: 'border-white/20',
+      },
+      text: {
+        primary: 'text-white/90',
+        secondary: 'text-white/60',
+        muted: 'text-white/40',
+        disabled: 'text-white/30',
+        label: 'text-white/40',
+      },
+      status: {
+        success: 'text-green-500',
+        warning: 'text-yellow-500',
+        error: 'text-red-500',
+        info: 'text-blue-500',
+      },
+    },
+    typography: {
+      h1: 'text-3xl font-thin text-white/90 tracking-tight',
+      h2: 'text-2xl font-thin text-white/90',
+      h3: 'text-xl font-light text-white/80',
+      body: 'text-sm text-white/80',
+      bodySmall: 'text-xs text-white/70',
+      label: 'text-white/40 text-[11px] uppercase tracking-[0.2em] font-light',
+      sublabel: 'text-white/30 text-[10px] font-light tracking-wider uppercase',
+      stat: 'text-3xl font-thin text-white/90',
+      code: 'font-mono text-xs',
+    },
+    components: {
+      card: 'bg-white/[0.02] backdrop-filter backdrop-blur-[20px] border border-white/5 rounded-[20px]',
+      cardHeader: 'border-b border-white/5 p-6',
+      cardContent: 'p-6',
+      cardHover: 'hover:bg-white/[0.03] transition-all duration-300',
+      button: {
+        base: 'px-6 py-3 text-xs uppercase tracking-wider transition-all duration-300 rounded-[14px]',
+        primary: 'bg-white/10 text-white border border-white/20 hover:bg-white/20',
+        secondary: 'bg-white/5 text-white/70 border border-white/10 hover:bg-white/10',
+        danger: 'bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500/20',
+        ghost: 'text-white/60 hover:text-white hover:bg-white/5',
+      },
+      input: 'w-full bg-black/20 border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/30 transition-all rounded-[14px] text-sm',
+      badge: {
+        base: 'px-2 py-1 text-xs font-medium uppercase tracking-wider border rounded-[8px]',
+        approved: 'bg-white/5 text-white/60 border-white/10',
+        pending: 'bg-white/5 text-white/60 border-white/10',
+        rejected: 'bg-red-500/10 text-red-500 border-red-500/20',
+        draft: 'bg-white/5 text-white/60 border-white/10',
+      },
+      stat: 'bg-white/[0.02] backdrop-filter backdrop-blur-[20px] border border-white/5 rounded-[20px] shadow-[0_0_30px_rgba(255,255,255,0.02)] p-6 hover:bg-white/[0.03] transition-all duration-300 group',
+      action: 'group bg-white/[0.02] backdrop-filter backdrop-blur-[20px] border border-white/5 rounded-[20px] hover:bg-white/[0.03] p-6 transition-all duration-300 flex items-center gap-4',
+    },
   },
+};
 
-  // Spacing
-  spacing: {
-    section: 'mb-8',
-    cardPadding: 'p-6',
-    containerPadding: 'px-4 lg:px-0',
-  },
-} as const;
+/**
+ * Get theme by name
+ */
+export function getTheme(name: 'vendor' | 'admin') {
+  return {
+    ...baseTheme,
+    ...themes[name],
+  };
+}
 
-// CSS Keyframes to inject
-export const dashboardKeyframes = `
-  @keyframes fade-in {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-  @keyframes subtle-pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.8; }
-  }
-  @keyframes gentle-float {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-3px); }
-  }
-  @keyframes subtle-glow {
-    0%, 100% { box-shadow: 0 0 20px rgba(255, 255, 255, 0.03); }
-    50% { box-shadow: 0 0 30px rgba(255, 255, 255, 0.06); }
-  }
-`;
+/**
+ * Default export for vendor (backwards compatible)
+ */
+export const vendorTheme = getTheme('vendor');
+export const adminTheme = getTheme('admin');
 
-// Utility classes - iOS 26 Rounded Style
-export const luxuryClasses = {
-  minimalGlass: 'bg-white/[0.02] backdrop-filter backdrop-blur-[20px] border border-white/5 rounded-[20px]',
-  subtleGlow: 'shadow-[0_0_30px_rgba(255,255,255,0.02)]',
-  luxuryGlow: 'animate-[subtle-glow_4s_ease-in-out_infinite]',
-  luxuryBorder: 'border-image-[linear-gradient(135deg,rgba(255,255,255,0.1),rgba(255,255,255,0.03))_1]',
-  roundedCard: 'rounded-[20px]',
-  roundedButton: 'rounded-[14px]',
-  roundedInput: 'rounded-[14px]',
-  roundedSidebar: 'rounded-[14px]',
-} as const;
-
-// Helper function to apply theme classes
-export function cn(...classes: (string | undefined | null | false)[]): string {
+/**
+ * Helper to combine theme classes
+ */
+export function tw(...classes: (string | undefined | false)[]): string {
   return classes.filter(Boolean).join(' ');
 }
 
-// Dashboard stat card component props
-export interface DashboardStatProps {
-  label: string;
-  value: string | number;
-  description?: string;
-  icon?: React.ComponentType<any>;
-  trend?: {
-    value: number;
-    direction: 'up' | 'down';
-  };
-  delay?: string;
+/**
+ * Get component classes with theme awareness
+ */
+export function getComponentClasses(
+  theme: 'vendor' | 'admin',
+  component: string,
+  variant?: string,
+  extra?: string
+): string {
+  const themeObj = getTheme(theme);
+  const componentStyles = themeObj.components[component as keyof typeof themeObj.components];
+  
+  if (typeof componentStyles === 'string') {
+    return tw(componentStyles, extra);
+  }
+  
+  if (typeof componentStyles === 'object' && variant) {
+    return tw(componentStyles[variant as keyof typeof componentStyles], extra);
+  }
+  
+  return extra || '';
 }
 
-// Chart color scheme
-export const chartColors = {
-  primary: '#ffffff',
-  gradient: {
-    start: 'rgba(255,255,255,0.1)',
-    end: 'rgba(255,255,255,0)',
-  },
-  grid: '#ffffff10',
-  text: '#ffffff40',
-} as const;
+/**
+ * Dashboard keyframes for animations
+ */
+export const dashboardKeyframes = `
+  @keyframes subtle-glow {
+    0%, 100% { box-shadow: 0 0 20px rgba(255, 255, 255, 0.02); }
+    50% { box-shadow: 0 0 30px rgba(255, 255, 255, 0.05); }
+  }
+`;
 
+/**
+ * Type exports
+ */
+export type ThemeName = 'vendor' | 'admin';
+export type Theme = ReturnType<typeof getTheme>;

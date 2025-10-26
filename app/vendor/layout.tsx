@@ -3,12 +3,16 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Home, Package, BarChart3, Settings, LogOut, Palette, ShoppingBag, FileText, DollarSign, Star, ChevronLeft, Menu, X, MapPin, Globe, Image, PenTool, TrendingUp, Users } from 'lucide-react';
+import { LogOut, Menu, X } from 'lucide-react';
 import VendorSupportChat from '@/components/VendorSupportChat';
 import AIActivityMonitor from '@/components/AIActivityMonitor';
 import { useVendorAuth, VendorAuthProvider } from '@/context/VendorAuthContext';
 import { showConfirm } from '@/components/NotificationToast';
 import { dashboardKeyframes } from '@/lib/dashboard-theme';
+import { vendorNavItems, mobileNavItems } from '@/lib/vendor-navigation';
+import { prefetchVendorData } from '@/hooks/useVendorData';
+import { useAutoHideHeader } from '@/hooks/useAutoHideHeader';
+import '../globals-dashboard.css';
 
 function VendorLayoutContent({
   children,
@@ -18,8 +22,7 @@ function VendorLayoutContent({
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [vendorLogo, setVendorLogo] = useState<string>('/yacht-club-logo.png');
-  const [isVisible, setIsVisible] = useState(true);
-  const [lastScrollY, setLastScrollY] = useState(0);
+  const isVisible = useAutoHideHeader(); // ✅ Shared hook - no memory leak
   const pathname = usePathname();
   const router = useRouter();
   const { vendor, isAuthenticated, isLoading, logout } = useVendorAuth();
@@ -27,7 +30,7 @@ function VendorLayoutContent({
   // Protect vendor routes - redirect to login if not authenticated
   useEffect(() => {
     // Allow special pages without auth
-    if (pathname === '/vendor/login' || pathname === '/vendor/component-editor') {
+    if (pathname === '/vendor/login') {
       return;
     }
     
@@ -35,46 +38,6 @@ function VendorLayoutContent({
       router.push('/vendor/login');
     }
   }, [isLoading, isAuthenticated, pathname, router]);
-
-  // Auto-hide header on scroll
-  useEffect(() => {
-    let ticking = false;
-    let rafId: number | null = null;
-
-    const controlHeader = () => {
-      const currentScrollY = window.scrollY;
-
-      // Show header when at top
-      if (currentScrollY < 10) {
-        setIsVisible(true);
-      }
-      // Hide when scrolling down, show when scrolling up
-      else if (currentScrollY > lastScrollY && currentScrollY > 100) {
-        setIsVisible(false);
-      } else if (currentScrollY < lastScrollY) {
-        setIsVisible(true);
-      }
-
-      setLastScrollY(currentScrollY);
-      ticking = false;
-    };
-
-    const onScroll = () => {
-      if (!ticking) {
-        rafId = window.requestAnimationFrame(controlHeader);
-        ticking = true;
-      }
-    };
-
-    window.addEventListener("scroll", onScroll, { passive: true });
-    
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      if (rafId !== null) {
-        window.cancelAnimationFrame(rafId);
-      }
-    };
-  }, [lastScrollY]);
 
   // Vendor logo - use default for now (can be added to Supabase vendors table later)
   useEffect(() => {
@@ -85,26 +48,20 @@ function VendorLayoutContent({
     }
   }, [isAuthenticated, vendor]);
 
-  const navItems = [
-    { href: '/vendor/dashboard', icon: Home, label: 'Overview' },
-    { href: '/vendor/analytics', icon: TrendingUp, label: 'Analytics' },
-    { href: '/vendor/orders', icon: ShoppingBag, label: 'Transactions' },
-    { href: '/vendor/products', icon: Package, label: 'Catalog' },
-    { href: '/vendor/inventory', icon: BarChart3, label: 'Inventory' },
-    { href: '/vendor/pricing', icon: DollarSign, label: 'Pricing' },
-    { href: '/vendor/media-library', icon: Image, label: 'Media' },
-    { href: '/vendor/locations', icon: MapPin, label: 'Locations' },
-    { href: '/vendor/purchase-orders', icon: FileText, label: 'Purchase Orders' },
-    { href: '/vendor/lab-results', icon: FileText, label: 'Lab Results' },
-    { href: '/vendor/payouts', icon: DollarSign, label: 'Payouts' },
-    { href: '/vendor/reviews', icon: Star, label: 'Reviews' },
-    { href: '/vendor/component-editor', icon: PenTool, label: 'Component Editor' },
-    { href: '/vendor/branding', icon: Palette, label: 'Branding' },
-    { href: '/vendor/domains', icon: Globe, label: 'Domains' },
-    { href: '/vendor/settings', icon: Settings, label: 'Settings' },
-  ];
+  // Prefetch data on hover for faster navigation
+  const handleNavHover = (href: string) => {
+    const dataEndpoint = {
+      '/vendor/dashboard': '/api/page-data/vendor-dashboard',
+      '/vendor/products': '/api/page-data/vendor-products',
+      '/vendor/inventory': '/api/page-data/vendor-inventory',
+    }[href];
+    
+    if (dataEndpoint) {
+      prefetchVendorData(dataEndpoint);
+    }
+  };
 
-  const currentPage = navItems.find(item => pathname?.startsWith(item.href))?.label || 'Portal';
+  const currentPage = vendorNavItems.find(item => pathname?.startsWith(item.href))?.label || 'Portal';
   const isActive = (href: string) => pathname?.startsWith(href);
 
   const vendorName = vendor?.store_name || 'Vendor';
@@ -118,13 +75,17 @@ function VendorLayoutContent({
     );
   }
 
-  // Allow login page without auth
-  if (pathname === '/vendor/login') {
+  // Component editor needs special layout (full screen, no navigation)
+  if (pathname === '/vendor/component-editor') {
+    // Still require auth for component editor
+    if (!isAuthenticated) {
+      return null; // Will redirect via useEffect
+    }
     return <>{children}</>;
   }
 
-  // Component editor needs special layout (no navigation)
-  if (pathname === '/vendor/component-editor') {
+  // Allow login page without auth
+  if (pathname === '/vendor/login') {
     return <>{children}</>;
   }
 
@@ -297,7 +258,7 @@ function VendorLayoutContent({
             </div>
 
             <nav className="flex-1 overflow-y-auto p-3 relative z-10">
-              {navItems.map((item) => {
+              {vendorNavItems.map((item) => {
                 const Icon = item.icon;
                 const active = isActive(item.href);
                 return (
@@ -305,6 +266,7 @@ function VendorLayoutContent({
                     key={item.href}
                     href={item.href}
                     onClick={() => setMobileMenuOpen(false)}
+                    onMouseEnter={() => handleNavHover(item.href)}
                     className={`flex items-center justify-between px-4 py-3 mb-1 rounded-[14px] transition-all duration-300 border ${
                       active 
                         ? 'bg-gradient-to-r from-white/10 to-white/5 text-white border-white/20 shadow-lg' 
@@ -394,13 +356,14 @@ function VendorLayoutContent({
           }}
         >
           <nav className="p-4 space-y-1 pb-8">
-            {navItems.map((item) => {
+            {vendorNavItems.map((item) => {
               const Icon = item.icon;
               const active = isActive(item.href);
               return (
                 <Link
                   key={item.href}
                   href={item.href}
+                  onMouseEnter={() => handleNavHover(item.href)}
                   className={`group flex items-center gap-3 px-5 py-3 transition-all duration-300 border rounded-[14px] ${
                     active
                       ? 'text-white bg-gradient-to-r from-white/10 to-white/5 border-white/20 shadow-lg'
@@ -432,12 +395,7 @@ function VendorLayoutContent({
         }}
       >
         <div className="flex items-center justify-around px-2 pt-2 pb-1">
-          {[
-            { href: '/vendor/dashboard', icon: Home, label: 'Overview' },
-            { href: '/vendor/products', icon: Package, label: 'Catalog' },
-            { href: '/vendor/orders', icon: ShoppingBag, label: 'Orders' },
-            { href: '/vendor/settings', icon: Settings, label: 'Settings' },
-          ].map((item) => {
+          {mobileNavItems.map((item) => {
             const Icon = item.icon;
             const active = isActive(item.href);
             return (

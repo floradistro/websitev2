@@ -9,6 +9,8 @@ import {
 } from 'lucide-react';
 import { showConfirm } from '@/components/NotificationToast';
 import AdminProtectedRoute from '@/components/AdminProtectedRoute';
+import { useAutoHideHeader } from '@/hooks/useAutoHideHeader';
+import '../globals-dashboard.css';
 
 export default function AdminLayout({
   children,
@@ -16,47 +18,9 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [isVisible, setIsVisible] = useState(true);
-  const [lastScrollY, setLastScrollY] = useState(0);
+  const isVisible = useAutoHideHeader(); // ✅ Shared hook - no memory leak
   const pathname = usePathname();
   const router = useRouter();
-
-  // Auto-hide header on scroll
-  useEffect(() => {
-    let ticking = false;
-    let rafId: number | null = null;
-
-    const controlHeader = () => {
-      const currentScrollY = window.scrollY;
-
-      if (currentScrollY < 10) {
-        setIsVisible(true);
-      } else if (currentScrollY > lastScrollY && currentScrollY > 100) {
-        setIsVisible(false);
-      } else if (currentScrollY < lastScrollY) {
-        setIsVisible(true);
-      }
-
-      setLastScrollY(currentScrollY);
-      ticking = false;
-    };
-
-    const onScroll = () => {
-      if (!ticking) {
-        rafId = window.requestAnimationFrame(controlHeader);
-        ticking = true;
-      }
-    };
-
-    window.addEventListener("scroll", onScroll, { passive: true });
-    
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      if (rafId !== null) {
-        window.cancelAnimationFrame(rafId);
-      }
-    };
-  }, [lastScrollY]);
 
   const navItems = [
     { href: '/admin/dashboard', icon: Home, label: 'Overview' },
@@ -103,86 +67,6 @@ export default function AdminLayout({
 
   return (
     <AdminProtectedRoute>
-      <style jsx global>{`
-        @supports (padding-bottom: env(safe-area-inset-bottom)) {
-          .safe-bottom {
-            padding-bottom: calc(env(safe-area-inset-bottom) + 4rem);
-          }
-        }
-        body {
-          overflow-x: hidden;
-          max-width: 100vw;
-          background: #000000;
-        }
-        * {
-          box-sizing: border-box;
-        }
-        input, textarea, select {
-          font-size: 16px !important;
-        }
-        input[type="url"], input[type="text"], input[type="email"] {
-          word-break: break-all;
-        }
-        @media (max-width: 1024px) {
-          table {
-            display: none !important;
-          }
-        }
-        .scrollbar-hide {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
-        .scrollbar-hide::-webkit-scrollbar {
-          display: none;
-        }
-        @keyframes subtle-glow {
-          0%, 100% { box-shadow: 0 0 20px rgba(255, 255, 255, 0.03); }
-          50% { box-shadow: 0 0 30px rgba(255, 255, 255, 0.06); }
-        }
-        .luxury-glow {
-          animation: subtle-glow 4s ease-in-out infinite;
-        }
-        .luxury-border {
-          border-image: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.03)) 1;
-        }
-        /* Sidebar scrollbar */
-        aside::-webkit-scrollbar {
-          width: 6px;
-        }
-        aside::-webkit-scrollbar-track {
-          background: transparent;
-        }
-        aside::-webkit-scrollbar-thumb {
-          background: rgba(255, 255, 255, 0.1);
-          border-radius: 3px;
-        }
-        aside::-webkit-scrollbar-thumb:hover {
-          background: rgba(255, 255, 255, 0.2);
-        }
-        aside {
-          scrollbar-width: thin;
-          scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
-        }
-        /* Main content scrollbar */
-        main::-webkit-scrollbar {
-          width: 8px;
-        }
-        main::-webkit-scrollbar-track {
-          background: transparent;
-        }
-        main::-webkit-scrollbar-thumb {
-          background: rgba(255, 255, 255, 0.1);
-          border-radius: 4px;
-        }
-        main::-webkit-scrollbar-thumb:hover {
-          background: rgba(255, 255, 255, 0.2);
-        }
-        main {
-          scrollbar-width: thin;
-          scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
-        }
-      `}</style>
-
       {/* PWA Safe Area Spacer */}
       <div 
         className="fixed top-0 left-0 right-0 z-[120] pointer-events-none bg-black"

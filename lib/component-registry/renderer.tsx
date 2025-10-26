@@ -35,6 +35,7 @@ const COMPONENT_MAP: Record<string, React.ComponentType<any>> = {
   'smart_product_detail': Smart.SmartProductDetail,
   'smart_header': Smart.SmartHeader,
   'smart_footer': Smart.SmartFooter,
+  'smart_shop_controls': Smart.SmartShopControls,
 };
 
 export interface DynamicComponentProps {
@@ -58,7 +59,11 @@ export function DynamicComponent({
   isPreviewMode = false,
   isSelected = false,
   onInlineEdit,
-}: DynamicComponentProps) {
+  vendorId,
+  vendorSlug,
+  vendorName,
+  vendorLogo,
+}: DynamicComponentProps & { vendorId?: string; vendorSlug?: string; vendorName?: string; vendorLogo?: string }) {
   const Component = COMPONENT_MAP[componentKey];
   
   if (!Component) {
@@ -70,6 +75,7 @@ export function DynamicComponent({
   }
   
   // Merge props with field bindings and inline edit support
+  // For smart components, inject vendorId and other vendor data
   const mergedProps = {
     ...props,
     ...fieldBindings,
@@ -77,6 +83,7 @@ export function DynamicComponent({
     isPreviewMode,
     isSelected,
     onInlineEdit,
+    ...(componentKey.startsWith('smart_') && vendorId ? { vendorId, vendorSlug, vendorName, vendorLogo } : {}),
   };
   
   try {
@@ -119,7 +126,11 @@ export function DynamicSection({
   isPreviewMode = false,
   onComponentSelect,
   selectedComponentId,
-}: DynamicSectionProps) {
+  vendorId,
+  vendorSlug,
+  vendorName,
+  vendorLogo,
+}: DynamicSectionProps & { vendorId?: string; vendorSlug?: string; vendorName?: string; vendorLogo?: string }) {
   // Filter to enabled and visible components, then sort by position
   const activeComponents = componentInstances
     .filter(c => c.is_enabled !== false && c.is_visible !== false)
@@ -174,6 +185,10 @@ export function DynamicSection({
               fieldBindings={instance.field_bindings}
               isPreviewMode={isPreviewMode}
               isSelected={isSelected}
+              vendorId={vendorId}
+              vendorSlug={vendorSlug}
+              vendorName={vendorName}
+              vendorLogo={vendorLogo}
               onInlineEdit={(updates) => {
                 // Send inline edit updates to parent via postMessage
                 if (typeof window !== 'undefined' && window.parent) {

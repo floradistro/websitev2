@@ -1,9 +1,26 @@
 "use client";
 
 import { useEffect, useState } from 'react';
+import dynamic from 'next/dynamic';
 import { useVendorAuth } from '@/context/VendorAuthContext';
-import { TrendingUp, TrendingDown, DollarSign, Package, ShoppingCart, Users, BarChart3, Activity, Target, AlertCircle } from 'lucide-react';
-import { LineChart, Line, AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { 
+  TrendingUp, TrendingDown, DollarSign, Package, ShoppingCart, 
+  Users, BarChart3, Activity, Target, AlertCircle 
+} from '@/lib/icons';
+import { useVendorAnalytics } from '@/hooks/useVendorData';
+
+// Lazy load charts for better performance
+const LineChart = dynamic(() => import('recharts').then(m => ({ default: m.LineChart })), { ssr: false });
+const AreaChart = dynamic(() => import('recharts').then(m => ({ default: m.AreaChart })), { ssr: false });
+const BarChart = dynamic(() => import('recharts').then(m => ({ default: m.BarChart })), { ssr: false });
+const Line = dynamic(() => import('recharts').then(m => ({ default: m.Line })), { ssr: false });
+const Area = dynamic(() => import('recharts').then(m => ({ default: m.Area })), { ssr: false });
+const Bar = dynamic(() => import('recharts').then(m => ({ default: m.Bar })), { ssr: false });
+const XAxis = dynamic(() => import('recharts').then(m => ({ default: m.XAxis })), { ssr: false });
+const YAxis = dynamic(() => import('recharts').then(m => ({ default: m.YAxis })), { ssr: false });
+const CartesianGrid = dynamic(() => import('recharts').then(m => ({ default: m.CartesianGrid })), { ssr: false });
+const Tooltip = dynamic(() => import('recharts').then(m => ({ default: m.Tooltip })), { ssr: false });
+const ResponsiveContainer = dynamic(() => import('recharts').then(m => ({ default: m.ResponsiveContainer })), { ssr: false });
 
 interface AnalyticsData {
   revenue: {
@@ -34,60 +51,19 @@ interface AnalyticsData {
 
 export default function VendorAnalytics() {
   const { vendor } = useVendorAuth();
-  const [loading, setLoading] = useState(true);
   const [timeRange, setTimeRange] = useState('30d');
-  const [analytics, setAnalytics] = useState<AnalyticsData>({
+  const { data: analyticsResponse, loading } = useVendorAnalytics(timeRange);
+  
+  const analytics: AnalyticsData = (analyticsResponse as any)?.analytics || {
     revenue: { total: 0, trend: 0, data: [] },
     orders: { total: 0, trend: 0, avgValue: 0 },
     products: { total: 0, topPerformers: [] },
     costs: { totalCost: 0, avgMargin: 0, profitability: 0 },
     inventory: { turnoverRate: 0, stockValue: 0, lowStockCount: 0 },
-  });
-
-  useEffect(() => {
-    loadAnalytics();
-  }, [timeRange]);
-
-  async function loadAnalytics() {
-    setLoading(true);
-    try {
-      const vendorId = localStorage.getItem('vendor_id');
-      if (!vendorId) return;
-
-      const response = await fetch(`/api/vendor/analytics?vendor_id=${vendorId}&range=${timeRange}`);
-      const data = await response.json();
-      
-      if (data.success) {
-        setAnalytics(data.analytics);
-      }
-    } catch (error) {
-      console.error('Error loading analytics:', error);
-    } finally {
-      setLoading(false);
-    }
-  }
+  };
 
   return (
     <div className="w-full px-4 lg:px-0">
-      <style jsx>{`
-        @keyframes fade-in {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .fade-in {
-          animation: fade-in 0.6s ease-out;
-        }
-        .minimal-glass {
-          background: rgba(255, 255, 255, 0.02);
-          backdrop-filter: blur(20px);
-          border: 1px solid rgba(255, 255, 255, 0.05);
-          border-radius: 20px;
-        }
-        .subtle-glow {
-          box-shadow: 0 0 30px rgba(255, 255, 255, 0.02);
-        }
-      `}</style>
-
       {/* Header */}
       <div className="mb-12 fade-in flex items-center justify-between">
         <div>

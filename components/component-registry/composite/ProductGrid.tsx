@@ -8,6 +8,7 @@ import { ProductCard } from './ProductCard';
 
 export interface ProductGridProps {
   products: any[];
+  locations?: any[];
   columns?: 2 | 3 | 4 | 5;
   gap?: 'sm' | 'md' | 'lg';
   showPrice?: boolean;
@@ -21,6 +22,7 @@ export interface ProductGridProps {
 
 export function ProductGrid({
   products,
+  locations = [],
   columns = 3,
   gap = 'md',
   showPrice = true,
@@ -54,11 +56,13 @@ export function ProductGrid({
   }
   
   return (
-    <div className={`grid ${columnClasses[columns]} ${gapClasses[gap]} ${className}`}>
-      {products.map(product => (
+    <div className={`grid ${columnClasses[columns]} ${gapClasses[gap]} pt-8 ${className}`} style={{ overflow: 'visible' }}>
+      {products.map((product, index) => (
         <ProductCard
           key={product.id}
           product={product}
+          index={index}
+          locations={locations}
           showPrice={showPrice}
           showQuickAdd={showQuickAdd}
           imageAspect={imageAspect}

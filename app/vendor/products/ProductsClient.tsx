@@ -1,0 +1,658 @@
+"use client";
+
+import { useEffect, useState, useMemo } from 'react';
+import Link from 'next/link';
+import { 
+  Plus, Search, Package, ChevronDown, ChevronUp, Edit2, Save, X,
+  Image as ImageIcon, DollarSign, FileText, Trash2, AlertCircle
+} from 'lucide-react';
+import { useVendorAuth } from '@/context/VendorAuthContext';
+import { showNotification, showConfirm } from '@/components/NotificationToast';
+import axios from 'axios';
+
+// Types
+interface Product {
+  id: string;
+  name: string;
+  sku: string;
+  category: string;
+  price: number;
+  cost_price?: number;
+  description?: string;
+  status: 'approved' | 'pending' | 'rejected';
+  total_stock: number;
+  custom_fields: any[];
+  pricing_tiers: any[];
+  images: string[];
+}
+
+export default function ProductsClient() {
+  const { isAuthenticated } = useVendorAuth();
+  
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'approved' | 'pending' | 'rejected'>('all');
+  const [categoryFilter, setCategoryFilter] = useState<string>('all');
+  
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [editingProduct, setEditingProduct] = useState<Record<string, any>>({});
+  const [saving, setSaving] = useState<Record<string, boolean>>({});
+  
+  const [page, setPage] = useState(1);
+  const ITEMS_PER_PAGE = 20;
+
+  // Load products
+  const loadProducts = async () => {
+    try {
+      const vendorId = localStorage.getItem('vendor_id');
+      if (!vendorId) {
+        setLoading(false);
+        return;
+      }
+
+      setLoading(true);
+      const response = await axios.get('/api/vendor/products/full', {
+        headers: { 'x-vendor-id': vendorId },
+        timeout: 30000
+      });
+
+      if (response.data.success) {
+        setProducts(response.data.products || []);
+        setLoading(false);
+      } else {
+        setLoading(false);
+      }
+    } catch (error: any) {
+      console.error('Products load error:', error);
+      showNotification({
+        type: 'error',
+        title: 'Load Failed',
+        message: error.response?.data?.error || 'Failed to load products'
+      });
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      loadProducts();
+    }
+  }, [isAuthenticated]);
+
+  // Filter products
+  const filteredProducts = useMemo(() => {
+    let items = [...products];
+
+    if (search) {
+      const s = search.toLowerCase();
+      items = items.filter(p => 
+        p.name.toLowerCase().includes(s) ||
+        (p.sku && p.sku.toLowerCase().includes(s))
+      );
+    }
+
+    if (statusFilter !== 'all') {
+      items = items.filter(p => p.status === statusFilter);
+    }
+
+    if (categoryFilter !== 'all') {
+      items = items.filter(p => p.category === categoryFilter);
+    }
+
+    return items;
+  }, [products, search, statusFilter, categoryFilter]);
+
+  // Paginated products
+  const paginatedProducts = useMemo(() => {
+    const start = (page - 1) * ITEMS_PER_PAGE;
+    const end = start + ITEMS_PER_PAGE;
+    return filteredProducts.slice(start, end);
+  }, [filteredProducts, page]);
+
+  const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
+
+  // Get categories
+  const categories = useMemo(() => {
+    const cats = new Set(products.map(p => p.category));
+    return ['all', ...Array.from(cats)];
+  }, [products]);
+
+  // Stats
+  const stats = useMemo(() => {
+    const total = products.length;
+    const approved = products.filter(p => p.status === 'approved').length;
+    const pending = products.filter(p => p.status === 'pending').length;
+    const rejected = products.filter(p => p.status === 'rejected').length;
+
+    return { total, approved, pending, rejected };
+  }, [products]);
+
+  // Save product updates
+  const handleSaveProduct = async (productId: string) => {
+    setSaving(prev => ({ ...prev, [productId]: true }));
+
+    try {
+      const vendorId = localStorage.getItem('vendor_id');
+      
+      console.log('Saving product updates:', editingProduct[productId]);
+      
+      const response = await axios.patch('/api/vendor/products/update', {
+        product_id: productId,
+        updates: editingProduct[productId]
+      }, {
+        headers: { 'x-vendor-id': vendorId }
+      });
+
+      console.log('Save response:', response.data);
+
+      if (response.data.success) {
+        await loadProducts();
+        setEditingProduct(prev => {
+          const { [productId]: _, ...rest } = prev;
+          return rest;
+        });
+        
+        showNotification({
+          type: 'success',
+          title: 'Saved',
+          message: 'Product updated successfully'
+        });
+      } else {
+        throw new Error(response.data.error || 'Save failed');
+      }
+    } catch (error: any) {
+      console.error('Product save error:', error);
+      showNotification({
+        type: 'error',
+        title: 'Failed',
+        message: error.response?.data?.error || error.message || 'Failed to save product'
+      });
+    } finally {
+      setSaving(prev => ({ ...prev, [productId]: false }));
+    }
+  };
+
+  // Delete product
+  const handleDeleteProduct = async (productId: string, productName: string) => {
+    await showConfirm({
+      title: 'Delete Product',
+      message: `Are you sure you want to delete "${productName}"? This will remove it from all locations.`,
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      type: 'warning',
+      onConfirm: async () => {
+        try {
+          const vendorId = localStorage.getItem('vendor_id');
+          const response = await axios.delete(`/api/vendor/products?product_id=${productId}`, {
+            headers: { 'x-vendor-id': vendorId }
+          });
+
+          if (response.data.success) {
+            showNotification({
+              type: 'success',
+              title: 'Deleted',
+              message: 'Product deleted successfully'
+            });
+            loadProducts();
+          }
+        } catch (error: any) {
+          showNotification({
+            type: 'error',
+            title: 'Delete Failed',
+            message: error.response?.data?.error || 'Failed to delete product'
+          });
+        }
+      }
+    });
+  };
+
+  if (loading) {
+    return (
+      <div className="w-full px-4 lg:px-0 py-12">
+        <div className="minimal-glass p-12 text-center">
+          <div className="w-16 h-16 border-4 border-white/20 border-t-white rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-white/60 text-sm uppercase tracking-wider">Loading Catalog...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-full px-4 lg:px-0">
+      {/* Header */}
+      <div className="mb-8 fade-in">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-3xl font-thin text-white/90 tracking-tight mb-2">
+              Product Catalog
+            </h1>
+            <p className="text-white/40 text-xs font-light tracking-wide uppercase">
+              {filteredProducts.length} of {products.length} Products · Full Builder
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <Link
+              href="/vendor/pricing"
+              className="px-6 py-3 bg-white/5 text-white/70 border border-white/10 hover:bg-white/10 hover:text-white transition-all duration-300 rounded-[14px] text-xs uppercase tracking-wider flex items-center gap-2"
+            >
+              <DollarSign size={14} />
+              Pricing
+            </Link>
+            <Link
+              href="/vendor/products/new"
+              className="px-6 py-3 bg-white/10 text-white border border-white/20 hover:bg-white/20 transition-all duration-300 rounded-[14px] text-xs uppercase tracking-wider flex items-center gap-2"
+            >
+              <Plus size={14} />
+              Add Product
+            </Link>
+          </div>
+        </div>
+
+        {/* Stats */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <div className="minimal-glass p-6">
+            <div className="text-white/40 text-[10px] uppercase tracking-wider mb-3">Total</div>
+            <div className="text-3xl font-thin text-white">{stats.total}</div>
+          </div>
+          <div className="minimal-glass p-6">
+            <div className="text-white/40 text-[10px] uppercase tracking-wider mb-3">Approved</div>
+            <div className="text-3xl font-thin text-white">{stats.approved}</div>
+          </div>
+          <div className="minimal-glass p-6">
+            <div className="text-white/40 text-[10px] uppercase tracking-wider mb-3">Pending</div>
+            <div className="text-3xl font-thin text-white/70">{stats.pending}</div>
+          </div>
+          <div className="minimal-glass p-6">
+            <div className="text-white/40 text-[10px] uppercase tracking-wider mb-3">Rejected</div>
+            <div className="text-3xl font-thin text-white/50">{stats.rejected}</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Filters */}
+      <div className="minimal-glass p-6 mb-6 fade-in" style={{ animationDelay: '0.1s' }}>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div className="relative">
+            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" />
+            <input
+              type="text"
+              placeholder="Search products..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full bg-black/20 border border-white/10 text-white placeholder-white/30 pl-10 pr-4 py-3 focus:outline-none focus:border-white/30 transition-all rounded-[14px] text-sm"
+            />
+          </div>
+
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value as any)}
+            className="bg-black/20 border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/30 transition-all rounded-[14px] text-sm"
+          >
+            <option value="all">All Status</option>
+            <option value="approved">Approved</option>
+            <option value="pending">Pending Review</option>
+            <option value="rejected">Rejected</option>
+          </select>
+
+          <select
+            value={categoryFilter}
+            onChange={(e) => setCategoryFilter(e.target.value)}
+            className="bg-black/20 border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/30 transition-all rounded-[14px] text-sm"
+          >
+            {categories.map(cat => (
+              <option key={cat} value={cat}>
+                {cat === 'all' ? 'All Categories' : cat}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      {/* Product List */}
+      {filteredProducts.length === 0 ? (
+        <div className="minimal-glass p-16 text-center">
+          <Package size={64} className="text-white/20 mx-auto mb-6" />
+          <p className="text-white/60 text-lg mb-2">No products found</p>
+          <Link
+            href="/vendor/products/new"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-white/10 text-white border border-white/20 hover:bg-white/20 transition-all rounded-[14px] text-sm uppercase tracking-wider mt-4"
+          >
+            <Plus size={16} />
+            Add Your First Product
+          </Link>
+        </div>
+      ) : (
+        <>
+          <div className="space-y-3 fade-in" style={{ animationDelay: '0.2s' }}>
+            {paginatedProducts.map((product) => {
+            const isExpanded = expandedId === product.id;
+            const isEditing = editingProduct[product.id];
+            const isSaving = saving[product.id];
+            
+            return (
+              <div key={product.id} className="minimal-glass overflow-hidden">
+                {/* Main Row */}
+                <div className="p-6 hover:bg-white/[0.02] transition-all cursor-pointer" onClick={() => setExpandedId(isExpanded ? null : product.id)}>
+                  <div className="flex items-center gap-6">
+                    {/* Product Info */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-3 mb-2">
+                        <h3 className="text-white font-medium text-lg">{product.name}</h3>
+                        <span className="px-2 py-1 text-[10px] uppercase tracking-wider border border-white/20 text-white/60 rounded-[8px]">
+                          {product.status}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-3 text-sm text-white/60">
+                        {product.sku && <span>SKU: {product.sku}</span>}
+                        {product.sku && <span>•</span>}
+                        <span>{product.category}</span>
+                        <span>•</span>
+                        <span>{product.total_stock.toFixed(2)}g in stock</span>
+                      </div>
+                    </div>
+
+                    {/* Pricing */}
+                    <div className="text-right">
+                      <div className="text-2xl font-thin text-white mb-1">${product.price.toFixed(2)}</div>
+                      <div className="text-white/40 text-xs">per gram</div>
+                      {product.cost_price && (
+                        <div className="text-white/50 text-xs mt-1">
+                          Cost: ${product.cost_price.toFixed(2)}/g
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex items-center gap-2">
+                      <Link
+                        href={`/vendor/inventory?product=${product.id}`}
+                        className="px-4 py-2 bg-white/5 border border-white/10 text-white/70 hover:bg-white/10 hover:text-white transition-all rounded-[10px] text-xs uppercase tracking-wider"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        Stock
+                      </Link>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setExpandedId(isExpanded ? null : product.id);
+                        }}
+                        className="text-white/40 hover:text-white transition-colors p-2"
+                      >
+                        {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Expanded - Full Product Builder */}
+                {isExpanded && (
+                  <div className="border-t border-white/10 bg-black/20">
+                    {/* Basic Info */}
+                    <div className="p-6 border-b border-white/10">
+                      <div className="flex items-center justify-between mb-4">
+                        <h4 className="text-white/60 text-xs uppercase tracking-wider font-medium">Product Information</h4>
+                        {!isEditing && (
+                          <button
+                            onClick={() => setEditingProduct(prev => ({
+                              ...prev,
+                              [product.id]: {
+                                name: product.name,
+                                sku: product.sku,
+                                price: product.price,
+                                cost_price: product.cost_price,
+                                description: product.description
+                              }
+                            }))}
+                            className="px-3 py-1.5 bg-white/5 border border-white/10 text-white/70 hover:bg-white/10 hover:text-white transition-all rounded-[10px] text-xs uppercase tracking-wider flex items-center gap-1"
+                          >
+                            <Edit2 size={12} />
+                            Edit
+                          </button>
+                        )}
+                      </div>
+
+                      {isEditing ? (
+                        <div className="space-y-4">
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <label className="text-white/40 text-xs mb-2 block">Product Name</label>
+                              <input
+                                type="text"
+                                value={isEditing.name || ''}
+                                onChange={(e) => setEditingProduct(prev => ({
+                                  ...prev,
+                                  [product.id]: { ...prev[product.id], name: e.target.value }
+                                }))}
+                                className="w-full bg-black/20 border border-white/10 text-white px-3 py-2 rounded-[10px] focus:outline-none focus:border-white/30"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-white/40 text-xs mb-2 block">SKU</label>
+                              <input
+                                type="text"
+                                value={isEditing.sku || ''}
+                                onChange={(e) => setEditingProduct(prev => ({
+                                  ...prev,
+                                  [product.id]: { ...prev[product.id], sku: e.target.value }
+                                }))}
+                                className="w-full bg-black/20 border border-white/10 text-white px-3 py-2 rounded-[10px] focus:outline-none focus:border-white/30"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-white/40 text-xs mb-2 block">Price ($/g)</label>
+                              <input
+                                type="number"
+                                step="0.01"
+                                value={isEditing.price || ''}
+                                onChange={(e) => setEditingProduct(prev => ({
+                                  ...prev,
+                                  [product.id]: { ...prev[product.id], price: parseFloat(e.target.value) }
+                                }))}
+                                className="w-full bg-black/20 border border-white/10 text-white px-3 py-2 rounded-[10px] focus:outline-none focus:border-white/30"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-white/40 text-xs mb-2 block">Cost ($/g)</label>
+                              <input
+                                type="number"
+                                step="0.01"
+                                value={isEditing.cost_price || ''}
+                                onChange={(e) => setEditingProduct(prev => ({
+                                  ...prev,
+                                  [product.id]: { ...prev[product.id], cost_price: parseFloat(e.target.value) }
+                                }))}
+                                className="w-full bg-black/20 border border-white/10 text-white px-3 py-2 rounded-[10px] focus:outline-none focus:border-white/30"
+                              />
+                            </div>
+                          </div>
+                          <div>
+                            <label className="text-white/40 text-xs mb-2 block">Description</label>
+                            <textarea
+                              value={isEditing.description || ''}
+                              onChange={(e) => setEditingProduct(prev => ({
+                                ...prev,
+                                [product.id]: { ...prev[product.id], description: e.target.value }
+                              }))}
+                              rows={4}
+                              className="w-full bg-black/20 border border-white/10 text-white px-3 py-2 rounded-[10px] focus:outline-none focus:border-white/30 resize-none"
+                            />
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <button
+                              onClick={() => handleSaveProduct(product.id)}
+                              disabled={isSaving}
+                              className="px-6 py-2 bg-white/10 text-white border border-white/20 hover:bg-white/20 disabled:opacity-30 transition-all rounded-[12px] text-xs uppercase tracking-wider flex items-center gap-2"
+                            >
+                              <Save size={14} />
+                              {isSaving ? 'Saving...' : 'Save Changes'}
+                            </button>
+                            <button
+                              onClick={() => setEditingProduct(prev => {
+                                const { [product.id]: _, ...rest } = prev;
+                                return rest;
+                              })}
+                              className="px-4 py-2 text-white/60 hover:text-white transition-colors text-xs uppercase tracking-wider"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                          <div>
+                            <div className="text-white/40 text-xs mb-1">Price</div>
+                            <div className="text-white">${product.price.toFixed(2)}/g</div>
+                          </div>
+                          {product.cost_price && (
+                            <div>
+                              <div className="text-white/40 text-xs mb-1">Cost</div>
+                              <div className="text-white">${product.cost_price.toFixed(2)}/g</div>
+                            </div>
+                          )}
+                          <div>
+                            <div className="text-white/40 text-xs mb-1">SKU</div>
+                            <div className="text-white">{product.sku || 'N/A'}</div>
+                          </div>
+                          <div>
+                            <div className="text-white/40 text-xs mb-1">Stock</div>
+                            <div className="text-white">{product.total_stock.toFixed(2)}g</div>
+                          </div>
+                        </div>
+                      )}
+
+                      {product.description && !isEditing && (
+                        <div className="mt-4 pt-4 border-t border-white/10">
+                          <div className="text-white/40 text-xs mb-2">Description</div>
+                          <div className="text-white/70 text-sm leading-relaxed">{product.description}</div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Custom Fields */}
+                    {product.custom_fields && product.custom_fields.length > 0 && (
+                      <div className="p-6 border-b border-white/10">
+                        <div className="flex items-center gap-2 mb-4">
+                          <FileText size={16} className="text-white/60" />
+                          <h4 className="text-white/60 text-xs uppercase tracking-wider font-medium">Custom Fields</h4>
+                        </div>
+                        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+                          {product.custom_fields.map((field: any, idx: number) => (
+                            <div key={idx}>
+                              <div className="text-white/40 text-xs mb-1">{field.field_name.replace(/_/g, ' ').toUpperCase()}</div>
+                              <div className="text-white text-sm">{field.field_value || 'N/A'}</div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Pricing Tiers */}
+                    {product.pricing_tiers && product.pricing_tiers.length > 0 && (
+                      <div className="p-6 border-b border-white/10">
+                        <div className="flex items-center gap-2 mb-4">
+                          <DollarSign size={16} className="text-white/60" />
+                          <h4 className="text-white/60 text-xs uppercase tracking-wider font-medium">Volume Pricing</h4>
+                        </div>
+                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                          {product.pricing_tiers.map((tier: any, idx: number) => (
+                            <div key={idx} className="bg-white/5 border border-white/10 p-4 rounded-[12px]">
+                              <div className="text-white/40 text-xs mb-2">{tier.label}</div>
+                              <div className="text-white text-lg font-medium">${tier.price.toFixed(2)}</div>
+                              <div className="text-white/40 text-xs mt-1">
+                                {tier.min_qty && `${tier.min_qty}${tier.max_qty ? `-${tier.max_qty}` : '+'} ${tier.unit || 'g'}`}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Actions Footer */}
+                    <div className="p-6 bg-black/40 flex items-center justify-between">
+                      <Link
+                        href={`/vendor/products/${product.id}/edit`}
+                        className="px-6 py-2 bg-white/10 text-white border border-white/20 hover:bg-white/20 transition-all rounded-[12px] text-xs uppercase tracking-wider flex items-center gap-2"
+                      >
+                        <Edit2 size={14} />
+                        Full Editor
+                      </Link>
+                      <button
+                        onClick={() => handleDeleteProduct(product.id, product.name)}
+                        className="px-4 py-2 bg-black/40 border border-white/10 text-white/50 hover:bg-white/5 hover:text-white/70 transition-all rounded-[12px] text-xs uppercase tracking-wider flex items-center gap-2"
+                      >
+                        <Trash2 size={14} />
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+          </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="minimal-glass p-4 mt-6 flex items-center justify-between">
+              <div className="text-white/60 text-sm">
+                Showing {((page - 1) * ITEMS_PER_PAGE) + 1}-{Math.min(page * ITEMS_PER_PAGE, filteredProducts.length)} of {filteredProducts.length}
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setPage(p => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                  className="px-4 py-2 bg-white/5 text-white/70 border border-white/10 hover:bg-white/10 hover:text-white disabled:opacity-20 disabled:cursor-not-allowed transition-all rounded-[10px] text-sm"
+                >
+                  Previous
+                </button>
+                <div className="flex items-center gap-1">
+                  {[...Array(Math.min(5, totalPages))].map((_, idx) => {
+                    const pageNum = idx + 1;
+                    return (
+                      <button
+                        key={pageNum}
+                        onClick={() => setPage(pageNum)}
+                        className={`w-10 h-10 rounded-[10px] text-sm transition-all ${
+                          page === pageNum
+                            ? 'bg-white/10 text-white border border-white/20'
+                            : 'bg-white/5 text-white/60 border border-white/10 hover:bg-white/10 hover:text-white'
+                        }`}
+                      >
+                        {pageNum}
+                      </button>
+                    );
+                  })}
+                  {totalPages > 5 && (
+                    <>
+                      <span className="text-white/40 px-2">...</span>
+                      <button
+                        onClick={() => setPage(totalPages)}
+                        className={`w-10 h-10 rounded-[10px] text-sm transition-all ${
+                          page === totalPages
+                            ? 'bg-white/10 text-white border border-white/20'
+                            : 'bg-white/5 text-white/60 border border-white/10 hover:bg-white/10 hover:text-white'
+                        }`}
+                      >
+                        {totalPages}
+                      </button>
+                    </>
+                  )}
+                </div>
+                <button
+                  onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                  disabled={page === totalPages}
+                  className="px-4 py-2 bg-white/5 text-white/70 border border-white/10 hover:bg-white/10 hover:text-white disabled:opacity-20 disabled:cursor-not-allowed transition-all rounded-[10px] text-sm"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+

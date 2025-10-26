@@ -79,14 +79,20 @@ function StorefrontProductCard({ product, vendorSlug, locations = [], config = {
     
     // Field configuration with proper labels - ALL available fields from API
     const fieldConfig: { [key: string]: string } = {
-      // Flower fields
+      // Flower fields (including new custom fields)
+      'thca_percentage': 'THCA',
+      'delta9_percentage': 'Δ9',
+      'thc_content': 'THC',
+      'cbd_content': 'CBD',
       'strain_type': 'Type',
       'lineage': 'Lineage',
+      'genetics': 'Genetics',
       'nose': 'Nose',
       'terpene_profile': 'Terpenes',
       'terpenes': 'Terpenes',
       'effects': 'Effects',
       'effect': 'Effects',
+      'flavors': 'Flavors',
       // Vape fields
       'hardware_type': 'Hardware',
       'oil_type': 'Oil',
@@ -121,6 +127,11 @@ function StorefrontProductCard({ product, vendorSlug, locations = [], config = {
         if (Array.isArray(value)) {
           displayValue = value.length > 0 ? value.join(', ') : '—';
         } 
+        // Handle percentage fields (THCA, Delta-9)
+        else if (key === 'thca_percentage' || key === 'delta9_percentage') {
+          const numValue = typeof value === 'string' ? parseFloat(value) : value;
+          displayValue = !isNaN(numValue) ? `${numValue}%` : String(value);
+        }
         // Handle numbers
         else if (typeof value === 'number') {
           displayValue = String(value);

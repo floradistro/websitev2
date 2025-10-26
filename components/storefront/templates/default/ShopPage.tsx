@@ -81,7 +81,7 @@ export default function ShopPage({ vendorId }: ShopPageProps) {
             No products available at the moment.
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 pt-8">
             {products.map((product) => (
               <ProductCard 
                 key={product.id}

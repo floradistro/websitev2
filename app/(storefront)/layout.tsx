@@ -12,6 +12,7 @@ import { getServiceSupabase } from '@/lib/supabase/client';
 import { ComponentBasedPageRenderer } from '@/components/storefront/ComponentBasedPageRenderer';
 import '@/app/globals.css';
 import './storefront.css';
+import Script from 'next/script';
 
 export const dynamic = 'force-dynamic';
 
@@ -140,6 +141,7 @@ export default async function StorefrontLayout({
           </StorefrontThemeProvider>
         </CartProvider>
       </WishlistProvider>
+      <Script src="/visual-editor.js" strategy="afterInteractive" />
     </AuthProvider>
   );
 }

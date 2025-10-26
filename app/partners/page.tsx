@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft, Store, BarChart3, Palette, DollarSign, Users, CheckCircle } from "lucide-react";
+import { motion } from 'framer-motion';
 
 export default function PartnersPage() {
   return (
@@ -45,11 +46,13 @@ export default function PartnersPage() {
             </div>
           </div>
           <h1 className="text-5xl md:text-7xl font-light mb-6 tracking-tight">
-            Partner Program
+            Build platforms
+            <br />
+            <span className="text-white/60">not products.</span>
           </h1>
           <div className="h-[1px] w-32 bg-gradient-to-r from-transparent via-white/30 to-transparent mx-auto mb-8"></div>
           <p className="text-xl text-white/50 font-light leading-relaxed max-w-2xl mx-auto">
-            Build your brand with enterprise infrastructure. Launch unlimited storefronts with complete control.
+            Multi-tenant infrastructure where each tenant gets a complete business system. AI-generated.
           </p>
         </div>
 
@@ -73,115 +76,97 @@ export default function PartnersPage() {
         `}</style>
       </section>
 
-      {/* What You Get */}
+      {/* The Vision */}
       <section className="py-20 px-4">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl font-light mb-12 text-center tracking-tight">What Partners Get</h2>
-          <div className="grid md:grid-cols-3 gap-px bg-white/5">
-            <div className="bg-black p-10 border border-white/10">
-              <Store className="text-white/40 mb-4" size={32} strokeWidth={1} />
-              <h3 className="text-xl font-light mb-3">Unlimited Storefronts</h3>
-              <p className="text-white/50 text-sm leading-relaxed">
-                Create and manage unlimited branded storefronts. Each with custom domains, themes, and complete independence.
-              </p>
-            </div>
-            <div className="bg-black p-10 border border-white/10">
-              <Palette className="text-white/40 mb-4" size={32} strokeWidth={1} />
-              <h3 className="text-xl font-light mb-3">Visual Builder</h3>
-              <p className="text-white/50 text-sm leading-relaxed">
-                Drag-and-drop interface with pre-built components. No coding required, but full code access if you want it.
-              </p>
-            </div>
-            <div className="bg-black p-10 border border-white/10">
-              <BarChart3 className="text-white/40 mb-4" size={32} strokeWidth={1} />
-              <h3 className="text-xl font-light mb-3">Advanced Analytics</h3>
-              <p className="text-white/50 text-sm leading-relaxed">
-                Real-time performance metrics, conversion tracking, and comprehensive insights for every storefront.
-              </p>
-            </div>
-            <div className="bg-black p-10 border border-white/10">
-              <DollarSign className="text-white/40 mb-4" size={32} strokeWidth={1} />
-              <h3 className="text-xl font-light mb-3">Revenue Tracking</h3>
-              <p className="text-white/50 text-sm leading-relaxed">
-                Detailed profit margins, commission calculations, and automated financial reporting.
-              </p>
-            </div>
-            <div className="bg-black p-10 border border-white/10">
-              <Users className="text-white/40 mb-4" size={32} strokeWidth={1} />
-              <h3 className="text-xl font-light mb-3">White Label Ready</h3>
-              <p className="text-white/50 text-sm leading-relaxed">
-                Complete brand control. Your logo, your colors, your identity. We're invisible to your customers.
-              </p>
-            </div>
-            <div className="bg-black p-10 border border-white/10">
-              <CheckCircle className="text-white/40 mb-4" size={32} strokeWidth={1} />
-              <h3 className="text-xl font-light mb-3">Priority Support</h3>
-              <p className="text-white/50 text-sm leading-relaxed">
-                Direct access to our engineering team. 24/7 support, dedicated account manager, and priority bug fixes.
-              </p>
-            </div>
+        <div className="max-w-4xl mx-auto">
+          <div className="border border-white/10 p-16 text-center">
+            <h2 className="text-4xl font-light mb-8 tracking-tight leading-tight">
+              Enterprise-grade infrastructure.
+              <br />
+              <span className="text-white/60">AI-generated ecosystems.</span>
+            </h2>
+            <p className="text-white/40">
+              Retail operations. Wholesale networks. POS systems. Inventory. Analytics. Everything a business needs to operate.
+            </p>
           </div>
         </div>
       </section>
 
-      {/* Pricing */}
+      {/* What You Get */}
       <section className="py-20 px-4">
         <div className="max-w-4xl mx-auto">
-          <h2 className="text-3xl font-light mb-12 text-center tracking-tight">Partner Pricing</h2>
-          <div className="border border-white/10 p-12">
-            <div className="space-y-8">
-              <div className="text-center">
-                <div className="text-5xl font-light mb-4">$99<span className="text-2xl text-white/40">/month</span></div>
-                <p className="text-white/50">Platform access + unlimited storefronts</p>
-              </div>
-              <div className="h-[1px] bg-white/10"></div>
-              <div className="space-y-4">
-                <div className="flex items-start gap-3">
-                  <CheckCircle className="text-white/40 mt-1" size={20} />
-                  <div>
-                    <h4 className="text-white/90 font-light mb-1">Unlimited Storefronts</h4>
-                    <p className="text-white/40 text-sm">No limits on the number of stores you can create</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <CheckCircle className="text-white/40 mt-1" size={20} />
-                  <div>
-                    <h4 className="text-white/90 font-light mb-1">Custom Domains</h4>
-                    <p className="text-white/40 text-sm">Connect unlimited custom domains with auto SSL</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <CheckCircle className="text-white/40 mt-1" size={20} />
-                  <div>
-                    <h4 className="text-white/90 font-light mb-1">Full API Access</h4>
-                    <p className="text-white/40 text-sm">Complete REST API with webhook support</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <CheckCircle className="text-white/40 mt-1" size={20} />
-                  <div>
-                    <h4 className="text-white/90 font-light mb-1">99.9% Uptime SLA</h4>
-                    <p className="text-white/40 text-sm">Enterprise-grade reliability guarantee</p>
-                  </div>
-                </div>
-              </div>
-            </div>
+          <div className="space-y-12 text-center">
+            {[
+              { title: "Complete infrastructure", desc: "E-commerce, POS, wholesale, inventory" },
+              { title: "Infinite tenants", desc: "Each isolated, each with full capabilities" },
+              { title: "White label", desc: "Your platform, our engine" }
+            ].map((item, i) => (
+              <motion.div 
+                key={item.title}
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ duration: 0.8, delay: i * 0.2, ease: [0.16, 1, 0.3, 1] }}
+                whileHover={{ scale: 1.03, borderColor: "rgba(255,255,255,0.2)" }}
+                className="border border-white/10 p-12 transition-all duration-500"
+              >
+                <motion.h3 
+                  initial={{ opacity: 0 }}
+                  whileInView={{ opacity: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.6, delay: i * 0.2 + 0.3 }}
+                  className="text-2xl font-light mb-4 text-white"
+                >
+                  {item.title}
+                </motion.h3>
+                <motion.p 
+                  initial={{ opacity: 0 }}
+                  whileInView={{ opacity: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.6, delay: i * 0.2 + 0.5 }}
+                  className="text-white/40"
+                >
+                  {item.desc}
+                </motion.p>
+              </motion.div>
+            ))}
           </div>
         </div>
       </section>
+
+      {/* For */}
+      <section className="py-20 px-4">
+        <div className="max-w-3xl mx-auto text-center">
+          <p className="text-white/40 text-sm uppercase tracking-[0.3em] mb-12">
+            Use cases
+          </p>
+          <div className="space-y-4">
+            <p className="text-white/60 text-xl font-light">Multi-vendor marketplaces</p>
+            <p className="text-white/60 text-xl font-light">SaaS platforms with customer portals</p>
+            <p className="text-white/60 text-xl font-light">Agency white-label solutions</p>
+            <p className="text-white/60 text-xl font-light">Vertical-specific commerce</p>
+          </div>
+        </div>
+      </section>
+
 
       {/* CTA */}
       <section className="py-20 px-4">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-4xl font-light mb-8 tracking-tight">Ready to Partner?</h2>
-          <p className="text-white/50 mb-12 text-lg">Join hundreds of partners building successful commerce businesses on WhaleTools.</p>
-          <Link
-            href="/vendor/login"
-            className="inline-flex items-center bg-white text-black px-8 py-4 rounded-full text-sm uppercase tracking-[0.2em] hover:bg-white/90 font-medium transition-all"
-          >
-            Start Free Trial
-          </Link>
-          <p className="text-white/40 text-sm mt-6">14-day free trial · No credit card required</p>
+          <div className="border border-white/10 p-16">
+            <h2 className="text-4xl font-light mb-8 tracking-tight">
+              Interested?
+            </h2>
+            <p className="text-white/40 text-sm uppercase tracking-[0.3em] mb-12">
+              partners@whaletools.dev
+            </p>
+            <Link
+              href="/vendor/login"
+              className="inline-flex items-center bg-white text-black px-8 py-4 rounded-full text-sm uppercase tracking-[0.2em] hover:bg-white/90 font-medium transition-all"
+            >
+              Request Access
+            </Link>
+          </div>
         </div>
       </section>
 

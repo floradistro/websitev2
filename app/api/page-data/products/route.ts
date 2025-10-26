@@ -30,6 +30,7 @@ export async function GET(request: NextRequest) {
           id,
           name,
           slug,
+          description,
           price,
           regular_price,
           sale_price,
@@ -129,11 +130,36 @@ export async function GET(request: NextRequest) {
       const fields: { [key: string]: any } = {};
       const blueprintFields = p.blueprint_fields || {};
       
-      // If it's an array (old format), convert it
+      // Label to field_id mapping
+      const labelToFieldId: { [key: string]: string } = {
+        'Strain Type': 'strain_type',
+        'Genetics': 'genetics',
+        'THC Content': 'thc_content',
+        'CBD Content': 'cbd_content',
+        'Dominant Terpenes': 'terpenes',
+        'Effects': 'effects',
+        'Flavors': 'flavors',
+        'Lineage': 'lineage',
+        'Nose': 'nose',
+      };
+      
+      // If it's an array, convert it
       if (Array.isArray(blueprintFields)) {
         blueprintFields.forEach((field: any) => {
-          if (field && field.field_name && field.field_value) {
-            fields[field.field_name] = field.field_value;
+          if (field) {
+            // New format with label/value from our strain update
+            if (field.label && field.value !== undefined) {
+              const fieldId = labelToFieldId[field.label] || field.label.toLowerCase().replace(/\s+/g, '_');
+              fields[fieldId] = field.value;
+            }
+            // Old format: {field_name, field_value}
+            else if (field.field_name && field.field_value !== undefined) {
+              fields[field.field_name] = field.field_value;
+            }
+            // Another format: {field_id, value}
+            else if (field.field_id && field.value !== undefined) {
+              fields[field.field_id] = field.value;
+            }
           }
         });
       } 
@@ -154,6 +180,7 @@ export async function GET(request: NextRequest) {
         id: p.id,
         name: p.name,
         slug: p.slug,
+        description: p.description,
         price: p.price,
         regular_price: p.regular_price,
         sale_price: p.sale_price,

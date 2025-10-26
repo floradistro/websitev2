@@ -8,7 +8,7 @@ import { ComponentBasedPageRenderer } from '@/components/storefront/ComponentBas
 
 export const dynamic = 'force-dynamic';
 
-export default async function StorefrontHomePage({ searchParams }: { searchParams: Promise<{ vendor?: string; preview?: string }> }) {
+export default async function StorefrontHomePage({ searchParams }: { searchParams: Promise<{ vendor?: string; preview?: string; editor?: string }> }) {
   // Check if template preview mode (no vendor)
   const headersList = await headers();
   const tenantType = headersList.get('x-tenant-type');
@@ -67,7 +67,7 @@ export default async function StorefrontHomePage({ searchParams }: { searchParam
 
   // Regular vendor storefront
   const params = await searchParams;
-  const isPreview = params.preview === 'true';
+  const isPreview = params.preview === 'true' || params.editor === 'true';
   
   const vendorId = await getVendorFromHeaders();
   
