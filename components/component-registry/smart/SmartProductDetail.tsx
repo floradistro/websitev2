@@ -59,6 +59,8 @@ export function SmartProductDetail({
   const [addedToCart, setAddedToCart] = useState(false);
   const [loading, setLoading] = useState(true);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [fulfillmentMethod, setFulfillmentMethod] = useState<'delivery' | 'pickup'>('delivery');
+  const [pickupLocationId, setPickupLocationId] = useState<string>('');
 
   const { addToCart } = useCart();
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
