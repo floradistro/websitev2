@@ -1,54 +1,69 @@
 "use strict";
 /**
- * Template Engine - Applies golden templates to vendor data
- * Instead of generating from scratch, customizes proven templates
+ * Template Engine V2 - Fully Database-Driven
+ * Reads templates from Supabase instead of hardcoded files
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.selectTemplate = selectTemplate;
 exports.applyTemplate = applyTemplate;
-exports.generateCompliancePages = generateCompliancePages;
+exports.fetchComplianceContent = fetchComplianceContent;
 exports.addComplianceSections = addComplianceSections;
-const wilsons_1 = require("./wilsons");
+const supabase_js_1 = require("@supabase/supabase-js");
 /**
- * Select template based on vendor type
+ * Get Supabase client
  */
-function selectTemplate(vendorType) {
-    const templates = {
-        cannabis: wilsons_1.VERCEL_CANNABIS_TEMPLATE,
-        dispensary: wilsons_1.VERCEL_CANNABIS_TEMPLATE,
-        thc: wilsons_1.VERCEL_CANNABIS_TEMPLATE,
-        cbd: wilsons_1.VERCEL_CANNABIS_TEMPLATE,
-    };
-    return templates[vendorType.toLowerCase()] || wilsons_1.VERCEL_CANNABIS_TEMPLATE;
+function getSupabaseClient() {
+    const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://uaednwpxursknmwdeejn.supabase.co';
+    const supabaseKey = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY ||
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVhZWRud3B4dXJza25td2RlZWpuIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MDk5NzIzMywiZXhwIjoyMDc2NTczMjMzfQ.l0NvBbS2JQWPObtWeVD2M2LD866A2tgLmModARYNnbI';
+    return (0, supabase_js_1.createClient)(supabaseUrl, supabaseKey);
 }
 /**
- * Apply template to vendor data
- * Replaces {{placeholders}} with actual vendor info
+ * Fetch template from database
  */
-function applyTemplate(vendorData) {
-    const template = selectTemplate(vendorData.vendor_type || 'cannabis');
+async function fetchTemplate(templateId = 'b17045df-9bf8-4abe-8d5b-bfd09ed3ccd0') {
+    const supabase = getSupabaseClient();
+    const { data, error } = await supabase
+        .from('section_template_components')
+        .select('*')
+        .eq('template_id', templateId)
+        .order('position_order');
+    if (error || !data) {
+        throw new Error(`Failed to fetch template: ${error?.message}`);
+    }
+    return data;
+}
+/**
+ * Apply template to vendor data (now reads from database)
+ */
+async function applyTemplate(vendorData) {
+    console.log('📖 Fetching Wilson\'s Template from Supabase...');
+    const templateComponents = await fetchTemplate();
+    console.log(`✅ Loaded ${templateComponents.length} components from database`);
     const sections = [];
     const components = [];
-    // Extract all page structures
-    const allPageSections = template.all_pages;
-    // Process each section
-    allPageSections.forEach((sectionDef) => {
-        // Add section
-        sections.push({
-            section_key: sectionDef.section_key,
-            section_order: sectionDef.section_order,
-            page_type: sectionDef.page_type || 'home'
-        });
-        // Process components
-        sectionDef.components.forEach((componentDef, idx) => {
-            const processedProps = processProps(componentDef.props || {}, vendorData);
-            // Add component normally (smart components handle their own empty states)
-            components.push({
-                section_key: sectionDef.section_key,
-                component_key: componentDef.component_key,
-                props: processedProps,
-                position_order: components.length
+    const seenSections = new Set();
+    // Process components and extract sections
+    templateComponents.forEach((comp) => {
+        const config = comp.container_config || {};
+        const sectionKey = config.section_key;
+        const pageType = config.page_type || 'home';
+        // Add section if not already added (use composite key)
+        const sectionCompositeKey = `${pageType}:${sectionKey}`;
+        if (sectionKey && !seenSections.has(sectionCompositeKey)) {
+            sections.push({
+                section_key: sectionKey,
+                section_order: config.section_order || 0,
+                page_type: pageType
             });
+            seenSections.add(sectionCompositeKey);
+        }
+        // Process component props (replace {{placeholders}})
+        const processedProps = processProps(comp.props || {}, vendorData);
+        components.push({
+            section_key: sectionKey,
+            component_key: comp.component_key,
+            props: processedProps,
+            position_order: comp.position_order
         });
     });
     return {
@@ -62,7 +77,7 @@ function applyTemplate(vendorData) {
 function processProps(props, vendorData) {
     const processed = {};
     for (const [key, value] of Object.entries(props)) {
-        if (typeof value === 'string') {
+        if (typeof value === 'string' && value.includes('{{')) {
             processed[key] = replacePlaceholders(value, vendorData);
         }
         else {
@@ -82,68 +97,28 @@ function replacePlaceholders(text, vendorData) {
         .replace(/\{\{vendor\.logo_url\}\}/g, vendorData.logo_url || '/default-logo.png');
 }
 /**
- * Generate compliance page content
+ * Fetch compliance content from database
  */
-function generateCompliancePages(vendorData) {
-    return {
-        medical_disclaimer: wilsons_1.COMPLIANCE_CONTENT.medical_disclaimer,
-        age_requirement: wilsons_1.COMPLIANCE_CONTENT.age_requirement,
-        shipping_disclaimer: wilsons_1.COMPLIANCE_CONTENT.shipping_disclaimer,
-        lab_testing: wilsons_1.COMPLIANCE_CONTENT.lab_testing_statement,
-        privacy_highlight: wilsons_1.COMPLIANCE_CONTENT.privacy_highlight
-    };
+async function fetchComplianceContent(templateId = 'b17045df-9bf8-4abe-8d5b-bfd09ed3ccd0', contentType) {
+    const supabase = getSupabaseClient();
+    let query = supabase
+        .from('template_compliance_content')
+        .select('*')
+        .eq('template_id', templateId);
+    if (contentType) {
+        query = query.eq('content_type', contentType);
+    }
+    const { data, error } = await query.order('display_order');
+    if (error) {
+        console.error('Error fetching compliance content:', error);
+        return [];
+    }
+    return data || [];
 }
 /**
- * Add FAQ and About sections to template
+ * Add compliance sections (reads from database)
  */
-function addComplianceSections(baseTemplate, vendorData) {
-    const enhanced = { ...baseTemplate };
-    // Add FAQ section
-    const faqSection = {
-        section_key: 'faq',
-        section_order: baseTemplate.sections.length - 1, // Before footer
-        page_type: 'home'
-    };
-    const faqComponents = [
-        { component_key: 'spacer', props: { height: 60 }, position_order: 0 },
-        { component_key: 'divider', props: { color: 'rgba(255,255,255,0.1)', thickness: 1 }, position_order: 1 },
-        { component_key: 'spacer', props: { height: 60 }, position_order: 2 },
-        { component_key: 'text', props: { text: 'FREQUENTLY ASKED QUESTIONS', size: 'medium', color: 'rgba(255,255,255,0.6)', alignment: 'center', font_weight: '400' }, position_order: 3 },
-        { component_key: 'spacer', props: { height: 16 }, position_order: 4 },
-        { component_key: 'text', props: { text: 'Everything you need to know', size: 'small', color: 'rgba(255,255,255,0.4)', alignment: 'center', font_weight: '300' }, position_order: 5 },
-        { component_key: 'spacer', props: { height: 48 }, position_order: 6 },
-        { component_key: 'text', props: { text: 'Q: How long does delivery take?', size: 'small', color: '#ffffff', alignment: 'center', font_weight: '500' }, position_order: 7 },
-        { component_key: 'spacer', props: { height: 8 }, position_order: 8 },
-        { component_key: 'text', props: { text: 'A: Same-day delivery for orders before 2 PM. Standard delivery is 1-2 business days.', size: 'small', color: 'rgba(255,255,255,0.5)', alignment: 'center', font_weight: '300' }, position_order: 9 },
-        { component_key: 'spacer', props: { height: 32 }, position_order: 10 },
-        { component_key: 'text', props: { text: 'Q: Are products lab tested?', size: 'small', color: '#ffffff', alignment: 'center', font_weight: '500' }, position_order: 11 },
-        { component_key: 'spacer', props: { height: 8 }, position_order: 12 },
-        { component_key: 'text', props: { text: 'A: Yes. Every product is third-party tested. Lab certificates available for all items.', size: 'small', color: 'rgba(255,255,255,0.5)', alignment: 'center', font_weight: '300' }, position_order: 13 },
-        { component_key: 'spacer', props: { height: 32 }, position_order: 14 },
-        { component_key: 'text', props: { text: 'Q: Is delivery discreet?', size: 'small', color: '#ffffff', alignment: 'center', font_weight: '500' }, position_order: 15 },
-        { component_key: 'spacer', props: { height: 8 }, position_order: 16 },
-        { component_key: 'text', props: { text: 'A: Absolutely. Plain, unmarked, odor-proof packaging for complete privacy.', size: 'small', color: 'rgba(255,255,255,0.5)', alignment: 'center', font_weight: '300' }, position_order: 17 },
-        { component_key: 'spacer', props: { height: 60 }, position_order: 18 }
-    ];
-    // Insert FAQ before footer
-    const footerIndex = enhanced.sections.findIndex(s => s.section_key === 'footer');
-    if (footerIndex > 0) {
-        enhanced.sections.splice(footerIndex, 0, faqSection);
-        // Reorder sections
-        enhanced.sections = enhanced.sections.map((s, idx) => ({
-            ...s,
-            section_order: s.section_key === 'header' ? -1 :
-                s.section_key === 'footer' ? 999 : idx
-        }));
-    }
-    // Add FAQ components
-    faqComponents.forEach(comp => {
-        enhanced.components.push({
-            section_key: 'faq',
-            component_key: comp.component_key,
-            props: comp.props,
-            position_order: comp.position_order
-        });
-    });
-    return enhanced;
+function addComplianceSections(design, vendorData) {
+    // Already included in template from database
+    return design;
 }

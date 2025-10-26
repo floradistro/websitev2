@@ -9,7 +9,12 @@
     "start": "node dist/index.js",
     "test": "tsx src/test.ts"
   },
-  "keywords": ["ai", "agent", "storefront", "claude"],
+  "keywords": [
+    "ai",
+    "agent",
+    "storefront",
+    "claude"
+  ],
   "author": "Yacht Club",
   "license": "MIT",
   "dependencies": {
@@ -18,6 +23,7 @@
     "@supabase/supabase-js": "^2.47.10",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
+    "exa-js": "^1.10.2",
     "express": "^4.21.2"
   },
   "devDependencies": {

@@ -1,45 +1,30 @@
 #!/bin/bash
 
-# ============================================================================
-# SUPABASE DATABASE CONFIGURATION
-# This file provides permanent database access for all Cursor AI sessions
-# ============================================================================
+# Supabase Database Configuration
+# Permanent credentials for Yacht Club project
 
-export DB_HOST="db.uaednwpxursknmwdeejn.supabase.co"
-export DB_PORT="5432"
-export DB_USER="postgres"
-export DB_NAME="postgres"
-export DB_PASS="SelahEsco123!!"
+export SUPABASE_HOST="db.uaednwpxursknmwdeejn.supabase.co"
+export SUPABASE_PORT="5432"
+export SUPABASE_USER="postgres"
+export SUPABASE_PASSWORD="SelahEsco123!!"
+export SUPABASE_DB="postgres"
 
-# Connection string for easy access
-export DATABASE_URL="postgresql://${DB_USER}:${DB_PASS}@${DB_HOST}:${DB_PORT}/${DB_NAME}"
+export DATABASE_URL="postgresql://postgres:SelahEsco123!!@db.uaednwpxursknmwdeejn.supabase.co:5432/postgres"
 
-# Helper function to run SQL
-function run_sql() {
-  PGPASSWORD="$DB_PASS" psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" "$@"
+# Helper function for quick queries
+db_query() {
+    psql "$DATABASE_URL" -c "$1"
 }
 
-# Helper function to run SQL from file
-function run_sql_file() {
-  PGPASSWORD="$DB_PASS" psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -f "$1"
+# Helper function for SQL files
+db_file() {
+    psql "$DATABASE_URL" -f "$1"
 }
 
-# Helper function to run SQL command directly
-function query() {
-  PGPASSWORD="$DB_PASS" psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -c "$1"
-}
-
-# Export functions
-export -f run_sql
-export -f run_sql_file
-export -f query
+# Flora Distro Vendor ID
+export FLORA_DISTRO_ID="cd2e1122-d511-4edb-be5d-98ef274b4baf"
 
 echo "✅ Database config loaded"
-echo "   Host: $DB_HOST"
-echo "   Database: $DB_NAME"
-echo ""
-echo "📋 Available commands:"
-echo "   run_sql -c 'SELECT NOW();'"
-echo "   run_sql_file migration.sql"
-echo "   query 'SELECT COUNT(*) FROM products;'"
-
+echo "   Host: $SUPABASE_HOST"
+echo "   Database: $SUPABASE_DB"
+echo "   Flora Distro ID: $FLORA_DISTRO_ID"

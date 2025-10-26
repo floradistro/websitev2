@@ -80,15 +80,17 @@ export async function applyTemplate(vendorData: VendorData): Promise<AppliedTemp
   templateComponents.forEach((comp: any) => {
     const config = comp.container_config || {};
     const sectionKey = config.section_key;
+    const pageType = config.page_type || 'home';
     
-    // Add section if not already added
-    if (sectionKey && !seenSections.has(sectionKey)) {
+    // Add section if not already added (use composite key)
+    const sectionCompositeKey = `${pageType}:${sectionKey}`;
+    if (sectionKey && !seenSections.has(sectionCompositeKey)) {
       sections.push({
         section_key: sectionKey,
         section_order: config.section_order || 0,
-        page_type: config.page_type || 'home'
+        page_type: pageType
       });
-      seenSections.add(sectionKey);
+      seenSections.add(sectionCompositeKey);
     }
 
     // Process component props (replace {{placeholders}})

@@ -1,8 +1,21 @@
 /**
  * Component Registry Context for AI Agent
- * Tells Claude what components are available
+ * COMPLETE REGISTRY - All smart components, all pages, 100% coverage
  */
 
+import { COMPLETE_SMART_COMPONENT_REGISTRY, COMPLETE_PAGE_STRUCTURE, WHALETOOLS_DESIGN_SYSTEM } from './smart-component-registry';
+import { COMPLETE_AGENT_INSTRUCTIONS, CANNABIS_VENDOR_SPECIFIC_CONTENT } from './agent-instructions';
+
+// Export complete registry for agent
+export { 
+  COMPLETE_SMART_COMPONENT_REGISTRY,
+  COMPLETE_PAGE_STRUCTURE,
+  WHALETOOLS_DESIGN_SYSTEM,
+  COMPLETE_AGENT_INSTRUCTIONS,
+  CANNABIS_VENDOR_SPECIFIC_CONTENT
+};
+
+// Legacy registry for backwards compatibility
 export const COMPONENT_REGISTRY = {
   smart_components: {
     smart_product_grid: {

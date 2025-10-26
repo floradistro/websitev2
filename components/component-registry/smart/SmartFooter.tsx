@@ -124,20 +124,21 @@ export function SmartFooter({
 
   return (
     <footer className={`relative border-t ${borderColor} ${backgroundColor}`}>
-      <div className="max-w-7xl mx-auto px-6 py-16">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-16 sm:py-20">
         {/* Footer Columns */}
-        <div className={`grid grid-cols-2 md:grid-cols-${columns.length} gap-8 md:gap-12`}>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12 mb-12">
           {columns.map((column, colIndex) => (
             <div key={colIndex}>
-              <h3 className="text-xs uppercase tracking-[0.12em] font-black mb-4 text-white" style={{ fontWeight: 900 }}>
+              <h3 className="text-[10px] sm:text-xs uppercase tracking-[0.15em] font-black mb-4 sm:mb-6 text-white/40" style={{ fontWeight: 900 }}>
                 {column.title}
               </h3>
-              <ul className="space-y-2.5 text-sm">
+              <ul className="space-y-2 sm:space-y-3">
                 {column.links.map((link, linkIndex) => (
                   <li key={linkIndex}>
                     <Link 
                       href={getHref(link.href)} 
-                      className={`${textColor} hover:text-white transition-colors font-normal`}
+                      className="text-xs sm:text-sm text-white/60 hover:text-white transition-colors uppercase tracking-wide font-black"
+                      style={{ fontWeight: 900 }}
                     >
                       {link.label}
                     </Link>
@@ -152,14 +153,14 @@ export function SmartFooter({
         {showLegalCompliance && (legalText1 || legalText2) && (
           <div className={`mt-12 pt-8 border-t ${borderColor}`}>
             <div className="flex items-start justify-between gap-8">
-              <div className="space-y-3 max-w-5xl flex-1">
+              <div className="max-w-5xl flex-1 bg-[#0a0a0a] border border-white/5 rounded-2xl p-6 space-y-3">
                 {legalText1 && (
-                  <p className="text-xs text-white/40 leading-relaxed font-light">
+                  <p className="text-[10px] sm:text-xs text-white/40 leading-relaxed uppercase tracking-wider">
                     {legalText1}
                   </p>
                 )}
                 {legalText2 && (
-                  <p className="text-xs text-white/40 leading-relaxed font-light">
+                  <p className="text-[10px] sm:text-xs text-white/40 leading-relaxed uppercase tracking-wider">
                     {legalText2}
                   </p>
                 )}
@@ -180,23 +181,23 @@ export function SmartFooter({
         {/* Bottom Bar */}
         <div className={`mt-8 pt-6 border-t ${borderColor} flex flex-col md:flex-row justify-between items-center gap-4`}>
           {showCopyright && (
-            <p className="text-sm text-white/50 font-light">
+            <p className="text-[10px] sm:text-xs text-white/40 uppercase tracking-[0.15em] font-black">
               {copyrightText || `© ${currentYear} ${vendorName}. All rights reserved.`}
             </p>
           )}
           
           {/* Social Links */}
           {hasSocialLinks && (
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
               {instagramUrl && (
                 <a 
                   href={instagramUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-white/50 hover:text-white transition-colors"
+                  className="p-2.5 rounded-2xl bg-[#0a0a0a] border border-white/5 text-white/60 hover:text-white hover:border-white/10 hover:bg-white/5 transition-all"
                   aria-label="Instagram"
                 >
-                  <Instagram size={18} />
+                  <Instagram size={16} strokeWidth={2.5} />
                 </a>
               )}
               {facebookUrl && (
@@ -204,10 +205,10 @@ export function SmartFooter({
                   href={facebookUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-white/50 hover:text-white transition-colors"
+                  className="p-2.5 rounded-2xl bg-[#0a0a0a] border border-white/5 text-white/60 hover:text-white hover:border-white/10 hover:bg-white/5 transition-all"
                   aria-label="Facebook"
                 >
-                  <Facebook size={18} />
+                  <Facebook size={16} strokeWidth={2.5} />
                 </a>
               )}
               {twitterUrl && (
@@ -215,17 +216,17 @@ export function SmartFooter({
                   href={twitterUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-white/50 hover:text-white transition-colors"
+                  className="p-2.5 rounded-2xl bg-[#0a0a0a] border border-white/5 text-white/60 hover:text-white hover:border-white/10 hover:bg-white/5 transition-all"
                   aria-label="Twitter"
                 >
-                  <Twitter size={18} />
+                  <Twitter size={16} strokeWidth={2.5} />
                 </a>
               )}
             </div>
           )}
           
           {showPoweredBy && poweredByText && (
-            <p className="text-xs text-white/30 font-light tracking-wide">
+            <p className="text-[10px] sm:text-xs text-white/40 uppercase tracking-[0.15em] font-black">
               {poweredByText}
             </p>
           )}

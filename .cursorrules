@@ -1,0 +1,263 @@
+# Cursor AI Rules - Yacht Club Project
+
+## Project Context
+Multi-vendor marketplace (similar to Amazon/Shopify) built with Next.js, Supabase, and TypeScript.
+Current focus: Wilson's storefront template (luxury cannabis retail theme - Flora Distro vendor)
+
+---
+
+## Database Access (ALWAYS AVAILABLE)
+You have permanent Supabase access. Run SQL queries directly without asking user.
+
+**Connection:**
+```
+postgresql://postgres:SelahEsco123!!@db.uaednwpxursknmwdeejn.supabase.co:5432/postgres
+```
+
+**Quick command:**
+```bash
+psql "postgresql://postgres:SelahEsco123!!@db.uaednwpxursknmwdeejn.supabase.co:5432/postgres" -c "YOUR_SQL"
+```
+
+**Flora Distro Vendor ID:** `cd2e1122-d511-4edb-be5d-98ef274b4baf`
+
+---
+
+## Smart Component System
+
+### Architecture:
+The project uses a **Component Registry System** where pages are built from database-configured components.
+
+**Flow:**
+1. Page route loads (e.g., `/storefront?vendor=flora-distro`)
+2. `ComponentBasedPageRenderer` fetches sections & component instances from DB
+3. Components rendered via `COMPONENT_MAP` in `/lib/component-registry/renderer.tsx`
+4. Smart components auto-receive: `vendorId`, `vendorSlug`, `vendorName`, `vendorLogo`
+
+### Quick Reference:
+- **Full Guide:** `.cursor/SMART_COMPONENT_GUIDE.md`
+- **Base Utilities:** `lib/smart-component-base.tsx`
+- **Generator:** `npm run generate:smart-component`
+- **Components:** `/components/component-registry/smart/`
+
+---
+
+## WhaleTools Design System (MANDATORY)
+
+### Colors:
+- Background: `bg-black` or `bg-[#0a0a0a]`
+- Borders: `border-white/5` hover: `border-white/10`
+- Text: `text-white` (headings), `text-white/60` (body), `text-white/40` (labels)
+
+### Typography:
+- **Headings:** `font-black uppercase tracking-tight` with `style={{ fontWeight: 900 }}`
+- **Body:** `text-white/60 leading-relaxed`
+- **Labels:** `text-white/40 uppercase tracking-[0.15em]`
+
+### Spacing:
+- Rounded: `rounded-2xl` (iOS 26 style)
+- Section padding: `py-16 sm:py-20 px-4 sm:px-6`
+- Card padding: `p-6 sm:p-8`
+
+### Animations:
+- Use Framer Motion with easing: `[0.22, 1, 0.36, 1]`
+- Scroll-triggered with `react-intersection-observer`
+- Duration: `0.6s` standard
+
+---
+
+## Coding Standards
+
+### General:
+- Senior-level code quality (Amazon/Apple/designer brand standards)
+- Fix bugs properly, rewrite from scratch if needed
+- NO MOCK/DEMO/FALLBACK DATA - only real data via API
+- Clean up duplicates, test files, unnecessary files
+- Double-check for syntax errors before proceeding
+- NO explanations unless asked - just execute
+
+### TypeScript:
+- Always use TypeScript with proper interfaces
+- Extend `SmartComponentBaseProps` for smart components
+- Type all props, state, and API responses
+
+### React/Next.js:
+- Use "use client" for interactive components
+- Server components by default for pages
+- Mobile-first responsive design
+- Use base utilities (`SmartContainers`, `SmartTypography`) for consistency
+
+### Database:
+- Run SQL directly without asking
+- Always use parameterized queries
+- Check for existing data before inserting
+- Use `ON CONFLICT` for upserts
+
+---
+
+## Dev Environment
+
+### Servers:
+- Keep Next.js dev server live on same port (3000)
+- No port hopping (3000, 3001, 3002 - stay on same port)
+- Hot-reload should not reset scroll or state
+
+### Git:
+- NEVER push unless user explicitly asks
+- NO destructive operations (force push, hard reset)
+- NO skipping hooks (--no-verify)
+- Check Vercel deployment status if configured
+
+### Vercel:
+- If repo has Vercel, monitor deployments after push
+- Fix build errors and re-deploy if needed
+- Ensure build succeeds
+
+---
+
+## Creating Smart Components
+
+### Use the Generator:
+```bash
+npm run generate:smart-component
+```
+
+### Minimal Template:
+```tsx
+"use client";
+
+import React from 'react';
+import { 
+  SmartComponentWrapper, 
+  SmartComponentBaseProps,
+  SmartTypography,
+  SmartContainers
+} from '@/lib/smart-component-base';
+
+export interface SmartYourComponentProps extends SmartComponentBaseProps {
+  headline?: string;
+}
+
+export function SmartYourComponent({
+  vendorId,
+  headline = "DEFAULT",
+  animate = true
+}: SmartYourComponentProps) {
+  return (
+    <SmartComponentWrapper animate={animate} componentName="Your Component">
+      <SmartContainers.Section>
+        <SmartContainers.MaxWidth>
+          <SmartTypography.Headline>{headline}</SmartTypography.Headline>
+        </SmartContainers.MaxWidth>
+      </SmartContainers.Section>
+    </SmartComponentWrapper>
+  );
+}
+```
+
+### Required Steps:
+1. Create component file
+2. Export in `index.ts`
+3. Add to `COMPONENT_MAP` in `renderer.tsx`
+4. Register in database via SQL
+
+---
+
+## Key Files
+
+### Component System:
+- `components/component-registry/smart/` - Smart components
+- `components/component-registry/atomic/` - Basic UI (Text, Button, Image, Icon)
+- `lib/component-registry/renderer.tsx` - Component mapping
+- `lib/smart-component-base.tsx` - Base utilities & helpers
+
+### Storefront:
+- `app/(storefront)/storefront/page.tsx` - Homepage
+- `components/storefront/ComponentBasedPageRenderer.tsx` - Main renderer
+- `components/component-registry/smart/SmartHeader.tsx` - Navigation
+- `components/component-registry/smart/SmartFooter.tsx` - Footer
+
+### Animation:
+- `lib/animations.ts` - Pre-built animations
+- `components/animations/` - Animation components
+
+### Docs:
+- `.cursor/SMART_COMPONENT_GUIDE.md` - **READ THIS FIRST**
+- `SMART_COMPONENT_SYSTEM.md` - Full system documentation
+- `ANIMATION_SYSTEM.md` - Animation library docs
+
+---
+
+## Common Tasks
+
+### Add Component to Page:
+```sql
+INSERT INTO vendor_component_instances (
+  vendor_id, section_id, component_key, props, position_order
+) VALUES (
+  'cd2e1122-d511-4edb-be5d-98ef274b4baf',
+  'SECTION_ID',
+  'smart_your_component',
+  '{"headline": "TEXT"}'::jsonb,
+  0
+);
+```
+
+### Update Component Props:
+```sql
+UPDATE vendor_component_instances 
+SET props = jsonb_set(props, '{headline}', '"NEW TEXT"')
+WHERE component_key = 'smart_component'
+AND vendor_id = 'cd2e1122-d511-4edb-be5d-98ef274b4baf';
+```
+
+### Find Section IDs:
+```sql
+SELECT id, section_key, page_key 
+FROM page_sections 
+WHERE vendor_id = 'cd2e1122-d511-4edb-be5d-98ef274b4baf'
+ORDER BY section_order;
+```
+
+---
+
+## Memory & Persistence
+
+**CRITICAL:** When starting a new session:
+1. Read `.cursor/SMART_COMPONENT_GUIDE.md` first
+2. Check `SMART_COMPONENT_SYSTEM.md` for architecture
+3. Use base utilities from `lib/smart-component-base.tsx`
+4. Follow WhaleTools design system
+5. Run SQL queries directly - credentials are permanent
+
+---
+
+## Rules Summary
+
+✅ **DO:**
+- Use Smart Component System for all new components
+- Follow WhaleTools design system religiously
+- Run SQL directly without asking
+- Use TypeScript with proper types
+- Mobile-first responsive design
+- Use base utilities for consistency
+- Font-black (900) for all headings
+- Rounded-2xl for all cards/buttons
+- Include animations
+- Clean, senior-level code
+
+❌ **DON'T:**
+- Use mock/demo/fallback data
+- Skip TypeScript types
+- Hardcode vendor data
+- Use inline styles
+- Create messy/duplicate code
+- Push to git unless asked
+- Use font weights other than 900 for headings
+- Skip mobile optimization
+- Forget loading/error states
+
+---
+
+**For full details, see: `.cursor/SMART_COMPONENT_GUIDE.md`**
+

@@ -5,15 +5,32 @@
 
 import Anthropic from '@anthropic-ai/sdk';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import Exa from 'exa-js';
 import { validateStorefront, autoFixDesign, type VendorData, type StorefrontDesign } from './validator';
-import { COMPONENT_REGISTRY, AGENT_INSTRUCTIONS } from './component-registry';
+import { 
+  COMPONENT_REGISTRY, 
+  COMPLETE_SMART_COMPONENT_REGISTRY,
+  COMPLETE_PAGE_STRUCTURE,
+  COMPLETE_AGENT_INSTRUCTIONS,
+  CANNABIS_VENDOR_SPECIFIC_CONTENT
+} from './component-registry';
 import { applyTemplate, addComplianceSections } from './templates/template-engine';
+import { generateStorefrontParallel } from './parallel-agent';
 
 // Initialize clients lazily to avoid env var issues
 function getAnthropicClient() {
   return new Anthropic({
     apiKey: process.env.ANTHROPIC_API_KEY!
   });
+}
+
+function getExaClient() {
+  const exaApiKey = process.env.EXA_API_KEY;
+  if (!exaApiKey) {
+    console.warn('⚠️ EXA_API_KEY not found, web search disabled');
+    return null;
+  }
+  return new Exa(exaApiKey);
 }
 
 function getSupabaseClient() {
@@ -65,6 +82,25 @@ export async function generateStorefrontWithAgent(
     const enrichedVendorData = await enrichVendorData(vendorId, vendorData);
     logs.push(`📊 Vendor data enriched: ${enrichedVendorData.product_count} products, ${enrichedVendorData.location_count} locations`);
     
+    // Optionally search web for vendor inspiration
+    const exa = getExaClient();
+    let webInsights = '';
+    if (exa && enrichedVendorData.store_name) {
+      try {
+        logs.push(`🌐 Searching web for ${enrichedVendorData.store_name} inspiration...`);
+        const searchResults = await exa.searchAndContents(
+          `${enrichedVendorData.store_name} ${enrichedVendorData.vendor_type} website design trends`,
+          { numResults: 3, text: true }
+        );
+        webInsights = searchResults.results
+          .map(r => `${r.title}: ${r.text?.slice(0, 200)}...`)
+          .join('\n');
+        logs.push(`✅ Found ${searchResults.results.length} web insights`);
+      } catch (e) {
+        logs.push(`⚠️ Web search failed (non-critical): ${(e as Error).message}`);
+      }
+    }
+    
     // Check if we should use template system (for cannabis vendors)
     const vendorType = (enrichedVendorData.vendor_type || '').toLowerCase();
     const useTemplate = vendorType.includes('cannabis') || 
@@ -88,43 +124,58 @@ export async function generateStorefrontWithAgent(
       // Phase 1: Design the storefront with Claude (for non-cannabis)
       logs.push(`🎨 Claude designing storefront...`);
     
+    // Optimized for speed
+    logs.push(`⚡ Claude generating (optimized for speed)...`);
+    
     const designResponse = await anthropic.messages.create({
       model: 'claude-sonnet-4-5-20250929',
       max_tokens: 8192,
-      temperature: 0.7, // Bit of creativity for design
-      system: AGENT_INSTRUCTIONS,
+      temperature: 0.5, // Optimized for speed and stability
+      system: COMPLETE_AGENT_INSTRUCTIONS,
       messages: [{
         role: 'user',
-        content: `Design a beautiful, professional storefront for this vendor:
+        content: `Design a COMPLETE, PRODUCTION-READY storefront with ALL 12 PAGES for this vendor:
 
 VENDOR INFORMATION:
 ${JSON.stringify(enrichedVendorData, null, 2)}
 
-COMPONENT REGISTRY:
-${JSON.stringify(COMPONENT_REGISTRY, null, 2)}
+COMPLETE SMART COMPONENT REGISTRY:
+${JSON.stringify(COMPLETE_SMART_COMPONENT_REGISTRY, null, 2)}
 
-TASK:
-1. Analyze the vendor's business type and data
-2. Choose 5-8 optimal sections that tell their story
-3. Select and configure components for each section
-4. Write compelling, professional copy (not generic)
-5. Use smart components to auto-wire their products/locations/reviews
-6. Handle edge cases (e.g., 0 products = "coming soon" section)
-7. Match their brand vibe (cannabis = trustworthy, restaurant = appetizing, etc.)
+COMPLETE PAGE STRUCTURE (YOU MUST CREATE ALL OF THESE):
+${JSON.stringify(COMPLETE_PAGE_STRUCTURE, null, 2)}
+
+PRE-BUILT CANNABIS CONTENT (Use this for cannabis vendors):
+${JSON.stringify(CANNABIS_VENDOR_SPECIFIC_CONTENT, null, 2)}
+
+${webInsights ? `\n🌐 WEB INSIGHTS FOR INSPIRATION:\n${webInsights}\n` : ''}
+
+CRITICAL REQUIREMENTS:
+1. Create sections for ALL 12 pages (home, shop, product, about, contact, faq, lab-results, privacy, terms, cookies, shipping, returns)
+2. EVERY page must have smart_header (section_order: -1, page_type: "all")
+3. EVERY page must have smart_footer (section_order: 999, page_type: "all")
+4. Use vendor-specific content (replace {{vendor.store_name}} with real name)
+5. Use smart components for auto-wired data (smart_product_grid, smart_shop_controls, etc.)
+6. Include real, compelling copy (not generic lorem ipsum)
+7. Follow WhaleTools luxury design (already built into components)
 
 OUTPUT FORMAT - CRITICAL:
-Return ONLY the JSON object. No explanations, no markdown, no text before or after.
-Start your response with { and end with }
+Return ONLY raw JSON. Start with { and end with }
 
-Required JSON structure:
 {
-  "sections": [{"section_key": "hero", "section_order": 0, "page_type": "home"}, ...],
-  "components": [{"section_key": "hero", "component_key": "text", "props": {...}, "position_order": 0}, ...]
+  "sections": [
+    {"section_key": "header", "section_order": -1, "page_type": "all"},
+    {"section_key": "how_it_works", "section_order": 0, "page_type": "home"},
+    ... (ALL sections for ALL 12 pages)
+    {"section_key": "footer", "section_order": 999, "page_type": "all"}
+  ],
+  "components": [
+    {"section_key": "header", "component_key": "smart_header", "props": {}, "position_order": 0},
+    ... (ALL components for ALL pages)
+  ]
 }
 
-DO NOT include any text like "Here's the design" or "I created".
-DO NOT wrap in markdown code blocks.
-ONLY return the raw JSON object.`
+NO markdown, NO explanations, ONLY JSON.`
       }]
     });
     
@@ -204,17 +255,24 @@ Fix these issues and return corrected JSON (same format).`
     const insertedSections = await insertSectionsDirectSQL(vendorId, design.sections);
     logs.push(`✅ Created ${insertedSections.length} sections`);
     
-    // Map section_keys to actual database IDs
+    // Map section_keys to actual database IDs (composite key: page_type:section_key)
     const sectionMap = new Map<string, string>();
-    insertedSections.forEach(section => {
-      sectionMap.set(section.section_key, section.id);
+    insertedSections.forEach((section: any) => {
+      const compositeKey = `${section.page_type}:${section.section_key}`;
+      sectionMap.set(compositeKey, section.id);
     });
     
     // Phase 4: Insert components using direct SQL (one by one for reliability)
     logs.push(`💾 Inserting components into database...`);
     
-    const componentsData = design.components.filter(c => sectionMap.has(c.section_key));
-    const insertedComponents = await insertComponentsDirectSQL(vendorId, sectionMap, componentsData);
+    // Filter components with composite key matching
+    const componentsData = design.components.filter((c: any) => {
+      const pageType = design.sections.find((s: any) => s.section_key === c.section_key)?.page_type || 'home';
+      const compositeKey = `${pageType}:${c.section_key}`;
+      return sectionMap.has(compositeKey);
+    });
+    
+    const insertedComponents = await insertComponentsDirectSQL(vendorId, sectionMap, componentsData, design.sections);
     logs.push(`✅ Created ${insertedComponents.length} components`);
     
     // Phase 5: Update vendor status using direct SQL
@@ -324,10 +382,14 @@ async function insertSectionsDirectSQL(vendorId: string, sections: any[]) {
     content_data: {}
   }));
   
+  // Use upsert to avoid duplicates
   const { data, error } = await supabase
     .from('vendor_storefront_sections')
-    .insert(sectionsToInsert)
-    .select('id, section_key');
+    .upsert(sectionsToInsert, { 
+      onConflict: 'vendor_id,page_type,section_key',
+      ignoreDuplicates: false 
+    })
+    .select('id, section_key, page_type');
   
   if (error) {
     throw new Error(`Failed to insert sections: ${error.message}`);
@@ -336,20 +398,33 @@ async function insertSectionsDirectSQL(vendorId: string, sections: any[]) {
   return data || [];
 }
 
-async function insertComponentsDirectSQL(vendorId: string, sectionMap: Map<string, string>, components: any[]) {
+async function insertComponentsDirectSQL(vendorId: string, sectionMap: Map<string, string>, components: any[], sections: any[]) {
   const supabase = getSupabaseClient();
   
   const componentsToInsert = components
-    .filter(c => sectionMap.has(c.section_key))
-    .map(c => ({
-      vendor_id: vendorId,
-      section_id: sectionMap.get(c.section_key)!,
-      component_key: c.component_key,
-      props: c.props || {},
-      position_order: c.position_order,
-      is_enabled: true,
-      field_bindings: {}
-    }));
+    .map(c => {
+      // Find page_type for this section
+      const section = sections.find((s: any) => s.section_key === c.section_key);
+      const pageType = section?.page_type || 'home';
+      const compositeKey = `${pageType}:${c.section_key}`;
+      const sectionId = sectionMap.get(compositeKey);
+      
+      if (!sectionId) {
+        console.warn(`No section ID found for ${compositeKey}`);
+        return null;
+      }
+      
+      return {
+        vendor_id: vendorId,
+        section_id: sectionId,
+        component_key: c.component_key,
+        props: c.props || {},
+        position_order: c.position_order,
+        is_enabled: true,
+        field_bindings: {}
+      };
+    })
+    .filter(c => c !== null);
   
   // Insert in batches of 50 to avoid payload size limits
   const batchSize = 50;

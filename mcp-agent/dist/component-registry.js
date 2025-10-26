@@ -1,10 +1,18 @@
 "use strict";
 /**
  * Component Registry Context for AI Agent
- * Tells Claude what components are available
+ * COMPLETE REGISTRY - All smart components, all pages, 100% coverage
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.AGENT_INSTRUCTIONS = exports.COMPONENT_REGISTRY = void 0;
+exports.AGENT_INSTRUCTIONS = exports.COMPONENT_REGISTRY = exports.CANNABIS_VENDOR_SPECIFIC_CONTENT = exports.COMPLETE_AGENT_INSTRUCTIONS = exports.WHALETOOLS_DESIGN_SYSTEM = exports.COMPLETE_PAGE_STRUCTURE = exports.COMPLETE_SMART_COMPONENT_REGISTRY = void 0;
+const smart_component_registry_1 = require("./smart-component-registry");
+Object.defineProperty(exports, "COMPLETE_SMART_COMPONENT_REGISTRY", { enumerable: true, get: function () { return smart_component_registry_1.COMPLETE_SMART_COMPONENT_REGISTRY; } });
+Object.defineProperty(exports, "COMPLETE_PAGE_STRUCTURE", { enumerable: true, get: function () { return smart_component_registry_1.COMPLETE_PAGE_STRUCTURE; } });
+Object.defineProperty(exports, "WHALETOOLS_DESIGN_SYSTEM", { enumerable: true, get: function () { return smart_component_registry_1.WHALETOOLS_DESIGN_SYSTEM; } });
+const agent_instructions_1 = require("./agent-instructions");
+Object.defineProperty(exports, "COMPLETE_AGENT_INSTRUCTIONS", { enumerable: true, get: function () { return agent_instructions_1.COMPLETE_AGENT_INSTRUCTIONS; } });
+Object.defineProperty(exports, "CANNABIS_VENDOR_SPECIFIC_CONTENT", { enumerable: true, get: function () { return agent_instructions_1.CANNABIS_VENDOR_SPECIFIC_CONTENT; } });
+// Legacy registry for backwards compatibility
 exports.COMPONENT_REGISTRY = {
     smart_components: {
         smart_product_grid: {

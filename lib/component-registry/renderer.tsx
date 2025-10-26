@@ -38,6 +38,12 @@ const COMPONENT_MAP: Record<string, React.ComponentType<any>> = {
   'smart_shop_controls': Smart.SmartShopControls,
   'smart_features': Smart.SmartFeatures,
   'smart_faq': Smart.SmartFAQ,
+  'smart_about': Smart.SmartAbout,
+  'smart_contact': Smart.SmartContact,
+  'smart_legal_page': Smart.SmartLegalPage,
+  'smart_shipping': Smart.SmartShipping,
+  'smart_returns': Smart.SmartReturns,
+  'smart_lab_results': Smart.SmartLabResults,
 };
 
 export interface DynamicComponentProps {

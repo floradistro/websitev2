@@ -7,7 +7,9 @@
     "dev:https": "concurrently \"next dev --turbopack -p 3000\" \"local-ssl-proxy --source 3443 --target 3000\"",
     "build": "next build",
     "start": "next start -p 3000",
-    "postinstall": "echo 'Install complete'"
+    "postinstall": "echo 'Install complete'",
+    "generate:smart-component": "ts-node scripts/smart-component-generator.ts",
+    "db:register": "ts-node scripts/register-component.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.67.0",

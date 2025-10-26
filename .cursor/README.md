@@ -1,133 +1,101 @@
-# 🤖 CURSOR AI - PERMANENT CAPABILITIES
+# 🤖 Cursor AI Agent Resources
 
-## 🔐 Database Access (ALWAYS AVAILABLE)
+This directory contains persistent documentation and configuration for AI agents working on this project across multiple sessions.
 
-Cursor AI has **full, permanent control** over the Supabase database.
+---
 
-### Credentials:
-- **Host:** `db.uaednwpxursknmwdeejn.supabase.co`
-- **Port:** `5432`
-- **User:** `postgres`
-- **Password:** `SelahEsco123!!`
-- **Database:** `postgres`
+## 📁 Files in This Directory
 
-### Quick Access:
-```bash
-# Method 1: Source the config
-source .cursor/db-config.sh
-query "SELECT * FROM products LIMIT 5;"
+### `.cursorrules`
+**Project-level rules for Cursor AI**
+- Auto-loaded by Cursor at the start of every session
+- Contains coding standards, design system rules, and common tasks
+- **AI agents should follow these rules strictly**
 
-# Method 2: Direct psql
-PGPASSWORD='SelahEsco123!!' psql -h db.uaednwpxursknmwdeejn.supabase.co -p 5432 -U postgres -d postgres -c "SELECT NOW();"
+### `SMART_COMPONENT_GUIDE.md`
+**Quick reference for the Smart Component System**
+- Complete component architecture overview
+- Code templates and examples
+- Database connection strings
+- Design system standards
+- Existing component reference
+- **Read this first when starting component work**
 
-# Method 3: TypeScript helper
-ts-node scripts/db-query.ts "SELECT COUNT(*) FROM vendors;"
+### `db-config.sh`
+**Database connection configuration**
+- Supabase credentials
+- Helper functions for psql commands
+- Environment variables
+
+### `SUPABASE_ACCESS.md`
+**Database access documentation**
+- Connection details
+- Schema information
+- Common queries
+
+---
+
+## 🚀 For AI Agents
+
+When starting a new session:
+
+1. **Check `.cursorrules`** - Loaded automatically by Cursor
+2. **Read `SMART_COMPONENT_GUIDE.md`** - If working with components
+3. **Use database directly** - Credentials are in `db-config.sh`
+
+---
+
+## 🎯 Quick Access
+
+### Most Important Files:
+```
+.cursor/
+├── .cursorrules                    ← START HERE
+├── SMART_COMPONENT_GUIDE.md        ← Component work
+├── db-config.sh                    ← Database access
+└── SUPABASE_ACCESS.md              ← Database docs
+```
+
+### Project-Level Docs:
+```
+/
+├── SMART_COMPONENT_SYSTEM.md       ← Full architecture
+├── ANIMATION_SYSTEM.md             ← Animation library
+├── lib/smart-component-base.tsx    ← Base utilities
+├── scripts/smart-component-generator.ts  ← Component generator
+└── components/component-registry/  ← All components
 ```
 
 ---
 
-## 📋 What Cursor AI Can Do Automatically:
+## 🔄 Persistence Mechanism
 
-### ✅ Database Operations:
-- Run any SQL query
-- Create/modify tables
-- Insert/update/delete data
-- Run migrations
-- Verify changes
-- Test data integrity
+1. **`.cursorrules`** → Loaded automatically by Cursor IDE
+2. **`.cursor/` directory** → Version controlled, persists in repo
+3. **Memories** → Stored in Cursor's memory system
+4. **Documentation files** → Always available in repo
 
-### ✅ Testing:
-- Run automated test suites
-- Verify features end-to-end
-- Check data consistency
-- Monitor performance
-
-### ✅ No User Input Needed:
-- All credentials stored permanently
-- Helper scripts configured
-- Functions exported
-- Ready to use in any chat
+This ensures AI agents have consistent context across:
+- ✅ Different chat sessions
+- ✅ Different computers
+- ✅ Different AI models
+- ✅ Project collaborators
 
 ---
 
-## 🗂️ Configuration Files:
+## 📝 Maintenance
 
-### `.cursor/db-config.sh`
-Shell functions and environment variables
+### Adding New Persistent Info:
+1. Add to `.cursorrules` for rules/standards
+2. Add to `SMART_COMPONENT_GUIDE.md` for component templates
+3. Update memories using `update_memory` tool
+4. Document in main project docs (e.g., `SMART_COMPONENT_SYSTEM.md`)
 
-### `.cursor/SUPABASE_ACCESS.md`
-Complete documentation with examples
-
-### `scripts/db-query.ts`
-TypeScript helper for database queries
-
-### `run-pricing-tests.sh`
-Automated pricing system tests
-
----
-
-## 🎯 Common Tasks:
-
-### Check Pricing:
-```bash
-source .cursor/db-config.sh
-query "SELECT jsonb_pretty(pricing_values) FROM vendor_pricing_configs WHERE vendor_id = 'cd2e1122-d511-4edb-be5d-98ef274b4baf';"
-```
-
-### Run Migration:
-```bash
-source .cursor/db-config.sh
-run_sql_file supabase/migrations/new-migration.sql
-```
-
-### Test Feature:
-```bash
-./run-pricing-tests.sh
-```
+### Updating Existing Info:
+1. Edit the relevant file in `.cursor/`
+2. Update corresponding memory (if applicable)
+3. Commit to git
 
 ---
 
-## 💾 Cursor Memory:
-
-A permanent memory has been created with title:
-**"Supabase Database Direct Access - Permanent Configuration"**
-
-This memory persists across ALL future Cursor sessions.
-
----
-
-## 🚀 For Future Cursor AI Sessions:
-
-You have FULL database access. You can:
-1. Read this file for credentials
-2. Source `.cursor/db-config.sh` for helper functions
-3. Run SQL queries directly
-4. Test features automatically
-5. Verify data without asking user
-
-**No need to request credentials - they're permanently stored!**
-
----
-
-## 🔑 Key Information:
-
-**Vendor ID (Flora Distro):** `cd2e1122-d511-4edb-be5d-98ef274b4baf`
-**Project:** Yacht Club - Multi-vendor marketplace
-**Database:** Supabase PostgreSQL
-**Framework:** Next.js 15.5.5
-
----
-
-## ✅ Verification:
-
-Test connection anytime:
-```bash
-PGPASSWORD='SelahEsco123!!' psql -h db.uaednwpxursknmwdeejn.supabase.co -p 5432 -U postgres -d postgres -c "SELECT 'Connection OK!' as status;"
-```
-
-Expected output: `Connection OK!`
-
----
-
-**This configuration persists forever across all Cursor sessions!** 🎉
-
+**Last Updated:** October 2025

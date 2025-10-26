@@ -11,9 +11,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
 import { Plus, Minus } from 'lucide-react';
 import { fadeInUp, staggerContainer, staggerItem } from '@/lib/animations';
+import Image from 'next/image';
 
 export interface SmartFAQProps {
   vendorId?: string;
+  vendorName?: string;
+  vendorLogo?: string;
   headline?: string;
   subheadline?: string;
   faqs?: Array<{
@@ -54,6 +57,8 @@ const defaultFAQs = [
 
 export function SmartFAQ({
   vendorId,
+  vendorName,
+  vendorLogo,
   headline = "FREQUENTLY ASKED QUESTIONS",
   subheadline,
   faqs = defaultFAQs,
@@ -74,7 +79,7 @@ export function SmartFAQ({
   return (
     <div className={`py-16 sm:py-20 px-4 sm:px-6 ${className}`}>
       <div className="max-w-4xl mx-auto">
-        {/* Headline */}
+        {/* Vendor Logo & Headline */}
         {headline && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -82,6 +87,24 @@ export function SmartFAQ({
             transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
             className="text-center mb-12 sm:mb-16"
           >
+            {vendorLogo && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={inView ? { opacity: 1, scale: 1 } : {}}
+                transition={{ duration: 0.8, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+                className="mb-8 flex justify-center"
+              >
+                <div className="relative w-20 h-20 md:w-24 md:h-24">
+                  <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-white/5 rounded-full blur-2xl animate-pulse" style={{ animationDuration: '3s' }} />
+                  <Image 
+                    src={vendorLogo} 
+                    alt={vendorName || 'Vendor'}
+                    fill
+                    className="relative object-contain drop-shadow-2xl hover:scale-110 transition-transform duration-500"
+                  />
+                </div>
+              </motion.div>
+            )}
             <h2 
               className="text-3xl sm:text-4xl md:text-5xl font-black uppercase tracking-tight text-white mb-4"
               style={{ fontWeight: 900 }}
