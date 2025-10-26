@@ -214,17 +214,17 @@ export default function HomePage() {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative pt-32 pb-20 px-4 overflow-hidden z-10">
+      <section className="relative pt-24 sm:pt-32 pb-12 sm:pb-20 px-4 overflow-hidden z-10">
         <div className="absolute inset-0 bg-gradient-to-b from-white/[0.02] to-transparent pointer-events-none"></div>
         <div className="max-w-5xl mx-auto text-center relative z-10">
           <motion.div 
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-            className="mb-12 flex justify-center relative"
+            className="mb-8 sm:mb-12 flex justify-center relative"
           >
-            {/* Animated Background */}
-            <div className="absolute inset-0 flex items-center justify-center" style={{ width: '800px', height: '800px', left: '50%', top: '50%', transform: 'translate(-50%, -50%)' }}>
+            {/* Animated Background - Desktop Only */}
+            <div className="absolute inset-0 hidden lg:flex items-center justify-center" style={{ width: '800px', height: '800px', left: '50%', top: '50%', transform: 'translate(-50%, -50%)' }}>
               <LogoAnimation />
             </div>
             {/* Large Logo */}
@@ -232,9 +232,9 @@ export default function HomePage() {
               <Image 
                 src="/yacht-club-logo.png" 
                 alt="WhaleTools" 
-                width={280} 
-                height={280}
-                className="object-contain opacity-90"
+                width={200} 
+                height={200}
+                className="object-contain opacity-90 sm:w-[240px] sm:h-[240px] md:w-[280px] md:h-[280px]"
                 priority
               />
             </div>
@@ -244,7 +244,7 @@ export default function HomePage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-            className="text-5xl md:text-7xl font-light mb-6 tracking-tight leading-tight"
+            className="text-4xl sm:text-5xl md:text-7xl font-light mb-6 tracking-tight leading-tight px-4"
           >
             Generate entire
             <br />
@@ -262,7 +262,7 @@ export default function HomePage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.6, ease: [0.16, 1, 0.3, 1] }}
-            className="text-xl md:text-2xl text-white/50 font-light leading-relaxed max-w-3xl mx-auto mb-12"
+            className="text-base sm:text-xl md:text-2xl text-white/50 font-light leading-relaxed max-w-3xl mx-auto mb-12 px-6"
           >
             AI builds the entire stack. Storefronts, inventory, POS, analytics. Everything.
           </motion.p>
@@ -271,41 +271,41 @@ export default function HomePage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            className="flex items-center justify-center gap-4"
+            className="flex flex-col sm:flex-row items-center justify-center gap-3 px-4"
           >
             <Link
               href="/vendor/login"
-              className="group inline-flex items-center gap-2 bg-white text-black px-8 py-4 rounded-full text-sm uppercase tracking-[0.2em] hover:bg-white/90 font-medium transition-all duration-300 hover:scale-105"
+              className="group inline-flex items-center justify-center gap-2 bg-white text-black px-6 sm:px-8 py-3 sm:py-4 rounded-full text-xs sm:text-sm uppercase tracking-[0.2em] hover:bg-white/90 font-medium transition-all duration-300 hover:scale-105 w-full sm:w-auto"
             >
               <span>Start Building</span>
-              <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+              <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
             </Link>
             <Link
               href="/api-status"
-              className="inline-flex items-center gap-2 bg-white/5 border border-white/10 text-white px-8 py-4 rounded-full text-sm uppercase tracking-[0.2em] hover:bg-white/10 hover:border-white/30 font-medium transition-all duration-300 hover:scale-105"
+              className="inline-flex items-center justify-center gap-2 bg-white/5 border border-white/10 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-full text-xs sm:text-sm uppercase tracking-[0.2em] hover:bg-white/10 hover:border-white/30 font-medium transition-all duration-300 hover:scale-105 w-full sm:w-auto"
             >
-              <span>View API Status</span>
+              <span>View API</span>
             </Link>
           </motion.div>
         </div>
       </section>
 
       {/* How It Works */}
-      <section className="py-20 px-4 relative z-10">
+      <section className="py-12 sm:py-20 px-4 relative z-10">
         <div className="max-w-4xl mx-auto text-center">
           <motion.div 
             initial={{ opacity: 0, y: 40 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            className="border border-white/10 bg-white/[0.01] p-16 hover:border-white/20 transition-colors duration-500"
+            className="border border-white/10 bg-white/[0.01] p-8 sm:p-16 hover:border-white/20 transition-colors duration-500"
           >
             <motion.h2 
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 1, delay: 0.3 }}
-              className="text-3xl md:text-5xl font-light mb-12 tracking-tight"
+              className="text-2xl sm:text-3xl md:text-5xl font-light mb-8 sm:mb-12 tracking-tight"
             >
               <motion.span
                 initial={{ opacity: 0, y: 20 }}
@@ -349,22 +349,21 @@ export default function HomePage() {
       </section>
 
       {/* The Secret */}
-      <section className="py-20 px-4 relative z-10">
+      <section className="py-12 sm:py-20 px-4 relative z-10">
         <div className="max-w-4xl mx-auto">
           <motion.div 
             initial={{ opacity: 0, y: 40 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            whileHover={{ scale: 1.02 }}
-            className="border border-white/10 bg-white/[0.01] p-12 md:p-16 transition-all duration-500 hover:border-white/20"
+            className="border border-white/10 bg-white/[0.01] p-8 sm:p-12 md:p-16 transition-all duration-500 hover:border-white/20"
           >
             <motion.h2 
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.8, delay: 0.3 }}
-              className="text-3xl md:text-5xl font-light mb-8 tracking-tight text-center leading-tight"
+              className="text-2xl sm:text-3xl md:text-5xl font-light mb-6 sm:mb-8 tracking-tight text-center leading-tight"
             >
               Not just websites.
               <br />
@@ -375,7 +374,7 @@ export default function HomePage() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.5 }}
-              className="text-white/40 text-center text-lg"
+              className="text-white/40 text-center text-sm sm:text-base md:text-lg"
             >
               E-commerce. Inventory. POS. Wholesale. Analytics. Customer portals. Employee tools. All generated, all connected.
             </motion.p>
@@ -384,9 +383,9 @@ export default function HomePage() {
       </section>
 
       {/* Capabilities */}
-      <section className="py-20 px-4 relative z-10">
+      <section className="py-12 sm:py-20 px-4 relative z-10">
         <div className="max-w-4xl mx-auto">
-          <div className="space-y-1 text-center">
+          <div className="space-y-2 sm:space-y-1 text-center">
             {[
               "Multi-vendor marketplaces",
               "Point-of-sale systems",
@@ -407,12 +406,7 @@ export default function HomePage() {
                   delay: i * 0.08,
                   ease: [0.16, 1, 0.3, 1]
                 }}
-                whileHover={{ 
-                  x: 10, 
-                  color: "rgba(255,255,255,1)",
-                  transition: { duration: 0.2 }
-                }}
-                className="text-white/60 text-lg font-light cursor-default"
+                className="text-white/60 text-sm sm:text-base md:text-lg font-light"
               >
                 {item}
               </motion.p>
@@ -422,7 +416,7 @@ export default function HomePage() {
       </section>
 
       {/* Stats Section */}
-      <section className="py-20 px-4 relative z-10 overflow-visible">
+      <section className="py-12 sm:py-20 px-4 relative z-10 overflow-visible">
         <div className="max-w-6xl mx-auto relative">
           
           {/* Floating Code Generation - Inside Stats Section */}
@@ -516,7 +510,7 @@ export default function HomePage() {
                 initial={{ scale: 1.2, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ duration: 0.3, ease: "easeOut" }}
-                className="text-6xl md:text-8xl font-light text-white/90 mb-4"
+                className="text-5xl sm:text-6xl md:text-8xl font-light text-white/90 mb-3 sm:mb-4"
               >
                 {countdown}
               </motion.div>
@@ -525,7 +519,7 @@ export default function HomePage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.6, delay: 0.5 }}
-                className="text-white/40 text-sm tracking-[0.3em] uppercase"
+                className="text-white/40 text-xs sm:text-sm tracking-[0.3em] uppercase"
               >
                 seconds
               </motion.div>
@@ -535,14 +529,14 @@ export default function HomePage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-32 px-4 relative z-10">
+      <section className="py-16 sm:py-24 md:py-32 px-4 relative z-10">
         <div className="max-w-4xl mx-auto text-center">
           <motion.h2 
             initial={{ opacity: 0, y: 40 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            className="text-4xl md:text-6xl font-light text-white mb-12 tracking-tight leading-tight"
+            className="text-3xl sm:text-4xl md:text-6xl font-light text-white mb-8 sm:mb-12 tracking-tight leading-tight px-4"
           >
             <span className="text-white/60">{countdown} seconds</span>
             <br />
@@ -562,27 +556,27 @@ export default function HomePage() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.5 }}
-            className="flex items-center justify-center gap-4"
+            className="flex flex-col sm:flex-row items-center justify-center gap-3 px-4"
           >
             <Link
               href="/vendor/login"
-              className="group inline-flex items-center gap-2 bg-white text-black px-8 py-4 rounded-full text-sm uppercase tracking-[0.2em] hover:bg-white/90 font-medium transition-all duration-300 hover:scale-105"
+              className="group inline-flex items-center justify-center gap-2 bg-white text-black px-6 sm:px-8 py-3 sm:py-4 rounded-full text-xs sm:text-sm uppercase tracking-[0.2em] hover:bg-white/90 font-medium transition-all duration-300 hover:scale-105 w-full sm:w-auto"
             >
               <span>Create Account</span>
-              <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+              <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
             </Link>
             <Link
               href="/partners"
-              className="inline-flex items-center gap-2 bg-white/5 border border-white/10 text-white px-8 py-4 rounded-full text-sm uppercase tracking-[0.2em] hover:bg-white/10 hover:border-white/30 font-medium transition-all duration-300 hover:scale-105"
+              className="inline-flex items-center justify-center gap-2 bg-white/5 border border-white/10 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-full text-xs sm:text-sm uppercase tracking-[0.2em] hover:bg-white/10 hover:border-white/30 font-medium transition-all duration-300 hover:scale-105 w-full sm:w-auto"
             >
-              <span>Become a Partner</span>
+              <span>Partners</span>
             </Link>
           </motion.div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-white/10 py-12 px-4 relative z-10">
+      <footer className="border-t border-white/10 py-8 sm:py-12 px-4 relative z-10">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-3">
@@ -593,22 +587,22 @@ export default function HomePage() {
                 height={24}
                 className="object-contain opacity-60"
               />
-              <span className="text-sm text-white/40">© 2025 WhaleTools. All rights reserved.</span>
+              <span className="text-xs sm:text-sm text-white/40">© 2025 WhaleTools. All rights reserved.</span>
             </div>
-            <div className="flex items-center gap-8">
-              <Link href="/about" className="text-sm text-white/40 hover:text-white transition-colors">
+            <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-8">
+              <Link href="/about" className="text-xs sm:text-sm text-white/40 hover:text-white transition-colors">
                 About
               </Link>
-              <Link href="/partners" className="text-sm text-white/40 hover:text-white transition-colors">
+              <Link href="/partners" className="text-xs sm:text-sm text-white/40 hover:text-white transition-colors">
                 Partners
               </Link>
-              <Link href="/api-status" className="text-sm text-white/40 hover:text-white transition-colors">
+              <Link href="/api-status" className="text-xs sm:text-sm text-white/40 hover:text-white transition-colors">
                 API
               </Link>
-              <Link href="/privacy" className="text-sm text-white/40 hover:text-white transition-colors">
+              <Link href="/privacy" className="text-xs sm:text-sm text-white/40 hover:text-white transition-colors">
                 Privacy
               </Link>
-              <Link href="/terms" className="text-sm text-white/40 hover:text-white transition-colors">
+              <Link href="/terms" className="text-xs sm:text-sm text-white/40 hover:text-white transition-colors">
                 Terms
               </Link>
             </div>
