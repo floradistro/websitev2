@@ -17,6 +17,7 @@ export interface ProductGridProps {
   cardStyle?: 'minimal' | 'bordered' | 'elevated';
   onQuickAdd?: (productId: string) => void;
   basePath?: string;
+  vendorId?: string;
   className?: string;
 }
 

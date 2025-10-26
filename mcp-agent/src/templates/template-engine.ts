@@ -1,9 +1,9 @@
 /**
- * Template Engine - Applies golden templates to vendor data
- * Instead of generating from scratch, customizes proven templates
+ * Template Engine V2 - Fully Database-Driven
+ * Reads templates from Supabase instead of hardcoded files
  */
 
-import { VERCEL_CANNABIS_TEMPLATE, COMPLIANCE_CONTENT } from './wilsons';
+import { getSupabaseClient } from '../supabase-client';
 
 export interface VendorData {
   id: string;
@@ -33,51 +33,61 @@ export interface AppliedTemplate {
 }
 
 /**
- * Select template based on vendor type
+ * Fetch template from database
  */
-export function selectTemplate(vendorType: string): any {
-  const templates: Record<string, any> = {
-    cannabis: VERCEL_CANNABIS_TEMPLATE,
-    dispensary: VERCEL_CANNABIS_TEMPLATE,
-    thc: VERCEL_CANNABIS_TEMPLATE,
-    cbd: VERCEL_CANNABIS_TEMPLATE,
-  };
+async function fetchTemplate(templateId: string = 'b17045df-9bf8-4abe-8d5b-bfd09ed3ccd0') {
+  const supabase = getSupabaseClient();
+  
+  const { data, error } = await supabase
+    .from('section_template_components')
+    .select('*')
+    .eq('template_id', templateId)
+    .order('position_order');
 
-  return templates[vendorType.toLowerCase()] || VERCEL_CANNABIS_TEMPLATE;
+  if (error || !data) {
+    throw new Error(`Failed to fetch template: ${error?.message}`);
+  }
+
+  return data;
 }
 
 /**
- * Apply template to vendor data
- * Replaces {{placeholders}} with actual vendor info
+ * Apply template to vendor data (now reads from database)
  */
-export function applyTemplate(vendorData: VendorData): AppliedTemplate {
-  const template = selectTemplate(vendorData.vendor_type || 'cannabis');
+export async function applyTemplate(vendorData: VendorData): Promise<AppliedTemplate> {
+  console.log('📖 Fetching Wilson\'s Template from Supabase...');
+  
+  const templateComponents = await fetchTemplate();
+  
+  console.log(`✅ Loaded ${templateComponents.length} components from database`);
+  
   const sections: any[] = [];
   const components: any[] = [];
+  const seenSections = new Set();
 
-  // Extract all page structures
-  const allPageSections = template.all_pages;
-
-  // Process each section
-  allPageSections.forEach((sectionDef: any) => {
-    // Add section
-    sections.push({
-      section_key: sectionDef.section_key,
-      section_order: sectionDef.section_order,
-      page_type: sectionDef.page_type || 'home'
-    });
-
-    // Process components
-    sectionDef.components.forEach((componentDef: any, idx: number) => {
-      const processedProps = processProps(componentDef.props || {}, vendorData);
-      
-      // Add component normally (smart components handle their own empty states)
-      components.push({
-        section_key: sectionDef.section_key,
-        component_key: componentDef.component_key,
-        props: processedProps,
-        position_order: components.length
+  // Process components and extract sections
+  templateComponents.forEach((comp: any) => {
+    const config = comp.container_config || {};
+    const sectionKey = config.section_key;
+    
+    // Add section if not already added
+    if (sectionKey && !seenSections.has(sectionKey)) {
+      sections.push({
+        section_key: sectionKey,
+        section_order: config.section_order || 0,
+        page_type: config.page_type || 'home'
       });
+      seenSections.add(sectionKey);
+    }
+
+    // Process component props (replace {{placeholders}})
+    const processedProps = processProps(comp.props || {}, vendorData);
+    
+    components.push({
+      section_key: sectionKey,
+      component_key: comp.component_key,
+      props: processedProps,
+      position_order: comp.position_order
     });
   });
 
@@ -92,9 +102,9 @@ export function applyTemplate(vendorData: VendorData): AppliedTemplate {
  */
 function processProps(props: Record<string, any>, vendorData: VendorData): Record<string, any> {
   const processed: Record<string, any> = {};
-
+  
   for (const [key, value] of Object.entries(props)) {
-    if (typeof value === 'string') {
+    if (typeof value === 'string' && value.includes('{{')) {
       processed[key] = replacePlaceholders(value, vendorData);
     } else {
       processed[key] = value;
@@ -119,73 +129,19 @@ function replacePlaceholders(text: string, vendorData: VendorData): string {
  * Generate compliance page content
  */
 export function generateCompliancePages(vendorData: VendorData) {
+  // This stays here - just static content text
   return {
-    medical_disclaimer: COMPLIANCE_CONTENT.medical_disclaimer,
-    age_requirement: COMPLIANCE_CONTENT.age_requirement,
-    shipping_disclaimer: COMPLIANCE_CONTENT.shipping_disclaimer,
-    lab_testing: COMPLIANCE_CONTENT.lab_testing_statement,
-    privacy_highlight: COMPLIANCE_CONTENT.privacy_highlight
+    privacy: `Privacy policy for ${vendorData.store_name}`,
+    terms: `Terms of service for ${vendorData.store_name}`,
+    cookies: `Cookie policy for ${vendorData.store_name}`,
+    returns: `Return policy for ${vendorData.store_name}`,
   };
 }
 
 /**
- * Add FAQ and About sections to template
+ * Add compliance sections
  */
-export function addComplianceSections(baseTemplate: AppliedTemplate, vendorData: VendorData): AppliedTemplate {
-  const enhanced = { ...baseTemplate };
-  
-  // Add FAQ section
-  const faqSection = {
-    section_key: 'faq',
-    section_order: baseTemplate.sections.length - 1, // Before footer
-    page_type: 'home'
-  };
-  
-  const faqComponents = [
-    { component_key: 'spacer', props: { height: 60 }, position_order: 0 },
-    { component_key: 'divider', props: { color: 'rgba(255,255,255,0.1)', thickness: 1 }, position_order: 1 },
-    { component_key: 'spacer', props: { height: 60 }, position_order: 2 },
-    { component_key: 'text', props: { text: 'FREQUENTLY ASKED QUESTIONS', size: 'medium', color: 'rgba(255,255,255,0.6)', alignment: 'center', font_weight: '400' }, position_order: 3 },
-    { component_key: 'spacer', props: { height: 16 }, position_order: 4 },
-    { component_key: 'text', props: { text: 'Everything you need to know', size: 'small', color: 'rgba(255,255,255,0.4)', alignment: 'center', font_weight: '300' }, position_order: 5 },
-    { component_key: 'spacer', props: { height: 48 }, position_order: 6 },
-    { component_key: 'text', props: { text: 'Q: How long does delivery take?', size: 'small', color: '#ffffff', alignment: 'center', font_weight: '500' }, position_order: 7 },
-    { component_key: 'spacer', props: { height: 8 }, position_order: 8 },
-    { component_key: 'text', props: { text: 'A: Same-day delivery for orders before 2 PM. Standard delivery is 1-2 business days.', size: 'small', color: 'rgba(255,255,255,0.5)', alignment: 'center', font_weight: '300' }, position_order: 9 },
-    { component_key: 'spacer', props: { height: 32 }, position_order: 10 },
-    { component_key: 'text', props: { text: 'Q: Are products lab tested?', size: 'small', color: '#ffffff', alignment: 'center', font_weight: '500' }, position_order: 11 },
-    { component_key: 'spacer', props: { height: 8 }, position_order: 12 },
-    { component_key: 'text', props: { text: 'A: Yes. Every product is third-party tested. Lab certificates available for all items.', size: 'small', color: 'rgba(255,255,255,0.5)', alignment: 'center', font_weight: '300' }, position_order: 13 },
-    { component_key: 'spacer', props: { height: 32 }, position_order: 14 },
-    { component_key: 'text', props: { text: 'Q: Is delivery discreet?', size: 'small', color: '#ffffff', alignment: 'center', font_weight: '500' }, position_order: 15 },
-    { component_key: 'spacer', props: { height: 8 }, position_order: 16 },
-    { component_key: 'text', props: { text: 'A: Absolutely. Plain, unmarked, odor-proof packaging for complete privacy.', size: 'small', color: 'rgba(255,255,255,0.5)', alignment: 'center', font_weight: '300' }, position_order: 17 },
-    { component_key: 'spacer', props: { height: 60 }, position_order: 18 }
-  ];
-  
-  // Insert FAQ before footer
-  const footerIndex = enhanced.sections.findIndex(s => s.section_key === 'footer');
-  if (footerIndex > 0) {
-    enhanced.sections.splice(footerIndex, 0, faqSection);
-    
-    // Reorder sections
-    enhanced.sections = enhanced.sections.map((s, idx) => ({
-      ...s,
-      section_order: s.section_key === 'header' ? -1 :
-                     s.section_key === 'footer' ? 999 : idx
-    }));
-  }
-  
-  // Add FAQ components
-  faqComponents.forEach(comp => {
-    enhanced.components.push({
-      section_key: 'faq',
-      component_key: comp.component_key,
-      props: comp.props,
-      position_order: comp.position_order
-    });
-  });
-  
-  return enhanced;
+export function addComplianceSections(design: AppliedTemplate, vendorData: VendorData): AppliedTemplate {
+  // Already included in template from database
+  return design;
 }
-
