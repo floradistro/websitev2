@@ -336,8 +336,7 @@ export default function ShippingEstimator({
               </p>
               <div className="h-1 bg-white/10 rounded-full overflow-hidden">
                 <div
-                    width: `${Math.min(((productPrice * quantity) / freeShippingThreshold) * 100, 100)}%` 
-                  }}
+                  style={{ width: `${Math.min(((productPrice * quantity) / freeShippingThreshold) * 100, 100)}%` }}
                   className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400"
                 />
               </div>
