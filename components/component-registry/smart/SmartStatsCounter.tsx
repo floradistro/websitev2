@@ -69,8 +69,9 @@ export function SmartStatsCounter({
               variant="label"
               size="sm"
               align="center"
-              color="#a3a3a3"
-              className="uppercase tracking-wider mt-2"
+              color="rgba(255,255,255,0.6)"
+              className="uppercase tracking-[0.12em] mt-2 font-black"
+              font_weight="900"
             />
           </div>
         ))}

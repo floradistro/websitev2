@@ -85,8 +85,8 @@ export function SmartProductShowcase({
     return (
       <div className={`py-12 ${className}`}>
         <div className="animate-pulse space-y-4">
-          {headline && <div className="h-10 bg-neutral-800 rounded w-1/3 mx-auto"></div>}
-          {subheadline && <div className="h-6 bg-neutral-800 rounded w-1/2 mx-auto"></div>}
+          {headline && <div className="h-10 bg-white/5 rounded w-1/3 mx-auto"></div>}
+          {subheadline && <div className="h-6 bg-white/5 rounded w-1/2 mx-auto"></div>}
           <div className={`grid grid-cols-${columns} gap-6 mt-8`}>
             {[...Array(columns)].map((_, i) => (
               <div key={i} className="space-y-3">

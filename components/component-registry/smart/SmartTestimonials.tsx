@@ -78,7 +78,7 @@ export function SmartTestimonials({
         {reviews.map(review => (
           <div
             key={review.id}
-            className={`bg-neutral-900 rounded-lg p-6 border border-neutral-800 ${layout === 'carousel' ? 'min-w-[300px] snap-start' : ''}`}
+            className={`bg-[#0a0a0a] rounded-2xl p-6 border border-white/5 ${layout === 'carousel' ? 'min-w-[300px] snap-start' : ''}`}
           >
             {/* Rating stars */}
             <div className="flex items-center gap-1 mb-3">
@@ -96,7 +96,7 @@ export function SmartTestimonials({
             
             {/* Reviewer name */}
             <div className="flex items-center gap-2">
-              <p className="text-sm font-semibold text-neutral-300">{review.customer_name || 'Customer'}</p>
+              <p className="text-sm font-black uppercase tracking-[0.08em] text-white" style={{ fontWeight: 900 }}>{review.customer_name || 'Customer'}</p>
               {review.verified && (
                 <span className="px-2 py-0.5 text-xs bg-green-600 text-white rounded-full">Verified</span>
               )}
