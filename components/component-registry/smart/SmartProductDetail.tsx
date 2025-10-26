@@ -500,7 +500,14 @@ export function SmartProductDetail({
             
             {/* Pickup Location Selector - Geo-Sorted */}
             {stockInfo.hasLocations && stockInfo.locationNames.length > 0 && (
-              <div className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-4">
+              <div 
+                style={{
+                  backgroundColor: templateStyle.color_palette.card_bg,
+                  border: `1px solid ${templateStyle.color_palette.border}`,
+                  borderRadius: templateStyle.border_radius.card,
+                  padding: templateStyle.spacing_scale.card_padding_mobile
+                }}
+              >
                 <div className="flex items-center justify-between mb-3">
                   <div className="text-[10px] uppercase tracking-[0.15em] text-white/40">Pickup Location</div>
                   {userLocation && locationsWithDistance.length > 0 && (
@@ -530,7 +537,14 @@ export function SmartProductDetail({
             
             {/* Pricing Tiers */}
             {showPricingTiers && pricingTiers.length > 0 && (
-              <div className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-4">
+              <div 
+                style={{
+                  backgroundColor: templateStyle.color_palette.card_bg,
+                  border: `1px solid ${templateStyle.color_palette.border}`,
+                  borderRadius: templateStyle.border_radius.card,
+                  padding: templateStyle.spacing_scale.card_padding_mobile
+                }}
+              >
                 <div className="text-[10px] uppercase tracking-[0.15em] text-white/40 mb-3">Select Quantity</div>
                 <select
                   value={selectedTier?.break_id || ''}
@@ -551,7 +565,15 @@ export function SmartProductDetail({
 
             {/* Add to Cart */}
             {showAddToCart && (
-              <div className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-4 space-y-3">
+              <div 
+                className="space-y-3"
+                style={{
+                  backgroundColor: templateStyle.color_palette.card_bg,
+                  border: `1px solid ${templateStyle.color_palette.border}`,
+                  borderRadius: templateStyle.border_radius.card,
+                  padding: templateStyle.spacing_scale.card_padding_mobile
+                }}
+              >
                 <button 
                   onClick={handleAddToCart}
                   disabled={addedToCart || !selectedPrice}
@@ -594,7 +616,14 @@ export function SmartProductDetail({
 
             {/* All Fields - If More Than 3 */}
             {showFields && product.fields && Object.keys(product.fields).length > 3 && (
-              <div className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-4">
+              <div 
+                style={{
+                  backgroundColor: templateStyle.color_palette.card_bg,
+                  border: `1px solid ${templateStyle.color_palette.border}`,
+                  borderRadius: templateStyle.border_radius.card,
+                  padding: templateStyle.spacing_scale.card_padding_mobile
+                }}
+              >
                 <div className="space-y-2">
                   {Object.entries(product.fields).slice(3).map(([key, value]: [string, any]) => (
                     <div key={key} className="flex items-center justify-between gap-2 py-1">
@@ -612,7 +641,14 @@ export function SmartProductDetail({
 
             {/* Description */}
             {product.description && (
-              <div className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-4">
+              <div 
+                style={{
+                  backgroundColor: templateStyle.color_palette.card_bg,
+                  border: `1px solid ${templateStyle.color_palette.border}`,
+                  borderRadius: templateStyle.border_radius.card,
+                  padding: templateStyle.spacing_scale.card_padding_mobile
+                }}
+              >
                 <div
                   className="text-xs text-white/60 leading-relaxed prose prose-sm prose-invert max-w-none"
                   dangerouslySetInnerHTML={{ __html: product.description }}
@@ -623,7 +659,15 @@ export function SmartProductDetail({
             {/* Lab Testing CTA */}
             {showLabResults && (
               <Link href={`/storefront/lab-results?vendor=${vendorSlug}`}>
-                <div className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-4 hover:border-white/10 transition-all">
+                <div 
+                  className="hover:border-white/10 transition-all"
+                  style={{
+                    backgroundColor: templateStyle.color_palette.card_bg,
+                    border: `1px solid ${templateStyle.color_palette.border}`,
+                    borderRadius: templateStyle.border_radius.card,
+                    padding: templateStyle.spacing_scale.card_padding_mobile
+                  }}
+                >
                   <div className="flex items-center gap-3">
                     <FlaskConical size={16} className="text-white/60" strokeWidth={1.5} />
                     <div className="flex-1">
