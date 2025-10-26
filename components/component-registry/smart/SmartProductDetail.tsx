@@ -411,6 +411,42 @@ export function SmartProductDetail({
           {/* Additional Details Below - Minimal Cards */}
           <div className="px-4 py-6 space-y-4">
             
+            {/* Fulfillment Method - Delivery or Pickup */}
+            {stockInfo.hasLocations && stockInfo.locationNames.length > 0 && (
+              <div className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-4">
+                <div className="text-[10px] uppercase tracking-[0.15em] text-white/40 mb-3">Fulfillment</div>
+                <select 
+                  value={fulfillmentMethod}
+                  onChange={(e) => setFulfillmentMethod(e.target.value as 'delivery' | 'pickup')}
+                  className="w-full bg-black border border-white/10 rounded-xl px-3 py-3 text-sm text-white focus:border-white/20 transition-all"
+                >
+                  <option value="delivery" className="bg-black">🚚 Delivery</option>
+                  <option value="pickup" className="bg-black">📍 Pickup</option>
+                </select>
+                
+                {/* Location selector - shown when pickup selected */}
+                {fulfillmentMethod === 'pickup' && (
+                  <div className="mt-3 pt-3 border-t border-white/10">
+                    <div className="text-[10px] uppercase tracking-[0.15em] text-white/40 mb-2">Select Location</div>
+                    <select 
+                      value={selectedLocationId}
+                      onChange={(e) => setSelectedLocationId(e.target.value)}
+                      className="w-full bg-black border border-white/10 rounded-xl px-3 py-3 text-sm text-white focus:border-white/20 transition-all"
+                    >
+                      <option value="" className="bg-black">Choose a location...</option>
+                      {inventory
+                        .filter((inv: any) => inv.quantity > 0 && inv.location?.name)
+                        .map((inv: any, idx: number) => (
+                          <option key={idx} value={inv.location.id} className="bg-black">
+                            {inv.location.name} - {inv.quantity} in stock
+                          </option>
+                        ))}
+                    </select>
+                  </div>
+                )}
+              </div>
+            )}
+            
             {/* Pricing Tiers */}
             {showPricingTiers && pricingTiers.length > 0 && (
               <div className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-4">
