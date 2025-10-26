@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { motion, div } from "framer-motion";
+import { motion } from "framer-motion";
 
 interface CartItem {
   productId: number;
@@ -285,8 +285,7 @@ export default function CartShippingEstimator({
           </div>
           <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
             <div
-                width: `${Math.min((cartTotal / freeShippingThreshold) * 100, 100)}%` 
-              }}
+              style={{ width: `${Math.min((cartTotal / freeShippingThreshold) * 100, 100)}%` }}
               className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400"
             />
           </div>

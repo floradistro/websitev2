@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { motion, div } from "framer-motion";
+import { motion } from "framer-motion";
 
 interface ShippingRate {
   method_id: string;
