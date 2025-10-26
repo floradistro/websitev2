@@ -1,6 +1,6 @@
-# Yacht Club AI Agent
+# WhaleTools AI Agent (MCP)
 
-Autonomous storefront generation service using Claude.
+Autonomous storefront generation service using Claude for the WhaleTools platform.
 
 ## Setup
 
@@ -100,7 +100,7 @@ Generate a complete storefront for a vendor.
   "vendorId": "uuid",
   "sectionsCreated": 8,
   "componentsCreated": 45,
-  "storefrontUrl": "https://yachtclub.com/storefront?vendor=flora-distro",
+  "storefrontUrl": "https://whaletools.com/storefront?vendor=flora-distro",
   "logs": ["..."]
 }
 ```

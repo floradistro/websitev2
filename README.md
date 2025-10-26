@@ -1,6 +1,9 @@
-# Yacht Club - Multi-Vendor Marketplace
+# WhaleTools - Multi-Vendor Marketplace Platform
 
 Premium multi-vendor commerce platform with AI-powered storefront generation.
+
+**Platform:** WhaleTools  
+**Master Vendor:** Yacht Club
 
 ## 🚀 Quick Start
 
@@ -193,6 +196,14 @@ railway up
 3. Add custom domain support
 4. Implement caching layer
 5. Scale to production
+
+---
+
+## 📛 Branding Structure
+
+**WhaleTools** is the platform infrastructure.  
+**Yacht Club** is the master vendor account (demo/reference implementation).  
+**Vendors** (like Flora Distro) create their own branded storefronts on WhaleTools.
 
 Built with Next.js 15, Supabase, and Claude AI.
 

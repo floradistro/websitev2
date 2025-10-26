@@ -35,6 +35,7 @@ const COMPONENT_MAP: Record<string, React.ComponentType<any>> = {
   'smart_product_detail': Smart.SmartProductDetail,
   'smart_header': Smart.SmartHeader,
   'smart_footer': Smart.SmartFooter,
+  'smart_hero': Smart.SmartHero,
   'smart_shop_controls': Smart.SmartShopControls,
   'smart_features': Smart.SmartFeatures,
   'smart_faq': Smart.SmartFAQ,

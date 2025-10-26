@@ -107,8 +107,9 @@ export async function generateStorefrontWithAgent(
                         vendorType.includes('thc') ||
                         vendorType.includes('dispensary') ||
                         vendorType.includes('cbd') ||
-                        vendorType === 'both' || // Flora Distro is 'both'
-                        vendorType === 'retail'; // Default to template
+                        vendorType === 'both'; // Flora Distro is 'both'
+    
+    const useParallel = process.env.PARALLEL_MODE === 'true';
     
     let design: StorefrontDesign;
     
@@ -120,6 +121,24 @@ export async function generateStorefrontWithAgent(
       // Add FAQ and compliance sections
       design = addComplianceSections(design, enrichedVendorData);
       logs.push(`✅ Added compliance sections (FAQ, disclaimers)`);
+    } else if (useParallel) {
+      // PARALLEL MODE: Generate 5 page groups simultaneously
+      logs.push(`⚡ PARALLEL MODE: Generating 5 groups simultaneously`);
+      
+      const parallelResult = await generateStorefrontParallel(vendorId, enrichedVendorData);
+      logs.push(...parallelResult.logs);
+      errors.push(...parallelResult.errors);
+      
+      if (!parallelResult.success) {
+        throw new Error('Parallel generation failed');
+      }
+      
+      design = {
+        sections: parallelResult.sections,
+        components: parallelResult.components
+      };
+      
+      logs.push(`✅ Parallel generation complete: ${design.sections.length} sections, ${design.components.length} components`);
     } else {
       // Phase 1: Design the storefront with Claude (for non-cannabis)
       logs.push(`🎨 Claude designing storefront...`);

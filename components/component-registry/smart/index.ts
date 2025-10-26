@@ -5,6 +5,7 @@
 
 export { SmartHeader } from './SmartHeader';
 export { SmartFooter } from './SmartFooter';
+export { SmartHero } from './SmartHero';
 export { SmartProductGrid } from './SmartProductGrid';
 export { SmartProductDetail } from './SmartProductDetail';
 export { SmartProductShowcase } from './SmartProductShowcase';

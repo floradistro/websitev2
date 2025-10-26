@@ -1,6 +1,6 @@
-# AI Storefront Agent for Yacht Club
+# AI Storefront Agent for WhaleTools
 
-AI-powered storefront generator that converts natural language vendor requests into fully functional Next.js e-commerce sites.
+AI-powered storefront generator that converts natural language vendor requests into fully functional Next.js e-commerce sites on the WhaleTools platform.
 
 ## Quick Start
 
@@ -20,7 +20,7 @@ Create `.env` file:
 ANTHROPIC_API_KEY=your_anthropic_key
 OPENAI_API_KEY=your_openai_key
 
-# Yacht Club Platform
+# WhaleTools Platform
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
 SUPABASE_SERVICE_ROLE_KEY=your_service_key
@@ -99,7 +99,7 @@ ai-agent/
 
 ## API Integration
 
-Add to your Yacht Club platform:
+Add to your WhaleTools platform:
 
 ```typescript
 // app/api/ai-agent/generate/route.ts
@@ -170,5 +170,5 @@ npm start
 
 ## License
 
-Proprietary - Yacht Club Internal Use Only
+Proprietary - WhaleTools Internal Use Only
 

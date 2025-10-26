@@ -14,6 +14,7 @@ const exa_js_1 = __importDefault(require("exa-js"));
 const validator_1 = require("./validator");
 const component_registry_1 = require("./component-registry");
 const template_engine_1 = require("./templates/template-engine");
+const parallel_agent_1 = require("./parallel-agent");
 // Initialize clients lazily to avoid env var issues
 function getAnthropicClient() {
     return new sdk_1.default({
@@ -78,8 +79,8 @@ async function generateStorefrontWithAgent(vendorId, vendorData) {
             vendorType.includes('thc') ||
             vendorType.includes('dispensary') ||
             vendorType.includes('cbd') ||
-            vendorType === 'both' || // Flora Distro is 'both'
-            vendorType === 'retail'; // Default to template
+            vendorType === 'both'; // Flora Distro is 'both'
+        const useParallel = process.env.PARALLEL_MODE === 'true';
         let design;
         if (useTemplate) {
             logs.push(`🎨 Applying Wilson's Template from database...`);
@@ -88,6 +89,21 @@ async function generateStorefrontWithAgent(vendorId, vendorData) {
             // Add FAQ and compliance sections
             design = (0, template_engine_1.addComplianceSections)(design, enrichedVendorData);
             logs.push(`✅ Added compliance sections (FAQ, disclaimers)`);
+        }
+        else if (useParallel) {
+            // PARALLEL MODE: Generate 5 page groups simultaneously
+            logs.push(`⚡ PARALLEL MODE: Generating 5 groups simultaneously`);
+            const parallelResult = await (0, parallel_agent_1.generateStorefrontParallel)(vendorId, enrichedVendorData);
+            logs.push(...parallelResult.logs);
+            errors.push(...parallelResult.errors);
+            if (!parallelResult.success) {
+                throw new Error('Parallel generation failed');
+            }
+            design = {
+                sections: parallelResult.sections,
+                components: parallelResult.components
+            };
+            logs.push(`✅ Parallel generation complete: ${design.sections.length} sections, ${design.components.length} components`);
         }
         else {
             // Phase 1: Design the storefront with Claude (for non-cannabis)

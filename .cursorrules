@@ -1,8 +1,11 @@
-# Cursor AI Rules - Yacht Club Project
+# Cursor AI Rules - WhaleTools Platform
 
 ## Project Context
-Multi-vendor marketplace (similar to Amazon/Shopify) built with Next.js, Supabase, and TypeScript.
-Current focus: Wilson's storefront template (luxury cannabis retail theme - Flora Distro vendor)
+**WhaleTools** is a multi-vendor marketplace platform (similar to Amazon/Shopify) built with Next.js, Supabase, and TypeScript.
+
+**Platform Name:** WhaleTools  
+**Master Vendor:** Yacht Club (demo/reference vendor account)  
+**Current Focus:** Wilson's storefront template (luxury cannabis retail theme - Flora Distro vendor)
 
 ---
 
