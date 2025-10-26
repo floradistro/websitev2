@@ -7,7 +7,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { validateStorefront, autoFixDesign, type VendorData, type StorefrontDesign } from './validator';
 import { COMPONENT_REGISTRY, AGENT_INSTRUCTIONS } from './component-registry';
-import { applyTemplate, selectTemplate, addComplianceSections } from './templates/template-engine';
+import { applyTemplate, addComplianceSections } from './templates/template-engine';
 
 // Initialize clients lazily to avoid env var issues
 function getAnthropicClient() {
@@ -77,8 +77,8 @@ export async function generateStorefrontWithAgent(
     let design: StorefrontDesign;
     
     if (useTemplate) {
-      logs.push(`🎨 Applying Vercel Black template...`);
-      design = applyTemplate(enrichedVendorData);
+      logs.push(`🎨 Applying Wilson's Template from database...`);
+      design = await applyTemplate(enrichedVendorData);
       logs.push(`✅ Template applied: ${design.sections.length} sections, ${design.components.length} components`);
       
       // Add FAQ and compliance sections
