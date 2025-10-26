@@ -9,8 +9,9 @@ export async function middleware(request: NextRequest) {
   // Extract domain (remove port for localhost)
   const domain = hostname.split(':')[0];
   
-  // Determine if this is the main Yacht Club domain
+  // Determine if this is the main Yacht Club/WhaleTools domain
   const isYachtClubDomain = domain.includes('yachtclub.vip') || 
+                           domain.includes('whaletools.dev') ||
                            domain === 'localhost' || 
                            domain.startsWith('localhost:');
   
@@ -114,7 +115,7 @@ export async function middleware(request: NextRequest) {
 
     // Check if this is a subdomain storefront (vendor-slug.yachtclub.com)
     const subdomain = domain.split('.')[0];
-    if (domain.includes('.') && !domain.startsWith('www')) {
+    if (domain.includes('.') && !domain.startsWith('www') && !isYachtClubDomain) {
       const { data: vendor, error: vendorError } = await supabase
         .from('vendors')
         .select('id, status, site_hidden')
