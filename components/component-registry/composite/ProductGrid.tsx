@@ -35,16 +35,16 @@ export function ProductGrid({
 }: ProductGridProps) {
   
   const columnClasses: Record<number, string> = {
-    2: 'grid-cols-2',
-    3: 'grid-cols-2 lg:grid-cols-3',
-    4: 'grid-cols-2 lg:grid-cols-4',
-    5: 'grid-cols-2 lg:grid-cols-5',
+    2: 'grid-cols-1 sm:grid-cols-2',
+    3: 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3',
+    4: 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4',
+    5: 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-5',
   };
   
   const gapClasses: Record<string, string> = {
-    sm: 'gap-4',
-    md: 'gap-6',
-    lg: 'gap-8',
+    sm: 'gap-3 sm:gap-4',
+    md: 'gap-4 sm:gap-6',
+    lg: 'gap-6 sm:gap-8',
   };
   
   if (products.length === 0) {
@@ -56,7 +56,7 @@ export function ProductGrid({
   }
   
   return (
-    <div className={`grid ${columnClasses[columns]} ${gapClasses[gap]} pt-8 ${className}`} style={{ overflow: 'visible' }}>
+    <div className={`grid ${columnClasses[columns]} ${gapClasses[gap]} pt-4 sm:pt-8 px-0 ${className}`} style={{ overflow: 'visible' }}>
       {products.map((product, index) => (
         <ProductCard
           key={product.id}

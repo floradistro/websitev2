@@ -320,12 +320,12 @@ export function SmartProductDetail({
               
               {/* Thumbnail Gallery */}
               {formattedImages.length > 1 && (
-                <div className="flex gap-2 px-6 py-4 overflow-x-auto">
+                <div className="flex gap-2 px-3 py-3 overflow-x-auto">
                   {formattedImages.map((img: any, idx: number) => (
                     <button
                       key={idx}
                       onClick={() => setSelectedImageIndex(idx)}
-                      className={`relative w-20 h-20 flex-shrink-0 bg-black border-2 rounded-2xl overflow-hidden transition-all ${
+                      className={`relative w-16 h-16 flex-shrink-0 bg-black border-2 rounded-xl overflow-hidden transition-all ${
                         selectedImageIndex === idx ? 'border-white' : 'border-white/20'
                       }`}
                     >
@@ -334,7 +334,7 @@ export function SmartProductDetail({
                         alt={`${product.name} ${idx + 1}`}
                         fill
                         className="object-contain"
-                        sizes="80px"
+                        sizes="64px"
                       />
                     </button>
                   ))}
@@ -343,15 +343,15 @@ export function SmartProductDetail({
             </div>
           )}
           
-          <div className="px-6 py-8 space-y-6 relative" style={{ zIndex: 100 }}>
+          <div className="px-3 py-6 space-y-5 relative" style={{ zIndex: 100 }}>
             {/* Product Name */}
             <div>
-              <h1 className="text-3xl uppercase tracking-[0.12em] text-white leading-relaxed mb-3" style={{ fontWeight: 900 }}>
+              <h1 className="text-2xl uppercase tracking-[0.1em] text-white leading-tight mb-3" style={{ fontWeight: 900 }}>
                 {product.name}
               </h1>
               
               {/* Price */}
-              <p className="text-lg font-medium text-white tracking-wide mb-4">
+              <p className="text-base font-medium text-white tracking-wide mb-3">
                 {selectedPrice 
                   ? `$${selectedPrice.toFixed(0)}` 
                   : pricingTiers.length > 0
@@ -406,11 +406,11 @@ export function SmartProductDetail({
                 <button 
                   onClick={handleAddToCart}
                   disabled={addedToCart || !selectedPrice}
-                  className={`w-full py-5 text-base uppercase tracking-wider transition-all duration-300 font-bold rounded-2xl relative overflow-hidden ${
+                  className={`w-full py-4 text-sm uppercase tracking-wider transition-all duration-300 font-bold rounded-2xl relative overflow-hidden ${
                     addedToCart 
                       ? "bg-white text-black border-2 border-white" 
                       : selectedPrice
-                      ? "bg-white text-black hover:bg-neutral-100 hover:scale-105 shadow-2xl shadow-white/20"
+                      ? "bg-white text-black hover:bg-neutral-100 sm:hover:scale-105 shadow-2xl shadow-white/20"
                       : "bg-white/20 text-white/40 cursor-not-allowed"
                   }`}
                 >
@@ -446,7 +446,7 @@ export function SmartProductDetail({
             {/* Blueprint Fields */}
             {showFields && product.fields && Object.keys(product.fields).length > 0 && (
               <div className="">
-                <div className="border border-white/10 bg-white/5 backdrop-blur-xl rounded-2xl p-6">
+                <div className="border border-white/10 bg-white/5 backdrop-blur-xl rounded-2xl p-4">
                   <h3 className="text-xs uppercase tracking-wider font-semibold mb-4 text-white/60">
                     Product Details
                   </h3>
@@ -465,7 +465,7 @@ export function SmartProductDetail({
             {/* Description */}
             {product.description && (
               <div className="">
-                <div className="border border-white/10 bg-white/5 backdrop-blur-xl rounded-2xl p-6">
+                <div className="border border-white/10 bg-white/5 backdrop-blur-xl rounded-2xl p-4">
                   <h3 className="text-xs uppercase tracking-wider font-semibold mb-4 text-white/60">
                     Description
                   </h3>

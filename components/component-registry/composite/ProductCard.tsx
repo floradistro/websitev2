@@ -262,7 +262,7 @@ export function ProductCard({
 
   return (
     <div
-      className={`group flex flex-col relative bg-[#0a0a0a] hover:bg-[#141414] cursor-pointer hover:shadow-2xl hover:shadow-white/5 hover:-translate-y-1 border border-white/5 hover:border-white/10 transition-all duration-300 rounded-2xl overflow-hidden ${!stockInfo.inStock ? 'opacity-60' : ''} ${className}`}
+      className={`group flex flex-col relative bg-[#0a0a0a] hover:bg-[#141414] cursor-pointer hover:shadow-2xl hover:shadow-white/5 sm:hover:-translate-y-1 border border-white/5 hover:border-white/10 transition-all duration-300 rounded-xl sm:rounded-2xl overflow-hidden ${!stockInfo.inStock ? 'opacity-60' : ''} ${className}`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       style={{
@@ -348,7 +348,7 @@ export function ProductCard({
       </a>
 
       {/* Product Info */}
-      <div className="flex flex-col flex-1 px-3 py-4">
+      <div className="flex flex-col flex-1 px-3 sm:px-4 py-3 sm:py-4">
         <div className="space-y-3">
           {/* Product Name */}
           <a href={productUrl}>

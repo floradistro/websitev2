@@ -210,13 +210,13 @@ export function ComponentBasedPageRenderer({
   const getSectionPadding = (sectionKey: string) => {
     switch (sectionKey) {
       case 'shop_controls':
-        return 'pt-8 pb-6 px-4 md:px-8 lg:px-12'; // Tight spacing for filters
+        return 'pt-6 pb-4 px-3 sm:px-4 md:px-8 lg:px-12'; // Tight spacing for filters
       case 'shop_grid':
-        return 'pt-2 pb-12 px-4 md:px-8 lg:px-12'; // Minimal top padding, product grid right under filters
+        return 'pt-2 pb-8 px-3 sm:px-4 md:px-8 lg:px-12'; // Minimal padding, full width on mobile
       case 'shop_hero':
-        return 'py-12 px-4 md:px-8 lg:px-12'; // Less padding for shop hero
+        return 'py-8 sm:py-12 px-3 sm:px-4 md:px-8 lg:px-12'; // Less padding for shop hero
       default:
-        return 'py-16 px-4 md:px-8 lg:px-12'; // Default padding
+        return 'py-12 sm:py-16 px-3 sm:px-4 md:px-8 lg:px-12'; // Default padding
     }
   };
   
