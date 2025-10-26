@@ -375,7 +375,8 @@ export function SmartProductDetail({
                   </div>
                   {stockInfo.hasLocations && stockInfo.locationNames.length > 0 && (
                     <span className="text-[10px] text-white/40 truncate ml-3.5">
-                      {stockInfo.locationNames.join(', ')}
+                      {stockInfo.locationNames.slice(0, 2).join(', ')}
+                      {stockInfo.locationNames.length > 2 && ` +${stockInfo.locationNames.length - 2} more`}
                     </span>
                   )}
                 </div>

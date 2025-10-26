@@ -363,10 +363,11 @@ export function ProductCard({
                 </span>
               </div>
               
-              {/* Always show location names */}
+              {/* Show first 2 locations only */}
               {stockInfo.locations.length > 0 && (
                 <span className="text-[10px] text-white/40 truncate ml-3.5">
-                  {stockInfo.locations.map((loc: any) => loc.name).join(', ')}
+                  {stockInfo.locations.slice(0, 2).map((loc: any) => loc.name).join(', ')}
+                  {stockInfo.locations.length > 2 && ` +${stockInfo.locations.length - 2} more`}
                 </span>
               )}
             </div>
