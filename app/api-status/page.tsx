@@ -58,40 +58,27 @@ export default function ApiStatusPage() {
       <section className="pt-40 pb-20 px-6">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-20">
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 1 }}
-              className="mb-12"
-            >
-              <Image 
-                src="/yacht-club-logo.png" 
-                alt="Yacht Club" 
-                width={120} 
-                height={120}
-                className="object-contain mx-auto"
-              />
-            </motion.div>
-            
-            <motion.h1 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-              className="text-6xl md:text-8xl font-black mb-8 tracking-tight uppercase"
-              style={{ fontWeight: 900 }}
-            >
-              186 Endpoints
-            </motion.h1>
-            
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.6, delay: 0.4 }}
-              className="flex items-center justify-center gap-3"
-            >
-              <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
-              <span className="text-xs uppercase tracking-[0.12em] text-white/60 font-black" style={{ fontWeight: 900 }}>Live</span>
-            </motion.div>
+          <div className="mb-12">
+            <Image 
+              src="/yacht-club-logo.png" 
+              alt="Yacht Club" 
+              width={120} 
+              height={120}
+              className="object-contain mx-auto"
+            />
+          </div>
+          
+          <h1 
+            className="text-6xl md:text-8xl font-black mb-8 tracking-tight uppercase"
+            style={{ fontWeight: 900 }}
+          >
+            186 Endpoints
+          </h1>
+          
+          <div className="flex items-center justify-center gap-3">
+            <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+            <span className="text-xs uppercase tracking-[0.12em] text-white/60 font-black" style={{ fontWeight: 900 }}>Live</span>
+          </div>
           </div>
 
           {/* Live Metrics */}
@@ -101,29 +88,21 @@ export default function ApiStatusPage() {
               { value: mounted ? uptime.toFixed(2) : '99.90', unit: '%', label: 'Uptime' },
               { value: mounted ? requestCount.toLocaleString() : '0', unit: '', label: 'Requests' }
             ].map((metric, i) => (
-              <motion.div
+              <div
                 key={metric.label}
-                initial={{ opacity: 0, y: 40 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.8, delay: i * 0.1 }}
                 className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-12 text-center hover:border-white/10 transition-colors"
               >
-                <motion.div 
-                  key={metric.value}
-                  initial={{ scale: 1.2, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{ duration: 0.3 }}
+                <div 
                   className="text-5xl font-black mb-3"
                   style={{ fontWeight: 900 }}
                 >
                   {metric.value}
                   {metric.unit && <span className="text-xl text-white/60">{metric.unit}</span>}
-                </motion.div>
+                </div>
                 <div className="text-xs uppercase tracking-[0.12em] text-white/60 font-black" style={{ fontWeight: 900 }}>
                   {metric.label}
                 </div>
-              </motion.div>
+              </div>
             ))}
           </div>
 
