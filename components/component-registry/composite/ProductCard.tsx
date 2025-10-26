@@ -6,11 +6,10 @@
  * Features: Hover effects, badges, stock status, pricing tiers, wishlist, quick actions
  */
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Heart, ShoppingBag } from 'lucide-react';
 import NextImage from 'next/image';
-import { createPortal } from 'react-dom';
 
 export interface ProductCardProps {
   product: {
