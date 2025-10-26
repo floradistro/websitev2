@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft } from "lucide-react";
-import { motion } from 'framer-motion';
 
 export default function ApiStatusPage() {
   const [mounted, setMounted] = useState(false);
@@ -108,11 +107,7 @@ export default function ApiStatusPage() {
 
           {/* Capabilities */}
           <div className="max-w-4xl mx-auto">
-            <motion.div
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8 }}
+            <div
               className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-16 text-center mb-20"
             >
               <div className="mb-8">
@@ -132,7 +127,7 @@ export default function ApiStatusPage() {
                 <br />
                 <span className="text-white/60">Repeat Infinitely</span>
               </h2>
-            </motion.div>
+            </div>
 
             {/* Categories */}
             <div className="grid md:grid-cols-3 gap-4 mb-20">
@@ -147,27 +142,19 @@ export default function ApiStatusPage() {
                 "Payments",
                 "Real-time"
               ].map((item, i) => (
-                <motion.div
+                <div
                   key={item}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.6, delay: i * 0.06 }}
                   className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-6 text-center hover:border-white/10 transition-colors"
                 >
                   <p className="text-xs uppercase tracking-[0.08em] font-black" style={{ fontWeight: 900 }}>
                     {item}
                   </p>
-                </motion.div>
+                </div>
               ))}
             </div>
 
             {/* Access CTA */}
-            <motion.div
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8 }}
+            <div
               className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-16 text-center"
             >
               <div className="mb-8">
@@ -189,7 +176,7 @@ export default function ApiStatusPage() {
               >
                 Request Access
               </Link>
-            </motion.div>
+            </div>
           </div>
         </div>
       </section>

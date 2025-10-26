@@ -50,7 +50,7 @@ interface SmartFooterProps {
   poweredByText?: string;
 }
 
-export default function SmartFooter({
+export function SmartFooter({
   vendorId,
   vendorSlug,
   vendorName,

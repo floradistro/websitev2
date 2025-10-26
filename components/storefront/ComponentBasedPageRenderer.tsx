@@ -128,25 +128,25 @@ export function ComponentBasedPageRenderer({
     return null;
   }
   
-  // Section-specific styling
+  // Section-specific styling - LUXURY CARD AESTHETIC
   const getSectionStyle = (sectionKey: string) => {
     switch (sectionKey) {
       case 'header':
         return ''; // Header handles its own styling
       case 'hero':
-        return 'min-h-[600px] flex items-center justify-center text-center bg-gradient-to-b from-black via-neutral-900 to-black';
+        return 'pt-32 sm:pt-40 pb-16 sm:pb-20 px-4 sm:px-6 flex items-center justify-center text-center bg-black';
       case 'process':
-        return 'bg-neutral-950 border-y border-neutral-900';
+        return 'py-16 sm:py-20 px-4 sm:px-6 bg-black';
       case 'locations':
-        return 'bg-black';
+        return 'py-16 sm:py-20 px-4 sm:px-6 bg-black';
       case 'featured_products':
-        return 'bg-neutral-950';
+        return 'py-16 sm:py-20 px-4 sm:px-6 bg-black';
       case 'reviews':
-        return 'bg-black';
+        return 'py-16 sm:py-20 px-4 sm:px-6 bg-black';
       case 'about_story':
-        return 'bg-neutral-900';
+        return 'py-16 sm:py-20 px-4 sm:px-6 bg-black';
       case 'shipping_badges':
-        return 'bg-black border-t border-neutral-800';
+        return 'py-16 sm:py-20 px-4 sm:px-6 bg-black';
       case 'footer':
         return ''; // Footer handles its own styling
       case 'differentiators':
@@ -224,12 +224,7 @@ export function ComponentBasedPageRenderer({
   const isOnlyLayoutSections = activeSections.every(s => s.section_key === 'header' || s.section_key === 'footer');
   
   return (
-    <div className={`${!isOnlyLayoutSections ? 'min-h-screen' : ''} relative`}>
-      {/* Background gradient */}
-      {!isOnlyLayoutSections && (
-        <div className="absolute inset-0 bg-gradient-to-b from-black via-neutral-950 to-black pointer-events-none" />
-      )}
-      
+    <div className={`${!isOnlyLayoutSections ? 'min-h-screen' : ''} relative bg-black`}>
       {/* Content */}
       <div className="relative z-10">
         {activeSections.map((section) => {

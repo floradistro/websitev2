@@ -56,6 +56,7 @@ export function LiveStorefrontPreview({
           content={sectionMap.hero}
           templateStyle={templateStyle}
           basePath={basePath}
+          vendor={vendor}
         />
       )}
 

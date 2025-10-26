@@ -19,6 +19,7 @@ interface SmartHeaderProps {
   vendorSlug: string;
   vendorName: string;
   logoUrl?: string;
+  vendorLogo?: string; // Alias for logoUrl
   
   // Styling
   backgroundColor?: string;
@@ -47,11 +48,12 @@ interface SmartHeaderProps {
   sticky?: boolean;
 }
 
-export default function SmartHeader({
+export function SmartHeader({
   vendorId,
   vendorSlug,
   vendorName,
-  logoUrl,
+  logoUrl: logoUrlProp,
+  vendorLogo,
   backgroundColor = 'bg-black/95 backdrop-blur-xl',
   textColor = 'text-white/80',
   hoverColor = 'hover:text-white',
@@ -72,6 +74,9 @@ export default function SmartHeader({
 }: SmartHeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
+  // Use vendorLogo if logoUrl not provided (renderer compatibility)
+  const logoUrl = logoUrlProp || vendorLogo;
+  
   const [searchOpen, setSearchOpen] = useState(false);
   const [productsDropdownOpen, setProductsDropdownOpen] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
@@ -171,11 +176,10 @@ export default function SmartHeader({
   return (
     <>
       <header 
-        className={`${sticky ? 'sticky' : 'relative'} ${backgroundColor} border-b ${borderColor} z-[110] transition-transform duration-300 shadow-lg shadow-black/20 ${
+        className={`${sticky ? 'sticky' : 'relative'} top-0 bg-black/95 backdrop-blur-xl border-b border-white/5 z-[110] transition-transform duration-300 ${
           isVisible ? 'translate-y-0' : '-translate-y-full'
         }`}
         style={{ 
-          top: 'env(safe-area-inset-top, 0px)',
           backdropFilter: 'blur(40px) saturate(180%)',
           WebkitBackdropFilter: 'blur(40px) saturate(180%)'
         }}
@@ -189,46 +193,26 @@ export default function SmartHeader({
 
         {/* Main Header */}
         <div className="relative bg-transparent">
-          <div className="relative flex items-center justify-between h-16 px-6 max-w-7xl mx-auto">
+          <div className="relative flex items-center justify-center h-16 px-6 max-w-7xl mx-auto">
             {/* Mobile Menu Button */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className={`lg:hidden ${textColor} p-2.5 -ml-2 hover:bg-white/10 transition-all rounded-[16px]`}
+              className={`lg:hidden absolute left-6 ${textColor} p-2.5 hover:bg-white/10 transition-all rounded-2xl`}
               aria-label="Toggle menu"
             >
               {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
 
-            {/* Logo */}
-            <Link 
-              href={getHref("/")} 
-              className={`absolute left-1/2 -translate-x-1/2 lg:relative lg:left-auto lg:translate-x-0 flex items-center gap-3 hover:opacity-70 transition-opacity`}
-            >
-              {logoUrl ? (
-                <div className="relative w-8 h-8 lg:w-10 lg:h-10">
-                  <Image 
-                    src={logoUrl} 
-                    alt={vendorName}
-                    fill
-                    priority
-                    sizes="(max-width: 1024px) 32px, 40px"
-                    className="object-contain"
-                  />
-                </div>
-              ) : (
-                <div className="w-8 h-8 lg:w-10 lg:h-10 flex items-center justify-center">
-                  <span className={`text-base sm:text-xl ${textColor} font-semibold tracking-tight`}>
-                    {vendorName}
-                  </span>
-                </div>
-              )}
-              <span className={`hidden sm:block text-base sm:text-xl ${textColor} font-semibold tracking-tight`}>
-                {vendorName}
-              </span>
-            </Link>
-
-            {/* Desktop Navigation */}
-            <nav className="hidden lg:flex items-center space-x-8 text-sm">
+            {/* Desktop Navigation - Centered */}
+            <nav className="hidden lg:flex items-center space-x-8 text-xs">
+              {/* Home Link */}
+              <Link
+                href={getHref("/")}
+                className="text-white/60 hover:text-white transition-colors font-black uppercase tracking-[0.12em]"
+                style={{ fontWeight: 900 }}
+              >
+                Home
+              </Link>
               {navLinks.map((link, index) => {
                 const isShopLink = link.showDropdown && categories.length > 0;
                 
@@ -241,7 +225,8 @@ export default function SmartHeader({
                   >
                     <Link
                       href={getHref(link.href)}
-                      className={`text-neutral-400 ${hoverColor} transition-colors flex items-center gap-1.5 font-semibold`}
+                      className="text-white/60 hover:text-white transition-colors flex items-center gap-1.5 font-black uppercase tracking-[0.12em]"
+                      style={{ fontWeight: 900 }}
                     >
                       <span>{link.label}</span>
                       {isShopLink && (
@@ -284,11 +269,11 @@ export default function SmartHeader({
             </nav>
 
             {/* Right Icons */}
-            <div className="flex items-center space-x-1 relative z-10">
+            <div className="flex items-center space-x-1 absolute right-6">
               {showSearch && (
                 <button 
                   onClick={() => setSearchOpen(true)}
-                  className={`text-neutral-400 ${hoverColor} p-2.5 hover:bg-white/10 rounded-[16px] transition-all`}
+                  className="text-white/60 hover:text-white p-2.5 hover:bg-white/10 rounded-2xl transition-all"
                   aria-label="Search"
                 >
                   <Search size={18} />
@@ -297,7 +282,7 @@ export default function SmartHeader({
               {showAccount && (
                 <Link 
                   href={getHref('/login')}
-                  className={`text-neutral-400 ${hoverColor} p-2.5 hover:bg-white/10 rounded-[16px] transition-all hidden sm:block`}
+                  className="text-white/60 hover:text-white p-2.5 hover:bg-white/10 rounded-2xl transition-all hidden sm:block"
                   aria-label="Account"
                 >
                   <User size={18} />
@@ -306,7 +291,7 @@ export default function SmartHeader({
               {showCart && (
                 <button 
                   onClick={() => setCartOpen(true)}
-                  className={`text-neutral-400 ${hoverColor} relative p-2.5 hover:bg-white/10 rounded-[16px] transition-all`}
+                  className="text-white/60 hover:text-white relative p-2.5 hover:bg-white/10 rounded-2xl transition-all"
                   aria-label="Cart"
                 >
                   <ShoppingBag size={18} />

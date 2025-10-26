@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, div } from "framer-motion";
 
 interface CartItem {
   productId: number;
@@ -222,20 +222,14 @@ export default function CartShippingEstimator({
       )}
 
       {/* Shipping Rates */}
-      <AnimatePresence>
+      <div>
         {rates.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
+          <div
             className="space-y-2 overflow-hidden"
           >
             {rates.map((rate, index) => (
-              <motion.button
+              <button
                 key={rate.method_id}
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.05 }}
                 onClick={() => handleRateSelect(rate)}
                 className={`w-full text-left border rounded-sm p-4 transition-all group ${
                   selectedRate?.method_id === rate.method_id
@@ -270,17 +264,15 @@ export default function CartShippingEstimator({
                     ${rate.cost.toFixed(2)}
                   </div>
                 </div>
-              </motion.button>
+              </button>
             ))}
-          </motion.div>
+          </div>
         )}
-      </AnimatePresence>
+      </div>
 
       {/* Free Shipping Progress */}
       {rates.length > 0 && amountUntilFree > 0 && (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
+        <div
           className="border-t border-white/10 pt-4 mt-4"
         >
           <div className="flex items-center justify-between mb-2">
@@ -292,23 +284,18 @@ export default function CartShippingEstimator({
             </span>
           </div>
           <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
-            <motion.div
-              initial={{ width: 0 }}
-              animate={{ 
+            <div
                 width: `${Math.min((cartTotal / freeShippingThreshold) * 100, 100)}%` 
               }}
-              transition={{ duration: 0.8, ease: "easeOut" }}
               className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400"
             />
           </div>
-        </motion.div>
+        </div>
       )}
 
       {/* Free Shipping Achieved */}
       {rates.length > 0 && amountUntilFree === 0 && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.98 }}
-          animate={{ opacity: 1, scale: 1 }}
+        <div
           className="border-t border-emerald-500/20 pt-4 mt-4"
         >
           <div className="flex items-center gap-2 text-emerald-400">
@@ -317,7 +304,7 @@ export default function CartShippingEstimator({
               Free Shipping Available
             </span>
           </div>
-        </motion.div>
+        </div>
       )}
     </div>
   );

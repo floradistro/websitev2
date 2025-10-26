@@ -49,6 +49,7 @@ export function LiveEditableStorefront({
           content={sectionMap.hero}
           templateStyle={templateStyle}
           basePath={basePath}
+          vendor={vendor}
         />
       )}
 

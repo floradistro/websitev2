@@ -64,47 +64,47 @@ export function Text({
   const size = sizeMap[sizeProp || ''] || sizeProp;
   const editableRef = useRef<HTMLDivElement>(null);
   
-  // Default sizes per variant
+  // Default sizes per variant - LUXURY SIZING
   const defaultSizes: Record<string, string> = {
     headline: '4xl',
-    subheadline: '2xl',
+    subheadline: 'xl',
     paragraph: 'md',
-    label: 'sm',
+    label: 'xs',
     caption: 'xs',
     quote: 'lg',
   };
   
   const actualSize = size || defaultSizes[variant] || 'md';
   
-  // Size classes
+  // Size classes - LUXURY LARGE TEXT like product cards
   const sizeClasses: Record<string, string> = {
-    xs: 'text-xs',
-    sm: 'text-sm',
-    md: 'text-base',
-    lg: 'text-lg',
-    xl: 'text-xl',
-    '2xl': 'text-2xl',
-    '3xl': 'text-3xl',
-    '4xl': 'text-4xl md:text-5xl lg:text-6xl',
+    xs: 'text-xs sm:text-sm',
+    sm: 'text-sm sm:text-base',
+    md: 'text-base sm:text-lg',
+    lg: 'text-lg sm:text-xl',
+    xl: 'text-xl sm:text-2xl',
+    '2xl': 'text-2xl sm:text-3xl md:text-4xl',
+    '3xl': 'text-3xl sm:text-5xl md:text-6xl',
+    '4xl': 'text-5xl sm:text-7xl md:text-8xl lg:text-9xl',
   };
   
-  // Weight classes
+  // ALL weights are BOLD (font-black = 900)
   const weightClasses: Record<string, string> = {
-    light: 'font-light',
-    normal: 'font-normal',
-    medium: 'font-medium',
-    semibold: 'font-semibold',
-    bold: 'font-bold',
+    light: 'font-black',
+    normal: 'font-black',
+    medium: 'font-black',
+    semibold: 'font-black',
+    bold: 'font-black',
   };
   
-  // Variant-specific classes
+  // Variant-specific classes - LUXURY PRODUCT CARD AESTHETIC
   const variantClasses: Record<string, string> = {
-    headline: 'font-bold tracking-tight',
-    subheadline: 'font-medium',
-    paragraph: 'leading-relaxed',
-    label: 'uppercase tracking-wide',
-    caption: 'text-neutral-500',
-    quote: 'italic font-light',
+    headline: 'text-white font-black uppercase tracking-tight leading-[0.85]',
+    subheadline: 'text-white/60 font-normal uppercase tracking-wide',
+    paragraph: 'text-white/60 leading-relaxed',
+    label: 'text-white/40 uppercase tracking-[0.15em] font-black',
+    caption: 'text-white/40 uppercase tracking-wide',
+    quote: 'italic text-white/60 border-l-2 border-white/20 pl-4',
   };
   
   const combinedClasses = [

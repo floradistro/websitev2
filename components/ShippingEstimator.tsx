@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, div } from "framer-motion";
 
 interface ShippingRate {
   method_id: string;
@@ -265,31 +265,22 @@ export default function ShippingEstimator({
 
       {/* Error Message */}
       {error && (
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
+        <div
           className="text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded-full px-4 py-2"
         >
           {error}
-        </motion.div>
+        </div>
       )}
 
       {/* Shipping Options */}
-      <AnimatePresence>
+      <div>
         {showResults && rates.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.3 }}
+          <div
             className="space-y-2 overflow-hidden"
           >
             {rates.map((rate, index) => (
-              <motion.div
+              <div
                 key={rate.method_id}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.1 }}
                 className="bg-white/5 border border-white/10 rounded-[24px] p-4 hover:bg-white/[0.07] hover:border-white/20 transition-all group"
               >
                 <div className="flex items-start justify-between gap-4">
@@ -325,18 +316,15 @@ export default function ShippingEstimator({
                     </div>
                   </div>
                 </div>
-              </motion.div>
+              </div>
             ))}
-          </motion.div>
+          </div>
         )}
-      </AnimatePresence>
+      </div>
 
       {/* Free Shipping Message */}
       {showResults && amountUntilFree > 0 && productPrice > 0 && (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
+        <div
           className="bg-gradient-to-r from-emerald-500/10 to-emerald-600/10 border border-emerald-500/20 rounded p-4"
         >
           <div className="flex items-center gap-3">
@@ -347,26 +335,20 @@ export default function ShippingEstimator({
                 <span className="font-semibold">FREE SHIPPING</span>
               </p>
               <div className="h-1 bg-white/10 rounded-full overflow-hidden">
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ 
+                <div
                     width: `${Math.min(((productPrice * quantity) / freeShippingThreshold) * 100, 100)}%` 
                   }}
-                  transition={{ duration: 0.6, ease: "easeOut" }}
                   className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400"
                 />
               </div>
             </div>
           </div>
-        </motion.div>
+        </div>
       )}
 
       {/* Free Shipping Eligible */}
       {showResults && amountUntilFree === 0 && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.4 }}
+        <div
           className="bg-gradient-to-r from-emerald-500/10 to-emerald-600/10 border border-emerald-500/20 rounded p-4"
         >
           <div className="flex items-center gap-3">
@@ -380,22 +362,19 @@ export default function ShippingEstimator({
               </p>
             </div>
           </div>
-        </motion.div>
+        </div>
       )}
 
       {/* Shipping Origin Info - Always show when results are displayed */}
       {showResults && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
+        <div
           className="flex items-center gap-2 text-sm text-white/60 pt-4 border-t border-white/10 mt-4"
         >
           <div className="w-1 h-3 bg-white/30 rounded-full" />
           <span className="uppercase tracking-wider font-medium">
             Ships from {originLocation?.name || 'Blowing Rock'} ({originLocation?.city || 'Blowing Rock'}, {originLocation?.state || 'NC'})
           </span>
-        </motion.div>
+        </div>
       )}
 
       {/* Info Text */}

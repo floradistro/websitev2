@@ -3,7 +3,6 @@
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft } from "lucide-react";
-import { motion } from 'framer-motion';
 
 export default function AboutPage() {
   return (
@@ -33,10 +32,7 @@ export default function AboutPage() {
       {/* Hero */}
       <section className="pt-40 pb-20 px-6">
         <div className="max-w-4xl mx-auto text-center">
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 1 }}
+          <div 
             className="mb-12"
           >
             <Image 
@@ -46,11 +42,8 @@ export default function AboutPage() {
               height={120}
               className="object-contain mx-auto"
             />
-          </motion.div>
-          <motion.h1 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
+          </div>
+          <h1 
             className="text-5xl md:text-7xl font-black mb-6 tracking-tight uppercase leading-[0.9]"
             style={{ fontWeight: 900 }}
           >
@@ -59,32 +52,22 @@ export default function AboutPage() {
             Infrastructure
             <br />
             <span className="text-white/60">That Generates Itself</span>
-          </motion.h1>
-          <motion.div 
-            initial={{ scaleX: 0 }}
-            animate={{ scaleX: 1 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
+          </h1>
+          <div 
             className="h-[1px] w-32 bg-white/10 mx-auto mb-12"
           />
-          <motion.p 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.6 }}
+          <p 
             className="text-xl text-white/60 leading-relaxed max-w-2xl mx-auto"
           >
             From retail operations to wholesale networks. AI builds the entire stack.
-          </motion.p>
+          </p>
         </div>
       </section>
 
       {/* What We Build */}
       <section className="py-20 px-6">
         <div className="max-w-4xl mx-auto">
-          <motion.div 
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
+          <div 
             className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-16"
           >
             <h2 className="text-3xl font-black mb-12 tracking-tight uppercase text-center" style={{ fontWeight: 900 }}>
@@ -107,18 +90,14 @@ export default function AboutPage() {
                 </div>
               ))}
             </div>
-          </motion.div>
+          </div>
         </div>
       </section>
 
       {/* The Secret */}
       <section className="py-20 px-6">
         <div className="max-w-4xl mx-auto">
-          <motion.div 
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
+          <div 
             className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-16 text-center"
           >
             <div className="mb-8">
@@ -138,7 +117,7 @@ export default function AboutPage() {
             <p className="text-white/60">
               Each component automatically scopes to its tenant. No manual configuration. No data leaks.
             </p>
-          </motion.div>
+          </div>
         </div>
       </section>
 
@@ -152,18 +131,14 @@ export default function AboutPage() {
               "Components auto-fetch tenant data",
               "Live app in 20 seconds"
             ].map((text, i) => (
-              <motion.div 
+              <div 
                 key={i}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: i * 0.1 }}
                 className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-6 text-center"
               >
                 <div className="text-sm font-black uppercase tracking-[0.08em]" style={{ fontWeight: 900 }}>
                   {text}
                 </div>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
@@ -172,11 +147,7 @@ export default function AboutPage() {
       {/* CTA */}
       <section className="py-20 px-6">
         <div className="max-w-4xl mx-auto text-center">
-          <motion.div 
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
+          <div 
             className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-16"
           >
             <div className="mb-8">
@@ -198,7 +169,7 @@ export default function AboutPage() {
             >
               Get Started
             </Link>
-          </motion.div>
+          </div>
         </div>
       </section>
 

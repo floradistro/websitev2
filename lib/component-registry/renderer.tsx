@@ -36,6 +36,8 @@ const COMPONENT_MAP: Record<string, React.ComponentType<any>> = {
   'smart_header': Smart.SmartHeader,
   'smart_footer': Smart.SmartFooter,
   'smart_shop_controls': Smart.SmartShopControls,
+  'smart_features': Smart.SmartFeatures,
+  'smart_faq': Smart.SmartFAQ,
 };
 
 export interface DynamicComponentProps {

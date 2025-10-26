@@ -59,6 +59,7 @@ export async function ContentDrivenHomePage({
           content={sectionMap.hero}
           templateStyle={templateStyle}
           basePath={basePath}
+          vendor={vendor}
         />
       )}
 

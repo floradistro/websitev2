@@ -16,54 +16,33 @@ interface CTASectionProps {
 }
 
 export function CTASection({ content, templateStyle = 'minimalist', basePath = '' }: CTASectionProps) {
-  const styles = {
-    minimalist: {
-      container: 'py-20 bg-black border-t border-white/10',
-      inner: 'max-w-4xl mx-auto text-center',
-      headline: 'text-4xl md:text-5xl font-light text-white mb-4',
-      description: 'text-white/60 text-lg mb-8',
-      button: 'inline-flex items-center gap-2 bg-white text-black px-8 py-4 text-sm uppercase tracking-[0.2em] hover:bg-white/90 transition-all',
-    },
-    luxury: {
-      container: 'py-32 bg-gradient-to-b from-neutral-900 to-black',
-      inner: 'max-w-5xl mx-auto text-center',
-      headline: 'text-5xl md:text-7xl font-serif font-light text-amber-100 mb-6',
-      description: 'text-amber-200/70 text-xl mb-10 font-light',
-      button: 'inline-flex items-center gap-3 bg-gradient-to-r from-amber-600 to-amber-500 text-black px-12 py-5 text-base uppercase tracking-widest hover:from-amber-500 hover:to-amber-400 transition-all shadow-lg shadow-amber-500/20',
-    },
-    bold: {
-      container: 'py-24 bg-gradient-to-r from-pink-600 via-purple-600 to-indigo-600',
-      inner: 'max-w-4xl mx-auto text-center',
-      headline: 'text-6xl md:text-8xl font-black text-white mb-6',
-      description: 'text-white/90 text-2xl mb-10 font-bold',
-      button: 'inline-flex items-center gap-3 bg-white text-black px-12 py-6 text-xl font-black uppercase tracking-wider hover:scale-105 transition-transform shadow-2xl',
-    },
-    organic: {
-      container: 'py-28 bg-gradient-to-b from-green-950 to-teal-950',
-      inner: 'max-w-4xl mx-auto text-center',
-      headline: 'text-5xl md:text-6xl font-light text-green-100 mb-4',
-      description: 'text-green-200/70 text-lg mb-8',
-      button: 'inline-flex items-center gap-2 bg-green-600 text-white px-10 py-4 rounded-full text-sm uppercase tracking-wider hover:bg-green-500 transition-all shadow-lg',
-    },
-  };
-
-  const style = styles[templateStyle];
-
   return (
-    <div className={style.container}>
-      <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-10">
-        <div className={style.inner}>
-          <h2 className={style.headline}>{content.headline}</h2>
+    <section className="py-16 sm:py-20 px-4 sm:px-6 bg-black">
+      <div className="max-w-4xl mx-auto text-center">
+        <div className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-8 sm:p-12 md:p-16">
+          {/* Headline */}
+          <h2 className="text-3xl sm:text-4xl md:text-6xl font-black mb-6 sm:mb-8 uppercase tracking-tight leading-tight" style={{ fontWeight: 900 }}>
+            {content.headline}
+          </h2>
+          
+          {/* Description */}
           {content.description && (
-            <p className={style.description}>{content.description}</p>
+            <p className="text-base sm:text-lg text-white/60 mb-8 sm:mb-12 max-w-2xl mx-auto">
+              {content.description}
+            </p>
           )}
-          <Link href={`${basePath}${content.button_link}`} className={style.button}>
+          
+          {/* CTA Button */}
+          <Link 
+            href={`${basePath}${content.button_link}`} 
+            className="group inline-flex items-center justify-center gap-3 bg-white text-black px-6 sm:px-8 py-3 sm:py-4 rounded-2xl text-xs uppercase tracking-[0.08em] hover:bg-white/90 font-black transition-all hover:scale-105"
+            style={{ fontWeight: 900 }}
+          >
             <span>{content.button_text}</span>
-            <ArrowRight size={20} />
+            <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
           </Link>
         </div>
       </div>
-    </div>
+    </section>
   );
 }
-

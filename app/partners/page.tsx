@@ -3,7 +3,6 @@
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft } from "lucide-react";
-import { motion } from 'framer-motion';
 
 export default function PartnersPage() {
   return (
@@ -33,10 +32,7 @@ export default function PartnersPage() {
       {/* Hero */}
       <section className="pt-40 pb-20 px-6">
         <div className="max-w-4xl mx-auto text-center">
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 1 }}
+          <div 
             className="mb-12"
           >
             <Image 
@@ -46,11 +42,8 @@ export default function PartnersPage() {
               height={120}
               className="object-contain mx-auto"
             />
-          </motion.div>
-          <motion.h1 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
+          </div>
+          <h1 
             className="text-5xl md:text-7xl font-black mb-6 tracking-tight uppercase leading-[0.9]"
             style={{ fontWeight: 900 }}
           >
@@ -59,32 +52,22 @@ export default function PartnersPage() {
             Platforms
             <br />
             <span className="text-white/60">Not Products</span>
-          </motion.h1>
-          <motion.div 
-            initial={{ scaleX: 0 }}
-            animate={{ scaleX: 1 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
+          </h1>
+          <div 
             className="h-[1px] w-32 bg-white/10 mx-auto mb-12"
           />
-          <motion.p 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.6 }}
+          <p 
             className="text-xl text-white/60 leading-relaxed max-w-2xl mx-auto"
           >
             Multi-tenant infrastructure where each tenant gets a complete business system. AI-generated.
-          </motion.p>
+          </p>
         </div>
       </section>
 
       {/* The Vision */}
       <section className="py-20 px-6">
         <div className="max-w-4xl mx-auto">
-          <motion.div 
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
+          <div 
             className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-16 text-center"
           >
             <div className="mb-8">
@@ -104,7 +87,7 @@ export default function PartnersPage() {
             <p className="text-white/60">
               Retail operations. Wholesale networks. POS systems. Inventory. Analytics. Everything a business needs.
             </p>
-          </motion.div>
+          </div>
         </div>
       </section>
 
@@ -120,12 +103,8 @@ export default function PartnersPage() {
               { title: "Infinite Tenants", desc: "Each isolated, each with full capabilities" },
               { title: "White Label", desc: "Your platform, our engine" }
             ].map((item, i) => (
-              <motion.div 
+              <div 
                 key={i}
-                initial={{ opacity: 0, y: 40 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.8, delay: i * 0.1 }}
                 className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-8 hover:border-white/10 transition-colors"
               >
                 <div className="text-sm font-black uppercase tracking-[0.08em] text-white mb-3" style={{ fontWeight: 900 }}>
@@ -134,7 +113,7 @@ export default function PartnersPage() {
                 <div className="text-sm text-white/60">
                   {item.desc}
                 </div>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
@@ -153,18 +132,14 @@ export default function PartnersPage() {
               "Agency white-label solutions",
               "Vertical-specific commerce"
             ].map((text, i) => (
-              <motion.div 
+              <div 
                 key={i}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: i * 0.1 }}
                 className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-6 text-center"
               >
                 <div className="text-sm font-black uppercase tracking-[0.08em]" style={{ fontWeight: 900 }}>
                   {text}
                 </div>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
@@ -173,11 +148,7 @@ export default function PartnersPage() {
       {/* CTA */}
       <section className="py-20 px-6">
         <div className="max-w-4xl mx-auto text-center">
-          <motion.div 
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
+          <div 
             className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-16"
           >
             <div className="mb-8">
@@ -202,7 +173,7 @@ export default function PartnersPage() {
             >
               Request Access
             </Link>
-          </motion.div>
+          </div>
         </div>
       </section>
 
