@@ -429,8 +429,8 @@ export function SmartProductDetail({
                   <div className="mt-3 pt-3 border-t border-white/10">
                     <div className="text-[10px] uppercase tracking-[0.15em] text-white/40 mb-2">Select Location</div>
                     <select 
-                      value={selectedLocationId}
-                      onChange={(e) => setSelectedLocationId(e.target.value)}
+                      value={pickupLocationId}
+                      onChange={(e) => setPickupLocationId(e.target.value)}
                       className="w-full bg-black border border-white/10 rounded-xl px-3 py-3 text-sm text-white focus:border-white/20 transition-all"
                     >
                       <option value="" className="bg-black">Choose a location...</option>
