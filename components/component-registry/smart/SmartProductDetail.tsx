@@ -300,58 +300,61 @@ export function SmartProductDetail({
 
       {/* Product Content */}
       <div className="relative bg-black" style={{ minHeight: '100vh' }}>
-        {/* Mobile Layout */}
-        <div className="lg:hidden relative">
-          {/* Gallery */}
-          {showGallery && (
-            <div className="relative">
-              <div className="relative aspect-square bg-black">
-                {formattedImages[selectedImageIndex] && (
-                  <Image
-                    src={formattedImages[selectedImageIndex].src}
-                    alt={product.name}
-                    fill
-                    className="object-contain"
-                    sizes="100vw"
-                    priority
-                  />
+        {/* Mobile Layout - Matches Product Card Style */}
+        <div className="lg:hidden relative bg-black">
+          {/* Main Product Card Container */}
+          <div className="bg-[#0a0a0a] border-b border-white/5">
+            
+            {/* Gallery */}
+            {showGallery && (
+              <div className="relative">
+                <div className="relative aspect-[4/5] overflow-hidden bg-black">
+                  {formattedImages[selectedImageIndex] && (
+                    <Image
+                      src={formattedImages[selectedImageIndex].src}
+                      alt={product.name}
+                      fill
+                      className="object-contain"
+                      sizes="100vw"
+                      priority
+                    />
+                  )}
+                </div>
+                
+                {/* Thumbnail Gallery */}
+                {formattedImages.length > 1 && (
+                  <div className="flex gap-2 p-4 overflow-x-auto bg-black border-t border-white/5">
+                    {formattedImages.map((img: any, idx: number) => (
+                      <button
+                        key={idx}
+                        onClick={() => setSelectedImageIndex(idx)}
+                        className={`relative w-16 h-16 flex-shrink-0 bg-black border-2 rounded-xl overflow-hidden transition-all ${
+                          selectedImageIndex === idx ? 'border-white' : 'border-white/10'
+                        }`}
+                      >
+                        <Image
+                          src={img.src}
+                          alt={`${product.name} ${idx + 1}`}
+                          fill
+                          className="object-contain"
+                          sizes="64px"
+                        />
+                      </button>
+                    ))}
+                  </div>
                 )}
               </div>
-              
-              {/* Thumbnail Gallery */}
-              {formattedImages.length > 1 && (
-                <div className="flex gap-2 px-3 py-3 overflow-x-auto">
-                  {formattedImages.map((img: any, idx: number) => (
-                    <button
-                      key={idx}
-                      onClick={() => setSelectedImageIndex(idx)}
-                      className={`relative w-16 h-16 flex-shrink-0 bg-black border-2 rounded-xl overflow-hidden transition-all ${
-                        selectedImageIndex === idx ? 'border-white' : 'border-white/20'
-                      }`}
-                    >
-                      <Image
-                        src={img.src}
-                        alt={`${product.name} ${idx + 1}`}
-                        fill
-                        className="object-contain"
-                        sizes="64px"
-                      />
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-          
-          <div className="px-3 py-6 space-y-5 relative" style={{ zIndex: 100 }}>
-            {/* Product Name */}
-            <div>
-              <h1 className="text-2xl uppercase tracking-[0.1em] text-white leading-tight mb-3" style={{ fontWeight: 900 }}>
+            )}
+            
+            {/* Product Info - Exactly Like Product Card */}
+            <div className="px-4 py-4 space-y-3">
+              {/* Product Name */}
+              <h1 className="text-xs uppercase tracking-[0.12em] font-normal text-white line-clamp-2 leading-relaxed">
                 {product.name}
               </h1>
               
               {/* Price */}
-              <p className="text-base font-medium text-white tracking-wide mb-3">
+              <p className="text-sm font-medium text-white tracking-wide">
                 {selectedPrice 
                   ? `$${selectedPrice.toFixed(0)}` 
                   : pricingTiers.length > 0
@@ -360,144 +363,157 @@ export function SmartProductDetail({
                 }
               </p>
 
-              {/* Stock Status - Wilson's Style */}
+              {/* Stock Status - Exactly Like Product Card */}
               {isInStock ? (
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-green-500" />
-                  <span className="text-xs uppercase tracking-wider text-neutral-400">In Stock</span>
-                  {stockInfo.hasLocations && (
-                    <span className="text-xs text-white/40">
-                      • {stockInfo.locationNames.join(', ')}
+                <div className="flex flex-col gap-0.5">
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-2 h-2 rounded-full bg-green-500 flex-shrink-0"></div>
+                    <span className="text-[11px] uppercase tracking-wider text-white/60 truncate">
+                      {stockInfo.count === 1 ? 'In Stock' : `In Stock · ${stockInfo.count} locations`}
+                    </span>
+                  </div>
+                  {stockInfo.count <= 2 && stockInfo.locationNames.length > 0 && (
+                    <span className="text-[10px] text-white/40 truncate ml-3.5">
+                      {stockInfo.locationNames.join(', ')}
                     </span>
                   )}
                 </div>
               ) : (
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-red-500/60" />
-                  <span className="text-xs uppercase tracking-wider text-neutral-400">Out of Stock</span>
+                <div className="flex flex-col gap-1">
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-2 h-2 rounded-full bg-red-500/60 flex-shrink-0"></div>
+                    <span className="text-[11px] uppercase tracking-wider text-white/40">Out of Stock</span>
+                  </div>
+                  <span className="text-[10px] text-white/30 ml-3.5">Check back soon</span>
+                </div>
+              )}
+              
+              {/* Product Fields - Like Product Card */}
+              {product.fields && Object.keys(product.fields).length > 0 && (
+                <div className="space-y-1.5 pt-2 border-t border-white/10">
+                  {Object.entries(product.fields).slice(0, 3).map(([key, value]: [string, any]) => (
+                    <div key={key} className="flex items-center justify-between gap-2">
+                      <span className="uppercase tracking-[0.12em] font-medium text-white/60 text-[10px] whitespace-nowrap">
+                        {key}
+                      </span>
+                      <span className="text-[11px] tracking-wide text-white/90 font-normal text-right truncate">
+                        {value}
+                      </span>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
-
-            {/* Pricing Tiers Dropdown - iOS 26 Rounded */}
+          </div>
+          
+          {/* Additional Details Below - Minimal Cards */}
+          <div className="px-4 py-6 space-y-4">
+            
+            {/* Pricing Tiers */}
             {showPricingTiers && pricingTiers.length > 0 && (
-              <div>
-                <label className="block text-xs uppercase tracking-wider text-white/60 mb-2">Select Quantity</label>
+              <div className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-4">
+                <div className="text-[10px] uppercase tracking-[0.15em] text-white/40 mb-3">Select Quantity</div>
                 <select
                   value={selectedTier?.break_id || ''}
                   onChange={(e) => {
                     const tier = pricingTiers.find(t => t.break_id === e.target.value);
                     if (tier) handlePriceSelect(tier);
                   }}
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-4 text-white backdrop-blur-xl hover:bg-white/10 focus:bg-white/10 focus:border-white/20 transition-all"
+                  className="w-full bg-black border border-white/10 rounded-xl px-3 py-3 text-sm text-white focus:border-white/20 transition-all"
                 >
                   {pricingTiers.map((tier: any) => (
                     <option key={tier.break_id} value={tier.break_id} className="bg-black">
-                      {tier.label || tier.tier_name} - ${tier.price} {tier.price_per_gram && `($${tier.price_per_gram.toFixed(2)}/g)`}
+                      {tier.label || tier.tier_name} - ${tier.price}
                     </option>
                   ))}
                 </select>
               </div>
             )}
 
-            {/* Add to Cart & Actions - iOS 26 Rounded-2xl Buttons */}
+            {/* Add to Cart */}
             {showAddToCart && (
-              <div className="space-y-3">
+              <div className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-4 space-y-3">
                 <button 
                   onClick={handleAddToCart}
                   disabled={addedToCart || !selectedPrice}
-                  className={`w-full py-4 text-sm uppercase tracking-wider transition-all duration-300 font-bold rounded-2xl relative overflow-hidden ${
+                  className={`w-full py-4 text-sm uppercase tracking-[0.15em] transition-all duration-300 font-bold rounded-2xl relative overflow-hidden ${
                     addedToCart 
                       ? "bg-white text-black border-2 border-white" 
                       : selectedPrice
-                      ? "bg-white text-black hover:bg-neutral-100 sm:hover:scale-105 shadow-2xl shadow-white/20"
+                      ? "bg-white text-black active:scale-95 shadow-2xl shadow-white/20"
                       : "bg-white/20 text-white/40 cursor-not-allowed"
                   }`}
                 >
-                  <span className={`inline-flex items-center gap-2 transition-all duration-300 ${addedToCart ? "opacity-0" : "opacity-100"}`}>
+                  <span className={`transition-all duration-300 ${addedToCart ? "opacity-0" : "opacity-100"}`}>
                     Add to Cart
                   </span>
                   <span className={`absolute inset-0 flex items-center justify-center gap-2 transition-all duration-300 ${addedToCart ? "opacity-100" : "opacity-0"}`}>
-                    <Check size={18} strokeWidth={2.5} />
+                    <Check size={16} strokeWidth={2.5} />
                     Added
                   </span>
                 </button>
                 
-                <div className="flex space-x-3">
-                  {showWishlistButton && (
-                    <button 
-                      onClick={handleToggleWishlist}
-                      className="flex-1 border-2 border-white bg-transparent text-white py-4 text-xs uppercase tracking-wider hover:bg-white hover:text-black transition-all duration-300 flex items-center justify-center space-x-2 rounded-2xl"
-                    >
-                      <Heart size={16} className={inWishlist ? 'fill-current' : ''} strokeWidth={2} />
-                      <span>Wishlist</span>
-                    </button>
-                  )}
-                  {showShareButton && (
-                    <button className="flex-1 border-2 border-white bg-transparent text-white py-4 text-xs uppercase tracking-wider hover:bg-white hover:text-black transition-all duration-300 flex items-center justify-center space-x-2 rounded-2xl">
-                      <Share2 size={16} strokeWidth={2} />
-                      <span>Share</span>
-                    </button>
-                  )}
-                </div>
+                {(showWishlistButton || showShareButton) && (
+                  <div className="flex gap-2">
+                    {showWishlistButton && (
+                      <button 
+                        onClick={handleToggleWishlist}
+                        className={`flex-1 border-2 ${inWishlist ? 'border-white bg-white text-black' : 'border-white/10 text-white'} py-3 text-xs uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-2 rounded-2xl`}
+                      >
+                        <Heart size={14} className={inWishlist ? 'fill-current' : ''} strokeWidth={2} />
+                      </button>
+                    )}
+                    {showShareButton && (
+                      <button className="flex-1 border-2 border-white/10 text-white py-3 text-xs uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-2 rounded-2xl">
+                        <Share2 size={14} strokeWidth={2} />
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
             )}
 
-            {/* Blueprint Fields */}
-            {showFields && product.fields && Object.keys(product.fields).length > 0 && (
-              <div className="">
-                <div className="border border-white/10 bg-white/5 backdrop-blur-xl rounded-2xl p-4">
-                  <h3 className="text-xs uppercase tracking-wider font-semibold mb-4 text-white/60">
-                    Product Details
-                  </h3>
-                  <dl className="space-y-3">
-                    {Object.entries(product.fields).map(([key, value]: [string, any]) => (
-                      <div key={key} className="flex justify-between text-sm">
-                        <dt className="text-white/60">{key}:</dt>
-                        <dd className="text-white font-medium">{value}</dd>
-                      </div>
-                    ))}
-                  </dl>
+            {/* All Fields - If More Than 3 */}
+            {showFields && product.fields && Object.keys(product.fields).length > 3 && (
+              <div className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-4">
+                <div className="space-y-2">
+                  {Object.entries(product.fields).slice(3).map(([key, value]: [string, any]) => (
+                    <div key={key} className="flex items-center justify-between gap-2 py-1">
+                      <span className="uppercase tracking-[0.12em] font-medium text-white/60 text-[10px] whitespace-nowrap">
+                        {key}
+                      </span>
+                      <span className="text-[11px] tracking-wide text-white/90 font-normal text-right truncate">
+                        {value}
+                      </span>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
 
             {/* Description */}
             {product.description && (
-              <div className="">
-                <div className="border border-white/10 bg-white/5 backdrop-blur-xl rounded-2xl p-4">
-                  <h3 className="text-xs uppercase tracking-wider font-semibold mb-4 text-white/60">
-                    Description
-                  </h3>
-                  <div
-                    className="text-sm text-white/80 leading-relaxed prose prose-sm prose-invert max-w-none"
-                    dangerouslySetInnerHTML={{ __html: product.description }}
-                  />
-                </div>
+              <div className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-4">
+                <div
+                  className="text-xs text-white/60 leading-relaxed prose prose-sm prose-invert max-w-none"
+                  dangerouslySetInnerHTML={{ __html: product.description }}
+                />
               </div>
             )}
 
             {/* Lab Testing CTA */}
             {showLabResults && (
-              <div className="">
-                <Link href={`/storefront/lab-results?vendor=${vendorSlug}`}>
-                  <div className="border border-white/20 bg-white/5 backdrop-blur-xl rounded-2xl p-6 hover:bg-white/10 hover:border-white/30 transition-all cursor-pointer group">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
-                        <FlaskConical className="w-6 h-6 text-white" />
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="text-sm uppercase tracking-wider font-semibold mb-1 text-white/90 group-hover:text-white transition-colors">
-                          Lab Tested
-                        </h3>
-                        <p className="text-xs text-white/60 font-light">
-                          View our complete library of third-party test results →
-                        </p>
-                      </div>
+              <Link href={`/storefront/lab-results?vendor=${vendorSlug}`}>
+                <div className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-4 hover:border-white/10 transition-all">
+                  <div className="flex items-center gap-3">
+                    <FlaskConical size={16} className="text-white/60" strokeWidth={1.5} />
+                    <div className="flex-1">
+                      <div className="text-xs uppercase tracking-[0.12em] text-white/90">Lab Tested</div>
+                      <div className="text-[10px] text-white/40">View test results →</div>
                     </div>
                   </div>
-                </Link>
-              </div>
+                </div>
+              </Link>
             )}
           </div>
         </div>
