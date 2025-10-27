@@ -1,6 +1,6 @@
 # WhaleTools Documentation
 
-**Complete documentation for the WhaleTools platform - the world's first living, AI-powered multi-vendor marketplace.**
+**Complete documentation for the WhaleTools platform - the world's first living, AI-powered multi-vendor marketplace with integrated POS.**
 
 ---
 
@@ -8,8 +8,8 @@
 
 ```
 docs/
-├── evolution/          ⭐ Start here for evolution plan
-├── architecture/       🏗️ System architecture & components
+├── evolution/          ⭐ Platform evolution & vision
+├── architecture/       🏗️ System architecture & components  
 ├── guides/            📖 How-to guides & setup
 ├── reference/         📋 API reference & technical docs
 └── archive/           📦 Historical documentation
@@ -22,138 +22,159 @@ docs/
 ### **For Executives/Business:**
 1. [The Vision](evolution/THE_VISION_SUMMARY.md) - What we're building
 2. [Platform Overview](architecture/WHALETOOLS_PLATFORM.md) - Market position
-3. [Evolution Plan Summary](evolution/WHALETOOLS_EVOLUTION_PLAN.md) - Timeline
+3. [What's Next](WHATS_NEXT.md) - Current status & roadmap
 
 ### **For Developers:**
 1. [Master Index](evolution/MASTER_INDEX.md) - Complete navigation guide
-2. [Evolution Plan Part 1](evolution/WHALETOOLS_EVOLUTION_PLAN.md) - Phases 1-3
-3. [Evolution Plan Part 2](evolution/WHALETOOLS_EVOLUTION_PART2.md) - Phases 4-6
-4. [Implementation Guide](evolution/IMPLEMENTATION_GUIDE.md) - Step-by-step execution
+2. [Smart Component Guide](architecture/SMART_COMPONENT_GUIDE.md) - Component system
+3. [POS Implementation Status](architecture/POS_IMPLEMENTATION_STATUS.md) - POS system docs
 
 ### **For New Team Members:**
 1. [The Vision](evolution/THE_VISION_SUMMARY.md) - Understand the vision
 2. [Platform Overview](architecture/WHALETOOLS_PLATFORM.md) - Architecture
-3. [Smart Components Guide](architecture/SMART_COMPONENT_GUIDE.md) - Component system
+3. [WCL Specification](architecture/WCL_LANGUAGE_SPECIFICATION.md) - Component language
 4. [Platform Naming](architecture/PLATFORM_NAMING.md) - Branding guidelines
 
 ---
 
-## 📂 **DOCUMENTATION SECTIONS**
+## 🆕 **LATEST UPDATES (October 27, 2025)**
 
-### **🎯 Evolution /** 
-**The roadmap to transform WhaleTools into a living platform**
+### **POS System - Phase 1 Complete! 🎉**
+- ✅ Pickup order queue with real-time updates
+- ✅ Walk-in sales register (90% complete)
+- ✅ Session management (open/close)
+- ✅ Inventory deduction (tested & working)
+- ✅ Cash payment processing
+- ✅ PWA support for iPad
 
-| Document | Description | Priority |
-|----------|-------------|----------|
-| [**MASTER_INDEX.md**](evolution/MASTER_INDEX.md) | Complete navigation hub | ⭐⭐⭐ |
-| [**THE_VISION_SUMMARY.md**](evolution/THE_VISION_SUMMARY.md) | Vision, business case, competitive moat | ⭐⭐⭐ |
-| [**WHALETOOLS_EVOLUTION_PLAN.md**](evolution/WHALETOOLS_EVOLUTION_PLAN.md) | Phases 1-3 (Weeks 1-12) | ⭐⭐⭐ |
-| [**WHALETOOLS_EVOLUTION_PART2.md**](evolution/WHALETOOLS_EVOLUTION_PART2.md) | Phases 4-6 (Weeks 13-24) | ⭐⭐ |
-| [**IMPLEMENTATION_GUIDE.md**](evolution/IMPLEMENTATION_GUIDE.md) | Step-by-step execution | ⭐⭐⭐ |
+**Docs:** [POS Implementation Status](architecture/POS_IMPLEMENTATION_STATUS.md)
 
-**Start here:** [MASTER_INDEX.md](evolution/MASTER_INDEX.md)
+### **Component System - Mature**
+- ✅ WCL (WhaleTools Component Language) working
+- ✅ AI component generation (Claude)
+- ✅ Quantum rendering (behavioral states)
+- ✅ Smart component base utilities
+- ✅ Database-driven configuration
 
----
-
-### **🏗️ Architecture /**
-**System architecture, component design, and technical specifications**
-
-| Document | Description | Type |
-|----------|-------------|------|
-| [**WHALETOOLS_PLATFORM.md**](architecture/WHALETOOLS_PLATFORM.md) | Platform architecture overview | Overview |
-| [**WCL_LANGUAGE_SPECIFICATION.md**](architecture/WCL_LANGUAGE_SPECIFICATION.md) | WhaleTools Component Language spec | ⭐ WORKING |
-| [**WCL_RESPONSIVE_VS_QUANTUM.md**](architecture/WCL_RESPONSIVE_VS_QUANTUM.md) | Critical: Responsive vs Quantum guide | ⭐ NEW |
-| [**QUANTUM_RENDERING.md**](architecture/QUANTUM_RENDERING.md) | Quantum rendering deep dive | ⭐ WORKING |
-| [**SMART_COMPONENT_GUIDE.md**](architecture/SMART_COMPONENT_GUIDE.md) | Smart component quick reference | Reference |
-| [**SMART_COMPONENT_SYSTEM.md**](architecture/SMART_COMPONENT_SYSTEM.md) | Full component system docs | Detailed |
-| [**PLATFORM_NAMING.md**](architecture/PLATFORM_NAMING.md) | Branding & naming conventions | Guidelines |
-| [**ANIMATION_SYSTEM.md**](architecture/ANIMATION_SYSTEM.md) | Animation library documentation | Reference |
-| [**COMPONENT_ARCHITECTURE.md**](architecture/COMPONENT_ARCHITECTURE.md) | Component design patterns | Technical |
-
-**Start here:** [WCL_LANGUAGE_SPECIFICATION.md](architecture/WCL_LANGUAGE_SPECIFICATION.md) for the future of WhaleTools
+**Docs:** [Smart Component Guide](architecture/SMART_COMPONENT_GUIDE.md)
 
 ---
 
-### **📖 Guides /**
-**How-to guides, setup instructions, and tutorials**
+## 📂 **KEY DOCUMENTS BY TOPIC**
 
+### **🏪 Point of Sale (POS)** ⭐ NEW
+| Document | Description | Status |
+|----------|-------------|--------|
+| [POS Quick Start Guide](POS_QUICK_START.md) | Staff training & usage guide | ⭐ Essential |
+| [POS Implementation Status](architecture/POS_IMPLEMENTATION_STATUS.md) | Current state & test results | ✅ Oct 27 |
+| [POS API Reference](architecture/POS_API_REFERENCE.md) | Complete API documentation | ✅ Oct 27 |
+| [POS Deployment Guide](architecture/POS_DEPLOYMENT_GUIDE.md) | Production deployment steps | ✅ Oct 27 |
+| [POS System Architecture](architecture/POS_SYSTEM.md) | Complete system design | Reference |
+| [POS Order Flows](architecture/POS_ORDER_FLOWS.md) | Flow diagrams & scenarios | Reference |
+
+**Quick Access:** `/pos-test` (pickup queue) • `/pos-register-test` (register)  
+**Production:** `/pos/orders` • `/pos/register` (requires auth)
+
+---
+
+### **🎨 Component System**
+| Document | Description | Status |
+|----------|-------------|--------|
+| [Smart Component Guide](architecture/SMART_COMPONENT_GUIDE.md) | Quick reference for developers | ⭐ Essential |
+| [Smart Component System](architecture/SMART_COMPONENT_SYSTEM.md) | Complete system documentation | Detailed |
+| [Component Architecture](architecture/COMPONENT_ARCHITECTURE.md) | Design patterns | Technical |
+| [Animation System](architecture/ANIMATION_SYSTEM.md) | Animation library | Reference |
+
+**Generator:** `npm run generate:smart-component`
+
+---
+
+### **🌊 WCL (WhaleTools Component Language)**
+| Document | Description | Status |
+|----------|-------------|--------|
+| [WCL Language Specification](architecture/WCL_LANGUAGE_SPECIFICATION.md) | Complete language spec | ⭐ Working |
+| [WCL Implementation Guide](guides/WCL_IMPLEMENTATION.md) | Step-by-step setup | Guide |
+| [WCL Examples](guides/WCL_EXAMPLES.md) | Component examples | Cookbook |
+| [WCL Responsive vs Quantum](architecture/WCL_RESPONSIVE_VS_QUANTUM.md) | Critical design guide | Important |
+| [Quantum Rendering](architecture/QUANTUM_RENDERING.md) | Behavioral state system | Technical |
+
+**Editor:** `/wcl-editor` (AI-powered component editor)
+
+---
+
+### **🏗️ Platform Architecture**
+| Document | Description | Status |
+|----------|-------------|--------|
+| [WhaleTools Platform](architecture/WHALETOOLS_PLATFORM.md) | Platform overview | Core |
+| [Platform Naming](architecture/PLATFORM_NAMING.md) | Branding guidelines | Guidelines |
+| [Evolution Plan](evolution/WHALETOOLS_EVOLUTION_PLAN.md) | 6-month roadmap | Planning |
+
+---
+
+### **📖 Setup & Guides**
 | Document | Description | Audience |
 |----------|-------------|----------|
-| [**WCL_IMPLEMENTATION.md**](guides/WCL_IMPLEMENTATION.md) | Step-by-step WCL implementation | ⭐ Devs |
-| [**WCL_EXAMPLES.md**](guides/WCL_EXAMPLES.md) | WCL component examples cookbook | ⭐ Devs |
-| [**SETUP_INSTRUCTIONS.md**](guides/SETUP_INSTRUCTIONS.md) | Initial setup guide | All |
-| [**CONTENT_COMPONENTS_GUIDE.md**](guides/CONTENT_COMPONENTS_GUIDE.md) | Content component usage | Content |
-| [**MCP_AGENT_SETUP.md**](guides/MCP_AGENT_SETUP.md) | AI agent configuration | Devs |
+| [Setup Instructions](guides/SETUP_INSTRUCTIONS.md) | Initial setup | All |
+| [Content Components Guide](guides/CONTENT_COMPONENTS_GUIDE.md) | Content usage | Content |
+| [MCP Agent Setup](guides/MCP_AGENT_SETUP.md) | AI agent config | Devs |
 
 ---
 
-### **📋 Reference /**
-**API reference, database schemas, and technical specifications**
+## 🎯 **THE PLATFORM (4 Contexts)**
 
-*(To be populated with API docs, database schemas, etc.)*
+```
+WhaleTools Organism
+├── Storefront Context    ✅ Complete (customers browse online)
+├── POS Context          ⭐ NEW (staff process in-store)
+├── Vendor Context       ✅ Complete (analytics & management)
+└── Admin Context        ✅ Complete (platform oversight)
 
----
-
-### **📦 Archive /**
-**Historical documentation (status updates, implementation logs, etc.)**
-
-Archived documents from previous implementations:
-- Status updates (COMPLETE, STATUS files)
-- Implementation logs (FIX, FIXED files)
-- Feature-specific docs (WILSON, FLORA, BLUEPRINT, etc.)
-- Old analysis and reports
-
-**Note:** Archive files are kept for historical reference but not actively maintained.
+ALL contexts:
+- Share same database
+- Use same component system
+- Feed same AI learning
+- Optimize together
+```
 
 ---
 
-## 🎯 **THE VISION**
+## 🔥 **WHAT'S WORKING NOW**
 
-WhaleTools is transforming from a static multi-vendor platform into **the world's first living, AI-powered commerce organism.**
+### **Live Features:**
+1. **Multi-Vendor Marketplace**
+   - Vendor storefronts (Flora Distro demo)
+   - Product catalog with custom fields
+   - 3-tier pricing (Retail/Wholesale/Distributor)
+   - Multi-location inventory
 
-### **Key Capabilities:**
-- ✅ **WCL (WhaleTools Component Language)** - Domain-specific language for living components ⭐ **WORKING!**
-- ✅ **AI Component Generation** - Claude generates components from descriptions ⭐ **WORKING!**
-- ✅ **Quantum Rendering** - Multiple behavioral states, best one wins ⭐ **WORKING!**
-- 🚧 **AI Layout Engine** - Optimizes layouts automatically (Phase 2)
-- 🚧 **Real-Time Adaptation** - UI morphs based on user behavior (Phase 2)
-- 🚧 **Component Streaming** - Progressive rendering (Phase 1)
-- 🚧 **Collective Intelligence** - Cross-vendor learning (Phase 3)
-- 🚧 **Section Portals** - Living, morphing components (Phase 3)
+2. **Component System**
+   - Database-driven layouts
+   - Smart components (vendor-aware)
+   - WCL language & compiler
+   - AI generation & modification
+   - Quantum behavioral states
 
-### **Timeline:**
-- **Phase 0 → 1 (Current):** Foundation + WCL System ⭐ **WCL WORKING!**
-- **Phase 1-2 (Next 2 months):** Foundation + Component Evolution
-- **Phase 3 (Month 3):** AI Orchestration
-- **Phase 4 (Month 4):** Global Scale  
-- **Phase 5 (Month 5):** Advanced AI
-- **Phase 6 (Month 6):** The Matrix ✨
+3. **POS System** ⭐ NEW
+   - Pickup order queue (real-time)
+   - Walk-in sales register
+   - Session management
+   - Cash payments
+   - Inventory deduction
+   - iPad PWA support
 
-**Total:** 6 months to world-class, living platform
+4. **Vendor Dashboard**
+   - Analytics & reporting
+   - Inventory management
+   - Order tracking
+   - Product management
+   - Location management
 
-**Major Milestone Achieved:** WCL system is working! Halloween homepage successfully generated and rendered with quantum behavioral states.
-
----
-
-## 📊 **SUCCESS METRICS**
-
-### **Technical:**
-- Page Load: <100ms (edge cached)
-- Time to Interactive: <500ms
-- Database Queries: 1-3 per page (batched)
-- Global Response: <50ms
-
-### **Business:**
-- Vendors: 100,000+
-- Daily Users: 10M+
-- Conversion Uplift: +20-50%
-- Retention Rate: 95%+
-
-### **AI:**
-- Layout Optimizations: Real-time
-- Component Generation: On-demand
-- Sentiment Analysis: Every 30s
-- A/B Tests: Self-optimizing
+5. **Admin Tools**
+   - Platform monitoring
+   - Vendor approval
+   - Product approval
+   - User management
+   - WCL editor
 
 ---
 
@@ -161,48 +182,196 @@ WhaleTools is transforming from a static multi-vendor platform into **the world'
 
 ```bash
 # Development
-npm run dev                          # Start dev server
+npm run dev                          # Start dev server (port 3000)
 npm run build                        # Build production
 npm run generate:smart-component     # Generate component
 
 # Database
 psql "postgresql://postgres:SelahEsco123!!@db.uaednwpxursknmwdeejn.supabase.co:5432/postgres"
 
-# Key Vendor IDs
-# Flora Distro: cd2e1122-d511-4edb-be5d-98ef274b4baf
+# Key IDs
+# Flora Distro Vendor: cd2e1122-d511-4edb-be5d-98ef274b4baf
+# Charlotte Central Location: c4eedafb-4050-4d2d-a6af-e164aad5d934
 ```
+
+### **Test URLs:**
+```
+Storefront:          http://localhost:3000/storefront?vendor=flora-distro
+POS Pickup Queue:    http://localhost:3000/pos-test
+POS Register:        http://localhost:3000/pos-register-test
+Vendor Dashboard:    http://localhost:3000/vendor/dashboard
+Admin Dashboard:     http://localhost:3000/admin/dashboard
+WCL Editor:          http://localhost:3000/wcl-editor
+```
+
+---
+
+## 📊 **PLATFORM METRICS**
+
+### **Current Scale:**
+- **Vendors:** 1 (Flora Distro - reference implementation)
+- **Products:** 68 cannabis products
+- **Inventory Records:** 408 (across 6 locations)
+- **Locations:** 6 (Charlotte Central, Monroe, Blowing Rock, etc.)
+- **Smart Components:** 15+
+- **API Endpoints:** 200+
+
+### **Target Scale (6 months):**
+- **Vendors:** 100,000+
+- **Products:** Millions
+- **Daily Users:** 10M+
+- **Locations:** 500,000+
+
+---
+
+## 🎯 **KEY CAPABILITIES**
+
+### **What Makes WhaleTools Unique:**
+
+1. **Living Platform**
+   - AI optimizes layouts automatically
+   - Components adapt to user behavior
+   - Learns from all vendors collectively
+
+2. **Component Language (WCL)**
+   - Domain-specific language for components
+   - AI generates from descriptions
+   - Quantum behavioral states
+
+3. **Unified POS + Storefront**
+   - Same inventory database
+   - Real-time sync
+   - Omnichannel orders
+   - Cross-context learning
+
+4. **Multi-Vendor Infrastructure**
+   - Unlimited vendors on one platform
+   - Per-vendor customization
+   - Shared platform improvements
 
 ---
 
 ## 🆘 **GETTING HELP**
 
-### **For Implementation Questions:**
-1. Check [Implementation Guide](evolution/IMPLEMENTATION_GUIDE.md)
-2. Review relevant architecture docs
-3. Check code examples in evolution docs
+### **For Implementation:**
+1. Check [What's Next](WHATS_NEXT.md) for current priorities
+2. Review [Architecture Docs](architecture/)
+3. Read component examples in guides
 
-### **For Architecture Questions:**
-1. Review [Master Index](evolution/MASTER_INDEX.md)
-2. Check [Platform Overview](architecture/WHALETOOLS_PLATFORM.md)
-3. See component system docs
+### **For Architecture:**
+1. [Master Index](evolution/MASTER_INDEX.md)
+2. [Platform Overview](architecture/WHALETOOLS_PLATFORM.md)
+3. Component system docs
 
-### **For Business Questions:**
-1. Read [The Vision](evolution/THE_VISION_SUMMARY.md)
-2. Check competitive analysis in platform docs
-
----
-
-## 🚀 **GET STARTED**
-
-**Ready to start implementation?**
-
-1. Read: [The Vision](evolution/THE_VISION_SUMMARY.md) (15 min)
-2. Review: [Evolution Plan Phase 1](evolution/WHALETOOLS_EVOLUTION_PLAN.md) (30 min)
-3. Execute: [Implementation Guide Week 1](evolution/IMPLEMENTATION_GUIDE.md) (start today)
-
-**Documentation maintained and updated:** October 2025
+### **For POS:**
+1. [POS Implementation Status](architecture/POS_IMPLEMENTATION_STATUS.md)
+2. [POS System Architecture](architecture/POS_SYSTEM.md)
+3. [POS Order Flows](architecture/POS_ORDER_FLOWS.md)
 
 ---
 
-**WhaleTools: Building the future of e-commerce, one component at a time.** 🐋⚡
+## 📈 **PROGRESS TIMELINE**
 
+```
+Oct 2025  ✅ Platform foundation
+          ✅ Flora Distro migration
+          ✅ Component registry system
+          ✅ Smart components
+          ✅ WCL language & compiler
+          ✅ Quantum rendering
+          ✅ POS Phase 1 (Pickup Orders)
+          ⭐ POS Phase 2 (Walk-In Sales - 90%)
+
+Nov 2025  ⏳ POS production deployment
+          ⏳ Customer lookup & receipts
+          ⏳ Component library expansion
+          ⏳ Infrastructure optimization
+
+Dec 2025  ⏳ Card terminal integration
+          ⏳ Advanced POS features
+          ⏳ Multi-vendor rollout
+          ⏳ AI optimization engine
+
+Q1 2026   ⏳ Vendor self-service (WCL)
+          ⏳ Global scale (100K vendors)
+          ⏳ Collective intelligence
+          ⏳ Living platform evolution
+```
+
+---
+
+## 🎓 **LEARNING PATH**
+
+### **Week 1: Foundation**
+1. Read [The Vision](evolution/THE_VISION_SUMMARY.md) (15 min)
+2. Review [Platform Overview](architecture/WHALETOOLS_PLATFORM.md) (30 min)
+3. Study [Smart Component Guide](architecture/SMART_COMPONENT_GUIDE.md) (1 hour)
+4. Build your first component (2 hours)
+
+### **Week 2: Advanced**
+1. Learn WCL ([WCL Specification](architecture/WCL_LANGUAGE_SPECIFICATION.md))
+2. Study Quantum Rendering ([Quantum Rendering](architecture/QUANTUM_RENDERING.md))
+3. Build with WCL Editor (`/wcl-editor`)
+4. Contribute components
+
+### **Week 3: POS System**
+1. Study [POS Architecture](architecture/POS_SYSTEM.md)
+2. Review [POS Order Flows](architecture/POS_ORDER_FLOWS.md)
+3. Test POS interfaces (`/pos-test`, `/pos-register-test`)
+4. Understand omnichannel integration
+
+---
+
+## 🚨 **KNOWN ISSUES**
+
+### **Schema Mismatches:**
+- stock_movements.product_id (INTEGER vs UUID) - **Workaround: Nullable**
+- pos_transactions.customer_id (INTEGER vs UUID) - **Workaround: Store in metadata**
+
+### **Missing Features:**
+- Inventory reservation (trigger disabled - schema issue)
+- Receipt printing (hardware integration pending)
+- Card payments (terminal integration pending)
+- Customer lookup UI (component pending)
+
+### **Technical Debt:**
+- Test routes need cleanup (`/pos-test`, `/pos-register-test`)
+- Authentication needed for production POS routes
+- Schema migration plan needed
+
+**Priority:** Low - workarounds functional, can fix post-launch
+
+---
+
+## 📞 **SUPPORT**
+
+### **Database Access:**
+- Always available via psql
+- Service role credentials in memories
+- Direct SQL execution enabled
+
+### **Supabase:**
+- Host: `db.uaednwpxursknmwdeejn.supabase.co`
+- Database: `postgres`
+- Port: `5432`
+
+### **Vercel:**
+- Platform: Next.js 15.5.5
+- Region: iad1
+- Framework: React 19
+
+---
+
+## 🎯 **GET STARTED**
+
+**Ready to contribute?**
+
+1. **Read:** [What's Next](WHATS_NEXT.md) - Current priorities (5 min)
+2. **Review:** [POS Status](architecture/POS_IMPLEMENTATION_STATUS.md) - Where we are (10 min)
+3. **Build:** Complete walk-in sales or add features (start coding)
+
+**Documentation last updated:** October 27, 2025
+
+---
+
+**WhaleTools: Building the future of omnichannel commerce, one component at a time.** 🐋⚡

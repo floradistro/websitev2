@@ -1,8 +1,9 @@
 /**
- * AI WCL Generator - Claude generates WCL components
+ * AI WCL Generator - Claude generates WCL components with Exa research
  */
 
 import { Anthropic } from '@anthropic-ai/sdk';
+import { ExaClient, formatExaResultsForAI, extractDesignInsights } from './exa-client';
 
 export interface WCLGenerationRequest {
   goal: string;
@@ -10,41 +11,107 @@ export interface WCLGenerationRequest {
     vendorType?: string;
     industry?: string;
     targetAudience?: string;
+    style?: string;
   };
   requirements?: string[];
+  enableResearch?: boolean; // Default: true
 }
 
 export class WCLGenerator {
   private claude: Anthropic;
+  private exa: ExaClient;
   
   constructor() {
     this.claude = new Anthropic({
       apiKey: process.env.ANTHROPIC_API_KEY!
     });
+    this.exa = new ExaClient(process.env.EXA_API_KEY);
   }
   
   async generateComponent(request: WCLGenerationRequest): Promise<string> {
+    const { goal, context, requirements, enableResearch = true } = request;
+    
+    // PHASE 1: DEEP RESEARCH WITH EXA (if enabled)
+    let researchContext = '';
+    
+    if (enableResearch && context.industry) {
+      console.log('🔍 Starting deep research with Exa...');
+      
+      try {
+        // Parallel research queries
+        const [designResults, bestPractices, trends] = await Promise.all([
+          this.exa.searchDesignInspiration(goal, context.industry),
+          this.exa.searchBestPractices('homepage layout', context.industry),
+          this.exa.researchTrends(context.industry, 2025)
+        ]);
+        
+        console.log('✅ Exa research complete:', {
+          design: designResults.length,
+          practices: bestPractices.length,
+          trends: trends.length
+        });
+        
+        // Extract actionable insights
+        const insights = extractDesignInsights([...designResults, ...bestPractices, ...trends]);
+        
+        researchContext = `
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔬 DEEP RESEARCH FINDINGS (via Exa)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+${formatExaResultsForAI(designResults)}
+
+📊 DESIGN INSIGHTS EXTRACTED:
+
+Color Schemes:
+${insights.colorSchemes.slice(0, 5).map(c => `• ${c}`).join('\n')}
+
+Layout Patterns:
+${insights.layoutPatterns.slice(0, 5).map(l => `• ${l}`).join('\n')}
+
+Typography Trends:
+${insights.typography.slice(0, 5).map(t => `• ${t}`).join('\n')}
+
+Animation Patterns:
+${insights.animations.slice(0, 5).map(a => `• ${a}`).join('\n')}
+
+Best Practices:
+${insights.bestPractices.slice(0, 8).map(bp => `• ${bp}`).join('\n')}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+USE THIS RESEARCH to inform your design decisions. Apply modern trends, 
+proven best practices, and industry-specific patterns to create a 
+world-class component.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+`;
+      } catch (error) {
+        console.warn('⚠️ Exa research failed, continuing without it:', error);
+      }
+    }
+    
+    // PHASE 2: GENERATE WCL WITH RESEARCH CONTEXT
     const prompt = `
 You are an expert in WCL (WhaleTools Component Language), a domain-specific language for e-commerce components.
 
-You have access to:
-1. **Web Search (Exa)** - Research latest design trends, best practices, and inspiration
-2. **Computer Use (Playwright)** - Inspect live websites for design patterns and functionality
+${researchContext}
 
 TASK: Generate a WCL component based on this request:
-"${request.goal}"
+"${goal}"
 
 CONTEXT:
-- Vendor Type: ${request.context.vendorType || 'general'}
-- Industry: ${request.context.industry || 'e-commerce'}
-- Target Audience: ${request.context.targetAudience || 'general consumers'}
+- Vendor Type: ${context.vendorType || 'general'}
+- Industry: ${context.industry || 'e-commerce'}
+- Target Audience: ${context.targetAudience || 'general consumers'}
+- Style: ${context.style || 'modern luxury'}
 
-CAPABILITIES YOU CAN USE:
-- Search for "best ${request.context.industry || 'e-commerce'} component designs 2025" to find cutting-edge patterns
-- Research behavioral adaptation and personalization strategies (NOT responsive design)
-- Look up luxury design systems similar to Apple, Tesla, or high-end brands
-- Find real-world examples of successful ${request.context.vendorType || 'e-commerce'} components
-- Inspect competitor sites for behavioral patterns (first-time vs returning users, cart abandonment, etc.)
+APPLY THE RESEARCH FINDINGS ABOVE:
+- Use proven color schemes and patterns
+- Apply modern typography trends
+- Include contemporary animations
+- Follow best practices for conversion
+- Incorporate industry-specific patterns
 
 WCL SYNTAX RULES:
 1. Component structure:
@@ -181,8 +248,9 @@ Generate ONLY the WCL code, no explanations:`;
     // Multi-turn conversation to handle tool use
     while (!wcl_code) {
       const response = await this.claude.messages.create({
-        model: 'claude-sonnet-4-5-20250929',
-        max_tokens: 8000,
+        model: 'claude-sonnet-4-5-20250929', // Latest
+        max_tokens: 16000, // Large for complete components
+        temperature: 1.0, // More creative and thorough
         messages: conversationMessages
       });
 

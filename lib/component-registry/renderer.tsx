@@ -45,7 +45,6 @@ const COMPONENT_MAP: Record<string, React.ComponentType<any>> = {
   'smart_shipping': Smart.SmartShipping,
   'smart_returns': Smart.SmartReturns,
   'smart_lab_results': Smart.SmartLabResults,
-  'flora_halloween_home': Smart.FloraDistroHalloweenHomepage,
   'flora_distro_hero': Smart.FloraDistroHero,
   'flora_distro_homepage': Smart.FloraDistroHomepage,
 };

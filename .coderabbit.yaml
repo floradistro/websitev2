@@ -1,0 +1,66 @@
+language: "en-US"
+tone_instructions: "You are reviewing code for WhaleTools, a luxury multi-vendor marketplace platform. Expect Amazon/Apple/designer brand quality. Focus on: TypeScript correctness, performance, security, and adherence to the WhaleTools design system."
+
+reviews:
+  profile: "assertive"
+  request_changes_workflow: false
+  high_level_summary: true
+  high_level_summary_placeholder: "## CodeRabbit Review Summary"
+  poem: false
+  review_status: true
+  collapse_walkthrough: false
+  
+  auto_review:
+    enabled: true
+    auto_incremental_review: true
+    ignore_title_keywords:
+      - "WIP"
+      - "DO NOT REVIEW"
+    drafts: false
+    base_branches:
+      - "main"
+      - "develop"
+  
+  path_filters:
+    - "!node_modules/**"
+    - "!dist/**"
+    - "!build/**"
+    - "!.next/**"
+    - "!coverage/**"
+    - "!**/*.min.js"
+    - "!package-lock.json"
+  
+  path_instructions:
+    - path: "components/component-registry/smart/**"
+      instructions: "Ensure all components extend SmartComponentBaseProps, use SmartComponentWrapper, follow WhaleTools design system (bg-black, rounded-2xl, font-black for headings, proper animations with Framer Motion)."
+    
+    - path: "lib/smart-component-base.tsx"
+      instructions: "This is critical infrastructure. Any changes must maintain backward compatibility with all existing smart components."
+    
+    - path: "app/api/**"
+      instructions: "Check for proper error handling, TypeScript types, security (SQL injection, auth), and response formats."
+    
+    - path: "supabase/migrations/**"
+      instructions: "Verify SQL syntax, ensure migrations are idempotent, check for proper indexes, and validate foreign key constraints."
+    
+    - path: "components/component-registry/pos/**"
+      instructions: "POS components must be optimized for touch interfaces, handle offline mode, and include proper error boundaries."
+
+chat:
+  auto_reply: true
+
+# Advanced settings
+early_access: true
+enable_free_tier: true
+
+# Focus areas for WhaleTools
+knowledge_base:
+  - "This is a Next.js 14 project with TypeScript"
+  - "Database: Supabase (PostgreSQL)"
+  - "UI: Tailwind CSS with Framer Motion animations"
+  - "Component system: Smart Component Registry with database-driven configuration"
+  - "Design system: Luxury theme with bg-black, rounded-2xl, font-black headings"
+  - "Never use mock/fallback data - only real API data"
+  - "All database queries must be parameterized to prevent SQL injection"
+  - "Mobile-first responsive design required"
+

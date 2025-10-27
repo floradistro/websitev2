@@ -1,6 +1,0 @@
-# Backup files should NOT be in git
-backups/*.csv
-backups/*.json
-backups/*.sql
-!backups/.gitkeep
-

@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
     const propsSection = wclCode.match(/props\s*{([^}]+)}/);
     if (propsSection) {
       const propLines = propsSection[1].split('\n');
-      propLines.forEach(line => {
+      propLines.forEach((line: string) => {
         const match = line.match(/(\w+):\s*String\s*=\s*"([^"]+)"/);
         if (match) {
           props[match[1]] = match[2];
@@ -172,7 +172,7 @@ export async function POST(request: NextRequest) {
           if (item.blueprint_fields && Array.isArray(item.blueprint_fields)) {
             return item.blueprint_fields.map((field: any) => {
               let fieldHtml = fieldTemplate;
-              fieldHtml = fieldHtml.replace(new RegExp(`\\{${fieldVar}\\.(\\w+)\\}`, 'g'), (__, prop) => {
+              fieldHtml = fieldHtml.replace(new RegExp(`\\{${fieldVar}\\.(\\w+)\\}`, 'g'), (_: string, prop: string) => {
                 return field[prop] || '';
               });
               return fieldHtml;

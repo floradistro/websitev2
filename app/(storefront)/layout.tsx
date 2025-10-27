@@ -68,9 +68,9 @@ export default async function StorefrontLayout({
     return (
       <ComingSoonPage
         vendorName={vendor.store_name || vendor.slug}
-        vendorLogo={vendor.logo_url}
-        message={vendor.coming_soon_message}
-        launchDate={vendor.launch_date}
+        vendorLogo={vendor.logo_url || undefined}
+        message={vendor.coming_soon_message || undefined}
+        launchDate={vendor.launch_date || undefined}
       />
     );
   }

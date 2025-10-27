@@ -70,8 +70,8 @@ export async function POST(request: NextRequest) {
     let propsSchema: Record<string, any> = {};
     
     if (propsMatch) {
-      const propLines = propsMatch[1].split('\n').filter(l => l.trim());
-      propLines.forEach(line => {
+      const propLines = propsMatch[1].split('\n').filter((l: string) => l.trim());
+      propLines.forEach((line: string) => {
         const match = line.match(/(\w+):\s*(\w+)\s*=\s*"([^"]*)"/);
         if (match) {
           const [, propName, propType, defaultValue] = match;

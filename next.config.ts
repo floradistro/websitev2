@@ -1,5 +1,10 @@
 import type { NextConfig } from "next";
 
+// Bundle analyzer (run with: ANALYZE=true npm run build)
+const withBundleAnalyzer = require('@next/bundle-analyzer')({
+  enabled: process.env.ANALYZE === 'true',
+});
+
 const nextConfig: NextConfig = {
   // Increase max listeners to prevent warnings
   onDemandEntries: {
@@ -134,6 +139,15 @@ const nextConfig: NextConfig = {
               minChunks: 2,
               reuseExistingChunk: true,
             },
+            // POS routes
+            posRoutes: {
+              test: /[\\/]app[\\/]pos[\\/]/,
+              name: 'pos',
+              chunks: 'async',
+              priority: 15,
+              minChunks: 2,
+              reuseExistingChunk: true,
+            },
           },
         },
       };
@@ -211,4 +225,4 @@ const nextConfig: NextConfig = {
   // },
 };
 
-export default nextConfig;
+export default withBundleAnalyzer(nextConfig);

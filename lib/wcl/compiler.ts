@@ -1,7 +1,10 @@
 /**
- * WCL (WhaleTools Component Language) Compiler - Production Version
+ * WCL (WhaleTools Component Language) Compiler - Production Version V2
  * Transform WCL syntax into React/TypeScript components with comprehensive error handling
+ * NOW USING: Parser V2 (Tokenizer + Recursive Descent Parser)
  */
+
+import { parseWCL, validateWCL, type AST, type ComponentNode, type WCLParseError } from './parser-v2';
 
 export class WCLCompilerError extends Error {
   constructor(
@@ -56,123 +59,31 @@ interface OptimizeDirective {
 
 export class WCLCompiler {
   /**
-   * Parse WCL syntax into AST
+   * Parse WCL syntax into AST using Parser V2
+   * Now handles: nested braces, comments, complex JSX, multi-line strings
    */
   parse(wclCode: string): WCLComponent {
     try {
-      const trimmedCode = wclCode.trim();
+      // Use new parser V2
+      const ast = parseWCL(wclCode);
       
-      // Validate component structure
-      const componentMatch = trimmedCode.match(/component\s+(\w+)\s*\{([\s\S]+)\}$/);
-      if (!componentMatch) {
-        throw new WCLCompilerError(
-          'Invalid WCL syntax: Expected "component ComponentName { ... }"',
-          1,
-          1,
-          'Make sure your WCL starts with: component YourComponentName { ... }',
-          trimmedCode.substring(0, 50)
-        );
-      }
-      
-      const [, name, body] = componentMatch;
-      
-      // Validate component name (PascalCase)
-      if (!/^[A-Z][a-zA-Z0-9]*$/.test(name)) {
-        throw new WCLCompilerError(
-          `Invalid component name "${name}": Must be PascalCase`,
-          1,
-          10,
-          'Use PascalCase like "SmartHero" or "ProductGrid"'
-        );
-      }
-      
-      // Extract props with error handling
-      let props = {};
-      const propsMatch = body.match(/props\s*{([^}]+)}/);
-      if (propsMatch) {
-        try {
-          props = this.parseProps(propsMatch[1]);
-        } catch (error: any) {
-          throw new WCLCompilerError(
-            `Error parsing props: ${error.message}`,
-            undefined,
-            undefined,
-            'Check prop syntax: propName: Type = defaultValue'
-          );
-        }
-      }
-      
-      // Extract data fetchers with error handling
-      let data = {};
-      const dataMatch = body.match(/data\s*{([^}]+)}/);
-      if (dataMatch) {
-        try {
-          data = this.parseData(dataMatch[1]);
-        } catch (error: any) {
-          throw new WCLCompilerError(
-            `Error parsing data: ${error.message}`,
-            undefined,
-            undefined,
-            'Check data syntax: dataName = fetch("/api/endpoint") @cache(5m)'
-          );
-        }
-      }
-      
-      // Extract render block
-      const renderIndex = body.indexOf('render');
-      if (renderIndex === -1) {
-        throw new WCLCompilerError(
-          'No render block found',
-          undefined,
-          undefined,
-          'Add a render block: render { <div>...</div> } or render { quantum { ... } }'
-        );
-      }
-      
-      const renderSection = body.substring(renderIndex);
-      const quantumMatch = renderSection.includes('quantum');
-      
-      let render: string | QuantumRender;
-      if (quantumMatch) {
-        try {
-          const quantumContent = renderSection.substring(renderSection.indexOf('quantum') + 8);
-          render = { quantum: this.parseQuantumStates(quantumContent) };
-          
-          if (render.quantum.length === 0) {
-            throw new WCLCompilerError(
-              'No quantum states defined',
-              undefined,
-              undefined,
-              'Add at least one state: state Mobile when user.device == "mobile" { <div>...</div> }'
-            );
-          }
-        } catch (error: any) {
-          if (error instanceof WCLCompilerError) throw error;
-          throw new WCLCompilerError(
-            `Error parsing quantum states: ${error.message}`,
-            undefined,
-            undefined,
-            'Check quantum syntax: state StateName when condition { <JSX /> }'
-          );
-        }
-      } else {
-        const simpleMatch = renderSection.match(/render\s*\{([^}]+)\}/);
-        render = simpleMatch ? simpleMatch[1].trim() : '';
-        
-        if (!render) {
-          throw new WCLCompilerError(
-            'Empty render block',
-            undefined,
-            undefined,
-            'Add JSX to your render block: render { <div>Hello</div> }'
-          );
-        }
-      }
-      
-      return { name, props, data, render };
+      // Convert AST to WCLComponent format
+      return this.astToComponent(ast.component);
       
     } catch (error: any) {
+      // Convert parser errors to compiler errors
+      if (error.line && error.column) {
+        throw new WCLCompilerError(
+          error.message,
+          error.line,
+          error.column,
+          error.suggestion,
+          error.token?.value
+        );
+      }
+      
       if (error instanceof WCLCompilerError) throw error;
+      
       throw new WCLCompilerError(
         `Unexpected parse error: ${error.message}`,
         undefined,
@@ -180,6 +91,66 @@ export class WCLCompiler {
         'Check your WCL syntax for errors'
       );
     }
+  }
+
+  /**
+   * Convert Parser V2 AST to WCLComponent format
+   */
+  private astToComponent(node: ComponentNode): WCLComponent {
+    return {
+      name: node.name,
+      props: node.props ? this.convertProps(node.props) : {},
+      data: node.data ? this.convertData(node.data) : {},
+      render: this.convertRender(node.render)
+    };
+  }
+
+  /**
+   * Convert props AST node to legacy format
+   */
+  private convertProps(propsNode: any): Record<string, any> {
+    const props: Record<string, any> = {};
+    propsNode.properties.forEach((prop: any) => {
+      props[prop.name] = {
+        type: prop.propType,
+        default: prop.defaultValue,
+        optional: prop.optional
+      };
+    });
+    return props;
+  }
+
+  /**
+   * Convert data AST node to legacy format
+   */
+  private convertData(dataNode: any): Record<string, any> {
+    const data: Record<string, any> = {};
+    dataNode.fetchers.forEach((fetcher: any) => {
+      data[fetcher.name] = {
+        endpoint: fetcher.endpoint,
+        directive: fetcher.cache ? 'cache' : undefined,
+        params: fetcher.cache
+      };
+    });
+    return data;
+  }
+
+  /**
+   * Convert render AST node to legacy format
+   */
+  private convertRender(renderNode: any): string | QuantumRender {
+    if (renderNode.mode === 'simple') {
+      return renderNode.content?.raw || '';
+    }
+    
+    // Quantum render
+    return {
+      quantum: renderNode.quantumStates?.map((state: any) => ({
+        state: state.name,
+        condition: state.condition,
+        template: state.template.raw
+      })) || []
+    };
   }
   
   /**
@@ -217,74 +188,6 @@ export function ${ast.name}({ vendorId, ...props }: ${ast.name}Props) {
   );
 }
 `;
-  }
-  
-  private parseProps(propsBody: string): Record<string, any> {
-    const props: Record<string, any> = {};
-    const lines = propsBody.split('\n').filter(l => l.trim());
-    
-    lines.forEach(line => {
-      const match = line.match(/(\w+):\s*(\w+)(?:\s*=\s*(.+))?/);
-      if (match) {
-        const [, name, type, defaultValue] = match;
-        props[name] = { type, default: defaultValue };
-      }
-    });
-    
-    return props;
-  }
-  
-  private parseData(dataBody: string): Record<string, any> {
-    const data: Record<string, any> = {};
-    const fetchers = dataBody.match(/(\w+)\s*=\s*fetch\(([^)]+)\)(?:\s*@(\w+)\(([^)]+)\))?/g);
-    
-    if (fetchers) {
-      fetchers.forEach(fetcher => {
-        const match = fetcher.match(/(\w+)\s*=\s*fetch\("([^"]+)"\)(?:\s*@(\w+)\(([^)]+)\))?/);
-        if (match) {
-          const [, name, endpoint, directive, params] = match;
-          data[name] = { endpoint, directive, params };
-        }
-      });
-    }
-    
-    return data;
-  }
-  
-  private parseQuantumStates(quantumBody: string): QuantumState[] {
-    const states: QuantumState[] = [];
-    
-    // Find all state blocks with proper brace matching
-    let currentIndex = 0;
-    while (currentIndex < quantumBody.length) {
-      const stateMatch = quantumBody.substring(currentIndex).match(/state\s+(\w+)\s+when\s+([^{]+)\s*{/);
-      if (!stateMatch) break;
-      
-      const [matchText, stateName, condition] = stateMatch;
-      const stateStart = currentIndex + stateMatch.index! + matchText.length;
-      
-      // Find matching closing brace
-      let braceCount = 1;
-      let templateEnd = stateStart;
-      while (templateEnd < quantumBody.length && braceCount > 0) {
-        if (quantumBody[templateEnd] === '{') braceCount++;
-        if (quantumBody[templateEnd] === '}') braceCount--;
-        templateEnd++;
-      }
-      
-      if (braceCount === 0) {
-        const template = quantumBody.substring(stateStart, templateEnd - 1).trim();
-        states.push({
-          state: stateName.trim(),
-          condition: condition.trim(),
-          template
-        });
-      }
-      
-      currentIndex = templateEnd;
-    }
-    
-    return states;
   }
   
   private generatePropsInterface(props: Record<string, any>): string {

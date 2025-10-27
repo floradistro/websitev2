@@ -8,12 +8,15 @@ export const swrConfig = {
   revalidateOnFocus: false, // Don't refetch when window regains focus (prevents crashes on tab switch)
   revalidateOnReconnect: true, // Refetch when reconnecting
   revalidateIfStale: true,
-  dedupingInterval: 5000, // Dedupe requests within 5 seconds
+  dedupingInterval: 60000, // Dedupe requests within 60 seconds (1 minute) - prevents duplicate API calls
   
   // Cache settings
   focusThrottleInterval: 60000, // Throttle focus revalidation to 1 minute
   errorRetryInterval: 5000,
   errorRetryCount: 3,
+  
+  // Performance optimization: share cache across component instances
+  provider: () => new Map(), // Use global cache for all SWR hooks
   
   // Performance settings
   shouldRetryOnError: true,
@@ -27,10 +30,7 @@ export const swrConfig = {
   // Cache timeout
   loadingTimeout: 3000,
   
-  // Provider value for global state
-  provider: () => new Map(),
-  
-  // Keep previous data while revalidating
+  // Keep previous data while revalidating (prevents flashing)
   keepPreviousData: true,
   
   onError: (error: Error) => {
