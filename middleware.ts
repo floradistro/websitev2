@@ -69,6 +69,8 @@ export async function middleware(request: NextRequest) {
   }
 
   // Check if this is a custom vendor domain
+  console.log('[Middleware] Checking domain:', { hostname, domain, isYachtClubDomain });
+  
   try {
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -83,6 +85,8 @@ export async function middleware(request: NextRequest) {
       .eq('verified', true)
       .eq('is_active', true)
       .single();
+    
+    console.log('[Middleware] Domain lookup result:', { domainRecord, domainError: domainError?.message });
 
     if (domainRecord && !domainError) {
       // Get vendor to check if coming soon mode is active
@@ -130,6 +134,8 @@ export async function middleware(request: NextRequest) {
       
       return response;
     }
+    
+    console.log('[Middleware] No custom domain found for:', domain);
 
     // Check if this is a subdomain storefront (vendor-slug.yachtclub.com)
     const subdomain = domain.split('.')[0];
