@@ -137,6 +137,9 @@ export {
   // Notifications
   CheckSquare,
   
+  // WCL & Testing
+  FlaskConical,
+  
 } from 'lucide-react';
 
 // Export commonly used icon props

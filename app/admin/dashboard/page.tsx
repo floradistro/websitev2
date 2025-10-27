@@ -6,7 +6,7 @@ import dynamic from 'next/dynamic';
 import { 
   Package, Users, DollarSign, TrendingUp, AlertCircle, Store, Activity, 
   ShoppingCart, Database, Cpu, HardDrive, Terminal, RefreshCw, Code, 
-  Zap, Eye, Wifi, Server, FileCode, Settings, Trash2 
+  Zap, Eye, Wifi, Server, FileCode, Settings, Trash2, FlaskConical 
 } from '@/lib/icons';
 import { StatsGridSkeleton, ChartSkeleton } from '@/components/AdminSkeleton';
 import { logger } from '@/lib/logger';
@@ -108,6 +108,30 @@ export default function AdminDashboard() {
           COMMAND CENTER · {new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }).toUpperCase()}
         </p>
       </div>
+
+      {/* WCL Editor - NEW Feature */}
+      <Link 
+        href="/wcl-editor"
+        className="block mb-8 bg-gradient-to-r from-purple-500/10 to-orange-500/10 backdrop-filter backdrop-blur-[20px] border border-purple-500/20 rounded-[14px] hover:from-purple-500/20 hover:to-orange-500/20 p-5 transition-all duration-300 group -mx-4 lg:mx-0 fade-in border-l-2 border-l-purple-500/60"
+      >
+        <div className="flex items-center gap-4">
+          <FlaskConical size={18} className="text-purple-400 flex-shrink-0" strokeWidth={1.5} />
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-1">
+              <p className="text-white text-sm font-light">
+                WCL Editor - AI-Powered Component IDE
+              </p>
+              <span className="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 bg-orange-500/20 text-orange-400 rounded-full">
+                NEW
+              </span>
+            </div>
+            <p className="text-white/40 text-xs font-light tracking-wide">
+              PROFESSIONAL IDE · LIVE PREVIEW · AI ASSISTANT · QUANTUM TESTING
+            </p>
+          </div>
+          <TrendingUp size={14} className="text-purple-400/60 opacity-0 group-hover:opacity-100 transition-all duration-300 transform group-hover:translate-x-1" strokeWidth={1.5} />
+        </div>
+      </Link>
 
       {/* Alert for pending products */}
       {stats.pendingProducts > 0 && (

@@ -1,49 +1,54 @@
-# Cursor AI Configuration
+# .cursor/ Directory
 
-This folder contains configuration for Cursor AI editor.
-
----
-
-## 📂 **What's Here**
-
-- **`.cursorrules`** - AI behavior rules and coding standards (in root)
-- **`db-config.sh`** - Database connection configuration
+**Cursor AI configuration and project status files**
 
 ---
 
-## 📚 **Documentation Moved**
+## 📁 **ACTIVE FILES**
 
-All documentation has been organized in `/docs`:
+### **Current Status:**
+- **SESSION_SUMMARY_2025_10_27.md** - Latest session: WCL Editor V2 finalization ⭐ START HERE
+- **PROJECT_STATUS_2025_10_26.md** - Project roadmap and architecture
 
-- **Evolution Plan:** `/docs/evolution/`
-- **Architecture:** `/docs/architecture/`  
-- **Guides:** `/docs/guides/`
-- **Archive:** `/docs/archive/`
+### **WCL System:**
+- **WCL_EDITOR_V2_COMPLETE.md** - WCL Editor V2 completion summary
+- **WCL_SANDBOX_COMPLETE.md** - WCL sandbox implementation
+- **WCL_SYSTEM_COMPLETE.md** - Full WCL system documentation
+- **WCL_QUANTUM_FIX.md** - Quantum state fixes
+- **WCL_NEXT_STEPS.md** - Future WCL development plans
+- **WCL_COMPILER_IMPROVEMENTS.md** - Compiler enhancement plans
 
-**[See complete documentation →](../docs/README.md)**
+### **Lessons Learned:**
+- **V1_VS_V2_LESSONS_LEARNED.md** - Key learnings from editor iterations
 
----
+### **Historical (Reference):**
+- **WCL_BREAKTHROUGH_ANALYSIS.md** - Initial WCL breakthrough
+- **WCL_PROOF_OF_CONCEPT.md** - First working WCL demo
+- **WCL_QUANTUM_FIX_TEST_RESULTS.md** - Quantum state test results
 
-## 🎯 **Quick Reference for AI**
-
-### **Platform:**
-- **Name:** WhaleTools (not "Yacht Club" - that's a vendor)
-- **Stack:** Next.js 15, TypeScript, Supabase, Claude AI
-- **Architecture:** Component registry system (database-driven UI)
-
-### **Key Docs for AI:**
-1. `/docs/evolution/MASTER_INDEX.md` - Complete navigation
-2. `/docs/architecture/SMART_COMPONENT_GUIDE.md` - Component reference
-3. `/docs/architecture/PLATFORM_NAMING.md` - Naming conventions
-4. `/.cursorrules` - Coding rules (in root)
-
-### **Database:**
-```bash
-psql "postgresql://postgres:SelahEsco123!!@db.uaednwpxursknmwdeejn.supabase.co:5432/postgres"
-```
-
-**Key Vendor:** Flora Distro (`cd2e1122-d511-4edb-be5d-98ef274b4baf`)
+### **Configuration:**
+- **db-config.sh** - Database connection config
+- **CURRENT_STATUS.md** - Legacy status file
 
 ---
 
-**Last Updated:** October 2025
+## 📦 **ARCHIVED FILES**
+
+Old status files moved to `archive/2025-10/`:
+- Deployment status files
+- Session summaries
+- Fix logs
+- Historical status updates
+
+---
+
+## 🎯 **QUICK START**
+
+**To understand current state:**
+1. Read [SESSION_SUMMARY_2025_10_27.md](./SESSION_SUMMARY_2025_10_27.md) - Latest changes
+2. Review [WCL_EDITOR_V2_COMPLETE.md](./WCL_EDITOR_V2_COMPLETE.md) - Editor architecture
+3. Check main docs at [../docs/README.md](../docs/README.md) - System overview
+
+---
+
+**Last Updated:** October 27, 2025

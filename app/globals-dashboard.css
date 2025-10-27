@@ -45,6 +45,16 @@
   box-shadow: 0 0 30px rgba(255, 255, 255, 0.02);
 }
 
+/* === WCL EDITOR STYLES === */
+.wcl-resize-handle {
+  cursor: col-resize;
+  user-select: none;
+}
+
+.wcl-resize-handle:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
 /* === SCROLLBARS === */
 aside::-webkit-scrollbar {
   width: 6px;

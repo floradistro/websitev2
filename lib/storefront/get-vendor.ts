@@ -23,6 +23,9 @@ export interface VendorStorefront {
   return_policy: string | null;
   shipping_policy: string | null;
   template_id: string;
+  coming_soon?: boolean;
+  coming_soon_message?: string;
+  launch_date?: string;
 }
 
 export interface StorefrontTheme {
@@ -70,7 +73,10 @@ export async function getVendorStorefront(vendorId: string): Promise<VendorStore
         business_hours,
         return_policy,
         shipping_policy,
-        template_id
+        template_id,
+        coming_soon,
+        coming_soon_message,
+        launch_date
       `)
       .eq('id', vendorId)
       .eq('status', 'active')

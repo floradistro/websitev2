@@ -42,27 +42,57 @@
    - Target market
    - Roadmap
 
-6. **.cursor/PLATFORM_NAMING.md**
+6. **WCL_LANGUAGE_SPECIFICATION.md** ⭐ **NEW**
+   - WhaleTools Component Language
+   - Domain-specific language for living components
+   - Quantum rendering capability
+   - Compiler architecture
+
+7. **QUANTUM_RENDERING.md** ⭐ **NEW**
+   - Technical deep dive
+   - Parallel universe rendering
+   - Implementation details
+   - Performance metrics
+
+8. **.cursor/PLATFORM_NAMING.md**
    - Branding clarification
    - WhaleTools vs Yacht Club
    - Naming conventions
 
 ### **📖 TECHNICAL GUIDES:**
-7. **.cursor/SMART_COMPONENT_GUIDE.md**
-   - Component system overview
-   - Quick reference
-   - Database queries
-   - Base utilities
+9. **WCL_IMPLEMENTATION.md** ⭐ **NEW**
+   - Step-by-step implementation
+   - Week-by-week plan
+   - Code examples
+   - Testing strategies
 
-8. **SMART_COMPONENT_SYSTEM.md**
-   - Full system documentation
-   - Architecture details
-   - Advanced usage
+10. **WCL_EXAMPLES.md** ⭐ **NEW**
+    - Component cookbook
+    - E-commerce patterns
+    - Quantum examples
+    - AI-optimized components
 
-9. **ANIMATION_SYSTEM.md**
-   - Animation library
-   - Framer Motion patterns
-   - GSAP examples
+11. **WCL_INTEGRATION_PLAN.md** ⭐ **NEW**
+    - How WCL accelerates evolution
+    - 50% time reduction
+    - Business impact
+    - Migration strategy
+
+12. **.cursor/SMART_COMPONENT_GUIDE.md**
+    - Component system overview
+    - Quick reference
+    - Database queries
+    - Base utilities
+
+13. **SMART_COMPONENT_SYSTEM.md**
+    - Full system documentation
+    - Architecture details
+    - Advanced usage
+
+14. **ANIMATION_SYSTEM.md**
+    - Animation library
+    - Framer Motion patterns
+    - GSAP examples
 
 ---
 
@@ -78,10 +108,13 @@
 ### **For Developers (Full Implementation):**
 ```
 1. THE_VISION_SUMMARY.md (understand vision)
-2. WHALETOOLS_EVOLUTION_PLAN.md (Phases 1-3 details)
-3. WHALETOOLS_EVOLUTION_PART2.md (Phases 4-6 details)
-4. IMPLEMENTATION_GUIDE.md (execute step-by-step)
-5. .cursor/SMART_COMPONENT_GUIDE.md (component reference)
+2. WCL_LANGUAGE_SPECIFICATION.md ⭐ (learn the future language)
+3. WCL_INTEGRATION_PLAN.md ⭐ (see how it accelerates everything)
+4. WHALETOOLS_EVOLUTION_PLAN.md (Phases 1-3 details)
+5. WHALETOOLS_EVOLUTION_PART2.md (Phases 4-6 details)
+6. IMPLEMENTATION_GUIDE.md (execute step-by-step)
+7. WCL_IMPLEMENTATION.md ⭐ (build the language)
+8. .cursor/SMART_COMPONENT_GUIDE.md (component reference)
 ```
 
 ### **For New Team Members:**

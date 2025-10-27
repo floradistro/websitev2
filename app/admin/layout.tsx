@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { 
   Home, Package, Store, Settings, LogOut, Users, CheckSquare, 
-  FileText, DollarSign, BarChart3, Menu, X, MapPin, Globe, FolderTree, Layers, ShoppingBag, Activity, FileCode 
+  FileText, DollarSign, BarChart3, Menu, X, MapPin, Globe, FolderTree, Layers, ShoppingBag, Activity, FileCode, FlaskConical 
 } from 'lucide-react';
 import { showConfirm } from '@/components/NotificationToast';
 import AdminProtectedRoute from '@/components/AdminProtectedRoute';
@@ -25,6 +25,7 @@ export default function AdminLayout({
   const navItems = [
     { href: '/admin/dashboard', icon: Home, label: 'Overview' },
     { href: '/admin/platform-editor', icon: FileCode, label: 'Yacht Club Editor' },
+    { href: '/admin/wcl-sandbox', icon: FlaskConical, label: 'WCL Sandbox' },
     { href: '/admin/orders', icon: ShoppingBag, label: 'Transactions' },
     { href: '/admin/products', icon: Package, label: 'Catalog' },
     { href: '/admin/categories', icon: FolderTree, label: 'Collections' },

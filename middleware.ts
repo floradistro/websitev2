@@ -80,18 +80,24 @@ export async function middleware(request: NextRequest) {
       .single();
 
     if (domainRecord && !domainError) {
-      // Get vendor to check if site is hidden
+      // Get vendor to check if coming soon mode is active
       const { data: vendor } = await supabase
         .from('vendors')
-        .select('site_hidden')
+        .select('coming_soon')
         .eq('id', domainRecord.vendor_id)
         .single();
         
-      // Check if site is hidden and redirect to coming soon
-      if (vendor?.site_hidden && !pathname.includes('/coming-soon')) {
-        const url = request.nextUrl.clone();
-        url.pathname = '/storefront/coming-soon';
-        return NextResponse.redirect(url);
+      // Check if coming soon mode is active - block entire site
+      if (vendor?.coming_soon) {
+        // Allow preview mode to bypass
+        const isPreview = request.nextUrl.searchParams.get('preview') === 'true';
+        if (!isPreview) {
+          // All requests go to coming soon - no other pages accessible
+          const response = NextResponse.next();
+          response.headers.set('x-vendor-id', domainRecord.vendor_id);
+          response.headers.set('x-coming-soon', 'true');
+          return response;
+        }
       }
       
       // Custom domain found - rewrite to /storefront AND inject tenant context
@@ -118,17 +124,21 @@ export async function middleware(request: NextRequest) {
     if (domain.includes('.') && !domain.startsWith('www') && !isYachtClubDomain) {
       const { data: vendor, error: vendorError } = await supabase
         .from('vendors')
-        .select('id, status, site_hidden')
+        .select('id, status, coming_soon')
         .eq('slug', subdomain)
         .eq('status', 'active')
         .single();
 
       if (vendor && !vendorError) {
-        // Check if site is hidden and redirect to coming soon
-        if (vendor.site_hidden && !pathname.includes('/coming-soon')) {
-          const url = request.nextUrl.clone();
-          url.pathname = '/storefront/coming-soon';
-          return NextResponse.redirect(url);
+        // Check if coming soon mode is active - block entire site
+        if (vendor.coming_soon) {
+          const isPreview = request.nextUrl.searchParams.get('preview') === 'true';
+          if (!isPreview) {
+            const response = NextResponse.next();
+            response.headers.set('x-vendor-id', vendor.id);
+            response.headers.set('x-coming-soon', 'true');
+            return response;
+          }
         }
         
         // Subdomain storefront found - redirect to /storefront
@@ -169,18 +179,21 @@ export async function middleware(request: NextRequest) {
         
         const { data: vendor } = await supabase
           .from('vendors')
-          .select('id, status, site_hidden')
+          .select('id, status, coming_soon')
           .eq('slug', vendorSlug)
           .eq('status', 'active')
           .single();
           
         if (vendor) {
-          // Check if site is hidden and redirect to coming soon
-          if (vendor.site_hidden && !pathname.includes('/coming-soon')) {
-            const url = request.nextUrl.clone();
-            url.pathname = '/storefront/coming-soon';
-            url.searchParams.set('vendor', vendorSlug);
-            return NextResponse.redirect(url);
+          // Check if coming soon mode is active - block entire site
+          if (vendor.coming_soon) {
+            const isPreview = request.nextUrl.searchParams.get('preview') === 'true';
+            if (!isPreview) {
+              const response = NextResponse.next();
+              response.headers.set('x-vendor-id', vendor.id);
+              response.headers.set('x-coming-soon', 'true');
+              return response;
+            }
           }
           
           const response = NextResponse.next();

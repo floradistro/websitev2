@@ -24,6 +24,7 @@ export default async function StorefrontLayout({
   // Check if template preview mode (blank slate)
   const headersList = await headers();
   const tenantType = headersList.get('x-tenant-type');
+  const comingSoonHeader = headersList.get('x-coming-soon');
   
   // If template preview, render minimal blank template
   if (tenantType === 'template-preview') {
@@ -59,6 +60,19 @@ export default async function StorefrontLayout({
 
   if (!vendor) {
     notFound();
+  }
+
+  // Check if coming soon mode is enabled (blocks ENTIRE site except preview)
+  if (comingSoonHeader === 'true') {
+    const { ComingSoonPage } = await import('@/components/storefront/ComingSoonPage');
+    return (
+      <ComingSoonPage
+        vendorName={vendor.store_name || vendor.slug}
+        vendorLogo={vendor.logo_url}
+        message={vendor.coming_soon_message}
+        launchDate={vendor.launch_date}
+      />
+    );
   }
 
   // Fetch header and footer sections from component registry

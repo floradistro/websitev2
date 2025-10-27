@@ -43,6 +43,7 @@ export function ComponentBasedPageRenderer({
   // Always start with server data to avoid hydration mismatch
   const [componentInstances, setComponentInstances] = useState(initialInstances);
   const [selectedComponentId, setSelectedComponentId] = useState<string | null>(null);
+  const [lockedSelection, setLockedSelection] = useState(false);
   
   // Listen for postMessage updates from parent editor (INSTANT updates via postMessage)
   // Attach immediately on mount - no dependency on isClient state to avoid race conditions
@@ -78,6 +79,13 @@ export function ComponentBasedPageRenderer({
       // Handle component selection from parent editor
       if (event.data.type === 'SELECT_COMPONENT') {
         setSelectedComponentId(event.data.payload.componentId);
+        setLockedSelection(true);
+      }
+      
+      // Handle deselection from parent editor
+      if (event.data.type === 'DESELECT_COMPONENT') {
+        setSelectedComponentId(null);
+        setLockedSelection(false);
       }
     };
     
@@ -95,7 +103,9 @@ export function ComponentBasedPageRenderer({
   const handleComponentSelect = (componentId: string) => {
     if (!isPreview) return;
     
+    // Lock the selection when clicked
     setSelectedComponentId(componentId);
+    setLockedSelection(true);
     
     // Notify parent editor about the selection
     if (typeof window !== 'undefined' && window.parent) {
@@ -105,6 +115,24 @@ export function ComponentBasedPageRenderer({
       }, '*');
     }
   };
+  
+  // Handle clicking outside to deselect
+  useEffect(() => {
+    if (!isPreview || typeof window === 'undefined') return;
+    
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      
+      // If clicking on background (not a component), deselect
+      if (!target.closest('[data-component-id]')) {
+        setSelectedComponentId(null);
+        setLockedSelection(false);
+      }
+    };
+    
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [isPreview]);
   
   // Group component instances by section
   const instancesBySection = useMemo(() => {

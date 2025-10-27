@@ -45,6 +45,9 @@ const COMPONENT_MAP: Record<string, React.ComponentType<any>> = {
   'smart_shipping': Smart.SmartShipping,
   'smart_returns': Smart.SmartReturns,
   'smart_lab_results': Smart.SmartLabResults,
+  'flora_halloween_home': Smart.FloraDistroHalloweenHomepage,
+  'flora_distro_hero': Smart.FloraDistroHero,
+  'flora_distro_homepage': Smart.FloraDistroHomepage,
 };
 
 export interface DynamicComponentProps {
@@ -162,14 +165,17 @@ export function DynamicSection({
             key={componentId}
             className={`${containerClasses} ${
               isPreviewMode 
-                ? `cursor-pointer relative group transition-all ${
+                ? `cursor-pointer relative group transition-all duration-300 ${
                     isSelected 
-                      ? 'ring-2 ring-blue-500 ring-offset-2 ring-offset-black' 
-                      : 'hover:ring-2 hover:ring-blue-400/50 hover:ring-offset-2 hover:ring-offset-black'
+                      ? 'ring-[6px] ring-white/90 ring-offset-[6px] ring-offset-black shadow-[0_0_60px_rgba(255,255,255,0.3)] z-[100]' 
+                      : 'hover:ring-[3px] hover:ring-white/40 hover:ring-offset-[3px] hover:ring-offset-black hover:shadow-[0_0_30px_rgba(255,255,255,0.15)]'
                   }` 
                 : ''
             }`}
-            style={containerStyle}
+            style={{
+              ...containerStyle,
+              ...(isPreviewMode && isSelected ? { position: 'relative', zIndex: 100 } : {})
+            }}
             onClick={(e) => {
               if (isPreviewMode && onComponentSelect) {
                 e.stopPropagation();
@@ -179,13 +185,30 @@ export function DynamicSection({
             data-component-id={componentId}
             data-component-key={instance.component_key}
           >
-            {/* Edit indicator overlay */}
+            {/* Edit indicator badge */}
             {isPreviewMode && (
-              <div className={`absolute top-0 left-0 px-2 py-0.5 bg-blue-600 text-white text-[10px] font-medium z-50 pointer-events-none transition-opacity ${
-                isSelected || 'group-hover:opacity-100 opacity-0'
+              <div className={`absolute -top-3 left-4 z-[110] pointer-events-none transition-all duration-300 ${
+                isSelected ? 'opacity-100 scale-100' : 'group-hover:opacity-100 group-hover:scale-100 opacity-0 scale-95'
               }`}>
-                {instance.component_key}
+                <div className="bg-white text-black px-4 py-2 rounded-full shadow-2xl shadow-white/30 border-4 border-black">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+                    <span className="text-[10px] font-black uppercase tracking-[0.15em]">
+                      {instance.component_key.replace(/_/g, ' ')}
+                    </span>
+                  </div>
+                </div>
               </div>
+            )}
+            
+            {/* Editable indicators - corner dots */}
+            {isPreviewMode && isSelected && (
+              <>
+                <div className="absolute -top-1 -left-1 w-3 h-3 bg-white rounded-full border-2 border-black z-[110] pointer-events-none"></div>
+                <div className="absolute -top-1 -right-1 w-3 h-3 bg-white rounded-full border-2 border-black z-[110] pointer-events-none"></div>
+                <div className="absolute -bottom-1 -left-1 w-3 h-3 bg-white rounded-full border-2 border-black z-[110] pointer-events-none"></div>
+                <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-white rounded-full border-2 border-black z-[110] pointer-events-none"></div>
+              </>
             )}
             
             <DynamicComponent

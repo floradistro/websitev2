@@ -312,7 +312,7 @@ export function SmartProductDetail({
   }
 
   const inventory = product?.inventory || [];
-  const isInStock = product.stock_status === "instock" || product.total_stock > 0;
+  const isInStock = product.stock_status === "instock" || (product.stock_quantity && product.stock_quantity > 0);
 
   // Get location stock info
   const getLocationStockInfo = () => {
