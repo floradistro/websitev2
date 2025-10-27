@@ -526,7 +526,24 @@ export default function WCLEditor() {
       if (result.success && result.modifiedSection) {
         console.log('✅ AI returned modified section');
         
-        const modifiedCode = result.modifiedSection;
+        let modifiedCode = result.modifiedSection;
+        
+        // Validate WCL structure - ensure braces are balanced
+        const validateBraces = (code: string): boolean => {
+          let count = 0;
+          for (const char of code) {
+            if (char === '{') count++;
+            if (char === '}') count--;
+            if (count < 0) return false; // More closing than opening
+          }
+          return count === 0; // Equal opening and closing
+        };
+        
+        if (!validateBraces(modifiedCode)) {
+          console.error('❌ AI generated invalid WCL structure - braces not balanced');
+          alert('AI generated invalid code structure. Please try a simpler modification or edit manually.');
+          return;
+        }
         
         // Check if AI added a data section
         const hasDataSection = modifiedCode.includes('data {');
@@ -543,6 +560,14 @@ export default function WCLEditor() {
           lines.splice(renderStart, section.lineEnd - section.lineStart + 1, ...modifiedLines);
           
           const newWCLCode = lines.join('\n');
+          
+          // Validate entire WCL structure
+          if (!validateBraces(newWCLCode)) {
+            console.error('❌ Updated WCL structure is invalid - reverting');
+            alert('The modification would break the component structure. Please try again.');
+            return;
+          }
+          
           console.log('📝 Updated WCL with data + render');
           setWclCode(newWCLCode);
         } else {
@@ -557,6 +582,14 @@ export default function WCLEditor() {
           );
           
           const newWCLCode = lines.join('\n');
+          
+          // Validate entire WCL structure
+          if (!validateBraces(newWCLCode)) {
+            console.error('❌ Updated WCL structure is invalid - reverting');
+            alert('The modification would break the component structure. Please try again.');
+            return;
+          }
+          
           console.log('📝 Updated WCL code');
           setWclCode(newWCLCode);
         }
@@ -1170,26 +1203,17 @@ export default function WCLEditor() {
                           key={comp.key}
                           onClick={() => {
                             console.log('Component selected:', comp.name);
-                            // Generate WCL template for this component
-                            const template = `component ${comp.name.replace(/\s/g, '')} {
-  props {
-    headline: String = "${comp.name}"
-  }
-  
-  data {
-    ${comp.key === 'smart_product_grid' || comp.key === 'smart_product_showcase' ? 
-      `products = fetch("/api/products?vendor_id=${selectedVendor}&limit=6") @cache(5m)` : 
-      comp.key === 'smart_testimonials' ?
-      `testimonials = fetch("/api/testimonials?vendor_id=${selectedVendor}") @cache(10m)` :
-      '// Add data fetching here'}
-  }
-  
-  render {
-    <div className="bg-black py-16 px-4">
+                            
+                            // Generate new section content based on component type
+                            let newDataSection = '';
+                            let newRenderContent = '';
+                            
+                            if (comp.key === 'smart_product_grid' || comp.key === 'smart_product_showcase') {
+                              newDataSection = `products = fetch("/api/products?vendor_id=${selectedVendor}&limit=6") @cache(5m)`;
+                              newRenderContent = `<div className="bg-black py-12 px-4">
       <div className="max-w-6xl mx-auto">
-        <h2 className="text-5xl font-black uppercase text-white mb-8">{headline}</h2>
-        ${comp.key === 'smart_product_grid' || comp.key === 'smart_product_showcase' ? 
-          `<div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <h2 className="text-3xl font-black uppercase text-white mb-8">{headline}</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {products.map(p => (
             <div key={p.id} className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-6 hover:border-white/10 transition-all">
               <img src={p.featured_image_storage} alt={p.name} className="w-full aspect-square object-cover rounded-xl mb-4" />
@@ -1201,9 +1225,15 @@ export default function WCLEditor() {
               </div>
             </div>
           ))}
-        </div>` : 
-        comp.key === 'smart_testimonials' ?
-          `<div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        </div>
+      </div>
+    </div>`;
+                            } else if (comp.key === 'smart_testimonials') {
+                              newDataSection = `testimonials = fetch("/api/testimonials?vendor_id=${selectedVendor}") @cache(10m)`;
+                              newRenderContent = `<div className="bg-black py-12 px-4">
+      <div className="max-w-6xl mx-auto">
+        <h2 className="text-3xl font-black uppercase text-white mb-8">{headline}</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {testimonials.map(t => (
             <div key={t.id} className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-6">
               <div className="flex items-center gap-3 mb-4">
@@ -1218,13 +1248,84 @@ export default function WCLEditor() {
               <p className="text-white/60 leading-relaxed">{t.review_text}</p>
             </div>
           ))}
-        </div>` :
-          '<p className="text-white/60">Component content goes here...</p>'}
+        </div>
       </div>
-    </div>
+    </div>`;
+                            } else {
+                              newRenderContent = `<div className="bg-black py-12 px-4">
+      <div className="max-w-6xl mx-auto">
+        <h2 className="text-3xl font-black uppercase text-white mb-8">{headline}</h2>
+        <p className="text-white/60">Component content goes here...</p>
+      </div>
+    </div>`;
+                            }
+                            
+                            // If WCL is empty or only has initial template, create new component
+                            if (!wclCode.trim() || wclCode.includes('Your Headline')) {
+                              const template = `component ${comp.name.replace(/\s/g, '')} {
+  props {
+    headline: String = "${comp.name}"
+  }
+  
+  data {
+    ${newDataSection}
+  }
+  
+  render {
+    ${newRenderContent}
   }
 }`;
-                            setWclCode(template);
+                              setWclCode(template);
+                            } else {
+                              // Merge new content into existing component
+                              const lines = wclCode.split('\n');
+                              
+                              // Find data section
+                              const dataStartIdx = lines.findIndex(l => l.trim().startsWith('data {'));
+                              if (dataStartIdx !== -1 && newDataSection) {
+                                // Find closing brace of data section
+                                let braceCount = 0;
+                                let dataEndIdx = dataStartIdx;
+                                for (let i = dataStartIdx; i < lines.length; i++) {
+                                  braceCount += (lines[i].match(/{/g) || []).length;
+                                  braceCount -= (lines[i].match(/}/g) || []).length;
+                                  if (braceCount === 0 && i > dataStartIdx) {
+                                    dataEndIdx = i;
+                                    break;
+                                  }
+                                }
+                                // Insert new data fetch before closing brace
+                                lines.splice(dataEndIdx, 0, `    ${newDataSection}`);
+                              } else if (newDataSection) {
+                                // No data section exists, add one before render
+                                const renderStartIdx = lines.findIndex(l => l.trim().startsWith('render {'));
+                                if (renderStartIdx !== -1) {
+                                  lines.splice(renderStartIdx, 0, `  data {`, `    ${newDataSection}`, `  }`, ``);
+                                }
+                              }
+                              
+                              // Find render section and append new content
+                              const renderStartIdx = lines.findIndex(l => l.trim().startsWith('render {'));
+                              if (renderStartIdx !== -1) {
+                                // Find closing brace of render section
+                                let braceCount = 0;
+                                let renderEndIdx = renderStartIdx;
+                                for (let i = renderStartIdx; i < lines.length; i++) {
+                                  braceCount += (lines[i].match(/{/g) || []).length;
+                                  braceCount -= (lines[i].match(/}/g) || []).length;
+                                  if (braceCount === 0 && i > renderStartIdx) {
+                                    renderEndIdx = i;
+                                    break;
+                                  }
+                                }
+                                // Insert new render content before closing brace
+                                const indentedContent = newRenderContent.split('\n').map(line => `    ${line}`).join('\n');
+                                lines.splice(renderEndIdx, 0, indentedContent);
+                              }
+                              
+                              setWclCode(lines.join('\n'));
+                            }
+                            
                             setShowComponentBrowser(false);
                           }}
                           className="w-full px-6 py-4 hover:bg-white/[0.03] transition-colors text-left group"

@@ -195,13 +195,17 @@ WHALETOOLS LUXURY THEME (PREFERRED):
 - Text: text-white, text-white/60, text-white/40
 - Spacing: py-12 sm:py-16 MAX, px-4 sm:px-6, gap-4 to gap-6, space-y-3 to space-y-4
 
-RULES:
-1. Return ONLY the modified section code (render { ... } block)
-2. If user asks for products/data, ADD a data section above render
-3. Always use vendor_id=${vendorId || 'cd2e1122-d511-4edb-be5d-98ef274b4baf'} in fetch calls
-4. Apply WhaleTools luxury theme to ALL new elements
-5. Keep WCL structure intact
-6. Use Tailwind CSS classes for ALL styling - you have FULL creative control
+CRITICAL RULES (MUST FOLLOW):
+1. Return ONLY the modified section code - NEVER return the entire component
+2. If editing "Props" section, return ONLY: props { ... }
+3. If editing "Data" section, return ONLY: data { ... }
+4. If editing "Layout" section, return ONLY: render { ... }
+5. ALWAYS ensure braces are BALANCED ({ must match })
+6. NEVER break the WCL structure - each section must be complete
+7. If user asks for products/data, ADD a data section above render
+8. Always use vendor_id=${vendorId || 'cd2e1122-d511-4edb-be5d-98ef274b4baf'} in fetch calls
+9. Apply WhaleTools luxury theme to ALL new elements
+10. Use Tailwind CSS classes for ALL styling - you have FULL creative control
 
 STRICT LAYOUT STANDARDS (ALWAYS FOLLOW):
 ❌ NO EMOJIS - Never use emoji characters (🎃 🌟 ⭐ 🔥 etc.) in ANY content
@@ -262,7 +266,27 @@ Logo positioning:
 - Top-left: absolute top-4 left-4
 - Header: flex items-center gap-3 with logo + brand name
 
-Return complete modified section (if adding data fetching, include BOTH data and render blocks):`
+RESPONSE FORMAT EXAMPLES:
+
+If editing Props section:
+props {
+  headline: String = "My Headline"
+  description: String = "Description"
+}
+
+If editing Data section:
+data {
+  products = fetch("/api/products?vendor_id=XXX") @cache(5m)
+}
+
+If editing Layout section (render):
+render {
+  <div className="bg-black py-12 px-4">
+    <h1>{headline}</h1>
+  </div>
+}
+
+IMPORTANT: Return ONLY the section being edited. DO NOT return the entire component or add extra sections unless specifically requested.`
       }]
     });
 
