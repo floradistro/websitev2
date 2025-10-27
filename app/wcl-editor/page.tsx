@@ -11,10 +11,11 @@ import {
   Monitor, Smartphone, Maximize2, Send, ArrowLeft, 
   ChevronDown, Type, Database, Zap, Edit2, Save, Plus, Trash2,
   Command, Palette, Layout, Grid, Move, Wand2, AlignLeft, AlignCenter,
-  AlignRight, Bold, Italic, Underline, MinusCircle, PlusCircle
+  AlignRight, Bold, Italic, Underline, MinusCircle, PlusCircle, Settings
 } from 'lucide-react';
 import { WCLCompiler } from '@/lib/wcl/compiler';
 import Link from 'next/link';
+import { AgentConfigPanel } from '@/components/wcl/AgentConfigPanel';
 
 // Clean syntax highlighter with purple/white accents
 const highlightWCL = (code: string): string => {
@@ -191,6 +192,7 @@ export default function WCLEditor() {
   const [toolsExecuted, setToolsExecuted] = useState<Array<{tool: string, result: string, details: string}>>([]);
   const [generatedCodeBackup, setGeneratedCodeBackup] = useState<string>('');
   const [displayedCode, setDisplayedCode] = useState<string>('');
+  const [showAgentConfig, setShowAgentConfig] = useState(false);
 
   // Google Fonts library
   const FONT_LIBRARY = [
@@ -1672,6 +1674,13 @@ export default function WCLEditor() {
           >
             {isSaving ? 'Deploying...' : 'Deploy'}
           </button>
+          <button
+            onClick={() => setShowAgentConfig(true)}
+            className="p-1.5 rounded-lg hover:bg-white/5 text-white/40 hover:text-white transition-all"
+            title="Agent Configuration"
+          >
+            <Settings size={16} strokeWidth={2} />
+          </button>
         </div>
       </div>
 
@@ -2435,6 +2444,12 @@ export default function WCLEditor() {
         </div>
       )}
       </div>
+
+      {/* Agent Configuration Panel */}
+      <AgentConfigPanel
+        isOpen={showAgentConfig}
+        onClose={() => setShowAgentConfig(false)}
+      />
     </>
   );
 }

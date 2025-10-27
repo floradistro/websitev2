@@ -98,7 +98,7 @@ export function ComingSoonPage({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-            className="text-6xl sm:text-7xl md:text-8xl font-black uppercase tracking-tight text-white mb-8 leading-[0.9]"
+            className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black uppercase tracking-tight text-white mb-6 sm:mb-8 leading-[0.9]"
             style={{ fontWeight: 900 }}
           >
             Coming Soon
@@ -109,27 +109,27 @@ export function ComingSoonPage({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.4, duration: 0.6 }}
-            className="text-xl sm:text-2xl text-white/60 mb-16 max-w-2xl mx-auto leading-relaxed"
+            className="text-lg sm:text-xl md:text-2xl text-white/60 mb-12 sm:mb-16 max-w-2xl mx-auto leading-relaxed px-4"
           >
             {message}
           </motion.p>
 
           {/* Countdown Timer */}
-          {launchDate && (
+          {launchDate && mounted && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5, duration: 0.6 }}
-              className="mb-16"
+              className="mb-12 sm:mb-16"
             >
-              <div className="flex items-center justify-center gap-3 mb-8">
-                <Calendar size={18} className="text-white/40" />
+              <div className="flex items-center justify-center gap-2 sm:gap-3 mb-6 sm:mb-8">
+                <Calendar size={16} className="text-white/40 sm:w-[18px] sm:h-[18px]" />
                 <span className="text-white/40 text-xs font-black uppercase tracking-[0.15em]">
                   Launching In
                 </span>
               </div>
               
-              <div className="grid grid-cols-4 gap-4 sm:gap-6 max-w-3xl mx-auto">
+              <div className="grid grid-cols-4 gap-3 sm:gap-4 md:gap-6 max-w-3xl mx-auto">
                 {[
                   { label: 'Days', value: timeLeft.days },
                   { label: 'Hours', value: timeLeft.hours },
@@ -138,12 +138,12 @@ export function ComingSoonPage({
                 ].map((item) => (
                   <div
                     key={item.label}
-                    className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-6 sm:p-8"
+                    className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-4 sm:p-6 md:p-8"
                   >
-                    <div className="text-4xl sm:text-6xl font-black text-white mb-3" style={{ fontWeight: 900 }}>
+                    <div className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-white mb-2 sm:mb-3" style={{ fontWeight: 900 }}>
                       {item.value.toString().padStart(2, '0')}
                     </div>
-                    <div className="text-white/40 text-xs font-black uppercase tracking-[0.15em]">
+                    <div className="text-white/40 text-[10px] sm:text-xs font-black uppercase tracking-[0.15em]">
                       {item.label}
                     </div>
                   </div>
@@ -157,24 +157,24 @@ export function ComingSoonPage({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6, duration: 0.6 }}
-            className="max-w-lg mx-auto"
+            className="max-w-lg mx-auto px-4"
           >
             {!subscribed ? (
-              <form onSubmit={handleSubscribe} className="space-y-4">
+              <form onSubmit={handleSubscribe} className="space-y-3 sm:space-y-4">
                 <div className="relative">
-                  <Mail className="absolute left-6 top-1/2 -translate-y-1/2 text-white/40" size={20} />
+                  <Mail className="absolute left-4 sm:left-6 top-1/2 -translate-y-1/2 text-white/40" size={18} />
                   <input
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="Enter your email"
-                    className="w-full bg-[#0a0a0a] border border-white/5 rounded-2xl pl-16 pr-6 py-5 text-white placeholder:text-white/40 focus:outline-none focus:border-white/10 transition-colors"
+                    className="w-full bg-[#0a0a0a] border border-white/5 rounded-2xl pl-12 sm:pl-16 pr-4 sm:pr-6 py-4 sm:py-5 text-sm sm:text-base text-white placeholder:text-white/40 focus:outline-none focus:border-white/10 transition-colors"
                     required
                   />
                 </div>
                 <button
                   type="submit"
-                  className="w-full bg-white hover:bg-white/90 text-black px-8 py-5 rounded-2xl font-black uppercase tracking-tight transition-all duration-300 hover:scale-[1.02]"
+                  className="w-full bg-white hover:bg-white/90 text-black px-6 sm:px-8 py-4 sm:py-5 rounded-2xl font-black uppercase tracking-tight transition-all duration-300 hover:scale-[1.02] text-sm sm:text-base"
                   style={{ fontWeight: 900 }}
                 >
                   Notify Me When We Launch
@@ -184,19 +184,19 @@ export function ComingSoonPage({
               <motion.div
                 initial={{ scale: 0.95, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
-                className="bg-white text-black rounded-2xl p-8"
+                className="bg-white text-black rounded-2xl p-6 sm:p-8"
               >
-                <Bell className="mx-auto mb-4 text-black" size={32} />
-                <p className="font-black uppercase tracking-tight text-lg" style={{ fontWeight: 900 }}>
+                <Bell className="mx-auto mb-3 sm:mb-4 text-black" size={28} />
+                <p className="font-black uppercase tracking-tight text-base sm:text-lg" style={{ fontWeight: 900 }}>
                   You're on the list!
                 </p>
-                <p className="text-black/60 mt-2">
+                <p className="text-black/60 mt-2 text-sm sm:text-base">
                   We'll notify you when we launch.
                 </p>
               </motion.div>
             )}
 
-            <p className="text-white/40 text-xs mt-6">
+            <p className="text-white/40 text-xs mt-4 sm:mt-6 text-center">
               We'll never share your email. Unsubscribe anytime.
             </p>
           </motion.div>
