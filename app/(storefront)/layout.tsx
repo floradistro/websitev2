@@ -26,6 +26,12 @@ export default async function StorefrontLayout({
   const tenantType = headersList.get('x-tenant-type');
   const comingSoonHeader = headersList.get('x-coming-soon');
   
+  console.log('[Storefront Layout] Headers:', {
+    tenantType,
+    comingSoonHeader,
+    vendorId: headersList.get('x-vendor-id'),
+  });
+  
   // If template preview, render minimal blank template
   if (tenantType === 'template-preview') {
     return (
@@ -59,11 +65,20 @@ export default async function StorefrontLayout({
   const vendor = await getVendorStorefront(vendorId);
 
   if (!vendor) {
+    console.log('[Storefront Layout] Vendor not found:', vendorId);
     notFound();
   }
 
+  console.log('[Storefront Layout] Vendor:', {
+    id: vendor.id,
+    name: vendor.store_name,
+    coming_soon: vendor.coming_soon,
+    comingSoonHeader,
+  });
+
   // Check if coming soon mode is enabled (blocks ENTIRE site except preview)
   if (comingSoonHeader === 'true') {
+    console.log('[Storefront Layout] Rendering coming soon page for:', vendor.store_name);
     const { ComingSoonPage } = await import('@/components/storefront/ComingSoonPage');
     return (
       <ComingSoonPage
@@ -74,6 +89,8 @@ export default async function StorefrontLayout({
       />
     );
   }
+  
+  console.log('[Storefront Layout] Rendering normal storefront for:', vendor.store_name);
 
   // Fetch header and footer sections from component registry
   const supabase = getServiceSupabase();

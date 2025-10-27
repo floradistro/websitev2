@@ -15,6 +15,16 @@ export async function middleware(request: NextRequest) {
                            domain === 'localhost' || 
                            domain.startsWith('localhost:');
   
+  // OPTIMIZATION: Early exit for main domain homepage - no DB lookup needed
+  if (isYachtClubDomain && pathname === '/') {
+    const response = NextResponse.next();
+    response.headers.set('x-tenant-type', 'whaletools');
+    response.headers.set('X-Frame-Options', 'SAMEORIGIN');
+    response.headers.set('X-Content-Type-Options', 'nosniff');
+    response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+    return response;
+  }
+  
   // Skip middleware for:
   // - Static assets
   // - API routes
@@ -53,13 +63,6 @@ export async function middleware(request: NextRequest) {
     response.headers.set('X-Content-Type-Options', 'nosniff');
     response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
     
-    // Disable caching in development
-    if (process.env.NODE_ENV === 'development') {
-      response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-      response.headers.set('Pragma', 'no-cache');
-      response.headers.set('Expires', '0');
-    }
-    
     return response;
   }
 
@@ -86,16 +89,23 @@ export async function middleware(request: NextRequest) {
         .select('coming_soon')
         .eq('id', domainRecord.vendor_id)
         .single();
+      
+      console.log('[Middleware] Custom domain vendor:', {
+        vendorId: domainRecord.vendor_id,
+        comingSoon: vendor?.coming_soon,
+      });
         
       // Check if coming soon mode is active - block entire site
       if (vendor?.coming_soon) {
         // Allow preview mode to bypass
         const isPreview = request.nextUrl.searchParams.get('preview') === 'true';
+        console.log('[Middleware] Coming soon mode active, preview:', isPreview);
         if (!isPreview) {
           // All requests go to coming soon - no other pages accessible
           const response = NextResponse.next();
           response.headers.set('x-vendor-id', domainRecord.vendor_id);
           response.headers.set('x-coming-soon', 'true');
+          console.log('[Middleware] Setting x-coming-soon header for custom domain');
           return response;
         }
       }
@@ -130,13 +140,20 @@ export async function middleware(request: NextRequest) {
         .single();
 
       if (vendor && !vendorError) {
+        console.log('[Middleware] Subdomain vendor:', {
+          subdomain,
+          vendorId: vendor.id,
+          comingSoon: vendor.coming_soon,
+        });
         // Check if coming soon mode is active - block entire site
         if (vendor.coming_soon) {
           const isPreview = request.nextUrl.searchParams.get('preview') === 'true';
+          console.log('[Middleware] Coming soon mode active, preview:', isPreview);
           if (!isPreview) {
             const response = NextResponse.next();
             response.headers.set('x-vendor-id', vendor.id);
             response.headers.set('x-coming-soon', 'true');
+            console.log('[Middleware] Setting x-coming-soon header for subdomain');
             return response;
           }
         }
@@ -185,13 +202,20 @@ export async function middleware(request: NextRequest) {
           .single();
           
         if (vendor) {
+          console.log('[Middleware] Vendor param:', {
+            vendorSlug,
+            vendorId: vendor.id,
+            comingSoon: vendor.coming_soon,
+          });
           // Check if coming soon mode is active - block entire site
           if (vendor.coming_soon) {
             const isPreview = request.nextUrl.searchParams.get('preview') === 'true';
+            console.log('[Middleware] Coming soon mode active, preview:', isPreview);
             if (!isPreview) {
               const response = NextResponse.next();
               response.headers.set('x-vendor-id', vendor.id);
               response.headers.set('x-coming-soon', 'true');
+              console.log('[Middleware] Setting x-coming-soon header for vendor param');
               return response;
             }
           }

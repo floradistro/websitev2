@@ -25,10 +25,15 @@ export function ComingSoonPage({
     minutes: 0,
     seconds: 0,
   });
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Countdown timer
   useEffect(() => {
-    if (!launchDate) return;
+    if (!launchDate || !mounted) return;
 
     const timer = setInterval(() => {
       const now = new Date().getTime();
@@ -49,7 +54,7 @@ export function ComingSoonPage({
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [launchDate]);
+  }, [launchDate, mounted]);
 
   const handleSubscribe = (e: React.FormEvent) => {
     e.preventDefault();
@@ -62,6 +67,9 @@ export function ComingSoonPage({
 
   return (
     <div className="min-h-screen bg-black relative overflow-hidden flex items-center justify-center py-16 sm:py-20 px-4 sm:px-6">
+      {/* Background gradient effect */}
+      <div className="absolute inset-0 bg-gradient-radial from-white/5 via-transparent to-transparent opacity-20" />
+      
       {/* Content */}
       <div className="relative z-10 max-w-4xl mx-auto text-center">
         <motion.div

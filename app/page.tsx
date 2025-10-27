@@ -1,97 +1,32 @@
-'use client';
-
-import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { motion } from 'framer-motion';
+import { HomeNavigation } from "@/components/HomeNavigation";
+import { HomeCountdown } from "@/components/HomeCountdown";
 
 export default function HomePage() {
-  const [countdown, setCountdown] = useState(20);
-
-  useEffect(() => {
-    const countdownTimer = setInterval(() => {
-      setCountdown((prev) => (prev <= 1 ? 20 : prev - 1));
-    }, 1000);
-    
-    return () => clearInterval(countdownTimer);
-  }, []);
-
   return (
     <div className="min-h-screen bg-black text-white">
-      {/* Navigation */}
-      <nav className="fixed top-0 w-full z-50 bg-black/95 backdrop-blur-xl border-b border-white/5">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="flex items-center justify-between h-20">
-            <div className="flex items-center gap-4">
-              <Image 
-                src="/yacht-club-logo.png" 
-                alt="Yacht Club" 
-                width={40} 
-                height={40}
-                className="object-contain"
-              />
-              <span className="text-xl font-black uppercase tracking-[0.08em]" style={{ fontWeight: 900 }}>WhaleTools</span>
-            </div>
-            <div className="hidden md:flex items-center gap-8">
-              <Link 
-                href="/about" 
-                className="text-xs uppercase tracking-[0.12em] font-black text-white/60 hover:text-white transition-colors" 
-                style={{ fontWeight: 900 }}
-              >
-                About
-              </Link>
-              <Link 
-                href="/api-status" 
-                className="text-xs uppercase tracking-[0.12em] font-black text-white/60 hover:text-white transition-colors" 
-                style={{ fontWeight: 900 }}
-              >
-                API
-              </Link>
-              <Link 
-                href="/partners" 
-                className="text-xs uppercase tracking-[0.12em] font-black text-white/60 hover:text-white transition-colors" 
-                style={{ fontWeight: 900 }}
-              >
-                Partners
-              </Link>
-              <Link 
-                href="/vendor/login" 
-                className="bg-white text-black px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-[0.08em] hover:bg-white/90 transition-all"
-                style={{ fontWeight: 900 }}
-              >
-                Get Started
-              </Link>
-            </div>
-          </div>
-        </div>
-      </nav>
+      {/* Navigation - Client Component */}
+      <HomeNavigation />
 
-      {/* Hero Section */}
-      <section className="pt-40 pb-20 px-6">
+      {/* Hero Section - Server Rendered */}
+      <section className="pt-24 sm:pt-32 md:pt-40 pb-12 sm:pb-16 md:pb-20 px-4 sm:px-6">
         <div className="max-w-5xl mx-auto text-center">
           {/* Large Logo */}
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 1 }}
-            className="mb-12 flex justify-center"
-          >
+          <div className="mb-8 sm:mb-12 flex justify-center">
             <Image 
               src="/yacht-club-logo.png" 
               alt="Yacht Club" 
-              width={280} 
-              height={280}
-              className="object-contain"
+              width={180} 
+              height={180}
+              className="object-contain sm:w-[240px] sm:h-[240px] md:w-[280px] md:h-[280px]"
               priority
             />
-          </motion.div>
+          </div>
           
-          <motion.h1 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="text-5xl sm:text-6xl md:text-8xl font-black mb-8 tracking-tight leading-[0.9] uppercase"
+          <h1 
+            className="text-4xl sm:text-5xl md:text-6xl lg:text-8xl font-black mb-6 sm:mb-8 tracking-tight leading-[0.9] uppercase"
             style={{ fontWeight: 900 }}
           >
             Generate
@@ -99,30 +34,15 @@ export default function HomePage() {
             Business
             <br />
             <span className="text-white/60">Ecosystems</span>
-          </motion.h1>
+          </h1>
           
-          <motion.div 
-            initial={{ scaleX: 0 }}
-            animate={{ scaleX: 1 }}
-            transition={{ duration: 0.8, delay: 0.5 }}
-            className="h-[1px] w-32 bg-white/10 mx-auto mb-12"
-          />
+          <div className="h-[1px] w-32 bg-white/10 mx-auto mb-12" />
           
-          <motion.p 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.6 }}
-            className="text-xl text-white/60 font-normal leading-relaxed max-w-2xl mx-auto mb-16"
-          >
+          <p className="text-base sm:text-lg md:text-xl text-white/60 font-normal leading-relaxed max-w-2xl mx-auto mb-12 sm:mb-16 px-4">
             AI builds the entire stack. Storefronts, inventory, POS, analytics. Everything.
-          </motion.p>
+          </p>
           
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.8 }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-4"
-          >
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
               href="/vendor/login"
               className="group inline-flex items-center justify-center gap-3 bg-white text-black px-8 py-4 rounded-2xl text-xs uppercase tracking-[0.08em] hover:bg-white/90 font-black transition-all hover:scale-105 w-full sm:w-auto"
@@ -138,24 +58,18 @@ export default function HomePage() {
             >
               <span>View API</span>
             </Link>
-          </motion.div>
+          </div>
         </div>
       </section>
 
       {/* What Gets Built */}
-      <section className="py-20 px-6">
+      <section className="py-12 sm:py-16 md:py-20 px-4 sm:px-6">
         <div className="max-w-4xl mx-auto">
-          <motion.div 
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-            className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-12 md:p-16"
-          >
-            <h2 className="text-3xl md:text-5xl font-black mb-12 tracking-tight uppercase text-center" style={{ fontWeight: 900 }}>
+          <div className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-6 sm:p-10 md:p-12 lg:p-16">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black mb-8 sm:mb-10 md:mb-12 tracking-tight uppercase text-center" style={{ fontWeight: 900 }}>
               Complete Infrastructure
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8">
               {[
                 { title: "Public Storefronts", desc: "Customer-facing e-commerce" },
                 { title: "Internal Dashboards", desc: "Vendor & admin portals" },
@@ -163,70 +77,54 @@ export default function HomePage() {
                 { title: "Inventory", desc: "Real-time stock management" },
                 { title: "Wholesale", desc: "B2B ordering platforms" },
                 { title: "Analytics", desc: "Business intelligence" },
-              ].map((item, i) => (
-                <motion.div
-                  key={item.title}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.6, delay: i * 0.1 }}
-                  className="text-center"
-                >
+              ].map((item) => (
+                <div key={item.title} className="text-center">
                   <div className="text-xs uppercase tracking-[0.12em] font-black text-white mb-2" style={{ fontWeight: 900 }}>
                     {item.title}
                   </div>
                   <div className="text-sm text-white/60">
                     {item.desc}
                   </div>
-                </motion.div>
+                </div>
               ))}
             </div>
-          </motion.div>
+          </div>
         </div>
       </section>
 
       {/* The Stack */}
-      <section className="py-20 px-6">
+      <section className="py-12 sm:py-16 md:py-20 px-4 sm:px-6">
         <div className="max-w-4xl mx-auto text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-            className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-12 md:p-16"
-          >
-            <div className="mb-8">
+          <div className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-6 sm:p-10 md:p-12 lg:p-16">
+            <div className="mb-6 sm:mb-8">
               <Image 
                 src="/yacht-club-logo.png" 
                 alt="Yacht Club" 
-                width={80} 
-                height={80}
-                className="object-contain mx-auto opacity-40"
+                width={60} 
+                height={60}
+                className="object-contain mx-auto opacity-40 sm:w-20 sm:h-20"
               />
             </div>
-            <h3 className="text-2xl md:text-4xl font-black mb-6 uppercase tracking-tight" style={{ fontWeight: 900 }}>
+            <h3 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-black mb-4 sm:mb-6 uppercase tracking-tight" style={{ fontWeight: 900 }}>
               Not Just Websites
             </h3>
-            <p className="text-lg text-white/60 max-w-2xl mx-auto">
+            <p className="text-sm sm:text-base md:text-lg text-white/60 max-w-2xl mx-auto px-4">
               Complete business operating systems. E-commerce, inventory, POS, wholesale, analytics, customer portals, employee tools. All generated, all connected.
             </p>
-          </motion.div>
+          </div>
         </div>
       </section>
 
       {/* Capabilities Grid */}
-      <section className="py-20 px-6">
+      <section className="py-12 sm:py-16 md:py-20 px-4 sm:px-6">
         <div className="max-w-6xl mx-auto">
-          <motion.h2 
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-3xl md:text-5xl font-black mb-16 text-center uppercase tracking-tight" 
+          <h2 
+            className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black mb-10 sm:mb-12 md:mb-16 text-center uppercase tracking-tight" 
             style={{ fontWeight: 900 }}
           >
             What We Build
-          </motion.h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             {[
               "Multi-vendor marketplaces",
               "Point-of-sale systems",
@@ -236,125 +134,75 @@ export default function HomePage() {
               "Customer loyalty programs",
               "Employee portals",
               "TV menu displays"
-            ].map((item, i) => (
-              <motion.div
+            ].map((item) => (
+              <div
                 key={item}
-                initial={{ opacity: 0, x: -20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: i * 0.08 }}
-                className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-6 hover:border-white/10 transition-colors"
+                className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-4 sm:p-6 hover:border-white/10 transition-colors"
               >
-                <div className="text-sm font-black uppercase tracking-[0.08em]" style={{ fontWeight: 900 }}>
+                <div className="text-xs sm:text-sm font-black uppercase tracking-[0.08em]" style={{ fontWeight: 900 }}>
                   {item}
                 </div>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Countdown Section */}
-      <section className="py-32 px-6">
-        <div className="max-w-4xl mx-auto text-center">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.5 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 1 }}
-            className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-16 md:p-24"
-          >
-            <div className="mb-8">
-              <Image 
-                src="/yacht-club-logo.png" 
-                alt="Yacht Club" 
-                width={120} 
-                height={120}
-                className="object-contain mx-auto opacity-20"
-              />
-            </div>
-            <motion.div 
-              key={countdown}
-              initial={{ scale: 1.2, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ duration: 0.3 }}
-              className="text-8xl md:text-9xl font-black mb-6"
-              style={{ fontWeight: 900 }}
-            >
-              {countdown}
-            </motion.div>
-            <div className="text-xs uppercase tracking-[0.12em] text-white/60 font-black mb-12" style={{ fontWeight: 900 }}>
-              Seconds
-            </div>
-            <h3 className="text-2xl md:text-4xl font-black mb-6 uppercase tracking-tight" style={{ fontWeight: 900 }}>
-              From Idea To Deployed
-            </h3>
-            <p className="text-sm uppercase tracking-[0.12em] text-white/40 font-black" style={{ fontWeight: 900 }}>
-              No Designer. No Developer.
-            </p>
-          </motion.div>
-        </div>
-      </section>
+      {/* Countdown Section - Client Component */}
+      <HomeCountdown />
 
       {/* CTA Section */}
-      <section className="py-20 px-6">
+      <section className="py-12 sm:py-16 md:py-20 px-4 sm:px-6">
         <div className="max-w-4xl mx-auto text-center">
-          <motion.div 
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-          >
-            <div className="mb-12">
-              <Image 
-                src="/yacht-club-logo.png" 
-                alt="Yacht Club" 
-                width={100} 
-                height={100}
-                className="object-contain mx-auto"
-              />
-            </div>
-            <h2 className="text-4xl md:text-6xl font-black mb-12 uppercase tracking-tight leading-tight" style={{ fontWeight: 900 }}>
-              Ready To Build?
-            </h2>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link
-                href="/vendor/login"
-                className="group inline-flex items-center justify-center gap-3 bg-white text-black px-8 py-4 rounded-2xl text-xs uppercase tracking-[0.08em] hover:bg-white/90 font-black transition-all hover:scale-105 w-full sm:w-auto"
-                style={{ fontWeight: 900 }}
-              >
-                <span>Create Account</span>
-                <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
-              </Link>
-              <Link
-                href="/partners"
-                className="inline-flex items-center justify-center gap-3 bg-transparent border border-white/5 text-white px-8 py-4 rounded-2xl text-xs uppercase tracking-[0.08em] hover:bg-white/5 hover:border-white/10 font-black transition-all hover:scale-105 w-full sm:w-auto"
-                style={{ fontWeight: 900 }}
-              >
-                <span>Partners</span>
-              </Link>
-            </div>
-          </motion.div>
+          <div className="mb-8 sm:mb-12">
+            <Image 
+              src="/yacht-club-logo.png" 
+              alt="Yacht Club" 
+              width={80} 
+              height={80}
+              className="object-contain mx-auto sm:w-[100px] sm:h-[100px]"
+            />
+          </div>
+          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black mb-8 sm:mb-12 uppercase tracking-tight leading-tight" style={{ fontWeight: 900 }}>
+            Ready To Build?
+          </h2>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <Link
+              href="/vendor/login"
+              className="group inline-flex items-center justify-center gap-3 bg-white text-black px-8 py-4 rounded-2xl text-xs uppercase tracking-[0.08em] hover:bg-white/90 font-black transition-all hover:scale-105 w-full sm:w-auto"
+              style={{ fontWeight: 900 }}
+            >
+              <span>Create Account</span>
+              <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+            </Link>
+            <Link
+              href="/partners"
+              className="inline-flex items-center justify-center gap-3 bg-transparent border border-white/5 text-white px-8 py-4 rounded-2xl text-xs uppercase tracking-[0.08em] hover:bg-white/5 hover:border-white/10 font-black transition-all hover:scale-105 w-full sm:w-auto"
+              style={{ fontWeight: 900 }}
+            >
+              <span>Partners</span>
+            </Link>
+          </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-white/5 py-16 px-6 bg-black">
+      <footer className="border-t border-white/5 py-10 sm:py-12 md:py-16 px-4 sm:px-6 bg-black">
         <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-8 mb-12">
-            <div className="flex items-center gap-4">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6 sm:gap-8 mb-8 sm:mb-12">
+            <div className="flex items-center gap-3 sm:gap-4">
               <Image 
                 src="/yacht-club-logo.png" 
                 alt="Yacht Club" 
-                width={32} 
-                height={32}
-                className="object-contain opacity-60"
+                width={28} 
+                height={28}
+                className="object-contain opacity-60 sm:w-8 sm:h-8"
               />
               <span className="text-xs uppercase tracking-[0.12em] text-white/40 font-black" style={{ fontWeight: 900 }}>
                 © 2025 WhaleTools
               </span>
             </div>
-            <div className="flex flex-wrap items-center justify-center gap-8">
+            <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 md:gap-8">
               {['About', 'Partners', 'API', 'Privacy', 'Terms'].map(link => (
                 <Link 
                   key={link} 
@@ -371,9 +219,9 @@ export default function HomePage() {
             <Image 
               src="/yacht-club-logo.png" 
               alt="Yacht Club" 
-              width={60} 
-              height={60}
-              className="object-contain mx-auto opacity-20"
+              width={48} 
+              height={48}
+              className="object-contain mx-auto opacity-20 sm:w-[60px] sm:h-[60px]"
             />
           </div>
         </div>
