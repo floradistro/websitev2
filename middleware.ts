@@ -101,17 +101,26 @@ export async function middleware(request: NextRequest) {
         comingSoon: vendor?.coming_soon,
       });
         
-      // Check if coming soon mode is active - block entire site
+      // Check if coming soon mode is active - rewrite to storefront to show coming soon page
       if (vendor?.coming_soon) {
         // Allow preview mode to bypass
         const isPreview = request.nextUrl.searchParams.get('preview') === 'true';
         console.log('[Middleware] Coming soon mode active, preview:', isPreview);
         if (!isPreview) {
-          // All requests go to coming soon - no other pages accessible
-          const response = NextResponse.next();
+          // Rewrite to /storefront so the coming soon page is rendered
+          const url = request.nextUrl.clone();
+          if (!pathname.startsWith('/storefront')) {
+            url.pathname = `/storefront${pathname}`;
+          }
+          const response = NextResponse.rewrite(url);
           response.headers.set('x-vendor-id', domainRecord.vendor_id);
           response.headers.set('x-coming-soon', 'true');
-          console.log('[Middleware] Setting x-coming-soon header for custom domain');
+          response.headers.set('x-tenant-type', 'vendor');
+          response.headers.set('x-is-custom-domain', 'true');
+          response.headers.set('X-Frame-Options', 'SAMEORIGIN');
+          response.headers.set('X-Content-Type-Options', 'nosniff');
+          response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+          console.log('[Middleware] Rewriting to storefront with coming soon header');
           return response;
         }
       }
