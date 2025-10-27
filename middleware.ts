@@ -6,6 +6,8 @@ export async function middleware(request: NextRequest) {
   const hostname = request.headers.get('host') || '';
   const pathname = request.nextUrl.pathname;
   
+  // Force rebuild for Vercel deployment v2
+  
   // Extract domain (remove port for localhost)
   const domain = hostname.split(':')[0];
   
