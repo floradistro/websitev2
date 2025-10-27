@@ -166,6 +166,8 @@ export default function WCLEditor() {
   const previewRef = useRef<HTMLIFrameElement>(null);
   const [previewKey, setPreviewKey] = useState(0);
   const [previewHTML, setPreviewHTML] = useState('');
+  const [wclHistory, setWclHistory] = useState<string[]>([]);
+  const [historyIndex, setHistoryIndex] = useState(-1);
 
 
   // Fetch vendors on mount
@@ -498,8 +500,35 @@ export default function WCLEditor() {
     });
   };
 
+  // Save current state to history
+  const saveToHistory = (code: string) => {
+    const newHistory = wclHistory.slice(0, historyIndex + 1);
+    newHistory.push(code);
+    setWclHistory(newHistory);
+    setHistoryIndex(newHistory.length - 1);
+  };
+
+  // Undo function
+  const undo = () => {
+    if (historyIndex > 0) {
+      setHistoryIndex(historyIndex - 1);
+      setWclCode(wclHistory[historyIndex - 1]);
+    }
+  };
+
+  // Redo function
+  const redo = () => {
+    if (historyIndex < wclHistory.length - 1) {
+      setHistoryIndex(historyIndex + 1);
+      setWclCode(wclHistory[historyIndex + 1]);
+    }
+  };
+
   const handleAIGenerate = async (section: Section) => {
     if (!aiPrompt.trim()) return;
+    
+    // Save current state before AI modification
+    saveToHistory(wclCode);
     
     const currentVendor = vendors.find(v => v.id === selectedVendor);
     console.log('🤖 AI Request:', aiPrompt, 'for section:', section.name, 'vendor:', currentVendor?.store_name);
@@ -525,23 +554,70 @@ export default function WCLEditor() {
       
       if (result.success && result.modifiedSection) {
         console.log('✅ AI returned modified section');
+        console.log('📄 AI Generated Code:');
+        console.log('--- START ---');
+        console.log(result.modifiedSection);
+        console.log('--- END ---');
         
         let modifiedCode = result.modifiedSection;
         
-        // Validate WCL structure - ensure braces are balanced
-        const validateBraces = (code: string): boolean => {
-          let count = 0;
+        // Enhanced validation
+        const validateWCLSection = (code: string, sectionType: string): { valid: boolean; error?: string } => {
+          // 1. Check braces are balanced
+          let braceCount = 0;
           for (const char of code) {
-            if (char === '{') count++;
-            if (char === '}') count--;
-            if (count < 0) return false; // More closing than opening
+            if (char === '{') braceCount++;
+            if (char === '}') braceCount--;
+            if (braceCount < 0) return { valid: false, error: 'Unbalanced braces - more closing than opening' };
           }
-          return count === 0; // Equal opening and closing
+          if (braceCount !== 0) return { valid: false, error: `Unbalanced braces - count: ${braceCount}` };
+          
+          // 2. Check section starts with correct keyword
+          const trimmed = code.trim();
+          if (sectionType === 'props' && !trimmed.startsWith('props {')) {
+            return { valid: false, error: 'Props section must start with "props {"' };
+          }
+          if (sectionType === 'data' && !trimmed.startsWith('data {')) {
+            return { valid: false, error: 'Data section must start with "data {"' };
+          }
+          if (sectionType === 'render' && !trimmed.startsWith('render {')) {
+            return { valid: false, error: 'Render section must start with "render {"' };
+          }
+          
+          // 3. For render sections, validate JSX structure
+          if (sectionType === 'render') {
+            // Extract JSX content (between render { and closing })
+            const jsxMatch = code.match(/render\s*\{([\s\S]*)\}/);
+            if (!jsxMatch) {
+              return { valid: false, error: 'Cannot extract JSX from render section' };
+            }
+            
+            const jsx = jsxMatch[1];
+            
+            // Check for common JSX issues
+            // Count opening and closing angle brackets for tags
+            const openTags = (jsx.match(/<(\w+)/g) || []).filter(tag => !tag.includes('</'));
+            const closeTags = (jsx.match(/<\/(\w+)>/g) || []);
+            const selfClosing = (jsx.match(/\/>/g) || []).length;
+            
+            // Basic check: opening tags should roughly match closing + self-closing
+            // (This is not perfect but catches obvious issues)
+            const expectedClosing = openTags.length - selfClosing;
+            if (closeTags.length < expectedClosing * 0.8) { // Allow some flexibility
+              console.warn(`⚠️  Potential JSX issue: ${openTags.length} opening tags, ${closeTags.length} closing tags, ${selfClosing} self-closing`);
+              return { valid: false, error: `Possible unclosed JSX tags - found ${openTags.length} opening, ${closeTags.length} closing` };
+            }
+          }
+          
+          return { valid: true };
         };
         
-        if (!validateBraces(modifiedCode)) {
-          console.error('❌ AI generated invalid WCL structure - braces not balanced');
-          alert('AI generated invalid code structure. Please try a simpler modification or edit manually.');
+        const validation = validateWCLSection(modifiedCode, section.type);
+        
+        if (!validation.valid) {
+          console.error('❌ AI generated invalid WCL structure:', validation.error);
+          console.error('❌ Generated code:', modifiedCode);
+          alert(`AI generated invalid code:\n\n${validation.error}\n\nPlease try a simpler modification or edit the section manually.`);
           return;
         }
         
@@ -562,10 +638,18 @@ export default function WCLEditor() {
           const newWCLCode = lines.join('\n');
           
           // Validate entire WCL structure
-          if (!validateBraces(newWCLCode)) {
-            console.error('❌ Updated WCL structure is invalid - reverting');
-            alert('The modification would break the component structure. Please try again.');
-            return;
+          const finalValidation = validateWCLSection(newWCLCode, 'component');
+          if (finalValidation.valid) {
+            // Also try to compile to catch any syntax errors
+            try {
+              const compiler = new WCLCompiler();
+              compiler.compile(newWCLCode);
+              console.log('✅ Final WCL validation passed');
+            } catch (compileError: any) {
+              console.error('❌ Final WCL compilation failed:', compileError);
+              alert(`AI modification would break compilation:\n\n${compileError.message}\n\nReverting changes.`);
+              return;
+            }
           }
           
           console.log('📝 Updated WCL with data + render');
@@ -584,10 +668,18 @@ export default function WCLEditor() {
           const newWCLCode = lines.join('\n');
           
           // Validate entire WCL structure
-          if (!validateBraces(newWCLCode)) {
-            console.error('❌ Updated WCL structure is invalid - reverting');
-            alert('The modification would break the component structure. Please try again.');
-            return;
+          const finalValidation = validateWCLSection(newWCLCode, 'component');
+          if (finalValidation.valid) {
+            // Also try to compile to catch any syntax errors
+            try {
+              const compiler = new WCLCompiler();
+              compiler.compile(newWCLCode);
+              console.log('✅ Final WCL validation passed');
+            } catch (compileError: any) {
+              console.error('❌ Final WCL compilation failed:', compileError);
+              alert(`AI modification would break compilation:\n\n${compileError.message}\n\nReverting changes.`);
+              return;
+            }
           }
           
           console.log('📝 Updated WCL code');
@@ -679,9 +771,22 @@ export default function WCLEditor() {
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Cmd/Ctrl + Z - Undo
+      if ((e.metaKey || e.ctrlKey) && e.key === 'z' && !e.shiftKey) {
+        e.preventDefault();
+        undo();
+        return;
+      }
+      // Cmd/Ctrl + Shift + Z - Redo
+      if ((e.metaKey || e.ctrlKey) && e.key === 'z' && e.shiftKey) {
+        e.preventDefault();
+        redo();
+        return;
+      }
       // Delete key - delete selected sections
       if (e.key === 'Delete' && selectedSections.size > 0 && !editingSection) {
         e.preventDefault();
+        saveToHistory(wclCode); // Save before deletion
         selectedSections.forEach(name => {
           const section = sections.find(s => s.name === name);
           if (section) deleteSection(section);
@@ -694,7 +799,7 @@ export default function WCLEditor() {
         setAiPrompt('');
       }
       // Cmd/Ctrl + A - select all sections
-      if ((e.metaKey || e.ctrlKey) && e.key === 'a') {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'a' && !e.shiftKey) {
         e.preventDefault();
         setSelectedSections(new Set(sections.map(s => s.name)));
       }
@@ -702,7 +807,7 @@ export default function WCLEditor() {
     
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedSections, editingSection, sections]);
+  }, [selectedSections, editingSection, sections, wclCode, historyIndex, wclHistory]);
 
   // Deploy component to production
   const deployComponent = async () => {
@@ -748,12 +853,39 @@ export default function WCLEditor() {
     <div className="fixed inset-0 bg-black flex flex-col">
       {/* Top Bar - VSCode Luxury Theme */}
       <div className="h-12 bg-black border-b border-white/5 flex items-center justify-between px-4">
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           <Link href="/admin/dashboard" className="text-white/40 hover:text-white/60 transition-colors">
             <ArrowLeft size={14} strokeWidth={2} />
           </Link>
-          {isCompiling && <RefreshCw size={12} className="animate-spin text-white/30" strokeWidth={2} />}
-          {!isCompiling && !compileError && compiledCode && <CheckCircle size={12} className="text-white/40" strokeWidth={2} />}
+          
+          {/* Undo/Redo */}
+          <div className="flex items-center gap-0.5 border-l border-white/5 pl-3 ml-1">
+            <button
+              onClick={undo}
+              disabled={historyIndex <= 0}
+              className="p-1.5 rounded transition-all disabled:opacity-20 disabled:cursor-not-allowed hover:bg-white/5 text-white/40 hover:text-white"
+              title="Undo (Cmd+Z)"
+            >
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 7h8M3 7l3-3M3 7l3 3" />
+              </svg>
+            </button>
+            <button
+              onClick={redo}
+              disabled={historyIndex >= wclHistory.length - 1}
+              className="p-1.5 rounded transition-all disabled:opacity-20 disabled:cursor-not-allowed hover:bg-white/5 text-white/40 hover:text-white"
+              title="Redo (Cmd+Shift+Z)"
+            >
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M11 7H3m8 0l-3-3m3 3l-3 3" />
+              </svg>
+            </button>
+          </div>
+          
+          <div className="border-l border-white/5 pl-3 ml-1 flex items-center gap-2">
+            {isCompiling && <RefreshCw size={12} className="animate-spin text-white/30" strokeWidth={2} />}
+            {!isCompiling && !compileError && compiledCode && <CheckCircle size={12} className="text-white/40" strokeWidth={2} />}
+          </div>
         </div>
 
         <div className="flex items-center gap-2">
