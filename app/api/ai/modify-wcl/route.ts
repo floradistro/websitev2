@@ -191,9 +191,9 @@ WHALETOOLS LUXURY THEME (PREFERRED):
 - Borders: border-white/5 hover:border-white/10  
 - Typography: font-black (900), uppercase, tracking-tight
 - Rounded: rounded-2xl (iOS 26 style)
-- Cards: bg-[#0a0a0a] border border-white/5 rounded-2xl p-6
+- Cards: bg-[#0a0a0a] border border-white/5 rounded-2xl p-4 sm:p-6
 - Text: text-white, text-white/60, text-white/40
-- Spacing: py-16 sm:py-20, px-4 sm:px-6, gap-6, space-y-4
+- Spacing: py-12 sm:py-16 MAX, px-4 sm:px-6, gap-4 to gap-6, space-y-3 to space-y-4
 
 RULES:
 1. Return ONLY the modified section code (render { ... } block)
@@ -202,6 +202,27 @@ RULES:
 4. Apply WhaleTools luxury theme to ALL new elements
 5. Keep WCL structure intact
 6. Use Tailwind CSS classes for ALL styling - you have FULL creative control
+
+STRICT LAYOUT STANDARDS (ALWAYS FOLLOW):
+❌ NO EMOJIS - Never use emoji characters (🎃 🌟 ⭐ 🔥 etc.) in ANY content
+❌ NO FLOATING BADGES - Avoid "FEATURED", "NEW", "SALE" badges floating over images
+❌ NO EXCESSIVE SPACING - Use reasonable gaps: gap-4, gap-6, gap-8 MAX (not gap-12 or gap-16)
+❌ NO GIANT PADDING - Use py-8, py-12, py-16 MAX for sections (not py-20 or py-24)
+❌ NO REDUNDANT WRAPPERS - Don't nest multiple containers unnecessarily
+
+✅ CLEAN, PROFESSIONAL LAYOUTS:
+- Spacing: gap-4 to gap-8 for items, py-8 to py-16 for sections
+- Typography: text-sm to text-2xl (not text-5xl or larger unless hero)
+- Cards: p-4 to p-6 (not p-8 or p-10)
+- Grid gaps: gap-4 to gap-6 (not gap-8 or larger)
+- Minimal decorative elements - focus on content
+- Stock indicators: simple text or small badges (not floating overlays)
+
+LAYOUT HIERARCHY:
+1. Section container: bg-black py-12 px-4
+2. Max width wrapper: max-w-6xl mx-auto
+3. Grid: grid grid-cols-1 md:grid-cols-3 gap-6
+4. Cards: bg-[#0a0a0a] border border-white/5 rounded-2xl p-6
 
 STYLING EXAMPLES FOR BLUEPRINT FIELDS:
 User says "add more spacing" → Add space-y-4, gap-6, py-4, etc.

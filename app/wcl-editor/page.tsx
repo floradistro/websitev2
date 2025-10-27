@@ -489,7 +489,7 @@ export default function WCLEditor() {
     const newWCLCode = lines.join('\n');
     console.log('🗑️  Deleted section:', section.name);
     setWclCode(newWCLCode);
-    setSelectedSection(null);
+    setSelectedSections(new Set());
     setEditingSection(null);
     setExpandedSections(prev => {
       const newSet = new Set(prev);
@@ -562,7 +562,7 @@ export default function WCLEditor() {
         }
         
         setAiPrompt('');
-        setSelectedSection(null);
+        setSelectedSections(new Set());
         
         console.log('✅ Code updated! Preview will refresh automatically');
       } else {
