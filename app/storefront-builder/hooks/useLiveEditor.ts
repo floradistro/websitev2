@@ -29,6 +29,18 @@ export function useLiveEditor(code: string, setCode: (code: string) => void, pre
       if (type === 'ELEMENT_CLICKED_LIVE') {
         const { tagName, classList, textContent, position, value } = payload;
 
+        // Get iframe offset to adjust coordinates
+        const iframe = previewRef.current;
+        const iframeRect = iframe?.getBoundingClientRect();
+
+        // Adjust position to account for iframe offset in parent window
+        const adjustedPosition = {
+          x: position.x + (iframeRect?.left || 0),
+          y: position.y + (iframeRect?.top || 0),
+          width: position.width,
+          height: position.height,
+        };
+
         // Determine element type
         let elementType: SelectedElement['type'] = 'container';
         if (tagName === 'h1' || tagName === 'h2' || tagName === 'h3') {
@@ -45,7 +57,7 @@ export function useLiveEditor(code: string, setCode: (code: string) => void, pre
           type: elementType,
           value: value || textContent || '',
           classes: classList.split(' ').filter(Boolean),
-          position,
+          position: adjustedPosition,
           selector: `${tagName}.${classList.split(' ')[0]}`,
           tagName,
         });
@@ -55,7 +67,7 @@ export function useLiveEditor(code: string, setCode: (code: string) => void, pre
 
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
-  }, []);
+  }, [previewRef]);
 
   // Apply live updates
   const applyLiveUpdate = useCallback((changes: {

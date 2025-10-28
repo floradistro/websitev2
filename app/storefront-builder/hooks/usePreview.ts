@@ -51,12 +51,12 @@ export function usePreview(code: string, selectedVendor: string, currentVendor?:
             let selectedElement = null;
 
             function updateOutline(element, isSelected) {
+              // Highlight is now handled by InlineEditor overlay - no inline styles needed
+              // This prevents duplicate highlights
               if (isSelected) {
-                element.style.boxShadow = 'inset 0 0 0 2px rgba(255,255,255,0.9), inset 0 0 0 4px rgba(6,182,212,1), 0 0 0 2px rgba(255,255,255,0.9), 0 0 0 4px rgba(6,182,212,1)';
                 element.style.position = 'relative';
                 element.style.zIndex = '10';
               } else {
-                element.style.boxShadow = '';
                 element.style.position = '';
                 element.style.zIndex = '';
               }
@@ -116,15 +116,18 @@ export function usePreview(code: string, selectedVendor: string, currentVendor?:
 
             document.body.addEventListener('mouseover', (e) => {
               const target = e.target;
+              // Light hover effect only (not intrusive)
               if (target !== selectedElement && target.tagName !== 'BODY' && target.tagName !== 'HTML') {
-                target.style.boxShadow = 'inset 0 0 0 2px rgba(6, 182, 212, 0.6)';
+                target.style.outline = '1px solid rgba(6, 182, 212, 0.4)';
+                target.style.outlineOffset = '-1px';
               }
             }, true);
 
             document.body.addEventListener('mouseout', (e) => {
               const target = e.target;
               if (target !== selectedElement) {
-                target.style.boxShadow = '';
+                target.style.outline = '';
+                target.style.outlineOffset = '';
               }
             }, true);
           </script>
