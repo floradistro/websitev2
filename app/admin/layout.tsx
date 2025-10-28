@@ -3,9 +3,9 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { 
-  Home, Package, Store, Settings, LogOut, Users, CheckSquare, 
-  FileText, DollarSign, BarChart3, Menu, X, MapPin, Globe, FolderTree, Layers, ShoppingBag, Activity, FileCode, FlaskConical, Monitor 
+import {
+  Home, Package, Store, Settings, LogOut, Users, CheckSquare,
+  FileText, DollarSign, BarChart3, Menu, X, MapPin, Globe, FolderTree, Layers, ShoppingBag, Activity, FileCode, FlaskConical, Monitor, Sparkles
 } from 'lucide-react';
 import { showConfirm } from '@/components/NotificationToast';
 import AdminProtectedRoute from '@/components/AdminProtectedRoute';
@@ -43,6 +43,7 @@ export default function AdminLayout({
     // CONFIGURATION - System
     { href: '/admin/pos-management', icon: Monitor, label: 'POS' },
     { href: '/admin/domains', icon: Globe, label: 'Domains' },
+    { href: '/storefront-builder', icon: Sparkles, label: 'Storefront Builder' },
     { href: '/admin/monitoring', icon: Activity, label: 'System Health' },
     { href: '/admin/settings', icon: Settings, label: 'Settings' },
   ];
