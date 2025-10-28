@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { Search, Package, TrendingUp, AlertTriangle, Store, DollarSign, Eye, X, Grid3x3, List, FileText, Flask, Tag, ArrowUpDown, Download, CheckCircle, Clock } from 'lucide-react';
+import { Search, Package, TrendingUp, AlertTriangle, Store, DollarSign, Eye, X, Grid3x3, List, FileText, FlaskConical, Tag, ArrowUpDown, Download, CheckCircle, Clock } from 'lucide-react';
 import Image from 'next/image';
 import AdminPageWrapper from '@/components/AdminPageWrapper';
 
@@ -882,8 +882,8 @@ export default function MasterCatalog() {
                   {quickViewProduct.coas && quickViewProduct.coas.length > 0 && (
                     <div className="col-span-full mt-3 md:mt-6">
                       <div className="flex items-center gap-2 mb-2 md:mb-3">
-                        <Flask size={12} className="text-white/40 md:hidden" strokeWidth={1.5} />
-                        <Flask size={14} className="text-white/40 hidden md:block" strokeWidth={1.5} />
+                        <FlaskConical size={12} className="text-white/40 md:hidden" strokeWidth={1.5} />
+                        <FlaskConical size={14} className="text-white/40 hidden md:block" strokeWidth={1.5} />
                         <h4 className="text-white/40 text-[9px] md:text-[10px] uppercase tracking-[0.15em] font-black" style={{ fontWeight: 900 }}>
                           Lab Results ({quickViewProduct.coas.length})
                         </h4>
