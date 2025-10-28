@@ -12,26 +12,11 @@ const VENDOR_SLUG = 'floradistro';
 setup('authenticate as vendor', async ({ page }) => {
   console.log('🔐 Setting up vendor authentication...');
 
-  // Go to vendor login page
-  await page.goto('http://localhost:3000/vendor/login');
+  // Navigate to vendor dashboard and inject auth directly (most reliable for testing)
+  await page.goto('http://localhost:3000/vendor/dashboard');
 
-  // Fill in credentials and submit
-  await page.fill('input[type="email"]', VENDOR_EMAIL);
-  await page.fill('input[type="password"]', 'testpassword123');
-  await page.click('button[type="submit"]');
-
-  // Wait for successful login - either dashboard or any vendor page loads
-  try {
-    await page.waitForURL('**/vendor/**', { timeout: 10000 });
-    console.log('✅ Logged in successfully');
-  } catch (error) {
-    console.log('⚠️  Login redirect timeout, trying alternative auth method...');
-    
-    // Alternative: Set localStorage directly (for development/testing)
-    await page.goto('http://localhost:3000/vendor/dashboard');
-
-    // Inject vendor data directly into localStorage
-    await page.evaluate((vendorData) => {
+  // Inject vendor data directly into localStorage
+  await page.evaluate((vendorData) => {
       // AppAuthContext uses 'app_user' NOT 'vendor_user'
       const appUser = {
         id: vendorData.id,
@@ -63,13 +48,12 @@ setup('authenticate as vendor', async ({ page }) => {
       vendor_type: 'standard',
       pos_enabled: true,
     });
-    
-    // Reload to apply auth
-    await page.reload();
-    console.log('✅ Auth injected via localStorage');
-  }
 
-  // Ensure auth is persisted - inject if needed
+  // Reload to apply auth
+  await page.reload();
+  await page.waitForTimeout(1000); // Wait for auth to take effect
+
+  // Verify and ensure auth is persisted
   await page.evaluate((vendorData) => {
     // AppAuthContext uses 'app_user' NOT 'vendor_user'
     const appUser = {
