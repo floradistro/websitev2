@@ -57,11 +57,55 @@ export async function GET(
       .eq('product_id', productId)
       .eq('vendor_id', vendorId);
 
-    // Get pricing tiers
-    const { data: pricing } = await supabase
-      .from('pricing_tiers')
-      .select('*')
-      .eq('product_id', productId);
+    // Get vendor pricing config (same as POS)
+    const { data: vendorPricingConfig, error: pricingError } = await supabase
+      .from('vendor_pricing_configs')
+      .select(`
+        pricing_values,
+        blueprint:pricing_tier_blueprints(
+          id,
+          name,
+          price_breaks
+        )
+      `)
+      .eq('vendor_id', vendorId)
+      .eq('is_active', true)
+      .single();
+
+    console.log(`[Product API] Vendor pricing config:`, vendorPricingConfig);
+    if (pricingError) console.error('[Product API] Pricing error:', pricingError);
+
+    // Extract pricing tiers from vendor config (same logic as POS)
+    const pricing: any[] = [];
+    const blueprint = Array.isArray(vendorPricingConfig?.blueprint)
+      ? vendorPricingConfig.blueprint[0]
+      : vendorPricingConfig?.blueprint;
+
+    if (blueprint?.price_breaks && vendorPricingConfig) {
+      const pricingValues = vendorPricingConfig.pricing_values || {};
+
+      blueprint.price_breaks.forEach((priceBreak: any) => {
+        const breakId = priceBreak.break_id;
+        const vendorPrice = pricingValues[breakId];
+
+        // Only add if tier is ENABLED and has a price
+        if (vendorPrice && vendorPrice.enabled !== false && vendorPrice.price) {
+          pricing.push({
+            label: priceBreak.label || `${priceBreak.qty}${priceBreak.unit || ''}`,
+            qty: priceBreak.qty || 1,
+            unit: priceBreak.unit || 'g',
+            price: parseFloat(vendorPrice.price),
+            break_id: breakId,
+            sort_order: priceBreak.sort_order || 0,
+          });
+        }
+      });
+
+      // Sort by sort_order
+      pricing.sort((a, b) => a.sort_order - b.sort_order);
+    }
+
+    console.log(`[Product API] Extracted pricing tiers:`, pricing);
 
     // Extract custom fields - handle both formats
     const custom_fields: any = {};
@@ -109,14 +153,13 @@ export async function GET(
           test_results: coa.test_results,
           is_verified: coa.is_verified || false
         })),
-        pricing_tiers: (pricing || []).map(tier => ({
-          id: tier.id,
-          label: tier.label || tier.tier_name,
-          quantity: tier.quantity,
-          unit: tier.unit || 'g',
+        pricing_tiers: pricing.map((tier: any) => ({
+          label: tier.label,
+          quantity: tier.qty,
+          unit: tier.unit,
           price: tier.price,
-          min_quantity: tier.min_quantity,
-          max_quantity: tier.max_quantity
+          min_quantity: tier.qty,
+          max_quantity: null
         })),
         images
       }

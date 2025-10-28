@@ -54,6 +54,10 @@ interface POSProductGridProps {
   onProductClick?: (productSlug: string) => void;
   displayMode?: 'cards' | 'list' | 'compact';
   showInventory?: boolean;
+  skuInput?: string;
+  onSkuInputChange?: (value: string) => void;
+  onSkuSubmit?: (e: React.FormEvent) => void;
+  skuInputRef?: React.RefObject<HTMLInputElement | null>;
 }
 
 export function POSProductGrid({
@@ -67,6 +71,10 @@ export function POSProductGrid({
   onProductClick,
   displayMode = 'cards',
   showInventory = true,
+  skuInput,
+  onSkuInputChange,
+  onSkuSubmit,
+  skuInputRef,
 }: POSProductGridProps) {
   const { vendor } = useAppAuth();
   const [products, setProducts] = useState<Product[]>([]);
@@ -242,14 +250,48 @@ export function POSProductGrid({
             registerId={registerId}
           />
 
-          {/* Search */}
-          <input
-            type="text"
-            placeholder={`Search ${filteredProducts.length} products...`}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="flex-1 bg-white/5 border border-white/10 text-white px-3 py-2.5 rounded-2xl text-[10px] uppercase tracking-[0.15em] focus:outline-none focus:border-white/20 placeholder-white/40 hover:bg-white/10 transition-all"
-          />
+          {/* Search Bar - filters as you type, Enter/double-click/button to lookup SKU */}
+          <div className="flex-1 relative flex gap-2">
+            <div className="flex-1 relative">
+              <input
+                ref={skuInputRef}
+                type="text"
+                value={searchQuery}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setSearchQuery(value);
+                  if (onSkuInputChange) {
+                    onSkuInputChange(value.toUpperCase());
+                  }
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && onSkuSubmit) {
+                    e.preventDefault();
+                    onSkuSubmit(e as any);
+                  }
+                }}
+                onDoubleClick={(e) => {
+                  if (onSkuSubmit && searchQuery) {
+                    e.preventDefault();
+                    onSkuSubmit(e as any);
+                  }
+                }}
+                placeholder={`Search ${filteredProducts.length} products...`}
+                className="w-full bg-white/5 border border-white/10 text-white px-3 py-2.5 rounded-2xl text-[10px] uppercase tracking-[0.15em] focus:outline-none focus:border-white/20 placeholder-white/40 hover:bg-white/10 transition-all"
+                autoComplete="off"
+              />
+            </div>
+            {onSkuSubmit && searchQuery && (
+              <button
+                type="button"
+                onClick={(e) => onSkuSubmit(e as any)}
+                className="px-4 py-2.5 bg-white/10 border border-white/20 rounded-2xl text-[10px] uppercase tracking-[0.15em] hover:bg-white/20 transition-all font-black"
+                style={{ fontWeight: 900 }}
+              >
+                Scan
+              </button>
+            )}
+          </div>
 
           {/* Category Dropdown */}
           <div className="relative">
@@ -423,10 +465,16 @@ function ProductCard({ product, onAddToCart, onProductClick, onQuickView, showIn
 
   return (
     <div className="group flex flex-col bg-[#0a0a0a] hover:bg-[#141414] border border-white/5 hover:border-white/10 rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1">
-      {/* Product Image - Clickable */}
-      <div 
-        className="relative aspect-[4/5] overflow-hidden bg-black cursor-pointer" 
+      {/* Product Image - Clickable (single click navigates, double-click opens quick view) */}
+      <div
+        className="relative aspect-[4/5] overflow-hidden bg-black cursor-pointer"
         onClick={handleProductClick}
+        onDoubleClick={(e) => {
+          e.stopPropagation();
+          if (onQuickView) {
+            onQuickView(product);
+          }
+        }}
       >
         {product.image_url ? (
           <Image

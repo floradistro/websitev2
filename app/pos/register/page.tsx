@@ -5,7 +5,6 @@ import { POSProductGrid } from '@/components/component-registry/pos/POSProductGr
 import { POSCart, CartItem } from '@/components/component-registry/pos/POSCart';
 import { POSPayment, PaymentData } from '@/components/component-registry/pos/POSPayment';
 import { POSRegisterSelector } from '@/components/component-registry/pos/POSRegisterSelector';
-import { Search, Barcode } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
 import { calculatePrice, type Promotion } from '@/lib/pricing';
 
@@ -368,52 +367,6 @@ export default function POSRegisterPage() {
       <div className="flex gap-0 flex-1 min-h-0">
         {/* Left: Product Selection */}
         <div className="flex-1 flex flex-col overflow-hidden">
-          {/* SKU Scanner Bar */}
-          <div className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 border-b border-white/10 p-4">
-            <form onSubmit={handleSkuSubmit} className="max-w-2xl">
-              <div className="flex items-center gap-3">
-                <div className="flex-1 relative">
-                  <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center gap-2 text-white/60">
-                    <Barcode size={20} />
-                    <span className="text-xs">|</span>
-                  </div>
-                  <input
-                    ref={skuInputRef}
-                    type="text"
-                    value={skuInput}
-                    onChange={(e) => setSkuInput(e.target.value.toUpperCase())}
-                    placeholder="Scan barcode or type SKU..."
-                    className="w-full bg-black/50 border border-white/20 text-white pl-16 pr-4 py-3 rounded-lg text-lg font-mono focus:outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 placeholder:text-white/30"
-                    disabled={skuLoading}
-                    autoFocus
-                  />
-                  {skuLoading && (
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                      <div className="animate-spin h-5 w-5 border-2 border-blue-500 border-t-transparent rounded-full"></div>
-                    </div>
-                  )}
-                </div>
-                <button
-                  type="submit"
-                  disabled={!skuInput.trim() || skuLoading}
-                  className="px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-white/10 disabled:cursor-not-allowed rounded-lg font-medium transition-all flex items-center gap-2"
-                >
-                  <Search size={18} />
-                  Lookup
-                </button>
-              </div>
-              {skuError && (
-                <div className={`mt-2 text-sm px-3 py-2 rounded ${
-                  skuError.startsWith('✅')
-                    ? 'bg-green-500/20 text-green-400 border border-green-500/30'
-                    : 'bg-red-500/20 text-red-400 border border-red-500/30'
-                }`}>
-                  {skuError}
-                </div>
-              )}
-            </form>
-          </div>
-
           <POSProductGrid
             locationId={CHARLOTTE_CENTRAL_ID}
             locationName="Charlotte Central"
@@ -423,6 +376,10 @@ export default function POSRegisterPage() {
             onAddToCart={handleAddToCart}
             displayMode="cards"
             showInventory={true}
+            skuInput={skuInput}
+            onSkuInputChange={setSkuInput}
+            onSkuSubmit={handleSkuSubmit}
+            skuInputRef={skuInputRef}
           />
         </div>
 

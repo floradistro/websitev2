@@ -20,6 +20,34 @@ export function useLiveEditor(code: string, setCode: (code: string) => void, pre
   const [selectedElement, setSelectedElement] = useState<SelectedElement | null>(null);
   const [isEditorVisible, setIsEditorVisible] = useState(false);
 
+  // Helper function to recalculate element position
+  const updateElementPosition = useCallback((selector: string) => {
+    const iframe = previewRef.current;
+    if (!iframe) return null;
+
+    const doc = iframe.contentDocument || iframe.contentWindow?.document;
+    if (!doc) return null;
+
+    try {
+      // Escape special characters in selector
+      const escapedSelector = selector.replace(/\//g, '\\/');
+      const element = doc.querySelector(escapedSelector);
+      if (!element) return null;
+
+      const rect = element.getBoundingClientRect();
+      const iframeRect = iframe.getBoundingClientRect();
+
+      return {
+        x: rect.left + iframeRect.left,
+        y: rect.top + iframeRect.top,
+        width: rect.width,
+        height: rect.height,
+      };
+    } catch (error) {
+      return null;
+    }
+  }, [previewRef]);
+
   // Listen for element clicks in preview
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
@@ -70,6 +98,41 @@ export function useLiveEditor(code: string, setCode: (code: string) => void, pre
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
   }, [previewRef]);
+
+  // Track scroll in preview iframe and update position
+  useEffect(() => {
+    if (!selectedElement || !isEditorVisible) return;
+
+    const iframe = previewRef.current;
+    if (!iframe) return;
+
+    const doc = iframe.contentDocument || iframe.contentWindow?.document;
+    if (!doc) return;
+
+    const handleScroll = () => {
+      const newPosition = updateElementPosition(selectedElement.selector);
+      if (newPosition) {
+        setSelectedElement(prev => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            position: newPosition,
+          };
+        });
+      }
+    };
+
+    // Listen for scroll events in iframe
+    doc.addEventListener('scroll', handleScroll, true);
+    window.addEventListener('scroll', handleScroll); // Also track parent window scroll
+    window.addEventListener('resize', handleScroll); // And window resize
+
+    return () => {
+      doc.removeEventListener('scroll', handleScroll, true);
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', handleScroll);
+    };
+  }, [selectedElement, isEditorVisible, previewRef, updateElementPosition]);
 
   // Apply live updates
   const applyLiveUpdate = useCallback((changes: {
@@ -156,24 +219,32 @@ export function useLiveEditor(code: string, setCode: (code: string) => void, pre
     const doc = iframe.contentDocument || iframe.contentWindow?.document;
     if (!doc) return;
 
-    // Find element in iframe
-    const elements = doc.querySelectorAll(update.selector);
-    if (elements.length === 0) return;
+    try {
+      // Escape special characters in selector (Tailwind uses / for opacity)
+      const escapedSelector = update.selector.replace(/\//g, '\\/');
 
-    // Apply updates to all matching elements
-    elements.forEach((element: any) => {
-      if (update.textContent !== undefined) {
-        element.textContent = update.textContent;
-      }
-      if (update.className !== undefined) {
-        element.className = update.className;
-      }
-      if (update.styles) {
-        Object.entries(update.styles).forEach(([property, value]) => {
-          element.style[property] = value;
-        });
-      }
-    });
+      // Find element in iframe
+      const elements = doc.querySelectorAll(escapedSelector);
+      if (elements.length === 0) return;
+
+      // Apply updates to all matching elements
+      elements.forEach((element: any) => {
+        if (update.textContent !== undefined) {
+          element.textContent = update.textContent;
+        }
+        if (update.className !== undefined) {
+          element.className = update.className;
+        }
+        if (update.styles) {
+          Object.entries(update.styles).forEach(([property, value]) => {
+            element.style[property] = value;
+          });
+        }
+      });
+    } catch (error) {
+      console.warn('Failed to update preview DOM:', error);
+      // Silently fail - not critical for UX
+    }
   }, [previewRef]);
 
   // Delete element

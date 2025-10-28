@@ -74,11 +74,16 @@ export function useCodeEditor(initialCode: string = '', selectedVendor: string) 
     return () => clearTimeout(compileTimeout);
   }, [code, compileReact]);
 
-  // Backup code to localStorage
+  // Backup code to localStorage (debounced for performance)
   useEffect(() => {
-    if (code) {
+    if (!code) return;
+
+    // Debounce saves to prevent excessive writes on every keystroke
+    const saveTimeout = setTimeout(() => {
       saveCodeBackup(selectedVendor, code);
-    }
+    }, 500); // Save 500ms after user stops typing
+
+    return () => clearTimeout(saveTimeout);
   }, [code, selectedVendor]);
 
   // All code manipulation tools

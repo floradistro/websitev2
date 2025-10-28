@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAppAuth } from '@/context/AppAuthContext';
 import Link from 'next/link';
-import { Store, Mail, Lock, ArrowRight, AlertCircle, ArrowLeft, Home, Users } from 'lucide-react';
+import { Mail, Lock, AlertCircle, Home, Users, Store } from 'lucide-react';
 
 export default function VendorLogin() {
   const [email, setEmail] = useState('');
@@ -35,150 +35,153 @@ export default function VendorLogin() {
   }
 
   return (
-    <div className="bg-black flex flex-col" style={{ minHeight: '100vh' }}>
+    <div className="min-h-screen bg-black flex flex-col relative overflow-hidden">
       {/* PWA Safe Area Spacer */}
-      <div 
+      <div
         className="fixed top-0 left-0 right-0 bg-black z-[130] pointer-events-none"
         style={{ height: 'env(safe-area-inset-top, 0px)' }}
       />
-      
+
+      {/* Animated gradient orbs */}
+      <div className="absolute top-20 left-20 w-96 h-96 bg-white/[0.02] rounded-full blur-3xl" style={{ animation: 'subtle-glow 8s ease-in-out infinite' }} />
+      <div className="absolute bottom-20 right-20 w-96 h-96 bg-white/[0.015] rounded-full blur-3xl" style={{ animation: 'subtle-glow 12s ease-in-out infinite' }} />
+
       {/* Breadcrumb Navigation */}
-      <div 
-        className="border-b border-white/10 relative z-10 sticky bg-black"
+      <div
+        className="border-b border-white/5 relative z-10 sticky bg-black/95 backdrop-blur-xl"
         style={{ top: 'env(safe-area-inset-top, 0px)' }}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center gap-2 text-sm">
-            <Link 
-              href="/" 
+            <Link
+              href="/"
               className="text-white/60 hover:text-white transition-colors flex items-center gap-2 group"
             >
               <Home size={16} className="group-hover:-translate-y-0.5 transition-transform duration-300" />
               <span>Home</span>
             </Link>
-            <span className="text-white/40">/</span>
-            <Link 
-              href="/vendors" 
+            <span className="text-white/30">/</span>
+            <Link
+              href="/vendors"
               className="text-white/60 hover:text-white transition-colors flex items-center gap-2 group"
             >
               <Users size={16} className="group-hover:-translate-y-0.5 transition-transform duration-300" />
               <span>Vendors</span>
             </Link>
-            <span className="text-white/40">/</span>
-            <span className="text-white/80">Portal Login</span>
+            <span className="text-white/30">/</span>
+            <span className="text-white/90">Portal Login</span>
           </div>
         </div>
       </div>
 
       {/* Login Content */}
-      <div className="flex-1 flex items-center justify-center px-4 py-12">
-      <div className="max-w-md w-full">
-        {/* Logo */}
-        <div className="text-center mb-8">
-          <Link href="/" className="inline-block">
-            <img src="/yacht-club-logo.png" alt="Yacht Club" className="w-24 h-24 mx-auto mb-4 opacity-80 hover:opacity-100 transition-opacity" />
-          </Link>
-          <h1 className="text-3xl text-white mb-2 font-medium">Vendor Portal</h1>
-          <p className="text-white/60 text-sm">Sign in to manage your store</p>
-        </div>
-
-        {/* Login Form */}
-        <div className="bg-white/5 border border-white/10 p-8">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Error Message */}
-            {error && (
-              <div className="bg-red-500/10 border border-red-500/20 p-4 flex items-start gap-3">
-                <AlertCircle size={20} className="text-red-500 flex-shrink-0 mt-0.5" />
-                <p className="text-red-500 text-sm">{error}</p>
+      <div className="flex-1 flex items-center justify-center px-4 py-12 relative z-10">
+        <div className="max-w-md w-full">
+          {/* Logo & Header */}
+          <div className="text-center mb-10">
+            <Link href="/" className="inline-block group">
+              <div className="inline-flex items-center justify-center w-20 h-20 bg-white/[0.02] rounded-full mb-6 border border-white/10 p-3 backdrop-blur-xl group-hover:bg-white/[0.04] group-hover:border-white/20 transition-all duration-300" style={{ boxShadow: '0 0 40px rgba(255,255,255,0.02)' }}>
+                <img src="/yacht-club-logo.png" alt="Yacht Club" className="w-full h-full object-contain" />
               </div>
-            )}
+            </Link>
+            <h1 className="text-3xl text-white font-light mb-2 tracking-[0.15em] uppercase">Vendor Portal</h1>
+            <div className="w-24 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent mx-auto mb-3" />
+            <p className="text-white/40 text-xs tracking-[0.1em] uppercase font-light">Sign in to manage your store</p>
+          </div>
 
-            {/* Email */}
-            <div>
-              <label htmlFor="email" className="block text-white/80 text-sm uppercase tracking-wider mb-2">
-                Email Address
-              </label>
-              <div className="relative">
-                <Mail size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40" />
-                <input
-                  type="email"
-                  id="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full bg-black border border-white/20 text-white pl-12 pr-4 py-3 focus:outline-none focus:border-white/40 transition-all"
-                  placeholder="your@email.com"
-                  required
-                  autoFocus
-                />
-              </div>
-            </div>
+          {/* Login Form */}
+          <form onSubmit={handleSubmit} className="relative">
+            {/* Glass effect backdrop */}
+            <div className="absolute inset-0 bg-gradient-to-br from-white/[0.03] to-white/[0.01] rounded-2xl blur-xl" />
 
-            {/* Password */}
-            <div>
-              <label htmlFor="password" className="block text-white/80 text-sm uppercase tracking-wider mb-2">
-                Password
-              </label>
-              <div className="relative">
-                <Lock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40" />
-                <input
-                  type="password"
-                  id="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full bg-black border border-white/20 text-white pl-12 pr-4 py-3 focus:outline-none focus:border-white/40 transition-all"
-                  placeholder="••••••••"
-                  required
-                />
-              </div>
-            </div>
-
-            {/* Submit Button */}
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-white text-black py-3 px-6 hover:bg-white/90 active:bg-white/80 transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? (
-                <>
-                  <div className="w-5 h-5 border-2 border-black/20 border-t-black rounded-full animate-spin"></div>
-                  <span className="text-sm uppercase tracking-wider">Signing In...</span>
-                </>
-              ) : (
-                <>
-                  <span className="text-sm uppercase tracking-wider">Sign In</span>
-                  <ArrowRight size={16} />
-                </>
+            <div className="relative bg-white/[0.02] backdrop-blur-xl border border-white/10 p-6 md:p-10 rounded-2xl" style={{ boxShadow: '0 0 30px rgba(255,255,255,0.02)' }}>
+              {/* Error Message */}
+              {error && (
+                <div className="mb-6 bg-red-500/10 border border-red-500/20 p-4 flex items-start gap-3 rounded-xl">
+                  <AlertCircle size={18} className="text-red-500 flex-shrink-0 mt-0.5" strokeWidth={1.5} />
+                  <p className="text-red-500 text-sm font-light">{error}</p>
+                </div>
               )}
-            </button>
+
+              <div className="space-y-6">
+                {/* Email */}
+                <div>
+                  <label htmlFor="email" className="block text-white/40 text-[10px] uppercase tracking-[0.2em] mb-3 font-light">
+                    Email Address
+                  </label>
+                  <div className="relative">
+                    <Mail size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-white/30" strokeWidth={1.5} />
+                    <input
+                      type="email"
+                      id="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="w-full bg-black/20 border border-white/10 text-white pl-12 pr-5 py-4 focus:outline-none focus:border-white/30 focus:bg-black/30 transition-all duration-300 rounded-[14px] font-light placeholder:text-white/20"
+                      placeholder="your@email.com"
+                      required
+                      autoFocus
+                    />
+                  </div>
+                </div>
+
+                {/* Password */}
+                <div>
+                  <label htmlFor="password" className="block text-white/40 text-[10px] uppercase tracking-[0.2em] mb-3 font-light">
+                    Password
+                  </label>
+                  <div className="relative">
+                    <Lock size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-white/30" strokeWidth={1.5} />
+                    <input
+                      type="password"
+                      id="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="w-full bg-black/20 border border-white/10 text-white pl-12 pr-5 py-4 focus:outline-none focus:border-white/30 focus:bg-black/30 transition-all duration-300 rounded-[14px] font-light placeholder:text-white/20"
+                      placeholder="••••••••"
+                      required
+                    />
+                  </div>
+                </div>
+
+                {/* Submit Button */}
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full bg-white/10 hover:bg-white/15 text-white border border-white/20 hover:border-white/30 px-6 py-4 text-xs font-light uppercase tracking-[0.2em] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed rounded-[14px] mt-8"
+                  style={{ boxShadow: '0 0 20px rgba(255,255,255,0.05)' }}
+                >
+                  {loading ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Authenticating...
+                    </span>
+                  ) : (
+                    'Access Portal'
+                  )}
+                </button>
+              </div>
+
+              {/* Help Links */}
+              <div className="mt-8 pt-6 border-t border-white/5 text-center space-y-3">
+                <p className="text-white/40 text-xs font-light">
+                  <a href="/reset-password" className="hover:text-white/70 transition-colors tracking-wide">
+                    Forgot your password?
+                  </a>
+                </p>
+                <p className="text-white/40 text-xs font-light">
+                  Need an account? <Link href="/" className="text-white/60 hover:text-white/90 transition-colors">Contact us</Link>
+                </p>
+              </div>
+            </div>
           </form>
 
-          {/* Help Links */}
-          <div className="mt-6 pt-6 border-t border-white/10 text-center space-y-2">
-            <p className="text-white/60 text-xs">
-              <a href="/reset-password" className="hover:text-white transition-colors">
-                Forgot your password?
-              </a>
-            </p>
-            <p className="text-white/60 text-xs">
-              Don't have a vendor account? <Link href="/" className="text-white hover:text-white/80 transition-colors">Contact us</Link>
+          {/* Additional Links */}
+          <div className="mt-6 text-center space-y-3">
+            <p className="text-white/30 text-xs font-light">
+              Customer? <Link href="/login" className="text-white/50 hover:text-white/90 transition-colors">Sign in here</Link>
             </p>
           </div>
         </div>
-
-        {/* Customer Login Link */}
-        <div className="mt-6 text-center">
-          <p className="text-white/60 text-xs">
-            Customer? <Link href="/login" className="text-white hover:text-white/80 transition-colors">Sign in here</Link>
-          </p>
-        </div>
-
-        {/* Test Credentials (Remove in production) */}
-        <div className="mt-6 bg-white/5 border border-white/10 p-4">
-          <p className="text-white/60 text-xs mb-2">Test Credentials:</p>
-          <p className="text-white/80 text-xs font-mono">Email: darioncdjr@gmail.com</p>
-          <p className="text-white/80 text-xs font-mono">Password: Vendor123!</p>
-        </div>
-      </div>
       </div>
     </div>
   );

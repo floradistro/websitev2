@@ -418,125 +418,106 @@ export default function InventoryClient() {
                               </div>
                             </div>
 
-                            {/* Quick Select Weights */}
-                            <div className="space-y-3">
-                              <div className="grid grid-cols-4 gap-2">
-                                <button
-                                  onClick={() => handleLocationAdjust(product.product_id, loc.location_id, loc.inventory_id, 1)}
-                                  disabled={isAdjusting}
-                                  className="px-3 py-2.5 bg-white/10 border border-white/20 text-white hover:bg-white/20 disabled:opacity-20 transition-all rounded-[10px] text-sm font-medium"
-                                >
-                                  +1g
-                                </button>
-                                <button
-                                  onClick={() => handleLocationAdjust(product.product_id, loc.location_id, loc.inventory_id, 3.5)}
-                                  disabled={isAdjusting}
-                                  className="px-3 py-2.5 bg-white/10 border border-white/20 text-white hover:bg-white/20 disabled:opacity-20 transition-all rounded-[10px] text-sm font-medium"
-                                >
-                                  +⅛oz
-                                </button>
-                                <button
-                                  onClick={() => handleLocationAdjust(product.product_id, loc.location_id, loc.inventory_id, 7)}
-                                  disabled={isAdjusting}
-                                  className="px-3 py-2.5 bg-white/10 border border-white/20 text-white hover:bg-white/20 disabled:opacity-20 transition-all rounded-[10px] text-sm font-medium"
-                                >
-                                  +¼oz
-                                </button>
-                                <button
-                                  onClick={() => handleLocationAdjust(product.product_id, loc.location_id, loc.inventory_id, 14)}
-                                  disabled={isAdjusting}
-                                  className="px-3 py-2.5 bg-white/10 border border-white/20 text-white hover:bg-white/20 disabled:opacity-20 transition-all rounded-[10px] text-sm font-medium"
-                                >
-                                  +½oz
-                                </button>
-                                <button
-                                  onClick={() => handleLocationAdjust(product.product_id, loc.location_id, loc.inventory_id, 28)}
-                                  disabled={isAdjusting}
-                                  className="px-3 py-2.5 bg-white/10 border border-white/20 text-white hover:bg-white/20 disabled:opacity-20 transition-all rounded-[10px] text-sm font-medium"
-                                >
-                                  +1oz
-                                </button>
-                                <button
-                                  onClick={() => handleLocationAdjust(product.product_id, loc.location_id, loc.inventory_id, 112)}
-                                  disabled={isAdjusting}
-                                  className="px-3 py-2.5 bg-white/10 border border-white/20 text-white hover:bg-white/20 disabled:opacity-20 transition-all rounded-[10px] text-sm font-medium"
-                                >
-                                  +¼lb
-                                </button>
-                                <button
-                                  onClick={() => handleLocationAdjust(product.product_id, loc.location_id, loc.inventory_id, 224)}
-                                  disabled={isAdjusting}
-                                  className="px-3 py-2.5 bg-white/10 border border-white/20 text-white hover:bg-white/20 disabled:opacity-20 transition-all rounded-[10px] text-sm font-medium"
-                                >
-                                  +½lb
-                                </button>
-                                <button
-                                  onClick={() => handleLocationAdjust(product.product_id, loc.location_id, loc.inventory_id, 453.6)}
-                                  disabled={isAdjusting}
-                                  className="px-3 py-2.5 bg-white/10 border border-white/20 text-white hover:bg-white/20 disabled:opacity-20 transition-all rounded-[10px] text-sm font-medium"
-                                >
-                                  +1lb
-                                </button>
+                            {/* Simplified Stock Control */}
+                            <div className="space-y-4">
+                              {/* Adjust Stock Section */}
+                              <div>
+                                <div className="text-white/40 text-[10px] uppercase tracking-wider mb-3">Adjust Stock</div>
+                                <div className="flex items-center gap-3">
+                                  {/* Quick Preset Dropdown */}
+                                  <select
+                                    onChange={(e) => {
+                                      const value = parseFloat(e.target.value);
+                                      if (value !== 0) {
+                                        handleLocationAdjust(product.product_id, loc.location_id, loc.inventory_id, value);
+                                        e.target.value = '0';
+                                      }
+                                    }}
+                                    disabled={isAdjusting}
+                                    className="bg-black/40 border border-white/10 text-white px-4 py-3 rounded-[14px] focus:outline-none focus:border-white/30 text-sm hover:bg-black/60 transition-all disabled:opacity-50 cursor-pointer"
+                                  >
+                                    <option value="0">Quick Add...</option>
+                                    <optgroup label="Add Stock">
+                                      <option value="3.5">+ ⅛oz (3.5g)</option>
+                                      <option value="7">+ ¼oz (7g)</option>
+                                      <option value="14">+ ½oz (14g)</option>
+                                      <option value="28">+ 1oz (28g)</option>
+                                      <option value="112">+ ¼lb (112g)</option>
+                                      <option value="224">+ ½lb (224g)</option>
+                                      <option value="453.6">+ 1lb (453.6g)</option>
+                                    </optgroup>
+                                    <optgroup label="Remove Stock">
+                                      <option value="-3.5">- ⅛oz (3.5g)</option>
+                                      <option value="-7">- ¼oz (7g)</option>
+                                      <option value="-14">- ½oz (14g)</option>
+                                      <option value="-28">- 1oz (28g)</option>
+                                      <option value="-112">- ¼lb (112g)</option>
+                                      <option value="-224">- ½lb (224g)</option>
+                                      <option value="-453.6">- 1lb (453.6g)</option>
+                                    </optgroup>
+                                  </select>
+
+                                  {/* Custom Amount Input with +/- Buttons */}
+                                  <div className="flex-1 flex items-center gap-2">
+                                    <input
+                                      type="number"
+                                      step="0.01"
+                                      placeholder="Custom amount (g)"
+                                      value={customVal}
+                                      onChange={(e) => setCustomAmount(prev => ({ ...prev, [locKey]: e.target.value }))}
+                                      onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                          handleCustomAdjust(product.product_id, loc.location_id, loc.inventory_id);
+                                        }
+                                      }}
+                                      className="flex-1 bg-black/40 border border-white/10 text-white px-4 py-3 rounded-[14px] focus:outline-none focus:border-white/30 text-sm placeholder:text-white/20"
+                                    />
+                                    <button
+                                      onClick={() => handleCustomAdjust(product.product_id, loc.location_id, loc.inventory_id)}
+                                      disabled={isAdjusting || !customVal}
+                                      className="px-6 py-3 bg-white/10 border border-white/20 text-white hover:bg-white/20 disabled:opacity-20 disabled:cursor-not-allowed transition-all rounded-[14px] text-sm uppercase tracking-wider font-medium min-w-[80px]"
+                                    >
+                                      {isAdjusting ? (
+                                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mx-auto"></div>
+                                      ) : (
+                                        'Apply'
+                                      )}
+                                    </button>
+                                  </div>
+                                </div>
                               </div>
 
-                              {/* Custom Amount */}
-                              <div className="flex items-center gap-2">
-                                <input
-                                  type="number"
-                                  step="0.01"
-                                  placeholder="Custom amount (g)"
-                                  value={customVal}
-                                  onChange={(e) => setCustomAmount(prev => ({ ...prev, [locKey]: e.target.value }))}
-                                  onKeyDown={(e) => {
-                                    if (e.key === 'Enter') {
-                                      handleCustomAdjust(product.product_id, loc.location_id, loc.inventory_id);
-                                    }
-                                  }}
-                                  className="flex-1 bg-black/40 border border-white/10 text-white px-3 py-2 rounded-[10px] focus:outline-none focus:border-white/30 text-sm"
-                                />
-                                <button
-                                  onClick={() => handleCustomAdjust(product.product_id, loc.location_id, loc.inventory_id)}
-                                  disabled={isAdjusting || !customVal}
-                                  className="px-4 py-2 bg-white/10 border border-white/20 text-white hover:bg-white/20 disabled:opacity-20 disabled:cursor-not-allowed transition-all rounded-[10px] text-sm uppercase tracking-wider"
-                                >
-                                  {isAdjusting ? (
-                                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                                  ) : (
-                                    'Set'
-                                  )}
-                                </button>
-                              </div>
-
-                              {/* Remove Weights */}
-                              <div className="grid grid-cols-4 gap-2">
-                                <button
-                                  onClick={() => handleLocationAdjust(product.product_id, loc.location_id, loc.inventory_id, -1)}
-                                  disabled={isAdjusting || loc.quantity < 1}
-                                  className="px-3 py-2 bg-black/40 border border-white/10 text-white/50 hover:bg-white/5 hover:text-white disabled:opacity-20 disabled:cursor-not-allowed transition-all rounded-[10px] text-sm"
-                                >
-                                  −1g
-                                </button>
-                                <button
-                                  onClick={() => handleLocationAdjust(product.product_id, loc.location_id, loc.inventory_id, -3.5)}
-                                  disabled={isAdjusting || loc.quantity < 3.5}
-                                  className="px-3 py-2 bg-black/40 border border-white/10 text-white/50 hover:bg-white/5 hover:text-white disabled:opacity-20 disabled:cursor-not-allowed transition-all rounded-[10px] text-sm"
-                                >
-                                  −⅛oz
-                                </button>
-                                <button
-                                  onClick={() => handleLocationAdjust(product.product_id, loc.location_id, loc.inventory_id, -28)}
-                                  disabled={isAdjusting || loc.quantity < 28}
-                                  className="px-3 py-2 bg-black/40 border border-white/10 text-white/50 hover:bg-white/5 hover:text-white disabled:opacity-20 disabled:cursor-not-allowed transition-all rounded-[10px] text-sm"
-                                >
-                                  −1oz
-                                </button>
-                                <button
-                                  onClick={() => handleLocationAdjust(product.product_id, loc.location_id, loc.inventory_id, -453.6)}
-                                  disabled={isAdjusting || loc.quantity < 453.6}
-                                  className="px-3 py-2 bg-black/40 border border-white/10 text-white/50 hover:bg-white/5 hover:text-white disabled:opacity-20 disabled:cursor-not-allowed transition-all rounded-[10px] text-sm"
-                                >
-                                  −1lb
-                                </button>
+                              {/* Fine Control */}
+                              <div>
+                                <div className="text-white/40 text-[10px] uppercase tracking-wider mb-3">Fine Control</div>
+                                <div className="flex items-center gap-2">
+                                  <button
+                                    onClick={() => handleLocationAdjust(product.product_id, loc.location_id, loc.inventory_id, -1)}
+                                    disabled={isAdjusting || loc.quantity < 1}
+                                    className="px-4 py-2 bg-black/40 border border-white/10 text-white/70 hover:bg-white/5 hover:text-white disabled:opacity-20 disabled:cursor-not-allowed transition-all rounded-[12px] text-sm"
+                                  >
+                                    -1g
+                                  </button>
+                                  <button
+                                    onClick={() => handleLocationAdjust(product.product_id, loc.location_id, loc.inventory_id, 1)}
+                                    disabled={isAdjusting}
+                                    className="px-4 py-2 bg-white/10 border border-white/20 text-white hover:bg-white/20 disabled:opacity-20 transition-all rounded-[12px] text-sm"
+                                  >
+                                    +1g
+                                  </button>
+                                  <div className="flex-1 h-px bg-white/5"></div>
+                                  <button
+                                    onClick={() => {
+                                      if (confirm(`Set ${loc.location_name} stock to 0g?`)) {
+                                        handleLocationAdjust(product.product_id, loc.location_id, loc.inventory_id, -loc.quantity);
+                                      }
+                                    }}
+                                    disabled={isAdjusting || loc.quantity === 0}
+                                    className="px-4 py-2 bg-black/40 border border-white/10 text-white/50 hover:bg-white/5 hover:text-white/70 disabled:opacity-20 disabled:cursor-not-allowed transition-all rounded-[12px] text-xs uppercase tracking-wider"
+                                  >
+                                    Clear Stock
+                                  </button>
+                                </div>
                               </div>
                             </div>
                           </div>

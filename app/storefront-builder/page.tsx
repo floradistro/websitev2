@@ -15,7 +15,6 @@ import { TopBar } from './components/TopBar';
 import { ToolsPanel } from './components/ToolsPanel';
 import { AIPanel } from './components/AIPanel';
 import { PreviewFrame } from './components/PreviewFrame';
-import { StreamingPanel } from './components/StreamingPanel';
 import { FontPicker } from './components/FontPicker';
 import { ComponentBrowser } from './components/ComponentBrowser';
 import { InlineEditor } from './components/InlineEditor';
@@ -38,9 +37,10 @@ export default function StorefrontBuilder() {
   const [showConversationHistory, setShowConversationHistory] = useState(false);
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
   const [selectedSections, setSelectedSections] = useState<Set<string>>(new Set());
+  const [currentVendorId, setCurrentVendorId] = useState<string>('cd2e1122-d511-4edb-be5d-98ef274b4baf');
 
-  // Initialize code editor hook
-  const codeEditor = useCodeEditor('', 'cd2e1122-d511-4edb-be5d-98ef274b4baf');
+  // Initialize code editor hook with dynamic vendor ID
+  const codeEditor = useCodeEditor('', currentVendorId);
 
   // Initialize vendor selection hook
   const vendorSelection = useVendorSelection(
@@ -117,8 +117,11 @@ export default function StorefrontBuilder() {
     code: codeEditor.code,
   });
 
-  // Handle vendor change
+  // Handle vendor change and sync vendor ID for auto-save
   useEffect(() => {
+    // Update current vendor ID for auto-save
+    setCurrentVendorId(vendorSelection.selectedVendor);
+
     const newCode = vendorSelection.handleVendorChange(vendorSelection.selectedVendor, codeEditor.code);
     if (newCode !== codeEditor.code) {
       codeEditor.setCode(newCode);
@@ -321,6 +324,8 @@ export default function StorefrontBuilder() {
               setAiPrompt={aiGeneration.setAiPrompt}
               isGenerating={aiGeneration.isGenerating}
               onGenerate={aiGeneration.handleAIGenerate}
+              streamingStatus={aiGeneration.streamingStatus}
+              displayedCode={aiGeneration.displayedCode}
             />
 
             {codeEditor.compileError && (
@@ -359,14 +364,7 @@ export default function StorefrontBuilder() {
       </div>
 
       {/* Modals */}
-      <StreamingPanel
-        isVisible={aiGeneration.showStreamingPanel}
-        status={aiGeneration.streamingStatus}
-        thinking={aiGeneration.streamingThinking}
-        displayedCode={aiGeneration.displayedCode}
-        toolsExecuted={aiGeneration.toolsExecuted}
-        screenshotPreview={aiGeneration.screenshotPreview}
-      />
+      {/* StreamingPanel removed - now shows inline in left panel */}
 
       <FontPicker
         isVisible={showFontPicker}

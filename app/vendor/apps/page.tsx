@@ -38,20 +38,47 @@ export default function AppsPage() {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-10">
-          {/* Welcome */}
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h1 className="text-4xl font-black text-white uppercase tracking-tight mb-2" style={{ fontWeight: 900 }}>
-                Welcome back, {user?.name}
-              </h1>
-              <p className="text-white/60 text-sm">
-                Select an app to get started
-              </p>
-            </div>
+          {/* Hero Welcome with Vendor Logo */}
+          <div className="relative overflow-hidden bg-gradient-to-br from-white/[0.02] via-transparent to-transparent border border-white/5 rounded-3xl p-8 lg:p-12 mb-6">
+            {/* Subtle animated background gradient */}
+            <div className="absolute inset-0 bg-gradient-to-r from-purple-500/5 via-blue-500/5 to-transparent opacity-50 animate-pulse" />
 
-            {/* User Info Card */}
-            <div className="hidden lg:block bg-white/5 border border-white/10 rounded-2xl p-4 min-w-[280px]">
-              <div className="space-y-3">
+            <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-6">
+              {/* Left: Logo + Welcome Message */}
+              <div className="flex items-center gap-6 lg:gap-8">
+                {/* Vendor Logo with Glow */}
+                {vendor?.logo_url ? (
+                  <div className="relative group">
+                    <div className="w-20 h-20 lg:w-24 lg:h-24 bg-white/10 backdrop-blur-sm rounded-2xl p-3 border border-white/20 flex items-center justify-center transition-all duration-500 group-hover:scale-105 group-hover:border-white/40">
+                      <img
+                        src={vendor.logo_url}
+                        alt={vendor.store_name}
+                        className="w-full h-full object-contain"
+                      />
+                    </div>
+                    {/* Glow effect */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-purple-500/20 to-blue-500/20 rounded-2xl blur-2xl scale-150 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  </div>
+                ) : (
+                  <div className="w-20 h-20 lg:w-24 lg:h-24 bg-gradient-to-br from-purple-500/20 to-blue-500/20 rounded-2xl flex items-center justify-center border border-white/20">
+                    <Briefcase size={40} className="text-white/60" />
+                  </div>
+                )}
+
+                {/* Welcome Text */}
+                <div>
+                  <h1 className="text-3xl lg:text-5xl font-black text-white uppercase tracking-tight mb-2 bg-gradient-to-b from-white to-white/90 bg-clip-text text-transparent" style={{ fontWeight: 900 }}>
+                    Welcome Back, {vendor?.store_name || user?.name}
+                  </h1>
+                  <p className="text-white/60 text-sm lg:text-base">
+                    Select an app to get started
+                  </p>
+                </div>
+              </div>
+
+              {/* Right: User Info Card */}
+              <div className="hidden lg:block bg-white/5 border border-white/10 rounded-2xl p-4 min-w-[280px] backdrop-blur-sm">
+                <div className="space-y-3">
                 {/* Vendor */}
                 {vendor && (
                   <div className="flex items-center gap-3">
@@ -109,6 +136,7 @@ export default function AppsPage() {
                     </div>
                   </div>
                 )}
+                </div>
               </div>
             </div>
           </div>

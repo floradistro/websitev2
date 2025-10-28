@@ -53,8 +53,8 @@ export function useAIGeneration(
 
     setIsGenerating(true);
 
-    // Reset all streaming state
-    setShowStreamingPanel(true);
+    // Reset all streaming state (showStreamingPanel disabled - now inline in left panel)
+    setShowStreamingPanel(false);
     setStreamingStatus('Initializing Claude Sonnet 4.5...');
     setStreamingText('');
     setDisplayedCode('');
@@ -100,19 +100,25 @@ export function useAIGeneration(
 
       let chunkCount = 0;
       let lastChunkTime = Date.now();
+      let streamTimedOut = false;
 
       // Inactivity timeout - if no data for 120s, assume connection died
       const inactivityCheck = setInterval(() => {
         const timeSinceLastChunk = Date.now() - lastChunkTime;
         if (timeSinceLastChunk > 120000) {
           clearInterval(inactivityCheck);
+          streamTimedOut = true;
           reader.cancel();
-          throw new Error('Stream timeout - no data received for 120 seconds');
         }
       }, 5000);
 
       try {
         while (true) {
+          // Check if stream timed out
+          if (streamTimedOut) {
+            throw new Error('Stream timeout - no data received for 120 seconds');
+          }
+
           const { done, value } = await reader.read();
           lastChunkTime = Date.now();
 
@@ -160,14 +166,35 @@ export function useAIGeneration(
                 case 'text':
                   // Stream full AI response (includes explanations + code)
                   const newChunk = event.content || event.text || '';
-                  setStreamingText(prev => prev + newChunk);
+                  const updatedText = streamingText + newChunk;
+                  setStreamingText(updatedText);
 
-                  // Extract and display code blocks in real-time
-                  const codeMatch = (streamingText + newChunk).match(/```(?:jsx|javascript|js|tsx|typescript)?\n([\s\S]*?)```/);
+                  // Extract and display code blocks in real-time (supports partial/incomplete blocks)
+                  // Try to match complete code blocks first
+                  let codeMatch = updatedText.match(/```(?:jsx|javascript|js|tsx|typescript)?\s*\n([\s\S]*?)```/);
+
                   if (codeMatch && codeMatch[1]) {
-                    const extractedCode = codeMatch[1];
+                    // Complete code block found
+                    const extractedCode = codeMatch[1].trim();
                     setDisplayedCode(extractedCode);
-                    setGeneratedCodeBackup(extractedCode); // Backup extracted code
+                    setGeneratedCodeBackup(extractedCode);
+                  } else {
+                    // Try to match incomplete/streaming code blocks (no closing backticks yet)
+                    const partialMatch = updatedText.match(/```(?:jsx|javascript|js|tsx|typescript)?\s*\n([\s\S]+)$/);
+                    if (partialMatch && partialMatch[1]) {
+                      const partialCode = partialMatch[1].trim();
+                      // Only show if it looks like valid code (more than 10 chars)
+                      if (partialCode.length > 10) {
+                        setDisplayedCode(partialCode);
+                        setGeneratedCodeBackup(partialCode);
+                      }
+                    } else {
+                      // Fallback: if streamingText looks like code (contains component/render/etc), show it
+                      if (updatedText.includes('component ') || updatedText.includes('render {') || updatedText.includes('props {')) {
+                        setDisplayedCode(updatedText);
+                        setGeneratedCodeBackup(updatedText);
+                      }
+                    }
                   }
 
                   setStreamingStatus('✨ Generating code...');
@@ -215,11 +242,11 @@ export function useAIGeneration(
                     }
                   }
 
-                  // Close panel after showing success
+                  // Auto-clear after success
                   setTimeout(() => {
-                    setShowStreamingPanel(false);
                     setIsGenerating(false);
                     setAiPrompt('');
+                    setDisplayedCode(''); // Clear inline display
                   }, 2000);
                   return;
                 case 'error':
@@ -249,9 +276,11 @@ export function useAIGeneration(
         setErrorMessage(displayError);
       }
 
-      setTimeout(() => setErrorMessage(null), 10000);
+      setTimeout(() => {
+        setErrorMessage(null);
+        setDisplayedCode(''); // Clear inline display after error shown
+      }, 10000);
 
-      setShowStreamingPanel(false);
       setIsGenerating(false);
       return;
     }

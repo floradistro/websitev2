@@ -2,12 +2,12 @@
 
 import { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
-import { 
-  Plus, Search, Package, ChevronDown, ChevronUp, Edit2, Save, X,
-  Image as ImageIcon, DollarSign, FileText, Trash2, AlertCircle
+import {
+  Plus, Search, Package, Eye, DollarSign, FileText, Trash2
 } from 'lucide-react';
 import { useAppAuth } from '@/context/AppAuthContext';
 import { showNotification, showConfirm } from '@/components/NotificationToast';
+import { ProductQuickView } from '@/components/vendor/ProductQuickView';
 import axios from 'axios';
 
 // Types
@@ -31,15 +31,13 @@ export default function ProductsClient() {
   
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  
+
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'approved' | 'pending' | 'rejected'>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
-  
-  const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [editingProduct, setEditingProduct] = useState<Record<string, any>>({});
-  const [saving, setSaving] = useState<Record<string, boolean>>({});
-  
+
+  const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
+
   const [page, setPage] = useState(1);
   const ITEMS_PER_PAGE = 20;
 
@@ -129,50 +127,6 @@ export default function ProductsClient() {
     return { total, approved, pending, rejected };
   }, [products]);
 
-  // Save product updates
-  const handleSaveProduct = async (productId: string) => {
-    setSaving(prev => ({ ...prev, [productId]: true }));
-
-    try {
-      const vendorId = vendor?.id;
-      
-      console.log('Saving product updates:', editingProduct[productId]);
-      
-      const response = await axios.patch('/api/vendor/products/update', {
-        product_id: productId,
-        updates: editingProduct[productId]
-      }, {
-        headers: { 'x-vendor-id': vendorId }
-      });
-
-      console.log('Save response:', response.data);
-
-      if (response.data.success) {
-        await loadProducts();
-        setEditingProduct(prev => {
-          const { [productId]: _, ...rest } = prev;
-          return rest;
-        });
-        
-        showNotification({
-          type: 'success',
-          title: 'Saved',
-          message: 'Product updated successfully'
-        });
-      } else {
-        throw new Error(response.data.error || 'Save failed');
-      }
-    } catch (error: any) {
-      console.error('Product save error:', error);
-      showNotification({
-        type: 'error',
-        title: 'Failed',
-        message: error.response?.data?.error || error.message || 'Failed to save product'
-      });
-    } finally {
-      setSaving(prev => ({ ...prev, [productId]: false }));
-    }
-  };
 
   // Delete product
   const handleDeleteProduct = async (productId: string, productName: string) => {
@@ -221,6 +175,24 @@ export default function ProductsClient() {
 
   return (
     <div className="w-full px-4 lg:px-0">
+      {/* Quick View Modal */}
+      {quickViewProduct && (
+        <ProductQuickView
+          product={quickViewProduct}
+          vendorId={vendor?.id || ''}
+          isOpen={!!quickViewProduct}
+          onClose={() => setQuickViewProduct(null)}
+          onSave={() => {
+            loadProducts();
+            setQuickViewProduct(null);
+          }}
+          onDelete={() => {
+            loadProducts();
+            setQuickViewProduct(null);
+          }}
+        />
+      )}
+
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-6">
@@ -325,269 +297,79 @@ export default function ProductsClient() {
         </div>
       ) : (
         <>
-          <div className="space-y-3">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {paginatedProducts.map((product) => {
-            const isExpanded = expandedId === product.id;
-            const isEditing = editingProduct[product.id];
-            const isSaving = saving[product.id];
-            
+            const margin = product.cost_price
+              ? ((product.price - product.cost_price) / product.price * 100).toFixed(1)
+              : null;
+
+            const stockStatus = product.total_stock === 0 ? 'OUT' :
+                               product.total_stock <= 10 ? 'LOW' : 'OK';
+
+            const stockColor = stockStatus === 'OUT' ? 'border-red-500/30 text-red-500' :
+                              stockStatus === 'LOW' ? 'border-yellow-500/30 text-yellow-500' :
+                              'border-green-500/30 text-green-500';
+
             return (
-              <div key={product.id} className="minimal-glass overflow-hidden">
-                {/* Main Row */}
-                <div className="p-6 hover:bg-white/[0.02] transition-all cursor-pointer" onClick={() => setExpandedId(isExpanded ? null : product.id)}>
-                  <div className="flex items-center gap-6">
-                    {/* Product Info */}
+              <div key={product.id} className="minimal-glass overflow-hidden hover:bg-white/[0.03] transition-all group">
+                <div className="p-6">
+                  {/* Header */}
+                  <div className="flex items-start justify-between mb-4">
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-3 mb-2">
-                        <h3 className="text-white font-medium text-lg">{product.name}</h3>
+                      <h3 className="text-white font-medium text-lg mb-2 group-hover:text-white/90 transition-colors">{product.name}</h3>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className={`px-2 py-1 text-[10px] uppercase tracking-wider border rounded-[8px] ${stockColor}`}>
+                          {stockStatus}
+                        </span>
                         <span className="px-2 py-1 text-[10px] uppercase tracking-wider border border-white/20 text-white/60 rounded-[8px]">
                           {product.status}
                         </span>
-                      </div>
-                      <div className="flex items-center gap-3 text-sm text-white/60">
-                        {product.sku && <span>SKU: {product.sku}</span>}
-                        {product.sku && <span>•</span>}
-                        <span>{product.category}</span>
-                        <span>•</span>
-                        <span>{product.total_stock.toFixed(2)}g in stock</span>
-                      </div>
-                    </div>
-
-                    {/* Pricing */}
-                    <div className="text-right">
-                      <div className="text-2xl font-thin text-white mb-1">${product.price.toFixed(2)}</div>
-                      <div className="text-white/40 text-xs">per gram</div>
-                      {product.cost_price && (
-                        <div className="text-white/50 text-xs mt-1">
-                          Cost: ${product.cost_price.toFixed(2)}/g
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Actions */}
-                    <div className="flex items-center gap-2">
-                      <Link
-                        href={`/vendor/inventory?product=${product.id}`}
-                        className="px-4 py-2 bg-white/5 border border-white/10 text-white/70 hover:bg-white/10 hover:text-white transition-all rounded-[10px] text-xs uppercase tracking-wider"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        Stock
-                      </Link>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setExpandedId(isExpanded ? null : product.id);
-                        }}
-                        className="text-white/40 hover:text-white transition-colors p-2"
-                      >
-                        {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Expanded - Full Product Builder */}
-                {isExpanded && (
-                  <div className="border-t border-white/10 bg-black/20">
-                    {/* Basic Info */}
-                    <div className="p-6 border-b border-white/10">
-                      <div className="flex items-center justify-between mb-4">
-                        <h4 className="text-white/60 text-xs uppercase tracking-wider font-medium">Product Information</h4>
-                        {!isEditing && (
-                          <button
-                            onClick={() => setEditingProduct(prev => ({
-                              ...prev,
-                              [product.id]: {
-                                name: product.name,
-                                sku: product.sku,
-                                price: product.price,
-                                cost_price: product.cost_price,
-                                description: product.description
-                              }
-                            }))}
-                            className="px-3 py-1.5 bg-white/5 border border-white/10 text-white/70 hover:bg-white/10 hover:text-white transition-all rounded-[10px] text-xs uppercase tracking-wider flex items-center gap-1"
-                          >
-                            <Edit2 size={12} />
-                            Edit
-                          </button>
+                        {margin && (
+                          <span className="px-2 py-1 text-[10px] uppercase tracking-wider border border-white/20 text-white/60 rounded-[8px]">
+                            {margin}% margin
+                          </span>
                         )}
                       </div>
-
-                      {isEditing ? (
-                        <div className="space-y-4">
-                          <div className="grid grid-cols-2 gap-4">
-                            <div>
-                              <label className="text-white/40 text-xs mb-2 block">Product Name</label>
-                              <input
-                                type="text"
-                                value={isEditing.name || ''}
-                                onChange={(e) => setEditingProduct(prev => ({
-                                  ...prev,
-                                  [product.id]: { ...prev[product.id], name: e.target.value }
-                                }))}
-                                className="w-full bg-black/20 border border-white/10 text-white px-3 py-2 rounded-[10px] focus:outline-none focus:border-white/30"
-                              />
-                            </div>
-                            <div>
-                              <label className="text-white/40 text-xs mb-2 block">SKU</label>
-                              <input
-                                type="text"
-                                value={isEditing.sku || ''}
-                                onChange={(e) => setEditingProduct(prev => ({
-                                  ...prev,
-                                  [product.id]: { ...prev[product.id], sku: e.target.value }
-                                }))}
-                                className="w-full bg-black/20 border border-white/10 text-white px-3 py-2 rounded-[10px] focus:outline-none focus:border-white/30"
-                              />
-                            </div>
-                            <div>
-                              <label className="text-white/40 text-xs mb-2 block">Price ($/g)</label>
-                              <input
-                                type="number"
-                                step="0.01"
-                                value={isEditing.price || ''}
-                                onChange={(e) => setEditingProduct(prev => ({
-                                  ...prev,
-                                  [product.id]: { ...prev[product.id], price: parseFloat(e.target.value) }
-                                }))}
-                                className="w-full bg-black/20 border border-white/10 text-white px-3 py-2 rounded-[10px] focus:outline-none focus:border-white/30"
-                              />
-                            </div>
-                            <div>
-                              <label className="text-white/40 text-xs mb-2 block">Cost ($/g)</label>
-                              <input
-                                type="number"
-                                step="0.01"
-                                value={isEditing.cost_price || ''}
-                                onChange={(e) => setEditingProduct(prev => ({
-                                  ...prev,
-                                  [product.id]: { ...prev[product.id], cost_price: parseFloat(e.target.value) }
-                                }))}
-                                className="w-full bg-black/20 border border-white/10 text-white px-3 py-2 rounded-[10px] focus:outline-none focus:border-white/30"
-                              />
-                            </div>
-                          </div>
-                          <div>
-                            <label className="text-white/40 text-xs mb-2 block">Description</label>
-                            <textarea
-                              value={isEditing.description || ''}
-                              onChange={(e) => setEditingProduct(prev => ({
-                                ...prev,
-                                [product.id]: { ...prev[product.id], description: e.target.value }
-                              }))}
-                              rows={4}
-                              className="w-full bg-black/20 border border-white/10 text-white px-3 py-2 rounded-[10px] focus:outline-none focus:border-white/30 resize-none"
-                            />
-                          </div>
-                          <div className="flex items-center gap-3">
-                            <button
-                              onClick={() => handleSaveProduct(product.id)}
-                              disabled={isSaving}
-                              className="px-6 py-2 bg-white/10 text-white border border-white/20 hover:bg-white/20 disabled:opacity-30 transition-all rounded-[12px] text-xs uppercase tracking-wider flex items-center gap-2"
-                            >
-                              <Save size={14} />
-                              {isSaving ? 'Saving...' : 'Save Changes'}
-                            </button>
-                            <button
-                              onClick={() => setEditingProduct(prev => {
-                                const { [product.id]: _, ...rest } = prev;
-                                return rest;
-                              })}
-                              className="px-4 py-2 text-white/60 hover:text-white transition-colors text-xs uppercase tracking-wider"
-                            >
-                              Cancel
-                            </button>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                          <div>
-                            <div className="text-white/40 text-xs mb-1">Price</div>
-                            <div className="text-white">${product.price.toFixed(2)}/g</div>
-                          </div>
-                          {product.cost_price && (
-                            <div>
-                              <div className="text-white/40 text-xs mb-1">Cost</div>
-                              <div className="text-white">${product.cost_price.toFixed(2)}/g</div>
-                            </div>
-                          )}
-                          <div>
-                            <div className="text-white/40 text-xs mb-1">SKU</div>
-                            <div className="text-white">{product.sku || 'N/A'}</div>
-                          </div>
-                          <div>
-                            <div className="text-white/40 text-xs mb-1">Stock</div>
-                            <div className="text-white">{product.total_stock.toFixed(2)}g</div>
-                          </div>
-                        </div>
-                      )}
-
-                      {product.description && !isEditing && (
-                        <div className="mt-4 pt-4 border-t border-white/10">
-                          <div className="text-white/40 text-xs mb-2">Description</div>
-                          <div className="text-white/70 text-sm leading-relaxed">{product.description}</div>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Custom Fields */}
-                    {product.custom_fields && product.custom_fields.length > 0 && (
-                      <div className="p-6 border-b border-white/10">
-                        <div className="flex items-center gap-2 mb-4">
-                          <FileText size={16} className="text-white/60" />
-                          <h4 className="text-white/60 text-xs uppercase tracking-wider font-medium">Custom Fields</h4>
-                        </div>
-                        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-                          {product.custom_fields.map((field: any, idx: number) => (
-                            <div key={idx}>
-                              <div className="text-white/40 text-xs mb-1">{field.field_name.replace(/_/g, ' ').toUpperCase()}</div>
-                              <div className="text-white text-sm">{field.field_value || 'N/A'}</div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Pricing Tiers */}
-                    {product.pricing_tiers && product.pricing_tiers.length > 0 && (
-                      <div className="p-6 border-b border-white/10">
-                        <div className="flex items-center gap-2 mb-4">
-                          <DollarSign size={16} className="text-white/60" />
-                          <h4 className="text-white/60 text-xs uppercase tracking-wider font-medium">Volume Pricing</h4>
-                        </div>
-                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-                          {product.pricing_tiers.map((tier: any, idx: number) => (
-                            <div key={idx} className="bg-white/5 border border-white/10 p-4 rounded-[12px]">
-                              <div className="text-white/40 text-xs mb-2">{tier.label}</div>
-                              <div className="text-white text-lg font-medium">${tier.price.toFixed(2)}</div>
-                              <div className="text-white/40 text-xs mt-1">
-                                {tier.min_qty && `${tier.min_qty}${tier.max_qty ? `-${tier.max_qty}` : '+'} ${tier.unit || 'g'}`}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Actions Footer */}
-                    <div className="p-6 bg-black/40 flex items-center justify-between">
-                      <Link
-                        href={`/vendor/products/${product.id}/edit`}
-                        className="px-6 py-2 bg-white/10 text-white border border-white/20 hover:bg-white/20 transition-all rounded-[12px] text-xs uppercase tracking-wider flex items-center gap-2"
-                      >
-                        <Edit2 size={14} />
-                        Full Editor
-                      </Link>
-                      <button
-                        onClick={() => handleDeleteProduct(product.id, product.name)}
-                        className="px-4 py-2 bg-black/40 border border-white/10 text-white/50 hover:bg-white/5 hover:text-white/70 transition-all rounded-[12px] text-xs uppercase tracking-wider flex items-center gap-2"
-                      >
-                        <Trash2 size={14} />
-                        Delete
-                      </button>
                     </div>
                   </div>
-                )}
+
+                  {/* Details Grid */}
+                  <div className="grid grid-cols-2 gap-4 mb-4 pb-4 border-b border-white/10">
+                    <div>
+                      <div className="text-white/40 text-[10px] uppercase tracking-wider mb-1">Price</div>
+                      <div className="text-white text-xl font-light">${product.price.toFixed(2)}/g</div>
+                    </div>
+                    <div>
+                      <div className="text-white/40 text-[10px] uppercase tracking-wider mb-1">Stock</div>
+                      <div className="text-white text-xl font-light">{product.total_stock.toFixed(2)}g</div>
+                    </div>
+                    <div>
+                      <div className="text-white/40 text-[10px] uppercase tracking-wider mb-1">Category</div>
+                      <div className="text-white text-sm">{product.category}</div>
+                    </div>
+                    <div>
+                      <div className="text-white/40 text-[10px] uppercase tracking-wider mb-1">SKU</div>
+                      <div className="text-white text-sm">{product.sku || 'N/A'}</div>
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setQuickViewProduct(product)}
+                      className="flex-1 px-4 py-3 bg-white/10 border border-white/20 text-white hover:bg-white/20 transition-all rounded-[14px] text-xs uppercase tracking-wider flex items-center justify-center gap-2 font-medium"
+                    >
+                      <Eye size={14} />
+                      Quick View
+                    </button>
+                    <Link
+                      href={`/vendor/inventory?product=${product.id}`}
+                      className="px-4 py-3 bg-white/5 border border-white/10 text-white/70 hover:bg-white/10 hover:text-white transition-all rounded-[14px] text-xs uppercase tracking-wider"
+                    >
+                      Stock
+                    </Link>
+                  </div>
+                </div>
               </div>
             );
           })}
