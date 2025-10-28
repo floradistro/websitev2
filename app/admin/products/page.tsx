@@ -523,20 +523,96 @@ export default function MasterCatalog() {
             ))}
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <div className="bg-white/5 border border-white/10 rounded-xl md:rounded-2xl">
-              <table className="w-full min-w-[640px]">
-                <thead>
-                  <tr className="border-b border-white/10 bg-white/5">
-                    <th className="text-left px-3 md:px-5 py-2 md:py-3 text-[9px] md:text-[9px] text-white/40 uppercase tracking-[0.15em] font-black" style={{ fontWeight: 900 }}>Product</th>
-                    <th className="text-left px-3 md:px-5 py-2 md:py-3 text-[9px] md:text-[9px] text-white/40 uppercase tracking-[0.15em] font-black" style={{ fontWeight: 900 }}>Tenant</th>
-                    <th className="text-left px-3 md:px-5 py-2 md:py-3 text-[9px] md:text-[9px] text-white/40 uppercase tracking-[0.15em] font-black" style={{ fontWeight: 900 }}>Category</th>
-                    <th className="text-left px-3 md:px-5 py-2 md:py-3 text-[9px] md:text-[9px] text-white/40 uppercase tracking-[0.15em] font-black" style={{ fontWeight: 900 }}>Price</th>
-                    <th className="text-left px-3 md:px-5 py-2 md:py-3 text-[9px] md:text-[9px] text-white/40 uppercase tracking-[0.15em] font-black" style={{ fontWeight: 900 }}>Stock</th>
-                    <th className="text-left px-3 md:px-5 py-2 md:py-3 text-[9px] md:text-[9px] text-white/40 uppercase tracking-[0.15em] font-black" style={{ fontWeight: 900 }}>Status</th>
-                    <th className="text-left px-3 md:px-5 py-2 md:py-3 text-[9px] md:text-[9px] text-white/40 uppercase tracking-[0.15em] font-black" style={{ fontWeight: 900 }}>Actions</th>
-                </tr>
-              </thead>
+          <>
+            {/* Mobile: Card List */}
+            <div className="flex flex-col gap-2 lg:hidden">
+              {sortedProducts.map((product) => (
+                <div
+                  key={product.id}
+                  onClick={() => setQuickViewProduct(product)}
+                  className="bg-white/5 border border-white/10 rounded-xl p-3 hover:bg-white/[0.02] transition-all cursor-pointer"
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="w-16 h-16 bg-white/5 border border-white/10 rounded-lg relative flex-shrink-0">
+                      {product.images && product.images.length > 0 ? (
+                        <Image
+                          src={product.images[0]}
+                          alt={product.name}
+                          fill
+                          className="object-contain p-1"
+                        />
+                      ) : (
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <Package size={14} className="text-white/10" strokeWidth={1.5} />
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="text-xs font-black text-white uppercase line-clamp-2 mb-1" style={{ fontWeight: 900 }}>
+                        {product.name}
+                      </h4>
+                      <div className="flex items-center gap-2 mb-2">
+                        {product.vendor?.logo_url && (
+                          <div className="w-5 h-5 bg-white/5 border border-white/10 rounded relative flex-shrink-0">
+                            <Image src={product.vendor.logo_url} alt="" fill className="object-contain p-0.5" />
+                          </div>
+                        )}
+                        <span className="text-[10px] text-white/60 truncate">
+                          {product.vendor?.store_name || 'Unknown'}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-1">
+                          {product.pricing_tiers && product.pricing_tiers.length > 0 ? (
+                            <span className="text-xs font-black text-white" style={{ fontWeight: 900 }}>
+                              ${Math.min(...product.pricing_tiers.map(t => t.price)).toFixed(2)}
+                            </span>
+                          ) : (
+                            <span className="text-xs font-black text-white" style={{ fontWeight: 900 }}>
+                              ${product.price.toFixed(2)}
+                            </span>
+                          )}
+                          <span className="text-[9px] text-white/40">•</span>
+                          <span className="text-[9px] text-white/40">{product.stock_quantity} in stock</span>
+                        </div>
+                        <span className={`px-2 py-0.5 text-[8px] uppercase tracking-wider font-black rounded ${
+                          product.status === 'active' ? 'bg-white/10 text-white' :
+                          product.status === 'draft' ? 'bg-white/5 text-white/40' :
+                          'bg-white/5 text-white/30'
+                        }`} style={{ fontWeight: 900 }}>
+                          {product.status}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Desktop: Table */}
+            <div className="hidden lg:block w-full">
+              <div className="bg-white/5 border border-white/10 rounded-xl md:rounded-2xl overflow-hidden">
+                <table className="w-full table-fixed">
+                  <colgroup>
+                    <col className="w-[30%]" />
+                    <col className="w-[15%]" />
+                    <col className="w-[12%]" />
+                    <col className="w-[12%]" />
+                    <col className="w-[8%]" />
+                    <col className="w-[15%]" />
+                    <col className="w-[8%]" />
+                  </colgroup>
+                  <thead>
+                    <tr className="border-b border-white/10 bg-white/5">
+                      <th className="text-left px-3 md:px-5 py-2 md:py-3 text-[9px] text-white/40 uppercase tracking-[0.15em] font-black" style={{ fontWeight: 900 }}>Product</th>
+                      <th className="text-left px-3 md:px-5 py-2 md:py-3 text-[9px] text-white/40 uppercase tracking-[0.15em] font-black" style={{ fontWeight: 900 }}>Tenant</th>
+                      <th className="text-left px-3 md:px-5 py-2 md:py-3 text-[9px] text-white/40 uppercase tracking-[0.15em] font-black" style={{ fontWeight: 900 }}>Category</th>
+                      <th className="text-left px-3 md:px-5 py-2 md:py-3 text-[9px] text-white/40 uppercase tracking-[0.15em] font-black" style={{ fontWeight: 900 }}>Price</th>
+                      <th className="text-left px-3 md:px-5 py-2 md:py-3 text-[9px] text-white/40 uppercase tracking-[0.15em] font-black" style={{ fontWeight: 900 }}>Stock</th>
+                      <th className="text-left px-3 md:px-5 py-2 md:py-3 text-[9px] text-white/40 uppercase tracking-[0.15em] font-black" style={{ fontWeight: 900 }}>Status</th>
+                      <th className="text-left px-3 md:px-5 py-2 md:py-3 text-[9px] text-white/40 uppercase tracking-[0.15em] font-black" style={{ fontWeight: 900 }}>Actions</th>
+                    </tr>
+                  </thead>
               <tbody>
                 {sortedProducts.map((product) => (
                   <tr
@@ -560,7 +636,7 @@ export default function MasterCatalog() {
                             </div>
                           )}
                         </div>
-                        <span className="text-[11px] md:text-xs font-black text-white uppercase line-clamp-2" style={{ fontWeight: 900 }}>{product.name}</span>
+                        <span className="text-[11px] md:text-xs font-black text-white uppercase truncate" style={{ fontWeight: 900 }}>{product.name}</span>
                       </div>
                     </td>
                     <td className="px-3 md:px-5 py-3 md:py-4">
@@ -570,21 +646,21 @@ export default function MasterCatalog() {
                             <Image src={product.vendor.logo_url} alt="" fill className="object-contain p-1" />
                           </div>
                         )}
-                        <span className="text-[11px] md:text-xs font-light text-white/60">
+                        <span className="text-[11px] md:text-xs font-light text-white/60 truncate">
                           {product.vendor?.store_name || 'Unknown'}
                         </span>
                       </div>
                     </td>
                     <td className="px-3 md:px-5 py-3 md:py-4">
                       {product.category?.name ? (
-                        <span className="text-[10px] md:text-xs font-light text-white/40 uppercase tracking-wide">
+                        <span className="text-[10px] md:text-xs font-light text-white/40 uppercase tracking-wide truncate block">
                           {product.category.name}
                         </span>
                       ) : (
                         <span className="text-[10px] md:text-xs font-light text-white/20">—</span>
                       )}
                     </td>
-                    <td className="px-2 md:px-5 py-2 md:py-4">
+                    <td className="px-3 md:px-5 py-3 md:py-4">
                       {product.pricing_tiers && product.pricing_tiers.length > 0 ? (
                         <div className="flex flex-col gap-0.5">
                           <div className="flex items-center gap-1 md:gap-2">
@@ -603,12 +679,12 @@ export default function MasterCatalog() {
                         </span>
                       )}
                     </td>
-                    <td className="px-2 md:px-5 py-2 md:py-4">
+                    <td className="px-3 md:px-5 py-3 md:py-4">
                       <span className="text-xs md:text-sm font-black text-white" style={{ fontWeight: 900 }}>
                         {product.stock_quantity}
                       </span>
                     </td>
-                    <td className="px-2 md:px-5 py-2 md:py-4">
+                    <td className="px-3 md:px-5 py-3 md:py-4">
                       <div className="flex flex-wrap items-center gap-1 md:gap-1.5">
                         <span className={`px-1.5 md:px-2 py-0.5 md:py-1 text-[7px] md:text-[8px] uppercase tracking-wider font-black rounded ${
                           product.status === 'active' ? 'bg-white/10 text-white' :
@@ -654,7 +730,7 @@ export default function MasterCatalog() {
                         })()}
                       </div>
                     </td>
-                    <td className="px-2 md:px-5 py-2 md:py-4">
+                    <td className="px-3 md:px-5 py-3 md:py-4">
                       <button
                         onClick={() => setQuickViewProduct(product)}
                         className="px-2 md:px-3 py-1 md:py-1.5 bg-white/5 border border-white/10 rounded-md md:rounded-lg text-[8px] md:text-[9px] text-white uppercase tracking-wider font-black hover:bg-white/10 transition-all flex items-center gap-1 md:gap-1.5"
@@ -662,15 +738,16 @@ export default function MasterCatalog() {
                       >
                         <Eye size={9} className="md:hidden" />
                         <Eye size={10} className="hidden md:block" />
-                        <span className="hidden sm:inline">View</span>
+                        <span className="hidden xl:inline">View</span>
                       </button>
                     </td>
                   </tr>
                 ))}
               </tbody>
-              </table>
+                </table>
+              </div>
             </div>
-          </div>
+          </>
         )}
       </div>
 

@@ -63,6 +63,7 @@ export function usePreview(code: string, selectedVendor: string, currentVendor?:
             }
 
             document.addEventListener('click', (e) => {
+              e.preventDefault();
               e.stopPropagation();
               const target = e.target;
 
@@ -73,18 +74,42 @@ export function usePreview(code: string, selectedVendor: string, currentVendor?:
               selectedElement = target;
               updateOutline(selectedElement, true);
 
+              // Get element position for inline editor
+              const rect = target.getBoundingClientRect();
               const section = target.closest('[data-section]');
               const sectionId = section?.getAttribute('data-section') || 'unknown';
               const tagName = target.tagName.toLowerCase();
               const classList = Array.from(target.classList).join(' ');
 
+              // Get actual text content (not nested)
+              let textValue = '';
+              if (tagName === 'img') {
+                textValue = target.src || '';
+              } else {
+                // Get direct text content only
+                for (const node of target.childNodes) {
+                  if (node.nodeType === Node.TEXT_NODE) {
+                    textValue += node.textContent || '';
+                  }
+                }
+                textValue = textValue.trim();
+              }
+
+              // Send detailed info for live editing
               window.parent.postMessage({
-                type: 'ELEMENT_SELECTED',
+                type: 'ELEMENT_CLICKED_LIVE',
                 payload: {
                   section: sectionId,
                   tagName: tagName,
                   classList: classList,
-                  textContent: target.textContent?.substring(0, 100)
+                  textContent: target.textContent?.substring(0, 100),
+                  value: textValue,
+                  position: {
+                    x: rect.left,
+                    y: rect.top,
+                    width: rect.width,
+                    height: rect.height
+                  }
                 }
               }, '*');
             }, true);

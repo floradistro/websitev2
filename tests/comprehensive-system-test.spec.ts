@@ -22,6 +22,13 @@ async function waitForNetworkIdle(page: Page, timeout = 5000) {
   await page.waitForLoadState('networkidle', { timeout });
 }
 
+async function waitForPageLoad(page: Page) {
+  // Wait for loading state to complete
+  await page.waitForSelector('text=Loading promotions...', { state: 'hidden', timeout: 15000 }).catch(() => {});
+  // Ensure the Create Promotion button is visible
+  await page.waitForSelector('button:has-text("Create Promotion")', { state: 'visible', timeout: 15000 });
+}
+
 async function clearAllPromotions(page: Page) {
   await page.goto(`${BASE_URL}/vendor/promotions`);
   await waitForNetworkIdle(page);
@@ -44,6 +51,7 @@ test.describe('Promotions System - CRUD Operations', () => {
   test('1.1 Create Product-Level Promotion', async ({ page }) => {
     await page.goto(`${BASE_URL}/vendor/promotions`);
     await waitForNetworkIdle(page);
+    await waitForPageLoad(page);
 
     // Click Create Promotion
     await page.click('button:has-text("Create Promotion")');
@@ -83,6 +91,7 @@ test.describe('Promotions System - CRUD Operations', () => {
   test('1.2 Create Global Promotion', async ({ page }) => {
     await page.goto(`${BASE_URL}/vendor/promotions`);
     await waitForNetworkIdle(page);
+    await waitForPageLoad(page);
 
     await page.click('button:has-text("Create Promotion")');
     await page.waitForSelector('input[placeholder*="20% Off"]');
@@ -112,6 +121,7 @@ test.describe('Promotions System - CRUD Operations', () => {
   test('1.3 Edit Existing Promotion', async ({ page }) => {
     await page.goto(`${BASE_URL}/vendor/promotions`);
     await waitForNetworkIdle(page);
+    await waitForPageLoad(page);
 
     // Click Edit on first promotion
     const editButtons = await page.locator('button:has-text("Edit")').all();
@@ -137,6 +147,7 @@ test.describe('Promotions System - CRUD Operations', () => {
   test('1.4 Delete Promotion', async ({ page }) => {
     await page.goto(`${BASE_URL}/vendor/promotions`);
     await waitForNetworkIdle(page);
+    await waitForPageLoad(page);
 
     const initialCount = await page.locator('text=/% OFF|OFF/').count();
 
@@ -171,6 +182,7 @@ test.describe('Time-Based Promotions', () => {
   test('2.1 Create Happy Hour Promotion (4-6pm, Weekdays)', async ({ page }) => {
     await page.goto(`${BASE_URL}/vendor/promotions`);
     await waitForNetworkIdle(page);
+    await waitForPageLoad(page);
 
     await page.click('button:has-text("Create Promotion")');
     await page.waitForSelector('input[placeholder*="20% Off"]');
@@ -204,6 +216,7 @@ test.describe('Time-Based Promotions', () => {
   test('2.2 Create Weekend Sale', async ({ page }) => {
     await page.goto(`${BASE_URL}/vendor/promotions`);
     await waitForNetworkIdle(page);
+    await waitForPageLoad(page);
 
     await page.click('button:has-text("Create Promotion")');
     await page.waitForSelector('input[placeholder*="20% Off"]');
@@ -360,6 +373,7 @@ test.describe('Edge Cases & Error Handling', () => {
   test('5.1 Handle Empty Promotion Name', async ({ page }) => {
     await page.goto(`${BASE_URL}/vendor/promotions`);
     await waitForNetworkIdle(page);
+    await waitForPageLoad(page);
 
     await page.click('button:has-text("Create Promotion")');
     await page.waitForSelector('input[placeholder*="20% Off"]');
@@ -380,6 +394,7 @@ test.describe('Edge Cases & Error Handling', () => {
   test('5.2 Handle Zero Discount Value', async ({ page }) => {
     await page.goto(`${BASE_URL}/vendor/promotions`);
     await waitForNetworkIdle(page);
+    await waitForPageLoad(page);
 
     await page.click('button:has-text("Create Promotion")');
     await page.waitForSelector('input[placeholder*="20% Off"]');
@@ -398,6 +413,7 @@ test.describe('Edge Cases & Error Handling', () => {
   test('5.3 Handle Negative Discount', async ({ page }) => {
     await page.goto(`${BASE_URL}/vendor/promotions`);
     await waitForNetworkIdle(page);
+    await waitForPageLoad(page);
 
     await page.click('button:has-text("Create Promotion")');
     await page.waitForSelector('input[placeholder*="20% Off"]');
@@ -416,6 +432,7 @@ test.describe('Edge Cases & Error Handling', () => {
   test('5.4 Handle Extremely Large Discount (>100%)', async ({ page }) => {
     await page.goto(`${BASE_URL}/vendor/promotions`);
     await waitForNetworkIdle(page);
+    await waitForPageLoad(page);
 
     await page.click('button:has-text("Create Promotion")');
     await page.waitForSelector('input[placeholder*="20% Off"]');
@@ -454,6 +471,7 @@ test.describe('Real-World Use Cases', () => {
     // Create a flash sale with start and end dates
     await page.goto(`${BASE_URL}/vendor/promotions`);
     await waitForNetworkIdle(page);
+    await waitForPageLoad(page);
 
     await page.click('button:has-text("Create Promotion")');
     await page.waitForSelector('input[placeholder*="20% Off"]');
@@ -488,6 +506,7 @@ test.describe('Real-World Use Cases', () => {
   test('6.2 Bulk Discount (Tier-Level)', async ({ page }) => {
     await page.goto(`${BASE_URL}/vendor/promotions`);
     await waitForNetworkIdle(page);
+    await waitForPageLoad(page);
 
     await page.click('button:has-text("Create Promotion")');
     await page.waitForSelector('input[placeholder*="20% Off"]');
@@ -507,6 +526,7 @@ test.describe('Real-World Use Cases', () => {
   test('6.3 Category-Wide Sale', async ({ page }) => {
     await page.goto(`${BASE_URL}/vendor/promotions`);
     await waitForNetworkIdle(page);
+    await waitForPageLoad(page);
 
     await page.click('button:has-text("Create Promotion")');
     await page.waitForSelector('input[placeholder*="20% Off"]');
@@ -574,6 +594,7 @@ test.describe('Data Integrity & Validation', () => {
   test('8.1 Promotion Priority Ordering', async ({ page }) => {
     await page.goto(`${BASE_URL}/vendor/promotions`);
     await waitForNetworkIdle(page);
+    await waitForPageLoad(page);
 
     // Create two promotions with different priorities
     for (let priority of [0, 10]) {
@@ -600,6 +621,7 @@ test.describe('Data Integrity & Validation', () => {
   test('8.2 Badge Color Persistence', async ({ page }) => {
     await page.goto(`${BASE_URL}/vendor/promotions`);
     await waitForNetworkIdle(page);
+    await waitForPageLoad(page);
 
     await page.click('button:has-text("Create Promotion")');
     await page.waitForSelector('input[placeholder*="20% Off"]');
@@ -649,6 +671,7 @@ test.describe('Navigation & UI/UX', () => {
   test('9.2 Modal Open/Close Functionality', async ({ page }) => {
     await page.goto(`${BASE_URL}/vendor/promotions`);
     await waitForNetworkIdle(page);
+    await waitForPageLoad(page);
 
     // Open modal
     await page.click('button:has-text("Create Promotion")');
@@ -677,6 +700,7 @@ test.describe('Comprehensive Integration Test', () => {
     // Step 1: Create promotion
     await page.goto(`${BASE_URL}/vendor/promotions`);
     await waitForNetworkIdle(page);
+    await waitForPageLoad(page);
 
     await page.click('button:has-text("Create Promotion")');
     await page.waitForSelector('input[placeholder*="20% Off"]');
@@ -706,6 +730,7 @@ test.describe('Comprehensive Integration Test', () => {
     // Step 4: Go back and edit
     await page.goto(`${BASE_URL}/vendor/promotions`);
     await waitForNetworkIdle(page);
+    await waitForPageLoad(page);
 
     const editButtons = await page.locator('button:has-text("Edit")').all();
     if (editButtons.length > 0) {

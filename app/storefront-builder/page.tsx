@@ -18,6 +18,7 @@ import { PreviewFrame } from './components/PreviewFrame';
 import { StreamingPanel } from './components/StreamingPanel';
 import { FontPicker } from './components/FontPicker';
 import { ComponentBrowser } from './components/ComponentBrowser';
+import { InlineEditor } from './components/InlineEditor';
 import { AgentConfigPanel } from '@/components/admin/AgentConfigPanel';
 import { ConversationHistory } from '@/components/admin/ConversationHistory';
 
@@ -27,6 +28,7 @@ import { useVendorSelection } from './hooks/useVendorSelection';
 import { useAIGeneration } from './hooks/useAIGeneration';
 import { usePreview } from './hooks/usePreview';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
+import { useLiveEditor } from './hooks/useLiveEditor';
 
 export default function StorefrontBuilder() {
   // UI State
@@ -59,6 +61,13 @@ export default function StorefrontBuilder() {
     codeEditor.setCode,
     vendorSelection.selectedVendor,
     vendorSelection.currentVendor
+  );
+
+  // Initialize live editor hook (Canva-style editing)
+  const liveEditor = useLiveEditor(
+    codeEditor.code,
+    codeEditor.setCode,
+    preview.previewRef
   );
 
   // Parse sections from code
@@ -386,6 +395,19 @@ export default function StorefrontBuilder() {
           setShowConversationHistory(false);
         }}
       />
+
+      {/* Live Inline Editor (Canva-style) */}
+      {liveEditor.selectedElement && (
+        <InlineEditor
+          isVisible={liveEditor.isEditorVisible}
+          position={liveEditor.selectedElement.position}
+          elementType={liveEditor.selectedElement.type}
+          currentValue={liveEditor.selectedElement.value}
+          currentClasses={liveEditor.selectedElement.classes}
+          onUpdate={liveEditor.applyLiveUpdate}
+          onClose={liveEditor.closeEditor}
+        />
+      )}
     </>
   );
 }

@@ -29,11 +29,31 @@ setup('authenticate as vendor', async ({ page }) => {
     
     // Alternative: Set localStorage directly (for development/testing)
     await page.goto('http://localhost:3000/vendor/dashboard');
-    
+
     // Inject vendor data directly into localStorage
     await page.evaluate((vendorData) => {
+      // AppAuthContext uses 'app_user' NOT 'vendor_user'
+      const appUser = {
+        id: vendorData.id,
+        email: vendorData.email,
+        name: vendorData.store_name,
+        role: 'vendor_admin',
+        vendor_id: vendorData.id,
+        vendor: {
+          id: vendorData.id,
+          store_name: vendorData.store_name,
+          slug: vendorData.slug,
+          vendor_type: vendorData.vendor_type,
+          pos_enabled: vendorData.pos_enabled,
+        }
+      };
+
+      // Set both formats for compatibility
+      localStorage.setItem('app_user', JSON.stringify(appUser));
       localStorage.setItem('vendor_user', JSON.stringify(vendorData));
       localStorage.setItem('vendor_authenticated', 'true');
+      localStorage.setItem('vendor_id', vendorData.id);
+      localStorage.setItem('vendor_email', vendorData.email);
     }, {
       id: VENDOR_ID,
       store_name: VENDOR_STORE_NAME,
@@ -51,12 +71,28 @@ setup('authenticate as vendor', async ({ page }) => {
 
   // Ensure auth is persisted - inject if needed
   await page.evaluate((vendorData) => {
-    // Double-check localStorage has vendor data
-    const existing = localStorage.getItem('vendor_user');
-    if (!existing) {
-      localStorage.setItem('vendor_user', JSON.stringify(vendorData));
-      localStorage.setItem('vendor_authenticated', 'true');
-    }
+    // AppAuthContext uses 'app_user' NOT 'vendor_user'
+    const appUser = {
+      id: vendorData.id,
+      email: vendorData.email,
+      name: vendorData.store_name,
+      role: 'vendor_admin',
+      vendor_id: vendorData.id,
+      vendor: {
+        id: vendorData.id,
+        store_name: vendorData.store_name,
+        slug: vendorData.slug,
+        vendor_type: vendorData.vendor_type,
+        pos_enabled: vendorData.pos_enabled,
+      }
+    };
+
+    // Set both formats for compatibility
+    localStorage.setItem('app_user', JSON.stringify(appUser));
+    localStorage.setItem('vendor_user', JSON.stringify(vendorData));
+    localStorage.setItem('vendor_authenticated', 'true');
+    localStorage.setItem('vendor_id', vendorData.id);
+    localStorage.setItem('vendor_email', vendorData.email);
   }, {
     id: VENDOR_ID,
     store_name: VENDOR_STORE_NAME,
@@ -69,8 +105,8 @@ setup('authenticate as vendor', async ({ page }) => {
 
   // Verify auth by checking localStorage
   const authState = await page.evaluate(() => ({
-    hasVendor: localStorage.getItem('vendor_user') !== null,
-    vendorData: localStorage.getItem('vendor_user'),
+    hasVendor: localStorage.getItem('app_user') !== null,
+    vendorData: localStorage.getItem('app_user'),
   }));
 
   expect(authState.hasVendor).toBeTruthy();

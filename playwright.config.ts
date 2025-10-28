@@ -39,9 +39,9 @@ export default defineConfig({
       dependencies: ['setup'], // Run setup first
     },
   ],
-  webServer: {
-    command: 'npm run dev',
-    url: 'http://localhost:3000',
-    reuseExistingServer: true,
-  },
+  // webServer: { // Disabled - manually manage dev server
+  //   command: 'npm run dev',
+  //   url: 'http://localhost:3000',
+  //   reuseExistingServer: true,
+  // },
 });
