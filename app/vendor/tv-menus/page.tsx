@@ -516,7 +516,7 @@ export default function SimpleTVMenusPage() {
               >
                 <img
                   src={vendor.logo_url}
-                  alt={vendor.business_name}
+                  alt={vendor.store_name || 'Vendor Logo'}
                   className="mx-auto max-w-sm max-h-48 object-contain"
                   style={{
                     filter: 'drop-shadow(0 0 30px rgba(255, 255, 255, 0.15))'
@@ -527,6 +527,8 @@ export default function SimpleTVMenusPage() {
             ) : (
               <button
                 onClick={async () => {
+                  if (!vendor?.id) return;
+
                   // Get the next available TV number
                   const { data: existingDevices } = await supabase
                     .from('tv_devices')

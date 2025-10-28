@@ -28,8 +28,8 @@ export default function VendorSettings() {
   const fetchSettings = async () => {
     try {
       setFetching(true);
-      
-      const vendorId = vendor?.id;
+
+      const vendorId: string | undefined = vendor?.id;
       if (!vendorId) {
         setError('Not authenticated');
         setFetching(false);
@@ -37,27 +37,27 @@ export default function VendorSettings() {
       }
 
       // Get vendor data from Supabase
-      const { data: vendor, error } = await supabase
+      const { data: vendorData, error } = await supabase
         .from('vendors')
         .select('*')
         .eq('id', vendorId)
         .single();
-      
+
       if (error) {
         console.error('Failed to fetch vendor:', error);
         setError('Failed to load settings. Please refresh the page.');
-      } else if (vendor) {
+      } else if (vendorData) {
         setSettings({
-          companyName: vendor.store_name || '',
-          contactName: vendor.contact_name || '',
-          email: vendor.email || '',
-          phone: vendor.phone || '',
-          address: vendor.address || '',
-          city: vendor.city || '',
-          state: vendor.state || '',
-          zip: vendor.zip || '',
-          taxId: vendor.tax_id || '',
-          siteHidden: vendor.site_hidden || false,
+          companyName: vendorData.store_name || '',
+          contactName: vendorData.contact_name || '',
+          email: vendorData.email || '',
+          phone: vendorData.phone || '',
+          address: vendorData.address || '',
+          city: vendorData.city || '',
+          state: vendorData.state || '',
+          zip: vendorData.zip || '',
+          taxId: vendorData.tax_id || '',
+          siteHidden: vendorData.site_hidden || false,
         });
       }
     } catch (err) {
