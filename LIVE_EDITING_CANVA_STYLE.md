@@ -25,12 +25,20 @@ Transform the storefront builder into a **world-class, Canva-style visual editor
 - Floating toolbar appears instantly above selected element
 - Access all controls (font size, alignment, bold, etc.)
 
-### **Double-Click Auto-Edit** 🎯 NEW!
+### **Double-Click Auto-Edit** 🎯
 - **Double-click any text**: Instantly enters edit mode
 - Input appears with text auto-selected
 - Just start typing - no extra clicks needed!
 - 67% faster than single-click workflow
 - Press Enter to apply, Escape to cancel
+
+### **Delete Elements** 🗑️ NEW!
+- **Click trash button**: Remove any element from preview and code
+- Works on ALL types: text, headings, images, buttons, containers, icons, sections
+- Confirmation dialog prevents accidents
+- Fade-out animation (smooth removal)
+- Code automatically updated
+- **Keyboard shortcut**: Delete or Backspace key
 
 ### **Live Code Patching**
 - Changes update code without iframe reload
@@ -46,17 +54,25 @@ Different elements get appropriate tools:
 - ✅ Font size increase/decrease
 - ✅ Text alignment (left/center/right)
 - ✅ Bold toggle
+- ✅ Delete element (trash button)
 - ✅ Live preview updates
 
 **Images:**
 - ✅ Replace image button
 - ✅ Filter options
-- (More tools in Phase 2)
+- ✅ Delete element (trash button)
 
 **Buttons:**
 - ✅ Edit button text
 - ✅ Font size controls
 - ✅ Alignment controls
+- ✅ Delete element (trash button)
+
+**All Elements:**
+- ✅ Delete with trash button or Delete/Backspace key
+- ✅ Confirmation dialog
+- ✅ Smooth fade-out animation
+- ✅ Code automatically synced
 
 ### **Smooth Animations**
 - Beautiful fade-in/slide-up animations (Framer Motion)
@@ -144,7 +160,13 @@ User types text → Preview updates instantly → Code patches surgically → Do
 User clicks A+ → Font size increases in preview → Code class updated → Smooth!
 ```
 
-### **4. Close Editor**
+### **4. Delete Element**
+```
+Click trash icon → Confirm → Element fades out → Code updated → Editor closes
+OR press Delete/Backspace key → Same flow
+```
+
+### **5. Close Editor**
 ```
 Press ESC or click X → Toolbar fades out → Selection cleared → Ready for next edit
 ```
@@ -307,6 +329,12 @@ patchTailwindClass(code, 'text-2xl', 'text-3xl')
 - [x] Increase/decrease font size
 - [x] Change text alignment
 - [x] Toggle bold formatting
+- [x] Double-click for instant edit
+- [x] Delete elements with trash button
+- [x] Delete with keyboard (Delete/Backspace)
+- [x] Confirm deletion dialog works
+- [x] Element fades out smoothly
+- [x] Code updates after deletion
 - [x] Press Escape to close editor
 - [x] Click different elements in sequence
 - [x] Verify code updates correctly
@@ -426,6 +454,21 @@ We're building a **truly world-class editing experience** that rivals:
 - Works for text, headings, and buttons
 
 **Result:** 67% faster text editing workflow! ✅
+
+---
+
+### Delete Any Element - NEW FEATURE ✅
+**Enhancement:** User requested "we need to be able to delete text sections, or icons, from the component /anything on the preview and modify them"
+
+**Implementation:**
+- Added trash icon (Trash2) to InlineEditor toolbar
+- Smart deletion with dual strategy (text content → class matching)
+- Preview: Fade-out animation (200ms) before removal
+- Code: Regex-based element removal (handles regular and self-closing tags)
+- Keyboard shortcut: Delete or Backspace key
+- Confirmation dialog prevents accidental deletions
+
+**Result:** Can delete ANY element from preview! ✅
 
 ---
 
