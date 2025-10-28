@@ -2,6 +2,10 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { POSModal } from './POSModal';
+import { POSCashDrawer } from './POSCashDrawer';
+import { DollarSign } from 'lucide-react';
+import { useAppAuth } from '@/context/AppAuthContext';
+import Image from 'next/image';
 
 interface POSSession {
   id: string;
@@ -15,11 +19,24 @@ interface POSSession {
   opened_at: string;
 }
 
+interface CashMovementSummary {
+  opening: number;
+  sales: number;
+  refunds: number;
+  no_sales: number;
+  paid_in: number;
+  paid_out: number;
+  current_balance: number;
+  movement_count: number;
+}
+
 interface POSSessionHeaderProps {
   locationId: string;
   locationName: string;
   userId?: string;
   userName?: string;
+  vendorId?: string;
+  registerId?: string;
 }
 
 export function POSSessionHeader({
@@ -27,12 +44,36 @@ export function POSSessionHeader({
   locationName,
   userId,
   userName = 'Staff',
+  vendorId = 'cd2e1122-d511-4edb-be5d-98ef274b4baf', // Flora Distro - will be passed from parent
+  registerId,
 }: POSSessionHeaderProps) {
+  const { vendor, refreshUserData } = useAppAuth();
   const [session, setSession] = useState<POSSession | null>(null);
   const [loading, setLoading] = useState(true);
-  const [modal, setModal] = useState<{isOpen: boolean; title: string; message: string; type: 'success'|'error'|'info'; onConfirm?: () => void; confirmText?: string; cancelText?: string}>({ 
-    isOpen: false, title: '', message: '', type: 'info' 
+  const [modal, setModal] = useState<{isOpen: boolean; title: string; message: string; type: 'success'|'error'|'info'; onConfirm?: () => void; confirmText?: string; cancelText?: string}>({
+    isOpen: false, title: '', message: '', type: 'info'
   });
+  const [showCashDrawer, setShowCashDrawer] = useState(false);
+  const [cashSummary, setCashSummary] = useState<CashMovementSummary | null>(null);
+
+  // Refresh vendor data on mount to get latest logo/POS status
+  useEffect(() => {
+    if (vendor) {
+      refreshUserData();
+    }
+  }, []); // Only run once on mount
+
+  // Debug vendor data
+  useEffect(() => {
+    if (vendor) {
+      console.log('🔍 POS Header - Vendor Data:', {
+        store_name: vendor.store_name,
+        logo_url: vendor.logo_url,
+        pos_enabled: vendor.pos_enabled,
+        has_logo: !!vendor.logo_url
+      });
+    }
+  }, [vendor]);
 
   const loadActiveSession = useCallback(async () => {
     try {
@@ -41,6 +82,11 @@ export function POSSessionHeader({
       if (response.ok) {
         const data = await response.json();
         setSession(data.session);
+        
+        // Load cash movements if session exists
+        if (data.session) {
+          loadCashMovements(data.session.id);
+        }
       } else {
         setSession(null);
       }
@@ -51,6 +97,18 @@ export function POSSessionHeader({
       setLoading(false);
     }
   }, [locationId]);
+
+  const loadCashMovements = useCallback(async (sessionId: string) => {
+    try {
+      const response = await fetch(`/api/pos/cash-movements?sessionId=${sessionId}`);
+      if (response.ok) {
+        const data = await response.json();
+        setCashSummary(data.summary);
+      }
+    } catch (error) {
+      console.error('Error loading cash movements:', error);
+    }
+  }, []);
 
   // Load active session and refresh every 30 seconds
   useEffect(() => {
@@ -184,6 +242,14 @@ export function POSSessionHeader({
     );
   }
 
+  const handleCashMovementRecorded = () => {
+    // Reload cash movements and session
+    if (session) {
+      loadCashMovements(session.id);
+      loadActiveSession();
+    }
+  };
+
   return (
     <>
       <POSModal
@@ -196,10 +262,41 @@ export function POSSessionHeader({
         cancelText={modal.cancelText}
         onConfirm={modal.onConfirm}
       />
+
+      {/* Cash Drawer Modal */}
+      {showCashDrawer && session && userId && (
+        <POSCashDrawer
+          sessionId={session.id}
+          registerId={registerId}
+          userId={userId}
+          locationId={locationId}
+          vendorId={vendorId}
+          currentBalance={cashSummary?.current_balance || session.opening_cash}
+          onMovementRecorded={handleCashMovementRecorded}
+          onClose={() => setShowCashDrawer(false)}
+        />
+      )}
       
       <div className="flex items-center justify-between px-4 py-3">
-      {/* Left: Location & Staff */}
+      {/* Left: Vendor Logo, Location & Staff */}
       <div className="flex items-center gap-4">
+        {/* Vendor Logo */}
+        {vendor?.logo_url && (
+          <>
+            <div className="relative w-10 h-10 flex-shrink-0 bg-white/5 rounded-lg overflow-hidden">
+              <Image
+                src={vendor.logo_url}
+                alt={vendor.store_name || 'Vendor Logo'}
+                fill
+                className="object-contain p-1"
+                priority
+                unoptimized
+              />
+            </div>
+            <div className="h-6 w-px bg-white/10"></div>
+          </>
+        )}
+        
         <div>
           <div className="text-white/40 text-[10px] uppercase tracking-[0.15em]">Location</div>
           <div className="text-white font-black text-xs" style={{ fontWeight: 900 }}>
@@ -218,6 +315,22 @@ export function POSSessionHeader({
       {/* Center: Session Info */}
       {session ? (
         <div className="flex items-center gap-4">
+          {/* Cash Balance */}
+          <button
+            onClick={() => setShowCashDrawer(true)}
+            className="text-center hover:bg-white/5 rounded-xl px-3 py-1 transition-all group"
+          >
+            <div className="text-white/40 text-[10px] uppercase tracking-[0.15em] flex items-center gap-1">
+              <DollarSign size={10} />
+              Cash Drawer
+            </div>
+            <div className="text-white font-black text-sm group-hover:text-green-400 transition-colors" style={{ fontWeight: 900 }}>
+              ${(cashSummary?.current_balance || session.opening_cash).toFixed(2)}
+            </div>
+          </button>
+          
+          <div className="h-6 w-px bg-white/10"></div>
+          
           <div className="text-center">
             <div className="text-white/40 text-[10px] uppercase tracking-[0.15em]">Sales</div>
             <div className="text-white font-black text-sm" style={{ fontWeight: 900 }}>
@@ -247,13 +360,24 @@ export function POSSessionHeader({
       <div className="flex gap-2">
         {session ? (
           <>
-            <a
-              href="/pos-test"
-              className="px-4 py-2.5 border border-white/10 text-white rounded-2xl hover:bg-white/5 hover:border-white/20 text-[10px] font-black uppercase tracking-[0.15em] transition-all flex items-center justify-center"
-              style={{ fontWeight: 900 }}
-            >
-              Orders
-            </a>
+            {/* Context-aware navigation button */}
+            {typeof window !== 'undefined' && window.location.pathname === '/pos/orders' ? (
+              <a
+                href="/pos/register"
+                className="px-4 py-2.5 border border-white/10 text-white rounded-2xl hover:bg-white/5 hover:border-white/20 text-[10px] font-black uppercase tracking-[0.15em] transition-all flex items-center justify-center"
+                style={{ fontWeight: 900 }}
+              >
+                Register
+              </a>
+            ) : (
+              <a
+                href="/pos/orders"
+                className="px-4 py-2.5 border border-white/10 text-white rounded-2xl hover:bg-white/5 hover:border-white/20 text-[10px] font-black uppercase tracking-[0.15em] transition-all flex items-center justify-center"
+                style={{ fontWeight: 900 }}
+              >
+                Orders
+              </a>
+            )}
             <button
               onClick={closeSession}
               className="px-4 py-2.5 border border-white/10 text-red-400 rounded-2xl hover:bg-white/5 hover:border-white/20 text-[10px] font-black uppercase tracking-[0.15em] transition-all flex items-center justify-center"
@@ -265,7 +389,7 @@ export function POSSessionHeader({
         ) : (
           <button
             onClick={openSession}
-            className="px-5 py-2.5 bg-white text-black border-2 border-white rounded-2xl hover:bg-black hover:text-white text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-300 flex items-center justify-center"
+            className="px-5 py-2.5 bg-white/10 text-white border-2 border-white/20 rounded-2xl hover:bg-white/20 hover:border-white/30 text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-300 flex items-center justify-center"
             style={{ fontWeight: 900 }}
           >
             Open Session

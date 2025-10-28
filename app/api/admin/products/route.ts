@@ -30,6 +30,7 @@ export async function GET(request: NextRequest) {
       .from('products')
       .select(`
         *,
+        blueprint_fields,
         vendor:vendors(
           id,
           store_name,
@@ -75,33 +76,155 @@ export async function GET(request: NextRequest) {
     }
     
     console.log(`✅ Fetched ${products?.length || 0} products from ${count || 0} total`);
-    
-    // If wholesale info requested, fetch tier counts
-    let productsWithTiers = products;
-    if (withWholesale && products) {
-      const productIds = products.map(p => p.id);
-      
-      // Get tier counts for each product
-      const { data: tiers } = await supabase
-        .from('wholesale_pricing')
-        .select('product_id')
-        .in('product_id', productIds)
-        .eq('is_active', true);
-      
-      // Count tiers per product
-      const tierCounts = new Map<string, number>();
-      (tiers || []).forEach(tier => {
-        tierCounts.set(
-          tier.product_id,
-          (tierCounts.get(tier.product_id) || 0) + 1
-        );
-      });
-      
-      productsWithTiers = products.map(p => ({
-        ...p,
-        tier_count: tierCounts.get(p.id) || 0
+
+    // Get product IDs for batch fetching related data
+    const productIds = products?.map(p => p.id) || [];
+
+    // Batch fetch COAs
+    const { data: allCoas } = await supabase
+      .from('vendor_coas')
+      .select('*')
+      .in('product_id', productIds);
+
+    // Batch fetch pricing tier assignments with blueprint data
+    const { data: allPricingAssignments } = await supabase
+      .from('product_pricing_assignments')
+      .select(`
+        product_id,
+        blueprint:pricing_tier_blueprints(
+          id,
+          name,
+          slug,
+          tier_type,
+          price_breaks
+        ),
+        price_overrides
+      `)
+      .in('product_id', productIds)
+      .eq('is_active', true);
+
+    // Create lookup maps
+    const coasByProduct = new Map<string, any[]>();
+    (allCoas || []).forEach(coa => {
+      if (!coasByProduct.has(coa.product_id)) {
+        coasByProduct.set(coa.product_id, []);
+      }
+      coasByProduct.get(coa.product_id)!.push(coa);
+    });
+
+    // Get vendor IDs to fetch pricing configs
+    const vendorIds = Array.from(new Set(products?.map(p => p.vendor_id).filter(Boolean) || []));
+
+    // Batch fetch vendor pricing configs
+    const { data: vendorPricingConfigs } = await supabase
+      .from('vendor_pricing_configs')
+      .select('*')
+      .in('vendor_id', vendorIds)
+      .eq('is_active', true);
+
+    // Create lookup map for vendor pricing configs
+    const vendorPricingMap = new Map<string, any>(); // key: vendorId_blueprintId
+    (vendorPricingConfigs || []).forEach(config => {
+      vendorPricingMap.set(`${config.vendor_id}_${config.blueprint_id}`, config);
+    });
+
+    // Create lookup map for pricing assignments by product
+    const pricingByProduct = new Map<string, any[]>();
+    (allPricingAssignments || []).forEach(assignment => {
+      if (!pricingByProduct.has(assignment.product_id)) {
+        pricingByProduct.set(assignment.product_id, []);
+      }
+      pricingByProduct.get(assignment.product_id)!.push(assignment);
+    });
+
+    // Process products to include images array and related data
+    let processedProducts = products?.map(product => {
+      const images: string[] = [];
+
+      // Add featured_image if it exists
+      if (product.featured_image) {
+        images.push(product.featured_image);
+      }
+
+      // Or convert featured_image_storage to public URL
+      if (product.featured_image_storage && !product.featured_image) {
+        const publicUrl = `https://uaednwpxursknmwdeejn.supabase.co/storage/v1/object/public/vendor-product-images/${product.featured_image_storage}`;
+        images.push(publicUrl);
+      }
+
+      // Process blueprint fields into a clean object
+      const custom_fields: any = {};
+      if (product.blueprint_fields && Array.isArray(product.blueprint_fields)) {
+        product.blueprint_fields.forEach((field: any) => {
+          if (field) {
+            const name = field.field_name || field.label || '';
+            const value = field.field_value || field.value || '';
+            if (name && value) {
+              custom_fields[name] = value;
+            }
+          }
+        });
+      }
+
+      // Get COAs and pricing tiers for this product
+      const coas = (coasByProduct.get(product.id) || []).map(coa => ({
+        id: coa.id,
+        file_name: coa.file_name,
+        file_url: coa.file_url,
+        lab_name: coa.lab_name,
+        test_date: coa.test_date,
+        batch_number: coa.batch_number,
+        test_results: coa.test_results,
+        is_verified: coa.is_verified || false
       }));
-    }
+
+      // Process pricing tiers from blueprint assignments
+      const pricingAssignments = pricingByProduct.get(product.id) || [];
+      const pricing_tiers: any[] = [];
+
+      pricingAssignments.forEach(assignment => {
+        const blueprint = assignment.blueprint as any;
+        if (!blueprint) return;
+
+        // Get vendor's pricing config for this blueprint
+        const vendorConfig = vendorPricingMap.get(`${product.vendor_id}_${blueprint.id}`);
+        const vendorPricing = vendorConfig?.pricing_values || {};
+        const productOverrides = assignment.price_overrides || {};
+
+        // Merge pricing: vendor config + product overrides
+        const finalPricing = { ...vendorPricing, ...productOverrides };
+
+        // Process each price break in the blueprint
+        if (blueprint.price_breaks && Array.isArray(blueprint.price_breaks)) {
+          blueprint.price_breaks.forEach((priceBreak: any) => {
+            const breakId = priceBreak.break_id;
+            const pricing = finalPricing[breakId];
+
+            if (pricing && pricing.enabled !== false) {
+              pricing_tiers.push({
+                id: `${blueprint.id}_${breakId}`,
+                label: priceBreak.label,
+                quantity: priceBreak.qty || priceBreak.min_qty || 0,
+                unit: priceBreak.unit || 'units',
+                price: parseFloat(pricing.price || 0),
+                min_quantity: priceBreak.min_qty,
+                max_quantity: priceBreak.max_qty,
+                blueprint_name: blueprint.name
+              });
+            }
+          });
+        }
+      });
+
+      return {
+        ...product,
+        images,
+        custom_fields,
+        coas,
+        pricing_tiers,
+        tier_count: pricing_tiers.length // Add tier count for display
+      };
+    }) || [];
     
     // Get vendor stats
     const { data: vendors } = await supabase
@@ -113,7 +236,7 @@ export async function GET(request: NextRequest) {
     
     return NextResponse.json({
       success: true,
-      products: productsWithTiers || [],
+      products: processedProducts || [],
       pagination: {
         page,
         limit,

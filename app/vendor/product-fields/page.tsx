@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { useVendorAuth } from '@/context/VendorAuthContext';
+import { useAppAuth } from '@/context/AppAuthContext';
 import { Plus, Edit2, Trash2, Save, X, Layers, Lock } from 'lucide-react';
 import { showSuccess, showError } from '@/components/NotificationToast';
 import { Button } from '@/components/ui/Button';
@@ -64,7 +64,7 @@ const FIELD_TYPES = [
 ];
 
 export default function VendorProductFieldsPage() {
-  const { vendor } = useVendorAuth();
+  const { vendor } = useAppAuth();
   const [loading, setLoading] = useState(true);
   const [categories, setCategories] = useState<Category[]>([]);
   const [adminFields, setAdminFields] = useState<AdminFieldGroup[]>([]);
@@ -80,7 +80,7 @@ export default function VendorProductFieldsPage() {
   async function loadData() {
     try {
       setLoading(true);
-      const vendorId = localStorage.getItem('vendor_id');
+      const vendorId = vendor?.id;
 
       // Load categories
       const categoriesRes = await fetch('/api/supabase/categories');
@@ -119,7 +119,7 @@ export default function VendorProductFieldsPage() {
     }
 
     try {
-      const vendorId = localStorage.getItem('vendor_id');
+      const vendorId = vendor?.id;
       const method = editingField.id ? 'PUT' : 'POST';
       
       const res = await fetch('/api/vendor/product-fields', {
@@ -156,7 +156,7 @@ export default function VendorProductFieldsPage() {
     if (!confirm('Are you sure you want to delete this field?')) return;
 
     try {
-      const vendorId = localStorage.getItem('vendor_id');
+      const vendorId = vendor?.id;
       const res = await fetch(`/api/vendor/product-fields?id=${fieldId}`, {
         method: 'DELETE',
         headers: { 'x-vendor-id': vendorId! }
@@ -206,27 +206,10 @@ export default function VendorProductFieldsPage() {
 
   return (
     <div className="w-full px-4 lg:px-0">
-      <style jsx>{`
-        @keyframes fade-in {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .fade-in {
-          animation: fade-in 0.6s ease-out;
-        }
-        .minimal-glass {
-          background: rgba(255, 255, 255, 0.02);
-          backdrop-filter: blur(20px);
-          border: 1px solid rgba(255, 255, 255, 0.05);
-          border-radius: 20px;
-        }
-        .subtle-glow {
-          box-shadow: 0 0 30px rgba(255, 255, 255, 0.02);
-        }
-      `}</style>
+      
 
       {/* Header */}
-      <div className="mb-12 fade-in">
+      <div className="mb-12">
         <h1 className="text-3xl font-thin text-white/90 tracking-tight mb-2">
           Product Fields
         </h1>
@@ -236,7 +219,7 @@ export default function VendorProductFieldsPage() {
       </div>
 
       {/* Category Filter */}
-      <div className="mb-6 flex items-center gap-4 fade-in">
+      <div className="mb-6 flex items-center gap-4">
           <label className="text-white/40 text-[11px] uppercase tracking-[0.2em] font-light">
             Filter by Category
           </label>
@@ -256,7 +239,7 @@ export default function VendorProductFieldsPage() {
 
         {/* Admin Required Fields */}
         {adminFields.length > 0 && (
-          <Card className="mb-8 fade-in">
+          <Card className="mb-8">
             <CardHeader>
               <div className="flex items-center gap-2">
                 <Lock className="w-5 h-5 text-white/40" />
@@ -309,7 +292,7 @@ export default function VendorProductFieldsPage() {
         )}
 
         {/* Vendor Custom Fields */}
-        <Card className="fade-in">
+        <Card className="">
           <CardHeader action={
             <Button variant="primary" icon={Plus} onClick={handleNewField}>
               Add Custom Field
@@ -387,7 +370,7 @@ export default function VendorProductFieldsPage() {
 
       {/* Add/Edit Field Modal */}
       {showAddModal && editingField && (
-        <div className="fixed inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center z-50 p-4 fade-in">
+        <div className="fixed inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center z-50 p-4">
           <div className="minimal-glass subtle-glow w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden" style={{ background: 'rgba(0, 0, 0, 0.95)' }}>
             <div className="p-6 border-b border-white/10 flex items-center justify-between flex-shrink-0">
               <h2 className="text-xl font-thin tracking-tight">

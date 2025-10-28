@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { Upload, Save, AlertCircle, CheckCircle, X } from 'lucide-react';
-import { useVendorAuth } from '@/context/VendorAuthContext';
+import { useAppAuth } from '@/context/AppAuthContext';
 
 export default function VendorBranding() {
-  const { vendor } = useVendorAuth();
+  const { vendor } = useAppAuth();
   const [loading, setLoading] = useState(false);
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string>('');
@@ -50,7 +50,7 @@ export default function VendorBranding() {
 
   const loadBranding = async () => {
     try {
-      const vendorId = localStorage.getItem('vendor_id');
+      const vendorId = vendor?.id;
       if (!vendorId) return;
 
       const response = await fetch('/api/supabase/vendor/branding', {
@@ -145,7 +145,7 @@ export default function VendorBranding() {
     setLoading(true);
 
     try {
-      const vendorId = localStorage.getItem('vendor_id');
+      const vendorId = vendor?.id;
       if (!vendorId) throw new Error('Not authenticated');
 
       let logoUrl = '';

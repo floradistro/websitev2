@@ -55,7 +55,9 @@ export async function POST(request: NextRequest) {
           slug: vendor.slug,
           email: vendor.email,
           vendor_type: vendor.vendor_type || 'standard',
-          wholesale_enabled: vendor.wholesale_enabled || false
+          wholesale_enabled: vendor.wholesale_enabled || false,
+          logo_url: vendor.logo_url,
+          pos_enabled: vendor.pos_enabled || false
         },
         message: 'Logged in without Supabase auth (legacy mode)'
       });
@@ -85,7 +87,9 @@ export async function POST(request: NextRequest) {
         slug: vendor.slug,
         email: vendor.email,
         vendor_type: vendor.vendor_type || 'standard',
-        wholesale_enabled: vendor.wholesale_enabled || false
+        wholesale_enabled: vendor.wholesale_enabled || false,
+        logo_url: vendor.logo_url,
+        pos_enabled: vendor.pos_enabled || false
       },
       session: authData.session.access_token
     });

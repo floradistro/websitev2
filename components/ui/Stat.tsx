@@ -39,10 +39,10 @@ export function Stat({
         hover:bg-white/[0.03] 
         transition-all duration-300 
         group 
-        fade-in
+       
         ${className}
       `}
-      style={delay ? { animationDelay: delay } : undefined}
+     
     >
       <div className="flex items-center justify-between mb-4">
         <span className="text-white/40 text-[11px] uppercase tracking-[0.2em] font-light">

@@ -102,26 +102,10 @@ export default function VendorWholesaleSettings() {
 
   return (
     <div className="w-full px-4 lg:px-0">
-      <style jsx>{`
-        @keyframes fade-in {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .fade-in {
-          animation: fade-in 0.6s ease-out;
-        }
-        .minimal-glass {
-          background: rgba(255, 255, 255, 0.02);
-          backdrop-filter: blur(20px);
-          border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-        .subtle-glow {
-          box-shadow: 0 0 30px rgba(255, 255, 255, 0.02);
-        }
-      `}</style>
+      
 
       {/* Header */}
-      <div className="mb-8 fade-in">
+      <div className="mb-8">
         <button
           onClick={() => router.back()}
           className="flex items-center gap-2 text-white/40 hover:text-white/60 mb-4 transition-all duration-300 text-xs font-light uppercase tracking-wider"
@@ -139,7 +123,7 @@ export default function VendorWholesaleSettings() {
       </div>
 
         {/* Current Status */}
-        <div className="minimal-glass subtle-glow p-6 mb-6 fade-in" style={{ animationDelay: '0.1s' }}>
+        <div className="minimal-glass subtle-glow p-6 mb-6">
           <div className="flex items-center justify-between mb-4">
             <div>
               <h3 className="text-white/40 text-[11px] font-light tracking-[0.2em] uppercase mb-2">Current Status</h3>
@@ -160,7 +144,7 @@ export default function VendorWholesaleSettings() {
         </div>
 
         {/* Vendor Type Selection */}
-        <div className="minimal-glass subtle-glow p-6 mb-6 fade-in" style={{ animationDelay: '0.2s' }}>
+        <div className="minimal-glass subtle-glow p-6 mb-6">
           <h3 className="text-white/40 text-[11px] font-light tracking-[0.2em] uppercase mb-6">Vendor Type</h3>
           
           <div className="space-y-3">
@@ -226,7 +210,7 @@ export default function VendorWholesaleSettings() {
         {/* Wholesale Settings */}
         {(vendorType === 'distributor' || vendorType === 'both') && (
           <>
-            <div className="minimal-glass subtle-glow p-6 mb-6 fade-in" style={{ animationDelay: '0.3s' }}>
+            <div className="minimal-glass subtle-glow p-6 mb-6">
               <h3 className="text-white/40 text-[11px] font-light tracking-[0.2em] uppercase mb-6">Wholesale Configuration</h3>
               
               <div className="space-y-6">
@@ -281,7 +265,7 @@ export default function VendorWholesaleSettings() {
             </div>
 
             {/* License Information */}
-            <div className="minimal-glass subtle-glow p-6 mb-6 fade-in" style={{ animationDelay: '0.4s' }}>
+            <div className="minimal-glass subtle-glow p-6 mb-6">
               <h3 className="text-white/40 text-[11px] font-light tracking-[0.2em] uppercase mb-6">Distributor License (Optional)</h3>
               
               <div className="space-y-6">
@@ -316,7 +300,7 @@ export default function VendorWholesaleSettings() {
 
         {/* How It Works */}
         {vendorType === 'both' && (
-          <div className="minimal-glass subtle-glow p-6 mb-6 border-l-2 border-l-blue-500/40 fade-in" style={{ animationDelay: '0.5s' }}>
+          <div className="minimal-glass subtle-glow p-6 mb-6 border-l-2 border-l-blue-500/40">
             <h3 className="text-blue-400/90 text-[11px] font-light tracking-[0.2em] uppercase mb-4">How Hybrid Mode Works</h3>
             
             <div className="space-y-4 text-xs font-light">
@@ -345,7 +329,7 @@ export default function VendorWholesaleSettings() {
         )}
 
       {/* Save Button */}
-      <div className="flex gap-3 fade-in" style={{ animationDelay: '0.6s' }}>
+      <div className="flex gap-3">
         <button
           onClick={saveSettings}
           disabled={saving}

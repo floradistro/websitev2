@@ -29,8 +29,8 @@ export function DashboardStat({
   
   return (
     <div
-      className={tw(themeObj.components.stat, 'fade-in', className)}
-      style={delay ? { animationDelay: delay } : undefined}
+      className={tw(themeObj.components.stat, className)}
+     
     >
       <div className="flex items-center justify-between mb-4">
         <span className={themeObj.typography.label}>{label}</span>

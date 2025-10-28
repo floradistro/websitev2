@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { ArrowLeft, Plus, Trash2, DollarSign, Percent, Save, Calculator } from 'lucide-react';
 import Link from 'next/link';
 import { showNotification } from '@/components/NotificationToast';
+import { useAppAuth } from '@/context/AppAuthContext';
 
 interface MarkupTier {
   tier_id: string;
@@ -17,6 +18,7 @@ interface MarkupTier {
 }
 
 export default function CostPlusPricingPage() {
+  const { vendor } = useAppAuth();
   const [loading, setLoading] = useState(false);
   const [exampleCost, setExampleCost] = useState('1000'); // Example cost for preview only
   const [costUnit, setCostUnit] = useState<'pound' | 'ounce' | 'gram'>('pound');
@@ -126,8 +128,8 @@ export default function CostPlusPricingPage() {
   async function saveConfiguration() {
     setLoading(true);
     try {
-      const vendorId = localStorage.getItem('vendor_id');
-      
+      const vendorId = vendor?.id;
+
       const config = {
         name: 'Wholesale Flower Cost-Plus Pricing',
         cost_unit: costUnit,

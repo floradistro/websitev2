@@ -30,8 +30,8 @@ export function ChartCard({
 }: ChartCardProps) {
   return (
     <div
-      className={`minimal-glass fade-in ${className}`}
-      style={delay ? { animationDelay: delay } : undefined}
+      className={`minimal-glass ${className}`}
+     
     >
       <div className="border-b border-white/5 p-6 flex justify-between items-center">
         <div>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { useVendorAuth } from '@/context/VendorAuthContext';
+import { useAppAuth } from '@/context/AppAuthContext';
 import { Plus, Trash2, Edit2, Save, X, Sparkles } from 'lucide-react';
 
 interface CustomField {
@@ -36,7 +36,7 @@ const FIELD_TYPES = [
 ];
 
 export default function FieldsManagerPage() {
-  const { vendor } = useVendorAuth();
+  const { vendor } = useAppAuth();
   const [customFields, setCustomFields] = useState<CustomField[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -57,7 +57,7 @@ export default function FieldsManagerPage() {
   async function loadCustomFields() {
     try {
       setLoading(true);
-      const vendorId = localStorage.getItem('vendor_id');
+      const vendorId = vendor?.id;
       
       const response = await fetch('/api/vendor/custom-fields', {
         headers: { 'x-vendor-id': vendorId! }
@@ -76,7 +76,7 @@ export default function FieldsManagerPage() {
 
   async function handleAddField() {
     try {
-      const vendorId = localStorage.getItem('vendor_id');
+      const vendorId = vendor?.id;
       
       const fieldDefinition: any = {
         type: newField.type,
@@ -130,7 +130,7 @@ export default function FieldsManagerPage() {
     }
 
     try {
-      const vendorId = localStorage.getItem('vendor_id');
+      const vendorId = vendor?.id;
       
       const response = await fetch(`/api/vendor/custom-fields?id=${fieldId}`, {
         method: 'DELETE',

@@ -50,7 +50,7 @@ docs/
 **Docs:** [POS Implementation Status](architecture/POS_IMPLEMENTATION_STATUS.md)
 
 ### **Component System - Mature**
-- ✅ WCL (WhaleTools Component Language) working
+- ✅ React Component Builder working
 - ✅ AI component generation (Claude)
 - ✅ Quantum rendering (behavioral states)
 - ✅ Smart component base utilities
@@ -89,16 +89,13 @@ docs/
 
 ---
 
-### **🌊 WCL (WhaleTools Component Language)**
+### **🌊 React Component Builder**
 | Document | Description | Status |
 |----------|-------------|--------|
 | [WCL Language Specification](architecture/WCL_LANGUAGE_SPECIFICATION.md) | Complete language spec | ⭐ Working |
-| [WCL Implementation Guide](guides/WCL_IMPLEMENTATION.md) | Step-by-step setup | Guide |
-| [WCL Examples](guides/WCL_EXAMPLES.md) | Component examples | Cookbook |
-| [WCL Responsive vs Quantum](architecture/WCL_RESPONSIVE_VS_QUANTUM.md) | Critical design guide | Important |
 | [Quantum Rendering](architecture/QUANTUM_RENDERING.md) | Behavioral state system | Technical |
 
-**Editor:** `/wcl-editor` (AI-powered component editor)
+**Editor:** `/storefront-builder` (AI-powered component editor)
 
 ---
 
@@ -150,7 +147,7 @@ ALL contexts:
 2. **Component System**
    - Database-driven layouts
    - Smart components (vendor-aware)
-   - WCL language & compiler
+   - React components & compiler
    - AI generation & modification
    - Quantum behavioral states
 
@@ -174,7 +171,7 @@ ALL contexts:
    - Vendor approval
    - Product approval
    - User management
-   - WCL editor
+   - Storefront Builder
 
 ---
 
@@ -201,7 +198,7 @@ POS Pickup Queue:    http://localhost:3000/pos-test
 POS Register:        http://localhost:3000/pos-register-test
 Vendor Dashboard:    http://localhost:3000/vendor/dashboard
 Admin Dashboard:     http://localhost:3000/admin/dashboard
-WCL Editor:          http://localhost:3000/wcl-editor
+Storefront Builder:  http://localhost:3000/storefront-builder
 ```
 
 ---
@@ -233,7 +230,7 @@ WCL Editor:          http://localhost:3000/wcl-editor
    - Components adapt to user behavior
    - Learns from all vendors collectively
 
-2. **Component Language (WCL)**
+2. **Component Language (React)**
    - Domain-specific language for components
    - AI generates from descriptions
    - Quantum behavioral states
@@ -277,7 +274,7 @@ Oct 2025  ✅ Platform foundation
           ✅ Flora Distro migration
           ✅ Component registry system
           ✅ Smart components
-          ✅ WCL language & compiler
+          ✅ React components & compiler
           ✅ Quantum rendering
           ✅ POS Phase 1 (Pickup Orders)
           ⭐ POS Phase 2 (Walk-In Sales - 90%)
@@ -292,7 +289,7 @@ Dec 2025  ⏳ Card terminal integration
           ⏳ Multi-vendor rollout
           ⏳ AI optimization engine
 
-Q1 2026   ⏳ Vendor self-service (WCL)
+Q1 2026   ⏳ Vendor self-service (React)
           ⏳ Global scale (100K vendors)
           ⏳ Collective intelligence
           ⏳ Living platform evolution
@@ -309,9 +306,8 @@ Q1 2026   ⏳ Vendor self-service (WCL)
 4. Build your first component (2 hours)
 
 ### **Week 2: Advanced**
-1. Learn WCL ([WCL Specification](architecture/WCL_LANGUAGE_SPECIFICATION.md))
-2. Study Quantum Rendering ([Quantum Rendering](architecture/QUANTUM_RENDERING.md))
-3. Build with WCL Editor (`/wcl-editor`)
+1. Study Quantum Rendering ([Quantum Rendering](architecture/QUANTUM_RENDERING.md))
+2. Build with Storefront Builder (`/storefront-builder`)
 4. Contribute components
 
 ### **Week 3: POS System**

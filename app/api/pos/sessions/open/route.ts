@@ -7,7 +7,7 @@ export const runtime = 'nodejs';
 export async function POST(request: NextRequest) {
   try {
     const supabase = getServiceSupabase();
-    const { locationId, userId, openingCash = 0, vendorId } = await request.json();
+    const { locationId, userId, openingCash = 0, vendorId, registerId } = await request.json();
 
     if (!locationId) {
       return NextResponse.json(
@@ -87,6 +87,7 @@ export async function POST(request: NextRequest) {
         location_id: locationId,
         vendor_id: vendorId || location.vendor_id,
         user_id: finalUserId,
+        register_id: registerId || null,
         session_number: sessionNumber,
         status: 'open',
         opening_cash: openingCash,
@@ -96,6 +97,7 @@ export async function POST(request: NextRequest) {
           opened_via: 'pos_register',
           opened_at_timestamp: Date.now(),
           test_mode: !userId,
+          register_id: registerId || null,
         },
       })
       .select()

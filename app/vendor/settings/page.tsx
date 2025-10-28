@@ -3,9 +3,10 @@
 import { useState, useEffect } from 'react';
 import { Save, CheckCircle, AlertCircle, Loader } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
-import { useVendorAuth } from '@/context/VendorAuthContext';
+import { useAppAuth } from '@/context/AppAuthContext';
 
 export default function VendorSettings() {
+  const { vendor } = useAppAuth();
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
   const [error, setError] = useState('');
@@ -28,7 +29,7 @@ export default function VendorSettings() {
     try {
       setFetching(true);
       
-      const vendorId = localStorage.getItem('vendor_id');
+      const vendorId = vendor?.id;
       if (!vendorId) {
         setError('Not authenticated');
         setFetching(false);
@@ -78,7 +79,7 @@ export default function VendorSettings() {
     setSuccess(false);
 
     try {
-      const vendorId = localStorage.getItem('vendor_id');
+      const vendorId = vendor?.id;
       if (!vendorId) {
         setError('Not authenticated');
         setLoading(false);
@@ -129,27 +130,10 @@ export default function VendorSettings() {
 
   return (
     <div className="w-full px-4 lg:px-0">
-      <style jsx>{`
-        @keyframes fade-in {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .fade-in {
-          animation: fade-in 0.6s ease-out;
-        }
-        .minimal-glass {
-          background: rgba(255, 255, 255, 0.02);
-          backdrop-filter: blur(20px);
-          border: 1px solid rgba(255, 255, 255, 0.05);
-          border-radius: 20px;
-        }
-        .subtle-glow {
-          box-shadow: 0 0 30px rgba(255, 255, 255, 0.02);
-        }
-      `}</style>
+      
 
       {/* Header */}
-      <div className="mb-12 fade-in">
+      <div className="mb-12">
         <h1 className="text-3xl font-thin text-white/90 tracking-tight mb-2">
           Vendor Settings
         </h1>

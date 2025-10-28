@@ -25,7 +25,8 @@ export async function POST(request: NextRequest) {
         vendor_id,
         total_amount,
         payment_method,
-        customer_id
+        customer_id,
+        delivery_type
       `)
       .eq('id', orderId)
       .single();
@@ -37,13 +38,23 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Determine if this is a shipping order
+    const isShippingOrder = order.delivery_type === 'delivery';
+
     // FIRST: Update order status to fulfilled
+    const updateData: any = {
+      fulfillment_status: 'fulfilled',
+      completed_date: new Date().toISOString(),
+    };
+
+    // For shipping orders, also set shipped_date
+    if (isShippingOrder) {
+      updateData.shipped_date = new Date().toISOString();
+    }
+
     const { error: updateError } = await supabase
       .from('orders')
-      .update({
-        fulfillment_status: 'fulfilled',
-        completed_date: new Date().toISOString(),
-      })
+      .update(updateData)
       .eq('id', orderId);
 
     if (updateError) {
@@ -64,9 +75,12 @@ export async function POST(request: NextRequest) {
       .limit(1)
       .single();
 
-    // Create POS transaction for pickup fulfillment
+    // Create POS transaction for fulfillment
     const transactionNumber = `TXN-${order.order_number}-${Date.now()}`;
-    
+    // NOTE: Using 'pickup_fulfillment' for all orders until database constraint is updated
+    // Shipping orders are tracked via metadata.is_shipping_order
+    const transactionType = 'pickup_fulfillment';
+
     const { data: transaction, error: transactionError } = await supabase
       .from('pos_transactions')
       .insert({
@@ -75,7 +89,7 @@ export async function POST(request: NextRequest) {
         vendor_id: order.vendor_id,
         order_id: order.id,
         session_id: activeSession?.id || null,
-        transaction_type: 'pickup_fulfillment',
+        transaction_type: transactionType,
         payment_method: 'prepaid_online',
         payment_status: 'completed',
         subtotal: order.total_amount,
@@ -88,6 +102,8 @@ export async function POST(request: NextRequest) {
           original_order: order.order_number,
           customer_id: order.customer_id, // Store in metadata instead
           fulfilled_at: new Date().toISOString(),
+          delivery_type: order.delivery_type,
+          is_shipping_order: isShippingOrder,
         },
       })
       .select()

@@ -1,61 +1,69 @@
-/**
- * UNIFIED BUTTON COMPONENT
- * Works across all dashboards
- */
-
+import { ReactNode, ButtonHTMLAttributes } from 'react';
 import { LucideIcon } from 'lucide-react';
 
-interface ButtonProps {
-  children: React.ReactNode;
-  variant?: 'primary' | 'secondary' | 'danger' | 'ghost';
+interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+  children: ReactNode;
+  variant?: 'primary' | 'secondary' | 'ghost';
+  size?: 'sm' | 'md' | 'lg';
   icon?: LucideIcon;
-  onClick?: () => void;
-  disabled?: boolean;
-  type?: 'button' | 'submit' | 'reset';
-  className?: string;
+  iconPosition?: 'left' | 'right';
+  fullWidth?: boolean;
   loading?: boolean;
 }
 
 export function Button({
   children,
-  variant = 'primary',
+  variant = 'secondary',
+  size = 'md',
   icon: Icon,
-  onClick,
-  disabled,
-  type = 'button',
+  iconPosition = 'left',
+  fullWidth = false,
+  loading = false,
   className = '',
-  loading,
+  disabled,
+  ...props
 }: ButtonProps) {
-  const variants = {
-    primary: 'bg-white/10 text-white border border-white/20 hover:bg-white/20',
-    secondary: 'bg-white/5 text-white/70 border border-white/10 hover:bg-white/10',
-    danger: 'bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500/20',
-    ghost: 'text-white/60 hover:text-white hover:bg-white/5',
-  };
-  
+  const baseClass = (() => {
+    switch (variant) {
+      case 'primary':
+        return 'button-primary';
+      case 'secondary':
+        return 'button-secondary';
+      case 'ghost':
+        return 'bg-transparent border border-white/10 hover:bg-white/5 hover:border-white/20 text-white';
+      default:
+        return 'button-secondary';
+    }
+  })();
+
+  const sizeClass = (() => {
+    switch (size) {
+      case 'sm':
+        return 'px-3 py-2 text-[10px]';
+      case 'md':
+        return 'px-4 py-3 text-xs';
+      case 'lg':
+        return 'px-6 py-4 text-sm';
+      default:
+        return 'px-4 py-3 text-xs';
+    }
+  })();
+
+  const widthClass = fullWidth ? 'w-full' : '';
+  const disabledClass = (disabled || loading) ? 'opacity-50 cursor-not-allowed' : '';
+
   return (
     <button
-      type={type}
-      onClick={onClick}
+      className={`${baseClass} ${sizeClass} ${widthClass} ${disabledClass} flex items-center justify-center gap-2 uppercase tracking-wider ${className}`}
       disabled={disabled || loading}
-      className={`
-        px-6 py-3 
-        text-xs uppercase tracking-wider 
-        transition-all duration-300 
-        rounded-[14px]
-        flex items-center justify-center gap-2
-        ${variants[variant]}
-        ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
-        ${className}
-      `}
+      {...props}
     >
-      {loading ? (
-        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-      ) : Icon ? (
-        <Icon size={14} />
-      ) : null}
+      {loading && (
+        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+      )}
+      {Icon && iconPosition === 'left' && !loading && <Icon size={14} strokeWidth={1.5} />}
       {children}
+      {Icon && iconPosition === 'right' && !loading && <Icon size={14} strokeWidth={1.5} />}
     </button>
   );
 }
-

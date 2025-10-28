@@ -22,6 +22,12 @@ export interface CartItem {
   quantity: number;
   lineTotal: number;
   inventoryId: string;
+  // Promotion fields
+  originalPrice?: number; // Price before discount
+  discount?: number; // Discount amount
+  promotionName?: string; // Name of applied promotion
+  badgeText?: string; // Badge text (e.g., "20% OFF")
+  badgeColor?: string; // Badge color
 }
 
 interface POSCartProps {
@@ -89,12 +95,43 @@ export function POSCart({
           items.map((item) => (
             <div
               key={item.productId}
-              className="bg-[#141414] border border-white/5 hover:border-white/10 rounded-2xl p-3 transition-all"
+              className="bg-[#141414] border border-white/5 hover:border-white/10 rounded-2xl p-3 transition-all relative"
             >
+              {/* Sale Badge */}
+              {item.badgeText && (
+                <div
+                  className="absolute top-2 right-2 px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider"
+                  style={{
+                    backgroundColor: item.badgeColor === 'red' ? '#ef4444' :
+                                   item.badgeColor === 'orange' ? '#f97316' :
+                                   item.badgeColor === 'green' ? '#22c55e' :
+                                   item.badgeColor === 'blue' ? '#3b82f6' : '#ef4444',
+                    color: 'white'
+                  }}
+                >
+                  {item.badgeText}
+                </div>
+              )}
+
               <div className="flex items-start justify-between mb-3">
                 <div className="flex-1">
                   <div className="text-white font-black text-xs uppercase tracking-tight" style={{ fontWeight: 900 }}>{item.productName}</div>
-                  <div className="text-white/40 text-[10px] uppercase tracking-[0.15em] mt-1">${item.unitPrice.toFixed(2)} each</div>
+
+                  {/* Show original price if on sale */}
+                  {item.originalPrice && item.originalPrice > item.unitPrice ? (
+                    <div className="mt-1">
+                      <div className="text-white/40 text-[10px] line-through">
+                        ${item.originalPrice.toFixed(2)} each
+                      </div>
+                      <div className="text-green-400 text-[10px] font-bold uppercase tracking-[0.15em]">
+                        ${item.unitPrice.toFixed(2)} each
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-white/40 text-[10px] uppercase tracking-[0.15em] mt-1">
+                      ${item.unitPrice.toFixed(2)} each
+                    </div>
+                  )}
                 </div>
                 <button
                   onClick={() => onRemoveItem(item.productId)}
@@ -126,8 +163,15 @@ export function POSCart({
                   </button>
                 </div>
                 
-                <div className="text-white font-black text-sm tracking-tight" style={{ fontWeight: 900 }}>
-                  ${item.lineTotal.toFixed(2)}
+                <div className="text-right">
+                  <div className="text-white font-black text-sm tracking-tight" style={{ fontWeight: 900 }}>
+                    ${item.lineTotal.toFixed(2)}
+                  </div>
+                  {item.discount && item.discount > 0 && (
+                    <div className="text-green-400 text-[9px] font-bold mt-0.5">
+                      Saved ${item.discount.toFixed(2)}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -160,7 +204,7 @@ export function POSCart({
             <button
               onClick={() => onCheckout(selectedCustomer)}
               disabled={isProcessing}
-              className="w-full bg-white text-black border-2 border-white rounded-2xl px-4 py-4 text-xs uppercase tracking-[0.15em] hover:bg-black hover:text-white hover:border-white font-black transition-all duration-300 shadow-lg shadow-white/10 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="w-full bg-white/10 text-white border-2 border-white/20 rounded-2xl px-4 py-4 text-xs uppercase tracking-[0.15em] hover:bg-white/20 hover:border-white/30 font-black transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               style={{ fontWeight: 900 }}
             >
               {isProcessing ? 'Processing...' : `Charge $${total.toFixed(2)}`}

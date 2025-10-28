@@ -3,12 +3,13 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { 
+import {
   ArrowLeft, Save, AlertCircle, FileText, Image as ImageIcon,
   DollarSign, Package, Upload, X, Download, Trash2, Plus
 } from 'lucide-react';
 import { showNotification, showConfirm } from '@/components/NotificationToast';
 import axios from 'axios';
+import { useAppAuth } from '@/context/AppAuthContext';
 
 interface Product {
   name: string;
@@ -53,6 +54,7 @@ interface PricingTier {
 export default function ProductEditor() {
   const params = useParams();
   const router = useRouter();
+  const { vendor } = useAppAuth();
   const productId = params.id as string;
 
   const [product, setProduct] = useState<Product>({
@@ -89,7 +91,7 @@ export default function ProductEditor() {
   const loadProduct = async () => {
     try {
       setLoading(true);
-      const vendorId = localStorage.getItem('vendor_id');
+      const vendorId = vendor?.id;
       if (!vendorId) {
         router.push('/vendor/login');
         return;
@@ -141,7 +143,7 @@ export default function ProductEditor() {
   const handleSave = async () => {
     try {
       setSaving(true);
-      const vendorId = localStorage.getItem('vendor_id');
+      const vendorId = vendor?.id;
 
       // Build custom fields object (only include non-empty values)
       const customFields: any = {};
@@ -216,7 +218,7 @@ export default function ProductEditor() {
   return (
     <div className="w-full px-4 lg:px-0">
       {/* Header */}
-      <div className="mb-8 fade-in">
+      <div className="mb-8">
         <Link
           href="/vendor/products"
           className="inline-flex items-center gap-2 text-white/60 hover:text-white text-sm mb-4 transition-colors"
@@ -266,7 +268,7 @@ export default function ProductEditor() {
       </div>
 
       {/* Section Tabs */}
-      <div className="minimal-glass p-2 mb-6 flex items-center gap-2 fade-in" style={{ animationDelay: '0.1s' }}>
+      <div className="minimal-glass p-2 mb-6 flex items-center gap-2">
         <button
           onClick={() => setActiveSection('basic')}
           className={`flex-1 px-4 py-3 text-xs uppercase tracking-wider transition-all rounded-[12px] ${
@@ -325,7 +327,7 @@ export default function ProductEditor() {
       </div>
 
       {/* Content Sections */}
-      <div className="fade-in" style={{ animationDelay: '0.2s' }}>
+      <div className="">
         {/* BASIC INFO */}
         {activeSection === 'basic' && (
           <div className="space-y-6">

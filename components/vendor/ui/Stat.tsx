@@ -23,7 +23,7 @@ export function VendorStat({
   return (
     <div
       className={tw(vendorTheme.components.stat, className)}
-      style={delay ? { animationDelay: delay } : undefined}
+     
     >
       <div className="flex items-center justify-between mb-4">
         <span className={vendorTheme.typography.label}>{label}</span>

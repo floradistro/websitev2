@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Users, Plus, Edit2, Trash2, CheckCircle, XCircle, Shield, MapPin } from 'lucide-react';
-import { useVendorAuth } from '@/context/VendorAuthContext';
+import { useAppAuth } from '@/context/AppAuthContext';
 import axios from 'axios';
 import { showNotification, showConfirm } from '@/components/NotificationToast';
 import AdminModal from '@/components/AdminModal';
@@ -36,7 +36,7 @@ const VENDOR_ROLES = [
 ];
 
 export default function VendorEmployees() {
-  const { vendor, isAuthenticated, isLoading: authLoading } = useVendorAuth();
+  const { vendor, isAuthenticated, isLoading: authLoading } = useAppAuth();
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [locations, setLocations] = useState<Location[]>([]);
   const [loading, setLoading] = useState(true);
@@ -65,7 +65,7 @@ export default function VendorEmployees() {
   async function loadEmployees() {
     try {
       setLoading(true);
-      const vendorId = localStorage.getItem('vendor_id');
+      const vendorId = vendor?.id;
       if (!vendorId) return;
 
       const response = await axios.get('/api/vendor/employees', {
@@ -84,7 +84,7 @@ export default function VendorEmployees() {
 
   async function loadLocations() {
     try {
-      const vendorId = localStorage.getItem('vendor_id');
+      const vendorId = vendor?.id;
       if (!vendorId) return;
 
       const response = await axios.get('/api/vendor/locations', {
@@ -110,7 +110,7 @@ export default function VendorEmployees() {
     }
 
     try {
-      const vendorId = localStorage.getItem('vendor_id');
+      const vendorId = vendor?.id;
       const response = await axios.post('/api/vendor/employees', {
         action: 'create',
         ...newEmployee
@@ -148,7 +148,7 @@ export default function VendorEmployees() {
     if (!editingEmployee) return;
 
     try {
-      const vendorId = localStorage.getItem('vendor_id');
+      const vendorId = vendor?.id;
       const response = await axios.post('/api/vendor/employees', {
         action: 'update',
         employee_id: editingEmployee.id,
@@ -191,7 +191,7 @@ export default function VendorEmployees() {
     }
 
     try {
-      const vendorId = localStorage.getItem('vendor_id');
+      const vendorId = vendor?.id;
       const response = await axios.post('/api/vendor/employees', {
         action: 'assign_locations',
         employee_id: assigningEmployee.id,
@@ -224,7 +224,7 @@ export default function VendorEmployees() {
     const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
 
     try {
-      const vendorId = localStorage.getItem('vendor_id');
+      const vendorId = vendor?.id;
       const response = await axios.post('/api/vendor/employees', {
         action: 'toggle_status',
         employee_id: employeeId,
@@ -263,7 +263,7 @@ export default function VendorEmployees() {
     if (!confirmed) return;
 
     try {
-      const vendorId = localStorage.getItem('vendor_id');
+      const vendorId = vendor?.id;
       const response = await axios.post('/api/vendor/employees', {
         action: 'delete',
         employee_id: employeeId

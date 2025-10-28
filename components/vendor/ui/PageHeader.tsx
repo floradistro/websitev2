@@ -12,7 +12,7 @@ interface PageHeaderProps {
 
 export function VendorPageHeader({ title, subtitle, action, className }: PageHeaderProps) {
   return (
-    <div className={tw('mb-12 fade-in', className)}>
+    <div className={tw('mb-12', className)}>
       <div className="flex items-start justify-between">
         <div>
           <h1 className={vendorTheme.typography.h1}>

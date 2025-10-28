@@ -137,7 +137,7 @@ export {
   // Notifications
   CheckSquare,
   
-  // WCL & Testing
+  // React & Testing
   FlaskConical,
   
 } from 'lucide-react';

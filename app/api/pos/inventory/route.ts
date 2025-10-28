@@ -33,7 +33,20 @@ export async function GET(request: NextRequest) {
             name,
             price,
             featured_image,
-            vendor_id
+            vendor_id,
+            description,
+            short_description,
+            blueprint_fields,
+            product_categories (
+              categories (
+                name
+              )
+            ),
+            vendors (
+              id,
+              store_name,
+              logo_url
+            )
           )
         `)
         .eq('location_id', locationId)
@@ -101,15 +114,36 @@ export async function GET(request: NextRequest) {
         // Get pricing tiers for this product's vendor
         const pricingTiers = vendorPricingMap.get(inv.products.vendor_id) || [];
 
+        // Get category from product_categories
+        const productCategories = inv.products.product_categories || [];
+        const category = productCategories.length > 0 && productCategories[0].categories
+          ? productCategories[0].categories.name
+          : null;
+
+        // Get product fields from blueprint_fields JSONB
+        const blueprintFields = inv.products.blueprint_fields || [];
+        const productFields = Array.isArray(blueprintFields) ? blueprintFields : [];
+
+        // Get vendor info
+        const vendor = inv.products.vendors || null;
+
         return {
           id: inv.products.id,
           name: inv.products.name,
           price: inv.products.price || 0,
           image_url: inv.products.featured_image,
-          category: null,
+          category: category,
+          description: inv.products.description || null,
+          short_description: inv.products.short_description || null,
+          fields: productFields,
           inventory_quantity: inv.available_quantity,
           inventory_id: inv.id,
           pricing_tiers: pricingTiers,
+          vendor: vendor ? {
+            id: vendor.id,
+            store_name: vendor.store_name,
+            logo_url: vendor.logo_url
+          } : null,
         };
       })
       .sort((a, b) => a.name.localeCompare(b.name));

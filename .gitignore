@@ -47,3 +47,10 @@ backups/*.json
 backups/*.sql
 !backups/.gitkeep
 
+# playwright
+/playwright-report/
+/test-results/
+
+# backup files
+*.backup
+

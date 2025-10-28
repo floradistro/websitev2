@@ -14,7 +14,7 @@ interface PageHeaderProps {
 
 export function PageHeader({ title, subtitle, action, className = '' }: PageHeaderProps) {
   return (
-    <div className={`mb-12 fade-in ${className}`}>
+    <div className={`mb-12 ${className}`}>
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-3xl font-thin text-white/90 tracking-tight mb-2">

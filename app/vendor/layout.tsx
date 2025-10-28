@@ -6,7 +6,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { LogOut, Menu, X } from 'lucide-react';
 import VendorSupportChat from '@/components/VendorSupportChat';
 import AIActivityMonitor from '@/components/AIActivityMonitor';
-import { useVendorAuth, VendorAuthProvider } from '@/context/VendorAuthContext';
+import { useAppAuth, AppAuthProvider } from '@/context/AppAuthContext';
 import { showConfirm } from '@/components/NotificationToast';
 import { dashboardKeyframes } from '@/lib/dashboard-theme';
 import { vendorNavItems, mobileNavItems } from '@/lib/vendor-navigation';
@@ -25,7 +25,7 @@ function VendorLayoutContent({
   const isVisible = useAutoHideHeader(); // ✅ Shared hook - no memory leak
   const pathname = usePathname();
   const router = useRouter();
-  const { vendor, isAuthenticated, isLoading, logout } = useVendorAuth();
+  const { vendor, isAuthenticated, isLoading, logout } = useAppAuth();
 
   // Protect vendor routes - redirect to login if not authenticated
   useEffect(() => {
@@ -66,6 +66,11 @@ function VendorLayoutContent({
 
   const vendorName = vendor?.store_name || 'Vendor';
 
+  // Special pages without auth/navigation
+  if (pathname === '/vendor/login' || pathname === '/vendor/component-editor') {
+    return <>{children}</>;
+  }
+
   // Show loading while checking auth
   if (isLoading) {
     return (
@@ -75,21 +80,7 @@ function VendorLayoutContent({
     );
   }
 
-  // Component editor needs special layout (full screen, no navigation)
-  if (pathname === '/vendor/component-editor') {
-    // Still require auth for component editor
-    if (!isAuthenticated) {
-      return null; // Will redirect via useEffect
-    }
-    return <>{children}</>;
-  }
-
-  // Allow login page without auth
-  if (pathname === '/vendor/login') {
-    return <>{children}</>;
-  }
-
-  // If not authenticated, don't render (will redirect)
+  // If not authenticated, don't render (redirect will happen via useEffect)
   if (!isAuthenticated) {
     return null;
   }
@@ -284,13 +275,20 @@ function VendorLayoutContent({
             </nav>
 
             <div className="p-4 border-t border-white/5 relative z-10" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 1rem)' }}>
-              <Link 
-                href="/" 
+              <Link
+                href="/vendor/apps"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center justify-center gap-2 w-full px-4 py-3 text-white/60 text-xs uppercase tracking-wider border border-white/20 rounded-[14px] transition-all duration-300 hover:bg-white/10 hover:border-white/30 hover:text-white mb-2"
+              >
+                View All Apps
+              </Link>
+              <Link
+                href="/"
                 className="flex items-center justify-center gap-2 w-full px-4 py-3 text-white/50 text-xs uppercase tracking-wider border border-white/10 rounded-[14px] transition-all duration-300 hover:bg-white/5 hover:border-white/20 hover:text-white/70 mb-2"
               >
                 Back to Store
               </Link>
-              <button 
+              <button
                 onClick={() => {
                   setMobileMenuOpen(false);
                   handleLogout();
@@ -325,13 +323,19 @@ function VendorLayoutContent({
             </Link>
 
             <div className="flex items-center gap-6">
-              <Link 
-                href="/" 
+              <Link
+                href="/vendor/apps"
+                className="text-white/60 hover:text-white text-xs uppercase tracking-[0.15em] transition-all duration-300 font-light"
+              >
+                Apps
+              </Link>
+              <Link
+                href="/"
                 className="text-white/40 hover:text-white/70 text-xs uppercase tracking-[0.15em] transition-all duration-300 font-light"
               >
-                Back to Store
+                Store
               </Link>
-              <button 
+              <button
                 onClick={handleLogout}
                 className="group text-white/40 hover:text-white/70 text-xs uppercase tracking-[0.15em] transition-all duration-300 flex items-center gap-2 font-light"
               >
@@ -428,9 +432,9 @@ export default function VendorLayout({
   children: React.ReactNode;
 }) {
   return (
-    <VendorAuthProvider>
+    <AppAuthProvider>
       <VendorLayoutContent>{children}</VendorLayoutContent>
-    </VendorAuthProvider>
+    </AppAuthProvider>
   );
 }
 

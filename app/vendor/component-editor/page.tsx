@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { ComponentInstanceEditor } from '@/components/vendor/ComponentInstanceEditor';
-import { useVendorAuth, VendorAuthProvider } from '@/context/VendorAuthContext';
+import { useAppAuth, AppAuthProvider } from '@/context/AppAuthContext';
 import { useRouter } from 'next/navigation';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -336,7 +336,7 @@ function SortableComponentItem({
                 }
 
 function ComponentEditorContent() {
-  const { vendor: authVendor, isAuthenticated, isLoading } = useVendorAuth();
+  const { vendor: authVendor, isAuthenticated, isLoading } = useAppAuth();
   const router = useRouter();
   const [sections, setSections] = useState<Section[]>([]);
   const [components, setComponents] = useState<ComponentInstance[]>([]);
@@ -1301,8 +1301,8 @@ function ComponentEditorContent() {
 // Wrap with auth provider
 export default function ComponentEditor() {
   return (
-    <VendorAuthProvider>
+    <AppAuthProvider>
       <ComponentEditorContent />
-    </VendorAuthProvider>
+    </AppAuthProvider>
   );
 }

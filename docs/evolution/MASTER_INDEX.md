@@ -42,7 +42,7 @@
    - Target market
    - Roadmap
 
-6. **WCL_LANGUAGE_SPECIFICATION.md** ⭐ **NEW**
+6. **React_LANGUAGE_SPECIFICATION.md** ⭐ **NEW**
    - WhaleTools Component Language
    - Domain-specific language for living components
    - Quantum rendering capability
@@ -60,20 +60,20 @@
    - Naming conventions
 
 ### **📖 TECHNICAL GUIDES:**
-9. **WCL_IMPLEMENTATION.md** ⭐ **NEW**
+9. **React_IMPLEMENTATION.md** ⭐ **NEW**
    - Step-by-step implementation
    - Week-by-week plan
    - Code examples
    - Testing strategies
 
-10. **WCL_EXAMPLES.md** ⭐ **NEW**
+10. **React_EXAMPLES.md** ⭐ **NEW**
     - Component cookbook
     - E-commerce patterns
     - Quantum examples
     - AI-optimized components
 
-11. **WCL_INTEGRATION_PLAN.md** ⭐ **NEW**
-    - How WCL accelerates evolution
+11. **React_INTEGRATION_PLAN.md** ⭐ **NEW**
+    - How React accelerates evolution
     - 50% time reduction
     - Business impact
     - Migration strategy
@@ -108,12 +108,12 @@
 ### **For Developers (Full Implementation):**
 ```
 1. THE_VISION_SUMMARY.md (understand vision)
-2. WCL_LANGUAGE_SPECIFICATION.md ⭐ (learn the future language)
-3. WCL_INTEGRATION_PLAN.md ⭐ (see how it accelerates everything)
+2. React_LANGUAGE_SPECIFICATION.md ⭐ (learn the future language)
+3. React_INTEGRATION_PLAN.md ⭐ (see how it accelerates everything)
 4. WHALETOOLS_EVOLUTION_PLAN.md (Phases 1-3 details)
 5. WHALETOOLS_EVOLUTION_PART2.md (Phases 4-6 details)
 6. IMPLEMENTATION_GUIDE.md (execute step-by-step)
-7. WCL_IMPLEMENTATION.md ⭐ (build the language)
+7. React_IMPLEMENTATION.md ⭐ (build the language)
 8. .cursor/SMART_COMPONENT_GUIDE.md (component reference)
 ```
 

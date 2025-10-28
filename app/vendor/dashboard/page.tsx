@@ -2,11 +2,15 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Package, Plus, AlertCircle, CheckCircle, XCircle, TrendingUp, DollarSign, AlertTriangle, Bell, Calendar, ArrowUpRight, ArrowDownRight, FileText, MessageSquare, Store, Image, FileCode, Palette } from 'lucide-react';
-import { useVendorAuth } from '@/context/VendorAuthContext';
+import { Package, Plus, AlertCircle, TrendingUp, DollarSign, AlertTriangle, Calendar, Store, Image, FileCode, Palette, CheckCircle, Bell } from 'lucide-react';
+import { useAppAuth } from '@/context/AppAuthContext';
 import VendorProfitWidget from '@/components/VendorProfitWidget';
 import { useVendorDashboard } from '@/hooks/useVendorData';
 import { DashboardSkeleton } from '@/components/vendor/VendorSkeleton';
+import { StatCard } from '@/components/ui/StatCard';
+import { Card, CardHeader } from '@/components/ui/Card';
+import { QuickAction } from '@/components/ui/QuickAction';
+import { Badge } from '@/components/ui/Badge';
 
 interface RecentProduct {
   id: number;
@@ -50,7 +54,7 @@ interface ActionItem {
 }
 
 export default function VendorDashboard() {
-  const { vendor, isAuthenticated, isLoading: authLoading } = useVendorAuth();
+  const { vendor, isAuthenticated, isLoading: authLoading } = useAppAuth();
   const { data: dashboardData, loading, error } = useVendorDashboard();
   
   const [recentProducts, setRecentProducts] = useState<RecentProduct[]>([]);
@@ -173,20 +177,6 @@ export default function VendorDashboard() {
     return nextMonth.toISOString().split('T')[0];
   }
 
-  const getStatusBadge = (status: string) => {
-    const styles = {
-      approved: "bg-white/5 text-white/60 border-white/10",
-      pending: "bg-white/5 text-white/60 border-white/10",
-      rejected: "bg-red-500/10 text-red-500 border-red-500/20",
-      draft: "bg-white/5 text-white/60 border-white/10",
-    };
-
-    return (
-      <span className={`px-2 py-1 text-xs font-medium uppercase tracking-wider border rounded-[14px] ${styles[status as keyof typeof styles] || styles.draft}`}>
-        {status}
-      </span>
-    );
-  };
 
   const getNoticeIcon = (type: string) => {
     switch (type) {
@@ -209,178 +199,140 @@ export default function VendorDashboard() {
   return (
     <div className="w-full px-4 lg:px-0">
       {/* Header */}
-      <div className="mb-12 fade-in">
-        <h1 className="text-3xl font-thin text-white/90 tracking-tight mb-2">
+      <div className="mb-6 md:mb-12">
+        <h1 className="text-xl md:text-3xl font-thin text-white/90 tracking-tight mb-2">
           {vendor?.store_name || 'Dashboard'}
         </h1>
-        <p className="text-white/40 text-xs font-light tracking-wide">
+        <p className="text-white/40 text-[10px] md:text-xs font-light tracking-wide">
           {vendorBranding?.store_tagline?.toUpperCase() || 'VENDOR PORTAL'} · {new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }).toUpperCase()}
         </p>
       </div>
 
       {/* Key Metrics */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
-        {/* Live Products */}
-        <div className="minimal-glass subtle-glow p-6 hover:bg-white/[0.03] transition-all duration-300 group fade-in">
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-white/40 text-[11px] uppercase tracking-[0.2em] font-light">Live Products</span>
-            <Package size={16} className="text-white/20 group-hover:text-white/30 transition-all duration-300" strokeWidth={1.5} />
-          </div>
-          <div className="text-3xl font-thin text-white/90 mb-2">
-            {loading ? '—' : stats.approved}
-          </div>
-          <div className="text-white/30 text-[10px] font-light tracking-wider uppercase">Currently Selling</div>
-        </div>
-
-        {/* Pending Review */}
-        <div className="minimal-glass subtle-glow p-6 hover:bg-white/[0.03] transition-all duration-300 group fade-in" style={{ animationDelay: '0.1s' }}>
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-white/40 text-[11px] uppercase tracking-[0.2em] font-light">Pending Review</span>
-            <AlertCircle size={16} className="text-white/20 group-hover:text-white/30 transition-all duration-300" strokeWidth={1.5} />
-          </div>
-          <div className="text-3xl font-thin text-white/90 mb-2">
-            {loading ? '—' : stats.pending}
-          </div>
-          <div className="text-white/30 text-[10px] font-light tracking-wider uppercase">Awaiting Approval</div>
-        </div>
-
-        {/* Sales (30 Days) */}
-        <div className="minimal-glass subtle-glow p-6 hover:bg-white/[0.03] transition-all duration-300 group fade-in" style={{ animationDelay: '0.2s' }}>
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-white/40 text-[11px] uppercase tracking-[0.2em] font-light">Revenue (30d)</span>
-            <DollarSign size={16} className="text-white/20 group-hover:text-white/30 transition-all duration-300" strokeWidth={1.5} />
-          </div>
-          <div className="text-3xl font-thin text-white/90 mb-2">
-            ${loading ? '—' : stats.totalSales30d.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-          </div>
-          <div className="text-white/30 text-[10px] font-light tracking-wider uppercase">This Month</div>
-        </div>
-
-        {/* Low Stock */}
-        <div className="minimal-glass subtle-glow p-6 hover:bg-white/[0.03] transition-all duration-300 group fade-in" style={{ animationDelay: '0.3s' }}>
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-white/40 text-[11px] uppercase tracking-[0.2em] font-light">Low Stock</span>
-            <AlertTriangle size={16} className="text-white/20 group-hover:text-white/30 transition-all duration-300" strokeWidth={1.5} />
-          </div>
-          <div className="text-3xl font-thin text-white/90 mb-2">
-            {loading ? '—' : stats.lowStock}
-          </div>
-          <div className="text-white/30 text-[10px] font-light tracking-wider uppercase">
-            {stats.lowStock > 0 ? 'Need Restocking' : 'All Stocked'}
-          </div>
-        </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 md:gap-3 mb-4 md:mb-8">
+        <StatCard
+          label="Live Products"
+          value={loading ? '—' : stats.approved}
+          sublabel="Currently Selling"
+          icon={Package}
+          loading={loading}
+          delay="0s"
+        />
+        <StatCard
+          label="Pending Review"
+          value={loading ? '—' : stats.pending}
+          sublabel="Awaiting Approval"
+          icon={AlertCircle}
+          loading={loading}
+          delay="0.1s"
+        />
+        <StatCard
+          label="Revenue (30d)"
+          value={loading ? '—' : `$${stats.totalSales30d.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+          sublabel="This Month"
+          icon={DollarSign}
+          loading={loading}
+          delay="0.2s"
+        />
+        <StatCard
+          label="Low Stock"
+          value={loading ? '—' : stats.lowStock}
+          sublabel={stats.lowStock > 0 ? 'Need Restocking' : 'All Stocked'}
+          icon={AlertTriangle}
+          loading={loading}
+          delay="0.3s"
+        />
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-2 lg:grid-cols-6 gap-3 mb-8 fade-in" style={{ animationDelay: '0.4s' }}>
-        <Link
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-2 md:gap-3 mb-4 md:mb-8">
+        <QuickAction
           href={`/storefront?vendor=${vendor?.slug || 'flora-distro'}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="group minimal-glass hover:bg-white/[0.03] p-6 transition-all duration-300 relative overflow-hidden flex items-center gap-4 col-span-2 lg:col-span-2 border-white/10"
-        >
-          <div className="w-10 h-10 bg-gradient-to-br from-blue-500/20 to-cyan-500/10 flex items-center justify-center transition-all duration-300 group-hover:scale-110 border border-blue-500/20 group-hover:border-blue-500/30">
-            <Store size={20} className="text-blue-400 group-hover:text-blue-300 transition-colors duration-300" strokeWidth={1.5} />
-          </div>
-          <div className="flex-1">
-            <div className="text-white/90 group-hover:text-white text-sm uppercase tracking-[0.15em] font-light transition-colors duration-300 mb-1">View Storefront</div>
-            <div className="text-white/40 text-[10px] uppercase tracking-wider">Live Preview</div>
-          </div>
-          <ArrowUpRight size={16} className="text-white/30 group-hover:text-white/60 transition-all duration-300" />
-        </Link>
-
-        <Link
+          icon={Store}
+          label="View Storefront"
+          sublabel="Live Preview"
+          variant="highlight"
+          external
+          cols={2}
+        />
+        <QuickAction
           href="/vendor/products/new"
-          className="group minimal-glass hover:bg-white/[0.03] p-6 transition-all duration-300 relative overflow-hidden flex items-center gap-4"
-        >
-          <div className="w-10 h-10 bg-gradient-to-br from-white/10 to-white/5 flex items-center justify-center transition-all duration-300 group-hover:scale-110 border border-white/10">
-            <Plus size={20} className="text-white/60 group-hover:text-white transition-colors duration-300" strokeWidth={1.5} />
-          </div>
-          <div className="text-white/80 group-hover:text-white text-xs uppercase tracking-[0.15em] font-light transition-colors duration-300">Add Product</div>
-        </Link>
-
-        <Link
+          icon={Plus}
+          label="Add Product"
+        />
+        <QuickAction
           href="/vendor/products"
-          className="group minimal-glass hover:bg-white/[0.03] p-6 transition-all duration-300 flex items-center gap-4"
-        >
-          <div className="w-10 h-10 bg-gradient-to-br from-white/10 to-white/5 rounded-[12px] flex items-center justify-center transition-all duration-300 group-hover:scale-110 border border-white/10">
-            <Package size={20} className="text-white/60 group-hover:text-white transition-colors duration-300" strokeWidth={1.5} />
-          </div>
-          <div className="text-white/80 group-hover:text-white text-xs uppercase tracking-[0.15em] font-light transition-colors duration-300">My Products</div>
-        </Link>
-
-        <Link
+          icon={Package}
+          label="My Products"
+        />
+        <QuickAction
           href="/vendor/inventory"
-          className="group minimal-glass hover:bg-white/[0.03] p-6 transition-all duration-300 flex items-center gap-4"
-        >
-          <div className="w-10 h-10 bg-gradient-to-br from-white/10 to-white/5 rounded-[12px] flex items-center justify-center transition-all duration-300 group-hover:scale-110 border border-white/10">
-            <TrendingUp size={20} className="text-white/60 group-hover:text-white transition-colors duration-300" strokeWidth={1.5} />
-          </div>
-          <div className="text-white/80 group-hover:text-white text-xs uppercase tracking-[0.15em] font-light transition-colors duration-300">Inventory</div>
-        </Link>
-
-        <Link
+          icon={TrendingUp}
+          label="Inventory"
+        />
+        <QuickAction
           href="/vendor/media-library"
-          className="group minimal-glass hover:bg-white/[0.03] p-6 transition-all duration-300 flex items-center gap-4"
-        >
-          <div className="w-10 h-10 bg-gradient-to-br from-white/10 to-white/5 rounded-[12px] flex items-center justify-center transition-all duration-300 group-hover:scale-110 border border-white/10">
-            <Image size={20} className="text-white/60 group-hover:text-white transition-colors duration-300" strokeWidth={1.5} />
-          </div>
-          <div className="text-white/80 group-hover:text-white text-xs uppercase tracking-[0.15em] font-light transition-colors duration-300">Media</div>
-        </Link>
-
-        <Link
+          icon={Image}
+          label="Media"
+        />
+        <QuickAction
           href="/vendor/branding"
-          className="group minimal-glass hover:bg-white/[0.03] p-6 transition-all duration-300 flex items-center gap-4"
-        >
-          <div className="w-10 h-10 bg-gradient-to-br from-white/10 to-white/5 rounded-[12px] flex items-center justify-center transition-all duration-300 group-hover:scale-110 border border-white/10">
-            <Palette size={20} className="text-white/60 group-hover:text-white transition-colors duration-300" strokeWidth={1.5} />
-          </div>
-          <div className="text-white/80 group-hover:text-white text-xs uppercase tracking-[0.15em] font-light transition-colors duration-300">Branding</div>
-        </Link>
-
-        <Link
+          icon={Palette}
+          label="Branding"
+        />
+        <QuickAction
           href="/vendor/component-editor"
-          className="group minimal-glass hover:bg-white/[0.03] p-6 transition-all duration-300 flex items-center gap-4"
-        >
-          <div className="w-10 h-10 bg-gradient-to-br from-white/10 to-white/5 rounded-[12px] flex items-center justify-center transition-all duration-300 group-hover:scale-110 border border-white/10">
-            <FileCode size={20} className="text-white/60 group-hover:text-white transition-colors duration-300" strokeWidth={1.5} />
-          </div>
-          <div className="text-white/80 group-hover:text-white text-xs uppercase tracking-[0.15em] font-light transition-colors duration-300">Editor</div>
-        </Link>
+          icon={FileCode}
+          label="Editor"
+        />
       </div>
 
       {/* Recent Products & Low Stock */}
-      <div className="space-y-6">
+      <div className="space-y-4 md:space-y-6">
         {recentProducts.length > 0 && (
-          <div className="minimal-glass">
-            <div className="border-b border-white/5 p-6 flex justify-between items-center">
-              <h2 className="text-white/40 text-[11px] font-light tracking-[0.2em] uppercase">Recent Products</h2>
-              <Link href="/vendor/products" className="text-white/60 hover:text-white text-xs uppercase tracking-wider transition-colors">
-                View All
-              </Link>
-            </div>
-            <div className="divide-y divide-white/10">
+          <Card padding="none" className="">
+            <CardHeader
+              title="Recent Products"
+              subtitle="Latest submissions"
+              action={
+                <Link href="/vendor/products" className="text-white/60 hover:text-white text-xs uppercase tracking-wider transition-colors">
+                  View All
+                </Link>
+              }
+            />
+            <div className="divide-y divide-white/5">
               {recentProducts.map((product) => (
-                <div key={product.id} className="p-6 hover:bg-white/[0.02] transition-all">
-                  <div className="flex items-center gap-4">
-                    <div className="w-16 h-16 bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                <div key={product.id} className="list-item">
+                  <div className="flex items-center gap-2 md:gap-4">
+                    <div className="w-12 h-12 md:w-16 md:h-16 bg-white/5 border border-white/10 rounded-lg md:rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden">
                       {product.image ? (
                         <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
                       ) : (
-                        <Package size={20} className="text-white/30" />
+                        <>
+                          <Package size={16} className="text-white/30 md:hidden" />
+                          <Package size={20} className="text-white/30 hidden md:block" />
+                        </>
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="text-white font-medium mb-1 text-sm">{product.name}</div>
-                      <div className="flex items-center gap-2 text-xs text-white/40">
-                        <Calendar size={12} />
+                      <div className="text-white font-medium mb-1 text-xs md:text-sm">{product.name}</div>
+                      <div className="flex items-center gap-2 text-[10px] md:text-xs text-white/40">
+                        <Calendar size={10} className="md:hidden" />
+                        <Calendar size={12} className="hidden md:block" />
                         <span>{product.submittedDate}</span>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3">
-                      {getStatusBadge(product.status)}
-                      <Link href="/vendor/inventory" className="text-white/60 hover:text-white text-xs transition-colors">
+                    <div className="flex items-center gap-2 md:gap-3">
+                      <Badge
+                        variant={
+                          product.status === 'approved' ? 'success' :
+                          product.status === 'rejected' ? 'error' :
+                          'neutral'
+                        }
+                      >
+                        {product.status}
+                      </Badge>
+                      <Link href="/vendor/inventory" className="button-secondary px-2 md:px-3 py-1.5 md:py-2 text-[9px] md:text-[10px]">
                         View
                       </Link>
                     </div>
@@ -388,33 +340,34 @@ export default function VendorDashboard() {
                 </div>
               ))}
             </div>
-          </div>
+          </Card>
         )}
 
         {lowStockItems.length > 0 && (
-          <div className="minimal-glass border-red-500/10">
-            <div className="border-b border-white/5 p-6 flex items-center gap-3">
-              <AlertTriangle size={16} className="text-red-500" strokeWidth={1.5} />
-              <h2 className="text-white/40 text-[11px] font-light tracking-[0.2em] uppercase">Low Inventory Warnings</h2>
+          <Card padding="none" className="border-red-500/10">
+            <div className="border-b border-white/5 p-4 md:p-6 flex items-center gap-2 md:gap-3">
+              <AlertTriangle size={14} className="text-red-500 md:hidden" strokeWidth={1.5} />
+              <AlertTriangle size={16} className="text-red-500 hidden md:block" strokeWidth={1.5} />
+              <h2 className="text-label text-xs md:text-sm">Low Inventory Warnings</h2>
             </div>
             <div className="divide-y divide-white/5">
               {lowStockItems.map((item) => (
-                <div key={item.id} className="p-6 hover:bg-white/[0.02] transition-all">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="text-white font-medium mb-1">{item.name}</div>
-                      <div className="text-xs text-white/60">
+                <div key={item.id} className="list-item">
+                  <div className="flex items-center justify-between gap-2 md:gap-4">
+                    <div className="flex-1 min-w-0">
+                      <div className="text-white font-medium mb-1 text-xs md:text-sm">{item.name}</div>
+                      <div className="text-[10px] md:text-xs text-white/60">
                         Only <span className="text-red-500 font-medium">{item.currentStock}g</span> remaining (Threshold: {item.threshold}g)
                       </div>
                     </div>
-                    <Link href="/vendor/inventory" className="text-xs text-white bg-black border border-white/20 hover:bg-white hover:text-black hover:border-white px-4 py-2 uppercase tracking-wider transition-all duration-300">
+                    <Link href="/vendor/inventory" className="button-secondary px-2 md:px-4 py-1.5 md:py-2 text-[9px] md:text-[10px] hover:bg-white hover:text-black hover:border-white flex-shrink-0">
                       Restock
                     </Link>
                   </div>
                 </div>
               ))}
             </div>
-          </div>
+          </Card>
         )}
 
         <VendorProfitWidget />

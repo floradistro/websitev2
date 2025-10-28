@@ -2,7 +2,10 @@
 
 import { useEffect, useState, useMemo } from 'react';
 import Image from 'next/image';
-import { ShoppingBag } from 'lucide-react';
+import { ShoppingBag, Eye, Package } from 'lucide-react';
+import { POSQuickView } from './POSQuickView';
+import { POSVendorDropdown } from './POSVendorDropdown';
+import { useAppAuth } from '@/context/AppAuthContext';
 
 interface PricingTier {
   break_id: string;
@@ -13,19 +16,40 @@ interface PricingTier {
   sort_order?: number;
 }
 
+interface ProductField {
+  label: string;
+  value: string;
+  type: string;
+}
+
+interface Vendor {
+  id: string;
+  store_name: string;
+  logo_url: string | null;
+}
+
 interface Product {
   id: string;
   name: string;
   price: number;
   image_url: string | null;
   category: string | null;
+  description?: string | null;
+  short_description?: string | null;
+  fields?: ProductField[];
   inventory_quantity: number;
   inventory_id: string;
   pricing_tiers?: PricingTier[];
+  vendor?: Vendor | null;
 }
 
 interface POSProductGridProps {
   locationId: string;
+  locationName?: string;
+  vendorId?: string;
+  userId?: string;
+  userName?: string;
+  registerId?: string;
   onAddToCart: (product: Product, quantity: number) => void;
   onProductClick?: (productSlug: string) => void;
   displayMode?: 'cards' | 'list' | 'compact';
@@ -34,16 +58,23 @@ interface POSProductGridProps {
 
 export function POSProductGrid({
   locationId,
+  locationName = 'Location',
+  vendorId,
+  userId,
+  userName = 'Staff',
+  registerId,
   onAddToCart,
   onProductClick,
   displayMode = 'cards',
   showInventory = true,
 }: POSProductGridProps) {
+  const { vendor } = useAppAuth();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
 
   // Load location inventory
   useEffect(() => {
@@ -115,8 +146,68 @@ export function POSProductGrid({
 
   if (loading) {
     return (
-      <div className="bg-white/5 border border-white/10 rounded-2xl p-8">
-        <div className="text-white/40 text-center">Loading inventory...</div>
+      <div className="h-full flex flex-col">
+        {/* Loading Toolbar */}
+        <div className="flex-shrink-0 p-4 border-b border-white/5">
+          <div className="flex items-center gap-2">
+            {/* Vendor Logo Skeleton */}
+            <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-2xl px-3 py-2">
+              <div className="w-8 h-8 bg-white/10 rounded-lg animate-pulse flex-shrink-0" />
+              <div className="w-3 h-3 bg-white/10 rounded animate-pulse" />
+            </div>
+
+            {/* Search Bar Skeleton */}
+            <div className="flex-1 h-10 bg-white/5 border border-white/10 rounded-2xl animate-pulse" />
+
+            {/* Category Dropdown Skeleton */}
+            <div className="w-40 h-10 bg-white/5 border border-white/10 rounded-2xl animate-pulse" />
+          </div>
+        </div>
+
+        {/* Loading Products Grid */}
+        <div className="flex-1 overflow-y-auto px-4 pb-4 pt-4">
+          <div className="grid grid-cols-3 gap-4">
+            {[...Array(9)].map((_, i) => (
+              <div
+                key={i}
+                className="bg-white/5 border border-white/10 rounded-2xl p-4 relative overflow-hidden"
+                style={{
+                  animationDelay: `${i * 100}ms`,
+                }}
+              >
+                {/* Shimmer effect */}
+                <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/5 to-transparent" />
+
+                {/* Product Image Skeleton */}
+                <div className="aspect-square bg-white/10 rounded-xl mb-3 flex items-center justify-center">
+                  <Package size={48} className="text-white/20 animate-pulse" />
+                </div>
+
+                {/* Product Name Skeleton */}
+                <div className="h-5 bg-white/10 rounded-lg mb-2 animate-pulse" />
+                <div className="h-4 bg-white/10 rounded-lg w-2/3 mb-3 animate-pulse" />
+
+                {/* Price Skeleton */}
+                <div className="h-6 bg-white/10 rounded-lg w-1/2 mb-3 animate-pulse" />
+
+                {/* Button Skeleton */}
+                <div className="h-10 bg-white/10 rounded-xl animate-pulse" />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Loading indicator with text */}
+        <div className="flex-shrink-0 p-4 border-t border-white/5">
+          <div className="flex items-center justify-center gap-3 text-white/40">
+            <div className="flex gap-1">
+              <div className="w-2 h-2 bg-white/40 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+              <div className="w-2 h-2 bg-white/40 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+              <div className="w-2 h-2 bg-white/40 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+            </div>
+            <span className="text-xs uppercase tracking-[0.15em]">Loading products</span>
+          </div>
+        </div>
       </div>
     );
   }
@@ -139,31 +230,47 @@ export function POSProductGrid({
   return (
     <div className="h-full flex flex-col">
       {/* Search & Filters - Fixed at top */}
-      <div className="flex-shrink-0 p-4 border-b border-white/5">
-        <div className="flex gap-2 mb-3">
+      <div className="flex-shrink-0 p-4 border-b border-white/5 relative z-20">
+        <div className="flex gap-2">
+          {/* Vendor Logo Dropdown */}
+          <POSVendorDropdown
+            locationId={locationId}
+            locationName={locationName}
+            vendorId={vendorId}
+            userId={userId}
+            userName={userName}
+            registerId={registerId}
+          />
+
+          {/* Search */}
           <input
             type="text"
-            placeholder="Search..."
+            placeholder={`Search ${filteredProducts.length} products...`}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="flex-1 bg-white/5 border border-white/10 text-white px-3 py-2.5 rounded-2xl text-[10px] uppercase tracking-[0.15em] focus:outline-none focus:border-white/20 placeholder-white/40 hover:bg-white/10 transition-all"
           />
-          <select
-            value={selectedCategory || ''}
-            onChange={(e) => setSelectedCategory(e.target.value)}
-            className="bg-white/5 border border-white/10 text-white px-3 py-2.5 rounded-2xl text-[10px] uppercase tracking-[0.15em] focus:outline-none focus:border-white/20 hover:bg-white/10 transition-all min-w-[140px]"
-          >
-            {categories.map((cat) => (
-              <option key={cat} value={cat || ''} className="bg-black">
-                {cat === 'all' ? 'All Categories' : cat}
-              </option>
-            ))}
-          </select>
-        </div>
 
-        {/* Product Count */}
-        <div className="text-white/40 text-[10px] uppercase tracking-[0.15em]">
-          {filteredProducts.length} Products
+          {/* Category Dropdown */}
+          <div className="relative">
+            <select
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              className="bg-white/5 border border-white/10 text-white px-3 py-2.5 rounded-2xl text-[10px] uppercase tracking-[0.15em] focus:outline-none focus:border-white/20 hover:bg-white/10 transition-all min-w-[140px] cursor-pointer appearance-none pr-8"
+            >
+              {categories.map((cat) => (
+                <option key={cat} value={cat || 'all'} className="bg-black text-white">
+                  {cat === 'all' ? 'All Categories' : cat}
+                </option>
+              ))}
+            </select>
+            {/* Dropdown arrow */}
+            <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+              <svg className="w-3 h-3 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -176,12 +283,14 @@ export function POSProductGrid({
         ) : displayMode === 'cards' ? (
           <div className="grid grid-cols-3 gap-4">
             {filteredProducts.map((product) => (
-              <ProductCard 
-                key={product.id} 
-                product={product} 
+              <ProductCard
+                key={product.id}
+                product={product}
                 onAddToCart={handleAddProduct}
                 onProductClick={onProductClick}
+                onQuickView={setQuickViewProduct}
                 showInventory={showInventory}
+                vendorLogo={vendor?.logo_url || null}
               />
             ))}
           </div>
@@ -234,6 +343,15 @@ export function POSProductGrid({
           </div>
         )}
       </div>
+
+      {/* Quick View Modal */}
+      {quickViewProduct && (
+        <POSQuickView
+          product={quickViewProduct}
+          onClose={() => setQuickViewProduct(null)}
+          onAddToCart={onAddToCart}
+        />
+      )}
     </div>
   );
 }
@@ -243,10 +361,12 @@ interface ProductCardProps {
   product: Product;
   onAddToCart: (product: Product, priceTier?: PricingTier) => void;
   onProductClick?: (productSlug: string) => void;
+  onQuickView?: (product: Product) => void;
   showInventory: boolean;
+  vendorLogo: string | null;
 }
 
-function ProductCard({ product, onAddToCart, onProductClick, showInventory }: ProductCardProps) {
+function ProductCard({ product, onAddToCart, onProductClick, onQuickView, showInventory, vendorLogo }: ProductCardProps) {
   const [selectedTierIndex, setSelectedTierIndex] = useState<number | null>(null);
   const [showAddButton, setShowAddButton] = useState(false);
   
@@ -318,19 +438,34 @@ function ProductCard({ product, onAddToCart, onProductClick, showInventory }: Pr
             loading="lazy"
             quality={85}
           />
+        ) : vendorLogo ? (
+          <div className="w-full h-full flex items-center justify-center bg-white/5 p-8">
+            <Image
+              src={vendorLogo}
+              alt="Vendor Logo"
+              fill
+              sizes="33vw"
+              className="object-contain opacity-20"
+              loading="lazy"
+            />
+          </div>
         ) : (
           <div className="w-full h-full flex items-center justify-center text-white/20">
-            <div className="text-4xl">📦</div>
+            <Package size={48} className="text-white/20" />
           </div>
         )}
         
-        {/* Quick View Hint */}
-        {onProductClick && (
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center">
-            <div className="text-white text-[10px] uppercase tracking-[0.15em] font-black bg-white/10 px-4 py-2 rounded-xl border border-white/20">
-              Quick View
-            </div>
-          </div>
+        {/* Quick View Button */}
+        {onQuickView && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onQuickView(product);
+            }}
+            className="absolute top-2 right-2 w-8 h-8 bg-black/80 backdrop-blur-sm hover:bg-white hover:text-black rounded-xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 border border-white/20"
+          >
+            <Eye size={14} />
+          </button>
         )}
       </div>
 
@@ -392,7 +527,7 @@ function ProductCard({ product, onAddToCart, onProductClick, showInventory }: Pr
             {showAddButton && (
               <button
                 onClick={handleAddClick}
-                className="w-full bg-white text-black border-2 border-white rounded-2xl py-3 text-[10px] uppercase tracking-[0.15em] hover:bg-black hover:text-white font-black transition-all duration-300 flex items-center justify-center gap-2"
+                className="w-full bg-white/10 text-white border-2 border-white/20 rounded-2xl py-3 text-[10px] uppercase tracking-[0.15em] hover:bg-white/20 hover:border-white/30 font-black transition-all duration-300 flex items-center justify-center gap-2"
                 style={{ fontWeight: 900 }}
               >
                 <ShoppingBag size={12} strokeWidth={2.5} />
@@ -403,7 +538,7 @@ function ProductCard({ product, onAddToCart, onProductClick, showInventory }: Pr
         ) : product.inventory_quantity > 0 ? (
           <button
             onClick={handleAddClick}
-            className="w-full bg-white text-black border-2 border-white rounded-2xl py-3 text-[10px] uppercase tracking-[0.15em] hover:bg-black hover:text-white font-black transition-all duration-300 flex items-center justify-center gap-2 mt-auto"
+            className="w-full bg-white/10 text-white border-2 border-white/20 rounded-2xl py-3 text-[10px] uppercase tracking-[0.15em] hover:bg-white/20 hover:border-white/30 font-black transition-all duration-300 flex items-center justify-center gap-2 mt-auto"
             style={{ fontWeight: 900 }}
           >
             <ShoppingBag size={12} strokeWidth={2.5} />

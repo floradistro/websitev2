@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { DollarSign, Save, AlertCircle, Check, Calculator, Package, Plus, Trash2 } from 'lucide-react';
 import { showNotification } from '@/components/NotificationToast';
-import { useVendorAuth } from '@/context/VendorAuthContext';
+import { useAppAuth } from '@/context/AppAuthContext';
 
 // Unit conversion utilities (inline to avoid SSR issues)
 const CONVERSIONS: any = {
@@ -62,7 +62,7 @@ interface PricingConfig {
 }
 
 export default function VendorPricingPage() {
-  const { vendor, isAuthenticated, isLoading: authLoading } = useVendorAuth();
+  const { vendor, isAuthenticated, isLoading: authLoading } = useAppAuth();
   const [loading, setLoading] = useState(true);
   const [configs, setConfigs] = useState<PricingConfig[]>([]);
   const [availableBlueprints, setAvailableBlueprints] = useState<Blueprint[]>([]);
@@ -73,7 +73,7 @@ export default function VendorPricingPage() {
 
   useEffect(() => {
     if (!authLoading && isAuthenticated) {
-      const vendorId = localStorage.getItem('vendor_id');
+      const vendorId = vendor?.id;
       if (vendorId) {
         loadPricingData(vendorId);
       }
@@ -179,7 +179,7 @@ export default function VendorPricingPage() {
   }
 
   async function enableBlueprint(blueprintId: string) {
-    const vendorId = localStorage.getItem('vendor_id');
+    const vendorId = vendor?.id;
     if (!vendorId) return;
 
     // Find the blueprint to initialize pricing_values properly
@@ -231,7 +231,7 @@ export default function VendorPricingPage() {
   }
 
   async function saveConfig(config: PricingConfig) {
-    const vendorId = localStorage.getItem('vendor_id');
+    const vendorId = vendor?.id;
     if (!vendorId) return;
 
     // Validate at least one tier is enabled with a price
@@ -318,7 +318,7 @@ export default function VendorPricingPage() {
   }
 
   async function disableConfig(configId: string, configName: string) {
-    const vendorId = localStorage.getItem('vendor_id');
+    const vendorId = vendor?.id;
     if (!vendorId) return;
 
     try {
@@ -359,27 +359,8 @@ export default function VendorPricingPage() {
 
   return (
     <div className="w-full px-4 lg:px-0">
-      <style jsx>{`
-        @keyframes fade-in {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .fade-in {
-          animation: fade-in 0.6s ease-out;
-        }
-        .minimal-glass {
-          background: rgba(255, 255, 255, 0.02);
-          backdrop-filter: blur(20px);
-          border: 1px solid rgba(255, 255, 255, 0.05);
-          border-radius: 20px;
-        }
-        .subtle-glow {
-          box-shadow: 0 0 30px rgba(255, 255, 255, 0.02);
-        }
-      `}</style>
-
       {/* Header */}
-      <div className="flex justify-between items-start gap-4 mb-12 fade-in">
+      <div className="flex justify-between items-start gap-4 mb-12">
         <div className="min-w-0">
           <h1 className="text-3xl font-thin text-white/90 tracking-tight mb-2">
             Pricing Configuration
@@ -399,7 +380,7 @@ export default function VendorPricingPage() {
       </div>
 
       {/* Info Banner */}
-      <div className="minimal-glass p-6 mb-8 fade-in" style={{ animationDelay: '0.1s' }}>
+      <div className="minimal-glass p-6 mb-8">
         <div className="flex gap-3">
           <AlertCircle size={20} className="text-white/60 flex-shrink-0 mt-0.5" />
           <div>

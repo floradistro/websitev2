@@ -3,18 +3,20 @@
  * Reduces from 16 items to 10 core features
  */
 
-import { 
-  Home, 
-  Package, 
-  ShoppingBag, 
-  TrendingUp, 
+import {
+  Home,
+  Package,
+  ShoppingBag,
+  TrendingUp,
   BarChart3,
   Settings,
   Palette,
   DollarSign,
   FileText,
   Image,
-  Layers
+  Layers,
+  CreditCard,
+  Tv
 } from 'lucide-react';
 
 export interface NavItem {
@@ -54,6 +56,14 @@ export const vendorNavItems: NavItem[] = [
     group: 'sales'
   },
   { 
+    href: '/pos/register', 
+    icon: CreditCard, 
+    label: 'Point of Sale',
+    description: 'In-store register',
+    isCore: true,
+    group: 'sales'
+  },
+  { 
     href: '/vendor/analytics', 
     icon: TrendingUp, 
     label: 'Analytics',
@@ -88,20 +98,28 @@ export const vendorNavItems: NavItem[] = [
     group: 'core'
   },
   
-  // Content & Media (2)
-  { 
-    href: '/vendor/media-library', 
-    icon: Image, 
+  // Content & Media (3)
+  {
+    href: '/vendor/media-library',
+    icon: Image,
     label: 'Media',
     description: 'Images & assets',
     isCore: false,
     group: 'content'
   },
-  { 
-    href: '/vendor/branding', 
-    icon: Palette, 
+  {
+    href: '/vendor/branding',
+    icon: Palette,
     label: 'Branding',
     description: 'Store customization',
+    isCore: false,
+    group: 'content'
+  },
+  {
+    href: '/vendor/tv-menus',
+    icon: Tv,
+    label: 'Digital Signage',
+    description: 'TV menus & displays',
     isCore: false,
     group: 'content'
   },
@@ -134,6 +152,8 @@ export const secondaryFeatures = [
   { href: '/vendor/domains', parent: '/vendor/branding', label: 'Custom Domains' },
   { href: '/vendor/lab-results', parent: '/vendor/products', label: 'Lab Results' },
   { href: '/vendor/purchase-orders', parent: '/vendor/inventory', label: 'Purchase Orders' },
+  { href: '/vendor/suppliers', parent: '/vendor/inventory', label: 'Suppliers' },
+  { href: '/vendor/wholesale-customers', parent: '/vendor/inventory', label: 'Wholesale Customers' },
   { href: '/vendor/reviews', parent: '/vendor/products', label: 'Reviews' },
   { href: '/vendor/component-editor', parent: '/vendor/branding', label: 'Visual Editor' },
   { href: '/vendor/cost-plus-pricing', parent: '/vendor/pricing', label: 'Cost+ Pricing' },

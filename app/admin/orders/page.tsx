@@ -108,57 +108,10 @@ export default function AdminOrders() {
 
   return (
     <div className="w-full px-4 lg:px-0">
-      <style jsx>{`
-        @keyframes fade-in {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .fade-in {
-          animation: fade-in 0.6s ease-out;
-        }
-        .minimal-glass {
-          background: rgba(255, 255, 255, 0.02);
-          backdrop-filter: blur(20px);
-          border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-        .subtle-glow {
-          box-shadow: 0 0 30px rgba(255, 255, 255, 0.02);
-        }
-        /* Modern minimal checkbox */
-        input[type="checkbox"] {
-          appearance: none;
-          -webkit-appearance: none;
-          width: 16px;
-          height: 16px;
-          border: 1px solid rgba(255, 255, 255, 0.15);
-          background: rgba(255, 255, 255, 0.03);
-          cursor: pointer;
-          position: relative;
-          transition: all 0.3s ease;
-        }
-        input[type="checkbox"]:hover {
-          border-color: rgba(255, 255, 255, 0.25);
-          background: rgba(255, 255, 255, 0.05);
-        }
-        input[type="checkbox"]:checked {
-          background: rgba(255, 255, 255, 0.1);
-          border-color: rgba(255, 255, 255, 0.3);
-        }
-        input[type="checkbox"]:checked::after {
-          content: '';
-          position: absolute;
-          left: 5px;
-          top: 2px;
-          width: 4px;
-          height: 8px;
-          border: solid rgba(255, 255, 255, 0.9);
-          border-width: 0 1.5px 1.5px 0;
-          transform: rotate(45deg);
-        }
-      `}</style>
+      
 
       {/* Header */}
-      <div className="mb-12 flex items-center justify-between gap-4 flex-wrap fade-in">
+      <div className="mb-12 flex items-center justify-between gap-4 flex-wrap">
         <div>
           <h1 className="text-3xl font-thin text-white/90 tracking-tight mb-2">
             Transactions
@@ -187,7 +140,7 @@ export default function AdminOrders() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
-        <div className="minimal-glass subtle-glow p-6 hover:bg-white/[0.03] transition-all duration-300 fade-in" style={{ animationDelay: '0.1s' }}>
+        <div className="minimal-glass subtle-glow p-6 hover:bg-white/[0.03] transition-all duration-300">
           <div className="flex items-center justify-between mb-4">
             <CreditCard size={16} className="text-white/20" strokeWidth={1.5} />
             <span className="text-3xl font-thin text-white">
@@ -197,7 +150,7 @@ export default function AdminOrders() {
           <p className="text-white/40 text-[11px] uppercase tracking-[0.2em] font-light">Total Revenue</p>
         </div>
 
-        <div className="minimal-glass subtle-glow p-6 hover:bg-white/[0.03] transition-all duration-300 fade-in" style={{ animationDelay: '0.2s' }}>
+        <div className="minimal-glass subtle-glow p-6 hover:bg-white/[0.03] transition-all duration-300">
           <div className="flex items-center justify-between mb-4">
             <Package size={16} className="text-white/20" strokeWidth={1.5} />
             <span className="text-3xl font-thin text-white">
@@ -207,7 +160,7 @@ export default function AdminOrders() {
           <p className="text-white/40 text-[11px] uppercase tracking-[0.2em] font-light">Paid Orders</p>
         </div>
 
-        <div className="minimal-glass subtle-glow p-6 hover:bg-white/[0.03] transition-all duration-300 fade-in" style={{ animationDelay: '0.3s' }}>
+        <div className="minimal-glass subtle-glow p-6 hover:bg-white/[0.03] transition-all duration-300">
           <div className="flex items-center justify-between mb-4">
             <TruckIcon size={16} className="text-white/20" strokeWidth={1.5} />
             <span className="text-3xl font-thin text-white">
@@ -217,7 +170,7 @@ export default function AdminOrders() {
           <p className="text-white/40 text-[11px] uppercase tracking-[0.2em] font-light">Processing</p>
         </div>
 
-        <div className="minimal-glass subtle-glow p-6 hover:bg-white/[0.03] transition-all duration-300 fade-in" style={{ animationDelay: '0.4s' }}>
+        <div className="minimal-glass subtle-glow p-6 hover:bg-white/[0.03] transition-all duration-300">
           <div className="flex items-center justify-between mb-4">
             <CheckCircle size={16} className="text-white/20" strokeWidth={1.5} />
             <span className="text-3xl font-thin text-white">
@@ -229,7 +182,7 @@ export default function AdminOrders() {
       </div>
 
       {/* Filters & Search */}
-      <div className="mb-8 grid grid-cols-1 md:grid-cols-3 gap-3 fade-in" style={{ animationDelay: '0.5s' }}>
+      <div className="mb-8 grid grid-cols-1 md:grid-cols-3 gap-3">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30" size={16} strokeWidth={1.5} />
           <input
@@ -280,14 +233,14 @@ export default function AdminOrders() {
           <div className="text-white/20 text-xs font-light tracking-wider">LOADING ORDERS...</div>
         </div>
       ) : filteredOrders.length === 0 ? (
-        <div className="minimal-glass subtle-glow p-12 text-center fade-in">
+        <div className="minimal-glass subtle-glow p-12 text-center">
           <Package size={32} className="mx-auto mb-4 text-white/10" strokeWidth={1.5} />
           <p className="text-white/30 text-xs font-light tracking-wider uppercase">No Orders Found</p>
         </div>
       ) : (
         <>
           {/* Desktop Table */}
-          <div className="hidden lg:block minimal-glass subtle-glow overflow-hidden fade-in" style={{ animationDelay: '0.6s' }}>
+          <div className="hidden lg:block minimal-glass subtle-glow overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead className="bg-black/20 border-b border-white/5">

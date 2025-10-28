@@ -14,13 +14,6 @@ export default function AdminPageWrapper({ children }: { children: ReactNode }) 
         .subtle-glow {
           box-shadow: 0 0 30px rgba(255, 255, 255, 0.02);
         }
-        @keyframes fade-in {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .fade-in {
-          animation: fade-in 0.6s ease-out;
-        }
         /* Modern minimal checkbox */
         input[type="checkbox"], input[type="radio"] {
           appearance: none;

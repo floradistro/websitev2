@@ -53,70 +53,10 @@ export default function AdminAnalytics() {
 
   return (
     <div className="w-full px-4 lg:px-0">
-      <style jsx>{`
-        @keyframes fade-in {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .fade-in {
-          animation: fade-in 0.6s ease-out;
-        }
-        .minimal-glass {
-          background: rgba(255, 255, 255, 0.02);
-          backdrop-filter: blur(20px);
-          border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-        .subtle-glow {
-          box-shadow: 0 0 30px rgba(255, 255, 255, 0.02);
-        }
-        /* Modern minimal checkbox */
-        input[type="checkbox"], input[type="radio"] {
-          appearance: none;
-          -webkit-appearance: none;
-          width: 16px;
-          height: 16px;
-          border: 1px solid rgba(255, 255, 255, 0.15);
-          background: rgba(255, 255, 255, 0.03);
-          cursor: pointer;
-          position: relative;
-          transition: all 0.3s ease;
-        }
-        input[type="checkbox"]:hover, input[type="radio"]:hover {
-          border-color: rgba(255, 255, 255, 0.25);
-          background: rgba(255, 255, 255, 0.05);
-        }
-        input[type="checkbox"]:checked, input[type="radio"]:checked {
-          background: rgba(255, 255, 255, 0.1);
-          border-color: rgba(255, 255, 255, 0.3);
-        }
-        input[type="checkbox"]:checked::after {
-          content: '';
-          position: absolute;
-          left: 5px;
-          top: 2px;
-          width: 4px;
-          height: 8px;
-          border: solid rgba(255, 255, 255, 0.9);
-          border-width: 0 1.5px 1.5px 0;
-          transform: rotate(45deg);
-        }
-        input[type="radio"] {
-          border-radius: 50%;
-        }
-        input[type="radio"]:checked::after {
-          content: '';
-          position: absolute;
-          left: 4px;
-          top: 4px;
-          width: 6px;
-          height: 6px;
-          border-radius: 50%;
-          background: rgba(255, 255, 255, 0.9);
-        }
-      `}</style>
+      
 
       {/* Header */}
-      <div className="mb-12 fade-in">
+      <div className="mb-12">
         <h1 className="text-3xl font-thin text-white/90 tracking-tight mb-2">
           Insights
         </h1>
@@ -126,7 +66,7 @@ export default function AdminAnalytics() {
       </div>
 
       {/* Time Range Selector */}
-      <div className="flex gap-2 mb-8 fade-in" style={{ animationDelay: '0.1s' }}>
+      <div className="flex gap-2 mb-8">
         <button
           onClick={() => setTimeRange('7d')}
           className={`px-5 py-2 text-[11px] uppercase tracking-[0.2em] font-light transition-all duration-300 ${
@@ -161,7 +101,7 @@ export default function AdminAnalytics() {
 
       {/* Key Metrics */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
-        <div className="minimal-glass subtle-glow p-6 hover:bg-white/[0.03] transition-all duration-300 fade-in" style={{ animationDelay: '0.2s' }}>
+        <div className="minimal-glass subtle-glow p-6 hover:bg-white/[0.03] transition-all duration-300">
           <div className="flex items-center justify-between mb-4">
             <span className="text-white/40 text-[11px] uppercase tracking-[0.2em] font-light">Revenue</span>
             <DollarSign size={16} className="text-white/20" strokeWidth={1.5} />
@@ -172,7 +112,7 @@ export default function AdminAnalytics() {
           <div className="text-white/30 text-[10px] font-light tracking-wider uppercase">Total Earnings</div>
         </div>
 
-        <div className="minimal-glass subtle-glow p-6 hover:bg-white/[0.03] transition-all duration-300 fade-in" style={{ animationDelay: '0.3s' }}>
+        <div className="minimal-glass subtle-glow p-6 hover:bg-white/[0.03] transition-all duration-300">
           <div className="flex items-center justify-between mb-4">
             <span className="text-white/40 text-[11px] uppercase tracking-[0.2em] font-light">Orders</span>
             <ShoppingCart size={16} className="text-white/20" strokeWidth={1.5} />
@@ -183,7 +123,7 @@ export default function AdminAnalytics() {
           <div className="text-white/30 text-[10px] font-light tracking-wider uppercase">Completed</div>
         </div>
 
-        <div className="minimal-glass subtle-glow p-6 hover:bg-white/[0.03] transition-all duration-300 fade-in" style={{ animationDelay: '0.4s' }}>
+        <div className="minimal-glass subtle-glow p-6 hover:bg-white/[0.03] transition-all duration-300">
           <div className="flex items-center justify-between mb-4">
             <span className="text-white/40 text-[11px] uppercase tracking-[0.2em] font-light">Avg Order</span>
             <TrendingUp size={16} className="text-white/20" strokeWidth={1.5} />
@@ -194,7 +134,7 @@ export default function AdminAnalytics() {
           <div className="text-white/30 text-[10px] font-light tracking-wider uppercase">Per Transaction</div>
         </div>
 
-        <div className="minimal-glass subtle-glow p-6 hover:bg-white/[0.03] transition-all duration-300 fade-in" style={{ animationDelay: '0.5s' }}>
+        <div className="minimal-glass subtle-glow p-6 hover:bg-white/[0.03] transition-all duration-300">
           <div className="flex items-center justify-between mb-4">
             <span className="text-white/40 text-[11px] uppercase tracking-[0.2em] font-light">Conversion</span>
             <Users size={16} className="text-white/20" strokeWidth={1.5} />
@@ -209,7 +149,7 @@ export default function AdminAnalytics() {
       {/* Charts */}
       <div className="grid lg:grid-cols-2 gap-3 mb-8">
         {/* Revenue Trend */}
-        <div className="minimal-glass subtle-glow p-6 fade-in" style={{ animationDelay: '0.6s' }}>
+        <div className="minimal-glass subtle-glow p-6">
           <div className="flex items-center justify-between mb-6">
             <div>
               <h3 className="text-white/40 text-[11px] font-light tracking-[0.2em] uppercase mb-2">Revenue Trend</h3>
@@ -257,7 +197,7 @@ export default function AdminAnalytics() {
         </div>
 
         {/* Sales by Category */}
-        <div className="minimal-glass subtle-glow p-6 fade-in" style={{ animationDelay: '0.7s' }}>
+        <div className="minimal-glass subtle-glow p-6">
           <div className="flex items-center justify-between mb-6">
             <div>
               <h3 className="text-white/40 text-[11px] font-light tracking-[0.2em] uppercase mb-2">Sales by Category</h3>
@@ -305,7 +245,7 @@ export default function AdminAnalytics() {
       {/* Top Performers */}
       <div className="grid lg:grid-cols-2 gap-3">
         {/* Top Vendors */}
-        <div className="minimal-glass subtle-glow p-6 fade-in" style={{ animationDelay: '0.8s' }}>
+        <div className="minimal-glass subtle-glow p-6">
           <div className="mb-6">
             <h3 className="text-white/40 text-[11px] font-light tracking-[0.2em] uppercase mb-2">Top Vendors</h3>
             <p className="text-white/30 text-[10px] font-light">HIGHEST PERFORMERS</p>
@@ -322,7 +262,7 @@ export default function AdminAnalytics() {
         </div>
 
         {/* Top Products */}
-        <div className="minimal-glass subtle-glow p-6 fade-in" style={{ animationDelay: '0.9s' }}>
+        <div className="minimal-glass subtle-glow p-6">
           <div className="mb-6">
             <h3 className="text-white/40 text-[11px] font-light tracking-[0.2em] uppercase mb-2">Top Products</h3>
             <p className="text-white/30 text-[10px] font-light">BEST SELLERS</p>

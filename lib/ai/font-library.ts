@@ -96,7 +96,7 @@ ${font.name} (${font.category})
 └─ Vibe: ${font.vibe.join(', ')}
 `).join('\n')}
 
-USAGE IN WCL:
+USAGE IN React:
 <h1 className="${'{font-name}'} text-6xl font-black uppercase">Headline</h1>
 
 EXAMPLES:

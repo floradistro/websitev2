@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useState, useMemo } from 'react';
-import { 
-  Search, Package, RefreshCw, ChevronDown, ChevronUp, 
-  MapPin, TrendingUp
+import {
+  Search, Package, RefreshCw, ChevronDown, ChevronUp,
+  MapPin, TrendingUp, DollarSign
 } from 'lucide-react';
-import { useVendorAuth } from '@/context/VendorAuthContext';
+import { useAppAuth } from '@/context/AppAuthContext';
 import { showNotification } from '@/components/NotificationToast';
+import { StatCard } from '@/components/ui/StatCard';
 import axios from 'axios';
 
 // Types
@@ -35,7 +36,7 @@ interface Location {
 }
 
 export default function InventoryClient() {
-  const { isAuthenticated } = useVendorAuth();
+  const { isAuthenticated, vendor } = useAppAuth();
   
   const [products, setProducts] = useState<ProductInventory[]>([]);
   const [locations, setLocations] = useState<Location[]>([]);
@@ -55,7 +56,7 @@ export default function InventoryClient() {
   // Load inventory
   const loadInventory = async () => {
     try {
-      const vendorId = localStorage.getItem('vendor_id');
+      const vendorId = vendor?.id;
       if (!vendorId) {
         setLoading(false);
         return;
@@ -152,7 +153,7 @@ export default function InventoryClient() {
     setAdjusting(prev => ({ ...prev, [key]: true }));
 
     try {
-      const vendorId = localStorage.getItem('vendor_id');
+      const vendorId = vendor?.id;
       const response = await axios.post('/api/vendor/inventory/adjust', {
         inventoryId,
         productId,
@@ -215,7 +216,7 @@ export default function InventoryClient() {
   return (
     <div className="w-full px-4 lg:px-0">
       {/* Header */}
-      <div className="mb-8 fade-in">
+      <div className="mb-8">
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-3xl font-thin text-white/90 tracking-tight mb-2">
@@ -234,42 +235,48 @@ export default function InventoryClient() {
           </button>
         </div>
 
-        {/* Stats - Monochrome */}
-        <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
-          <div className="minimal-glass p-6">
-            <div className="text-white/40 text-[10px] uppercase tracking-wider mb-3">Total</div>
-            <div className="text-3xl font-thin text-white">{stats.total}</div>
-            <div className="text-white/30 text-[9px] uppercase tracking-wider mt-1">Products</div>
-          </div>
-          <div className="minimal-glass p-6">
-            <div className="text-white/40 text-[10px] uppercase tracking-wider mb-3">In Stock</div>
-            <div className="text-3xl font-thin text-white">{stats.inStock}</div>
-            <div className="text-white/30 text-[9px] uppercase tracking-wider mt-1">&gt; 10g</div>
-          </div>
-          <div className="minimal-glass p-6">
-            <div className="text-white/40 text-[10px] uppercase tracking-wider mb-3">Low</div>
-            <div className="text-3xl font-thin text-white/70">{stats.lowStock}</div>
-            <div className="text-white/30 text-[9px] uppercase tracking-wider mt-1">1-10g</div>
-          </div>
-          <div className="minimal-glass p-6">
-            <div className="text-white/40 text-[10px] uppercase tracking-wider mb-3">Empty</div>
-            <div className="text-3xl font-thin text-white/50">{stats.outOfStock}</div>
-            <div className="text-white/30 text-[9px] uppercase tracking-wider mt-1">0g</div>
-          </div>
-          <div className="minimal-glass p-6">
-            <div className="text-white/40 text-[10px] uppercase tracking-wider mb-3">Stock Value</div>
-            <div className="text-3xl font-thin text-white">${stats.totalValue.toLocaleString(undefined, {maximumFractionDigits: 0})}</div>
-            {stats.totalCost > 0 && (
-              <div className="text-white/30 text-[9px] uppercase tracking-wider mt-1">
-                Cost: ${stats.totalCost.toLocaleString(undefined, {maximumFractionDigits: 0})}
-              </div>
-            )}
-          </div>
+        {/* Stats */}
+        <div className="grid grid-cols-2 lg:grid-cols-5 spacing-grid">
+          <StatCard
+            label="Total Products"
+            value={stats.total}
+            sublabel="All Products"
+            icon={Package}
+            delay="0s"
+          />
+          <StatCard
+            label="In Stock"
+            value={stats.inStock}
+            sublabel="> 10g Available"
+            icon={TrendingUp}
+            delay="0.1s"
+          />
+          <StatCard
+            label="Low Stock"
+            value={stats.lowStock}
+            sublabel="1-10g Remaining"
+            icon={Package}
+            delay="0.2s"
+          />
+          <StatCard
+            label="Out of Stock"
+            value={stats.outOfStock}
+            sublabel="0g Remaining"
+            icon={Package}
+            delay="0.3s"
+          />
+          <StatCard
+            label="Stock Value"
+            value={`$${stats.totalValue.toLocaleString(undefined, {maximumFractionDigits: 0})}`}
+            sublabel={stats.totalCost > 0 ? `Cost: $${stats.totalCost.toLocaleString(undefined, {maximumFractionDigits: 0})}` : "Total Value"}
+            icon={DollarSign}
+            delay="0.4s"
+          />
         </div>
       </div>
 
       {/* Filters */}
-      <div className="minimal-glass p-6 mb-6 fade-in" style={{ animationDelay: '0.1s' }}>
+      <div className="minimal-glass p-6 mb-6">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           <div className="relative">
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" />
@@ -316,7 +323,7 @@ export default function InventoryClient() {
         </div>
       ) : (
         <>
-          <div className="space-y-3 fade-in" style={{ animationDelay: '0.2s' }}>
+          <div className="space-y-3">
             {paginatedProducts.map((product) => {
             const isExpanded = expandedId === product.product_id;
             const margin = product.cost_price 

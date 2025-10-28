@@ -3,8 +3,10 @@ import { getServiceSupabase } from '@/lib/supabase/client';
 
 export async function GET(request: NextRequest) {
   try {
-    const vendorId = request.headers.get('x-vendor-id');
-    
+    // Support both header and query parameter
+    const vendorId = request.headers.get('x-vendor-id') ||
+                     request.nextUrl.searchParams.get('vendor_id');
+
     if (!vendorId) {
       return NextResponse.json({ success: false, error: 'Vendor ID required' }, { status: 400 });
     }

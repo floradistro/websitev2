@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { 
   Home, Package, Store, Settings, LogOut, Users, CheckSquare, 
-  FileText, DollarSign, BarChart3, Menu, X, MapPin, Globe, FolderTree, Layers, ShoppingBag, Activity, FileCode, FlaskConical 
+  FileText, DollarSign, BarChart3, Menu, X, MapPin, Globe, FolderTree, Layers, ShoppingBag, Activity, FileCode, FlaskConical, Monitor 
 } from 'lucide-react';
 import { showConfirm } from '@/components/NotificationToast';
 import AdminProtectedRoute from '@/components/AdminProtectedRoute';
@@ -23,23 +23,27 @@ export default function AdminLayout({
   const router = useRouter();
 
   const navItems = [
+    // CORE - Platform Overview
     { href: '/admin/dashboard', icon: Home, label: 'Overview' },
-    { href: '/admin/platform-editor', icon: FileCode, label: 'Yacht Club Editor' },
-    { href: '/admin/wcl-sandbox', icon: FlaskConical, label: 'WCL Sandbox' },
+
+    // CORE - Tenant Management
+    { href: '/admin/vendors', icon: Store, label: 'Tenants' },
+    { href: '/admin/users', icon: Users, label: 'Users' },
+
+    // CORE - Platform Insights
+    { href: '/admin/products', icon: Package, label: 'Master Catalog' },
     { href: '/admin/orders', icon: ShoppingBag, label: 'Transactions' },
-    { href: '/admin/products', icon: Package, label: 'Catalog' },
-    { href: '/admin/categories', icon: FolderTree, label: 'Collections' },
-    { href: '/admin/field-groups', icon: Layers, label: 'Attributes' },
-    { href: '/admin/pricing-tiers', icon: DollarSign, label: 'Pricing' },
-    { href: '/admin/vendors', icon: Store, label: 'Partners' },
-    { href: '/admin/locations', icon: MapPin, label: 'Locations' },
+    { href: '/admin/analytics', icon: BarChart3, label: 'Analytics' },
+
+    // CONFIGURATION - Platform Rules
+    { href: '/admin/categories', icon: FolderTree, label: 'Categories' },
+    { href: '/admin/field-groups', icon: Layers, label: 'Product Fields' },
+    { href: '/admin/pricing-tiers', icon: DollarSign, label: 'Pricing Rules' },
+
+    // CONFIGURATION - System
+    { href: '/admin/pos-management', icon: Monitor, label: 'POS' },
     { href: '/admin/domains', icon: Globe, label: 'Domains' },
-    { href: '/admin/approvals', icon: CheckSquare, label: 'Review' },
-    { href: '/admin/users', icon: Users, label: 'Team' },
-    { href: '/admin/analytics', icon: BarChart3, label: 'Insights' },
-    { href: '/admin/monitoring', icon: Activity, label: 'Performance' },
-    { href: '/admin/payouts', icon: DollarSign, label: 'Payments' },
-    { href: '/admin/reports', icon: FileText, label: 'Reports' },
+    { href: '/admin/monitoring', icon: Activity, label: 'System Health' },
     { href: '/admin/settings', icon: Settings, label: 'Settings' },
   ];
 
@@ -278,8 +282,8 @@ export default function AdminLayout({
           {[
             { href: '/admin/dashboard', icon: Home, label: 'Overview' },
             { href: '/admin/products', icon: Package, label: 'Catalog' },
-            { href: '/admin/vendors', icon: Store, label: 'Partners' },
-            { href: '/admin/settings', icon: Settings, label: 'Settings' },
+            { href: '/admin/vendors', icon: Store, label: 'Tenants' },
+            { href: '/admin/analytics', icon: BarChart3, label: 'Insights' },
           ].map((item) => {
             const Icon = item.icon;
             const active = isActive(item.href);

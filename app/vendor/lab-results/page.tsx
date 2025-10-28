@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Search, FileText, CheckCircle, XCircle, AlertCircle, Upload, Download, Eye } from 'lucide-react';
 import Link from 'next/link';
+import { useAppAuth } from '@/context/AppAuthContext';
 
 interface COA {
   id: string | number;
@@ -51,6 +52,7 @@ interface COA {
 }
 
 export default function VendorLabResults() {
+  const { vendor } = useAppAuth();
   const [coas, setCoas] = useState<COA[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -60,7 +62,7 @@ export default function VendorLabResults() {
   useEffect(() => {
     async function fetchCOAs() {
       try {
-        const vendorId = localStorage.getItem('vendor_id');
+        const vendorId = vendor?.id;
         if (!vendorId) {
           setLoading(false);
           return;
@@ -87,7 +89,7 @@ export default function VendorLabResults() {
     }
 
     fetchCOAs();
-  }, []);
+  }, [vendor]);
 
   const getStatusBadge = (status: string) => {
     const styles = {

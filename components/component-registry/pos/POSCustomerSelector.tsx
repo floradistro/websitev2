@@ -215,7 +215,7 @@ export function POSCustomerSelector({
           <div className="p-2 border-t border-white/5">
             <button
               onClick={() => setShowNewCustomerForm(true)}
-              className="w-full bg-white text-black border-2 border-white rounded-2xl py-2.5 text-[10px] uppercase tracking-[0.15em] hover:bg-black hover:text-white font-black transition-all duration-300 flex items-center justify-center gap-2"
+              className="w-full bg-white/10 text-white border-2 border-white/20 rounded-2xl py-2.5 text-[10px] uppercase tracking-[0.15em] hover:bg-white/20 hover:border-white/30 font-black transition-all duration-300 flex items-center justify-center gap-2"
               style={{ fontWeight: 900 }}
             >
               <Plus size={12} strokeWidth={2.5} />

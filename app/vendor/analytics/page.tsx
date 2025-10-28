@@ -2,12 +2,13 @@
 
 import { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
-import { useVendorAuth } from '@/context/VendorAuthContext';
-import { 
-  TrendingUp, TrendingDown, DollarSign, Package, ShoppingCart, 
-  Users, BarChart3, Activity, Target, AlertCircle 
+import { useAppAuth } from '@/context/AppAuthContext';
+import {
+  TrendingUp, TrendingDown, DollarSign, Package, ShoppingCart,
+  Users, BarChart3, Activity, Target, AlertCircle
 } from '@/lib/icons';
 import { useVendorAnalytics } from '@/hooks/useVendorData';
+import { StatCard } from '@/components/ui/StatCard';
 
 // Lazy load charts for better performance
 const LineChart = dynamic(() => import('recharts').then(m => ({ default: m.LineChart })), { ssr: false });
@@ -50,7 +51,7 @@ interface AnalyticsData {
 }
 
 export default function VendorAnalytics() {
-  const { vendor } = useVendorAuth();
+  const { vendor } = useAppAuth();
   const [timeRange, setTimeRange] = useState('30d');
   const { data: analyticsResponse, loading } = useVendorAnalytics(timeRange);
   
@@ -65,7 +66,7 @@ export default function VendorAnalytics() {
   return (
     <div className="w-full px-4 lg:px-0">
       {/* Header */}
-      <div className="mb-12 fade-in flex items-center justify-between">
+      <div className="mb-12 flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-thin text-white/90 tracking-tight mb-2">
             Advanced Analytics
@@ -99,73 +100,47 @@ export default function VendorAnalytics() {
       </div>
 
       {/* Key Metrics */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
-        {/* Revenue */}
-        <div className="minimal-glass subtle-glow p-6 hover:bg-white/[0.03] transition-all duration-300 group fade-in">
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-white/40 text-[11px] uppercase tracking-[0.2em] font-light">Revenue</span>
-            <DollarSign size={16} className="text-white/20 group-hover:text-white/30 transition-all duration-300" strokeWidth={1.5} />
-          </div>
-          <div className="text-3xl font-thin text-white/90 mb-2">
-            ${loading ? '—' : analytics.revenue.total.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-          </div>
-          <div className="flex items-center gap-2">
-            {analytics.revenue.trend > 0 ? (
-              <TrendingUp size={12} className="text-green-500" strokeWidth={1.5} />
-            ) : (
-              <TrendingDown size={12} className="text-red-500" strokeWidth={1.5} />
-            )}
-            <span className={`text-[10px] font-light ${analytics.revenue.trend > 0 ? 'text-green-500' : 'text-red-500'}`}>
-              {Math.abs(analytics.revenue.trend)}% vs last period
-            </span>
-          </div>
-        </div>
-
-        {/* Average Margin */}
-        <div className="minimal-glass subtle-glow p-6 hover:bg-white/[0.03] transition-all duration-300 group fade-in" style={{ animationDelay: '0.1s' }}>
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-white/40 text-[11px] uppercase tracking-[0.2em] font-light">Profit Margin</span>
-            <Target size={16} className="text-white/20 group-hover:text-white/30 transition-all duration-300" strokeWidth={1.5} />
-          </div>
-          <div className="text-3xl font-thin text-white/90 mb-2">
-            {loading ? '—' : analytics.costs.avgMargin.toFixed(1)}%
-          </div>
-          <div className="text-white/30 text-[10px] font-light tracking-wider uppercase">
-            Average across catalog
-          </div>
-        </div>
-
-        {/* Inventory Turnover */}
-        <div className="minimal-glass subtle-glow p-6 hover:bg-white/[0.03] transition-all duration-300 group fade-in" style={{ animationDelay: '0.2s' }}>
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-white/40 text-[11px] uppercase tracking-[0.2em] font-light">Turnover Rate</span>
-            <Activity size={16} className="text-white/20 group-hover:text-white/30 transition-all duration-300" strokeWidth={1.5} />
-          </div>
-          <div className="text-3xl font-thin text-white/90 mb-2">
-            {loading ? '—' : analytics.inventory.turnoverRate.toFixed(1)}x
-          </div>
-          <div className="text-white/30 text-[10px] font-light tracking-wider uppercase">
-            Annual rate
-          </div>
-        </div>
-
-        {/* Average Order Value */}
-        <div className="minimal-glass subtle-glow p-6 hover:bg-white/[0.03] transition-all duration-300 group fade-in" style={{ animationDelay: '0.3s' }}>
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-white/40 text-[11px] uppercase tracking-[0.2em] font-light">Avg Order</span>
-            <ShoppingCart size={16} className="text-white/20 group-hover:text-white/30 transition-all duration-300" strokeWidth={1.5} />
-          </div>
-          <div className="text-3xl font-thin text-white/90 mb-2">
-            ${loading ? '—' : analytics.orders.avgValue.toFixed(2)}
-          </div>
-          <div className="text-white/30 text-[10px] font-light tracking-wider uppercase">
-            Per transaction
-          </div>
-        </div>
+      <div className="grid grid-cols-2 lg:grid-cols-4 spacing-grid mb-8">
+        <StatCard
+          label="Revenue"
+          value={loading ? '—' : `$${analytics.revenue.total.toLocaleString('en-US', { minimumFractionDigits: 2 })}`}
+          sublabel={`${Math.abs(analytics.revenue.trend)}% vs last period`}
+          icon={DollarSign}
+          loading={loading}
+          delay="0s"
+          trend={analytics.revenue.trend !== 0 ? {
+            value: `${Math.abs(analytics.revenue.trend)}%`,
+            direction: analytics.revenue.trend > 0 ? 'up' : 'down'
+          } : undefined}
+        />
+        <StatCard
+          label="Profit Margin"
+          value={loading ? '—' : `${analytics.costs.avgMargin.toFixed(1)}%`}
+          sublabel="Average across catalog"
+          icon={Target}
+          loading={loading}
+          delay="0.1s"
+        />
+        <StatCard
+          label="Turnover Rate"
+          value={loading ? '—' : `${analytics.inventory.turnoverRate.toFixed(1)}x`}
+          sublabel="Annual rate"
+          icon={Activity}
+          loading={loading}
+          delay="0.2s"
+        />
+        <StatCard
+          label="Avg Order"
+          value={loading ? '—' : `$${analytics.orders.avgValue.toFixed(2)}`}
+          sublabel="Per transaction"
+          icon={ShoppingCart}
+          loading={loading}
+          delay="0.3s"
+        />
       </div>
 
       {/* Revenue Chart */}
-      <div className="minimal-glass subtle-glow p-6 mb-8 fade-in" style={{ animationDelay: '0.4s' }}>
+      <div className="minimal-glass subtle-glow p-6 mb-8">
         <div className="flex items-center justify-between mb-6">
           <div>
             <h3 className="text-white/40 text-[11px] font-light tracking-[0.2em] uppercase mb-2">Revenue Trend</h3>
@@ -223,7 +198,7 @@ export default function VendorAnalytics() {
       </div>
 
       {/* Top Products */}
-      <div className="minimal-glass subtle-glow p-6 mb-8 fade-in" style={{ animationDelay: '0.5s' }}>
+      <div className="minimal-glass subtle-glow p-6 mb-8">
         <div className="flex items-center justify-between mb-6">
           <div>
             <h3 className="text-white/40 text-[11px] font-light tracking-[0.2em] uppercase mb-2">Top Performers</h3>
@@ -262,15 +237,15 @@ export default function VendorAnalytics() {
       </div>
 
       {/* Cost Analysis */}
-      <div className="grid lg:grid-cols-2 gap-3">
-        <div className="minimal-glass subtle-glow p-6 fade-in" style={{ animationDelay: '0.6s' }}>
+      <div className="grid lg:grid-cols-2 spacing-grid">
+        <div className="minimal-glass subtle-glow p-6">
           <div className="flex items-center justify-between mb-6">
             <div>
               <h3 className="text-white/40 text-[11px] font-light tracking-[0.2em] uppercase mb-2">Cost Analysis</h3>
               <p className="text-white/30 text-[10px] font-light">PROFITABILITY METRICS</p>
             </div>
           </div>
-          
+
           <div className="space-y-4">
             <div className="flex items-center justify-between py-3 border-b border-white/5">
               <span className="text-white/60 text-xs font-light tracking-wide uppercase">Total COGS</span>
@@ -287,14 +262,14 @@ export default function VendorAnalytics() {
           </div>
         </div>
 
-        <div className="minimal-glass subtle-glow p-6 fade-in" style={{ animationDelay: '0.7s' }}>
+        <div className="minimal-glass subtle-glow p-6">
           <div className="flex items-center justify-between mb-6">
             <div>
               <h3 className="text-white/40 text-[11px] font-light tracking-[0.2em] uppercase mb-2">Inventory Health</h3>
               <p className="text-white/30 text-[10px] font-light">STOCK METRICS</p>
             </div>
           </div>
-          
+
           <div className="space-y-4">
             <div className="flex items-center justify-between py-3 border-b border-white/5">
               <span className="text-white/60 text-xs font-light tracking-wide uppercase">Stock Value</span>

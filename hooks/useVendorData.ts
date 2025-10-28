@@ -5,6 +5,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import axios from 'axios';
+import { useAppAuth } from '@/context/AppAuthContext';
 
 interface CacheEntry<T> {
   data: T;
@@ -36,15 +37,17 @@ export function useVendorData<T>(
     onError,
   } = options;
 
+  const { vendor, isAuthenticated } = useAppAuth();
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const fetchData = useCallback(async (forceRefresh = false) => {
-    const vendorId = localStorage.getItem('vendor_id');
-    if (!vendorId) {
-      console.error('No vendor ID found in localStorage');
+    const vendorId = vendor?.id;
+
+    if (!vendorId || !isAuthenticated) {
+      console.error('No vendor ID found or not authenticated');
       setLoading(false);
       return;
     }
@@ -130,7 +133,7 @@ export function useVendorData<T>(
     } catch (err) {
       // Error already handled above
     }
-  }, [endpoint, enabled, cacheTime, onSuccess, onError]);
+  }, [endpoint, enabled, cacheTime, onSuccess, onError, vendor, isAuthenticated]);
 
   // Initial fetch
   useEffect(() => {

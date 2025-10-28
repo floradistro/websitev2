@@ -4,6 +4,7 @@
  */
 
 import { chromium } from 'playwright';
+import sharp from 'sharp';
 
 export interface ScreenshotAnalysis {
   url: string;
@@ -30,12 +31,34 @@ export class VisualAnalyzer {
   async analyzeWebsite(url: string, options?: {
     viewport?: { width: number; height: number };
     waitFor?: number;
+    onProgress?: (status: string) => void;
+    manualMode?: boolean; // NEW: Opens visible browser for manual interaction
   }): Promise<ScreenshotAnalysis> {
     const viewport = options?.viewport || { width: 1920, height: 1080 };
+    const onProgress = options?.onProgress || ((status: string) => console.log(status));
+    const manualMode = options?.manualMode || false;
     
-    console.log(`📸 Taking screenshot of ${url}...`);
+    console.log('🔍 VisualAnalyzer.analyzeWebsite called with manualMode:', manualMode);
     
-    const browser = await chromium.launch({ headless: true });
+    if (manualMode) {
+      onProgress('👁️ Opening visible browser - YOU interact with it!');
+      console.log('┌──────────────────────────────────────┐');
+      console.log('│  👁️  MANUAL MODE: Browser Launching  │');
+      console.log('│  ✅ Browser window will be VISIBLE   │');
+      console.log('│  ✅ YOU control the interaction      │');
+      console.log('└──────────────────────────────────────┘');
+    } else {
+      onProgress('🚀 Launching Chromium browser...');
+      console.log(`📸 Taking screenshot of ${url}...`);
+    }
+    
+    const launchOptions = { 
+      headless: !manualMode, // Show browser if manual mode
+      slowMo: manualMode ? 100 : 0 // Slow down actions in manual mode for visibility
+    };
+    
+    console.log('🚀 Launching browser with options:', launchOptions);
+    const browser = await chromium.launch(launchOptions);
     const context = await browser.newContext({
       viewport,
       deviceScaleFactor: 2 // Retina quality
@@ -45,14 +68,117 @@ export class VisualAnalyzer {
     
     try {
       // Navigate to page
+      onProgress(`🌐 Navigating to ${url}...`);
       await page.goto(url, { 
         waitUntil: 'networkidle',
         timeout: 30000 
       });
       
-      // Wait for content to load
-      if (options?.waitFor) {
-        await page.waitForTimeout(options.waitFor);
+      onProgress('✅ Page loaded successfully');
+      
+      // MANUAL MODE: Let user interact with the page themselves
+      if (manualMode) {
+        console.log('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        console.log('👁️  MANUAL MODE ACTIVE');
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        console.log('The browser window is now VISIBLE.');
+        console.log('YOU can:');
+        console.log('  1. Dismiss any age gates');
+        console.log('  2. Scroll to the section you want');
+        console.log('  3. Wait for lazy content to load');
+        console.log('');
+        console.log('Screenshot will be taken in 30 seconds...');
+        console.log('(Extend the wait time if you need more)');
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
+        
+        onProgress('⏳ Waiting 30s for YOU to manually interact with the page...');
+        
+        // Wait 30 seconds for user to manually interact
+        // Send progress updates every 5s to keep stream alive
+        for (let i = 0; i < 30; i += 5) {
+          await page.waitForTimeout(5000);
+          const remaining = 30 - i - 5;
+          if (remaining > 0) {
+            onProgress(`⏳ ${remaining}s remaining - interact with the browser now...`);
+            console.log(`⏳ ${remaining}s remaining for manual interaction...`);
+          }
+        }
+        
+        onProgress('✅ Manual interaction time complete - taking screenshot now!');
+        console.log('✅ 30 seconds elapsed - capturing screenshot now!');
+      } else {
+        // AUTO MODE: Try to bypass age gates automatically
+        onProgress('🔍 Checking for age gates and pop-ups...');
+        console.log('🔄 Checking for age gates and pop-ups...');
+        
+        // Try multiple times with different strategies
+        let dismissed = false;
+        const maxAttempts = 5;
+        
+        // Try a more aggressive approach - click ALL buttons on the page if it looks like an age gate
+      try {
+        await page.waitForTimeout(2000); // Wait for age gate to appear
+        
+        // Check if page looks like an age gate (has very few elements)
+        const bodyText = await page.evaluate(() => document.body.innerText.toLowerCase());
+        const isAgeGate = bodyText.includes('age') || bodyText.includes('21') || bodyText.includes('verify') || 
+                         bodyText.includes('enter') || bodyText.includes('confirm');
+        
+        if (isAgeGate) {
+          console.log('🔍 Detected potential age gate, trying all buttons...');
+          onProgress('🔍 Age verification detected, attempting to bypass...');
+          
+          // Get all buttons and try clicking each one
+          const buttons = await page.locator('button, a[role="button"], input[type="submit"]').all();
+          console.log(`📊 Found ${buttons.length} clickable elements`);
+          
+          for (let i = 0; i < buttons.length && !dismissed; i++) {
+            try {
+              const btn = buttons[i];
+              const isVisible = await btn.isVisible({ timeout: 500 });
+              
+              if (isVisible) {
+                console.log(`🎯 Attempting to click button ${i + 1}/${buttons.length}...`);
+                
+                // Try clicking
+                await btn.click({ timeout: 2000, force: true });
+                
+                // Wait a bit to see if page changes
+                await page.waitForTimeout(2000);
+                
+                // Check if we're past the age gate (page changed significantly)
+                const newBodyText = await page.evaluate(() => document.body.innerText.toLowerCase());
+                if (newBodyText !== bodyText && !newBodyText.includes('age') && !newBodyText.includes('verify')) {
+                  console.log(`✅ Successfully bypassed age gate with button ${i + 1}`);
+                  dismissed = true;
+                  break;
+                }
+              }
+            } catch (e) {
+              // Try next button
+              continue;
+            }
+          }
+        }
+      } catch (e: any) {
+        console.log(`⚠️ Age gate bypass failed: ${e.message}`);
+      }
+      
+        if (dismissed) {
+          console.log('✅ Age gate dismissed, waiting for content to load...');
+          onProgress('✅ Age gate bypassed, loading full site...');
+          await page.waitForTimeout(5000); // Extra wait for content to fully load
+        } else {
+          console.log('⚠️ No age gate found or unable to dismiss - proceeding anyway');
+          onProgress('⏩ Proceeding (age gate may still be visible)...');
+          // Take screenshot anyway - might still be useful or user can remove reference URL
+        }
+        
+        // Wait for content to load
+        if (options?.waitFor) {
+          onProgress('⏳ Waiting for animations and lazy content...');
+          await page.waitForTimeout(options.waitFor);
+        }
       }
       
       // Get page metadata
@@ -63,17 +189,30 @@ export class VisualAnalyzer {
         return bg.includes('0, 0, 0') || bg.includes('rgb(0') ? 'dark' : 'light';
       });
       
-      // Take screenshot
-      const screenshot = await page.screenshot({
-        type: 'png',
-        fullPage: false // Just above the fold
+      // Scroll through page to load lazy images and content (viewport will capture hero)
+      onProgress('📜 Scrolling to load content...');
+      console.log('📜 Scrolling to load content...');
+      await page.evaluate(async () => {
+        await new Promise<void>((resolve) => {
+          let totalHeight = 0;
+          const distance = 100;
+          const timer = setInterval(() => {
+            const scrollHeight = document.body.scrollHeight;
+            window.scrollBy(0, distance);
+            totalHeight += distance;
+
+            if(totalHeight >= scrollHeight){
+              clearInterval(timer);
+              window.scrollTo(0, 0); // Scroll back to top
+              setTimeout(resolve, 1000); // Wait 1s after scrolling back
+            }
+          }, 100);
+        });
       });
       
-      const screenshotBase64 = screenshot.toString('base64');
-      
-      console.log(`✅ Screenshot captured (${(screenshot.length / 1024).toFixed(1)}KB)`);
-      
-      // DEEP page structure analysis - Extract EVERYTHING
+      // DEEP page structure analysis - Extract EVERYTHING (do this before screenshot)
+      onProgress('📊 Analyzing page structure and design...');
+      console.log('📊 Analyzing page structure...');
       const analysis = await page.evaluate(() => {
         // Extract ALL colors (background, text, borders)
         const colors: string[] = [];
@@ -200,6 +339,47 @@ export class VisualAnalyzer {
         };
       });
       
+      onProgress('📸 Taking screenshot (viewport-only for speed)...');
+      console.log('📸 Taking viewport screenshot...');
+      
+      // CURSOR AI APPROACH: Viewport-only screenshot (never fullPage for reliability)
+      // This avoids dimension issues and is faster
+      let screenshot = await page.screenshot({
+        type: 'jpeg',
+        quality: 75,
+        fullPage: false // CRITICAL: Viewport only, like Cursor AI
+      });
+      
+      let sizeKB = screenshot.length / 1024;
+      
+      // Get metadata to show dimensions
+      const metadata = await sharp(screenshot).metadata();
+      console.log(`✅ Screenshot captured: ${metadata.width}x${metadata.height} (${sizeKB.toFixed(1)}KB)`);
+      onProgress(`✅ Captured: ${metadata.width}x${metadata.height}px (${sizeKB.toFixed(1)}KB)`);
+      
+      // Resize to safe dimensions (1280px max width, like Cursor AI)
+      let imageBuffer = screenshot;
+      const targetWidth = 1280; // Cursor AI uses ~1280px for Claude API
+      
+      if (metadata.width && metadata.width > targetWidth) {
+        onProgress(`🔧 Resizing to ${targetWidth}px width for optimal quality...`);
+        
+        imageBuffer = await sharp(screenshot)
+          .resize(targetWidth, null, {
+            fit: 'inside',
+            withoutEnlargement: true
+          })
+          .jpeg({ quality: 80 })
+          .toBuffer();
+        
+        const newMetadata = await sharp(imageBuffer).metadata();
+        sizeKB = imageBuffer.length / 1024;
+        console.log(`✅ Resized to ${newMetadata.width}x${newMetadata.height} (${sizeKB.toFixed(1)}KB)`);
+        onProgress(`✅ Optimized: ${newMetadata.width}x${newMetadata.height}px (${sizeKB.toFixed(1)}KB)`);
+      }
+      
+      const screenshotBase64 = imageBuffer.toString('base64');
+      
       await browser.close();
       
       return {
@@ -246,6 +426,7 @@ export class VisualAnalyzer {
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 URL: ${analysis.url}
+Screenshot: Above-the-fold viewport (hero section)
 Color Scheme: ${analysis.metadata.colorScheme}
 Layout System: ${analysis.insights.layout}
 
@@ -260,6 +441,9 @@ ${analysis.insights.typography.slice(0, 3).map(f => `• ${f}`).join('\n')}
 
 🧩 Components Detected:
 ${analysis.insights.components.map(c => `• ${c}`).join('\n')}
+
+NOTE: Focus on recreating the hero/above-fold design you see in the screenshot.
+Use the color palette, typography, and layout patterns detected above.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 `;

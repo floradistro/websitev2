@@ -167,7 +167,7 @@ export function POSReceipt({
         <div className="p-4 border-t border-white/5 flex gap-2 print:hidden">
           <button
             onClick={handlePrint}
-            className="flex-1 bg-white text-black border-2 border-white rounded-2xl py-3 text-[10px] uppercase tracking-[0.15em] hover:bg-black hover:text-white font-black transition-all duration-300 flex items-center justify-center gap-2"
+            className="flex-1 bg-white/10 text-white border-2 border-white/20 rounded-2xl py-3 text-[10px] uppercase tracking-[0.15em] hover:bg-white/20 hover:border-white/30 font-black transition-all duration-300 flex items-center justify-center gap-2"
             style={{ fontWeight: 900 }}
           >
             <Printer size={12} strokeWidth={2.5} />

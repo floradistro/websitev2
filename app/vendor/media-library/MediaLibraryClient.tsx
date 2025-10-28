@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { useVendorAuth } from '@/context/VendorAuthContext';
+import { useAppAuth } from '@/context/AppAuthContext';
 import { Upload } from 'lucide-react';
 
 interface MediaFile {
@@ -13,7 +13,7 @@ interface MediaFile {
 }
 
 export default function VendorMediaLibrary() {
-  const { vendor, isAuthenticated, isLoading: authLoading } = useVendorAuth();
+  const { vendor, isAuthenticated, isLoading: authLoading } = useAppAuth();
   const [files, setFiles] = useState<MediaFile[]>([]);
   const [loading, setLoading] = useState(true);
 

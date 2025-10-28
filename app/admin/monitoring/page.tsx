@@ -175,40 +175,10 @@ export default function MonitoringDashboard() {
   return (
     <div className="min-h-screen bg-black text-white p-6">
       {/* Subtle, professional animations */}
-      <style jsx>{`
-        @keyframes subtle-pulse {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.8; }
-        }
-        @keyframes gentle-float {
-          0%, 100% { transform: translateY(0px); }
-          50% { transform: translateY(-5px); }
-        }
-        @keyframes fade-in {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .subtle-pulse {
-          animation: subtle-pulse 3s infinite;
-        }
-        .gentle-float {
-          animation: gentle-float 4s ease-in-out infinite;
-        }
-        .fade-in {
-          animation: fade-in 0.6s ease-out;
-        }
-        .minimal-glass {
-          background: rgba(255, 255, 255, 0.02);
-          backdrop-filter: blur(20px);
-          border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-        .subtle-glow {
-          box-shadow: 0 0 30px rgba(255, 255, 255, 0.02);
-        }
-      `}</style>
+      
 
       {/* Minimalist Header */}
-      <div className="max-w-7xl mx-auto mb-12 fade-in">
+      <div className="max-w-7xl mx-auto mb-12">
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-3xl font-thin text-white/90 tracking-tight mb-2">
@@ -343,7 +313,7 @@ export default function MonitoringDashboard() {
 
         {/* Live Performance Chart - Minimal Line Graph */}
         {performanceHistory.length > 0 && (
-          <div className="minimal-glass subtle-glow mb-8 fade-in">
+          <div className="minimal-glass subtle-glow mb-8">
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-white/40 text-[11px] font-light tracking-[0.2em]">RESPONSE TIME</h3>

@@ -12,8 +12,8 @@ interface VendorStatProps {
 export function VendorStat({ label, value, sublabel, icon: Icon, delay }: VendorStatProps) {
   return (
     <div 
-      className="minimal-glass subtle-glow p-6 hover:bg-white/[0.03] transition-all duration-300 group fade-in"
-      style={delay ? { animationDelay: delay } : undefined}
+      className="minimal-glass subtle-glow p-6 hover:bg-white/[0.03] transition-all duration-300 group"
+     
     >
       <div className="flex items-center justify-between mb-4">
         <span className="text-white/40 text-[11px] uppercase tracking-[0.2em] font-light">

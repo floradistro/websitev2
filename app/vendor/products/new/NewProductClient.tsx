@@ -6,9 +6,11 @@ import { ArrowLeft, Upload, X, Plus, FileText, CheckCircle, AlertCircle, Loader 
 import Link from 'next/link';
 import axios from 'axios';
 import { showNotification } from '@/components/NotificationToast';
+import { useAppAuth } from '@/context/AppAuthContext';
 
 export default function NewProduct() {
   const router = useRouter();
+  const { vendor } = useAppAuth();
   const [loading, setLoading] = useState(false);
   const [uploadingImages, setUploadingImages] = useState(false);
   const [uploadingCOA, setUploadingCOA] = useState(false);
@@ -79,7 +81,7 @@ export default function NewProduct() {
     // Upload to Supabase Storage immediately
     try {
       setUploadingImages(true);
-      const vendorId = localStorage.getItem('vendor_id');
+      const vendorId = vendor?.id;
       
       if (!vendorId) {
         showNotification({
@@ -155,7 +157,7 @@ export default function NewProduct() {
     // Upload to Supabase Storage
     try {
       setUploadingCOA(true);
-      const vendorId = localStorage.getItem('vendor_id');
+      const vendorId = vendor?.id;
       
       if (!vendorId) {
         showNotification({
@@ -406,7 +408,7 @@ export default function NewProduct() {
       }
 
       // Create product via simplified API
-      const vendorId = localStorage.getItem('vendor_id');
+      const vendorId = vendor?.id;
       const response = await axios.post('/api/vendor/products', productData, {
         headers: { 'x-vendor-id': vendorId || '' }
       }).then(r => r.data);

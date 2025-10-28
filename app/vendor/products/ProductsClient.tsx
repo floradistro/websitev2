@@ -6,7 +6,7 @@ import {
   Plus, Search, Package, ChevronDown, ChevronUp, Edit2, Save, X,
   Image as ImageIcon, DollarSign, FileText, Trash2, AlertCircle
 } from 'lucide-react';
-import { useVendorAuth } from '@/context/VendorAuthContext';
+import { useAppAuth } from '@/context/AppAuthContext';
 import { showNotification, showConfirm } from '@/components/NotificationToast';
 import axios from 'axios';
 
@@ -27,7 +27,7 @@ interface Product {
 }
 
 export default function ProductsClient() {
-  const { isAuthenticated } = useVendorAuth();
+  const { isAuthenticated, vendor } = useAppAuth();
   
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -46,7 +46,7 @@ export default function ProductsClient() {
   // Load products
   const loadProducts = async () => {
     try {
-      const vendorId = localStorage.getItem('vendor_id');
+      const vendorId = vendor?.id;
       if (!vendorId) {
         setLoading(false);
         return;
@@ -134,7 +134,7 @@ export default function ProductsClient() {
     setSaving(prev => ({ ...prev, [productId]: true }));
 
     try {
-      const vendorId = localStorage.getItem('vendor_id');
+      const vendorId = vendor?.id;
       
       console.log('Saving product updates:', editingProduct[productId]);
       
@@ -184,7 +184,7 @@ export default function ProductsClient() {
       type: 'warning',
       onConfirm: async () => {
         try {
-          const vendorId = localStorage.getItem('vendor_id');
+          const vendorId = vendor?.id;
           const response = await axios.delete(`/api/vendor/products?product_id=${productId}`, {
             headers: { 'x-vendor-id': vendorId }
           });
@@ -222,7 +222,7 @@ export default function ProductsClient() {
   return (
     <div className="w-full px-4 lg:px-0">
       {/* Header */}
-      <div className="mb-8 fade-in">
+      <div className="mb-8">
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-3xl font-thin text-white/90 tracking-tight mb-2">
@@ -272,7 +272,7 @@ export default function ProductsClient() {
       </div>
 
       {/* Filters */}
-      <div className="minimal-glass p-6 mb-6 fade-in" style={{ animationDelay: '0.1s' }}>
+      <div className="minimal-glass p-6 mb-6">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           <div className="relative">
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" />
@@ -325,7 +325,7 @@ export default function ProductsClient() {
         </div>
       ) : (
         <>
-          <div className="space-y-3 fade-in" style={{ animationDelay: '0.2s' }}>
+          <div className="space-y-3">
             {paginatedProducts.map((product) => {
             const isExpanded = expandedId === product.id;
             const isEditing = editingProduct[product.id];

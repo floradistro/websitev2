@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Plus, X } from 'lucide-react';
+import { Plus, X, Banknote, CreditCard, Wallet } from 'lucide-react';
 
 interface SplitPayment {
   method: 'cash' | 'card';
@@ -115,31 +115,34 @@ export function POSPayment({ total, onPaymentComplete, onCancel }: POSPaymentPro
             onClick={() => setPaymentMethod('cash')}
             className={`py-3 rounded-2xl text-[10px] uppercase tracking-[0.15em] font-bold transition-all ${
               paymentMethod === 'cash'
-                ? 'bg-white text-black border-2 border-white shadow-lg shadow-white/10'
+                ? 'bg-white/20 text-white border-2 border-white/30'
                 : 'bg-white/5 text-white border border-white/10 hover:bg-white/10 hover:border-white/20'
             }`}
           >
-            💵 Cash
+            <Banknote size={14} className="inline mr-2" />
+            Cash
           </button>
           <button
             onClick={() => setPaymentMethod('card')}
             className={`py-3 rounded-2xl text-[10px] uppercase tracking-[0.15em] font-bold transition-all ${
               paymentMethod === 'card'
-                ? 'bg-white text-black border-2 border-white shadow-lg shadow-white/10'
+                ? 'bg-white/20 text-white border-2 border-white/30'
                 : 'bg-white/5 text-white border border-white/10 hover:bg-white/10 hover:border-white/20'
             }`}
           >
-            💳 Card
+            <CreditCard size={14} className="inline mr-2" />
+            Card
           </button>
           <button
             onClick={() => setPaymentMethod('split')}
             className={`py-3 rounded-2xl text-[10px] uppercase tracking-[0.15em] font-bold transition-all ${
               paymentMethod === 'split'
-                ? 'bg-white text-black border-2 border-white shadow-lg shadow-white/10'
+                ? 'bg-white/20 text-white border-2 border-white/30'
                 : 'bg-white/5 text-white border border-white/10 hover:bg-white/10 hover:border-white/20'
             }`}
           >
-            💰 Split
+            <Wallet size={14} className="inline mr-2" />
+            Split
           </button>
         </div>
 
@@ -199,7 +202,9 @@ export function POSPayment({ total, onPaymentComplete, onCancel }: POSPaymentPro
         {/* Card Payment */}
         {paymentMethod === 'card' && (
           <div className="bg-[#141414] border border-white/5 rounded-2xl p-6 mb-6 text-center">
-            <div className="text-4xl mb-3">💳</div>
+            <div className="flex justify-center mb-3">
+              <CreditCard size={48} className="text-white/20" />
+            </div>
             <div className="text-white/60 text-xs uppercase tracking-wider mb-2">
               Card terminal integration coming soon
             </div>
@@ -218,7 +223,11 @@ export function POSPayment({ total, onPaymentComplete, onCancel }: POSPaymentPro
                 {splitPayments.map((payment, index) => (
                   <div key={index} className="flex items-center justify-between bg-[#141414] border border-white/5 rounded-2xl p-3">
                     <div className="flex items-center gap-3">
-                      <div className="text-xl">{payment.method === 'cash' ? '💵' : '💳'}</div>
+                      {payment.method === 'cash' ? (
+                        <Banknote size={20} className="text-white/40" />
+                      ) : (
+                        <CreditCard size={20} className="text-white/40" />
+                      )}
                       <div>
                         <div className="text-[10px] uppercase tracking-[0.15em] text-white/40">{payment.method}</div>
                         <div className="text-white font-black text-sm" style={{ fontWeight: 900 }}>
@@ -269,7 +278,8 @@ export function POSPayment({ total, onPaymentComplete, onCancel }: POSPaymentPro
                         : 'bg-white/5 text-white/60 border border-white/10 hover:bg-white/10'
                     }`}
                   >
-                    💵 Cash
+                    <Banknote size={14} className="inline mr-2" />
+                    Cash
                   </button>
                   <button
                     onClick={() => setSplitMethod('card')}
@@ -279,7 +289,8 @@ export function POSPayment({ total, onPaymentComplete, onCancel }: POSPaymentPro
                         : 'bg-white/5 text-white/60 border border-white/10 hover:bg-white/10'
                     }`}
                   >
-                    💳 Card
+                    <CreditCard size={14} className="inline mr-2" />
+                    Card
                   </button>
                 </div>
 
@@ -331,7 +342,7 @@ export function POSPayment({ total, onPaymentComplete, onCancel }: POSPaymentPro
           <button
             onClick={handleComplete}
             disabled={!canComplete || processing}
-            className="flex-1 px-4 py-3 bg-white text-black border-2 border-white rounded-2xl hover:bg-black hover:text-white hover:border-white text-[10px] font-black uppercase tracking-[0.15em] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 shadow-lg shadow-white/10"
+            className="flex-1 px-4 py-3 bg-white/10 text-white border-2 border-white/20 rounded-2xl hover:bg-white/20 hover:border-white/30 text-[10px] font-black uppercase tracking-[0.15em] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
             style={{ fontWeight: 900 }}
           >
             {processing ? 'Processing...' : 'Complete'}

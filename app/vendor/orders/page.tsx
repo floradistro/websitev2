@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import { Search, Package, DollarSign, Calendar, User, ChevronRight } from 'lucide-react';
-import { useVendorAuth } from '@/context/VendorAuthContext';
+import { useAppAuth } from '@/context/AppAuthContext';
+import { StatCard } from '@/components/ui/StatCard';
+import { Badge } from '@/components/ui/Badge';
 import axios from 'axios';
 
 interface Order {
@@ -26,7 +28,7 @@ interface OrderItem {
 }
 
 export default function VendorOrders() {
-  const { isAuthenticated, isLoading: authLoading } = useVendorAuth();
+  const { isAuthenticated, isLoading: authLoading, vendor } = useAppAuth();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -42,7 +44,7 @@ export default function VendorOrders() {
       try {
         setLoading(true);
         // Orders feature
-        const vendorId = localStorage.getItem('vendor_id');
+        const vendorId = vendor?.id;
         const response = { orders: [] }; // TODO: Implement orders API
         
         if (response && response.orders) {
@@ -70,19 +72,17 @@ export default function VendorOrders() {
     loadOrders();
   }, [authLoading, isAuthenticated]);
 
-  const getStatusBadge = (status: string) => {
-    const styles = {
-      completed: "bg-white/5 text-white/60 border-white/10",
-      processing: "bg-white/5 text-white/60 border-white/10",
-      pending: "bg-white/5 text-white/60 border-white/10",
-      cancelled: "bg-red-500/10 text-red-500 border-red-500/20",
-    };
-
-    return (
-      <span className={`px-2 py-1 text-xs font-medium uppercase tracking-wider border ${styles[status as keyof typeof styles]}`}>
-        {status}
-      </span>
-    );
+  const getStatusVariant = (status: string): 'success' | 'warning' | 'error' | 'neutral' => {
+    switch (status) {
+      case 'completed':
+        return 'success';
+      case 'cancelled':
+        return 'error';
+      case 'processing':
+        return 'warning';
+      default:
+        return 'neutral';
+    }
   };
 
   const filteredOrders = orders.filter(order => {
@@ -96,73 +96,46 @@ export default function VendorOrders() {
 
   return (
     <div className="w-full px-4 lg:px-0">
-      <style jsx>{`
-        @keyframes fade-in {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .fade-in {
-          animation: fade-in 0.6s ease-out;
-        }
-        .minimal-glass {
-          background: rgba(255, 255, 255, 0.02);
-          backdrop-filter: blur(20px);
-          border: 1px solid rgba(255, 255, 255, 0.05);
-          border-radius: 20px;
-        }
-        .subtle-glow {
-          box-shadow: 0 0 30px rgba(255, 255, 255, 0.02);
-        }
-      `}</style>
-
       {/* Header */}
-      <div className="mb-12 fade-in">
+      <div className="mb-12">
         <h1 className="text-3xl font-thin text-white/90 tracking-tight mb-2">
           Orders & Sales
         </h1>
-        <p className="text-white/40 text-xs font-light tracking-wide">
+        <p className="text-white/40 text-xs font-light tracking-wide uppercase">
           TRACK ORDERS · COMMISSION EARNINGS
         </p>
       </div>
 
       {/* Summary Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-8">
-        <div className="minimal-glass subtle-glow p-6 hover:bg-white/[0.03] transition-all duration-300 group fade-in">
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-white/40 text-[11px] uppercase tracking-[0.2em] font-light">Total Orders</span>
-            <Package size={16} className="text-white/20 group-hover:text-white/30 transition-all duration-300" strokeWidth={1.5} />
-          </div>
-          <div className="text-3xl font-thin text-white/90 mb-2">
-            {loading ? '—' : filteredOrders.length}
-          </div>
-          <div className="text-white/30 text-[10px] font-light tracking-wider uppercase">With Your Products</div>
-        </div>
-
-        <div className="minimal-glass subtle-glow p-6 hover:bg-white/[0.03] transition-all duration-300 group fade-in" style={{ animationDelay: '0.1s' }}>
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-white/40 text-[11px] uppercase tracking-[0.2em] font-light">Gross Revenue</span>
-            <DollarSign size={16} className="text-white/20 group-hover:text-white/30 transition-all duration-300" strokeWidth={1.5} />
-          </div>
-          <div className="text-3xl font-thin text-white/90 mb-2">
-            ${loading ? '—' : totalRevenue.toFixed(2)}
-          </div>
-          <div className="text-white/30 text-[10px] font-light tracking-wider uppercase">Before Commission</div>
-        </div>
-
-        <div className="minimal-glass subtle-glow p-6 hover:bg-white/[0.03] transition-all duration-300 group fade-in" style={{ animationDelay: '0.2s' }}>
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-white/40 text-[11px] uppercase tracking-[0.2em] font-light">Your Earnings</span>
-            <DollarSign size={16} className="text-white/20 group-hover:text-white/30 transition-all duration-300" strokeWidth={1.5} />
-          </div>
-          <div className="text-3xl font-thin text-white/90 mb-2">
-            ${loading ? '—' : (totalRevenue - totalCommission).toFixed(2)}
-          </div>
-          <div className="text-white/30 text-[10px] font-light tracking-wider uppercase">After Commission</div>
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 spacing-grid mb-8">
+        <StatCard
+          label="Total Orders"
+          value={loading ? '—' : filteredOrders.length}
+          sublabel="With Your Products"
+          icon={Package}
+          loading={loading}
+          delay="0s"
+        />
+        <StatCard
+          label="Gross Revenue"
+          value={loading ? '—' : `$${totalRevenue.toFixed(2)}`}
+          sublabel="Before Commission"
+          icon={DollarSign}
+          loading={loading}
+          delay="0.1s"
+        />
+        <StatCard
+          label="Your Earnings"
+          value={loading ? '—' : `$${(totalRevenue - totalCommission).toFixed(2)}`}
+          sublabel="After Commission"
+          icon={DollarSign}
+          loading={loading}
+          delay="0.2s"
+        />
       </div>
 
       {/* Filters */}
-      <div className="minimal-glass p-6 mb-8 fade-in" style={{ animationDelay: '0.3s' }}>
+      <div className="minimal-glass p-6 mb-8">
         <div className="flex flex-col lg:flex-row gap-3 lg:gap-4">
           {/* Search */}
           <div className="flex-1 relative">
@@ -239,7 +212,7 @@ export default function VendorOrders() {
                     <div className="text-white text-sm font-medium mb-0.5">{order.customerName}</div>
                     <div className="text-white/40 text-xs font-mono">{order.orderNumber}</div>
                   </div>
-                  {getStatusBadge(order.status)}
+                  <Badge variant={getStatusVariant(order.status)}>{order.status}</Badge>
                 </div>
                 <div className="flex items-center justify-between text-xs text-white/60">
                   <span>{new Date(order.date).toLocaleDateString()}</span>
@@ -250,7 +223,7 @@ export default function VendorOrders() {
           </div>
 
           {/* Desktop Table View */}
-          <div className="hidden lg:block minimal-glass overflow-hidden fade-in" style={{ animationDelay: '0.4s' }}>
+          <div className="hidden lg:block minimal-glass overflow-hidden">
           <table className="w-full">
             <thead className="border-b border-white/5 bg-black/40">
               <tr>
@@ -295,7 +268,7 @@ export default function VendorOrders() {
                     <span className="text-red-500/80 text-sm">-${order.commission.toFixed(2)}</span>
                   </td>
                   <td className="p-4">
-                    {getStatusBadge(order.status)}
+                    <Badge variant={getStatusVariant(order.status)}>{order.status}</Badge>
                   </td>
                   <td className="p-4">
                     <button
@@ -373,7 +346,7 @@ export default function VendorOrders() {
               </div>
               <div>
                 <div className="text-white/60 text-xs mb-1">Status</div>
-                <div>{getStatusBadge(selectedOrder.status)}</div>
+                <Badge variant={getStatusVariant(selectedOrder.status)}>{selectedOrder.status}</Badge>
               </div>
             </div>
           </div>

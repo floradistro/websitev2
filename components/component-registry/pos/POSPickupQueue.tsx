@@ -30,11 +30,22 @@ interface PickupOrder {
   total_amount: number;
   subtotal: number;
   tax_amount: number;
+  shipping_amount?: number;
   payment_status: string;
   payment_method: string | null;
   created_at: string;
   metadata: any;
+  // Shipping-specific fields
+  shipping_address?: any;
+  tracking_number?: string;
+  tracking_url?: string;
+  shipping_carrier?: string;
+  shipping_method_title?: string;
+  fulfillment_status?: string;
+  shipped_date?: string;
 }
+
+type OrderType = 'pickup' | 'shipping';
 
 interface POSPickupQueueProps {
   locationId: string;
@@ -51,14 +62,19 @@ export function POSPickupQueue({
   refreshInterval = 30,
   enableSound = true,
 }: POSPickupQueueProps) {
-  const [orders, setOrders] = useState<PickupOrder[]>([]);
+  const [activeTab, setActiveTab] = useState<OrderType>('pickup');
+  const [pickupOrders, setPickupOrders] = useState<PickupOrder[]>([]);
+  const [shippingOrders, setShippingOrders] = useState<PickupOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [fulfilling, setFulfilling] = useState<string | null>(null);
   const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>('default');
-  const [modal, setModal] = useState<{isOpen: boolean; title: string; message: string; type: 'success'|'error'|'info'}>({ 
-    isOpen: false, title: '', message: '', type: 'info' 
+  const [modal, setModal] = useState<{isOpen: boolean; title: string; message: string; type: 'success'|'error'|'info'}>({
+    isOpen: false, title: '', message: '', type: 'info'
   });
+
+  // Get active orders based on tab
+  const orders = activeTab === 'pickup' ? pickupOrders : shippingOrders;
 
   // Request notification permission on mount
   useEffect(() => {
@@ -76,7 +92,7 @@ export function POSPickupQueue({
   // Show browser notification
   const showNotification = (order: PickupOrder) => {
     if ('Notification' in window && Notification.permission === 'granted') {
-      const notification = new Notification('New Pickup Order! 🛍️', {
+      const notification = new Notification('New Pickup Order!', {
         body: `${order.customers.first_name} ${order.customers.last_name}\n$${order.total_amount.toFixed(2)} - ${order.order_items.length} items`,
         icon: '/icons/pos-192.png',
         badge: '/icons/pos-192.png',
@@ -122,38 +138,67 @@ export function POSPickupQueue({
   const loadPickupOrders = useCallback(async () => {
     try {
       const response = await fetch(`/api/pos/orders/pickup?locationId=${locationId}`);
-      
+
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to load orders');
+        throw new Error(errorData.error || 'Failed to load pickup orders');
       }
 
       const { orders } = await response.json();
-      setOrders(orders as PickupOrder[] || []);
+      setPickupOrders(orders as PickupOrder[] || []);
       setError(null);
     } catch (err: any) {
       console.error('Error loading pickup orders:', err);
       setError(err.message);
-    } finally {
-      setLoading(false);
     }
   }, [locationId]);
 
+  // Load shipping orders via API
+  const loadShippingOrders = useCallback(async () => {
+    console.log('🚢 Loading shipping orders for location:', locationId);
+    try {
+      const response = await fetch(`/api/pos/orders/shipping?locationId=${locationId}`);
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('❌ Shipping orders API error:', errorData);
+        throw new Error(errorData.error || 'Failed to load shipping orders');
+      }
+
+      const { orders } = await response.json();
+      console.log('✅ Loaded shipping orders:', orders.length);
+      setShippingOrders(orders as PickupOrder[] || []);
+      setError(null);
+    } catch (err: any) {
+      console.error('Error loading shipping orders:', err);
+      setError(err.message);
+    }
+  }, [locationId]);
+
+  // Load all orders
+  const loadAllOrders = useCallback(async () => {
+    console.log('📦 Loading all orders (pickup + shipping)...');
+    setLoading(true);
+    await Promise.all([loadPickupOrders(), loadShippingOrders()]);
+    setLoading(false);
+    console.log('✅ All orders loaded');
+  }, [loadPickupOrders, loadShippingOrders]);
+
   // Initial load
   useEffect(() => {
-    loadPickupOrders();
-  }, [loadPickupOrders]);
+    loadAllOrders();
+  }, [loadAllOrders]);
 
   // Auto-refresh
   useEffect(() => {
     if (!autoRefresh) return;
 
     const interval = setInterval(() => {
-      loadPickupOrders();
+      loadAllOrders();
     }, refreshInterval * 1000);
 
     return () => clearInterval(interval);
-  }, [autoRefresh, refreshInterval, loadPickupOrders]);
+  }, [autoRefresh, refreshInterval, loadAllOrders]);
 
   // Real-time subscription
   useEffect(() => {
@@ -231,14 +276,23 @@ export function POSPickupQueue({
         throw new Error(errorData.error || 'Failed to fulfill order');
       }
 
-      // Remove from queue
-      setOrders(prev => prev.filter(o => o.id !== orderId));
+      // Remove from the appropriate queue
+      if (activeTab === 'pickup') {
+        setPickupOrders(prev => prev.filter(o => o.id !== orderId));
+      } else {
+        setShippingOrders(prev => prev.filter(o => o.id !== orderId));
+      }
 
       // Show success message
+      const successTitle = activeTab === 'shipping' ? 'Order Shipped' : 'Order Ready';
+      const successMessage = activeTab === 'shipping'
+        ? `Order ${orderNumber} has been marked as shipped!`
+        : `Order ${orderNumber} is ready for pickup!`;
+
       setModal({
         isOpen: true,
-        title: 'Order Fulfilled',
-        message: `Order ${orderNumber} has been fulfilled successfully!`,
+        title: successTitle,
+        message: successMessage,
         type: 'success',
       });
     } catch (err: any) {
@@ -304,19 +358,21 @@ export function POSPickupQueue({
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-black text-white uppercase tracking-tight" style={{ fontWeight: 900 }}>
-            Pickup Orders
+            Order Fulfillment
           </h2>
           <p className="text-white/40 text-sm mt-1">{locationName}</p>
         </div>
         <div className="flex items-center gap-4">
-          <div className="bg-white/5 border border-white/10 rounded-2xl px-6 py-3">
-            <div className="text-white/40 text-xs uppercase tracking-wide">Ready</div>
+          <div className="bg-white/5 border border-white/10 rounded-2xl px-6 py-3 text-center">
+            <div className="text-white/40 text-xs uppercase tracking-wide">
+              {activeTab === 'pickup' ? 'Pickup Ready' : 'To Ship'}
+            </div>
             <div className="text-white font-black text-2xl mt-1" style={{ fontWeight: 900 }}>
               {orders.length}
             </div>
           </div>
           <button
-            onClick={() => loadPickupOrders()}
+            onClick={() => loadAllOrders()}
             className="px-4 py-3 border border-white/20 text-white rounded-2xl hover:bg-white/5 text-sm font-bold uppercase"
           >
             Refresh
@@ -324,10 +380,52 @@ export function POSPickupQueue({
         </div>
       </div>
 
+      {/* Tabs */}
+      <div className="flex gap-2 border-b border-white/10 pb-4">
+        <button
+          onClick={() => setActiveTab('pickup')}
+          className={`px-6 py-3 rounded-xl font-black uppercase text-sm transition-all ${
+            activeTab === 'pickup'
+              ? 'bg-white/20 text-white border-2 border-white/30'
+              : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white border-2 border-transparent'
+          }`}
+          style={{ fontWeight: 900 }}
+        >
+          Pickup Orders
+          {pickupOrders.length > 0 && (
+            <span className={`ml-2 px-2 py-0.5 rounded-full text-xs ${
+              activeTab === 'pickup' ? 'bg-white/20 text-white' : 'bg-white/10 text-white/60'
+            }`}>
+              {pickupOrders.length}
+            </span>
+          )}
+        </button>
+        <button
+          onClick={() => setActiveTab('shipping')}
+          className={`px-6 py-3 rounded-xl font-black uppercase text-sm transition-all ${
+            activeTab === 'shipping'
+              ? 'bg-white/20 text-white border-2 border-white/30'
+              : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white border-2 border-transparent'
+          }`}
+          style={{ fontWeight: 900 }}
+        >
+          Shipping Orders
+          {shippingOrders.length > 0 && (
+            <span className={`ml-2 px-2 py-0.5 rounded-full text-xs ${
+              activeTab === 'shipping' ? 'bg-white/20 text-white' : 'bg-white/10 text-white/60'
+            }`}>
+              {shippingOrders.length}
+            </span>
+          )}
+        </button>
+      </div>
+
       {/* Orders List */}
       {orders.length === 0 ? (
         <div className="bg-white/5 border border-white/10 rounded-2xl p-12 text-center">
-          <div className="text-white/40 text-lg mb-2">No Pickup Orders</div>
+          <div className="text-white/40 text-lg mb-2">
+            No {activeTab === 'pickup' ? 'Pickup' : 'Shipping'} Orders
+          </div>
           <div className="text-white/20 text-sm">
             New orders will appear here in real-time
           </div>
@@ -395,21 +493,67 @@ export function POSPickupQueue({
                   <span>Tax</span>
                   <span>${order.tax_amount.toFixed(2)}</span>
                 </div>
+                {activeTab === 'shipping' && order.shipping_amount !== undefined && order.shipping_amount > 0 && (
+                  <div className="flex justify-between text-white/60">
+                    <span>Shipping</span>
+                    <span>${order.shipping_amount.toFixed(2)}</span>
+                  </div>
+                )}
                 <div className="flex justify-between text-white font-bold pt-2 border-t border-white/10">
                   <span>Total</span>
                   <span>${order.total_amount.toFixed(2)}</span>
                 </div>
               </div>
 
+              {/* Shipping Info (for shipping orders) */}
+              {activeTab === 'shipping' && order.shipping_address && (
+                <div className="bg-white/5 rounded-xl p-4 mb-4 space-y-2">
+                  <div className="text-white/40 text-xs uppercase tracking-wide mb-2">Shipping Address</div>
+                  <div className="text-white/80 text-sm">
+                    {order.shipping_address.address_1 && <div>{order.shipping_address.address_1}</div>}
+                    {order.shipping_address.address_2 && <div>{order.shipping_address.address_2}</div>}
+                    {order.shipping_address.city && order.shipping_address.state && (
+                      <div>{order.shipping_address.city}, {order.shipping_address.state} {order.shipping_address.postcode}</div>
+                    )}
+                  </div>
+                  {order.shipping_method_title && (
+                    <div className="text-white/60 text-xs mt-2">
+                      Method: {order.shipping_method_title}
+                    </div>
+                  )}
+                  {order.tracking_number && (
+                    <div className="mt-3 pt-3 border-t border-white/10">
+                      <div className="text-white/40 text-xs uppercase tracking-wide mb-1">Tracking</div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-white text-sm font-mono">{order.tracking_number}</span>
+                        {order.tracking_url && (
+                          <a
+                            href={order.tracking_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-400 hover:text-blue-300 text-xs underline"
+                          >
+                            Track
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* Actions */}
               <div className="flex gap-2">
                 <button
                   onClick={() => fulfillOrder(order.id, order.order_number)}
                   disabled={fulfilling === order.id}
-                  className="flex-1 bg-white text-black font-black uppercase py-4 rounded-2xl hover:bg-white/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                  className="flex-1 bg-white/10 text-white border-2 border-white/20 font-black uppercase py-4 rounded-2xl hover:bg-white/20 hover:border-white/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                   style={{ fontWeight: 900 }}
                 >
-                  {fulfilling === order.id ? 'Fulfilling...' : 'Fulfill Order'}
+                  {fulfilling === order.id
+                    ? (activeTab === 'pickup' ? 'Fulfilling...' : 'Shipping...')
+                    : (activeTab === 'pickup' ? 'Fulfill Order' : 'Mark as Shipped')
+                  }
                 </button>
                 <button
                   onClick={() => setModal({

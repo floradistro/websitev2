@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { useVendorAuth } from '@/context/VendorAuthContext';
+import { useAppAuth } from '@/context/AppAuthContext';
 import { Globe, Plus, Check, X, AlertCircle, ExternalLink, Copy, Trash2, Star, RefreshCw } from 'lucide-react';
 
 interface Domain {
@@ -18,7 +18,7 @@ interface Domain {
 }
 
 export default function VendorDomainsPage() {
-  const { vendor, isAuthenticated, isLoading: authLoading } = useVendorAuth();
+  const { vendor, isAuthenticated, isLoading: authLoading } = useAppAuth();
   const [domains, setDomains] = useState<Domain[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddDomain, setShowAddDomain] = useState(false);
@@ -38,7 +38,7 @@ export default function VendorDomainsPage() {
       setLoading(true);
       
       // Get vendor ID from localStorage
-      const vendorId = localStorage.getItem('vendor_id');
+      const vendorId = vendor?.id;
       if (!vendorId) {
         console.error('No vendor ID found');
         setLoading(false);
@@ -68,7 +68,7 @@ export default function VendorDomainsPage() {
     try {
       setAddingDomain(true);
       
-      const vendorId = localStorage.getItem('vendor_id');
+      const vendorId = vendor?.id;
       if (!vendorId) {
         alert('Vendor ID not found');
         setAddingDomain(false);
@@ -105,7 +105,7 @@ export default function VendorDomainsPage() {
     try {
       setVerifyingDomain(domainId);
       
-      const vendorId = localStorage.getItem('vendor_id');
+      const vendorId = vendor?.id;
       if (!vendorId) return;
       
       const response = await fetch('/api/vendor/domains/verify', {
@@ -135,7 +135,7 @@ export default function VendorDomainsPage() {
 
   async function handleSetPrimary(domainId: string) {
     try {
-      const vendorId = localStorage.getItem('vendor_id');
+      const vendorId = vendor?.id;
       if (!vendorId) return;
       
       const response = await fetch('/api/vendor/domains/set-primary', {
@@ -164,7 +164,7 @@ export default function VendorDomainsPage() {
     if (!confirm(`Are you sure you want to remove ${domain}?`)) return;
 
     try {
-      const vendorId = localStorage.getItem('vendor_id');
+      const vendorId = vendor?.id;
       if (!vendorId) return;
       
       const response = await fetch(`/api/vendor/domains?id=${domainId}`, {
@@ -193,7 +193,7 @@ export default function VendorDomainsPage() {
     setTimeout(() => setCopiedToken(null), 2000);
   }
 
-  const vendorSlug = vendor?.slug || localStorage.getItem('vendor_slug') || 'vendor';
+  const vendorSlug = vendor?.slug || vendor?.slug || 'vendor';
   const platformDomain = `${vendorSlug}.floradistro.com`;
 
   return (

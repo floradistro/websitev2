@@ -90,7 +90,7 @@ export function AlertBanner({
     border border-white/5 rounded-[14px] 
     hover:bg-white/[0.03] p-5 
     transition-all duration-300 group 
-    -mx-4 lg:mx-0 fade-in 
+    -mx-4 lg:mx-0 
     border-l-2 
     ${typeStyles[type]}
     ${className}

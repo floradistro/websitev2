@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useVendorAuth } from '@/context/VendorAuthContext';
+import { useAppAuth } from '@/context/AppAuthContext';
 import Link from 'next/link';
 import { Store, Mail, Lock, ArrowRight, AlertCircle, ArrowLeft, Home, Users } from 'lucide-react';
 
@@ -12,7 +12,7 @@ export default function VendorLogin() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const { login } = useVendorAuth();
+  const { login } = useAppAuth();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -21,9 +21,9 @@ export default function VendorLogin() {
 
     try {
       const success = await login(email, password);
-      
+
       if (success) {
-        router.push('/vendor/dashboard');
+        router.push('/vendor/apps');
       } else {
         setError('Invalid email or password. Please try again.');
       }

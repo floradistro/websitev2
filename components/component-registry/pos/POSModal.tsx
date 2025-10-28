@@ -75,7 +75,7 @@ export function POSModal({
               onConfirm?.();
               onClose();
             }}
-            className="flex-1 px-4 py-3 bg-white text-black border-2 border-white rounded-2xl hover:bg-black hover:text-white text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-300"
+            className="flex-1 px-4 py-3 bg-white/10 text-white border-2 border-white/20 rounded-2xl hover:bg-white/20 hover:border-white/30 text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-300"
             style={{ fontWeight: 900 }}
           >
             {confirmText || 'OK'}

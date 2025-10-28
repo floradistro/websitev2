@@ -1,28 +1,32 @@
+import { ReactNode } from 'react';
+
 interface BadgeProps {
-  children: React.ReactNode;
-  variant?: 'default' | 'primary' | 'secondary' | 'ghost';
-  className?: string;
+  children: ReactNode;
+  variant?: 'success' | 'warning' | 'error' | 'neutral';
+  size?: 'sm' | 'md';
 }
 
-export function Badge({ children, variant = 'default', className = '' }: BadgeProps) {
-  const variants = {
-    default: 'bg-white/5 text-white/60 border-white/10',
-    primary: 'bg-white/10 text-white/90 border-white/20',
-    secondary: 'bg-white/5 text-white/50 border-white/10',
-    ghost: 'bg-transparent text-white/40 border-white/5',
-  };
-  
+export function Badge({ children, variant = 'neutral', size = 'md' }: BadgeProps) {
+  const variantClass = (() => {
+    switch (variant) {
+      case 'success':
+        return 'badge-success';
+      case 'warning':
+        return 'badge-warning';
+      case 'error':
+        return 'badge-error';
+      case 'neutral':
+        return 'badge-neutral';
+      default:
+        return 'badge-neutral';
+    }
+  })();
+
+  const sizeClass = size === 'sm' ? 'text-[9px] px-1.5 py-0.5' : '';
+
   return (
-    <span
-      className={`
-        px-2 py-1 text-xs font-medium uppercase tracking-wider 
-        border rounded-[8px] inline-flex items-center
-        ${variants[variant]}
-        ${className}
-      `}
-    >
+    <span className={`badge-base ${variantClass} ${sizeClass}`}>
       {children}
     </span>
   );
 }
-

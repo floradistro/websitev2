@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { MapPin, Plus, Edit2, Star, CheckCircle, XCircle, Phone, Mail } from 'lucide-react';
-import { useVendorAuth } from '@/context/VendorAuthContext';
+import { useAppAuth } from '@/context/AppAuthContext';
 import axios from 'axios';
 import { showNotification } from '@/components/NotificationToast';
 import AdminModal from '@/components/AdminModal';
@@ -30,7 +30,7 @@ interface Location {
 }
 
 export default function VendorLocations() {
-  const { vendor, isAuthenticated, isLoading: authLoading } = useVendorAuth();
+  const { vendor, isAuthenticated, isLoading: authLoading } = useAppAuth();
   const [locations, setLocations] = useState<Location[]>([]);
   const [loading, setLoading] = useState(true);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -45,7 +45,7 @@ export default function VendorLocations() {
   async function loadLocations() {
     try {
       setLoading(true);
-      const vendorId = localStorage.getItem('vendor_id');
+      const vendorId = vendor?.id;
       if (!vendorId) return;
 
       const response = await axios.get('/api/vendor/locations', {
@@ -76,7 +76,7 @@ export default function VendorLocations() {
     if (!editingLocation) return;
 
     try {
-      const vendorId = localStorage.getItem('vendor_id');
+      const vendorId = vendor?.id;
       const response = await axios.post('/api/vendor/locations', {
         action: 'update',
         location_id: editingLocation.id,
@@ -115,29 +115,10 @@ export default function VendorLocations() {
 
   return (
     <div className="w-full px-4 lg:px-0">
-      <style jsx>{`
-        @keyframes fade-in {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .fade-in {
-          animation: fade-in 0.6s ease-out;
-        }
-        .minimal-glass {
-          background: rgba(255, 255, 255, 0.02);
-          backdrop-filter: blur(20px);
-          border: 1px solid rgba(255, 255, 255, 0.05);
-          border-radius: 20px;
-        }
-        .subtle-glow {
-          box-shadow: 0 0 30px rgba(255, 255, 255, 0.02);
-        }
-      `}</style>
-
       {/* Header */}
-      <div className="mb-12 fade-in">
+      <div className="mb-12">
         <h1 className="text-3xl font-thin text-white/90 tracking-tight mb-2">Locations</h1>
-        <p className="text-white/40 text-xs font-light tracking-wide">{locations.length} {locations.length === 1 ? 'LOCATION' : 'LOCATIONS'} · MULTI-SITE MANAGEMENT</p>
+        <p className="text-white/40 text-xs font-light tracking-wide uppercase">{locations.length} {locations.length === 1 ? 'LOCATION' : 'LOCATIONS'} · MULTI-SITE MANAGEMENT</p>
       </div>
 
       {/* Locations Grid */}

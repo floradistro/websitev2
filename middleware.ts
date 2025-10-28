@@ -32,6 +32,8 @@ export async function middleware(request: NextRequest) {
   // - API routes
   // - Admin routes
   // - Vendor portal routes
+  // - POS routes
+  // - TV Display routes
   // - Main Yacht Club pages (ONLY for yacht club domain, not vendor domains)
   // - Next.js internals
   if (
@@ -39,6 +41,8 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith('/api') ||
     pathname.startsWith('/admin') ||
     pathname.startsWith('/vendor') ||
+    pathname.startsWith('/pos') ||
+    pathname.startsWith('/tv-display') ||
     pathname.startsWith('/login') ||
     pathname.startsWith('/register') ||
     pathname.startsWith('/dashboard') ||

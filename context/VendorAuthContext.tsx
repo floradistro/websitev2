@@ -11,6 +11,8 @@ interface VendorUser {
   user_id: string | number;
   vendor_type?: 'standard' | 'distributor' | 'both';
   wholesale_enabled?: boolean;
+  logo_url?: string;
+  pos_enabled?: boolean;
 }
 
 interface VendorAuthContextType {
@@ -19,6 +21,7 @@ interface VendorAuthContextType {
   isLoading: boolean;
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
+  refreshUserData: () => Promise<void>;
 }
 
 const VendorAuthContext = createContext<VendorAuthContextType>({
@@ -27,6 +30,7 @@ const VendorAuthContext = createContext<VendorAuthContextType>({
   isLoading: true,
   login: async () => false,
   logout: () => {},
+  refreshUserData: async () => {},
 });
 
 export function VendorAuthProvider({ children }: { children: React.ReactNode }) {
@@ -37,28 +41,32 @@ export function VendorAuthProvider({ children }: { children: React.ReactNode }) 
   // Load vendor from localStorage on mount first
   useEffect(() => {
     let mounted = true;
-    
+    let vendorLoadedFromStorage = false;
+
     const savedVendor = localStorage.getItem('vendor_user');
     if (savedVendor && mounted) {
       try {
         const vendorData = JSON.parse(savedVendor);
         setVendor(vendorData);
         setIsAuthenticated(true);
+        setIsLoading(false); // Set loading to false immediately after loading vendor
+        vendorLoadedFromStorage = true;
         console.log('✅ Loaded vendor from localStorage:', vendorData.store_name);
       } catch (error) {
         console.error('Failed to load vendor from localStorage:', error);
         localStorage.removeItem('vendor_user');
       }
     }
-    
+
+    // Only run checkAuth if vendor wasn't loaded from storage
     async function checkAuthSafe() {
-      if (mounted) {
+      if (mounted && !vendorLoadedFromStorage) {
         await checkAuth();
       }
     }
-    
+
     checkAuthSafe();
-    
+
     return () => {
       mounted = false;
     };
@@ -113,7 +121,9 @@ export function VendorAuthProvider({ children }: { children: React.ReactNode }) 
         email: data.vendor.email,
         user_id: data.vendor.id,
         vendor_type: data.vendor.vendor_type || 'standard',
-        wholesale_enabled: data.vendor.wholesale_enabled || false
+        wholesale_enabled: data.vendor.wholesale_enabled || false,
+        logo_url: data.vendor.logo_url,
+        pos_enabled: data.vendor.pos_enabled || false
       };
       
       setVendor(vendorUser);
@@ -158,8 +168,42 @@ export function VendorAuthProvider({ children }: { children: React.ReactNode }) 
     console.log('✅ Vendor logged out');
   }
 
+  async function refreshUserData() {
+    if (!vendor) return;
+    
+    try {
+      const response = await fetch('/api/vendor/auth/refresh', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ vendorId: vendor.id })
+      });
+      
+      const data = await response.json();
+      
+      if (data.success && data.vendor) {
+        const updatedVendor = {
+          id: data.vendor.id,
+          store_name: data.vendor.store_name,
+          slug: data.vendor.slug,
+          email: data.vendor.email,
+          user_id: data.vendor.id,
+          vendor_type: data.vendor.vendor_type || 'standard',
+          wholesale_enabled: data.vendor.wholesale_enabled || false,
+          logo_url: data.vendor.logo_url,
+          pos_enabled: data.vendor.pos_enabled || false
+        };
+        
+        setVendor(updatedVendor);
+        localStorage.setItem('vendor_user', JSON.stringify(updatedVendor));
+        console.log('✅ Vendor data refreshed:', updatedVendor.store_name);
+      }
+    } catch (error) {
+      console.error('Failed to refresh vendor data:', error);
+    }
+  }
+
   return (
-    <VendorAuthContext.Provider value={{ vendor, isAuthenticated, isLoading, login, logout }}>
+    <VendorAuthContext.Provider value={{ vendor, isAuthenticated, isLoading, login, logout, refreshUserData }}>
       {children}
     </VendorAuthContext.Provider>
   );
