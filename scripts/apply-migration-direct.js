@@ -7,7 +7,7 @@ async function applyMigration() {
 
   const client = new Client({
     host: 'db.uaednwpxursknmwdeejn.supabase.co',
-    port: 6543,
+    port: 5432,
     database: 'postgres',
     user: 'postgres.uaednwpxursknmwdeejn',
     password: 'SelahEsco123!!',
@@ -20,23 +20,30 @@ async function applyMigration() {
     await client.connect();
     console.log('✅ Connected to database\n');
 
-    // Read migration file
-    const migrationPath = path.join(__dirname, '../supabase/migrations/20251027_rbac_system.sql');
-    const sql = fs.readFileSync(migrationPath, 'utf-8');
+    // Read migration files
+    const migrations = [
+      path.join(__dirname, '../supabase/migrations/20251028_promotions_system.sql'),
+      path.join(__dirname, '../supabase/migrations/20251028_tv_menu_inventory_integration.sql')
+    ];
 
-    console.log('📄 Loaded migration file');
-    console.log('🔧 Executing RBAC migration...\n');
+    for (const migrationPath of migrations) {
+      console.log(`📄 Loading ${path.basename(migrationPath)}...`);
+      const sql = fs.readFileSync(migrationPath, 'utf-8');
 
-    // Execute the entire SQL
-    await client.query(sql);
+      console.log(`🔧 Executing migration...\n`);
 
-    console.log('✅ Migration executed successfully!\n');
-    console.log('📊 RBAC System is now active:');
-    console.log('   - User roles: vendor_admin, manager, employee');
-    console.log('   - App permissions table created');
-    console.log('   - Location assignments table created');
-    console.log('   - Activity logging enabled');
-    console.log('   - RLS policies applied\n');
+      // Execute the entire SQL
+      await client.query(sql);
+
+      console.log(`✅ ${path.basename(migrationPath)} executed successfully!\n`);
+    }
+
+    console.log('🎉 All migrations completed!');
+    console.log('📊 Systems now active:');
+    console.log('   - Promotions system (product, category, tier, global)');
+    console.log('   - TV Menu inventory integration');
+    console.log('   - Real-time cache sync');
+    console.log('   - Product filtering rules\n');
 
   } catch (error) {
     console.error('❌ Error applying migration:');

@@ -154,7 +154,7 @@ export async function POST(request: NextRequest) {
           .eq('user_id', user.id)
           .eq('can_access', true);
 
-        locations = employeeLocations?.map(el => ({
+        locations = employeeLocations?.map((el: any) => ({
           id: el.locations.id,
           name: el.locations.name,
           address: el.locations.address,

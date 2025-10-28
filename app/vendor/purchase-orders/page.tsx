@@ -557,7 +557,7 @@ export default function PurchaseOrdersPageEnhanced() {
           <div className="flex items-center gap-2 mt-3 pt-3 border-t border-white/10">
             <span className="text-xs text-white/40">Active filters:</span>
             {statusFilter !== 'all' && (
-              <Badge variant="info">
+              <Badge variant="neutral">
                 {statusFilter}
                 <X size={10} className="ml-1 cursor-pointer" onClick={() => setStatusFilter('all')} />
               </Badge>
@@ -609,7 +609,7 @@ export default function PurchaseOrdersPageEnhanced() {
                     <Badge variant={
                       po.status === 'fulfilled' || po.status === 'received' ? 'success' :
                       po.status === 'draft' ? 'warning' :
-                      po.status === 'cancelled' ? 'error' : 'info'
+                      po.status === 'cancelled' ? 'error' : 'neutral'
                     }>
                       {po.status}
                     </Badge>
@@ -709,7 +709,7 @@ export default function PurchaseOrdersPageEnhanced() {
                               <div className="flex items-center gap-2">
                                 <Badge variant={
                                   customer.pricing_tier === 'vip' ? 'warning' :
-                                  customer.pricing_tier === 'distributor' ? 'info' : 'neutral'
+                                  customer.pricing_tier === 'distributor' ? 'neutral' : 'neutral'
                                 }>
                                   {customer.pricing_tier}
                                 </Badge>
@@ -915,10 +915,10 @@ export default function PurchaseOrdersPageEnhanced() {
                                 <div className="flex-1">
                                   <div className="flex items-center gap-2 mb-1">
                                     <span className="text-white text-sm font-medium">{np.name}</span>
-                                    <Badge variant="success" className="text-xs">NEW</Badge>
+                                    <Badge variant="success">NEW</Badge>
                                   </div>
                                   <div className="text-xs text-white/60">
-                                    SKU: {np.sku} • Category: {np.category || 'N/A'} • ${parseFloat(np.unit_cost).toFixed(2)}
+                                    SKU: {np.sku} • Category: {np.category || 'N/A'} • ${Number(np.unit_cost).toFixed(2)}
                                   </div>
                                 </div>
 

@@ -98,7 +98,7 @@ export async function GET(request: NextRequest) {
     })) || [];
 
     // Sort by urgency and then by available quantity
-    const urgencyOrder = { critical: 0, high: 1, medium: 2 };
+    const urgencyOrder: Record<string, number> = { critical: 0, high: 1, medium: 2 };
     lowStockItems.sort((a, b) => {
       const urgencyDiff = urgencyOrder[a.urgency] - urgencyOrder[b.urgency];
       if (urgencyDiff !== 0) return urgencyDiff;

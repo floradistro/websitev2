@@ -30,6 +30,7 @@ interface COA {
 interface Product {
   id: string;
   name: string;
+  sku?: string;
   price: number;
   stock_quantity: number;
   status: string;
@@ -44,6 +45,7 @@ interface Product {
   };
   description?: string;
   created_at: string;
+  updated_at?: string;
   custom_fields?: Record<string, string>;
   pricing_tiers?: PricingTier[];
   coas?: COA[];
@@ -178,9 +180,9 @@ export default function MasterCatalog() {
         product.stock_quantity || 0,
         product.price?.toFixed(2) || '',
         product.pricing_tiers?.length ? `${product.pricing_tiers.length} tiers (from $${minPrice.toFixed(2)})` : 'No tiers',
-        product.coas?.length > 0 ? 'Yes' : 'No',
+        (product.coas?.length ?? 0) > 0 ? 'Yes' : 'No',
         new Date(product.created_at).toLocaleDateString(),
-        new Date(product.updated_at).toLocaleDateString()
+        new Date(product.updated_at || product.created_at).toLocaleDateString()
       ];
     });
 
@@ -447,7 +449,7 @@ export default function MasterCatalog() {
                       const isNew = new Date(product.created_at).getTime() > Date.now() - (7 * 24 * 60 * 60 * 1000);
                       const hasNoPricing = !product.pricing_tiers || product.pricing_tiers.length === 0;
                       const hasNoCOA = !product.coas || product.coas.length === 0;
-                      const isVerified = product.pricing_tiers?.length > 0 && product.coas?.length > 0;
+                      const isVerified = (product.pricing_tiers?.length ?? 0) > 0 && (product.coas?.length ?? 0) > 0;
 
                       return (
                         <>
@@ -521,8 +523,9 @@ export default function MasterCatalog() {
             ))}
           </div>
         ) : (
-          <div className="bg-white/5 border border-white/10 rounded-xl md:rounded-2xl overflow-x-auto">
-              <table className="w-full min-w-[580px]">
+          <div className="w-full overflow-x-auto">
+            <div className="bg-white/5 border border-white/10 rounded-xl md:rounded-2xl min-w-[580px]">
+              <table className="w-full">
                 <thead>
                   <tr className="border-b border-white/10 bg-white/5">
                     <th className="text-left px-2 md:px-5 py-1.5 md:py-3 text-[7px] md:text-[9px] text-white/40 uppercase tracking-[0.15em] font-black" style={{ fontWeight: 900 }}>Product</th>
@@ -620,7 +623,7 @@ export default function MasterCatalog() {
                           const isNew = new Date(product.created_at).getTime() > Date.now() - (7 * 24 * 60 * 60 * 1000);
                           const hasNoPricing = !product.pricing_tiers || product.pricing_tiers.length === 0;
                           const hasNoCOA = !product.coas || product.coas.length === 0;
-                          const isVerified = product.pricing_tiers?.length > 0 && product.coas?.length > 0;
+                          const isVerified = (product.pricing_tiers?.length ?? 0) > 0 && (product.coas?.length ?? 0) > 0;
 
                           return (
                             <>
@@ -666,6 +669,7 @@ export default function MasterCatalog() {
                 ))}
               </tbody>
               </table>
+            </div>
           </div>
         )}
       </div>

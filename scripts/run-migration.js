@@ -1,61 +1,55 @@
-/**
- * Run TV Menu Migration using direct Postgres connection
- */
-
 const { Client } = require('pg');
 const fs = require('fs');
-const path = require('path');
-require('dotenv').config({ path: path.resolve(__dirname, '../.env.local') });
 
-// Try direct connection without pooler
-const connectionString = `postgresql://postgres:${process.env.SUPABASE_DB_PASSWORD}@db.uaednwpxursknmwdeejn.supabase.co:5432/postgres`;
+// Connection string - Direct connection (not pooler)
+const connectionString = 'postgresql://postgres.uaednwpxursknmwdeejn:SelahEsco123!!@aws-0-us-west-1.pooler.supabase.com:5432/postgres';
 
-async function runMigration() {
-  const client = new Client({ connectionString });
+async function runMigration(filePath) {
+  console.log(`\n📄 Running migration: ${filePath}`);
+
+  const client = new Client({
+    connectionString,
+    ssl: {
+      rejectUnauthorized: false
+    }
+  });
 
   try {
-    console.log('🔌 Connecting to database...');
     await client.connect();
-    console.log('✅ Connected!\n');
+    console.log('✅ Connected to database');
 
-    // Read migration file
-    const migrationPath = path.resolve(__dirname, '../supabase/migrations/20251027_tv_menu_system.sql');
-    const sql = fs.readFileSync(migrationPath, 'utf-8');
+    const sql = fs.readFileSync(filePath, 'utf8');
+    console.log(`   Executing SQL (${sql.length} characters)...`);
 
-    console.log('📄 Executing migration SQL...\n');
-
-    // Execute the migration
     await client.query(sql);
 
-    console.log('✅ Migration executed successfully!\n');
-
-    // Verify tables were created
-    const result = await client.query(`
-      SELECT table_name
-      FROM information_schema.tables
-      WHERE table_schema = 'public'
-      AND table_name LIKE 'tv_%'
-      ORDER BY table_name;
-    `);
-
-    console.log('📊 TV Menu System Tables Created:');
-    result.rows.forEach(row => {
-      console.log(`   ✅ ${row.table_name}`);
-    });
-
-    console.log('\n🎉 Migration complete!');
-
+    console.log('✅ Migration completed successfully!\n');
   } catch (error) {
-    console.error('❌ Migration error:', error.message);
-    if (error.message.includes('already exists')) {
-      console.log('\n⚠️  Some tables already exist - that\'s okay!');
-      console.log('✅ Migration completed with warnings');
-    } else {
-      process.exit(1);
-    }
+    console.error('❌ Migration failed:', error.message);
+    console.error('Full error:', error);
   } finally {
     await client.end();
   }
 }
 
-runMigration();
+async function main() {
+  console.log('🚀 Starting migrations...\n');
+
+  const migrations = process.argv.slice(2);
+
+  if (migrations.length === 0) {
+    console.log('Usage: node scripts/run-migration.js <path-to-migration.sql>');
+    console.log('\nExample:');
+    console.log('  node scripts/run-migration.js supabase/migrations/20251028_promotions_system.sql');
+    process.exit(1);
+  }
+
+  for (const migration of migrations) {
+    await runMigration(migration);
+  }
+
+  console.log('✨ All migrations complete!');
+  process.exit(0);
+}
+
+main();

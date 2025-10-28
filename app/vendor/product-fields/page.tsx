@@ -240,12 +240,7 @@ export default function VendorProductFieldsPage() {
         {/* Admin Required Fields */}
         {adminFields.length > 0 && (
           <Card className="mb-8">
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <Lock className="w-5 h-5 text-white/40" />
-                <CardTitle>Required Fields</CardTitle>
-              </div>
-            </CardHeader>
+            <CardHeader title="Required Fields" />
             <CardContent>
               <p className="text-sm text-white/40 mb-4 font-light">
                 These fields are required by the platform admin. You cannot edit or remove these fields.
@@ -257,7 +252,7 @@ export default function VendorProductFieldsPage() {
                     <div className="flex items-center gap-3 mb-3">
                       <h3 className="font-medium text-sm text-white/90">{group.name}</h3>
                       {group.isRequired && (
-                        <Badge variant="primary">Required</Badge>
+                        <Badge variant="warning">Required</Badge>
                       )}
                     </div>
                     
@@ -271,7 +266,7 @@ export default function VendorProductFieldsPage() {
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-1">
                               <span className="font-medium text-sm text-white/90">{field.name}</span>
-                              <Badge variant="secondary">{field.type}</Badge>
+                              <Badge variant="neutral">{field.type}</Badge>
                               {field.required && (
                                 <span className="text-xs text-white/60">*</span>
                               )}
@@ -293,16 +288,14 @@ export default function VendorProductFieldsPage() {
 
         {/* Vendor Custom Fields */}
         <Card className="">
-          <CardHeader action={
-            <Button variant="primary" icon={Plus} onClick={handleNewField}>
-              Add Custom Field
-            </Button>
-          }>
-            <div className="flex items-center gap-2">
-              <Layers className="w-5 h-5 text-white/60" />
-              <CardTitle>Your Custom Fields</CardTitle>
-            </div>
-          </CardHeader>
+          <CardHeader
+            title="Your Custom Fields"
+            action={
+              <Button variant="primary" icon={Plus} onClick={handleNewField}>
+                Add Custom Field
+              </Button>
+            }
+          />
 
           <CardContent>
             <p className="text-sm text-white/40 mb-4 font-light">
@@ -328,9 +321,9 @@ export default function VendorProductFieldsPage() {
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-2">
                           <h3 className="font-medium text-sm text-white/90">{field.definition.label}</h3>
-                          <Badge variant="secondary">{field.definition.type}</Badge>
+                          <Badge variant="neutral">{field.definition.type}</Badge>
                           {field.definition.required && (
-                            <Badge variant="ghost">Required</Badge>
+                            <Badge variant="warning">Required</Badge>
                           )}
                         </div>
                         

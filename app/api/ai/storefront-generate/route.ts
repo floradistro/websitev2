@@ -299,7 +299,7 @@ export async function POST(request: NextRequest) {
             }
           } catch (err) {
             console.error('Exa search failed:', err);
-            const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+            const errorMessage = (err as Error)?.message || String(err) || 'Unknown error';
             send('tool_result', {
               tool: 'exa_search',
               result: 'Failed ❌',
@@ -354,7 +354,7 @@ export async function POST(request: NextRequest) {
         let fullResponse = '';
         let currentThinking = '';
 
-        messageStream.on('text', (text) => {
+        messageStream.on('text', (text: string) => {
           fullResponse += text;
           send('text', { content: text, full: fullResponse });
         });
