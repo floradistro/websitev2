@@ -102,7 +102,7 @@ export default function MasterCatalog() {
   }
 
   const filteredProducts = products.filter(p => {
-    const matchesSearch = p.name.toLowerCase().includes(search.toLowerCase());
+    const matchesSearch = p.name?.toLowerCase().includes(search.toLowerCase()) ?? true;
     const matchesVendor = vendorFilter === 'all' || p.vendor_id === vendorFilter;
     const matchesCategory = categoryFilter === 'all' || p.category?.name === categoryFilter;
     const matchesStatus = statusFilter === 'all' || p.status === statusFilter;
@@ -523,18 +523,18 @@ export default function MasterCatalog() {
             ))}
           </div>
         ) : (
-          <div className="w-full overflow-x-auto">
-            <div className="bg-white/5 border border-white/10 rounded-xl md:rounded-2xl min-w-[580px]">
-              <table className="w-full">
+          <div className="overflow-x-auto">
+            <div className="bg-white/5 border border-white/10 rounded-xl md:rounded-2xl">
+              <table className="w-full min-w-[640px]">
                 <thead>
                   <tr className="border-b border-white/10 bg-white/5">
-                    <th className="text-left px-2 md:px-5 py-1.5 md:py-3 text-[7px] md:text-[9px] text-white/40 uppercase tracking-[0.15em] font-black" style={{ fontWeight: 900 }}>Product</th>
-                    <th className="text-left px-2 md:px-5 py-1.5 md:py-3 text-[7px] md:text-[9px] text-white/40 uppercase tracking-[0.15em] font-black" style={{ fontWeight: 900 }}>Tenant</th>
-                    <th className="text-left px-2 md:px-5 py-1.5 md:py-3 text-[7px] md:text-[9px] text-white/40 uppercase tracking-[0.15em] font-black" style={{ fontWeight: 900 }}>Category</th>
-                    <th className="text-left px-2 md:px-5 py-1.5 md:py-3 text-[7px] md:text-[9px] text-white/40 uppercase tracking-[0.15em] font-black" style={{ fontWeight: 900 }}>Price</th>
-                    <th className="text-left px-2 md:px-5 py-1.5 md:py-3 text-[7px] md:text-[9px] text-white/40 uppercase tracking-[0.15em] font-black" style={{ fontWeight: 900 }}>Stock</th>
-                    <th className="text-left px-2 md:px-5 py-1.5 md:py-3 text-[7px] md:text-[9px] text-white/40 uppercase tracking-[0.15em] font-black" style={{ fontWeight: 900 }}>Status</th>
-                    <th className="text-left px-2 md:px-5 py-1.5 md:py-3 text-[7px] md:text-[9px] text-white/40 uppercase tracking-[0.15em] font-black" style={{ fontWeight: 900 }}>Actions</th>
+                    <th className="text-left px-3 md:px-5 py-2 md:py-3 text-[9px] md:text-[9px] text-white/40 uppercase tracking-[0.15em] font-black" style={{ fontWeight: 900 }}>Product</th>
+                    <th className="text-left px-3 md:px-5 py-2 md:py-3 text-[9px] md:text-[9px] text-white/40 uppercase tracking-[0.15em] font-black" style={{ fontWeight: 900 }}>Tenant</th>
+                    <th className="text-left px-3 md:px-5 py-2 md:py-3 text-[9px] md:text-[9px] text-white/40 uppercase tracking-[0.15em] font-black" style={{ fontWeight: 900 }}>Category</th>
+                    <th className="text-left px-3 md:px-5 py-2 md:py-3 text-[9px] md:text-[9px] text-white/40 uppercase tracking-[0.15em] font-black" style={{ fontWeight: 900 }}>Price</th>
+                    <th className="text-left px-3 md:px-5 py-2 md:py-3 text-[9px] md:text-[9px] text-white/40 uppercase tracking-[0.15em] font-black" style={{ fontWeight: 900 }}>Stock</th>
+                    <th className="text-left px-3 md:px-5 py-2 md:py-3 text-[9px] md:text-[9px] text-white/40 uppercase tracking-[0.15em] font-black" style={{ fontWeight: 900 }}>Status</th>
+                    <th className="text-left px-3 md:px-5 py-2 md:py-3 text-[9px] md:text-[9px] text-white/40 uppercase tracking-[0.15em] font-black" style={{ fontWeight: 900 }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -543,9 +543,9 @@ export default function MasterCatalog() {
                     key={product.id}
                     className="border-b border-white/5 hover:bg-white/[0.02] transition-all"
                   >
-                    <td className="px-2 md:px-5 py-2 md:py-4">
+                    <td className="px-3 md:px-5 py-3 md:py-4">
                       <div className="flex items-center gap-2 md:gap-3">
-                        <div className="w-8 h-8 md:w-12 md:h-12 bg-white/5 border border-white/10 rounded-lg md:rounded-xl relative flex-shrink-0">
+                        <div className="w-10 h-10 md:w-12 md:h-12 bg-white/5 border border-white/10 rounded-lg md:rounded-xl relative flex-shrink-0">
                           {product.images && product.images.length > 0 ? (
                             <Image
                               src={product.images[0]}
@@ -555,33 +555,33 @@ export default function MasterCatalog() {
                             />
                           ) : (
                             <div className="absolute inset-0 flex items-center justify-center">
-                              <Package size={10} className="text-white/10 md:hidden" strokeWidth={1.5} />
+                              <Package size={12} className="text-white/10 md:hidden" strokeWidth={1.5} />
                               <Package size={14} className="text-white/10 hidden md:block" strokeWidth={1.5} />
                             </div>
                           )}
                         </div>
-                        <span className="text-[10px] md:text-xs font-black text-white uppercase" style={{ fontWeight: 900 }}>{product.name}</span>
+                        <span className="text-[11px] md:text-xs font-black text-white uppercase line-clamp-2" style={{ fontWeight: 900 }}>{product.name}</span>
                       </div>
                     </td>
-                    <td className="px-2 md:px-5 py-2 md:py-4">
-                      <div className="flex items-center gap-1 md:gap-2">
+                    <td className="px-3 md:px-5 py-3 md:py-4">
+                      <div className="flex items-center gap-1.5 md:gap-2">
                         {product.vendor?.logo_url && (
-                          <div className="w-6 h-6 md:w-8 md:h-8 bg-white/5 border border-white/10 rounded-md md:rounded-lg overflow-hidden relative">
+                          <div className="w-7 h-7 md:w-8 md:h-8 bg-white/5 border border-white/10 rounded-md md:rounded-lg overflow-hidden relative flex-shrink-0">
                             <Image src={product.vendor.logo_url} alt="" fill className="object-contain p-1" />
                           </div>
                         )}
-                        <span className="text-[10px] md:text-xs font-light text-white/60">
+                        <span className="text-[11px] md:text-xs font-light text-white/60">
                           {product.vendor?.store_name || 'Unknown'}
                         </span>
                       </div>
                     </td>
-                    <td className="px-2 md:px-5 py-2 md:py-4">
+                    <td className="px-3 md:px-5 py-3 md:py-4">
                       {product.category?.name ? (
-                        <span className="text-[9px] md:text-xs font-light text-white/40 uppercase tracking-wide">
+                        <span className="text-[10px] md:text-xs font-light text-white/40 uppercase tracking-wide">
                           {product.category.name}
                         </span>
                       ) : (
-                        <span className="text-[9px] md:text-xs font-light text-white/20">—</span>
+                        <span className="text-[10px] md:text-xs font-light text-white/20">—</span>
                       )}
                     </td>
                     <td className="px-2 md:px-5 py-2 md:py-4">

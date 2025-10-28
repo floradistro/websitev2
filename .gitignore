@@ -54,3 +54,4 @@ backups/*.sql
 # backup files
 *.backup
 
+playwright/.auth/
