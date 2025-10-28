@@ -103,60 +103,55 @@ export default function AdminDashboard() {
   return (
     <div className="w-full px-4 lg:px-0">
       {/* Header */}
-      <div className="mb-4 md:mb-8">
-        <h1 className="text-xl md:text-3xl font-thin text-white/90 tracking-tight mb-2">
-          Overview
-        </h1>
-        <p className="text-white/40 text-xs font-light tracking-wide">
-          COMMAND CENTER · {new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }).toUpperCase()}
-        </p>
-      </div>
-
-      {/* Storefront Builder - NEW Feature */}
-      <Link
-        href="/storefront-builder"
-        className="block mb-4 md:mb-8 bg-gradient-to-r from-purple-500/10 to-orange-500/10 backdrop-filter backdrop-blur-[20px] border border-purple-500/20 rounded-xl md:rounded-2xl hover:from-purple-500/20 hover:to-orange-500/20 p-3 md:p-5 transition-all duration-300 group -mx-4 lg:mx-0 border-l-2 border-l-purple-500/60"
-      >
-        <div className="flex items-center gap-2 md:gap-4">
-          <FlaskConical size={14} className="md:hidden text-purple-400 flex-shrink-0" strokeWidth={1.5} />
-          <FlaskConical size={18} className="hidden md:block text-purple-400 flex-shrink-0" strokeWidth={1.5} />
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1">
-              <p className="text-white text-xs md:text-sm font-light">
-                React Editor - AI-Powered Component IDE
-              </p>
-              <span className="text-[8px] md:text-[9px] font-black uppercase tracking-wider px-2 py-0.5 bg-orange-500/20 text-orange-400 rounded-full">
-                NEW
-              </span>
-            </div>
-            <p className="text-white/40 text-[10px] md:text-xs font-light tracking-wide">
-              PROFESSIONAL IDE · LIVE PREVIEW · AI ASSISTANT · QUANTUM TESTING
+      <div className="mb-6 md:mb-10">
+        <div className="flex items-center gap-4 md:gap-6 mb-4">
+          <img src="/whale.png" alt="WhaleTools" className="w-16 h-16 md:w-20 md:h-20 object-contain" />
+          <div>
+            <h1 className="text-2xl md:text-4xl font-thin text-white tracking-tight mb-1">
+              WhaleTools Overview
+            </h1>
+            <p className="text-white/50 text-xs md:text-sm font-light tracking-wide">
+              PLATFORM COMMAND CENTER · {new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }).toUpperCase()}
             </p>
           </div>
-          <TrendingUp size={12} className="md:hidden text-purple-400/60 opacity-0 group-hover:opacity-100 transition-all duration-300 transform group-hover:translate-x-1" strokeWidth={1.5} />
-          <TrendingUp size={14} className="hidden md:block text-purple-400/60 opacity-0 group-hover:opacity-100 transition-all duration-300 transform group-hover:translate-x-1" strokeWidth={1.5} />
         </div>
-      </Link>
+      </div>
+
 
       {/* Alert for pending products */}
       {stats.pendingProducts > 0 && (
         <Link
           href="/admin/approvals"
-          className="block mb-4 md:mb-8 bg-white/[0.02] backdrop-filter backdrop-blur-[20px] border border-white/5 rounded-xl md:rounded-2xl hover:bg-white/[0.03] p-3 md:p-5 transition-all duration-300 group -mx-4 lg:mx-0 border-l-2 border-l-yellow-500/40"
+          className="relative block mb-4 md:mb-8 bg-gradient-to-r from-yellow-500/10 to-amber-500/10 backdrop-filter backdrop-blur-[20px] border border-yellow-500/30 rounded-2xl md:rounded-3xl hover:from-yellow-500/15 hover:to-amber-500/15 p-4 md:p-6 transition-all duration-500 group -mx-4 lg:mx-0 overflow-hidden shadow-lg hover:shadow-yellow-500/20"
         >
-          <div className="flex items-center gap-2 md:gap-4">
-            <AlertCircle size={14} className="md:hidden text-yellow-500/80 flex-shrink-0 animate-pulse" strokeWidth={1.5} />
-            <AlertCircle size={18} className="hidden md:block text-yellow-500/80 flex-shrink-0 animate-pulse" strokeWidth={1.5} />
+          {/* Animated pulse */}
+          <div className="absolute inset-0 bg-gradient-to-r from-yellow-600/0 via-yellow-600/10 to-yellow-600/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 animate-pulse" />
+
+          {/* Glow effect */}
+          <div className="absolute -inset-1 bg-gradient-to-r from-yellow-600/20 to-amber-600/20 rounded-2xl md:rounded-3xl blur-xl opacity-0 group-hover:opacity-60 transition-opacity duration-500" />
+
+          <div className="relative z-10 flex items-center gap-3 md:gap-4">
+            <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-yellow-500/30 to-amber-500/30 rounded-xl md:rounded-2xl flex items-center justify-center border border-yellow-400/30 animate-pulse">
+              <AlertCircle size={20} className="md:hidden text-yellow-300" strokeWidth={2} />
+              <AlertCircle size={24} className="hidden md:block text-yellow-300" strokeWidth={2} />
+            </div>
             <div className="flex-1 min-w-0">
-              <p className="text-white text-xs md:text-sm font-light mb-1">
-                {stats.pendingProducts} product{stats.pendingProducts !== 1 ? 's' : ''} awaiting approval
-              </p>
-              <p className="text-white/40 text-[10px] md:text-xs font-light tracking-wide">
+              <div className="flex items-center gap-2 mb-1">
+                <p className="text-white text-sm md:text-base font-bold">
+                  {stats.pendingProducts} product{stats.pendingProducts !== 1 ? 's' : ''} awaiting approval
+                </p>
+                <span className="text-[8px] md:text-[9px] font-black uppercase tracking-wider px-2 py-1 bg-gradient-to-r from-yellow-500/30 to-yellow-500/20 text-yellow-300 rounded-full border border-yellow-400/30">
+                  {stats.pendingProducts}
+                </span>
+              </div>
+              <p className="text-white/60 text-[10px] md:text-xs font-light tracking-wide">
                 REVIEW PENDING SUBMISSIONS
               </p>
             </div>
-            <TrendingUp size={12} className="md:hidden text-yellow-500/60 opacity-0 group-hover:opacity-100 transition-all duration-300 transform group-hover:translate-x-1" strokeWidth={1.5} />
-            <TrendingUp size={14} className="hidden md:block text-yellow-500/60 opacity-0 group-hover:opacity-100 transition-all duration-300 transform group-hover:translate-x-1" strokeWidth={1.5} />
+            <div className="w-8 h-8 md:w-10 md:h-10 bg-white/10 rounded-lg md:rounded-xl flex items-center justify-center opacity-0 group-hover:opacity-100 translate-x-2 group-hover:translate-x-0 transition-all duration-300 border border-white/20">
+              <TrendingUp size={16} className="md:hidden text-white" strokeWidth={2} />
+              <TrendingUp size={20} className="hidden md:block text-white" strokeWidth={2} />
+            </div>
           </div>
         </Link>
       )}

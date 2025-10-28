@@ -385,40 +385,11 @@ function VendorLayoutContent({
 
         {/* Main Content - Scrollable area only */}
         <main className="absolute inset-0 lg:left-72 overflow-y-auto overflow-x-hidden">
-          <div className="lg:py-10 lg:px-10 xl:px-16 px-0 pt-16 lg:pt-10 pb-24 lg:pb-10">
+          <div className="lg:py-10 lg:px-10 xl:px-16 px-0 pt-16 lg:pt-10 pb-10">
             {children}
           </div>
         </main>
       </div>
-
-      {/* Mobile Bottom Navigation */}
-      <nav 
-        className="lg:hidden fixed bottom-0 left-0 right-0 border-t border-white/5 backdrop-blur-2xl z-[120] luxury-glow bg-black/98" 
-        style={{ 
-          paddingBottom: 'env(safe-area-inset-bottom)'
-        }}
-      >
-        <div className="flex items-center justify-around px-2 pt-2 pb-1">
-          {mobileNavItems.map((item) => {
-            const Icon = item.icon;
-            const active = isActive(item.href);
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`flex flex-col items-center justify-center gap-1 py-2 px-3 rounded-[12px] transition-all duration-300 min-w-[64px] ${
-                  active 
-                    ? 'text-white' 
-                    : 'text-white/30 hover:text-white/60'
-                }`}
-              >
-                <Icon size={20} strokeWidth={active ? 2 : 1.5} className={active ? 'drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]' : ''} />
-                <span className="text-[9px] font-light tracking-wider uppercase">{item.label}</span>
-              </Link>
-            );
-          })}
-        </div>
-      </nav>
 
       <VendorSupportChat isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
       <AIActivityMonitor />

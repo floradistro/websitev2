@@ -102,8 +102,8 @@ export default function AdminLayout({
             <h1 className="text-sm font-light text-white tracking-[0.2em] uppercase">{currentPage}</h1>
           </div>
 
-          <Link href="/admin/dashboard" className="w-9 h-9 bg-gradient-to-br from-white/8 to-white/3 rounded-[12px] flex items-center justify-center overflow-hidden border border-white/5 transition-all duration-300 hover:border-white/20 luxury-glow">
-            <img src="/yacht-club-logo.png" alt="Yacht Master" className="w-full h-full object-contain p-1" />
+          <Link href="/admin/dashboard" className="transition-all duration-300 hover:opacity-80">
+            <img src="/whale.png" alt="WhaleTools" className="w-10 h-10 object-contain" />
           </Link>
         </div>
       </nav>
@@ -127,13 +127,11 @@ export default function AdminLayout({
             />
             
             <div className="flex items-center justify-between p-5 border-b border-white/5 relative z-10">
-              <Link href="/admin/dashboard" className="flex items-center gap-3 group" onClick={() => setMobileMenuOpen(false)}>
-                <div className="w-11 h-11 bg-gradient-to-br from-white/10 to-white/5 rounded-[14px] flex items-center justify-center overflow-hidden border border-white/10 transition-all duration-300 group-hover:border-white/20 luxury-glow">
-                  <img src="/yacht-club-logo.png" alt="Yacht Master" className="w-full h-full object-contain p-1" />
-                </div>
+              <Link href="/admin/dashboard" className="flex items-center gap-4 group" onClick={() => setMobileMenuOpen(false)}>
+                <img src="/whale.png" alt="WhaleTools" className="w-14 h-14 object-contain transition-all duration-300 group-hover:opacity-80" />
                 <div>
-                  <div className="text-white text-sm font-light tracking-wider">YACHT MASTER</div>
-                  <div className="text-white/40 text-[10px] tracking-[0.15em] uppercase">Control Center</div>
+                  <div className="text-white text-base font-light tracking-wider">WHALETOOLS</div>
+                  <div className="text-white/40 text-[10px] tracking-[0.15em] uppercase">Admin Platform</div>
                 </div>
               </Link>
               <button 
@@ -200,13 +198,11 @@ export default function AdminLayout({
       >
         <div className="w-full px-6 xl:px-8">
           <div className="flex justify-between items-center h-20">
-            <Link href="/admin/dashboard" className="flex items-center gap-4 group">
-              <div className="w-12 h-12 bg-gradient-to-br from-white/10 to-white/5 rounded-[16px] flex items-center justify-center overflow-hidden border border-white/10 transition-all duration-300 group-hover:border-white/30 group-hover:shadow-[0_0_20px_rgba(255,255,255,0.1)]">
-                <img src="/yacht-club-logo.png" alt="Yacht Master" className="w-full h-full object-contain p-1.5" />
-              </div>
+            <Link href="/admin/dashboard" className="flex items-center gap-5 group">
+              <img src="/whale.png" alt="WhaleTools" className="w-16 h-16 object-contain transition-all duration-300 group-hover:opacity-80" />
               <div>
-                <div className="text-white text-lg font-light tracking-[0.15em]">YACHT MASTER</div>
-                <div className="text-white/30 text-[10px] tracking-[0.2em] uppercase">Control Center</div>
+                <div className="text-white text-xl font-light tracking-[0.15em]">WHALETOOLS</div>
+                <div className="text-white/40 text-[11px] tracking-[0.2em] uppercase">Admin Platform</div>
               </div>
             </Link>
 
@@ -266,45 +262,12 @@ export default function AdminLayout({
 
         {/* Main Content - Scrollable area only */}
         <main className="absolute inset-0 lg:left-72 overflow-y-auto overflow-x-hidden">
-          <div className="lg:py-10 lg:px-10 xl:px-16 px-0 pt-16 lg:pt-10 pb-24 lg:pb-10">
+          <div className="lg:py-10 lg:px-10 xl:px-16 px-0 pt-16 lg:pt-10 pb-10">
             {children}
           </div>
         </main>
       </div>
 
-      {/* Mobile Bottom Navigation */}
-      <nav 
-        className="lg:hidden fixed bottom-0 left-0 right-0 border-t border-white/5 backdrop-blur-2xl z-[120] luxury-glow bg-black/98" 
-        style={{ 
-          paddingBottom: 'env(safe-area-inset-bottom)'
-        }}
-      >
-        <div className="flex items-center justify-around px-2 pt-2 pb-1">
-          {[
-            { href: '/admin/dashboard', icon: Home, label: 'Overview' },
-            { href: '/admin/products', icon: Package, label: 'Catalog' },
-            { href: '/admin/vendors', icon: Store, label: 'Tenants' },
-            { href: '/admin/analytics', icon: BarChart3, label: 'Insights' },
-          ].map((item) => {
-            const Icon = item.icon;
-            const active = isActive(item.href);
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`flex flex-col items-center justify-center gap-1 py-2 px-3 rounded-[12px] transition-all duration-300 min-w-[64px] ${
-                  active 
-                    ? 'text-white' 
-                    : 'text-white/30 hover:text-white/60'
-                }`}
-              >
-                <Icon size={20} strokeWidth={active ? 2 : 1.5} className={active ? 'drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]' : ''} />
-                <span className="text-[9px] font-light tracking-wider uppercase">{item.label}</span>
-              </Link>
-            );
-          })}
-        </div>
-      </nav>
     </AdminProtectedRoute>
   );
 }

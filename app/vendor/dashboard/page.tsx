@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Package, Plus, AlertCircle, TrendingUp, DollarSign, AlertTriangle, Calendar, Store, Image, FileCode, Palette, CheckCircle, Bell } from 'lucide-react';
+import { Package, Plus, AlertCircle, TrendingUp, DollarSign, AlertTriangle, Calendar, Store, Image, FileCode, Palette, CheckCircle, Bell, Briefcase } from 'lucide-react';
 import { useAppAuth } from '@/context/AppAuthContext';
 import VendorProfitWidget from '@/components/VendorProfitWidget';
 import { useVendorDashboard } from '@/hooks/useVendorData';
@@ -198,14 +198,65 @@ export default function VendorDashboard() {
 
   return (
     <div className="w-full px-4 lg:px-0">
-      {/* Header */}
+      {/* Hero Header with Vendor Branding */}
       <div className="mb-6 md:mb-12">
-        <h1 className="text-xl md:text-3xl font-thin text-white/90 tracking-tight mb-2">
-          {vendor?.store_name || 'Dashboard'}
-        </h1>
-        <p className="text-white/40 text-[10px] md:text-xs font-light tracking-wide">
-          {vendorBranding?.store_tagline?.toUpperCase() || 'VENDOR PORTAL'} · {new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }).toUpperCase()}
-        </p>
+        <div className="relative overflow-hidden bg-gradient-to-br from-white/[0.02] via-transparent to-transparent border border-white/5 rounded-3xl p-6 lg:p-10">
+          {/* Subtle animated background gradient */}
+          <div className="absolute inset-0 bg-gradient-to-r from-purple-500/5 via-blue-500/5 to-transparent opacity-50 animate-pulse" />
+
+          <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+            {/* Left: Vendor Logo + Info */}
+            <div className="flex items-center gap-4 lg:gap-6">
+              {/* Vendor Logo with Glow */}
+              {vendorBranding?.logo_url ? (
+                <div className="relative group">
+                  <div className="w-16 h-16 lg:w-20 lg:h-20 bg-white/10 backdrop-blur-sm rounded-2xl p-3 border border-white/20 flex items-center justify-center transition-all duration-500 group-hover:scale-105 group-hover:border-white/40">
+                    <img
+                      src={vendorBranding.logo_url}
+                      alt={vendor?.store_name || 'Vendor'}
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+                  {/* Glow effect */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-purple-500/20 to-blue-500/20 rounded-2xl blur-2xl scale-150 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                </div>
+              ) : (
+                <div className="w-16 h-16 lg:w-20 lg:h-20 bg-gradient-to-br from-purple-500/20 to-blue-500/20 rounded-2xl flex items-center justify-center border border-white/20">
+                  <Store size={32} className="text-white/60" />
+                </div>
+              )}
+
+              {/* Welcome Text */}
+              <div>
+                <h1 className="text-2xl lg:text-4xl font-black text-white uppercase tracking-tight mb-1 bg-gradient-to-b from-white to-white/90 bg-clip-text text-transparent" style={{ fontWeight: 900 }}>
+                  {vendor?.store_name || 'Dashboard'}
+                </h1>
+                <p className="text-white/60 text-xs lg:text-sm">
+                  {vendorBranding?.store_tagline || 'Vendor Portal'} · {new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }).toUpperCase()}
+                </p>
+              </div>
+            </div>
+
+            {/* Right: Quick Stats Summary */}
+            <div className="grid grid-cols-3 gap-3 lg:gap-4 w-full lg:w-auto">
+              <div className="bg-white/5 border border-white/10 rounded-xl p-3 backdrop-blur-sm">
+                <div className="text-[9px] uppercase tracking-[0.15em] text-white/40 mb-1">Live</div>
+                <div className="text-white text-lg lg:text-2xl font-bold">{stats.approved}</div>
+                <div className="text-[9px] text-white/60">Products</div>
+              </div>
+              <div className="bg-white/5 border border-white/10 rounded-xl p-3 backdrop-blur-sm">
+                <div className="text-[9px] uppercase tracking-[0.15em] text-white/40 mb-1">30d</div>
+                <div className="text-white text-lg lg:text-2xl font-bold">${stats.totalSales30d.toFixed(0)}</div>
+                <div className="text-[9px] text-white/60">Revenue</div>
+              </div>
+              <div className="bg-white/5 border border-white/10 rounded-xl p-3 backdrop-blur-sm">
+                <div className="text-[9px] uppercase tracking-[0.15em] text-white/40 mb-1">Stock</div>
+                <div className="text-white text-lg lg:text-2xl font-bold">{stats.lowStock}</div>
+                <div className="text-[9px] text-white/60">Low Items</div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Key Metrics */}
@@ -245,46 +296,83 @@ export default function VendorDashboard() {
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-2 md:gap-3 mb-4 md:mb-8">
-        <QuickAction
-          href={`/storefront?vendor=${vendor?.slug || 'flora-distro'}`}
-          icon={Store}
-          label="View Storefront"
-          sublabel="Live Preview"
-          variant="highlight"
-          external
-          cols={2}
-        />
-        <QuickAction
-          href="/vendor/products/new"
-          icon={Plus}
-          label="Add Product"
-        />
-        <QuickAction
-          href="/vendor/products"
-          icon={Package}
-          label="My Products"
-        />
-        <QuickAction
-          href="/vendor/inventory"
-          icon={TrendingUp}
-          label="Inventory"
-        />
-        <QuickAction
-          href="/vendor/media-library"
-          icon={Image}
-          label="Media"
-        />
-        <QuickAction
-          href="/vendor/branding"
-          icon={Palette}
-          label="Branding"
-        />
-        <QuickAction
-          href="/vendor/component-editor"
-          icon={FileCode}
-          label="Editor"
-        />
+      <div className="mb-6 md:mb-12">
+        <div className="border-b border-white/5 pb-3 mb-4">
+          <h2 className="text-xs uppercase tracking-[0.15em] text-white/60 font-bold">
+            Quick Actions
+          </h2>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-3 md:gap-4">
+          <Link
+            href={`/storefront?vendor=${vendor?.slug || 'flora-distro'}`}
+            target="_blank"
+            className="relative group col-span-2 sm:col-span-2 bg-gradient-to-br from-blue-500/10 to-purple-500/10 border border-blue-500/20 rounded-2xl p-4 md:p-6 hover:from-blue-500/20 hover:to-purple-500/20 transition-all duration-500 overflow-hidden"
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-600/0 via-blue-600/10 to-blue-600/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 animate-pulse" />
+            <div className="absolute -inset-1 bg-gradient-to-r from-blue-600/20 to-purple-600/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-60 transition-opacity duration-500" />
+            <div className="relative z-10">
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-500/30 to-purple-500/30 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300 border border-blue-400/30">
+                <Store size={24} className="text-blue-300" strokeWidth={2} />
+              </div>
+              <div className="text-white font-bold text-sm mb-1">View Storefront</div>
+              <div className="text-white/60 text-[10px] uppercase tracking-wider">Live Preview</div>
+            </div>
+          </Link>
+          <Link
+            href="/vendor/products/new"
+            className="relative group bg-white/5 border border-white/10 rounded-2xl p-4 md:p-6 hover:bg-white/10 hover:border-white/20 transition-all duration-300"
+          >
+            <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300">
+              <Plus size={20} className="text-white" strokeWidth={2} />
+            </div>
+            <div className="text-white font-bold text-sm">Add Product</div>
+          </Link>
+          <Link
+            href="/vendor/products"
+            className="relative group bg-white/5 border border-white/10 rounded-2xl p-4 md:p-6 hover:bg-white/10 hover:border-white/20 transition-all duration-300"
+          >
+            <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300">
+              <Package size={20} className="text-white" strokeWidth={2} />
+            </div>
+            <div className="text-white font-bold text-sm">My Products</div>
+          </Link>
+          <Link
+            href="/vendor/inventory"
+            className="relative group bg-white/5 border border-white/10 rounded-2xl p-4 md:p-6 hover:bg-white/10 hover:border-white/20 transition-all duration-300"
+          >
+            <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300">
+              <TrendingUp size={20} className="text-white" strokeWidth={2} />
+            </div>
+            <div className="text-white font-bold text-sm">Inventory</div>
+          </Link>
+          <Link
+            href="/vendor/media-library"
+            className="relative group bg-white/5 border border-white/10 rounded-2xl p-4 md:p-6 hover:bg-white/10 hover:border-white/20 transition-all duration-300"
+          >
+            <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300">
+              <Image size={20} className="text-white" strokeWidth={2} />
+            </div>
+            <div className="text-white font-bold text-sm">Media</div>
+          </Link>
+          <Link
+            href="/vendor/branding"
+            className="relative group bg-white/5 border border-white/10 rounded-2xl p-4 md:p-6 hover:bg-white/10 hover:border-white/20 transition-all duration-300"
+          >
+            <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300">
+              <Palette size={20} className="text-white" strokeWidth={2} />
+            </div>
+            <div className="text-white font-bold text-sm">Branding</div>
+          </Link>
+          <Link
+            href="/vendor/component-editor"
+            className="relative group bg-white/5 border border-white/10 rounded-2xl p-4 md:p-6 hover:bg-white/10 hover:border-white/20 transition-all duration-300"
+          >
+            <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300">
+              <FileCode size={20} className="text-white" strokeWidth={2} />
+            </div>
+            <div className="text-white font-bold text-sm">Editor</div>
+          </Link>
+        </div>
       </div>
 
       {/* Recent Products & Low Stock */}
