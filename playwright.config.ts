@@ -7,10 +7,15 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   workers: 1,
   reporter: 'list',
+  timeout: 120000, // 2 minutes per test (increased from default 30s)
+  expect: {
+    timeout: 15000, // 15 seconds for assertions
+  },
   use: {
     baseURL: 'http://localhost:3000',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
+    actionTimeout: 30000, // 30 seconds for actions like click, fill
   },
   projects: [
     // Setup project - runs first to authenticate

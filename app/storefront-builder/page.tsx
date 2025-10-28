@@ -404,6 +404,7 @@ export default function StorefrontBuilder() {
           elementType={liveEditor.selectedElement.type}
           currentValue={liveEditor.selectedElement.value}
           currentClasses={liveEditor.selectedElement.classes}
+          autoEdit={liveEditor.selectedElement.autoEdit}
           onUpdate={liveEditor.applyLiveUpdate}
           onClose={liveEditor.closeEditor}
         />

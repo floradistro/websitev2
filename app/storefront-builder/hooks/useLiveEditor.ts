@@ -13,6 +13,7 @@ interface SelectedElement {
   position: { x: number; y: number; width: number; height: number };
   selector: string;
   tagName: string;
+  autoEdit: boolean; // Auto-enter edit mode on double-click
 }
 
 export function useLiveEditor(code: string, setCode: (code: string) => void, previewRef: React.RefObject<HTMLIFrameElement | null>) {
@@ -27,7 +28,7 @@ export function useLiveEditor(code: string, setCode: (code: string) => void, pre
       const { type, payload } = event.data;
 
       if (type === 'ELEMENT_CLICKED_LIVE') {
-        const { tagName, classList, textContent, position, value } = payload;
+        const { tagName, classList, textContent, position, value, isDoubleClick } = payload;
 
         // Get iframe offset to adjust coordinates
         const iframe = previewRef.current;
@@ -60,6 +61,7 @@ export function useLiveEditor(code: string, setCode: (code: string) => void, pre
           position: adjustedPosition,
           selector: `${tagName}.${classList.split(' ')[0]}`,
           tagName,
+          autoEdit: isDoubleClick || false, // Auto-edit on double-click
         });
         setIsEditorVisible(true);
       }

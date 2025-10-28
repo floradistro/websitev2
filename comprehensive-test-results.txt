@@ -1,0 +1,32 @@
+
+Running 28 tests using 1 worker
+
+🔐 Setting up vendor authentication...
+  ✘   1 [setup] › tests/auth.setup.ts:12:6 › authenticate as vendor (30.6s)
+
+
+  1) [setup] › tests/auth.setup.ts:12:6 › authenticate as vendor ───────────────────────────────────
+
+    TimeoutError: page.fill: Timeout 30000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('input[type="email"]')[22m
+
+
+      17 |
+      18 |   // Fill in credentials and submit
+    > 19 |   await page.fill('input[type="email"]', VENDOR_EMAIL);
+         |              ^
+      20 |   await page.fill('input[type="password"]', 'testpassword123');
+      21 |   await page.click('button[type="submit"]');
+      22 |
+        at /Users/whale/Desktop/Website/tests/auth.setup.ts:19:14
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/auth.setup.ts-authenticate-as-vendor-setup/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/auth.setup.ts-authenticate-as-vendor-setup/error-context.md
+
+  1 failed
+    [setup] › tests/auth.setup.ts:12:6 › authenticate as vendor ────────────────────────────────────
+  27 did not run

@@ -62,6 +62,10 @@ export function usePreview(code: string, selectedVendor: string, currentVendor?:
               }
             }
 
+            // Track clicks and double-clicks
+            let clickTimer = null;
+            let clickCount = 0;
+
             document.addEventListener('click', (e) => {
               e.preventDefault();
               e.stopPropagation();
@@ -95,6 +99,15 @@ export function usePreview(code: string, selectedVendor: string, currentVendor?:
                 textValue = textValue.trim();
               }
 
+              // Detect double-click
+              clickCount++;
+              const isDoubleClick = clickCount === 2;
+
+              if (clickTimer) clearTimeout(clickTimer);
+              clickTimer = setTimeout(() => {
+                clickCount = 0;
+              }, 300);
+
               // Send detailed info for live editing
               window.parent.postMessage({
                 type: 'ELEMENT_CLICKED_LIVE',
@@ -109,7 +122,8 @@ export function usePreview(code: string, selectedVendor: string, currentVendor?:
                     y: rect.top,
                     width: rect.width,
                     height: rect.height
-                  }
+                  },
+                  isDoubleClick: isDoubleClick
                 }
               }, '*');
             }, true);

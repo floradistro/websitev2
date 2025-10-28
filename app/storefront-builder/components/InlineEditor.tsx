@@ -13,6 +13,7 @@ interface InlineEditorProps {
   elementType: 'text' | 'heading' | 'image' | 'button' | 'container';
   currentValue: string;
   currentClasses: string[];
+  autoEdit?: boolean; // Auto-enter edit mode on mount (double-click)
   onUpdate: (changes: {
     text?: string;
     classes?: string[];
@@ -27,16 +28,24 @@ export function InlineEditor({
   elementType,
   currentValue,
   currentClasses,
+  autoEdit = false,
   onUpdate,
   onClose,
 }: InlineEditorProps) {
   const [editValue, setEditValue] = useState(currentValue);
-  const [isEditingText, setIsEditingText] = useState(false);
+  const [isEditingText, setIsEditingText] = useState(autoEdit);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setEditValue(currentValue);
   }, [currentValue]);
+
+  // Auto-enter edit mode on double-click
+  useEffect(() => {
+    if (autoEdit && (elementType === 'text' || elementType === 'heading' || elementType === 'button')) {
+      setIsEditingText(true);
+    }
+  }, [autoEdit, elementType]);
 
   useEffect(() => {
     if (isEditingText && inputRef.current) {

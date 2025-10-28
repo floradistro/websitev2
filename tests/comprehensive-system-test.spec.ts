@@ -24,18 +24,29 @@ async function waitForNetworkIdle(page: Page, timeout = 5000) {
 
 async function waitForPageLoad(page: Page) {
   // Wait for loading state to complete
-  await page.waitForSelector('text=Loading promotions...', { state: 'hidden', timeout: 15000 }).catch(() => {});
-  // Ensure the Create Promotion button is visible
-  await page.waitForSelector('button:has-text("Create Promotion")', { state: 'visible', timeout: 15000 });
+  await page.waitForSelector('text=Loading promotions...', { state: 'hidden', timeout: 30000 }).catch(() => {});
+  // Ensure the Create Promotion button is visible and clickable
+  await page.waitForSelector('button:has-text("Create Promotion")', { state: 'visible', timeout: 30000 });
+  // Wait a bit for any animations to settle
+  await page.waitForTimeout(500);
 }
 
 async function waitForModal(page: Page) {
   // Wait for modal to appear and animations to complete
-  await page.waitForSelector('input[placeholder*="20% Off"]', { state: 'visible', timeout: 10000 });
+  await page.waitForSelector('input[placeholder*="20% Off"]', { state: 'visible', timeout: 15000 });
   // Wait for modal backdrop animation to settle
-  await page.waitForTimeout(800);
+  await page.waitForTimeout(1200);
   // Ensure modal is stable and ready for interaction
   await page.waitForLoadState('networkidle').catch(() => {});
+}
+
+async function closeModalIfOpen(page: Page) {
+  // Close modal if it's open (cleanup between tests)
+  const modalVisible = await page.locator('input[placeholder*="20% Off"]').isVisible().catch(() => false);
+  if (modalVisible) {
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(500);
+  }
 }
 
 async function clearAllPromotions(page: Page) {
@@ -60,10 +71,11 @@ test.describe('Promotions System - CRUD Operations', () => {
   test('1.1 Create Product-Level Promotion', async ({ page }) => {
     await page.goto(`${BASE_URL}/vendor/promotions`);
     await waitForNetworkIdle(page);
+    await closeModalIfOpen(page); // Cleanup any open modals
     await waitForPageLoad(page);
 
-    // Click Create Promotion
-    await page.click('button:has-text("Create Promotion")');
+    // Click Create Promotion button - use force click if needed
+    await page.locator('button:has-text("Create Promotion")').click({ timeout: 15000 });
     await waitForModal(page);
 
     // Fill in form
@@ -102,7 +114,8 @@ test.describe('Promotions System - CRUD Operations', () => {
     await waitForNetworkIdle(page);
     await waitForPageLoad(page);
 
-    await page.click('button:has-text("Create Promotion")');
+    await closeModalIfOpen(page); // Cleanup any open modals
+    await page.locator('button:has-text("Create Promotion")').click({ timeout: 15000 });
     await waitForModal(page);
 
     await page.fill('input[placeholder*="20% Off"]', 'Entire Store 10% OFF');
@@ -193,7 +206,8 @@ test.describe('Time-Based Promotions', () => {
     await waitForNetworkIdle(page);
     await waitForPageLoad(page);
 
-    await page.click('button:has-text("Create Promotion")');
+    await closeModalIfOpen(page); // Cleanup any open modals
+    await page.locator('button:has-text("Create Promotion")').click({ timeout: 15000 });
     await waitForModal(page);
 
     await page.fill('input[placeholder*="20% Off"]', 'Happy Hour Special');
@@ -227,7 +241,8 @@ test.describe('Time-Based Promotions', () => {
     await waitForNetworkIdle(page);
     await waitForPageLoad(page);
 
-    await page.click('button:has-text("Create Promotion")');
+    await closeModalIfOpen(page); // Cleanup any open modals
+    await page.locator('button:has-text("Create Promotion")').click({ timeout: 15000 });
     await waitForModal(page);
 
     await page.fill('input[placeholder*="20% Off"]', 'Weekend Sale');
@@ -384,7 +399,8 @@ test.describe('Edge Cases & Error Handling', () => {
     await waitForNetworkIdle(page);
     await waitForPageLoad(page);
 
-    await page.click('button:has-text("Create Promotion")');
+    await closeModalIfOpen(page); // Cleanup any open modals
+    await page.locator('button:has-text("Create Promotion")').click({ timeout: 15000 });
     await waitForModal(page);
 
     // Try to create without name
@@ -405,7 +421,8 @@ test.describe('Edge Cases & Error Handling', () => {
     await waitForNetworkIdle(page);
     await waitForPageLoad(page);
 
-    await page.click('button:has-text("Create Promotion")');
+    await closeModalIfOpen(page); // Cleanup any open modals
+    await page.locator('button:has-text("Create Promotion")').click({ timeout: 15000 });
     await waitForModal(page);
 
     await page.fill('input[placeholder*="20% Off"]', 'Zero Discount Test');
@@ -424,7 +441,8 @@ test.describe('Edge Cases & Error Handling', () => {
     await waitForNetworkIdle(page);
     await waitForPageLoad(page);
 
-    await page.click('button:has-text("Create Promotion")');
+    await closeModalIfOpen(page); // Cleanup any open modals
+    await page.locator('button:has-text("Create Promotion")').click({ timeout: 15000 });
     await waitForModal(page);
 
     await page.fill('input[placeholder*="20% Off"]', 'Negative Discount Test');
@@ -443,7 +461,8 @@ test.describe('Edge Cases & Error Handling', () => {
     await waitForNetworkIdle(page);
     await waitForPageLoad(page);
 
-    await page.click('button:has-text("Create Promotion")');
+    await closeModalIfOpen(page); // Cleanup any open modals
+    await page.locator('button:has-text("Create Promotion")').click({ timeout: 15000 });
     await waitForModal(page);
 
     await page.fill('input[placeholder*="20% Off"]', 'Large Discount Test');
@@ -482,7 +501,8 @@ test.describe('Real-World Use Cases', () => {
     await waitForNetworkIdle(page);
     await waitForPageLoad(page);
 
-    await page.click('button:has-text("Create Promotion")');
+    await closeModalIfOpen(page); // Cleanup any open modals
+    await page.locator('button:has-text("Create Promotion")').click({ timeout: 15000 });
     await waitForModal(page);
 
     const now = new Date();
@@ -517,7 +537,8 @@ test.describe('Real-World Use Cases', () => {
     await waitForNetworkIdle(page);
     await waitForPageLoad(page);
 
-    await page.click('button:has-text("Create Promotion")');
+    await closeModalIfOpen(page); // Cleanup any open modals
+    await page.locator('button:has-text("Create Promotion")').click({ timeout: 15000 });
     await waitForModal(page);
 
     await page.fill('input[placeholder*="20% Off"]', 'Buy 7g+, Save 10%');
@@ -537,7 +558,8 @@ test.describe('Real-World Use Cases', () => {
     await waitForNetworkIdle(page);
     await waitForPageLoad(page);
 
-    await page.click('button:has-text("Create Promotion")');
+    await closeModalIfOpen(page); // Cleanup any open modals
+    await page.locator('button:has-text("Create Promotion")').click({ timeout: 15000 });
     await waitForModal(page);
 
     await page.fill('input[placeholder*="20% Off"]', 'All Flower 15% OFF');
@@ -632,7 +654,8 @@ test.describe('Data Integrity & Validation', () => {
     await waitForNetworkIdle(page);
     await waitForPageLoad(page);
 
-    await page.click('button:has-text("Create Promotion")');
+    await closeModalIfOpen(page); // Cleanup any open modals
+    await page.locator('button:has-text("Create Promotion")').click({ timeout: 15000 });
     await waitForModal(page);
 
     await page.fill('input[placeholder*="20% Off"]', 'Color Test');
@@ -683,7 +706,8 @@ test.describe('Navigation & UI/UX', () => {
     await waitForPageLoad(page);
 
     // Open modal
-    await page.click('button:has-text("Create Promotion")');
+    await closeModalIfOpen(page); // Cleanup any open modals
+    await page.locator('button:has-text("Create Promotion")').click({ timeout: 15000 });
     await waitForModal(page);
 
     const modalVisible = await page.locator('text=Create Promotion').last().isVisible();
@@ -711,7 +735,8 @@ test.describe('Comprehensive Integration Test', () => {
     await waitForNetworkIdle(page);
     await waitForPageLoad(page);
 
-    await page.click('button:has-text("Create Promotion")');
+    await closeModalIfOpen(page); // Cleanup any open modals
+    await page.locator('button:has-text("Create Promotion")').click({ timeout: 15000 });
     await waitForModal(page);
 
     const promotionName = `Integration Test ${Date.now()}`;
