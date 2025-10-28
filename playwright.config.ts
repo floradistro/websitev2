@@ -18,30 +18,9 @@ export default defineConfig({
     actionTimeout: 30000, // 30 seconds for actions like click, fill
   },
   projects: [
-    // Setup project - runs first to authenticate
     {
-      name: 'setup',
-      testMatch: /.*\.setup\.ts/,
-    },
-
-    // Unauthenticated tests (public pages like TV display)
-    {
-      name: 'public',
-      testMatch: /.*public.*\.spec\.ts/,
+      name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
-    },
-
-    // Authenticated vendor tests (use saved auth state)
-    {
-      name: 'vendor-authenticated',
-      testMatch: /.*\.spec\.ts/,
-      testIgnore: /.*public.*\.spec\.ts/,
-      use: {
-        ...devices['Desktop Chrome'],
-        // Use the auth state from setup
-        storageState: 'playwright/.auth/vendor.json',
-      },
-      dependencies: ['setup'], // Run setup first
     },
   ],
   // webServer: { // Disabled - manually manage dev server

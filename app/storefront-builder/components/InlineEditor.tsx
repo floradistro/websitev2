@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect, useRef } from 'react';
-import { Type, Palette, Image, AlignLeft, AlignCenter, AlignRight, Bold, Italic, X } from 'lucide-react';
+import { Type, Palette, Image, AlignLeft, AlignCenter, AlignRight, Bold, Italic, X, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface InlineEditorProps {
@@ -19,6 +19,7 @@ interface InlineEditorProps {
     classes?: string[];
     styles?: Record<string, string>;
   }) => void;
+  onDelete?: () => void; // Delete element from preview and code
   onClose: () => void;
 }
 
@@ -30,6 +31,7 @@ export function InlineEditor({
   currentClasses,
   autoEdit = false,
   onUpdate,
+  onDelete,
   onClose,
 }: InlineEditorProps) {
   const [editValue, setEditValue] = useState(currentValue);
@@ -228,6 +230,24 @@ export function InlineEditor({
                 <button className="px-3 py-2 hover:bg-white/10 rounded-lg transition-colors text-white/80 hover:text-white text-sm flex items-center gap-2">
                   <Palette size={16} strokeWidth={2} />
                   Filters
+                </button>
+              </>
+            )}
+
+            {/* Delete Button */}
+            {onDelete && (
+              <>
+                <div className="w-px h-6 bg-white/10 mx-1" />
+                <button
+                  onClick={() => {
+                    if (confirm(`Delete this ${elementType}? This cannot be undone.`)) {
+                      onDelete();
+                    }
+                  }}
+                  className="p-2 hover:bg-red-500/20 rounded-lg transition-colors text-white/40 hover:text-red-400"
+                  title="Delete element (can't undo)"
+                >
+                  <Trash2 size={16} strokeWidth={2} />
                 </button>
               </>
             )}

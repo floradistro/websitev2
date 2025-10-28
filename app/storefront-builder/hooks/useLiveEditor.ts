@@ -176,6 +176,78 @@ export function useLiveEditor(code: string, setCode: (code: string) => void, pre
     });
   }, [previewRef]);
 
+  // Delete element
+  const deleteElement = useCallback(() => {
+    if (!selectedElement) return;
+
+    // Remove from preview DOM immediately
+    const iframe = previewRef.current;
+    const doc = iframe?.contentDocument || iframe?.contentWindow?.document;
+    if (doc) {
+      const elements = doc.querySelectorAll(selectedElement.selector);
+      elements.forEach((element: any) => {
+        // Fade out animation before removing
+        element.style.transition = 'opacity 0.2s ease-out';
+        element.style.opacity = '0';
+        setTimeout(() => {
+          element.remove();
+        }, 200);
+      });
+    }
+
+    // Remove from code
+    // Find and remove the element from the code
+    let updatedCode = code;
+
+    // Strategy 1: Try to find by text content (most reliable for text elements)
+    if (selectedElement.value) {
+      const escapedValue = selectedElement.value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+      // Match JSX element with this text content
+      // Patterns to try:
+      // 1. Self-closing or simple element: <tag ...>text</tag>
+      // 2. With attributes: <tag className="..." ...>text</tag>
+      const patterns = [
+        // Match complete element with text content
+        new RegExp(`<${selectedElement.tagName}[^>]*>\\s*${escapedValue}\\s*</${selectedElement.tagName}>`, 'g'),
+        // Match self-closing image with src containing the value
+        new RegExp(`<img[^>]*src=["']${escapedValue}["'][^>]*\\/?>`, 'g'),
+      ];
+
+      for (const pattern of patterns) {
+        if (pattern.test(updatedCode)) {
+          updatedCode = updatedCode.replace(pattern, '');
+          break;
+        }
+      }
+    }
+
+    // Strategy 2: If text matching fails, try matching by classes
+    if (updatedCode === code && selectedElement.classes.length > 0) {
+      const firstClass = selectedElement.classes[0];
+      const escapedClass = firstClass.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+      // Match element with this class
+      const classPattern = new RegExp(
+        `<${selectedElement.tagName}[^>]*className=["'][^"']*${escapedClass}[^"']*["'][^>]*>.*?</${selectedElement.tagName}>`,
+        'gs'
+      );
+
+      if (classPattern.test(updatedCode)) {
+        updatedCode = updatedCode.replace(classPattern, '');
+      }
+    }
+
+    // Apply updated code
+    if (updatedCode !== code) {
+      setCode(updatedCode);
+    }
+
+    // Close editor after deletion
+    setIsEditorVisible(false);
+    setSelectedElement(null);
+  }, [selectedElement, code, setCode, previewRef]);
+
   // Close editor
   const closeEditor = useCallback(() => {
     setIsEditorVisible(false);
@@ -188,16 +260,23 @@ export function useLiveEditor(code: string, setCode: (code: string) => void, pre
       if (e.key === 'Escape' && isEditorVisible) {
         closeEditor();
       }
+      // Delete key to delete element
+      if ((e.key === 'Delete' || e.key === 'Backspace') && isEditorVisible && selectedElement) {
+        if (confirm(`Delete this ${selectedElement.type}? This cannot be undone.`)) {
+          deleteElement();
+        }
+      }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isEditorVisible, closeEditor]);
+  }, [isEditorVisible, closeEditor, selectedElement, deleteElement]);
 
   return {
     selectedElement,
     isEditorVisible,
     applyLiveUpdate,
+    deleteElement,
     closeEditor,
   };
 }

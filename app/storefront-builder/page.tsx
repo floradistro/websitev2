@@ -406,6 +406,7 @@ export default function StorefrontBuilder() {
           currentClasses={liveEditor.selectedElement.classes}
           autoEdit={liveEditor.selectedElement.autoEdit}
           onUpdate={liveEditor.applyLiveUpdate}
+          onDelete={liveEditor.deleteElement}
           onClose={liveEditor.closeEditor}
         />
       )}

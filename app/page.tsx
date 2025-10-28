@@ -4,6 +4,7 @@ import { ArrowRight } from "lucide-react";
 import { HomeNavigation } from "@/components/HomeNavigation";
 import { HomeCountdown } from "@/components/HomeCountdown";
 import { HeroContent } from "@/components/HomePage/HeroContent";
+import { ProductShowcase } from "@/components/HomePage/ProductShowcase";
 import { AnimatedSection, AnimatedGrid, AnimatedGridItem } from "@/components/HomePage/AnimatedSection";
 
 export default function HomePage() {
@@ -16,6 +17,9 @@ export default function HomePage() {
       <section className="pt-24 sm:pt-32 md:pt-40 pb-12 sm:pb-16 md:pb-20 px-4 sm:px-6 relative">
         <HeroContent />
       </section>
+
+      {/* Product Showcase - Beautiful Animation */}
+      <ProductShowcase />
 
       {/* What Gets Built */}
       <AnimatedSection className="py-12 sm:py-16 md:py-20 px-4 sm:px-6">
