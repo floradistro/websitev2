@@ -25,28 +25,12 @@ export function useAIGeneration(
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Typewriter effect for streaming code
+  // Reset displayed code when panel opens/closes
   useEffect(() => {
-    if (!streamingText || !showStreamingPanel) {
+    if (!showStreamingPanel) {
       setDisplayedCode('');
-      return;
     }
-
-    let currentIndex = displayedCode.length;
-
-    if (currentIndex < streamingText.length) {
-      const timer = setInterval(() => {
-        if (currentIndex < streamingText.length) {
-          setDisplayedCode(streamingText.substring(0, currentIndex + 1));
-          currentIndex++;
-        } else {
-          clearInterval(timer);
-        }
-      }, 10); // 10ms per character for smooth typewriter effect
-
-      return () => clearInterval(timer);
-    }
-  }, [streamingText, showStreamingPanel, displayedCode.length]);
+  }, [showStreamingPanel]);
 
   // Handle AI generation with streaming
   const handleAIGenerate = useCallback(async () => {
@@ -167,36 +151,71 @@ export function useAIGeneration(
                     title: event.title || 'Screenshot'
                   });
                   break;
+                case 'thinking_start':
+                  setStreamingStatus('💭 Extended thinking...');
+                  break;
                 case 'thinking':
                   setStreamingThinking(prev => prev + (event.text || ''));
                   break;
+                case 'text':
+                  // Stream full AI response (includes explanations + code)
+                  const newChunk = event.content || event.text || '';
+                  setStreamingText(prev => prev + newChunk);
+
+                  // Extract and display code blocks in real-time
+                  const codeMatch = (streamingText + newChunk).match(/```(?:jsx|javascript|js|tsx|typescript)?\n([\s\S]*?)```/);
+                  if (codeMatch && codeMatch[1]) {
+                    const extractedCode = codeMatch[1];
+                    setDisplayedCode(extractedCode);
+                    setGeneratedCodeBackup(extractedCode); // Backup extracted code
+                  }
+
+                  setStreamingStatus('✨ Generating code...');
+                  break;
                 case 'code_chunk':
-                  const newChunk = event.text || '';
+                  // Legacy support for direct code streaming
+                  const codeChunk = event.text || '';
                   setStreamingText(prev => {
-                    const updated = prev + newChunk;
-                    setGeneratedCodeBackup(updated); // Backup every chunk!
+                    const updated = prev + codeChunk;
+                    setGeneratedCodeBackup(updated);
                     return updated;
                   });
+                  setStreamingStatus('✨ Generating code...');
+                  break;
+                case 'tokens':
+                  // Track token usage (optional)
                   break;
                 case 'complete':
-                  fullCode = event.code || generatedCodeBackup || streamingText;
+                  // Use event code first, then backup, then streamingText
+                  const finalCode = event.code || generatedCodeBackup || streamingText;
 
                   // Save conversation ID
                   if (event.conversationId) {
                     setCurrentConversationId(event.conversationId);
                   }
 
-                  // Save to backup before rendering
-                  setGeneratedCodeBackup(fullCode);
-
-                  // Apply to editor
-                  try {
-                    setCode(fullCode);
-                  } catch (error) {
-                    setCode(generatedCodeBackup);
+                  // Update backup with final code
+                  if (finalCode) {
+                    setGeneratedCodeBackup(finalCode);
+                    fullCode = finalCode;
                   }
 
-                  setStreamingStatus('✅ Complete!');
+                  // Apply to editor with fallback
+                  if (fullCode) {
+                    try {
+                      setCode(fullCode);
+                      setStreamingStatus('✅ Complete!');
+                    } catch (error) {
+                      // Fallback to backup if main code fails
+                      const fallbackCode = generatedCodeBackup || streamingText;
+                      if (fallbackCode) {
+                        setCode(fallbackCode);
+                        setStreamingStatus('✅ Complete (with fallback)');
+                      }
+                    }
+                  }
+
+                  // Close panel after showing success
                   setTimeout(() => {
                     setShowStreamingPanel(false);
                     setIsGenerating(false);
@@ -235,9 +254,6 @@ export function useAIGeneration(
       setShowStreamingPanel(false);
       setIsGenerating(false);
       return;
-    } finally {
-      setShowStreamingPanel(false);
-      setIsGenerating(false);
     }
   }, [aiPrompt, code, selectedVendor, currentVendor, currentConversationId, generatedCodeBackup, streamingText, setCode]);
 

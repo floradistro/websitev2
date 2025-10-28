@@ -1,6 +1,7 @@
 /**
  * Streaming Panel Component
  * Real-time AI generation progress with tools, thinking, and code
+ * Aligned with Cursor AI best practices
  */
 
 import { ToolExecuted, ScreenshotPreview } from '@/lib/storefront-builder/types';
@@ -110,11 +111,23 @@ export function StreamingPanel({
               <div className="flex items-start gap-3">
                 <div className="text-white/40 text-xs font-mono mt-1">{String(toolsExecuted.length + (screenshotPreview ? 2 : 1) + (thinking ? 1 : 0)).padStart(2, '0')}</div>
                 <div className="flex-1">
-                  <div className="text-white/60 text-xs uppercase tracking-wider mb-2">Code Generation</div>
-                  <div className="bg-[#0a0a0a] border border-white/5 rounded-xl p-4">
-                    <pre className="text-white/80 text-xs font-mono leading-relaxed whitespace-pre-wrap">
+                  <div className="text-white/60 text-xs uppercase tracking-wider mb-2 flex items-center gap-2">
+                    <span>Code Generation</span>
+                    <div className="flex gap-1">
+                      <div className="w-1 h-1 bg-cyan-500 rounded-full animate-pulse" style={{ animationDelay: '0ms' }}></div>
+                      <div className="w-1 h-1 bg-cyan-500 rounded-full animate-pulse" style={{ animationDelay: '100ms' }}></div>
+                      <div className="w-1 h-1 bg-cyan-500 rounded-full animate-pulse" style={{ animationDelay: '200ms' }}></div>
+                    </div>
+                  </div>
+                  <div className="bg-[#0a0a0a] border border-white/5 rounded-xl p-4 max-h-[400px] overflow-y-auto">
+                    <pre className="text-cyan-400/80 text-xs font-mono leading-relaxed whitespace-pre-wrap">
 {displayedCode}
                     </pre>
+                    {displayedCode.split('\n').length > 20 && (
+                      <div className="text-white/40 text-xs mt-2">
+                        {displayedCode.split('\n').length} lines
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

@@ -108,6 +108,7 @@ export function InlineEditor({
   return (
     <AnimatePresence>
       <motion.div
+        key="inline-editor-toolbar"
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 10 }}
@@ -255,6 +256,7 @@ export function InlineEditor({
 
       {/* Element Highlight */}
       <motion.div
+        key="inline-editor-highlight"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}

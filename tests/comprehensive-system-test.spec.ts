@@ -29,6 +29,15 @@ async function waitForPageLoad(page: Page) {
   await page.waitForSelector('button:has-text("Create Promotion")', { state: 'visible', timeout: 15000 });
 }
 
+async function waitForModal(page: Page) {
+  // Wait for modal to appear and animations to complete
+  await page.waitForSelector('input[placeholder*="20% Off"]', { state: 'visible', timeout: 10000 });
+  // Wait for modal backdrop animation to settle
+  await page.waitForTimeout(800);
+  // Ensure modal is stable and ready for interaction
+  await page.waitForLoadState('networkidle').catch(() => {});
+}
+
 async function clearAllPromotions(page: Page) {
   await page.goto(`${BASE_URL}/vendor/promotions`);
   await waitForNetworkIdle(page);
@@ -55,7 +64,7 @@ test.describe('Promotions System - CRUD Operations', () => {
 
     // Click Create Promotion
     await page.click('button:has-text("Create Promotion")');
-    await page.waitForSelector('input[placeholder*="20% Off"]');
+    await waitForModal(page);
 
     // Fill in form
     await page.fill('input[placeholder*="20% Off"]', 'Blue Dream 20% OFF');
@@ -94,7 +103,7 @@ test.describe('Promotions System - CRUD Operations', () => {
     await waitForPageLoad(page);
 
     await page.click('button:has-text("Create Promotion")');
-    await page.waitForSelector('input[placeholder*="20% Off"]');
+    await waitForModal(page);
 
     await page.fill('input[placeholder*="20% Off"]', 'Entire Store 10% OFF');
     await page.fill('textarea', 'Store-wide sale for all products');
@@ -185,7 +194,7 @@ test.describe('Time-Based Promotions', () => {
     await waitForPageLoad(page);
 
     await page.click('button:has-text("Create Promotion")');
-    await page.waitForSelector('input[placeholder*="20% Off"]');
+    await waitForModal(page);
 
     await page.fill('input[placeholder*="20% Off"]', 'Happy Hour Special');
     await page.click('button:has-text("Global")');
@@ -219,7 +228,7 @@ test.describe('Time-Based Promotions', () => {
     await waitForPageLoad(page);
 
     await page.click('button:has-text("Create Promotion")');
-    await page.waitForSelector('input[placeholder*="20% Off"]');
+    await waitForModal(page);
 
     await page.fill('input[placeholder*="20% Off"]', 'Weekend Sale');
     await page.click('button:has-text("Global")');
@@ -376,7 +385,7 @@ test.describe('Edge Cases & Error Handling', () => {
     await waitForPageLoad(page);
 
     await page.click('button:has-text("Create Promotion")');
-    await page.waitForSelector('input[placeholder*="20% Off"]');
+    await waitForModal(page);
 
     // Try to create without name
     await page.click('button:has-text("Global")');
@@ -397,7 +406,7 @@ test.describe('Edge Cases & Error Handling', () => {
     await waitForPageLoad(page);
 
     await page.click('button:has-text("Create Promotion")');
-    await page.waitForSelector('input[placeholder*="20% Off"]');
+    await waitForModal(page);
 
     await page.fill('input[placeholder*="20% Off"]', 'Zero Discount Test');
     await page.click('button:has-text("Global")');
@@ -416,7 +425,7 @@ test.describe('Edge Cases & Error Handling', () => {
     await waitForPageLoad(page);
 
     await page.click('button:has-text("Create Promotion")');
-    await page.waitForSelector('input[placeholder*="20% Off"]');
+    await waitForModal(page);
 
     await page.fill('input[placeholder*="20% Off"]', 'Negative Discount Test');
     await page.click('button:has-text("Global")');
@@ -435,7 +444,7 @@ test.describe('Edge Cases & Error Handling', () => {
     await waitForPageLoad(page);
 
     await page.click('button:has-text("Create Promotion")');
-    await page.waitForSelector('input[placeholder*="20% Off"]');
+    await waitForModal(page);
 
     await page.fill('input[placeholder*="20% Off"]', 'Large Discount Test');
     await page.click('button:has-text("Global")');
@@ -474,7 +483,7 @@ test.describe('Real-World Use Cases', () => {
     await waitForPageLoad(page);
 
     await page.click('button:has-text("Create Promotion")');
-    await page.waitForSelector('input[placeholder*="20% Off"]');
+    await waitForModal(page);
 
     const now = new Date();
     const startTime = new Date(now.getTime() - 1000 * 60 * 60); // 1 hour ago
@@ -509,7 +518,7 @@ test.describe('Real-World Use Cases', () => {
     await waitForPageLoad(page);
 
     await page.click('button:has-text("Create Promotion")');
-    await page.waitForSelector('input[placeholder*="20% Off"]');
+    await waitForModal(page);
 
     await page.fill('input[placeholder*="20% Off"]', 'Buy 7g+, Save 10%');
     await page.click('button:has-text("Tier")');
@@ -529,7 +538,7 @@ test.describe('Real-World Use Cases', () => {
     await waitForPageLoad(page);
 
     await page.click('button:has-text("Create Promotion")');
-    await page.waitForSelector('input[placeholder*="20% Off"]');
+    await waitForModal(page);
 
     await page.fill('input[placeholder*="20% Off"]', 'All Flower 15% OFF');
     await page.click('button:has-text("Category")');
@@ -599,7 +608,7 @@ test.describe('Data Integrity & Validation', () => {
     // Create two promotions with different priorities
     for (let priority of [0, 10]) {
       await page.click('button:has-text("Create Promotion")');
-      await page.waitForSelector('input[placeholder*="20% Off"]');
+      await waitForModal(page);
 
       await page.fill('input[placeholder*="20% Off"]', `Priority ${priority} Test`);
       await page.click('button:has-text("Global")');
@@ -624,7 +633,7 @@ test.describe('Data Integrity & Validation', () => {
     await waitForPageLoad(page);
 
     await page.click('button:has-text("Create Promotion")');
-    await page.waitForSelector('input[placeholder*="20% Off"]');
+    await waitForModal(page);
 
     await page.fill('input[placeholder*="20% Off"]', 'Color Test');
     await page.click('button:has-text("Global")');
@@ -675,7 +684,7 @@ test.describe('Navigation & UI/UX', () => {
 
     // Open modal
     await page.click('button:has-text("Create Promotion")');
-    await page.waitForSelector('input[placeholder*="20% Off"]');
+    await waitForModal(page);
 
     const modalVisible = await page.locator('text=Create Promotion').last().isVisible();
     expect(modalVisible).toBeTruthy();
@@ -703,7 +712,7 @@ test.describe('Comprehensive Integration Test', () => {
     await waitForPageLoad(page);
 
     await page.click('button:has-text("Create Promotion")');
-    await page.waitForSelector('input[placeholder*="20% Off"]');
+    await waitForModal(page);
 
     const promotionName = `Integration Test ${Date.now()}`;
     await page.fill('input[placeholder*="20% Off"]', promotionName);

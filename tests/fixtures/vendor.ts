@@ -45,26 +45,34 @@ export async function createTestPromotion(page: any, data: {
   badgeColor?: string;
 }) {
   await page.goto(`${BASE_URL}/vendor/promotions`);
+  await waitForNetworkIdle(page);
+
+  // Click Create Promotion button
   await page.click('button:has-text("Create Promotion")');
-  
+
+  // Wait for modal to open and stabilize
+  await page.waitForSelector('input[placeholder*="20% Off"]', { state: 'visible', timeout: 10000 });
+  await page.waitForTimeout(800); // Wait for modal animation
+
   // Fill in basic info
   await page.fill('input[placeholder*="20% Off"]', data.name);
-  await page.selectOption('select[name="promotion_type"]', data.type);
-  await page.selectOption('select[name="discount_type"]', data.discountType);
-  await page.fill('input[name="discount_value"]', data.discountValue.toString());
-  
+  await page.click(`button:has-text("${data.type.charAt(0).toUpperCase() + data.type.slice(1)}")`);
+  await page.click(`button:has-text("${data.discountType === 'percentage' ? '%' : '$'}")`);
+  await page.fill('input[placeholder="20"]', data.discountValue.toString());
+
   if (data.badgeText) {
-    await page.fill('input[name="badge_text"]', data.badgeText);
+    await page.fill('input[placeholder="20% OFF"]', data.badgeText);
   }
-  
+
   if (data.badgeColor) {
-    await page.click(`button[data-color="${data.badgeColor}"]`);
+    await page.click(`button[style*="${data.badgeColor}"]`);
   }
-  
+
   // Submit
-  await page.click('button[type="submit"]:has-text("Create")');
-  
+  await page.click('button:has-text("Create"):last-child');
+
   // Wait for success
+  await page.waitForTimeout(2000);
   await waitForNetworkIdle(page);
 }
 
