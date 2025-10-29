@@ -116,7 +116,7 @@ export default function VendorLogin() {
                       id="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="w-full bg-black/20 border border-white/10 text-white pl-12 pr-5 py-4 focus:outline-none focus:border-white/30 focus:bg-black/30 transition-all duration-300 rounded-[14px] font-light placeholder:text-white/20"
+                      className="w-full bg-black/20 border border-white/10 text-white pl-12 pr-5 py-4 focus:outline-none focus:border-white/30 focus:bg-black/30 transition-all duration-300 rounded-2xl font-light placeholder:text-white/20"
                       placeholder="your@email.com"
                       required
                       autoFocus
@@ -136,7 +136,7 @@ export default function VendorLogin() {
                       id="password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="w-full bg-black/20 border border-white/10 text-white pl-12 pr-5 py-4 focus:outline-none focus:border-white/30 focus:bg-black/30 transition-all duration-300 rounded-[14px] font-light placeholder:text-white/20"
+                      className="w-full bg-black/20 border border-white/10 text-white pl-12 pr-5 py-4 focus:outline-none focus:border-white/30 focus:bg-black/30 transition-all duration-300 rounded-2xl font-light placeholder:text-white/20"
                       placeholder="••••••••"
                       required
                     />
@@ -147,7 +147,7 @@ export default function VendorLogin() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full bg-white/10 hover:bg-white/15 text-white border border-white/20 hover:border-white/30 px-6 py-4 text-xs font-light uppercase tracking-[0.2em] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed rounded-[14px] mt-8"
+                  className="w-full bg-white/10 hover:bg-white/15 text-white border border-white/20 hover:border-white/30 px-6 py-4 text-xs font-light uppercase tracking-[0.2em] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed rounded-2xl mt-8"
                   style={{ boxShadow: '0 0 20px rgba(255,255,255,0.05)' }}
                 >
                   {loading ? (

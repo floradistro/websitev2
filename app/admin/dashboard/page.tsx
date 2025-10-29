@@ -103,14 +103,14 @@ export default function AdminDashboard() {
 
   return (
     <div className="w-full px-4 lg:px-0">
-      <div className="mb-12 md:mb-16">
-        <div className="flex items-center gap-6 mb-8">
-          <img src="/whale.png" alt="WhaleTools" className="w-16 h-16 md:w-20 md:h-20 object-contain" />
+      <div className="mb-8">
+        <div className="flex items-center gap-4 mb-6 pb-6 border-b border-white/5">
+          <img src="/whale.png" alt="WhaleTools" className="w-8 h-8" />
           <div>
-            <h1 className="text-3xl md:text-5xl font-extralight text-white tracking-tight mb-2">
+            <h1 className="text-xs uppercase tracking-[0.15em] text-white font-black mb-1" style={{ fontWeight: 900 }}>
               WhaleTools Overview
             </h1>
-            <p className="text-sm font-light text-white/40">
+            <p className="text-[10px] uppercase tracking-[0.15em] text-white/40">
               Platform Command Center · {new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }).toUpperCase()}
             </p>
           </div>
@@ -330,10 +330,10 @@ export default function AdminDashboard() {
               <div className="flex items-center gap-2 md:gap-3">
                 <Store size={12} className="md:hidden text-white/30" strokeWidth={1.5} />
                 <Store size={14} className="hidden md:block text-white/30" strokeWidth={1.5} />
-                <span className="text-white/60 text-[10px] md:text-xs font-light tracking-wide uppercase">Active Vendors</span>
+                <span className="text-white/40 text-[10px] uppercase tracking-[0.15em]">Active Vendors</span>
               </div>
               <div className="flex items-center gap-2 md:gap-4">
-                <div className="text-white font-thin text-base md:text-lg">{loading ? '—' : stats.activeVendors}</div>
+                <div className="text-white font-black text-base" style={{ fontWeight: 900 }}>{loading ? '—' : stats.activeVendors}</div>
                 <div className="w-12 md:w-16 bg-black/50 h-[2px] overflow-hidden">
                   <div className="bg-white/30 h-full transition-all duration-1000" style={{ width: '85%' }}></div>
                 </div>
@@ -345,10 +345,10 @@ export default function AdminDashboard() {
               <div className="flex items-center gap-2 md:gap-3">
                 <Package size={12} className="md:hidden text-white/30" strokeWidth={1.5} />
                 <Package size={14} className="hidden md:block text-white/30" strokeWidth={1.5} />
-                <span className="text-white/60 text-[10px] md:text-xs font-light tracking-wide uppercase">Products Listed</span>
+                <span className="text-white/40 text-[10px] uppercase tracking-[0.15em]">Products Listed</span>
               </div>
               <div className="flex items-center gap-2 md:gap-4">
-                <div className="text-white font-thin text-base md:text-lg">{loading ? '—' : stats.totalProducts}</div>
+                <div className="text-white font-black text-base" style={{ fontWeight: 900 }}>{loading ? '—' : stats.totalProducts}</div>
                 <div className="w-12 md:w-16 bg-black/50 h-[2px] overflow-hidden">
                   <div className="bg-white/30 h-full transition-all duration-1000" style={{ width: '72%' }}></div>
                 </div>
@@ -360,10 +360,10 @@ export default function AdminDashboard() {
               <div className="flex items-center gap-2 md:gap-3">
                 <ShoppingCart size={12} className="md:hidden text-white/30" strokeWidth={1.5} />
                 <ShoppingCart size={14} className="hidden md:block text-white/30" strokeWidth={1.5} />
-                <span className="text-white/60 text-[10px] md:text-xs font-light tracking-wide uppercase">Total Orders</span>
+                <span className="text-white/40 text-[10px] uppercase tracking-[0.15em]">Total Orders</span>
               </div>
               <div className="flex items-center gap-2 md:gap-4">
-                <div className="text-white font-thin text-base md:text-lg">{loading ? '—' : stats.totalOrders}</div>
+                <div className="text-white font-black text-base" style={{ fontWeight: 900 }}>{loading ? '—' : stats.totalOrders}</div>
                 <div className="w-12 md:w-16 bg-black/50 h-[2px] overflow-hidden">
                   <div className="bg-white/30 h-full transition-all duration-1000" style={{ width: '93%' }}></div>
                 </div>
@@ -383,12 +383,12 @@ export default function AdminDashboard() {
           <div className="space-y-2">
             <Link
               href="/admin/approvals"
-              className="block px-3 md:px-4 py-2 md:py-3 bg-black/20 hover:bg-white/[0.03] border border-white/10 hover:border-white/20 text-white text-xs font-light transition-all duration-300 group rounded-xl md:rounded-2xl"
+              className="block px-3 md:px-4 py-2 md:py-3 bg-black/20 hover:bg-white/[0.03] border border-white/10 hover:border-white/20 text-white text-[10px] uppercase tracking-[0.15em] transition-all duration-300 group rounded-2xl"
             >
               <div className="flex items-center justify-between">
-                <span className="tracking-wide">Review Products</span>
+                <span>Review Products</span>
                 {stats.pendingProducts > 0 && (
-                  <span className="bg-yellow-500/20 text-yellow-500 text-[8px] md:text-[10px] px-2 py-0.5 font-light border border-yellow-500/30">
+                  <span className="bg-yellow-500/20 text-yellow-500 text-[10px] px-2 py-0.5 uppercase tracking-[0.15em] border border-yellow-500/30 rounded-full">
                     {stats.pendingProducts}
                   </span>
                 )}
@@ -397,12 +397,12 @@ export default function AdminDashboard() {
 
             <Link
               href="/admin/wholesale-applications"
-              className="block px-3 md:px-4 py-2 md:py-3 bg-black/20 hover:bg-white/[0.03] border border-white/10 hover:border-white/20 text-white text-xs font-light transition-all duration-300 group rounded-xl md:rounded-2xl"
+              className="block px-3 md:px-4 py-2 md:py-3 bg-black/20 hover:bg-white/[0.03] border border-white/10 hover:border-white/20 text-white text-[10px] uppercase tracking-[0.15em] transition-all duration-300 group rounded-2xl"
             >
               <div className="flex items-center justify-between">
-                <span className="tracking-wide">Wholesale Applications</span>
+                <span>Wholesale Applications</span>
                 {stats.pendingWholesaleApplications > 0 && (
-                  <span className="bg-yellow-500/20 text-yellow-500 text-[8px] md:text-[10px] px-2 py-0.5 font-light border border-yellow-500/30">
+                  <span className="bg-yellow-500/20 text-yellow-500 text-[10px] px-2 py-0.5 uppercase tracking-[0.15em] border border-yellow-500/30 rounded-full">
                     {stats.pendingWholesaleApplications}
                   </span>
                 )}
@@ -411,21 +411,21 @@ export default function AdminDashboard() {
 
             <Link
               href="/admin/vendors"
-              className="block px-3 md:px-4 py-2 md:py-3 bg-black/20 hover:bg-white/[0.03] border border-white/10 hover:border-white/20 text-white text-xs font-light transition-all duration-300 tracking-wide rounded-xl md:rounded-2xl"
+              className="block px-3 md:px-4 py-2 md:py-3 bg-black/20 hover:bg-white/[0.03] border border-white/10 hover:border-white/20 text-white text-[10px] uppercase tracking-[0.15em] transition-all duration-300 rounded-2xl"
             >
               Manage Vendors
             </Link>
 
             <Link
               href="/admin/products"
-              className="block px-3 md:px-4 py-2 md:py-3 bg-black/20 hover:bg-white/[0.03] border border-white/10 hover:border-white/20 text-white text-xs font-light transition-all duration-300 tracking-wide rounded-xl md:rounded-2xl"
+              className="block px-3 md:px-4 py-2 md:py-3 bg-black/20 hover:bg-white/[0.03] border border-white/10 hover:border-white/20 text-white text-[10px] uppercase tracking-[0.15em] transition-all duration-300 rounded-2xl"
             >
               View Products
             </Link>
 
             <Link
               href="/admin/users"
-              className="block px-3 md:px-4 py-2 md:py-3 bg-black/20 hover:bg-white/[0.03] border border-white/10 hover:border-white/20 text-white text-xs font-light transition-all duration-300 tracking-wide rounded-xl md:rounded-2xl"
+              className="block px-3 md:px-4 py-2 md:py-3 bg-black/20 hover:bg-white/[0.03] border border-white/10 hover:border-white/20 text-white text-[10px] uppercase tracking-[0.15em] transition-all duration-300 rounded-2xl"
             >
               Customer List
             </Link>
@@ -442,12 +442,12 @@ export default function AdminDashboard() {
           <div className="flex items-center gap-2 md:gap-3">
             <Terminal size={14} className="md:hidden text-white/40 group-hover:text-white/60 transition-all duration-300" strokeWidth={1.5} />
             <Terminal size={16} className="hidden md:block text-white/40 group-hover:text-white/60 transition-all duration-300" strokeWidth={1.5} />
-            <h3 className="text-white/40 text-[10px] md:text-[11px] font-light tracking-[0.2em] uppercase">
+            <h3 className="text-white/40 text-[10px] uppercase tracking-[0.15em]">
               Developer Tools Suite
             </h3>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-white/20 text-[9px] md:text-[10px] font-light tracking-wider uppercase">
+            <span className="text-white/20 text-[10px] uppercase tracking-[0.15em]">
               {devToolsOpen ? 'COLLAPSE' : 'EXPAND'}
             </span>
             <div className={`transform transition-transform duration-300 ${devToolsOpen ? 'rotate-180' : ''}`}>
@@ -463,8 +463,8 @@ export default function AdminDashboard() {
             <div className="minimal-glass subtle-glow p-3 md:p-6 rounded-xl md:rounded-2xl">
               <div className="flex items-center justify-between mb-4 md:mb-6">
                 <div>
-                  <h3 className="text-white/40 text-[10px] md:text-[11px] font-light tracking-[0.2em] uppercase mb-1 md:mb-2">System Health</h3>
-                  <p className="text-white/30 text-[9px] md:text-[10px] font-light">REAL-TIME MONITORING</p>
+                  <h3 className="text-white/40 text-[10px] uppercase tracking-[0.15em] mb-1 md:mb-2">System Health</h3>
+                  <p className="text-white/30 text-[10px] uppercase tracking-[0.15em]">Real-Time Monitoring</p>
                 </div>
                 <button
                   onClick={() => window.location.reload()}
@@ -480,47 +480,47 @@ export default function AdminDashboard() {
                   <div className="flex items-center gap-2 mb-2 md:mb-3">
                     <Database size={12} className="md:hidden text-white/40" strokeWidth={1.5} />
                     <Database size={14} className="hidden md:block text-white/40" strokeWidth={1.5} />
-                    <span className="text-white/40 text-[9px] md:text-[10px] uppercase tracking-wider">Database</span>
+                    <span className="text-white/40 text-[10px] uppercase tracking-[0.15em]">Database</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <div className={`w-2 h-2 rounded-full ${systemHealth.database === 'healthy' ? 'bg-green-500' : 'bg-red-500'} animate-pulse`} />
-                    <span className="text-white/80 text-[10px] md:text-xs font-light">{systemHealth.database}</span>
+                    <span className="text-white/80 text-[10px] uppercase tracking-[0.15em]">{systemHealth.database}</span>
                   </div>
                 </div>
 
-                <div className="bg-black/20 p-3 md:p-4 border border-white/10 hover:border-white/20 transition-all duration-300 rounded-xl md:rounded-2xl">
+                <div className="bg-black/20 p-3 md:p-4 border border-white/10 hover:border-white/20 transition-all duration-300 rounded-2xl">
                   <div className="flex items-center gap-2 mb-2 md:mb-3">
                     <Server size={12} className="md:hidden text-white/40" strokeWidth={1.5} />
                     <Server size={14} className="hidden md:block text-white/40" strokeWidth={1.5} />
-                    <span className="text-white/40 text-[9px] md:text-[10px] uppercase tracking-wider">API</span>
+                    <span className="text-white/40 text-[10px] uppercase tracking-[0.15em]">API</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <div className={`w-2 h-2 rounded-full ${systemHealth.api === 'healthy' ? 'bg-green-500' : 'bg-red-500'} animate-pulse`} />
-                    <span className="text-white/80 text-[10px] md:text-xs font-light">{systemHealth.api}</span>
+                    <span className="text-white/80 text-[10px] uppercase tracking-[0.15em]">{systemHealth.api}</span>
                   </div>
                 </div>
 
-                <div className="bg-black/20 p-3 md:p-4 border border-white/10 hover:border-white/20 transition-all duration-300 rounded-xl md:rounded-2xl">
+                <div className="bg-black/20 p-3 md:p-4 border border-white/10 hover:border-white/20 transition-all duration-300 rounded-2xl">
                   <div className="flex items-center gap-2 mb-2 md:mb-3">
                     <Zap size={12} className="md:hidden text-white/40" strokeWidth={1.5} />
                     <Zap size={14} className="hidden md:block text-white/40" strokeWidth={1.5} />
-                    <span className="text-white/40 text-[9px] md:text-[10px] uppercase tracking-wider">Cache</span>
+                    <span className="text-white/40 text-[10px] uppercase tracking-[0.15em]">Cache</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <div className={`w-2 h-2 rounded-full ${systemHealth.cache === 'healthy' ? 'bg-green-500' : 'bg-red-500'} animate-pulse`} />
-                    <span className="text-white/80 text-[10px] md:text-xs font-light">{systemHealth.cache}</span>
+                    <span className="text-white/80 text-[10px] uppercase tracking-[0.15em]">{systemHealth.cache}</span>
                   </div>
                 </div>
 
-                <div className="bg-black/20 p-3 md:p-4 border border-white/10 hover:border-white/20 transition-all duration-300 rounded-xl md:rounded-2xl">
+                <div className="bg-black/20 p-3 md:p-4 border border-white/10 hover:border-white/20 transition-all duration-300 rounded-2xl">
                   <div className="flex items-center gap-2 mb-2 md:mb-3">
                     <HardDrive size={12} className="md:hidden text-white/40" strokeWidth={1.5} />
                     <HardDrive size={14} className="hidden md:block text-white/40" strokeWidth={1.5} />
-                    <span className="text-white/40 text-[9px] md:text-[10px] uppercase tracking-wider">Storage</span>
+                    <span className="text-white/40 text-[10px] uppercase tracking-[0.15em]">Storage</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <div className={`w-2 h-2 rounded-full ${systemHealth.storage === 'healthy' ? 'bg-green-500' : 'bg-red-500'} animate-pulse`} />
-                    <span className="text-white/80 text-[10px] md:text-xs font-light">{systemHealth.storage}</span>
+                    <span className="text-white/80 text-[10px] uppercase tracking-[0.15em]">{systemHealth.storage}</span>
                   </div>
                 </div>
               </div>
@@ -529,19 +529,19 @@ export default function AdminDashboard() {
             {/* Dev Actions Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 md:gap-3">
               {/* Database Tools */}
-              <div className="minimal-glass subtle-glow p-3 md:p-6 rounded-xl md:rounded-2xl">
+              <div className="minimal-glass subtle-glow p-3 md:p-6 rounded-2xl">
                 <div className="flex items-center gap-2 mb-4 md:mb-6">
                   <Database size={12} className="md:hidden text-white/40" strokeWidth={1.5} />
                   <Database size={14} className="hidden md:block text-white/40" strokeWidth={1.5} />
-                  <h4 className="text-white/40 text-[10px] md:text-[11px] font-light tracking-[0.2em] uppercase">Database</h4>
+                  <h4 className="text-white/40 text-[10px] uppercase tracking-[0.15em]">Database</h4>
                 </div>
                 <div className="space-y-2">
                   <button
                     onClick={purgeOrphans}
                     disabled={isExecuting === 'purge-orphans'}
-                    className="w-full px-3 md:px-4 py-2 md:py-3 bg-black/20 hover:bg-white/[0.03] border border-white/10 hover:border-white/20 text-white text-xs font-light transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-between group rounded-xl md:rounded-2xl"
+                    className="w-full px-3 md:px-4 py-2 md:py-3 bg-black/20 hover:bg-white/[0.03] border border-white/10 hover:border-white/20 text-white text-[10px] uppercase tracking-[0.15em] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-between group rounded-2xl"
                   >
-                    <span className="tracking-wide">Purge Orphans</span>
+                    <span>Purge Orphans</span>
                     {isExecuting === 'purge-orphans' ? (
                       <RefreshCw size={12} className="animate-spin" strokeWidth={1.5} />
                     ) : (
@@ -552,9 +552,9 @@ export default function AdminDashboard() {
                   <button
                     onClick={rebuildIndexes}
                     disabled={isExecuting === 'rebuild-indexes'}
-                    className="w-full px-3 md:px-4 py-2 md:py-3 bg-black/20 hover:bg-white/[0.03] border border-white/10 hover:border-white/20 text-white text-xs font-light transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-between group rounded-xl md:rounded-2xl"
+                    className="w-full px-3 md:px-4 py-2 md:py-3 bg-black/20 hover:bg-white/[0.03] border border-white/10 hover:border-white/20 text-white text-[10px] uppercase tracking-[0.15em] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-between group rounded-2xl"
                   >
-                    <span className="tracking-wide">Rebuild Indexes</span>
+                    <span>Rebuild Indexes</span>
                     {isExecuting === 'rebuild-indexes' ? (
                       <RefreshCw size={12} className="animate-spin" strokeWidth={1.5} />
                     ) : (
@@ -565,9 +565,9 @@ export default function AdminDashboard() {
                   <button
                     onClick={resetDatabase}
                     disabled={isExecuting === 'reset-database'}
-                    className="w-full px-3 md:px-4 py-2 md:py-3 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 hover:border-red-500/50 text-red-400 text-xs font-light transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-between group rounded-xl md:rounded-2xl"
+                    className="w-full px-3 md:px-4 py-2 md:py-3 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 hover:border-red-500/50 text-red-400 text-[10px] uppercase tracking-[0.15em] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-between group rounded-2xl"
                   >
-                    <span className="tracking-wide">Reset Database</span>
+                    <span>Reset Database</span>
                     {isExecuting === 'reset-database' ? (
                       <RefreshCw size={12} className="animate-spin" strokeWidth={1.5} />
                     ) : (
@@ -578,19 +578,19 @@ export default function AdminDashboard() {
               </div>
 
               {/* Cache & Performance */}
-              <div className="minimal-glass subtle-glow p-3 md:p-6 rounded-xl md:rounded-2xl">
+              <div className="minimal-glass subtle-glow p-3 md:p-6 rounded-2xl">
                 <div className="flex items-center gap-2 mb-4 md:mb-6">
                   <Zap size={12} className="md:hidden text-white/40" strokeWidth={1.5} />
                   <Zap size={14} className="hidden md:block text-white/40" strokeWidth={1.5} />
-                  <h4 className="text-white/40 text-[10px] md:text-[11px] font-light tracking-[0.2em] uppercase">Performance</h4>
+                  <h4 className="text-white/40 text-[10px] uppercase tracking-[0.15em]">Performance</h4>
                 </div>
                 <div className="space-y-2">
                   <button
                     onClick={clearCache}
                     disabled={isExecuting === 'clear-cache'}
-                    className="w-full px-3 md:px-4 py-2 md:py-3 bg-black/20 hover:bg-white/[0.03] border border-white/10 hover:border-white/20 text-white text-xs font-light transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-between group rounded-xl md:rounded-2xl"
+                    className="w-full px-3 md:px-4 py-2 md:py-3 bg-black/20 hover:bg-white/[0.03] border border-white/10 hover:border-white/20 text-white text-[10px] uppercase tracking-[0.15em] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-between group rounded-2xl"
                   >
-                    <span className="tracking-wide">Clear Cache</span>
+                    <span>Clear Cache</span>
                     {isExecuting === 'clear-cache' ? (
                       <RefreshCw size={12} className="animate-spin" strokeWidth={1.5} />
                     ) : (
@@ -601,9 +601,9 @@ export default function AdminDashboard() {
                   <button
                     onClick={clearLogs}
                     disabled={isExecuting === 'clear-logs'}
-                    className="w-full px-3 md:px-4 py-2 md:py-3 bg-black/20 hover:bg-white/[0.03] border border-white/10 hover:border-white/20 text-white text-xs font-light transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-between group rounded-xl md:rounded-2xl"
+                    className="w-full px-3 md:px-4 py-2 md:py-3 bg-black/20 hover:bg-white/[0.03] border border-white/10 hover:border-white/20 text-white text-[10px] uppercase tracking-[0.15em] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-between group rounded-2xl"
                   >
-                    <span className="tracking-wide">Clear Logs</span>
+                    <span>Clear Logs</span>
                     {isExecuting === 'clear-logs' ? (
                       <RefreshCw size={12} className="animate-spin" strokeWidth={1.5} />
                     ) : (
@@ -613,28 +613,28 @@ export default function AdminDashboard() {
 
                   <Link
                     href="/admin/monitoring"
-                    className="w-full px-3 md:px-4 py-2 md:py-3 bg-black/20 hover:bg-white/[0.03] border border-white/10 hover:border-white/20 text-white text-xs font-light transition-all duration-300 flex items-center justify-between group rounded-xl md:rounded-2xl"
+                    className="w-full px-3 md:px-4 py-2 md:py-3 bg-black/20 hover:bg-white/[0.03] border border-white/10 hover:border-white/20 text-white text-[10px] uppercase tracking-[0.15em] transition-all duration-300 flex items-center justify-between group rounded-2xl"
                   >
-                    <span className="tracking-wide">View Metrics</span>
+                    <span>View Metrics</span>
                     <Eye size={12} className="text-white/40 group-hover:text-white/60 transition-all duration-300" strokeWidth={1.5} />
                   </Link>
                 </div>
               </div>
 
               {/* System Operations */}
-              <div className="minimal-glass subtle-glow p-3 md:p-6 rounded-xl md:rounded-2xl">
+              <div className="minimal-glass subtle-glow p-3 md:p-6 rounded-2xl">
                 <div className="flex items-center gap-2 mb-4 md:mb-6">
                   <Cpu size={12} className="md:hidden text-white/40" strokeWidth={1.5} />
                   <Cpu size={14} className="hidden md:block text-white/40" strokeWidth={1.5} />
-                  <h4 className="text-white/40 text-[10px] md:text-[11px] font-light tracking-[0.2em] uppercase">Operations</h4>
+                  <h4 className="text-white/40 text-[10px] uppercase tracking-[0.15em]">Operations</h4>
                 </div>
                 <div className="space-y-2">
                   <button
                     onClick={syncInventory}
                     disabled={isExecuting === 'sync-inventory'}
-                    className="w-full px-3 md:px-4 py-2 md:py-3 bg-black/20 hover:bg-white/[0.03] border border-white/10 hover:border-white/20 text-white text-xs font-light transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-between group rounded-xl md:rounded-2xl"
+                    className="w-full px-3 md:px-4 py-2 md:py-3 bg-black/20 hover:bg-white/[0.03] border border-white/10 hover:border-white/20 text-white text-[10px] uppercase tracking-[0.15em] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-between group rounded-2xl"
                   >
-                    <span className="tracking-wide">Sync Inventory</span>
+                    <span>Sync Inventory</span>
                     {isExecuting === 'sync-inventory' ? (
                       <RefreshCw size={12} className="animate-spin" strokeWidth={1.5} />
                     ) : (
@@ -645,9 +645,9 @@ export default function AdminDashboard() {
                   <button
                     onClick={testWebhooks}
                     disabled={isExecuting === 'test-webhooks'}
-                    className="w-full px-3 md:px-4 py-2 md:py-3 bg-black/20 hover:bg-white/[0.03] border border-white/10 hover:border-white/20 text-white text-xs font-light transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-between group rounded-xl md:rounded-2xl"
+                    className="w-full px-3 md:px-4 py-2 md:py-3 bg-black/20 hover:bg-white/[0.03] border border-white/10 hover:border-white/20 text-white text-[10px] uppercase tracking-[0.15em] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-between group rounded-2xl"
                   >
-                    <span className="tracking-wide">Test Webhooks</span>
+                    <span>Test Webhooks</span>
                     {isExecuting === 'test-webhooks' ? (
                       <RefreshCw size={12} className="animate-spin" strokeWidth={1.5} />
                     ) : (
@@ -657,9 +657,9 @@ export default function AdminDashboard() {
 
                   <button
                     onClick={() => window.open('/api/health', '_blank')}
-                    className="w-full px-3 md:px-4 py-2 md:py-3 bg-black/20 hover:bg-white/[0.03] border border-white/10 hover:border-white/20 text-white text-xs font-light transition-all duration-300 flex items-center justify-between group rounded-xl md:rounded-2xl"
+                    className="w-full px-3 md:px-4 py-2 md:py-3 bg-black/20 hover:bg-white/[0.03] border border-white/10 hover:border-white/20 text-white text-[10px] uppercase tracking-[0.15em] transition-all duration-300 flex items-center justify-between group rounded-2xl"
                   >
-                    <span className="tracking-wide">Health Check</span>
+                    <span>Health Check</span>
                     <Activity size={12} className="text-white/40 group-hover:text-white/60 transition-all duration-300" strokeWidth={1.5} />
                   </button>
                 </div>
@@ -667,11 +667,11 @@ export default function AdminDashboard() {
             </div>
 
             {/* API Playground */}
-            <div className="minimal-glass subtle-glow p-3 md:p-6 rounded-xl md:rounded-2xl">
+            <div className="minimal-glass subtle-glow p-3 md:p-6 rounded-2xl">
               <div className="flex items-center justify-between mb-4 md:mb-6">
                 <div>
-                  <h3 className="text-white/40 text-[10px] md:text-[11px] font-light tracking-[0.2em] uppercase mb-1 md:mb-2">API Playground</h3>
-                  <p className="text-white/30 text-[9px] md:text-[10px] font-light">TEST ENDPOINTS</p>
+                  <h3 className="text-white/40 text-[10px] uppercase tracking-[0.15em] mb-1 md:mb-2">API Playground</h3>
+                  <p className="text-white/30 text-[10px] uppercase tracking-[0.15em]">Test Endpoints</p>
                 </div>
                 <Terminal size={12} className="md:hidden text-white/40" strokeWidth={1.5} />
                 <Terminal size={14} className="hidden md:block text-white/40" strokeWidth={1.5} />
@@ -679,44 +679,44 @@ export default function AdminDashboard() {
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 md:gap-3">
                 <div className="space-y-2">
-                  <p className="text-white/40 text-[9px] md:text-[10px] uppercase tracking-wider mb-2 md:mb-3">Quick Tests</p>
+                  <p className="text-white/40 text-[10px] uppercase tracking-[0.15em] mb-2 md:mb-3">Quick Tests</p>
                   <button
                     onClick={() => window.open('/api/products', '_blank')}
-                    className="w-full px-3 md:px-4 py-2 bg-black/20 hover:bg-white/[0.03] border border-white/10 hover:border-white/20 text-white text-xs font-light transition-all duration-300 text-left rounded-xl md:rounded-2xl"
+                    className="w-full px-3 md:px-4 py-2 bg-black/20 hover:bg-white/[0.03] border border-white/10 hover:border-white/20 text-white text-[10px] uppercase tracking-[0.15em] transition-all duration-300 text-left rounded-2xl"
                   >
                     <span className="text-white/60">GET</span> /api/products
                   </button>
                   <button
                     onClick={() => window.open('/api/vendors', '_blank')}
-                    className="w-full px-3 md:px-4 py-2 bg-black/20 hover:bg-white/[0.03] border border-white/10 hover:border-white/20 text-white text-xs font-light transition-all duration-300 text-left rounded-xl md:rounded-2xl"
+                    className="w-full px-3 md:px-4 py-2 bg-black/20 hover:bg-white/[0.03] border border-white/10 hover:border-white/20 text-white text-[10px] uppercase tracking-[0.15em] transition-all duration-300 text-left rounded-2xl"
                   >
                     <span className="text-white/60">GET</span> /api/vendors
                   </button>
                   <button
                     onClick={() => window.open('/api/categories', '_blank')}
-                    className="w-full px-3 md:px-4 py-2 bg-black/20 hover:bg-white/[0.03] border border-white/10 hover:border-white/20 text-white text-xs font-light transition-all duration-300 text-left rounded-xl md:rounded-2xl"
+                    className="w-full px-3 md:px-4 py-2 bg-black/20 hover:bg-white/[0.03] border border-white/10 hover:border-white/20 text-white text-[10px] uppercase tracking-[0.15em] transition-all duration-300 text-left rounded-2xl"
                   >
                     <span className="text-white/60">GET</span> /api/categories
                   </button>
                 </div>
 
                 <div className="space-y-2">
-                  <p className="text-white/40 text-[9px] md:text-[10px] uppercase tracking-wider mb-2 md:mb-3">Admin Endpoints</p>
+                  <p className="text-white/40 text-[10px] uppercase tracking-[0.15em] mb-2 md:mb-3">Admin Endpoints</p>
                   <button
                     onClick={() => window.open('/api/admin/dashboard-stats', '_blank')}
-                    className="w-full px-3 md:px-4 py-2 bg-black/20 hover:bg-white/[0.03] border border-white/10 hover:border-white/20 text-white text-xs font-light transition-all duration-300 text-left rounded-xl md:rounded-2xl"
+                    className="w-full px-3 md:px-4 py-2 bg-black/20 hover:bg-white/[0.03] border border-white/10 hover:border-white/20 text-white text-[10px] uppercase tracking-[0.15em] transition-all duration-300 text-left rounded-2xl"
                   >
                     <span className="text-white/60">GET</span> /api/admin/dashboard-stats
                   </button>
                   <button
                     onClick={() => window.open('/api/admin/products', '_blank')}
-                    className="w-full px-3 md:px-4 py-2 bg-black/20 hover:bg-white/[0.03] border border-white/10 hover:border-white/20 text-white text-xs font-light transition-all duration-300 text-left rounded-xl md:rounded-2xl"
+                    className="w-full px-3 md:px-4 py-2 bg-black/20 hover:bg-white/[0.03] border border-white/10 hover:border-white/20 text-white text-[10px] uppercase tracking-[0.15em] transition-all duration-300 text-left rounded-2xl"
                   >
                     <span className="text-white/60">GET</span> /api/admin/products
                   </button>
                   <button
                     onClick={() => window.open('/api/admin/vendors', '_blank')}
-                    className="w-full px-3 md:px-4 py-2 bg-black/20 hover:bg-white/[0.03] border border-white/10 hover:border-white/20 text-white text-xs font-light transition-all duration-300 text-left rounded-xl md:rounded-2xl"
+                    className="w-full px-3 md:px-4 py-2 bg-black/20 hover:bg-white/[0.03] border border-white/10 hover:border-white/20 text-white text-[10px] uppercase tracking-[0.15em] transition-all duration-300 text-left rounded-2xl"
                   >
                     <span className="text-white/60">GET</span> /api/admin/vendors
                   </button>
@@ -725,29 +725,29 @@ export default function AdminDashboard() {
             </div>
 
             {/* System Info */}
-            <div className="minimal-glass subtle-glow p-3 md:p-6 rounded-xl md:rounded-2xl">
+            <div className="minimal-glass subtle-glow p-3 md:p-6 rounded-2xl">
               <div className="flex items-center gap-2 mb-4 md:mb-6">
                 <Server size={12} className="md:hidden text-white/40" strokeWidth={1.5} />
                 <Server size={14} className="hidden md:block text-white/40" strokeWidth={1.5} />
-                <h3 className="text-white/40 text-[10px] md:text-[11px] font-light tracking-[0.2em] uppercase">System Information</h3>
+                <h3 className="text-white/40 text-[10px] uppercase tracking-[0.15em]">System Information</h3>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
                 <div className="space-y-1">
-                  <p className="text-white/40 text-[9px] md:text-[10px] uppercase tracking-wider">Environment</p>
-                  <p className="text-white/80 text-[10px] md:text-xs font-light">{process.env.NODE_ENV || 'development'}</p>
+                  <p className="text-white/40 text-[10px] uppercase tracking-[0.15em]">Environment</p>
+                  <p className="text-white/80 text-[10px] uppercase tracking-[0.15em]">{process.env.NODE_ENV || 'development'}</p>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-white/40 text-[9px] md:text-[10px] uppercase tracking-wider">Node Version</p>
-                  <p className="text-white/80 text-[10px] md:text-xs font-light">{process.version || 'N/A'}</p>
+                  <p className="text-white/40 text-[10px] uppercase tracking-[0.15em]">Node Version</p>
+                  <p className="text-white/80 text-[10px] uppercase tracking-[0.15em]">{process.version || 'N/A'}</p>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-white/40 text-[9px] md:text-[10px] uppercase tracking-wider">Platform</p>
-                  <p className="text-white/80 text-[10px] md:text-xs font-light">{process.platform || 'N/A'}</p>
+                  <p className="text-white/40 text-[10px] uppercase tracking-[0.15em]">Platform</p>
+                  <p className="text-white/80 text-[10px] uppercase tracking-[0.15em]">{process.platform || 'N/A'}</p>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-white/40 text-[9px] md:text-[10px] uppercase tracking-wider">Uptime</p>
-                  <p className="text-white/80 text-[10px] md:text-xs font-light">{Math.floor(performance.now() / 1000 / 60)} min</p>
+                  <p className="text-white/40 text-[10px] uppercase tracking-[0.15em]">Uptime</p>
+                  <p className="text-white/80 text-[10px] uppercase tracking-[0.15em]">{Math.floor(performance.now() / 1000 / 60)} min</p>
                 </div>
               </div>
             </div>

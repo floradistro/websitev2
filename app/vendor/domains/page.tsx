@@ -199,10 +199,14 @@ export default function VendorDomainsPage() {
   return (
     <div className="p-8">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center justify-between mb-8 pb-6 border-b border-white/5">
         <div>
-          <h1 className="text-3xl font-bold text-white mb-2">Custom Domains</h1>
-          <p className="text-white/60">Use your own domain for your storefront</p>
+          <h1 className="text-xs uppercase tracking-[0.15em] text-white font-black mb-1" style={{ fontWeight: 900 }}>
+            Custom Domains
+          </h1>
+          <p className="text-[10px] uppercase tracking-[0.15em] text-white/40">
+            Use Your Own Domain · Storefront Branding
+          </p>
         </div>
         <button
           onClick={() => setShowAddDomain(true)}
@@ -264,7 +268,7 @@ export default function VendorDomainsPage() {
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <h3 className="text-white font-semibold">{platformDomain}</h3>
-                <span className="bg-white/10 text-white/80 px-2 py-0.5 rounded-[14px] text-xs">
+                <span className="bg-white/10 text-white/80 px-2 py-0.5 rounded-2xl text-xs">
                   Platform Domain
                 </span>
               </div>
@@ -319,11 +323,11 @@ export default function VendorDomainsPage() {
                         <Star className="text-yellow-500 fill-yellow-500" size={16} />
                       )}
                       {domain.verified ? (
-                        <span className="bg-green-500/20 text-green-500 px-2 py-0.5 rounded-[14px] text-xs flex items-center gap-1">
+                        <span className="bg-green-500/20 text-green-500 px-2 py-0.5 rounded-2xl text-xs flex items-center gap-1">
                           <Check size={12} /> Verified
                         </span>
                       ) : (
-                        <span className="bg-yellow-500/20 text-yellow-500 px-2 py-0.5 rounded-[14px] text-xs flex items-center gap-1">
+                        <span className="bg-yellow-500/20 text-yellow-500 px-2 py-0.5 rounded-2xl text-xs flex items-center gap-1">
                           <AlertCircle size={12} /> Pending Verification
                         </span>
                       )}
@@ -348,7 +352,7 @@ export default function VendorDomainsPage() {
                   <p className="text-white/60 text-sm mb-3">
                     Add a CNAME record to your DNS provider:
                   </p>
-                  <div className="bg-black/50 border border-white/10 rounded-[14px] p-3 font-mono text-sm mb-3">
+                  <div className="bg-black/50 border border-white/10 rounded-2xl p-3 font-mono text-sm mb-3">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-white/60">Type:</span>
                       <span className="text-white">CNAME</span>

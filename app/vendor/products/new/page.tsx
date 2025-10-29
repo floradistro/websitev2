@@ -7,8 +7,8 @@ const NewProductClient = dynamic(() => import('./NewProductClient'), {
   loading: () => (
     <div className="min-h-screen bg-black flex items-center justify-center">
       <div className="text-center">
-        <div className="w-16 h-16 border-4 border-white/20 border-t-white rounded-full animate-spin mx-auto mb-4"></div>
-        <p className="text-white/60 text-sm uppercase tracking-wider">Loading Product Form...</p>
+        <div className="w-12 h-12 border-4 border-white/20 border-t-white rounded-full animate-spin mx-auto mb-4"></div>
+        <p className="text-white/40 text-[10px] uppercase tracking-[0.15em]">Loading Product Form...</p>
       </div>
     </div>
   ),

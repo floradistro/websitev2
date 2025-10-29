@@ -97,12 +97,12 @@ export default function VendorOrders() {
   return (
     <div className="w-full px-4 lg:px-0">
       {/* Header */}
-      <div className="mb-12">
-        <h1 className="text-3xl font-thin text-white/90 tracking-tight mb-2">
+      <div className="mb-8 pb-6 border-b border-white/5">
+        <h1 className="text-xs uppercase tracking-[0.15em] text-white font-black mb-1" style={{ fontWeight: 900 }}>
           Orders & Sales
         </h1>
-        <p className="text-white/40 text-xs font-light tracking-wide uppercase">
-          TRACK ORDERS · COMMISSION EARNINGS
+        <p className="text-[10px] uppercase tracking-[0.15em] text-white/40">
+          Track Orders · Commission Earnings
         </p>
       </div>
 
@@ -145,7 +145,7 @@ export default function VendorOrders() {
               placeholder="Search by customer name or order number..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-black/20 border border-white/10 text-white placeholder-white/30 pl-10 pr-4 py-3 focus:outline-none focus:border-white/30 transition-all rounded-[14px] text-base"
+              className="w-full bg-black/20 border border-white/10 text-white placeholder-white/30 pl-10 pr-4 py-3 focus:outline-none focus:border-white/30 transition-all rounded-2xl text-base"
             />
           </div>
 
@@ -153,7 +153,7 @@ export default function VendorOrders() {
           <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 lg:mx-0 lg:px-0 lg:pb-0 scrollbar-hide">
             <button
               onClick={() => setStatusFilter('all')}
-              className={`px-4 py-2 text-xs uppercase tracking-wider transition-all whitespace-nowrap rounded-[14px] ${
+              className={`px-4 py-2 text-xs uppercase tracking-wider transition-all whitespace-nowrap rounded-2xl ${
                 statusFilter === 'all'
                   ? 'bg-gradient-to-r from-white/10 to-white/5 text-white border-white/20 border'
                   : 'bg-black/20 text-white/50 border border-white/10 hover:border-white/20 hover:text-white/70'
@@ -163,7 +163,7 @@ export default function VendorOrders() {
             </button>
             <button
               onClick={() => setStatusFilter('completed')}
-              className={`px-4 py-2 text-xs uppercase tracking-wider transition-all whitespace-nowrap rounded-[14px] ${
+              className={`px-4 py-2 text-xs uppercase tracking-wider transition-all whitespace-nowrap rounded-2xl ${
                 statusFilter === 'completed'
                   ? 'bg-gradient-to-r from-white/10 to-white/5 text-white border border-white/20'
                   : 'bg-black/20 text-white/50 border border-white/10 hover:border-white/20 hover:text-white/70'
@@ -173,7 +173,7 @@ export default function VendorOrders() {
             </button>
             <button
               onClick={() => setStatusFilter('processing')}
-              className={`px-4 py-2 text-xs uppercase tracking-wider transition-all whitespace-nowrap rounded-[14px] ${
+              className={`px-4 py-2 text-xs uppercase tracking-wider transition-all whitespace-nowrap rounded-2xl ${
                 statusFilter === 'processing'
                   ? 'bg-gradient-to-r from-white/10 to-white/5 text-white border border-white/20'
                   : 'bg-black/20 text-white/50 border border-white/10 hover:border-white/20 hover:text-white/70'

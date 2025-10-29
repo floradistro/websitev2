@@ -1,0 +1,444 @@
+================================================================================
+VENDOR DASHBOARD SYSTEM - COMPREHENSIVE EXPLORATION SUMMARY
+================================================================================
+
+Exploration Date: October 29, 2025
+Project: Cannabis/Dispensary Multi-Vendor B2B/B2C Platform
+Technology Stack: Next.js 14, TypeScript, Supabase, React, Tailwind CSS
+
+================================================================================
+1. KEY FINDINGS
+================================================================================
+
+BUSINESS MODEL: Multi-vendor cannabis dispensary & wholesale distribution platform
+- Industry: Legal cannabis retail with lab testing (COA) tracking
+- Multi-location support per vendor
+- Omnichannel: POS (in-store) + Online (pickup/delivery) + TV Menus
+- Target: Independent and franchise dispensaries, wholesalers
+
+PLATFORM STATUS: Production-ready with advanced features
+- 65 database migrations (12,632 lines of SQL)
+- 60+ API endpoints
+- 10 core vendor apps + secondary features
+- Real-time data synchronization
+- AI-powered features (image enhancement, layout optimization)
+
+================================================================================
+2. VENDOR DASHBOARD STRUCTURE
+================================================================================
+
+NAVIGATION LAYOUT (lib/vendor-navigation.ts)
+- Desktop: Fixed sidebar (272px) + main content area
+- Mobile: Top sticky nav + collapsible sidebar (PWA-ready)
+- 10 core apps organized by category
+- Permission-based access control via hasAppAccess()
+
+CORE APPS (10 items)
+├─ Operations (4)
+│  ├─ Dashboard (/vendor/apps) - Mega launch pad
+│  ├─ Products (/vendor/products) - Catalog management
+│  ├─ Orders (/vendor/orders) - Fulfillment queue
+│  └─ Point of Sale (/pos/register) - In-store register
+├─ Sales & Analytics (3)
+│  ├─ Analytics (/vendor/analytics) - Revenue/margins/trends
+│  ├─ Promotions (/vendor/promotions) - Sales promotions ✓ MARKETING
+│  └─ Payouts (/vendor/payouts) - Earnings tracking
+├─ Inventory & Pricing (3)
+│  ├─ Inventory (/vendor/inventory) - Stock by location
+│  ├─ Pricing (/vendor/pricing) - Multi-tier pricing
+│  └─ Product Fields (/vendor/product-fields) - Custom attributes
+├─ Content & Branding (3)
+│  ├─ Media Library (/vendor/media-library) - AI asset management ✓ MARKETING
+│  ├─ Branding (/vendor/branding) - Store customization ✓ MARKETING
+│  └─ Digital Signage (/vendor/tv-menus) - TV menu displays ✓ MARKETING
+└─ Settings (1)
+   └─ Settings (/vendor/settings) - Account management
+
+SECONDARY FEATURES (accessible from parent pages)
+- Locations, Employees, Custom Domains, Lab Results
+- Purchase Orders, Suppliers, Wholesale Customers
+- Reviews, Cost+ Pricing, Component Editor
+
+================================================================================
+3. EXISTING MARKETING FEATURES
+================================================================================
+
+✓ PROMOTIONS SYSTEM (Production-Ready)
+  Location: /vendor/promotions
+  API: /app/api/vendor/promotions/route.ts
+  DB: promotions table (UUID, vendor_id, promotion_type, discount_type, etc.)
+  Features:
+  - 4 promotion types: product, category, tier, global
+  - 2 discount types: percentage, fixed_amount
+  - Schedule: date range, days of week, time of day windows
+  - Display: badge text/color, show original price option
+  - Real-time: Supabase subscriptions with live updates
+  - Integration: POS calculates prices with promotions automatically
+  
+✓ REVIEWS MANAGEMENT
+  Location: /vendor/reviews
+  Features: Display ratings, vendor responses, filtering by stars
+  
+✓ BRANDING SYSTEM
+  Location: /vendor/branding
+  Features: Logo upload, colors, fonts, social links, store description
+  
+✓ DIGITAL SIGNAGE (TV MENUS)
+  Location: /vendor/tv-menus
+  Features: Location-based menus, AI-recommended layouts, themes, inventory sync
+  
+✓ ANALYTICS DASHBOARD
+  Location: /vendor/analytics
+  Metrics: Revenue, margins, inventory turnover, top products, costs
+  Visualizations: Area charts, product tables, KPI cards
+  
+✓ MEDIA LIBRARY
+  Location: /vendor/media-library
+  Features: Image upload, AI enhancement, background removal, upscaling, generation
+
+================================================================================
+4. BACKEND API ARCHITECTURE
+================================================================================
+
+API BASE: /app/api/vendor/* (60+ endpoints)
+
+AUTH & SESSIONS
+- POST /api/vendor/auth/login
+- POST /api/vendor/auth/refresh
+
+CORE OPERATIONS
+- GET/POST/PATCH /api/vendor/products
+- GET/POST /api/vendor/inventory/* (create, adjust, transfer, grouped, low-stock)
+- GET /api/vendor/analytics/* (overview, products, sales-trend)
+
+MARKETING APIS ✓
+- GET/POST/PATCH/DELETE /api/vendor/promotions
+- GET/POST /api/vendor/media/* (enhance, generate, reimagine, search-inspiration)
+- GET/POST /api/vendor/reviews
+- GET/POST /api/vendor/tv-menus/*
+
+ADMIN APIS
+- GET/POST /api/vendor/locations
+- GET/POST /api/vendor/employees
+- GET/POST /api/vendor/domains/*
+- GET/POST /api/vendor/suppliers
+- GET/POST /api/vendor/wholesale-customers
+- GET/POST /api/vendor/purchase-orders/*
+
+PRICING & CONFIGURATION
+- GET/POST /api/vendor/pricing-config/*
+- GET/POST /api/vendor/product-pricing
+- GET/POST /api/vendor/cost-plus-pricing
+- GET /api/vendor/category-pricing
+
+AUTH PATTERN
+- Uses AppAuthProvider context
+- Supabase Auth + Service Role for backend operations
+- x-vendor-id header for vendor context
+- RLS (Row Level Security) enforces tenant isolation
+
+================================================================================
+5. POINT OF SALE SYSTEM
+================================================================================
+
+LOCATION: /app/pos/register/page.tsx
+
+FEATURES
+1. Product Selection - SKU entry + grid browser
+2. Cart Management - Add/remove/adjust quantities
+3. Real-time Pricing - Automatic promotion calculations
+4. Payment Processing - Multiple payment methods
+5. Real-time Promotions - Supabase subscriptions update cart automatically
+
+DATA FLOW
+Product Grid → Add to Cart → Calculate Price (with active promotions)
+                                      ↓
+                              Apply Best Discount
+                                      ↓
+                              Display Breakdown
+                                      ↓
+                            Payment Processing → Order Creation
+
+HARDCODED DEMO LOCATION
+- Vendor: Flora Distro (cd2e1122-d511-4edb-be5d-98ef274b4baf)
+- Location: Charlotte Central (c4eedafb-4050-4d2d-a6af-e164aad5d934)
+- (Change to use location selector for production)
+
+================================================================================
+6. DATABASE SCHEMA (HIGHLIGHTS)
+================================================================================
+
+TOTAL: 65 migrations, 12,632 SQL lines
+
+KEY TABLES
+Vendors & Multi-Tenancy: vendors, users, employees, locations, roles, permissions
+Products: products, inventory, product_categories, coas (lab tests)
+Orders: orders, order_items, customers
+POS: pos_sessions, pos_registers, cash_movements
+Pricing: promotions, pricing_blueprints, pricing_configs, pricing_tiers
+Content: vendor_content, vendor_content_sections, vendor_style, tv_menus
+Branding: vendor_custom_domains, vendor_media
+Wholesale: wholesale_customers, purchase_orders, suppliers
+AI: ai_layout_recommendations
+
+PERFORMANCE
+- Indexes on vendor_id, status, dates (for analytics queries)
+- JSONB columns for flexible metadata
+- UUID primary keys for scalability
+- Real-time CDC (Change Data Capture) via Supabase
+
+================================================================================
+7. TECHNOLOGY STACK
+================================================================================
+
+FRONTEND
+- Next.js 14 (React framework)
+- TypeScript (type safety)
+- Tailwind CSS (styling)
+- Framer Motion (animations)
+- Recharts (data visualization)
+- Lucide React (icons)
+- Axios (HTTP client)
+
+BACKEND
+- Supabase (PostgreSQL + real-time)
+- Next.js API Routes
+- Service Role Auth
+
+DESIGN SYSTEM
+- Dark theme (black background, white text)
+- Luxury aesthetics (subtle glows, gradients, glass effects)
+- Responsive mobile-first design
+- 8px grid system
+- Consistent spacing & typography
+
+================================================================================
+8. WHAT'S MISSING (GAPS FOR MARKETING APP)
+================================================================================
+
+OPPORTUNITIES FOR NEW MARKETING APP
+
+Email Marketing
+- Campaign builder & sending
+- Customer segmentation for email
+- Newsletter system
+- Delivery tracking
+
+Customer Loyalty
+- Loyalty points system
+- Tiered membership levels
+- Reward redemption
+
+Referral Programs
+- Referral tracking & rewards
+- Viral loop mechanics
+- Referral analytics
+
+SMS/Push Notifications
+- SMS campaigns via Twilio
+- Push notifications
+- Geolocation-based messaging
+
+Social Media Integration
+- Instagram/Facebook API integration
+- Social posting & scheduling
+- User-generated content showcase
+
+Content Calendar
+- Campaign planning across channels
+- Content scheduling
+- Team collaboration
+
+Customer Intelligence
+- Customer segmentation (RFM scoring)
+- Behavioral analytics
+- Predictive analytics
+
+Lead Generation
+- Landing pages
+- Lead capture forms
+- Lead scoring
+
+Performance Attribution
+- UTM parameter tracking
+- Campaign ROI analysis
+- Multi-touch attribution
+
+Influencer/Affiliate Management
+- Affiliate program setup
+- Commission management
+- Influencer tracking
+
+================================================================================
+9. DESIGN PATTERNS & BEST PRACTICES
+================================================================================
+
+FRONTEND PATTERNS
+- Custom Hooks: useAppAuth(), useVendorData(), useVendorDashboard()
+- Context API: AppAuthContext for global state
+- Real-time Subscriptions: Supabase channels for live updates
+- Dynamic Imports: Lazy-loaded components for performance
+- "use client" directive: Client-side interactivity
+- Mobile Optimization: Safe area insets, responsive grids
+
+API PATTERNS
+- RESTful routes with standardized responses
+- Service role for admin operations
+- Vendor ID isolation (multi-tenancy)
+- Meaningful error messages
+- Async/await with try-catch
+
+DATABASE PATTERNS
+- UUID primary keys
+- JSONB for flexible data
+- Indexes on query hotspots
+- RLS for data isolation
+- Trigger functions for audit trails
+- Denormalization for analytics
+
+UI/UX PATTERNS
+- Dark theme (luxury aesthetic)
+- Minimal animations
+- Clear visual hierarchy
+- Responsive design
+- Focus states for accessibility
+- Consistent 8px spacing
+
+================================================================================
+10. SUMMARY & RECOMMENDATIONS
+================================================================================
+
+PLATFORM STRENGTHS
+1. Sophisticated multi-tenant architecture (true vendor isolation)
+2. Real-time capabilities (Supabase CDC for instant updates)
+3. Integrated promotions system (works across POS, TV, storefront)
+4. Flexible pricing models (fixed, cost-plus, tiered)
+5. Omnichannel ready (POS + online + digital signage)
+6. AI integration (image enhancement, layout optimization)
+7. Comprehensive analytics (revenue, margins, product performance)
+8. Mobile-first design (PWA-ready)
+
+CURRENT LIMITATIONS
+- No email marketing automation
+- No SMS/push notifications
+- Limited social media integration
+- No loyalty program system
+- No advanced customer segmentation
+- No content calendar
+- No referral system
+- No affiliate management
+
+RECOMMENDED NEXT STEPS FOR MARKETING APP
+
+Phase 1 (MVP - 2-3 weeks)
+1. Create /vendor/marketing hub page
+2. Campaign dashboard (overview of promotions + analytics)
+3. Email campaign basics (template builder, send, tracking)
+4. Customer segmentation (RFM scoring)
+
+Phase 2 (Enhanced - 4-6 weeks)
+5. Loyalty program (points, tiers, rewards)
+6. Content calendar (cross-channel planning)
+7. SMS campaigns (Twilio integration)
+8. Advanced analytics (campaign ROI, attribution)
+
+Phase 3 (Advanced - 8-12 weeks)
+9. Social media integration (Instagram, Facebook)
+10. Referral programs (tracking, rewards, virality)
+11. Lead generation (landing pages, forms, scoring)
+12. Influencer/affiliate management
+
+================================================================================
+DOCUMENTATION FILES GENERATED
+================================================================================
+
+1. VENDOR_DASHBOARD_EXPLORATION.md (655 lines)
+   - Comprehensive technical deep-dive
+   - All features documented with file locations
+   - Architecture diagrams and data flows
+   - Database schema references
+   - Design patterns and best practices
+
+2. MARKETING_APP_QUICK_START.md (380+ lines)
+   - How to create the marketing app
+   - Integration points with existing systems
+   - Recommended features (phases 1-3)
+   - Database schema examples
+   - API endpoint patterns
+   - UI component templates
+   - Testing & monitoring strategy
+
+3. VENDOR_DASHBOARD_SUMMARY.txt (this file)
+   - Executive summary of findings
+   - Quick reference for all key information
+
+================================================================================
+KEY FILE LOCATIONS REFERENCE
+================================================================================
+
+NAVIGATION & ROUTING
+- /lib/vendor-navigation.ts - Main nav config
+- /components/admin/AppsGrid.tsx - App launcher grid
+
+PAGES (Top-level vendor features)
+- /app/vendor/dashboard/page.tsx - Main dashboard
+- /app/vendor/apps/page.tsx - Apps mega launch pad
+- /app/vendor/promotions/page.tsx - Promotions manager ✓ MARKETING
+- /app/vendor/reviews/page.tsx - Review management ✓ MARKETING
+- /app/vendor/analytics/page.tsx - Analytics dashboard ✓ MARKETING
+- /app/vendor/branding/page.tsx - Store customization ✓ MARKETING
+- /app/vendor/media-library/page.tsx - Media library ✓ MARKETING
+- /app/vendor/tv-menus/page.tsx - Digital signage ✓ MARKETING
+- /app/vendor/products/page.tsx - Product catalog
+- /app/vendor/inventory/page.tsx - Stock management
+- /app/vendor/pricing/page.tsx - Pricing configuration
+- /app/vendor/orders/page.tsx - Order management
+- /app/vendor/settings/page.tsx - Account settings
+- /app/pos/register/page.tsx - Point of Sale
+
+APIS (Backend endpoints)
+- /app/api/vendor/promotions/route.ts ✓ MARKETING
+- /app/api/vendor/reviews/route.ts ✓ MARKETING
+- /app/api/vendor/media/* ✓ MARKETING
+- /app/api/vendor/tv-menus/* ✓ MARKETING
+- /app/api/vendor/analytics/* ✓ MARKETING
+- /app/api/vendor/auth/login
+- /app/api/vendor/products/*
+- /app/api/vendor/inventory/*
+- /app/api/vendor/orders
+- /app/api/vendor/pricing-config/*
+- /app/api/vendor/locations
+- /app/api/vendor/employees
+- /app/api/vendor/domains/*
+- /app/api/vendor/content/*
+- And 40+ more endpoints
+
+UTILITIES & LIBRARIES
+- /lib/pricing.ts - Promotion calculation logic (used by POS & displays)
+- /lib/vendor-navigation.ts - Navigation configuration
+- /lib/themes.ts - TV menu themes
+- /context/AppAuthContext.ts - Authentication context
+- /hooks/useAppAuth.ts - Auth hook
+- /hooks/useVendorData.ts - Data fetching hooks
+- /hooks/useVendorAnalytics.ts - Analytics hook
+
+DATABASE MIGRATIONS
+- /supabase/migrations/20251028_promotions_system.sql
+- /supabase/migrations/20251027_tv_menu_system.sql
+- /supabase/migrations/20251029_vendor_media_library.sql
+- /supabase/migrations/20251027_inbound_po_new_products.sql
+- /supabase/migrations/20251024_cost_plus_pricing.sql
+- And 60+ more SQL migrations
+
+================================================================================
+END OF SUMMARY
+================================================================================
+
+For questions or clarifications, refer to:
+1. VENDOR_DASHBOARD_EXPLORATION.md - Technical deep-dive
+2. MARKETING_APP_QUICK_START.md - Implementation guide
+3. Project source code in /app/vendor/* and /app/api/vendor/*
+
+Generated: October 29, 2025
+Explored by: Code Analysis Tool
+Total Lines Analyzed: 12,632 (SQL) + 50,000+ (TypeScript/TSX)

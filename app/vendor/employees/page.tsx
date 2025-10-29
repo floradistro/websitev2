@@ -309,10 +309,14 @@ export default function VendorEmployees() {
   return (
     <div className="w-full animate-fadeIn px-4 lg:px-0">
       {/* Header */}
-      <div className="flex justify-between items-start gap-4 mb-6">
+      <div className="flex justify-between items-start gap-4 mb-8 pb-6 border-b border-white/5">
         <div className="min-w-0">
-          <h1 className="text-2xl lg:text-3xl text-white font-light tracking-tight mb-2">Employees</h1>
-          <p className="text-white/50 text-sm">{employees.length} employee{employees.length !== 1 ? 's' : ''}</p>
+          <h1 className="text-xs uppercase tracking-[0.15em] text-white font-black mb-1" style={{ fontWeight: 900 }}>
+            Employees
+          </h1>
+          <p className="text-[10px] uppercase tracking-[0.15em] text-white/40">
+            {employees.length} {employees.length !== 1 ? 'Employees' : 'Employee'} · Team Management
+          </p>
         </div>
         <button
           onClick={() => setShowAddModal(true)}
@@ -347,7 +351,7 @@ export default function VendorEmployees() {
               {/* Mobile Layout */}
               <div className="lg:hidden space-y-3">
                 <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 bg-white/5 flex items-center justify-center flex-shrink-0 rounded-[14px]">
+                  <div className="w-10 h-10 bg-white/5 flex items-center justify-center flex-shrink-0 rounded-2xl">
                     <Users size={18} className="text-white/40" />
                   </div>
                   <div className="flex-1 min-w-0">

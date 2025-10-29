@@ -4,9 +4,12 @@ import { useEffect, useState, useCallback } from 'react';
 import { useAppAuth } from '@/context/AppAuthContext';
 import { supabase } from '@/lib/supabase/client';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Tv, X, ExternalLink, Circle, Pencil, Trash2, Palette, LayoutGrid, RotateCw } from 'lucide-react';
+import { Plus, Tv, X, ExternalLink, Circle, Pencil, Trash2, Palette, LayoutGrid, RotateCw, Sparkles, Grid3x3 } from 'lucide-react';
 import { themes, getTheme, type TVTheme } from '@/lib/themes';
 import CategorySelector from '@/components/tv-menus/CategorySelector';
+import DisplayConfigWizard from '@/components/ai/DisplayConfigWizard';
+import AIRecommendationViewer from '@/components/ai/AIRecommendationViewer';
+import DisplayGroupManager from '@/components/display-groups/DisplayGroupManager';
 
 interface Location {
   id: string;
@@ -59,6 +62,16 @@ export default function SimpleTVMenusPage() {
   const [deletingDevice, setDeletingDevice] = useState<TVDevice | null>(null);
   const [updating, setUpdating] = useState(false);
   const [previewRefresh, setPreviewRefresh] = useState(Date.now());
+
+  // AI state
+  const [showAIConfigWizard, setShowAIConfigWizard] = useState(false);
+  const [aiConfigDevice, setAIConfigDevice] = useState<TVDevice | null>(null);
+  const [showAIRecommendation, setShowAIRecommendation] = useState(false);
+  const [aiRecommendation, setAIRecommendation] = useState<any>(null);
+  const [generatingAI, setGeneratingAI] = useState(false);
+
+  // Tab state
+  const [activeTab, setActiveTab] = useState<'displays' | 'groups'>('displays');
 
   // Reset location filter on mount to prevent React Fast Refresh from preserving stale state
   useEffect(() => {
@@ -309,21 +322,23 @@ export default function SimpleTVMenusPage() {
     setEditMenuCategories(menu.config_data?.categories || []);
     setError(null);
 
-    // Fetch available categories from products
+    // Fetch available categories from API
     if (vendor) {
       try {
-        const { data: products } = await supabase
-          .from('products')
-          .select('category')
-          .eq('vendor_id', vendor.id)
-          .eq('status', 'published');
+        console.log('🔍 Fetching categories for vendor:', vendor.id);
+        const response = await fetch(`/api/vendor/products/categories?vendor_id=${vendor.id}`);
+        const data = await response.json();
 
-        if (products) {
-          const categories = [...new Set(products.map(p => p.category).filter(Boolean))].sort();
-          setAvailableCategories(categories as string[]);
+        if (data.success) {
+          console.log('📂 Fetched categories:', data.categories);
+          setAvailableCategories(data.categories || []);
+        } else {
+          console.error('❌ Error fetching categories:', data.error);
+          setAvailableCategories([]);
         }
       } catch (err) {
-        console.error('Error fetching categories:', err);
+        console.error('❌ Error fetching categories:', err);
+        setAvailableCategories([]);
       }
     }
   };
@@ -441,6 +456,58 @@ export default function SimpleTVMenusPage() {
     }
   };
 
+  // AI: Open config wizard
+  const openAIConfig = (device: TVDevice) => {
+    setAIConfigDevice(device);
+    setShowAIConfigWizard(true);
+  };
+
+  // AI: Profile saved, generate recommendation
+  const handleProfileComplete = async (profileId: string) => {
+    if (!aiConfigDevice || !vendor) return;
+
+    setShowAIConfigWizard(false);
+    setGeneratingAI(true);
+
+    try {
+      const response = await fetch('/api/ai/optimize-layout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          deviceId: aiConfigDevice.id,
+          menuId: aiConfigDevice.active_menu_id,
+          vendorId: vendor.id,
+          useLLM: false, // Start with rule-based, can enable LLM later
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to generate recommendation');
+      }
+
+      setAIRecommendation({
+        ...data.recommendation,
+        recommendationId: data.recommendationId,
+      });
+      setShowAIRecommendation(true);
+    } catch (err: any) {
+      console.error('Error generating AI recommendation:', err);
+      setError(err.message || 'Failed to generate AI recommendation');
+    } finally {
+      setGeneratingAI(false);
+    }
+  };
+
+  // AI: Layout applied
+  const handleLayoutApplied = () => {
+    setShowAIRecommendation(false);
+    setAIRecommendation(null);
+    setAIConfigDevice(null);
+    loadData(); // Refresh to show updated menu
+  };
+
   // Show loading spinner while data is loading
   // (auth loading is handled by the layout)
   if (loading) {
@@ -457,15 +524,15 @@ export default function SimpleTVMenusPage() {
   return (
     <div className="min-h-screen bg-black">
       {/* Header */}
-      <div className="border-b border-white/10 bg-black/50 backdrop-blur-xl sticky top-0 z-10">
+      <div className="border-b border-white/5 bg-black/50 backdrop-blur-xl sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-black text-white tracking-tight" style={{ fontWeight: 900 }}>
+              <h1 className="text-xs uppercase tracking-[0.15em] text-white font-black mb-1" style={{ fontWeight: 900 }}>
                 Digital Signage
               </h1>
-              <p className="text-white/40 text-sm mt-0.5">
-                {devices.filter(d => d.connection_status === 'online').length} of {devices.length} displays online • {menus.length} menus
+              <p className="text-[10px] uppercase tracking-[0.15em] text-white/40">
+                {devices.filter(d => d.connection_status === 'online').length} of {devices.length} Displays Online · {menus.length} Menus
               </p>
             </div>
 
@@ -499,8 +566,41 @@ export default function SimpleTVMenusPage() {
         </div>
       </div>
 
+      {/* Tabs */}
+      <div className="max-w-7xl mx-auto px-6 pt-6">
+        <div className="flex items-center gap-2 border-b border-white/10">
+          <button
+            onClick={() => setActiveTab('displays')}
+            className={`flex items-center gap-2 px-4 py-3 font-medium text-sm transition-all border-b-2 ${
+              activeTab === 'displays'
+                ? 'border-white text-white'
+                : 'border-transparent text-white/40 hover:text-white/60'
+            }`}
+          >
+            <Tv className="w-4 h-4" />
+            Displays & Menus
+          </button>
+          <button
+            onClick={() => setActiveTab('groups')}
+            className={`flex items-center gap-2 px-4 py-3 font-medium text-sm transition-all border-b-2 ${
+              activeTab === 'groups'
+                ? 'border-white text-white'
+                : 'border-transparent text-white/40 hover:text-white/60'
+            }`}
+          >
+            <Grid3x3 className="w-4 h-4" />
+            Display Groups
+          </button>
+        </div>
+      </div>
+
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-6 py-8">
+        {activeTab === 'groups' ? (
+          /* Display Groups View */
+          vendor && <DisplayGroupManager vendorId={vendor.id} />
+        ) : (
+          <>
         {/* No Devices State */}
         {devices.length === 0 ? (
           <div className="text-center py-20">
@@ -613,6 +713,13 @@ export default function SimpleTVMenusPage() {
                         <h3 className="text-white font-bold">{device.device_name}</h3>
                       </div>
                       <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => openAIConfig(device)}
+                          className="p-1.5 bg-purple-500/10 hover:bg-purple-500/20 rounded-lg transition-colors group"
+                          title="AI Optimize Layout"
+                        >
+                          <Sparkles size={14} className="text-purple-400 group-hover:text-purple-300" />
+                        </button>
                         <a
                           href={`/tv-display?vendor_id=${vendor?.id}&location_id=${device.location_id || ''}&tv_number=${device.tv_number}`}
                           target="_blank"
@@ -855,6 +962,8 @@ export default function SimpleTVMenusPage() {
             </div>
           </div>
         )}
+        </>
+        )}
       </div>
 
       {/* Create Menu Modal */}
@@ -1002,7 +1111,7 @@ export default function SimpleTVMenusPage() {
                 </div>
 
                 {/* Category Selector */}
-                <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+                <div>
                   <CategorySelector
                     availableCategories={availableCategories}
                     selectedCategories={editMenuCategories}
@@ -1338,6 +1447,59 @@ export default function SimpleTVMenusPage() {
                 </div>
               </div>
             </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* AI Configuration Wizard */}
+      {aiConfigDevice && (
+        <DisplayConfigWizard
+          isOpen={showAIConfigWizard}
+          onClose={() => {
+            setShowAIConfigWizard(false);
+            setAIConfigDevice(null);
+          }}
+          deviceId={aiConfigDevice.id}
+          deviceName={aiConfigDevice.device_name}
+          vendorId={vendor?.id || ''}
+          onComplete={handleProfileComplete}
+        />
+      )}
+
+      {/* AI Recommendation Viewer */}
+      {aiRecommendation && aiConfigDevice && (
+        <AIRecommendationViewer
+          isOpen={showAIRecommendation}
+          onClose={() => {
+            setShowAIRecommendation(false);
+            setAIRecommendation(null);
+            setAIConfigDevice(null);
+          }}
+          recommendation={aiRecommendation}
+          deviceName={aiConfigDevice.device_name}
+          menuId={aiConfigDevice.active_menu_id || ''}
+          onApply={handleLayoutApplied}
+        />
+      )}
+
+      {/* AI Generating Loader */}
+      <AnimatePresence>
+        {generatingAI && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50"
+          >
+            <div className="text-center">
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+                className="w-16 h-16 border-4 border-white/20 border-t-white rounded-full mx-auto mb-4"
+              />
+              <h3 className="text-xl font-bold text-white mb-2">Analyzing Display...</h3>
+              <p className="text-white/60 text-sm">Our AI is optimizing your layout</p>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

@@ -258,9 +258,13 @@ export default function VendorBranding() {
     <div className="min-h-screen bg-black text-white">
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-2xl font-light mb-2">Brand Settings</h1>
-          <p className="text-white/50 text-sm">Customize your brand identity and storefront appearance</p>
+        <div className="mb-8 pb-6 border-b border-white/5">
+          <h1 className="text-xs uppercase tracking-[0.15em] text-white font-black mb-1" style={{ fontWeight: 900 }}>
+            Brand Settings
+          </h1>
+          <p className="text-[10px] uppercase tracking-[0.15em] text-white/40">
+            Customize Your Brand · Storefront Appearance
+          </p>
         </div>
 
         <form onSubmit={handleSubmit} className="grid lg:grid-cols-2 gap-6">
@@ -272,7 +276,7 @@ export default function VendorBranding() {
               
               <div className="space-y-4">
                 {logoPreview && (
-                  <div className="relative w-32 h-32 bg-white/5 border border-white/10 rounded-[14px] overflow-hidden">
+                  <div className="relative w-32 h-32 bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
                     <img src={logoPreview} alt="Brand Logo" className="w-full h-full object-contain p-2" />
                     <button
                       type="button"
@@ -280,7 +284,7 @@ export default function VendorBranding() {
                         setLogoPreview('');
                         setLogoFile(null);
                       }}
-                      className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-[14px] hover:bg-red-600"
+                      className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-2xl hover:bg-red-600"
                     >
                       <X size={16} />
                     </button>
@@ -309,7 +313,7 @@ export default function VendorBranding() {
               
               <div className="space-y-4">
                 {bannerPreview && (
-                  <div className="relative w-full h-48 bg-white/5 border border-white/10 rounded-[14px] overflow-hidden">
+                  <div className="relative w-full h-48 bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
                     <img src={bannerPreview} alt="Banner" className="w-full h-full object-cover" />
                     <button
                       type="button"
@@ -317,7 +321,7 @@ export default function VendorBranding() {
                         setBannerPreview('');
                         setBannerFile(null);
                       }}
-                      className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-[14px] hover:bg-red-600"
+                      className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-2xl hover:bg-red-600"
                     >
                       <X size={16} />
                     </button>

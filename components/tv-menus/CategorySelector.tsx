@@ -31,6 +31,13 @@ export default function CategorySelector({
   };
 
   const handleCategoryClick = (category: string) => {
+    // If "All" is selected, clicking any category should select only that one
+    if (isAllSelected) {
+      onCategoriesChange([category]);
+      return;
+    }
+
+    // Toggle the category
     const newCategories = selectedCategories.includes(category)
       ? selectedCategories.filter((c) => c !== category)
       : [...selectedCategories, category];
@@ -39,6 +46,7 @@ export default function CategorySelector({
     if (newCategories.length === availableCategories.length) {
       onCategoriesChange([]);
     } else if (newCategories.length === 0) {
+      // If nothing selected, go back to "all"
       onCategoriesChange([]);
     } else {
       onCategoriesChange(newCategories);
@@ -46,16 +54,16 @@ export default function CategorySelector({
   };
 
   const isCategorySelected = (category: string) => {
-    return isAllSelected || selectedCategories.includes(category);
+    return selectedCategories.includes(category);
   };
 
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <label className="text-sm font-medium text-gray-900">
+        <label className="text-sm font-medium text-white">
           Display Categories
         </label>
-        <span className="text-xs text-gray-500">
+        <span className="text-xs text-white/40">
           {isAllSelected
             ? 'All categories'
             : `${selectedCategories.length} selected`}
@@ -68,12 +76,12 @@ export default function CategorySelector({
             type="button"
             onClick={handleAllClick}
             className={`
-              px-4 py-2.5 rounded-full text-sm font-medium
+              px-4 py-2.5 rounded-full text-sm font-bold
               transition-all duration-200 ease-out
               ${
                 isAllSelected
-                  ? 'bg-gray-900 text-white shadow-lg scale-105'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:scale-105'
+                  ? 'bg-white text-black shadow-lg shadow-white/20 scale-105'
+                  : 'bg-white/10 text-white hover:bg-white/20 hover:scale-105'
               }
             `}
           >
@@ -86,16 +94,13 @@ export default function CategorySelector({
             key={category}
             type="button"
             onClick={() => handleCategoryClick(category)}
-            disabled={isAllSelected}
             className={`
-              px-4 py-2.5 rounded-full text-sm font-medium
+              px-4 py-2.5 rounded-full text-sm font-bold
               transition-all duration-200 ease-out
               ${
-                isCategorySelected(category) && !isAllSelected
-                  ? 'bg-gray-900 text-white shadow-lg scale-105'
-                  : isAllSelected
-                  ? 'bg-gray-100 text-gray-400 opacity-60 cursor-not-allowed'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:scale-105'
+                isCategorySelected(category)
+                  ? 'bg-white text-black shadow-lg shadow-white/20 scale-105'
+                  : 'bg-white/10 text-white hover:bg-white/20 hover:scale-105'
               }
             `}
           >
@@ -105,12 +110,12 @@ export default function CategorySelector({
       </div>
 
       {availableCategories.length === 0 && (
-        <div className="text-sm text-gray-500 italic py-4 text-center bg-gray-50 rounded-lg">
+        <div className="text-sm text-white/40 italic py-4 text-center bg-white/5 border border-white/10 rounded-lg">
           No categories available. Add products with categories to enable filtering.
         </div>
       )}
 
-      <p className="text-xs text-gray-500 mt-2">
+      <p className="text-xs text-white/30 mt-2">
         Select specific categories to display on the menu, or choose "All Categories" to show everything.
       </p>
     </div>

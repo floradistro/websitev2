@@ -3,7 +3,7 @@ import { getServiceSupabase } from '@/lib/supabase/client';
 import FormData from 'form-data';
 import axios from 'axios';
 
-const REMOVE_BG_API_KEY = 'CTYgh57QAP1FvqrEAHAwzFqG';
+const REMOVE_BG_API_KEY = process.env.REMOVE_BG_API_KEY || '';
 
 // Process a single image with enhancements
 async function enhanceImage(
@@ -103,35 +103,35 @@ async function enhanceImage(
 export async function POST(request: NextRequest) {
   try {
     const vendorId = request.headers.get('x-vendor-id');
-    
+
     if (!vendorId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    
+
     const body = await request.json();
     const { files, options = {}, concurrency = 10 } = body;
-    
+
     if (!files || !Array.isArray(files) || files.length === 0) {
-      return NextResponse.json({ 
-        error: 'Files array required' 
+      return NextResponse.json({
+        error: 'Files array required'
       }, { status: 400 });
     }
-    
+
     console.log(`🔵 Bulk enhancing ${files.length} images with options:`, options);
-    
+
     const results: any[] = [];
     const errors: any[] = [];
-    
+
     // Process in chunks
     const chunks = [];
     for (let i = 0; i < files.length; i += concurrency) {
       chunks.push(files.slice(i, i + concurrency));
     }
-    
+
     for (const chunk of chunks) {
       const promises = chunk.map(file => enhanceImage(file, vendorId, options, 3));
       const settled = await Promise.allSettled(promises);
-      
+
       settled.forEach((result, index) => {
         if (result.status === 'fulfilled') {
           results.push(result.value);
@@ -142,14 +142,14 @@ export async function POST(request: NextRequest) {
           });
         }
       });
-      
+
       if (chunks.indexOf(chunk) < chunks.length - 1) {
         await new Promise(resolve => setTimeout(resolve, 250));
       }
     }
-    
+
     console.log(`✅ Bulk enhancement complete: ${results.length} success, ${errors.length} failed`);
-    
+
     return NextResponse.json({
       success: true,
       processed: results.length,
@@ -157,10 +157,15 @@ export async function POST(request: NextRequest) {
       results,
       errors
     });
-    
+
   } catch (error: any) {
     console.error('Error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
+}
+
+// PUT method - alias to POST for consistency
+export async function PUT(request: NextRequest) {
+  return POST(request);
 }
 

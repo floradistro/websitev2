@@ -854,12 +854,18 @@ function TVDisplayContent() {
                       </div>
                     )}
 
-                    {/* Pricing Display - Simplified */}
+                    {/* Pricing Display - Flexible */}
                     <div className="mt-3">
                       {(() => {
+                        // Get pricing display configuration (from group or menu)
+                        const heroPriceTier = displayGroup?.shared_hero_price_tier || activeMenu?.hero_price_tier || '3_5g';
+                        const priceDisplayMode = displayGroup?.shared_price_display_mode || activeMenu?.price_display_mode || 'hero_with_supporting';
+
                         // Debug logging
                         console.log('💰 Product pricing debug:', {
                           name: product.name,
+                          heroPriceTier,
+                          priceDisplayMode,
                           hasPricingTiers: !!product.pricing_tiers,
                           hasBlueprint: !!product.pricing_blueprint,
                           regularPrice: product.regular_price,
@@ -873,69 +879,110 @@ function TVDisplayContent() {
                           const priceBreaks = blueprint.price_breaks || [];
                           const prices = product.pricing_tiers;
 
-                          // Find the hero price (eighth - 3.5g)
-                          const heroBreak = priceBreaks.find((pb: any) => pb.break_id === '3_5g' || pb.break_id === '3.5g');
+                          // Find the hero price based on configuration
+                          const heroBreak = priceBreaks.find((pb: any) =>
+                            pb.break_id === heroPriceTier ||
+                            pb.break_id === heroPriceTier.replace('_', '.') ||
+                            pb.break_id === heroPriceTier.replace('.', '_')
+                          );
                           const heroPriceData = heroBreak ? prices[heroBreak.break_id] : null;
 
-                          // Find supporting prices (1g and 7g)
-                          const supportingBreaks = priceBreaks.filter((pb: any) =>
-                            pb.break_id === '1g' || pb.break_id === '7g' || pb.break_id === '14g'
-                          ).slice(0, 2);
+                          // Determine which prices to show based on display mode
+                          let pricesToDisplay: any[] = [];
+
+                          if (priceDisplayMode === 'all_tiers') {
+                            // Show all available tiers
+                            pricesToDisplay = priceBreaks.filter((pb: any) => prices[pb.break_id]?.price);
+                          } else if (priceDisplayMode === 'minimal') {
+                            // Show only the smallest tier
+                            const sortedBreaks = priceBreaks.sort((a: any, b: any) => {
+                              const qtyA = parseFloat(a.qty || a.display_qty || 0);
+                              const qtyB = parseFloat(b.qty || b.display_qty || 0);
+                              return qtyA - qtyB;
+                            });
+                            const minBreak = sortedBreaks.find((pb: any) => prices[pb.break_id]?.price);
+                            pricesToDisplay = minBreak ? [minBreak] : [];
+                          } else if (priceDisplayMode === 'hero_only') {
+                            // Show only the hero price
+                            pricesToDisplay = heroBreak ? [heroBreak] : [];
+                          } else {
+                            // Default: hero_with_supporting
+                            // Find supporting prices (exclude hero, show 1-2 others)
+                            const supportingBreaks = priceBreaks
+                              .filter((pb: any) => pb.break_id !== heroPriceTier && prices[pb.break_id]?.price)
+                              .slice(0, 2);
+                            pricesToDisplay = heroBreak ? [heroBreak, ...supportingBreaks] : supportingBreaks;
+                          }
 
                           return (
                             <>
-                              {/* Hero Price - Eighth */}
-                              {heroPriceData && heroPriceData.price ? (
-                                <div className="mb-2">
-                                  <div
-                                    className="inline-block rounded-lg px-4 py-2"
-                                    style={{
-                                      background: theme.styles.price.color + '15',
-                                      border: `2px solid ${theme.styles.price.color}`
-                                    }}
-                                  >
-                                    <div
-                                      className="text-xs font-bold opacity-70 mb-1"
-                                      style={{ color: theme.styles.productName.color }}
-                                    >
-                                      {heroBreak.display || '3.5g'}
-                                    </div>
-                                    <div
-                                      className="text-2xl font-black"
-                                      style={{ color: theme.styles.price.color }}
-                                    >
-                                      ${parseFloat(heroPriceData.price).toFixed(2)}
-                                    </div>
-                                  </div>
-                                </div>
-                              ) : (
-                                <div className="text-sm" style={{ color: theme.styles.productDescription.color, opacity: 0.5 }}>
-                                  No eighth price set
-                                </div>
-                              )}
+                              {pricesToDisplay.length > 0 ? (
+                                <>
+                                  {/* Hero Price (first in display list) */}
+                                  {pricesToDisplay[0] && (() => {
+                                    const firstBreak = pricesToDisplay[0];
+                                    const firstPriceData = prices[firstBreak.break_id];
+                                    const isHero = firstBreak.break_id === heroPriceTier;
 
-                              {/* Supporting Prices */}
-                              {supportingBreaks.length > 0 && (
-                                <div className="flex gap-2 flex-wrap">
-                                  {supportingBreaks.map((priceBreak: any) => {
-                                    const priceData = prices[priceBreak.break_id];
-                                    if (!priceData || !priceData.price) return null;
+                                    // Check if price data exists
+                                    if (!firstPriceData || !firstPriceData.price) {
+                                      return null;
+                                    }
 
                                     return (
-                                      <div
-                                        key={priceBreak.break_id}
-                                        className="text-xs"
-                                        style={{ color: theme.styles.productDescription.color }}
-                                      >
-                                        <span className="font-bold opacity-70">
-                                          {priceBreak.display || priceBreak.break_id}:
-                                        </span>{' '}
-                                        <span className="font-black" style={{ color: theme.styles.productName.color }}>
-                                          ${parseFloat(priceData.price).toFixed(2)}
-                                        </span>
+                                      <div className="mb-2">
+                                        <div
+                                          className="inline-block rounded-lg px-4 py-2"
+                                          style={{
+                                            background: isHero ? theme.styles.price.color + '15' : theme.styles.productCard.background,
+                                            border: `2px solid ${isHero ? theme.styles.price.color : theme.styles.productCard.borderColor}`
+                                          }}
+                                        >
+                                          <div
+                                            className="text-xs font-bold opacity-70 mb-1"
+                                            style={{ color: theme.styles.productName.color }}
+                                          >
+                                            {firstBreak.display || firstBreak.break_id}
+                                          </div>
+                                          <div
+                                            className="text-2xl font-black"
+                                            style={{ color: isHero ? theme.styles.price.color : theme.styles.productName.color }}
+                                          >
+                                            ${parseFloat(firstPriceData.price).toFixed(2)}
+                                          </div>
+                                        </div>
                                       </div>
                                     );
-                                  })}
+                                  })()}
+
+                                  {/* Supporting/Additional Prices */}
+                                  {pricesToDisplay.length > 1 && priceDisplayMode !== 'hero_only' && (
+                                    <div className="flex gap-2 flex-wrap">
+                                      {pricesToDisplay.slice(1).map((priceBreak: any) => {
+                                        const priceData = prices[priceBreak.break_id];
+                                        if (!priceData || !priceData.price) return null;
+
+                                        return (
+                                          <div
+                                            key={priceBreak.break_id}
+                                            className="text-xs"
+                                            style={{ color: theme.styles.productDescription.color }}
+                                          >
+                                            <span className="font-bold opacity-70">
+                                              {priceBreak.display || priceBreak.break_id}:
+                                            </span>{' '}
+                                            <span className="font-black" style={{ color: theme.styles.productName.color }}>
+                                              ${parseFloat(priceData.price).toFixed(2)}
+                                            </span>
+                                          </div>
+                                        );
+                                      })}
+                                    </div>
+                                  )}
+                                </>
+                              ) : (
+                                <div className="text-sm" style={{ color: theme.styles.productDescription.color, opacity: 0.5 }}>
+                                  No prices configured
                                 </div>
                               )}
                             </>

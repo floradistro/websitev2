@@ -16,7 +16,8 @@ import {
   Image,
   Layers,
   CreditCard,
-  Tv
+  Tv,
+  Megaphone
 } from 'lucide-react';
 
 export interface NavItem {
@@ -31,9 +32,9 @@ export interface NavItem {
 // Consolidated navigation - 10 core items
 export const vendorNavItems: NavItem[] = [
   // Core Operations (4)
-  { 
-    href: '/vendor/dashboard', 
-    icon: Home, 
+  {
+    href: '/vendor/apps',
+    icon: Home,
     label: 'Dashboard',
     description: 'Overview & metrics',
     isCore: true,
@@ -63,15 +64,23 @@ export const vendorNavItems: NavItem[] = [
     isCore: true,
     group: 'sales'
   },
-  { 
-    href: '/vendor/analytics', 
-    icon: TrendingUp, 
+  {
+    href: '/vendor/analytics',
+    icon: TrendingUp,
     label: 'Analytics',
     description: 'Performance insights',
     isCore: false,
     group: 'sales'
   },
-  
+  {
+    href: '/vendor/marketing',
+    icon: Megaphone,
+    label: 'Marketing',
+    description: 'Campaigns & loyalty',
+    isCore: false,
+    group: 'sales'
+  },
+
   // Inventory & Pricing (2)
   { 
     href: '/vendor/inventory', 

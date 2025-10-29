@@ -353,20 +353,24 @@ export default function PromotionsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 flex items-center justify-center">
-        <div className="text-white text-xl">Loading promotions...</div>
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-white/40 text-xs">Loading promotions...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 p-6">
+    <div className="min-h-screen bg-black p-6">
       {/* Header */}
-      <div className="max-w-7xl mx-auto mb-8">
+      <div className="max-w-7xl mx-auto mb-8 pb-6 border-b border-white/5">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-4xl font-black text-white mb-2">Promotions</h1>
-            <p className="text-white/60">System-wide sales that update instantly across POS, TV menus, and storefront</p>
+            <h1 className="text-xs uppercase tracking-[0.15em] text-white font-black mb-1" style={{ fontWeight: 900 }}>
+              Promotions
+            </h1>
+            <p className="text-[10px] uppercase tracking-[0.15em] text-white/40">
+              System-Wide Sales · POS · TV Menus · Storefront
+            </p>
           </div>
           <motion.button
             whileHover={{ scale: 1.05 }}

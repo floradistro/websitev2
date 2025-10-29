@@ -209,12 +209,12 @@ export default function VendorProductFieldsPage() {
       
 
       {/* Header */}
-      <div className="mb-12">
-        <h1 className="text-3xl font-thin text-white/90 tracking-tight mb-2">
+      <div className="mb-8 pb-6 border-b border-white/5">
+        <h1 className="text-xs uppercase tracking-[0.15em] text-white font-black mb-1" style={{ fontWeight: 900 }}>
           Product Fields
         </h1>
-        <p className="text-white/40 text-xs font-light tracking-wide">
-          MANAGE CUSTOM PRODUCT ATTRIBUTES · ADMIN REQUIRED FIELDS
+        <p className="text-[10px] uppercase tracking-[0.15em] text-white/40">
+          Manage Custom Product Attributes · Admin Required Fields
         </p>
       </div>
 
@@ -226,7 +226,7 @@ export default function VendorProductFieldsPage() {
           <select
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
-            className="bg-black/20 border border-white/10 px-4 py-3 text-white rounded-[14px] text-sm focus:outline-none focus:border-white/30 transition-all duration-300"
+            className="bg-black/20 border border-white/10 px-4 py-3 text-white rounded-2xl text-sm focus:outline-none focus:border-white/30 transition-all duration-300"
           >
             <option value="">All Categories</option>
             {categories.map((cat) => (
@@ -262,7 +262,7 @@ export default function VendorProductFieldsPage() {
                     
                     <div className="space-y-2">
                       {group.fields.map((field, idx) => (
-                        <div key={idx} className="bg-white/5 rounded-[10px] p-3 text-sm flex items-center justify-between hover:bg-white/10 transition-all duration-300">
+                        <div key={idx} className="bg-white/5 rounded-2xl p-3 text-sm flex items-center justify-between hover:bg-white/10 transition-all duration-300">
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-1">
                               <span className="font-medium text-sm text-white/90">{field.name}</span>
@@ -418,7 +418,7 @@ export default function VendorProductFieldsPage() {
                     ...editingField,
                     definition: { ...editingField.definition!, type: e.target.value }
                   })}
-                  className="w-full bg-black/20 border border-white/10 px-4 py-3 text-white rounded-[14px] text-sm focus:outline-none focus:border-white/30 transition-all duration-300"
+                  className="w-full bg-black/20 border border-white/10 px-4 py-3 text-white rounded-2xl text-sm focus:outline-none focus:border-white/30 transition-all duration-300"
                 >
                   {FIELD_TYPES.map((type) => (
                     <option key={type.value} value={type.value}>
@@ -449,7 +449,7 @@ export default function VendorProductFieldsPage() {
                     ...editingField,
                     definition: { ...editingField.definition!, description: e.target.value }
                   })}
-                  className="w-full bg-black/20 border border-white/10 px-4 py-3 text-white rounded-[14px] text-sm focus:outline-none focus:border-white/30 transition-all duration-300 h-20 resize-none"
+                  className="w-full bg-black/20 border border-white/10 px-4 py-3 text-white rounded-2xl text-sm focus:outline-none focus:border-white/30 transition-all duration-300 h-20 resize-none"
                   placeholder="Help text for this field"
                 />
               </div>

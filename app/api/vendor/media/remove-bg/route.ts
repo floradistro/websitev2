@@ -43,20 +43,12 @@ export async function POST(request: NextRequest) {
     });
     
     console.log('✅ Background removed successfully');
-    
+
     const supabase = getServiceSupabase();
-    
-    // Delete original file
-    const originalFilePath = `${vendorId}/${fileName}`;
-    await supabase.storage
-      .from('vendor-product-images')
-      .remove([originalFilePath]);
-    
-    console.log('🗑️ Deleted original:', fileName);
-    
-    // Upload with same filename but as PNG
+
+    // Upload with "-no-bg" suffix to create NEW file (keep original)
     const fileNameWithoutExt = fileName.replace(/\.[^/.]+$/, '');
-    const newFileName = `${fileNameWithoutExt}.png`; // Keep same name, change to PNG
+    const newFileName = `${fileNameWithoutExt}-no-bg.png`;
     const filePath = `${vendorId}/${newFileName}`;
     
     const { data: uploadData, error: uploadError } = await supabase.storage
@@ -77,7 +69,7 @@ export async function POST(request: NextRequest) {
       .from('vendor-product-images')
       .getPublicUrl(filePath);
     
-    console.log('✅ Replaced with:', newFileName);
+    console.log('✅ Created:', newFileName);
     
     return NextResponse.json({
       success: true,
@@ -150,18 +142,10 @@ async function processImage(file: { url: string; name: string }, vendorId: strin
       }
     
     const supabase = getServiceSupabase();
-    
-    // Delete original file first
-    const originalFilePath = `${vendorId}/${file.name}`;
-    await supabase.storage
-      .from('vendor-product-images')
-      .remove([originalFilePath]);
-    
-    console.log(`🗑️ Deleted original: ${file.name}`);
-    
-    // Upload with same filename but as PNG (preserving exact name)
+
+    // Upload with "-no-bg" suffix to create NEW file (keep original)
     const fileNameWithoutExt = file.name.replace(/\.[^/.]+$/, '');
-    const newFileName = `${fileNameWithoutExt}.png`; // Keep same name, just change to PNG
+    const newFileName = `${fileNameWithoutExt}-no-bg.png`;
     const filePath = `${vendorId}/${newFileName}`;
     
     const { data: uploadData, error: uploadError } = await supabase.storage
@@ -178,7 +162,7 @@ async function processImage(file: { url: string; name: string }, vendorId: strin
       .from('vendor-product-images')
       .getPublicUrl(filePath);
     
-    console.log(`✅ Replaced with: ${newFileName}`);
+    console.log(`✅ Created: ${newFileName}`);
     
       return {
         success: true,

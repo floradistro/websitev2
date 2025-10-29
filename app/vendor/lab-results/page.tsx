@@ -136,12 +136,12 @@ export default function VendorLabResults() {
   return (
     <div className="w-full max-w-full animate-fadeIn px-4 lg:px-0 py-6 lg:py-0 overflow-x-hidden">
       {/* Header */}
-      <div className="mb-6 lg:mb-8" style={{ animation: 'fadeInUp 0.5s ease-out' }}>
-        <h1 className="text-2xl lg:text-3xl font-light text-white mb-2 tracking-tight">
+      <div className="mb-6 lg:mb-8 pb-6 border-b border-white/5" style={{ animation: 'fadeInUp 0.5s ease-out' }}>
+        <h1 className="text-xs uppercase tracking-[0.15em] text-white font-black mb-1" style={{ fontWeight: 900 }}>
           Lab Results & COAs
         </h1>
-        <p className="text-white/60 text-xs lg:text-sm">
-          Manage Certificates of Analysis for your products
+        <p className="text-[10px] uppercase tracking-[0.15em] text-white/40">
+          Manage Certificates · Product Testing
         </p>
       </div>
 

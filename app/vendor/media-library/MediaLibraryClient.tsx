@@ -20,22 +20,75 @@ import {
   X,
   ImagePlus,
   FolderOpen,
-  AlertCircle
+  AlertCircle,
+  Eye,
+  Package,
+  Megaphone,
+  Menu as MenuIcon,
+  Layers,
+  Tag,
+  Clock,
+  TrendingUp,
+  AlertTriangle,
+  Archive,
+  Filter
 } from 'lucide-react';
 import AIActivityMonitor from '@/components/AIActivityMonitor';
+import AIImageGenerator from '@/components/vendor/AIImageGenerator';
+import AIReimaginModal from '@/components/vendor/AIReimaginModal';
 
 interface MediaFile {
   id: string;
-  name: string;
-  url: string;
-  size: number;
+  file_name: string;
+  file_url: string;
+  file_size: number;
+  file_path: string;
+  file_type: string;
+  category: 'product_photos' | 'marketing' | 'menus' | 'brand';
+  ai_tags?: string[];
+  ai_description?: string;
+  dominant_colors?: string[];
+  quality_score?: number;
+  custom_tags?: string[];
+  title?: string;
+  linked_product_ids?: string[];
+  usage_count?: number;
   created_at: string;
   updated_at?: string;
-  metadata?: Record<string, any>;
+}
+
+interface SmartCollections {
+  vendor_id: string;
+  category: string;
+  recent_count: number;
+  ai_generated_count: number;
+  needs_editing_count: number;
+  unused_count: number;
+  high_performing_count: number;
+  total_count: number;
 }
 
 type ViewMode = 'grid' | 'list';
-type AIOperation = 'remove-bg' | 'enhance' | 'upscale' | null;
+type AIOperation = 'remove-bg' | 'enhance' | 'upscale' | 'reimagine' | null;
+type MediaCategory = 'product_photos' | 'marketing' | 'menus' | 'brand' | null;
+
+// Helper function to generate optimized Supabase image URLs
+const getOptimizedImageUrl = (url: string, width?: number, height?: number) => {
+  if (!url) return url;
+
+  // Only optimize Supabase storage URLs
+  if (!url.includes('supabase.co/storage')) {
+    return url;
+  }
+
+  const separator = url.includes('?') ? '&' : '?';
+  const params = new URLSearchParams();
+
+  if (width) params.append('width', width.toString());
+  if (height) params.append('height', height.toString());
+
+  return `${url}${separator}${params.toString()}`;
+};
 
 export default function VendorMediaLibrary() {
   const { vendor, isAuthenticated, isLoading: authLoading } = useAppAuth();
@@ -50,20 +103,41 @@ export default function VendorMediaLibrary() {
   const [operationProgress, setOperationProgress] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [quickViewFile, setQuickViewFile] = useState<MediaFile | null>(null);
+  const [showAIGenerator, setShowAIGenerator] = useState(false);
+  const [showReimaginModal, setShowReimaginModal] = useState(false);
+
+  // Filter state
+  const [selectedCategory, setSelectedCategory] = useState<MediaCategory>(null);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [smartCollections, setSmartCollections] = useState<SmartCollections | null>(null);
 
   // Load media files
   useEffect(() => {
     if (!authLoading && isAuthenticated && vendor) {
       loadMedia();
     }
-  }, [authLoading, isAuthenticated, vendor]);
+  }, [authLoading, isAuthenticated, vendor, selectedCategory]);
+
+  // Debug: Track quickViewFile changes
+  useEffect(() => {
+    console.log('🔍 quickViewFile state changed:', quickViewFile ? quickViewFile.file_name : 'null');
+  }, [quickViewFile]);
 
   const loadMedia = async () => {
     try {
       setLoading(true);
       setError(null);
 
-      const response = await fetch('/api/vendor/media', {
+      // Build query params
+      const params = new URLSearchParams();
+      if (selectedCategory) {
+        params.append('category', selectedCategory);
+      }
+
+      const url = `/api/vendor/media${params.toString() ? `?${params.toString()}` : ''}`;
+
+      const response = await fetch(url, {
         headers: {
           'x-vendor-id': vendor?.id || '',
         },
@@ -75,6 +149,7 @@ export default function VendorMediaLibrary() {
 
       const data = await response.json();
       setFiles(data.files || []);
+      setSmartCollections(data.smart_collections || null);
     } catch (err: any) {
       console.error('❌ Error loading media:', err);
       setError(err.message);
@@ -175,8 +250,8 @@ export default function VendorMediaLibrary() {
   // Download file
   const handleDownload = (file: MediaFile) => {
     const a = document.createElement('a');
-    a.href = file.url;
-    a.download = file.name;
+    a.href = file.file_url;
+    a.download = file.file_name;
     a.target = '_blank';
     document.body.appendChild(a);
     a.click();
@@ -184,9 +259,15 @@ export default function VendorMediaLibrary() {
   };
 
   // AI Operations
-  const handleAIOperation = async (operation: 'remove-bg' | 'enhance' | 'upscale') => {
+  const handleAIOperation = async (operation: 'remove-bg' | 'enhance' | 'upscale' | 'reimagine') => {
     if (selectedFiles.size === 0) {
       alert('Please select files first');
+      return;
+    }
+
+    // For reimagine, show modal instead of direct processing
+    if (operation === 'reimagine') {
+      setShowReimaginModal(true);
       return;
     }
 
@@ -198,17 +279,29 @@ export default function VendorMediaLibrary() {
 
     try {
       const fileNames = Array.from(selectedFiles);
+
+      // Get file objects with URLs
+      const selectedFileObjects = files.filter(f => selectedFiles.has(f.file_name));
+      const filesData = selectedFileObjects.map(f => ({
+        url: f.file_url,
+        name: f.file_name
+      }));
+
       let endpoint = '';
+      let body: any = {};
 
       switch (operation) {
         case 'remove-bg':
           endpoint = '/api/vendor/media/remove-bg';
+          body = { files: filesData };
           break;
         case 'enhance':
           endpoint = '/api/vendor/media/bulk-enhance';
+          body = { files: filesData };
           break;
         case 'upscale':
           endpoint = '/api/vendor/media/upscale';
+          body = { files: filesData };
           break;
       }
 
@@ -222,18 +315,19 @@ export default function VendorMediaLibrary() {
           'Content-Type': 'application/json',
           'x-vendor-id': vendor?.id || '',
         },
-        body: JSON.stringify({ fileNames }),
+        body: JSON.stringify(body),
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to ${operation}`);
+        const errorData = await response.json();
+        throw new Error(errorData.error || `Failed to ${operation}`);
       }
 
       const result = await response.json();
 
       window.dispatchEvent(new CustomEvent('ai-autofill-progress', {
         detail: {
-          message: `\n## ✅ Complete\n\n- Processed: ${result.successful?.length || 0}\n- Failed: ${result.failed?.length || 0}`
+          message: `\n## ✅ Complete\n\n- Processed: ${result.processed || result.successful?.length || 0}\n- Failed: ${result.failed || result.errors?.length || 0}`
         }
       }));
 
@@ -268,14 +362,55 @@ export default function VendorMediaLibrary() {
     if (selectedFiles.size === filteredFiles.length) {
       setSelectedFiles(new Set());
     } else {
-      setSelectedFiles(new Set(filteredFiles.map(f => f.name)));
+      setSelectedFiles(new Set(filteredFiles.map(f => f.file_name)));
     }
   };
 
-  // Filter files by search
-  const filteredFiles = files.filter(file =>
-    file.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Extract all available tags
+  const availableTags = Array.from(
+    new Set(
+      files.flatMap(file => [
+        ...(file.ai_tags || []),
+        ...(file.custom_tags || [])
+      ])
+    )
+  ).sort();
+
+  // Filter files by search and tags
+  const filteredFiles = files.filter(file => {
+    // Search filter
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      const matchesName = file.file_name.toLowerCase().includes(query);
+      const matchesDescription = file.ai_description?.toLowerCase().includes(query);
+      const matchesTags = file.ai_tags?.some(tag => tag.toLowerCase().includes(query)) ||
+                          file.custom_tags?.some(tag => tag.toLowerCase().includes(query));
+
+      if (!matchesName && !matchesDescription && !matchesTags) {
+        return false;
+      }
+    }
+
+    // Tag filter
+    if (selectedTags.length > 0) {
+      const fileTags = [...(file.ai_tags || []), ...(file.custom_tags || [])];
+      const hasAllTags = selectedTags.every(tag =>
+        fileTags.some(fileTag => fileTag.toLowerCase() === tag.toLowerCase())
+      );
+      if (!hasAllTags) {
+        return false;
+      }
+    }
+
+    return true;
+  });
+
+  // Handle quick view with logging
+  const handleOpenQuickView = useCallback((file: MediaFile) => {
+    console.log('🖼️ Opening Quick View for:', file.file_name);
+    console.log('📋 Current quickViewFile:', quickViewFile);
+    setQuickViewFile(file);
+  }, [quickViewFile]);
 
   // Loading state
   if (authLoading || loading) {
@@ -309,20 +444,211 @@ export default function VendorMediaLibrary() {
       >
         <div className="max-w-[1800px] mx-auto">
           {/* Header */}
-          <div className="mb-8">
-            <div className="flex items-center justify-between mb-2">
-              <h1 className="text-3xl font-black text-white uppercase tracking-tight" style={{ fontWeight: 900 }}>
+          <div className="mb-8 pb-6 border-b border-white/5">
+            <div className="flex items-center justify-between mb-1">
+              <h1 className="text-xs uppercase tracking-[0.15em] text-white font-black" style={{ fontWeight: 900 }}>
                 Media Library
               </h1>
-              <div className="flex items-center gap-2 text-white/40 text-xs uppercase tracking-[0.15em]">
-                <ImagePlus className="w-4 h-4" />
+              <div className="flex items-center gap-2 text-white/40 text-[10px] uppercase tracking-[0.15em]">
+                <ImagePlus className="w-3 h-3" />
                 {files.length} Files
               </div>
             </div>
-            <p className="text-white/40 text-sm">
-              Manage your product images with AI-powered editing tools
+            <p className="text-[10px] uppercase tracking-[0.15em] text-white/40">
+              Manage Images · AI-Powered Editing
             </p>
           </div>
+
+          {/* Main Layout with Sidebar */}
+          <div className="flex gap-6">
+            {/* Smart Filters Sidebar */}
+            <aside className="w-64 flex-shrink-0 space-y-6">
+              {/* Categories */}
+              <div className="bg-[#0a0a0a] border border-white/10 rounded-2xl p-4">
+                <div className="flex items-center gap-2 mb-4">
+                  <Filter className="w-4 h-4 text-white/60" />
+                  <h2 className="text-xs uppercase tracking-[0.15em] text-white/80 font-bold">
+                    Categories
+                  </h2>
+                </div>
+                <div className="space-y-1">
+                  <button
+                    onClick={() => setSelectedCategory(null)}
+                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-left transition-all ${
+                      selectedCategory === null
+                        ? 'bg-white/10 text-white border border-white/20'
+                        : 'text-white/60 hover:text-white hover:bg-white/5'
+                    }`}
+                  >
+                    <Layers className="w-4 h-4 flex-shrink-0" />
+                    <span className="text-xs font-medium">All Media</span>
+                    <span className="ml-auto text-[10px] text-white/40">{files.length}</span>
+                  </button>
+                  <button
+                    onClick={() => setSelectedCategory('product_photos')}
+                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-left transition-all ${
+                      selectedCategory === 'product_photos'
+                        ? 'bg-white/10 text-white border border-white/20'
+                        : 'text-white/60 hover:text-white hover:bg-white/5'
+                    }`}
+                  >
+                    <Package className="w-4 h-4 flex-shrink-0" />
+                    <span className="text-xs font-medium">Products</span>
+                    <span className="ml-auto text-[10px] text-white/40">
+                      {files.filter(f => f.category === 'product_photos').length}
+                    </span>
+                  </button>
+                  <button
+                    onClick={() => setSelectedCategory('marketing')}
+                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-left transition-all ${
+                      selectedCategory === 'marketing'
+                        ? 'bg-white/10 text-white border border-white/20'
+                        : 'text-white/60 hover:text-white hover:bg-white/5'
+                    }`}
+                  >
+                    <Megaphone className="w-4 h-4 flex-shrink-0" />
+                    <span className="text-xs font-medium">Marketing</span>
+                    <span className="ml-auto text-[10px] text-white/40">
+                      {files.filter(f => f.category === 'marketing').length}
+                    </span>
+                  </button>
+                  <button
+                    onClick={() => setSelectedCategory('menus')}
+                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-left transition-all ${
+                      selectedCategory === 'menus'
+                        ? 'bg-white/10 text-white border border-white/20'
+                        : 'text-white/60 hover:text-white hover:bg-white/5'
+                    }`}
+                  >
+                    <MenuIcon className="w-4 h-4 flex-shrink-0" />
+                    <span className="text-xs font-medium">Menus</span>
+                    <span className="ml-auto text-[10px] text-white/40">
+                      {files.filter(f => f.category === 'menus').length}
+                    </span>
+                  </button>
+                  <button
+                    onClick={() => setSelectedCategory('brand')}
+                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-left transition-all ${
+                      selectedCategory === 'brand'
+                        ? 'bg-white/10 text-white border border-white/20'
+                        : 'text-white/60 hover:text-white hover:bg-white/5'
+                    }`}
+                  >
+                    <Layers className="w-4 h-4 flex-shrink-0" />
+                    <span className="text-xs font-medium">Brand</span>
+                    <span className="ml-auto text-[10px] text-white/40">
+                      {files.filter(f => f.category === 'brand').length}
+                    </span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Smart Collections */}
+              {smartCollections && (
+                <div className="bg-[#0a0a0a] border border-white/10 rounded-2xl p-4">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Sparkles className="w-4 h-4 text-white/60" />
+                    <h2 className="text-xs uppercase tracking-[0.15em] text-white/80 font-bold">
+                      Smart Collections
+                    </h2>
+                  </div>
+                  <div className="space-y-2">
+                    {smartCollections.recent_count > 0 && (
+                      <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-white/5 border border-white/10">
+                        <div className="flex items-center gap-2">
+                          <Clock className="w-3 h-3 text-blue-400" />
+                          <span className="text-xs text-white/80">Recently Added</span>
+                        </div>
+                        <span className="text-[10px] text-white/40">{smartCollections.recent_count}</span>
+                      </div>
+                    )}
+                    {smartCollections.ai_generated_count > 0 && (
+                      <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-white/5 border border-white/10">
+                        <div className="flex items-center gap-2">
+                          <Sparkles className="w-3 h-3 text-purple-400" />
+                          <span className="text-xs text-white/80">AI Generated</span>
+                        </div>
+                        <span className="text-[10px] text-white/40">{smartCollections.ai_generated_count}</span>
+                      </div>
+                    )}
+                    {smartCollections.needs_editing_count > 0 && (
+                      <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-white/5 border border-white/10">
+                        <div className="flex items-center gap-2">
+                          <AlertTriangle className="w-3 h-3 text-yellow-400" />
+                          <span className="text-xs text-white/80">Needs Editing</span>
+                        </div>
+                        <span className="text-[10px] text-white/40">{smartCollections.needs_editing_count}</span>
+                      </div>
+                    )}
+                    {smartCollections.unused_count > 0 && (
+                      <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-white/5 border border-white/10">
+                        <div className="flex items-center gap-2">
+                          <Archive className="w-3 h-3 text-gray-400" />
+                          <span className="text-xs text-white/80">Unused</span>
+                        </div>
+                        <span className="text-[10px] text-white/40">{smartCollections.unused_count}</span>
+                      </div>
+                    )}
+                    {smartCollections.high_performing_count > 0 && (
+                      <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-white/5 border border-white/10">
+                        <div className="flex items-center gap-2">
+                          <TrendingUp className="w-3 h-3 text-green-400" />
+                          <span className="text-xs text-white/80">High Performing</span>
+                        </div>
+                        <span className="text-[10px] text-white/40">{smartCollections.high_performing_count}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Available Tags */}
+              {availableTags.length > 0 && (
+                <div className="bg-[#0a0a0a] border border-white/10 rounded-2xl p-4">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Tag className="w-4 h-4 text-white/60" />
+                    <h2 className="text-xs uppercase tracking-[0.15em] text-white/80 font-bold">
+                      Tags
+                    </h2>
+                  </div>
+                  <div className="flex flex-wrap gap-2 max-h-60 overflow-y-auto">
+                    {availableTags.slice(0, 20).map(tag => {
+                      const isSelected = selectedTags.includes(tag);
+                      return (
+                        <button
+                          key={tag}
+                          onClick={() => {
+                            if (isSelected) {
+                              setSelectedTags(selectedTags.filter(t => t !== tag));
+                            } else {
+                              setSelectedTags([...selectedTags, tag]);
+                            }
+                          }}
+                          className={`px-2 py-1 rounded-lg text-[10px] transition-all ${
+                            isSelected
+                              ? 'bg-white/20 text-white border border-white/30'
+                              : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white border border-white/10'
+                          }`}
+                        >
+                          {tag}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {selectedTags.length > 0 && (
+                    <button
+                      onClick={() => setSelectedTags([])}
+                      className="mt-3 w-full text-xs text-white/40 hover:text-white transition-colors"
+                    >
+                      Clear Tags
+                    </button>
+                  )}
+                </div>
+              )}
+            </aside>
+
+            {/* Main Content */}
+            <div className="flex-1 min-w-0">
 
           {/* Error Display */}
           {error && (
@@ -375,6 +701,16 @@ export default function VendorMediaLibrary() {
                 <List className="w-5 h-5" />
               </button>
             </div>
+
+            {/* Generate with AI Button */}
+            <button
+              onClick={() => setShowAIGenerator(true)}
+              className="bg-white text-black border-2 border-white rounded-2xl px-6 py-3 text-xs uppercase tracking-[0.15em] hover:bg-white/90 font-black transition-all flex items-center gap-2"
+              style={{ fontWeight: 900 }}
+            >
+              <Sparkles className="w-4 h-4" />
+              Generate with AI
+            </button>
 
             {/* Upload Button */}
             <button
@@ -479,6 +815,19 @@ export default function VendorMediaLibrary() {
                       )}
                       Upscale 4x
                     </button>
+
+                    <button
+                      onClick={() => handleAIOperation('reimagine')}
+                      disabled={aiOperation !== null}
+                      className="bg-white/5 text-white border border-white/10 rounded-2xl px-4 py-2 text-xs uppercase tracking-[0.15em] hover:bg-white/10 hover:border-white/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 font-bold"
+                    >
+                      {aiOperation === 'reimagine' ? (
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                      ) : (
+                        <Sparkles className="w-3 h-3" />
+                      )}
+                      Re-imagine
+                    </button>
                   </div>
                 )}
               </div>
@@ -526,9 +875,10 @@ export default function VendorMediaLibrary() {
                 <MediaCard
                   key={file.id}
                   file={file}
-                  selected={selectedFiles.has(file.name)}
-                  onToggleSelect={() => toggleFileSelection(file.name)}
+                  selected={selectedFiles.has(file.file_name)}
+                  onToggleSelect={() => toggleFileSelection(file.file_name)}
                   onDownload={() => handleDownload(file)}
+                  onQuickView={() => handleOpenQuickView(file)}
                 />
               ))}
             </div>
@@ -538,13 +888,16 @@ export default function VendorMediaLibrary() {
                 <MediaListItem
                   key={file.id}
                   file={file}
-                  selected={selectedFiles.has(file.name)}
-                  onToggleSelect={() => toggleFileSelection(file.name)}
+                  selected={selectedFiles.has(file.file_name)}
+                  onToggleSelect={() => toggleFileSelection(file.file_name)}
                   onDownload={() => handleDownload(file)}
+                  onQuickView={() => handleOpenQuickView(file)}
                 />
               ))}
             </div>
           )}
+            </div>
+          </div>
         </div>
 
         {/* Drag & Drop Overlay */}
@@ -561,6 +914,52 @@ export default function VendorMediaLibrary() {
         )}
       </div>
 
+      {/* Quick View Modal */}
+      {quickViewFile && (
+        <QuickViewModal
+          file={quickViewFile}
+          onClose={() => setQuickViewFile(null)}
+          onDownload={() => handleDownload(quickViewFile)}
+          onDelete={async () => {
+            if (confirm(`Delete "${quickViewFile.file_name}"?`)) {
+              await fetch(`/api/vendor/media?file=${encodeURIComponent(quickViewFile.file_name)}`, {
+                method: 'DELETE',
+                headers: { 'x-vendor-id': vendor?.id || '' },
+              });
+              await loadMedia();
+              setQuickViewFile(null);
+            }
+          }}
+          vendorId={vendor?.id || ''}
+          onUpdate={loadMedia}
+        />
+      )}
+
+      {/* AI Image Generator Modal */}
+      {showAIGenerator && (
+        <AIImageGenerator
+          vendorId={vendor?.id || ''}
+          onClose={() => setShowAIGenerator(false)}
+          onImageGenerated={() => {
+            loadMedia();
+            setShowAIGenerator(false);
+          }}
+        />
+      )}
+
+      {/* AI Reimagine Modal */}
+      {showReimaginModal && (
+        <AIReimaginModal
+          vendorId={vendor?.id || ''}
+          files={files.filter(f => selectedFiles.has(f.file_name)).map(f => ({ url: f.file_url, name: f.file_name }))}
+          onClose={() => setShowReimaginModal(false)}
+          onComplete={() => {
+            loadMedia();
+            setSelectedFiles(new Set());
+          }}
+        />
+      )}
+
       {/* AI Activity Monitor */}
       <AIActivityMonitor />
     </>
@@ -573,10 +972,17 @@ interface MediaCardProps {
   selected: boolean;
   onToggleSelect: () => void;
   onDownload: () => void;
+  onQuickView: () => void;
 }
 
-function MediaCard({ file, selected, onToggleSelect, onDownload }: MediaCardProps) {
+function MediaCard({ file, selected, onToggleSelect, onDownload, onQuickView }: MediaCardProps) {
   const [imageError, setImageError] = useState(false);
+  const thumbnailUrl = getOptimizedImageUrl(file.file_url, 400, 400);
+
+  const handleQuickView = () => {
+    console.log('📸 Quick View clicked for:', file.file_name);
+    onQuickView();
+  };
 
   return (
     <div
@@ -586,7 +992,10 @@ function MediaCard({ file, selected, onToggleSelect, onDownload }: MediaCardProp
     >
       {/* Selection Checkbox */}
       <button
-        onClick={onToggleSelect}
+        onClick={(e) => {
+          e.stopPropagation();
+          onToggleSelect();
+        }}
         className="absolute top-3 left-3 z-10 w-6 h-6 rounded-lg bg-black/60 backdrop-blur-sm border border-white/20 flex items-center justify-center hover:bg-black/80 transition-all"
       >
         {selected ? (
@@ -598,35 +1007,50 @@ function MediaCard({ file, selected, onToggleSelect, onDownload }: MediaCardProp
 
       {/* Download Button */}
       <button
-        onClick={onDownload}
+        onClick={(e) => {
+          e.stopPropagation();
+          onDownload();
+        }}
         className="absolute top-3 right-3 z-10 w-6 h-6 rounded-lg bg-black/60 backdrop-blur-sm border border-white/20 flex items-center justify-center hover:bg-black/80 transition-all opacity-0 group-hover:opacity-100"
       >
         <Download className="w-3 h-3 text-white" />
       </button>
 
-      {/* Image */}
-      <div className="aspect-square bg-black relative">
+      {/* Image - Click to Quick View */}
+      <div
+        onClick={handleQuickView}
+        className="aspect-square bg-black relative cursor-pointer"
+      >
         {!imageError ? (
           <Image
-            src={file.url}
-            alt={file.name}
+            src={thumbnailUrl}
+            alt={file.file_name}
             fill
             sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 20vw"
             className="object-contain p-4"
             onError={() => setImageError(true)}
+            unoptimized
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
             <ImagePlus className="w-12 h-12 text-white/20" />
           </div>
         )}
+
+        {/* Quick View Hint */}
+        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center">
+          <div className="text-white text-xs uppercase tracking-[0.15em] flex items-center gap-2">
+            <Eye className="w-4 h-4" />
+            Quick View
+          </div>
+        </div>
       </div>
 
       {/* File Info */}
       <div className="p-3 border-t border-white/5">
-        <p className="text-white text-xs font-medium truncate mb-1">{file.name}</p>
+        <p className="text-white text-xs font-medium truncate mb-1">{file.file_name}</p>
         <p className="text-white/40 text-[10px] uppercase tracking-wider">
-          {(file.size / 1024).toFixed(0)} KB
+          {(file.file_size / 1024).toFixed(0)} KB
         </p>
       </div>
     </div>
@@ -639,10 +1063,17 @@ interface MediaListItemProps {
   selected: boolean;
   onToggleSelect: () => void;
   onDownload: () => void;
+  onQuickView: () => void;
 }
 
-function MediaListItem({ file, selected, onToggleSelect, onDownload }: MediaListItemProps) {
+function MediaListItem({ file, selected, onToggleSelect, onDownload, onQuickView }: MediaListItemProps) {
   const [imageError, setImageError] = useState(false);
+  const thumbnailUrl = getOptimizedImageUrl(file.file_url, 100, 100);
+
+  const handleQuickView = () => {
+    console.log('📸 Quick View clicked (list) for:', file.file_name);
+    onQuickView();
+  };
 
   return (
     <div
@@ -652,7 +1083,10 @@ function MediaListItem({ file, selected, onToggleSelect, onDownload }: MediaList
     >
       {/* Checkbox */}
       <button
-        onClick={onToggleSelect}
+        onClick={(e) => {
+          e.stopPropagation();
+          onToggleSelect();
+        }}
         className="flex-shrink-0 w-6 h-6 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-all"
       >
         {selected ? (
@@ -662,30 +1096,37 @@ function MediaListItem({ file, selected, onToggleSelect, onDownload }: MediaList
         )}
       </button>
 
-      {/* Thumbnail */}
-      <div className="flex-shrink-0 w-16 h-16 bg-black rounded-xl overflow-hidden relative">
+      {/* Thumbnail - Click to Quick View */}
+      <div
+        onClick={handleQuickView}
+        className="flex-shrink-0 w-16 h-16 bg-black rounded-xl overflow-hidden relative cursor-pointer hover:ring-2 hover:ring-white/20 transition-all group"
+      >
         {!imageError ? (
           <Image
-            src={file.url}
-            alt={file.name}
+            src={thumbnailUrl}
+            alt={file.file_name}
             fill
             sizes="64px"
             className="object-contain p-2"
             onError={() => setImageError(true)}
+            unoptimized
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
             <ImagePlus className="w-6 h-6 text-white/20" />
           </div>
         )}
+        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center">
+          <Eye className="w-4 h-4 text-white" />
+        </div>
       </div>
 
       {/* File Info */}
       <div className="flex-1 min-w-0">
-        <p className="text-white text-sm font-medium truncate">{file.name}</p>
+        <p className="text-white text-sm font-medium truncate">{file.file_name}</p>
         <div className="flex items-center gap-3 mt-1">
           <span className="text-white/40 text-xs uppercase tracking-wider">
-            {(file.size / 1024).toFixed(0)} KB
+            {(file.file_size / 1024).toFixed(0)} KB
           </span>
           <span className="text-white/20">•</span>
           <span className="text-white/40 text-xs">
@@ -696,11 +1137,309 @@ function MediaListItem({ file, selected, onToggleSelect, onDownload }: MediaList
 
       {/* Download Button */}
       <button
-        onClick={onDownload}
+        onClick={(e) => {
+          e.stopPropagation();
+          onDownload();
+        }}
         className="flex-shrink-0 w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 hover:border-white/20 transition-all"
       >
         <Download className="w-4 h-4 text-white" />
       </button>
+    </div>
+  );
+}
+
+// Quick View Modal Component
+interface QuickViewModalProps {
+  file: MediaFile;
+  onClose: () => void;
+  onDownload: () => void;
+  onDelete: () => void;
+  vendorId: string;
+  onUpdate: () => void;
+}
+
+interface Product {
+  id: string;
+  name: string;
+  featured_image?: string;
+}
+
+function QuickViewModal({ file, onClose, onDownload, onDelete, vendorId, onUpdate }: QuickViewModalProps) {
+  const [imageError, setImageError] = useState(false);
+  const fullSizeUrl = getOptimizedImageUrl(file.file_url, 1200);
+  const [linkedProducts, setLinkedProducts] = useState<Product[]>([]);
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
+  const [loadingProducts, setLoadingProducts] = useState(false);
+  const [showLinkProducts, setShowLinkProducts] = useState(false);
+
+  // Load linked products
+  useEffect(() => {
+    const loadProducts = async () => {
+      if (!file.linked_product_ids || file.linked_product_ids.length === 0) {
+        setLinkedProducts([]);
+        return;
+      }
+
+      setLoadingProducts(true);
+      try {
+        const response = await fetch('/api/vendor/products', {
+          headers: { 'x-vendor-id': vendorId }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const linked = data.products.filter((p: Product) =>
+            file.linked_product_ids?.includes(p.id)
+          );
+          setLinkedProducts(linked);
+          setAllProducts(data.products);
+        }
+      } catch (error) {
+        console.error('Error loading products:', error);
+      } finally {
+        setLoadingProducts(false);
+      }
+    };
+
+    loadProducts();
+  }, [file.linked_product_ids, vendorId]);
+
+  // Handle ESC key to close
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (showLinkProducts) {
+          setShowLinkProducts(false);
+        } else {
+          onClose();
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleEscape);
+    return () => window.removeEventListener('keydown', handleEscape);
+  }, [onClose, showLinkProducts]);
+
+  const handleBackdropClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
+
+  const handleDelete = async () => {
+    if (confirm(`Delete "${file.file_name}"?`)) {
+      onDelete();
+    }
+  };
+
+  const handleLinkProduct = async (productId: string) => {
+    try {
+      const updatedLinks = [...(file.linked_product_ids || []), productId];
+
+      const response = await fetch('/api/vendor/media', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-vendor-id': vendorId
+        },
+        body: JSON.stringify({
+          id: file.id,
+          linked_product_ids: updatedLinks
+        })
+      });
+
+      if (response.ok) {
+        // Refresh products list
+        const data = await response.json();
+        const linked = allProducts.filter(p => updatedLinks.includes(p.id));
+        setLinkedProducts(linked);
+        onUpdate();
+      }
+    } catch (error) {
+      console.error('Error linking product:', error);
+    }
+  };
+
+  const handleUnlinkProduct = async (productId: string) => {
+    try {
+      const updatedLinks = (file.linked_product_ids || []).filter(id => id !== productId);
+
+      const response = await fetch('/api/vendor/media', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-vendor-id': vendorId
+        },
+        body: JSON.stringify({
+          id: file.id,
+          linked_product_ids: updatedLinks
+        })
+      });
+
+      if (response.ok) {
+        const linked = allProducts.filter(p => updatedLinks.includes(p.id));
+        setLinkedProducts(linked);
+        onUpdate();
+      }
+    } catch (error) {
+      console.error('Error unlinking product:', error);
+    }
+  };
+
+  return (
+    <div
+      onClick={handleBackdropClick}
+      className="fixed inset-0 bg-black/90 backdrop-blur-md z-[250] flex items-center justify-center p-4"
+    >
+      <div className="bg-[#0a0a0a] border border-white/10 rounded-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+        {/* Header */}
+        <div className="flex items-center justify-between p-4 border-b border-white/10">
+          <div className="flex-1 min-w-0">
+            <h2 className="text-white font-black uppercase tracking-tight text-lg truncate" style={{ fontWeight: 900 }}>
+              {file.file_name}
+            </h2>
+            <div className="flex items-center gap-3 mt-1">
+              <span className="text-white/40 text-xs uppercase tracking-wider">
+                {(file.file_size / 1024).toFixed(0)} KB
+              </span>
+              <span className="text-white/20">•</span>
+              <span className="text-white/40 text-xs">
+                {new Date(file.created_at).toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric'
+                })}
+              </span>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="flex-shrink-0 w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 hover:border-white/20 transition-all ml-4"
+          >
+            <X className="w-5 h-5 text-white" />
+          </button>
+        </div>
+
+        {/* Image */}
+        <div className="flex-1 overflow-auto p-8 bg-black flex items-center justify-center min-h-[500px]">
+          {!imageError ? (
+            <div className="relative w-full h-[600px] max-w-4xl">
+              <Image
+                src={fullSizeUrl}
+                alt={file.file_name}
+                fill
+                sizes="(max-width: 1200px) 100vw, 1200px"
+                className="object-contain"
+                onError={() => setImageError(true)}
+                unoptimized
+                quality={100}
+              />
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center text-white/40 min-h-[500px]">
+              <ImagePlus className="w-20 h-20 mb-4" />
+              <p className="text-sm">Failed to load image</p>
+            </div>
+          )}
+        </div>
+
+        {/* Product Links Section */}
+        <div className="border-t border-white/10 p-4 bg-black/40">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <Package className="w-4 h-4 text-white/60" />
+              <h3 className="text-xs uppercase tracking-[0.15em] text-white/80 font-bold">
+                Linked Products
+              </h3>
+              {linkedProducts.length > 0 && (
+                <span className="text-[10px] text-white/40">({linkedProducts.length})</span>
+              )}
+            </div>
+            <button
+              onClick={() => setShowLinkProducts(!showLinkProducts)}
+              className="text-xs text-white/60 hover:text-white transition-colors uppercase tracking-wider"
+            >
+              {showLinkProducts ? 'Done' : 'Link Product'}
+            </button>
+          </div>
+
+          {showLinkProducts ? (
+            <div className="space-y-2 max-h-40 overflow-y-auto">
+              {allProducts
+                .filter(p => !file.linked_product_ids?.includes(p.id))
+                .map(product => (
+                  <button
+                    key={product.id}
+                    onClick={() => handleLinkProduct(product.id)}
+                    className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-left"
+                  >
+                    <span className="text-xs text-white">{product.name}</span>
+                    <span className="text-[10px] text-white/40">+ Link</span>
+                  </button>
+                ))}
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {loadingProducts ? (
+                <div className="text-center py-4">
+                  <Loader2 className="w-4 h-4 animate-spin text-white/40 mx-auto" />
+                </div>
+              ) : linkedProducts.length > 0 ? (
+                linkedProducts.map(product => (
+                  <div
+                    key={product.id}
+                    className="flex items-center justify-between px-3 py-2 rounded-xl bg-white/5 border border-white/10"
+                  >
+                    <span className="text-xs text-white">{product.name}</span>
+                    <button
+                      onClick={() => handleUnlinkProduct(product.id)}
+                      className="text-[10px] text-red-400 hover:text-red-300 transition-colors"
+                    >
+                      Unlink
+                    </button>
+                  </div>
+                ))
+              ) : (
+                <p className="text-xs text-white/40 text-center py-2">
+                  No products linked to this image
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Footer Actions */}
+        <div className="flex items-center justify-between p-4 border-t border-white/10 bg-black/40">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={onDownload}
+              className="bg-white/10 text-white border-2 border-white/20 rounded-2xl px-4 py-2 text-xs uppercase tracking-[0.15em] hover:bg-white/20 hover:border-white/30 font-black transition-all flex items-center gap-2"
+              style={{ fontWeight: 900 }}
+            >
+              <Download className="w-4 h-4" />
+              Download
+            </button>
+            <button
+              onClick={handleDelete}
+              className="bg-red-500/10 text-red-500 border-2 border-red-500/20 rounded-2xl px-4 py-2 text-xs uppercase tracking-[0.15em] hover:bg-red-500/20 hover:border-red-500/30 font-black transition-all flex items-center gap-2"
+              style={{ fontWeight: 900 }}
+            >
+              <Trash2 className="w-4 h-4" />
+              Delete
+            </button>
+          </div>
+          <a
+            href={file.file_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-white/40 hover:text-white text-xs uppercase tracking-[0.15em] transition-colors flex items-center gap-2"
+          >
+            <Edit3 className="w-3 h-3" />
+            Open Original
+          </a>
+        </div>
+      </div>
     </div>
   );
 }

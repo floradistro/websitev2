@@ -49,7 +49,7 @@ export default function AIActivityMonitor() {
     return (
       <button
         onClick={() => setIsMinimized(false)}
-        className="fixed bottom-20 right-4 lg:bottom-6 lg:right-6 z-[200] bg-white text-black p-3 shadow-lg hover:shadow-xl transition-all border border-white/20"
+        className="fixed bottom-20 right-4 lg:bottom-6 lg:right-6 z-[200] bg-white text-black p-3 rounded-2xl shadow-lg hover:shadow-xl transition-all border-2 border-white hover:border-white/90"
         title="Expand AI Agent"
       >
         <Sparkles className={`w-5 h-5 ${isActive ? 'animate-pulse' : ''}`} />
@@ -58,24 +58,28 @@ export default function AIActivityMonitor() {
   }
 
   return (
-    <div className="fixed bottom-20 right-4 left-4 lg:bottom-6 lg:right-6 lg:left-auto z-[200] lg:w-[400px] bg-black border border-white/20 shadow-2xl flex flex-col h-[60vh] lg:h-[480px] max-h-[500px]">
+    <div className="fixed bottom-20 right-4 left-4 lg:bottom-6 lg:right-6 lg:left-auto z-[200] lg:w-[420px] bg-[#0a0a0a] border border-white/10 shadow-2xl flex flex-col h-[60vh] lg:h-[500px] max-h-[600px] rounded-2xl overflow-hidden">
       {/* Header */}
-      <div className="px-3 py-2 border-b border-white/10 flex items-center justify-between flex-shrink-0">
-        <div className="flex items-center gap-2">
-          <Sparkles className={`w-3.5 h-3.5 text-white/80 ${isActive ? 'animate-pulse' : ''}`} />
-          <span className="text-white/90 text-xs font-medium tracking-wide" style={{ fontFamily: 'SF Mono, Monaco, Consolas, monospace' }}>
-            AI Agent
-          </span>
-          {isActive && (
-            <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
-          )}
+      <div className="px-4 py-3 border-b border-white/10 flex items-center justify-between flex-shrink-0 bg-black/40">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 bg-white/5 border border-white/10 rounded-xl flex items-center justify-center">
+            <Sparkles className={`w-4 h-4 text-white ${isActive ? 'animate-pulse' : ''}`} />
+          </div>
+          <div>
+            <h3 className="text-white font-black uppercase tracking-tight text-xs" style={{ fontWeight: 900 }}>
+              AI Agent
+            </h3>
+            <p className="text-white/40 text-[10px]">
+              {isActive ? 'Processing...' : 'Ready'}
+            </p>
+          </div>
         </div>
         <button
           onClick={() => setIsMinimized(true)}
-          className="p-1 hover:bg-white/10 rounded transition-colors"
+          className="w-8 h-8 hover:bg-white/10 rounded-xl transition-all flex items-center justify-center"
           title="Minimize"
         >
-          <Minimize2 className="w-3 h-3 text-white/50 hover:text-white/80" />
+          <Minimize2 className="w-4 h-4 text-white/60 hover:text-white" />
         </button>
       </div>
 
@@ -199,22 +203,25 @@ export default function AIActivityMonitor() {
       </div>
 
       {/* Footer Status */}
-      <div className="px-3 py-2 border-t border-white/10 bg-black/40 flex items-center justify-between flex-shrink-0">
+      <div className="px-4 py-3 border-t border-white/10 bg-black/60 flex items-center justify-between flex-shrink-0">
         <div className="flex items-center gap-2">
           {isActive ? (
             <>
-              <div className="w-1 h-1 bg-green-500 rounded-full animate-pulse"></div>
-              <span className="text-green-500 text-[9px] uppercase tracking-wider font-medium" style={{ fontFamily: 'SF Mono, Monaco, Consolas, monospace' }}>
+              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+              <span className="text-green-500 text-[10px] uppercase tracking-[0.15em] font-bold">
                 Active
               </span>
             </>
           ) : (
-            <span className="text-white/30 text-[9px] uppercase tracking-wider" style={{ fontFamily: 'SF Mono, Monaco, Consolas, monospace' }}>
-              Idle
-            </span>
+            <>
+              <div className="w-2 h-2 bg-white/20 rounded-full"></div>
+              <span className="text-white/40 text-[10px] uppercase tracking-[0.15em] font-bold">
+                Idle
+              </span>
+            </>
           )}
         </div>
-        <span className="text-white/20 text-[9px]" style={{ fontFamily: 'SF Mono, Monaco, Consolas, monospace' }}>
+        <span className="text-white/30 text-[10px] font-mono">
           {new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' })}
         </span>
       </div>

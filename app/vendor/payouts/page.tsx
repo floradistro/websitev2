@@ -78,12 +78,12 @@ export default function VendorPayouts() {
       
 
       {/* Header */}
-      <div className="mb-12">
-        <h1 className="text-3xl font-thin text-white/90 tracking-tight mb-2">
+      <div className="mb-8 pb-6 border-b border-white/5">
+        <h1 className="text-xs uppercase tracking-[0.15em] text-white font-black mb-1" style={{ fontWeight: 900 }}>
           Payout History
         </h1>
-        <p className="text-white/40 text-xs font-light tracking-wide">
-          PAYMENT HISTORY · TRACK EARNINGS
+        <p className="text-[10px] uppercase tracking-[0.15em] text-white/40">
+          Payment History · Track Earnings
         </p>
       </div>
 

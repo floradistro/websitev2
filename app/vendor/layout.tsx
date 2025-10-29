@@ -51,7 +51,8 @@ function VendorLayoutContent({
   // Prefetch data on hover for faster navigation
   const handleNavHover = (href: string) => {
     const dataEndpoint = {
-      '/vendor/dashboard': '/api/page-data/vendor-dashboard',
+      '/vendor/apps': '/api/page-data/vendor-dashboard',
+      '/vendor/dashboard': '/api/page-data/vendor-dashboard', // Keep for backwards compatibility
       '/vendor/products': '/api/page-data/vendor-products',
       '/vendor/inventory': '/api/page-data/vendor-inventory',
     }[href];
@@ -197,7 +198,7 @@ function VendorLayoutContent({
         <div className="flex items-center justify-between h-14 px-4">
           <button 
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-2 -ml-2 text-white/70 hover:text-white transition-all duration-300 hover:bg-white/5 rounded-[14px]"
+            className="p-2 -ml-2 text-white/70 hover:text-white transition-all duration-300 hover:bg-white/5 rounded-2xl"
           >
             <Menu size={20} strokeWidth={1.5} />
           </button>
@@ -206,7 +207,7 @@ function VendorLayoutContent({
             <h1 className="text-sm font-light text-white tracking-[0.2em] uppercase">{currentPage}</h1>
           </div>
 
-          <Link href="/vendor/dashboard" className="w-9 h-9 bg-gradient-to-br from-white/8 to-white/3 rounded-[12px] flex items-center justify-center overflow-hidden border border-white/5 transition-all duration-300 hover:border-white/20 luxury-glow">
+          <Link href="/vendor/apps" className="w-9 h-9 bg-gradient-to-br from-white/8 to-white/3 rounded-[12px] flex items-center justify-center overflow-hidden border border-white/5 transition-all duration-300 hover:border-white/20 luxury-glow">
             <img src={vendorLogo} alt={vendorName} className="w-full h-full object-contain p-1" />
           </Link>
         </div>
@@ -231,8 +232,8 @@ function VendorLayoutContent({
             />
             
             <div className="flex items-center justify-between p-5 border-b border-white/5 relative z-10">
-              <Link href="/vendor/dashboard" className="flex items-center gap-3 group" onClick={() => setMobileMenuOpen(false)}>
-                <div className="w-11 h-11 bg-gradient-to-br from-white/10 to-white/5 rounded-[14px] flex items-center justify-center overflow-hidden border border-white/10 transition-all duration-300 group-hover:border-white/20 luxury-glow">
+              <Link href="/vendor/apps" className="flex items-center gap-3 group" onClick={() => setMobileMenuOpen(false)}>
+                <div className="w-11 h-11 bg-gradient-to-br from-white/10 to-white/5 rounded-2xl flex items-center justify-center overflow-hidden border border-white/10 transition-all duration-300 group-hover:border-white/20 luxury-glow">
                   <img src={vendorLogo} alt={vendorName} className="w-full h-full object-contain p-1" />
                 </div>
                 <div>
@@ -242,7 +243,7 @@ function VendorLayoutContent({
               </Link>
               <button 
                 onClick={() => setMobileMenuOpen(false)}
-                className="p-2 text-white/50 hover:text-white transition-all duration-300 hover:bg-white/5 rounded-[10px]"
+                className="p-2 text-white/50 hover:text-white transition-all duration-300 hover:bg-white/5 rounded-2xl"
               >
                 <X size={18} strokeWidth={1.5} />
               </button>
@@ -258,7 +259,7 @@ function VendorLayoutContent({
                     href={item.href}
                     onClick={() => setMobileMenuOpen(false)}
                     onMouseEnter={() => handleNavHover(item.href)}
-                    className={`flex items-center justify-between px-4 py-3 mb-1 rounded-[14px] transition-all duration-300 border ${
+                    className={`flex items-center justify-between px-4 py-3 mb-1 rounded-2xl transition-all duration-300 border ${
                       active 
                         ? 'bg-gradient-to-r from-white/10 to-white/5 text-white border-white/20 shadow-lg' 
                         : 'text-white/50 hover:text-white/80 border-transparent hover:bg-white/5 hover:border-white/10'
@@ -278,13 +279,13 @@ function VendorLayoutContent({
               <Link
                 href="/vendor/apps"
                 onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center justify-center gap-2 w-full px-4 py-3 text-white/60 text-xs uppercase tracking-wider border border-white/20 rounded-[14px] transition-all duration-300 hover:bg-white/10 hover:border-white/30 hover:text-white mb-2"
+                className="flex items-center justify-center gap-2 w-full px-4 py-3 text-white/60 text-xs uppercase tracking-wider border border-white/20 rounded-2xl transition-all duration-300 hover:bg-white/10 hover:border-white/30 hover:text-white mb-2"
               >
                 View All Apps
               </Link>
               <Link
                 href="/"
-                className="flex items-center justify-center gap-2 w-full px-4 py-3 text-white/50 text-xs uppercase tracking-wider border border-white/10 rounded-[14px] transition-all duration-300 hover:bg-white/5 hover:border-white/20 hover:text-white/70 mb-2"
+                className="flex items-center justify-center gap-2 w-full px-4 py-3 text-white/50 text-xs uppercase tracking-wider border border-white/10 rounded-2xl transition-all duration-300 hover:bg-white/5 hover:border-white/20 hover:text-white/70 mb-2"
               >
                 Back to Store
               </Link>
@@ -293,7 +294,7 @@ function VendorLayoutContent({
                   setMobileMenuOpen(false);
                   handleLogout();
                 }}
-                className="w-full px-4 py-3 bg-gradient-to-r from-white/10 to-white/5 text-white/70 text-xs uppercase tracking-wider border border-white/10 rounded-[14px] transition-all duration-300 hover:border-white/20 hover:text-white flex items-center justify-center gap-2"
+                className="w-full px-4 py-3 bg-gradient-to-r from-white/10 to-white/5 text-white/70 text-xs uppercase tracking-wider border border-white/10 rounded-2xl transition-all duration-300 hover:border-white/20 hover:text-white flex items-center justify-center gap-2"
               >
                 <LogOut size={14} strokeWidth={1.5} />
                 Sign Out
@@ -312,7 +313,7 @@ function VendorLayoutContent({
       >
         <div className="w-full px-6 xl:px-8">
           <div className="flex justify-between items-center h-20">
-            <Link href="/vendor/dashboard" className="flex items-center gap-4 group">
+            <Link href="/vendor/apps" className="flex items-center gap-4 group">
               <div className="w-12 h-12 bg-gradient-to-br from-white/10 to-white/5 rounded-[16px] flex items-center justify-center overflow-hidden border border-white/10 transition-all duration-300 group-hover:border-white/30 group-hover:shadow-[0_0_20px_rgba(255,255,255,0.1)]">
                 <img src={vendorLogo} alt={vendorName} className="w-full h-full object-contain p-1.5" />
               </div>
@@ -368,7 +369,7 @@ function VendorLayoutContent({
                   key={item.href}
                   href={item.href}
                   onMouseEnter={() => handleNavHover(item.href)}
-                  className={`group flex items-center gap-3 px-5 py-3 transition-all duration-300 border rounded-[14px] ${
+                  className={`group flex items-center gap-3 px-5 py-3 transition-all duration-300 border rounded-2xl ${
                     active
                       ? 'text-white bg-gradient-to-r from-white/10 to-white/5 border-white/20 shadow-lg'
                       : 'text-white/40 hover:text-white/70 hover:bg-white/5 border-transparent hover:border-white/10'

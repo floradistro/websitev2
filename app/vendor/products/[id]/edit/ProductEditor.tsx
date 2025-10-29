@@ -238,14 +238,14 @@ export default function ProductEditor() {
           <div className="flex items-center gap-3">
             <Link
               href="/vendor/products"
-              className="px-6 py-3 bg-white/5 text-white/70 border border-white/10 hover:bg-white/10 hover:text-white transition-all duration-300 rounded-[14px] text-xs uppercase tracking-wider"
+              className="px-6 py-3 bg-white/5 text-white/70 border border-white/10 hover:bg-white/10 hover:text-white transition-all duration-300 rounded-2xl text-xs uppercase tracking-wider"
             >
               Cancel
             </Link>
             <button
               onClick={handleSave}
               disabled={saving}
-              className="px-6 py-3 bg-white/10 text-white border border-white/20 hover:bg-white/20 disabled:opacity-30 transition-all duration-300 rounded-[14px] text-xs uppercase tracking-wider flex items-center gap-2"
+              className="px-6 py-3 bg-white/10 text-white border border-white/20 hover:bg-white/20 disabled:opacity-30 transition-all duration-300 rounded-2xl text-xs uppercase tracking-wider flex items-center gap-2"
             >
               <Save size={14} />
               {saving ? 'Saving...' : 'Save Changes'}
@@ -255,7 +255,7 @@ export default function ProductEditor() {
 
         {/* Status Notice */}
         {product.status === 'pending' && (
-          <div className="mt-4 bg-white/5 border border-white/10 p-4 rounded-[14px]">
+          <div className="mt-4 bg-white/5 border border-white/10 p-4 rounded-2xl">
             <div className="flex items-start gap-3">
               <AlertCircle size={16} className="text-white/60 flex-shrink-0 mt-0.5" />
               <div>
@@ -343,7 +343,7 @@ export default function ProductEditor() {
                     value={product.name}
                     onChange={(e) => setProduct({...product, name: e.target.value})}
                     placeholder="e.g., Blue Dream"
-                    className="w-full bg-black/20 border border-white/10 text-white placeholder-white/30 px-4 py-3 focus:outline-none focus:border-white/30 transition-all rounded-[14px] text-base"
+                    className="w-full bg-black/20 border border-white/10 text-white placeholder-white/30 px-4 py-3 focus:outline-none focus:border-white/30 transition-all rounded-2xl text-base"
                   />
                 </div>
 
@@ -354,7 +354,7 @@ export default function ProductEditor() {
                     value={product.sku}
                     onChange={(e) => setProduct({...product, sku: e.target.value})}
                     placeholder="e.g., BD-001"
-                    className="w-full bg-black/20 border border-white/10 text-white placeholder-white/30 px-4 py-3 focus:outline-none focus:border-white/30 transition-all rounded-[14px] text-base"
+                    className="w-full bg-black/20 border border-white/10 text-white placeholder-white/30 px-4 py-3 focus:outline-none focus:border-white/30 transition-all rounded-2xl text-base"
                   />
                 </div>
 
@@ -364,7 +364,7 @@ export default function ProductEditor() {
                     required
                     value={product.category}
                     onChange={(e) => setProduct({...product, category: e.target.value})}
-                    className="w-full bg-black/20 border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/30 transition-all rounded-[14px] text-base"
+                    className="w-full bg-black/20 border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/30 transition-all rounded-2xl text-base"
                   >
                     <option value="">Select category</option>
                     <option value="Flower">Flower</option>
@@ -382,7 +382,7 @@ export default function ProductEditor() {
                     value={product.description}
                     onChange={(e) => setProduct({...product, description: e.target.value})}
                     placeholder="Describe your product..."
-                    className="w-full bg-black/20 border border-white/10 text-white placeholder-white/30 px-4 py-3 focus:outline-none focus:border-white/30 transition-all rounded-[14px] resize-none text-base"
+                    className="w-full bg-black/20 border border-white/10 text-white placeholder-white/30 px-4 py-3 focus:outline-none focus:border-white/30 transition-all rounded-2xl resize-none text-base"
                   />
                 </div>
               </div>
@@ -403,7 +403,7 @@ export default function ProductEditor() {
                       value={product.cost_price}
                       onChange={(e) => setProduct({...product, cost_price: e.target.value})}
                       placeholder="5.00"
-                      className="w-full bg-black/20 border border-white/10 text-white placeholder-white/30 pl-8 pr-4 py-3 focus:outline-none focus:border-white/30 transition-all rounded-[14px] text-base"
+                      className="w-full bg-black/20 border border-white/10 text-white placeholder-white/30 pl-8 pr-4 py-3 focus:outline-none focus:border-white/30 transition-all rounded-2xl text-base"
                     />
                     <span className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40">/g</span>
                   </div>
@@ -421,7 +421,7 @@ export default function ProductEditor() {
                       value={product.price}
                       onChange={(e) => setProduct({...product, price: e.target.value})}
                       placeholder="10.00"
-                      className="w-full bg-black/20 border border-white/10 text-white placeholder-white/30 pl-8 pr-4 py-3 focus:outline-none focus:border-white/30 transition-all rounded-[14px] text-base"
+                      className="w-full bg-black/20 border border-white/10 text-white placeholder-white/30 pl-8 pr-4 py-3 focus:outline-none focus:border-white/30 transition-all rounded-2xl text-base"
                     />
                     <span className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40">/g</span>
                   </div>
@@ -431,7 +431,7 @@ export default function ProductEditor() {
 
               {/* Margin Display */}
               {margin !== null && (
-                <div className="mt-4 bg-white/5 border border-white/10 p-4 rounded-[14px]">
+                <div className="mt-4 bg-white/5 border border-white/10 p-4 rounded-2xl">
                   <div className="grid grid-cols-3 gap-4 text-sm">
                     <div>
                       <div className="text-white/40 text-xs mb-1">Margin</div>
@@ -466,7 +466,7 @@ export default function ProductEditor() {
                   value={product.thc_percentage}
                   onChange={(e) => setProduct({...product, thc_percentage: e.target.value})}
                   placeholder="25.5"
-                  className="w-full bg-black/20 border border-white/10 text-white placeholder-white/30 px-4 py-3 focus:outline-none focus:border-white/30 transition-all rounded-[14px] text-base"
+                  className="w-full bg-black/20 border border-white/10 text-white placeholder-white/30 px-4 py-3 focus:outline-none focus:border-white/30 transition-all rounded-2xl text-base"
                 />
               </div>
 
@@ -478,7 +478,7 @@ export default function ProductEditor() {
                   value={product.cbd_percentage}
                   onChange={(e) => setProduct({...product, cbd_percentage: e.target.value})}
                   placeholder="0.3"
-                  className="w-full bg-black/20 border border-white/10 text-white placeholder-white/30 px-4 py-3 focus:outline-none focus:border-white/30 transition-all rounded-[14px] text-base"
+                  className="w-full bg-black/20 border border-white/10 text-white placeholder-white/30 px-4 py-3 focus:outline-none focus:border-white/30 transition-all rounded-2xl text-base"
                 />
               </div>
 
@@ -487,7 +487,7 @@ export default function ProductEditor() {
                 <select
                   value={product.strain_type}
                   onChange={(e) => setProduct({...product, strain_type: e.target.value})}
-                  className="w-full bg-black/20 border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/30 transition-all rounded-[14px] text-base"
+                  className="w-full bg-black/20 border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/30 transition-all rounded-2xl text-base"
                 >
                   <option value="">Select type</option>
                   <option value="indica">Indica</option>
@@ -503,7 +503,7 @@ export default function ProductEditor() {
                   value={product.lineage}
                   onChange={(e) => setProduct({...product, lineage: e.target.value})}
                   placeholder="e.g., Blueberry × Haze"
-                  className="w-full bg-black/20 border border-white/10 text-white placeholder-white/30 px-4 py-3 focus:outline-none focus:border-white/30 transition-all rounded-[14px] text-base"
+                  className="w-full bg-black/20 border border-white/10 text-white placeholder-white/30 px-4 py-3 focus:outline-none focus:border-white/30 transition-all rounded-2xl text-base"
                 />
               </div>
 
@@ -514,7 +514,7 @@ export default function ProductEditor() {
                   value={product.terpenes}
                   onChange={(e) => setProduct({...product, terpenes: e.target.value})}
                   placeholder="e.g., Myrcene, Pinene, Caryophyllene"
-                  className="w-full bg-black/20 border border-white/10 text-white placeholder-white/30 px-4 py-3 focus:outline-none focus:border-white/30 transition-all rounded-[14px] text-base"
+                  className="w-full bg-black/20 border border-white/10 text-white placeholder-white/30 px-4 py-3 focus:outline-none focus:border-white/30 transition-all rounded-2xl text-base"
                 />
               </div>
 
@@ -525,7 +525,7 @@ export default function ProductEditor() {
                   value={product.effects}
                   onChange={(e) => setProduct({...product, effects: e.target.value})}
                   placeholder="e.g., Relaxed, Creative, Euphoric"
-                  className="w-full bg-black/20 border border-white/10 text-white placeholder-white/30 px-4 py-3 focus:outline-none focus:border-white/30 transition-all rounded-[14px] text-base"
+                  className="w-full bg-black/20 border border-white/10 text-white placeholder-white/30 px-4 py-3 focus:outline-none focus:border-white/30 transition-all rounded-2xl text-base"
                 />
               </div>
 
@@ -536,7 +536,7 @@ export default function ProductEditor() {
                   value={product.nose}
                   onChange={(e) => setProduct({...product, nose: e.target.value})}
                   placeholder="e.g., Earthy, Pine"
-                  className="w-full bg-black/20 border border-white/10 text-white placeholder-white/30 px-4 py-3 focus:outline-none focus:border-white/30 transition-all rounded-[14px] text-base"
+                  className="w-full bg-black/20 border border-white/10 text-white placeholder-white/30 px-4 py-3 focus:outline-none focus:border-white/30 transition-all rounded-2xl text-base"
                 />
               </div>
 
@@ -547,7 +547,7 @@ export default function ProductEditor() {
                   value={product.taste}
                   onChange={(e) => setProduct({...product, taste: e.target.value})}
                   placeholder="e.g., Sweet, Citrus"
-                  className="w-full bg-black/20 border border-white/10 text-white placeholder-white/30 px-4 py-3 focus:outline-none focus:border-white/30 transition-all rounded-[14px] text-base"
+                  className="w-full bg-black/20 border border-white/10 text-white placeholder-white/30 px-4 py-3 focus:outline-none focus:border-white/30 transition-all rounded-2xl text-base"
                 />
               </div>
             </div>
@@ -561,14 +561,14 @@ export default function ProductEditor() {
               <h2 className="text-white/60 text-xs uppercase tracking-wider font-medium">Volume Pricing</h2>
               <Link
                 href="/vendor/pricing"
-                className="px-4 py-2 bg-white/5 text-white/70 border border-white/10 hover:bg-white/10 hover:text-white transition-all rounded-[10px] text-xs uppercase tracking-wider"
+                className="px-4 py-2 bg-white/5 text-white/70 border border-white/10 hover:bg-white/10 hover:text-white transition-all rounded-2xl text-xs uppercase tracking-wider"
               >
                 Manage Pricing
               </Link>
             </div>
 
             {pricingTiers.length === 0 ? (
-              <div className="bg-white/5 border border-white/10 p-8 text-center rounded-[14px]">
+              <div className="bg-white/5 border border-white/10 p-8 text-center rounded-2xl">
                 <DollarSign size={48} className="text-white/20 mx-auto mb-4" />
                 <p className="text-white/60 mb-2">No pricing tiers set</p>
                 <p className="text-white/40 text-sm mb-4">Add volume pricing to encourage bulk purchases</p>
@@ -603,14 +603,14 @@ export default function ProductEditor() {
               <h2 className="text-white/60 text-xs uppercase tracking-wider font-medium">Certificates of Analysis</h2>
               <Link
                 href="/vendor/lab-results"
-                className="px-4 py-2 bg-white/5 text-white/70 border border-white/10 hover:bg-white/10 hover:text-white transition-all rounded-[10px] text-xs uppercase tracking-wider"
+                className="px-4 py-2 bg-white/5 text-white/70 border border-white/10 hover:bg-white/10 hover:text-white transition-all rounded-2xl text-xs uppercase tracking-wider"
               >
                 COA Library
               </Link>
             </div>
 
             {coas.length === 0 ? (
-              <div className="bg-white/5 border border-white/10 p-8 text-center rounded-[14px]">
+              <div className="bg-white/5 border border-white/10 p-8 text-center rounded-2xl">
                 <FileText size={48} className="text-white/20 mx-auto mb-4" />
                 <p className="text-white/60 mb-2">No COAs uploaded</p>
                 <p className="text-white/40 text-sm mb-4">Products require lab results for approval</p>
@@ -625,7 +625,7 @@ export default function ProductEditor() {
             ) : (
               <div className="space-y-3">
                 {coas.map((coa) => (
-                  <div key={coa.id} className="bg-white/5 border border-white/10 p-5 rounded-[14px]">
+                  <div key={coa.id} className="bg-white/5 border border-white/10 p-5 rounded-2xl">
                     <div className="flex items-start justify-between mb-4">
                       <div>
                         <div className="text-white font-medium mb-1">{coa.file_name}</div>
@@ -681,14 +681,14 @@ export default function ProductEditor() {
               <h2 className="text-white/60 text-xs uppercase tracking-wider font-medium">Product Images</h2>
               <Link
                 href="/vendor/media-library"
-                className="px-4 py-2 bg-white/5 text-white/70 border border-white/10 hover:bg-white/10 hover:text-white transition-all rounded-[10px] text-xs uppercase tracking-wider"
+                className="px-4 py-2 bg-white/5 text-white/70 border border-white/10 hover:bg-white/10 hover:text-white transition-all rounded-2xl text-xs uppercase tracking-wider"
               >
                 Media Library
               </Link>
             </div>
 
             {images.length === 0 ? (
-              <div className="bg-white/5 border border-white/10 p-8 text-center rounded-[14px]">
+              <div className="bg-white/5 border border-white/10 p-8 text-center rounded-2xl">
                 <ImageIcon size={48} className="text-white/20 mx-auto mb-4" />
                 <p className="text-white/60 mb-2">No images uploaded</p>
                 <p className="text-white/40 text-sm mb-4">Add product photos from your media library</p>
@@ -703,7 +703,7 @@ export default function ProductEditor() {
             ) : (
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 {images.map((img, idx) => (
-                  <div key={idx} className="aspect-square bg-white/5 border border-white/10 rounded-[14px] overflow-hidden relative group">
+                  <div key={idx} className="aspect-square bg-white/5 border border-white/10 rounded-2xl overflow-hidden relative group">
                     <img src={img} alt="" className="w-full h-full object-cover" />
                     <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                       <button className="text-white/80 hover:text-white">
@@ -729,14 +729,14 @@ export default function ProductEditor() {
           <div className="flex items-center gap-3">
             <Link
               href="/vendor/products"
-              className="px-6 py-3 bg-white/5 text-white/70 border border-white/10 hover:bg-white/10 hover:text-white transition-all duration-300 rounded-[14px] text-xs uppercase tracking-wider"
+              className="px-6 py-3 bg-white/5 text-white/70 border border-white/10 hover:bg-white/10 hover:text-white transition-all duration-300 rounded-2xl text-xs uppercase tracking-wider"
             >
               Cancel
             </Link>
             <button
               onClick={handleSave}
               disabled={saving}
-              className="px-6 py-3 bg-white/10 text-white border border-white/20 hover:bg-white/20 disabled:opacity-30 transition-all duration-300 rounded-[14px] text-xs uppercase tracking-wider flex items-center gap-2"
+              className="px-6 py-3 bg-white/10 text-white border border-white/20 hover:bg-white/20 disabled:opacity-30 transition-all duration-300 rounded-2xl text-xs uppercase tracking-wider flex items-center gap-2"
             >
               <Save size={14} />
               {saving ? 'Saving...' : 'Save Changes'}

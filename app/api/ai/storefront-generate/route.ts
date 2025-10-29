@@ -114,11 +114,66 @@ export async function POST(request: NextRequest) {
         systemPrompt += `\n\n## CURRENT SESSION CONTEXT\n`;
         systemPrompt += `Vendor: ${vendorName} (ID: ${vendorId})\n`;
         systemPrompt += `Industry: ${industry}\n`;
-        
+
         if (isEditingExisting && fullCode) {
           systemPrompt += `\n⚠️ EDITING MODE ACTIVE\n`;
           systemPrompt += `Current code length: ${fullCode.length} chars\n`;
           systemPrompt += `Task: Make surgical edits only - preserve all existing functionality\n`;
+        }
+
+        // Fetch vendor's media library for real image usage
+        try {
+          const { data: mediaFiles } = await supabase
+            .from('vendor_media')
+            .select('*')
+            .eq('vendor_id', vendorId)
+            .eq('status', 'active')
+            .order('created_at', { ascending: false })
+            .limit(50);
+
+          if (mediaFiles && mediaFiles.length > 0) {
+            systemPrompt += `\n\n## 📸 AVAILABLE MEDIA LIBRARY\n`;
+            systemPrompt += `The vendor has ${mediaFiles.length} real media assets you can use in components:\n\n`;
+
+            // Group by category
+            const categories = {
+              product_photos: mediaFiles.filter(f => f.category === 'product_photos'),
+              marketing: mediaFiles.filter(f => f.category === 'marketing'),
+              menus: mediaFiles.filter(f => f.category === 'menus'),
+              brand: mediaFiles.filter(f => f.category === 'brand'),
+            };
+
+            systemPrompt += `### Product Photos (${categories.product_photos.length})\n`;
+            categories.product_photos.slice(0, 10).forEach(file => {
+              systemPrompt += `- ${file.file_url}\n`;
+              if (file.ai_description) systemPrompt += `  Description: ${file.ai_description}\n`;
+              if (file.ai_tags && file.ai_tags.length > 0) systemPrompt += `  Tags: ${file.ai_tags.join(', ')}\n`;
+            });
+
+            systemPrompt += `\n### Marketing Materials (${categories.marketing.length})\n`;
+            categories.marketing.slice(0, 5).forEach(file => {
+              systemPrompt += `- ${file.file_url}\n`;
+              if (file.ai_description) systemPrompt += `  Description: ${file.ai_description}\n`;
+            });
+
+            systemPrompt += `\n### Menu Graphics (${categories.menus.length})\n`;
+            categories.menus.slice(0, 5).forEach(file => {
+              systemPrompt += `- ${file.file_url}\n`;
+            });
+
+            systemPrompt += `\n### Brand Assets (${categories.brand.length})\n`;
+            categories.brand.slice(0, 5).forEach(file => {
+              systemPrompt += `- ${file.file_url}\n`;
+              if (file.ai_description) systemPrompt += `  Description: ${file.ai_description}\n`;
+            });
+
+            systemPrompt += `\n✨ **IMPORTANT**: Use these REAL images in your components instead of placeholders!\n`;
+            systemPrompt += `Example: <img src="${mediaFiles[0]?.file_url}" alt="Product" />\n`;
+            systemPrompt += `\nThese are high-quality, vendor-uploaded images that make the storefront look professional.\n`;
+          }
+        } catch (mediaError) {
+          console.error('Failed to fetch media library:', mediaError);
+          // Continue without media library context
         }
 
         // Get conversation history for context

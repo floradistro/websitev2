@@ -66,13 +66,13 @@ export default function VendorAnalytics() {
   return (
     <div className="w-full px-4 lg:px-0">
       {/* Header */}
-      <div className="mb-12 flex items-center justify-between">
+      <div className="mb-8 pb-6 border-b border-white/5 flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-thin text-white/90 tracking-tight mb-2">
+          <h1 className="text-xs uppercase tracking-[0.15em] text-white font-black mb-1" style={{ fontWeight: 900 }}>
             Advanced Analytics
           </h1>
-          <p className="text-white/40 text-xs font-light tracking-wide">
-            PERFORMANCE INSIGHTS · {vendor?.store_name?.toUpperCase()}
+          <p className="text-[10px] uppercase tracking-[0.15em] text-white/40">
+            Performance Insights · {vendor?.store_name?.toUpperCase()}
           </p>
         </div>
 
@@ -87,7 +87,7 @@ export default function VendorAnalytics() {
             <button
               key={range.value}
               onClick={() => setTimeRange(range.value)}
-              className={`px-4 py-2 text-xs uppercase tracking-wider transition-all duration-300 border rounded-[14px] ${
+              className={`px-4 py-2 text-xs uppercase tracking-wider transition-all duration-300 border rounded-2xl ${
                 timeRange === range.value
                   ? 'bg-gradient-to-r from-white/10 to-white/5 text-white border-white/20'
                   : 'bg-black/20 text-white/50 border-white/10 hover:border-white/20 hover:text-white/70'

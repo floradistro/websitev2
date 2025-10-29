@@ -163,11 +163,15 @@ export default function FieldsManagerPage() {
   return (
     <div className="p-8">
       {/* Header */}
-      <div className="mb-8">
+      <div className="mb-8 pb-6 border-b border-white/5">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h1 className="text-3xl font-bold text-white mb-2">Custom Fields</h1>
-            <p className="text-white/60">Extend your sections with custom fields</p>
+            <h1 className="text-xs uppercase tracking-[0.15em] text-white font-black mb-1" style={{ fontWeight: 900 }}>
+              Custom Fields
+            </h1>
+            <p className="text-[10px] uppercase tracking-[0.15em] text-white/40">
+              Extend Sections · Add Custom Data
+            </p>
           </div>
           <button
             onClick={() => setShowAddModal(true)}
@@ -211,7 +215,7 @@ export default function FieldsManagerPage() {
                 <select
                   value={newField.section_key}
                   onChange={(e) => setNewField({ ...newField, section_key: e.target.value })}
-                  className="w-full bg-black/98 border border-white/10 rounded-[14px] px-4 py-2 text-white"
+                  className="w-full bg-black/98 border border-white/10 rounded-2xl px-4 py-2 text-white"
                 >
                   <option value="hero">Hero</option>
                   <option value="process">Process Steps</option>
@@ -234,7 +238,7 @@ export default function FieldsManagerPage() {
                   value={newField.field_id}
                   onChange={(e) => setNewField({ ...newField, field_id: e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '_') })}
                   placeholder="promotional_badge"
-                  className="w-full bg-black/98 border border-white/10 rounded-[14px] px-4 py-2 text-white font-mono"
+                  className="w-full bg-black/98 border border-white/10 rounded-2xl px-4 py-2 text-white font-mono"
                 />
                 <p className="text-white/40 text-xs mt-1">Lowercase, underscores only (e.g., promo_badge, video_url)</p>
               </div>
@@ -249,7 +253,7 @@ export default function FieldsManagerPage() {
                   value={newField.label}
                   onChange={(e) => setNewField({ ...newField, label: e.target.value })}
                   placeholder="Promotional Badge"
-                  className="w-full bg-black/98 border border-white/10 rounded-[14px] px-4 py-2 text-white"
+                  className="w-full bg-black/98 border border-white/10 rounded-2xl px-4 py-2 text-white"
                 />
                 <p className="text-white/40 text-xs mt-1">What users see in the editor</p>
               </div>
@@ -260,7 +264,7 @@ export default function FieldsManagerPage() {
                 <select
                   value={newField.type}
                   onChange={(e) => setNewField({ ...newField, type: e.target.value })}
-                  className="w-full bg-black/98 border border-white/10 rounded-[14px] px-4 py-2 text-white"
+                  className="w-full bg-black/98 border border-white/10 rounded-2xl px-4 py-2 text-white"
                 >
                   {FIELD_TYPES.map((type) => (
                     <option key={type.value} value={type.value}>{type.label}</option>
@@ -276,7 +280,7 @@ export default function FieldsManagerPage() {
                   value={newField.placeholder}
                   onChange={(e) => setNewField({ ...newField, placeholder: e.target.value })}
                   placeholder="e.g., Enter text here..."
-                  className="w-full bg-black/98 border border-white/10 rounded-[14px] px-4 py-2 text-white"
+                  className="w-full bg-black/98 border border-white/10 rounded-2xl px-4 py-2 text-white"
                 />
               </div>
 
@@ -288,7 +292,7 @@ export default function FieldsManagerPage() {
                   onChange={(e) => setNewField({ ...newField, helper_text: e.target.value })}
                   placeholder="Explain what this field does..."
                   rows={2}
-                  className="w-full bg-black/98 border border-white/10 rounded-[14px] px-4 py-2 text-white"
+                  className="w-full bg-black/98 border border-white/10 rounded-2xl px-4 py-2 text-white"
                 />
               </div>
 
@@ -359,7 +363,7 @@ export default function FieldsManagerPage() {
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-2">
                           <h4 className="text-white font-medium">{field.field_definition.label}</h4>
-                          <span className="bg-purple-500/20 text-purple-400 px-2 py-0.5 rounded-[14px] text-xs">
+                          <span className="bg-purple-500/20 text-purple-400 px-2 py-0.5 rounded-2xl text-xs">
                             {field.field_definition.type}
                           </span>
                         </div>

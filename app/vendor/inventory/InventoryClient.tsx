@@ -205,9 +205,9 @@ export default function InventoryClient() {
   if (loading) {
     return (
       <div className="w-full px-4 lg:px-0 py-12">
-        <div className="minimal-glass p-12 text-center">
-          <div className="w-16 h-16 border-4 border-white/20 border-t-white rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-white/60 text-sm uppercase tracking-wider">Loading Inventory...</p>
+        <div className="bg-white/5 border border-white/10 rounded-2xl p-12 text-center">
+          <div className="w-12 h-12 border-4 border-white/20 border-t-white rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-white/40 text-[10px] uppercase tracking-[0.15em]">Loading Inventory...</p>
         </div>
       </div>
     );
@@ -217,18 +217,18 @@ export default function InventoryClient() {
     <div className="w-full px-4 lg:px-0">
       {/* Header */}
       <div className="mb-8">
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-6 pb-6 border-b border-white/5">
           <div>
-            <h1 className="text-3xl font-thin text-white/90 tracking-tight mb-2">
+            <h1 className="text-xs uppercase tracking-[0.15em] text-white font-black mb-1" style={{ fontWeight: 900 }}>
               Stock Management
             </h1>
-            <p className="text-white/40 text-xs font-light tracking-wide uppercase">
+            <p className="text-[10px] uppercase tracking-[0.15em] text-white/40">
               {filteredProducts.length} of {products.length} Products · {locations.length} Locations
             </p>
           </div>
           <button
             onClick={loadInventory}
-            className="px-6 py-3 bg-white/5 text-white/70 border border-white/10 hover:bg-white/10 hover:text-white transition-all duration-300 rounded-[14px] text-xs uppercase tracking-wider flex items-center gap-2"
+            className="px-4 py-2.5 bg-white/5 text-white border border-white/10 hover:bg-white/10 transition-all duration-300 rounded-2xl text-[10px] uppercase tracking-[0.15em] flex items-center gap-2"
           >
             <RefreshCw size={14} />
             Refresh
@@ -276,34 +276,34 @@ export default function InventoryClient() {
       </div>
 
       {/* Filters */}
-      <div className="minimal-glass p-6 mb-6">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div className="bg-white/5 border border-white/10 rounded-2xl p-4 mb-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
           <div className="relative">
-            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" />
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" />
             <input
               type="text"
-              placeholder="Search products..."
+              placeholder="SEARCH PRODUCTS..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-black/20 border border-white/10 text-white placeholder-white/30 pl-10 pr-4 py-3 focus:outline-none focus:border-white/30 transition-all rounded-[14px] text-sm"
+              className="w-full bg-white/5 border border-white/10 text-white placeholder-white/30 pl-10 pr-3 py-2.5 focus:outline-none focus:border-white/20 transition-all rounded-2xl text-[10px] uppercase tracking-[0.15em]"
             />
           </div>
 
           <select
             value={stockFilter}
             onChange={(e) => setStockFilter(e.target.value as any)}
-            className="bg-black/20 border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/30 transition-all rounded-[14px] text-sm"
+            className="bg-white/5 border border-white/10 text-white px-3 py-2.5 focus:outline-none focus:border-white/20 transition-all rounded-2xl text-[10px] uppercase tracking-[0.15em] appearance-none"
           >
-            <option value="all">All Stock Levels</option>
-            <option value="in_stock">In Stock (&gt; 10g)</option>
-            <option value="low_stock">Low Stock (1-10g)</option>
+            <option value="all">ALL STOCK LEVELS</option>
+            <option value="in_stock">IN STOCK (&gt; 10g)</option>
+            <option value="low_stock">LOW STOCK (1-10g)</option>
             <option value="out_of_stock">Out of Stock</option>
           </select>
 
           <select
             value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value)}
-            className="bg-black/20 border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/30 transition-all rounded-[14px] text-sm"
+            className="bg-black/20 border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/30 transition-all rounded-2xl text-sm"
           >
             {categories.map(cat => (
               <option key={cat} value={cat}>
@@ -405,7 +405,7 @@ export default function InventoryClient() {
                         const customVal = customAmount[locKey] || '';
                         
                         return (
-                          <div key={loc.inventory_id} className="bg-white/5 border border-white/10 p-5 rounded-[14px]">
+                          <div key={loc.inventory_id} className="bg-white/5 border border-white/10 p-5 rounded-2xl">
                             {/* Location Header */}
                             <div className="flex items-start justify-between mb-4">
                               <div>
@@ -434,7 +434,7 @@ export default function InventoryClient() {
                                       }
                                     }}
                                     disabled={isAdjusting}
-                                    className="bg-black/40 border border-white/10 text-white px-4 py-3 rounded-[14px] focus:outline-none focus:border-white/30 text-sm hover:bg-black/60 transition-all disabled:opacity-50 cursor-pointer"
+                                    className="bg-black/40 border border-white/10 text-white px-4 py-3 rounded-2xl focus:outline-none focus:border-white/30 text-sm hover:bg-black/60 transition-all disabled:opacity-50 cursor-pointer"
                                   >
                                     <option value="0">Quick Add...</option>
                                     <optgroup label="Add Stock">
@@ -470,12 +470,12 @@ export default function InventoryClient() {
                                           handleCustomAdjust(product.product_id, loc.location_id, loc.inventory_id);
                                         }
                                       }}
-                                      className="flex-1 bg-black/40 border border-white/10 text-white px-4 py-3 rounded-[14px] focus:outline-none focus:border-white/30 text-sm placeholder:text-white/20"
+                                      className="flex-1 bg-black/40 border border-white/10 text-white px-4 py-3 rounded-2xl focus:outline-none focus:border-white/30 text-sm placeholder:text-white/20"
                                     />
                                     <button
                                       onClick={() => handleCustomAdjust(product.product_id, loc.location_id, loc.inventory_id)}
                                       disabled={isAdjusting || !customVal}
-                                      className="px-6 py-3 bg-white/10 border border-white/20 text-white hover:bg-white/20 disabled:opacity-20 disabled:cursor-not-allowed transition-all rounded-[14px] text-sm uppercase tracking-wider font-medium min-w-[80px]"
+                                      className="px-6 py-3 bg-white/10 border border-white/20 text-white hover:bg-white/20 disabled:opacity-20 disabled:cursor-not-allowed transition-all rounded-2xl text-sm uppercase tracking-wider font-medium min-w-[80px]"
                                     >
                                       {isAdjusting ? (
                                         <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mx-auto"></div>
@@ -541,7 +541,7 @@ export default function InventoryClient() {
                 <button
                   onClick={() => setPage(p => Math.max(1, p - 1))}
                   disabled={page === 1}
-                  className="px-4 py-2 bg-white/5 text-white/70 border border-white/10 hover:bg-white/10 hover:text-white disabled:opacity-20 disabled:cursor-not-allowed transition-all rounded-[10px] text-sm"
+                  className="px-4 py-2 bg-white/5 text-white/70 border border-white/10 hover:bg-white/10 hover:text-white disabled:opacity-20 disabled:cursor-not-allowed transition-all rounded-2xl text-sm"
                 >
                   Previous
                 </button>
@@ -552,7 +552,7 @@ export default function InventoryClient() {
                       <button
                         key={pageNum}
                         onClick={() => setPage(pageNum)}
-                        className={`w-10 h-10 rounded-[10px] text-sm transition-all ${
+                        className={`w-10 h-10 rounded-2xl text-sm transition-all ${
                           page === pageNum
                             ? 'bg-white/10 text-white border border-white/20'
                             : 'bg-white/5 text-white/60 border border-white/10 hover:bg-white/10 hover:text-white'
@@ -567,7 +567,7 @@ export default function InventoryClient() {
                       <span className="text-white/40 px-2">...</span>
                       <button
                         onClick={() => setPage(totalPages)}
-                        className={`w-10 h-10 rounded-[10px] text-sm transition-all ${
+                        className={`w-10 h-10 rounded-2xl text-sm transition-all ${
                           page === totalPages
                             ? 'bg-white/10 text-white border border-white/20'
                             : 'bg-white/5 text-white/60 border border-white/10 hover:bg-white/10 hover:text-white'
@@ -581,7 +581,7 @@ export default function InventoryClient() {
                 <button
                   onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                   disabled={page === totalPages}
-                  className="px-4 py-2 bg-white/5 text-white/70 border border-white/10 hover:bg-white/10 hover:text-white disabled:opacity-20 disabled:cursor-not-allowed transition-all rounded-[10px] text-sm"
+                  className="px-4 py-2 bg-white/5 text-white/70 border border-white/10 hover:bg-white/10 hover:text-white disabled:opacity-20 disabled:cursor-not-allowed transition-all rounded-2xl text-sm"
                 >
                   Next
                 </button>

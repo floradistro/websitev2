@@ -178,9 +178,11 @@ export default function CostPlusPricingPage() {
           <ArrowLeft size={16} />
           Back to Pricing
         </Link>
-        <h1 className="text-3xl font-light text-white mb-2">Cost-Plus Pricing</h1>
-        <p className="text-white/60 text-sm">
-          Set your cost and markup tiers. Prices calculate automatically.
+        <h1 className="text-xs uppercase tracking-[0.15em] text-white font-black mb-1" style={{ fontWeight: 900 }}>
+          Cost-Plus Pricing
+        </h1>
+        <p className="text-[10px] uppercase tracking-[0.15em] text-white/40">
+          Set Cost · Define Markup · Auto Calculate Prices
         </p>
       </div>
 
@@ -216,7 +218,7 @@ export default function CostPlusPricingPage() {
                 value={exampleCost}
                 onChange={(e) => setExampleCost(e.target.value)}
                 placeholder="1000.00"
-                className="w-full bg-white/5 border border-white/10 text-white placeholder-white/40 pl-8 pr-4 py-3 rounded-[14px] focus:outline-none focus:border-white/20"
+                className="w-full bg-white/5 border border-white/10 text-white placeholder-white/40 pl-8 pr-4 py-3 rounded-2xl focus:outline-none focus:border-white/20"
               />
             </div>
             <p className="text-white/40 text-xs mt-1">
@@ -231,7 +233,7 @@ export default function CostPlusPricingPage() {
             <select
               value={costUnit}
               onChange={(e) => setCostUnit(e.target.value as 'pound' | 'ounce' | 'gram')}
-              className="w-full bg-white/5 border border-white/10 text-white px-4 py-3 rounded-[14px] focus:outline-none focus:border-white/20"
+              className="w-full bg-white/5 border border-white/10 text-white px-4 py-3 rounded-2xl focus:outline-none focus:border-white/20"
             >
               <option value="pound">Per Pound (lb)</option>
               <option value="ounce">Per Ounce (oz)</option>
@@ -304,7 +306,7 @@ export default function CostPlusPricingPage() {
                       step="0.1"
                       value={tier.min_quantity}
                       onChange={(e) => updateTier(index, { min_quantity: parseFloat(e.target.value) })}
-                      className="w-full bg-white/5 border border-white/10 text-white px-3 py-2 text-sm rounded-[14px] focus:outline-none focus:border-white/20"
+                      className="w-full bg-white/5 border border-white/10 text-white px-3 py-2 text-sm rounded-2xl focus:outline-none focus:border-white/20"
                     />
                   </div>
 
@@ -314,7 +316,7 @@ export default function CostPlusPricingPage() {
                     <select
                       value={tier.min_quantity_unit}
                       onChange={(e) => updateTier(index, { min_quantity_unit: e.target.value })}
-                      className="w-full bg-white/5 border border-white/10 text-white px-3 py-2 text-sm rounded-[14px] focus:outline-none focus:border-white/20"
+                      className="w-full bg-white/5 border border-white/10 text-white px-3 py-2 text-sm rounded-2xl focus:outline-none focus:border-white/20"
                     >
                       <option value="pound">Pounds</option>
                       <option value="ounce">Ounces</option>
@@ -363,7 +365,7 @@ export default function CostPlusPricingPage() {
                         step={tier.markup_type === 'flat' ? '1' : '0.1'}
                         value={tier.markup_value}
                         onChange={(e) => updateTier(index, { markup_value: parseFloat(e.target.value) || 0 })}
-                        className={`w-full bg-white/5 border border-white/10 text-white px-3 py-2 text-sm rounded-[14px] focus:outline-none focus:border-white/20 ${
+                        className={`w-full bg-white/5 border border-white/10 text-white px-3 py-2 text-sm rounded-2xl focus:outline-none focus:border-white/20 ${
                           tier.markup_type === 'flat' ? 'pl-7' : ''
                         }`}
                       />

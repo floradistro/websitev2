@@ -12,6 +12,8 @@ interface Vendor {
   vendor_type?: 'standard' | 'distributor' | 'both';
   wholesale_enabled?: boolean;
   pos_enabled?: boolean;
+  marketing_provider?: 'builtin' | 'alpineiq';
+  marketing_config?: any;
 }
 
 interface Location {

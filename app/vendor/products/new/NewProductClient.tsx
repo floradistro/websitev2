@@ -1006,7 +1006,7 @@ export default function NewProduct() {
             {imagePreviews.length > 0 && (
               <div className="grid grid-cols-3 gap-4 mb-4">
                 {imagePreviews.map((preview, index) => (
-                  <div key={index} className="relative aspect-square bg-white/5 rounded-[14px] overflow-hidden group">
+                  <div key={index} className="relative aspect-square bg-white/5 rounded-2xl overflow-hidden group">
                     <img src={preview} alt={`Product ${index + 1}`} className="w-full h-full object-cover" />
                     {uploadedImageUrls[index] ? (
                       <div className="absolute top-2 left-2 bg-green-500 text-white px-2 py-1 text-xs flex items-center gap-1">
@@ -1022,7 +1022,7 @@ export default function NewProduct() {
                     <button
                       type="button"
                       onClick={() => removeImage(index)}
-                      className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-[14px] opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity"
                     >
                       <X size={16} />
                     </button>
