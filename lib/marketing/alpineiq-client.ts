@@ -432,7 +432,10 @@ export class AlpineIQClient {
   /**
    * Get all loyalty program members
    */
-  async getLoyaltyMembers(): Promise<Array<{
+  async getLoyaltyMembers(options?: {
+    limit?: number;
+    audienceId?: string;
+  }): Promise<Array<{
     id: string;
     email: string;
     phone: string;
@@ -444,41 +447,65 @@ export class AlpineIQClient {
     tierLevel?: number;
     lifetimePoints?: number;
   }>> {
-    // Get audiences (loyalty members are in audiences)
+    // Get audiences to find "Signed Up" loyalty members audience
     const audiences = await this.request<any>('GET', `/api/v1.1/audiences/${this.config.userId}`);
 
-    // Get contacts from the main audience
-    const contacts = [];
-    if (audiences.data && audiences.data.length > 0) {
-      for (const audience of audiences.data) {
-        try {
-          const audienceContacts = await this.request<any>(
-            'GET',
-            `/api/v1.1/contacts/${this.config.userId}?audienceId=${audience.id}&limit=1000`
-          );
+    // Find the "Signed Up" audience (loyaltyMember = true)
+    const loyaltyAudience = audiences.data?.find((a: any) =>
+      a.name === 'Signed Up' || a.traits?.some((t: any) => t.type === 'loyaltyMember' && t.value === true)
+    );
 
-          if (audienceContacts.data) {
-            contacts.push(...audienceContacts.data);
-          }
-        } catch (error) {
-          console.error(`Failed to fetch audience ${audience.id}:`, error);
+    if (!loyaltyAudience) {
+      console.log('No loyalty audience found');
+      return [];
+    }
+
+    console.log(`Found loyalty audience: ${loyaltyAudience.name} (${loyaltyAudience.audienceSize} members)`);
+
+    // Get contact IDs from the audience
+    const memberIds = await this.request<string[]>(
+      'GET',
+      `/api/v2/audience/members/${loyaltyAudience.id}`
+    );
+
+    console.log(`Fetched ${memberIds.length} contact IDs`);
+
+    // For now, return sample data structure since we need to fetch individual contacts
+    // In production, we'd batch these lookups
+    const limit = options?.limit || 100;
+    const contacts = [];
+
+    // Fetch contact details in batches
+    for (let i = 0; i < Math.min(memberIds.length, limit); i++) {
+      try {
+        const contactId = memberIds[i];
+
+        // Get wallet info for this contact
+        const wallet = await this.request<any>(
+          'GET',
+          `/api/v1.1/wallet/${this.config.userId}/${contactId}`
+        );
+
+        if (wallet && wallet.contact) {
+          contacts.push({
+            id: contactId,
+            email: wallet.contact.email || '',
+            phone: wallet.contact.phone || '',
+            firstName: wallet.contact.firstName,
+            lastName: wallet.contact.lastName,
+            birthdate: wallet.contact.birthdate,
+            points: wallet.wallet?.points || 0,
+            tier: wallet.wallet?.tier || 'Member',
+            tierLevel: wallet.wallet?.tierLevel || 1,
+            lifetimePoints: wallet.wallet?.lifetimePoints || 0,
+          });
         }
+      } catch (error) {
+        console.error(`Failed to fetch contact ${memberIds[i]}:`, error);
       }
     }
 
-    // Transform to standardized format
-    return contacts.map((contact: any) => ({
-      id: contact.id || contact.universalID,
-      email: contact.email,
-      phone: contact.phone,
-      firstName: contact.firstName,
-      lastName: contact.lastName,
-      birthdate: contact.birthdate,
-      points: contact.wallet?.points || 0,
-      tier: contact.wallet?.tier || 'Member',
-      tierLevel: contact.wallet?.tierLevel || 1,
-      lifetimePoints: contact.wallet?.lifetimePoints || 0,
-    }));
+    return contacts;
   }
 
   // ----------------------------------------------------------------------------

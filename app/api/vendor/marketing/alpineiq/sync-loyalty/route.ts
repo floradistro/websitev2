@@ -20,6 +20,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Vendor ID required' }, { status: 400 });
     }
 
+    // Get optional limit from request body
+    const body = await request.json().catch(() => ({}));
+    const limit = body.limit || 50; // Default to 50 to avoid timeout
+
     // Get vendor's Alpine IQ config
     const { data: vendor } = await supabase
       .from('vendors')
@@ -46,9 +50,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Fetch all loyalty members from Alpine IQ
-    console.log('📥 Fetching loyalty members from Alpine IQ...');
-    const members = await alpineiq.getLoyaltyMembers();
+    // Fetch loyalty members from Alpine IQ (with limit)
+    console.log(`📥 Fetching up to ${limit} loyalty members from Alpine IQ...`);
+    const members = await alpineiq.getLoyaltyMembers({ limit });
 
     if (!members || members.length === 0) {
       return NextResponse.json({
