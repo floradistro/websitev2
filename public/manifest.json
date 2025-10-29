@@ -1,27 +1,51 @@
 {
-  "name": "WhaleTools POS",
-  "short_name": "POS",
-  "description": "Point of Sale System for WhaleTools Multi-Vendor Platform",
-  "start_url": "/pos/orders",
+  "name": "WhaleTools",
+  "short_name": "WhaleTools",
+  "description": "Multi-Tenant Commerce Platform - Vendor Dashboard, POS & TV Display",
+  "start_url": "/",
   "display": "standalone",
-  "background_color": "#0a0a0a",
+  "background_color": "#000000",
   "theme_color": "#000000",
-  "orientation": "portrait",
-  "scope": "/pos/",
+  "orientation": "any",
+  "scope": "/",
+  "display_override": ["standalone", "fullscreen"],
   "icons": [
     {
-      "src": "/icons/pos-192.png",
+      "src": "/yacht-club-logo.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/icons/pos-512.png",
+      "src": "/yacht-club-logo.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
     }
   ],
-  "categories": ["business", "productivity"],
-  "prefer_related_applications": false
+  "categories": ["business", "productivity", "lifestyle"],
+  "prefer_related_applications": false,
+  "shortcuts": [
+    {
+      "name": "Vendor Dashboard",
+      "short_name": "Dashboard",
+      "description": "Access vendor dashboard",
+      "url": "/vendor/dashboard",
+      "icons": [{ "src": "/yacht-club-logo.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "POS",
+      "short_name": "POS",
+      "description": "Point of Sale",
+      "url": "/pos/orders",
+      "icons": [{ "src": "/yacht-club-logo.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "TV Display",
+      "short_name": "TV",
+      "description": "TV menu display",
+      "url": "/tv-display",
+      "icons": [{ "src": "/yacht-club-logo.png", "sizes": "192x192" }]
+    }
+  ]
 }

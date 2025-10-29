@@ -87,8 +87,8 @@ export default function RootLayout({
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col overflow-x-hidden min-h-screen`}
-        style={{ 
-          backgroundColor: '#000000' 
+        style={{
+          backgroundColor: '#000000'
         }}
         suppressHydrationWarning
       >

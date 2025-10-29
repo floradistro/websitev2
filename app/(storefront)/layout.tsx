@@ -36,16 +36,16 @@ export default async function StorefrontLayout({
   if (tenantType === 'template-preview') {
     return (
       <>
-        <div className="storefront-container bg-[#1a1a1a] min-h-screen">
-          <header className="sticky top-0 bg-black text-white z-50 border-b border-white/10">
+        <div className="storefront-container bg-[#1a1a1a] min-h-screen safe-top">
+          <header className="sticky bg-black text-white z-50 border-b border-white/10" style={{ top: 'env(safe-area-inset-top, 0px)' }}>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-center">
               <span className="text-sm uppercase tracking-wider text-white/40">Blank Template</span>
             </div>
           </header>
-          <main className="storefront-main">
+          <main className="storefront-main safe-bottom">
             {children}
           </main>
-          <footer className="bg-black border-t border-white/10 py-8">
+          <footer className="bg-black border-t border-white/10 py-8 safe-bottom">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
               <p className="text-white/30 text-xs">Template Preview</p>
             </div>
@@ -142,7 +142,7 @@ export default async function StorefrontLayout({
             <PreservePreviewMode />
             <LoadingBar />
             <NotificationToast />
-            <div className="storefront-container bg-black min-h-screen">
+            <div className="storefront-container bg-black min-h-screen safe-top">
               {/* Header from Component Registry */}
               {headerSections && headerSections.length > 0 && (
                 <ComponentBasedPageRenderer
@@ -153,20 +153,22 @@ export default async function StorefrontLayout({
                   isPreview={false}
                 />
               )}
-              
-              <main className="storefront-main">
+
+              <main className="storefront-main safe-bottom">
                 {children}
               </main>
-              
+
               {/* Footer from Component Registry */}
               {footerSections && footerSections.length > 0 && (
-                <ComponentBasedPageRenderer
-                  vendor={vendor}
-                  pageType="all"
-                  sections={footerSections}
-                  componentInstances={footerInstances || []}
-                  isPreview={false}
-                />
+                <div className="safe-bottom">
+                  <ComponentBasedPageRenderer
+                    vendor={vendor}
+                    pageType="all"
+                    sections={footerSections}
+                    componentInstances={footerInstances || []}
+                    isPreview={false}
+                  />
+                </div>
               )}
             </div>
           </StorefrontThemeProvider>

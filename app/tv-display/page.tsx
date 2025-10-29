@@ -36,6 +36,8 @@ function TVDisplayContent() {
   const [connectionStatus, setConnectionStatus] = useState<'online' | 'offline' | 'error'>('offline');
   const [carouselPage, setCarouselPage] = useState(0);
   const [promotions, setPromotions] = useState<Promotion[]>([]);
+  const [displayGroup, setDisplayGroup] = useState<any>(null);
+  const [groupMember, setGroupMember] = useState<any>(null);
 
   /**
    * Device Registration
@@ -179,6 +181,42 @@ function TVDisplayContent() {
   }, [vendorId, locationId, tvNumber, deviceId, isPreview]);
 
   /**
+   * Check for Display Group Membership
+   */
+  useEffect(() => {
+    if (!deviceId || isPreview) return;
+
+    const checkGroupMembership = async () => {
+      try {
+        console.log('🎯 Checking for display group membership:', deviceId);
+
+        // Use API endpoint to bypass RLS
+        const response = await fetch(`/api/display-groups/membership?device_id=${deviceId}`);
+        const data = await response.json();
+
+        if (!data.success) {
+          console.error('Error checking group membership:', data.error);
+          return;
+        }
+
+        if (data.isMember) {
+          console.log('✅ Device is part of group:', data.group.name);
+          setDisplayGroup(data.group);
+          setGroupMember(data.member);
+        } else {
+          console.log('📺 Device not part of any display group');
+          setDisplayGroup(null);
+          setGroupMember(null);
+        }
+      } catch (err: any) {
+        console.error('Error checking group membership:', err);
+      }
+    };
+
+    checkGroupMembership();
+  }, [deviceId, isPreview]);
+
+  /**
    * Load Menu & Products
    */
   const loadMenuAndProducts = useCallback(async () => {
@@ -253,7 +291,7 @@ function TVDisplayContent() {
       setError(err.message);
       setLoading(false);
     }
-  }, [deviceId, menuIdParam]);
+  }, [deviceId, menuIdParam, groupMember]);
 
   /**
    * Load Products for Menu
@@ -271,7 +309,7 @@ function TVDisplayContent() {
       setPromotions(activePromotions);
       console.log('🎉 Loaded promotions:', activePromotions.length);
 
-      // Load products with pricing assignments
+      // Load products with pricing assignments and categories
       const { data: productData, error } = await supabase
         .from('products')
         .select(`
@@ -287,6 +325,9 @@ function TVDisplayContent() {
               price_breaks,
               display_unit
             )
+          ),
+          product_categories(
+            category:categories(name)
           )
         `)
         .eq('vendor_id', vendorId)
@@ -351,13 +392,24 @@ function TVDisplayContent() {
 
       // Filter products by selected categories (if any)
       let filteredProducts = enrichedProducts;
-      const selectedCategories = menuData?.config_data?.categories;
+
+      // Priority 1: If part of a display group, use group member's assigned categories
+      let selectedCategories = groupMember?.assigned_categories;
+      let filterSource = 'group';
+
+      // Priority 2: Fall back to menu categories if not in a group
+      if (!selectedCategories || selectedCategories.length === 0) {
+        selectedCategories = menu?.config_data?.categories;
+        filterSource = 'menu';
+      }
 
       if (selectedCategories && selectedCategories.length > 0) {
-        filteredProducts = enrichedProducts.filter((p: any) =>
-          selectedCategories.includes(p.category)
-        );
-        console.log(`🎯 Filtered to ${filteredProducts.length} products from ${enrichedProducts.length} (categories: ${selectedCategories.join(', ')})`);
+        filteredProducts = enrichedProducts.filter((p: any) => {
+          // Check if product has any of the selected categories
+          const productCategories = p.product_categories?.map((pc: any) => pc.category?.name).filter(Boolean) || [];
+          return productCategories.some((cat: string) => selectedCategories.includes(cat));
+        });
+        console.log(`🎯 Filtered to ${filteredProducts.length} products from ${enrichedProducts.length} (${filterSource} categories: ${selectedCategories.join(', ')})`);
       }
 
       setProducts(filteredProducts);
@@ -372,7 +424,15 @@ function TVDisplayContent() {
       } : 'No products');
 
       // Extract unique categories (from ALL products, not just filtered)
-      const uniqueCategories = [...new Set(enrichedProducts.map((p: any) => p.category).filter(Boolean))];
+      const categorySet = new Set<string>();
+      enrichedProducts.forEach((p: any) => {
+        p.product_categories?.forEach((pc: any) => {
+          if (pc.category?.name) {
+            categorySet.add(pc.category.name);
+          }
+        });
+      });
+      const uniqueCategories = [...categorySet].sort();
       setCategories(uniqueCategories as any[]);
     } catch (err: any) {
       console.error('❌ Failed to load products:', err);
@@ -498,7 +558,7 @@ function TVDisplayContent() {
   // Loading State
   if (loading) {
     return (
-      <div className="w-screen h-screen flex items-center justify-center bg-black">
+      <div className="w-screen h-screen flex items-center justify-center bg-black safe-all">
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-white mx-auto mb-4"></div>
           <p className="text-white text-xl">Loading display...</p>
@@ -510,7 +570,7 @@ function TVDisplayContent() {
   // Error State
   if (error) {
     return (
-      <div className="w-screen h-screen flex items-center justify-center bg-black">
+      <div className="w-screen h-screen flex items-center justify-center bg-black safe-all">
         <div className="text-center">
           <div className="text-6xl mb-4">⚠️</div>
           <h1 className="text-red-500 text-2xl font-bold mb-2">Display Error</h1>
@@ -529,7 +589,7 @@ function TVDisplayContent() {
   // No Content State
   if (!activeMenu) {
     return (
-      <div className="w-screen h-screen flex items-center justify-center bg-black">
+      <div className="w-screen h-screen flex items-center justify-center bg-black safe-all">
         <div className="text-center text-white">
           {/* Show vendor logo if available */}
           {vendor?.logo_url ? (
@@ -557,8 +617,10 @@ function TVDisplayContent() {
     );
   }
 
-  // Get theme
-  const theme = getTheme(activeMenu.theme);
+  // Get theme - Use display group's theme if device is part of a group, otherwise use menu theme
+  const themeId = displayGroup?.shared_theme || activeMenu.theme;
+  const theme = getTheme(themeId);
+  console.log('🎨 Using theme:', themeId, displayGroup ? '(from display group)' : '(from menu)');
 
   // Render Menu
   return (
@@ -567,69 +629,97 @@ function TVDisplayContent() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.8 }}
-      className="w-screen h-screen overflow-hidden relative"
+      className="w-screen h-screen overflow-hidden relative safe-all"
       style={{
         background: theme.styles.background,
         backgroundImage: theme.styles.backgroundImage
       }}
     >
       {/* Menu Content */}
-      <div className="absolute inset-0 p-12">
+      <div className="absolute inset-0" style={{ padding: '3rem 4rem' }}>
         <div className="h-full flex flex-col">
           {/* Header */}
           <div className="text-center mb-12">
-            <h1
-              className="uppercase tracking-[0.15em]"
-              style={{
-                ...theme.styles.menuTitle,
-                lineHeight: 1,
-                letterSpacing: '0.15em'
-              }}
-            >
-              {activeMenu.name}
-            </h1>
-            {activeMenu.description && (
-              <p
-                className="mt-4 uppercase tracking-wider font-medium"
-                style={{
-                  ...theme.styles.menuDescription,
-                  letterSpacing: '0.1em'
-                }}
-              >
-                {activeMenu.description}
-              </p>
+            {/* Display Group Mode: Show only category */}
+            {groupMember?.assigned_categories && groupMember.assigned_categories.length > 0 ? (
+              <div className="mb-6">
+                <h1
+                  className="uppercase tracking-[0.2em] font-black text-white"
+                  style={{
+                    fontSize: '2rem',
+                    lineHeight: 1,
+                    letterSpacing: '0.2em',
+                    opacity: 0.9
+                  }}
+                >
+                  {groupMember.assigned_categories.join(' • ')}
+                </h1>
+              </div>
+            ) : (
+              /* Regular Mode: Show menu name and description */
+              <>
+                <h1
+                  className="uppercase tracking-[0.15em]"
+                  style={{
+                    ...theme.styles.menuTitle,
+                    lineHeight: 1,
+                    letterSpacing: '0.15em'
+                  }}
+                >
+                  {activeMenu.name}
+                </h1>
+                {activeMenu.description && (
+                  <p
+                    className="mt-4 uppercase tracking-wider font-medium"
+                    style={{
+                      ...theme.styles.menuDescription,
+                      letterSpacing: '0.1em'
+                    }}
+                  >
+                    {activeMenu.description}
+                  </p>
+                )}
+              </>
             )}
           </div>
 
           {/* Products Grid */}
           {products.length > 0 ? (() => {
-            const displayMode = activeMenu.display_mode || 'dense';
+            // Use display group settings if available, otherwise fall back to menu settings
+            const displayMode = displayGroup?.shared_display_mode || activeMenu.display_mode || 'dense';
+            const gridColumns = displayGroup?.shared_grid_columns || 4;
+            const gridRows = displayGroup?.shared_grid_rows || 3;
             const isCarousel = displayMode === 'carousel';
             const isDense = displayMode === 'dense';
 
+            console.log('📐 Grid settings:', { displayMode, gridColumns, gridRows, source: displayGroup ? 'group' : 'menu' });
+
             // Calculate products to show
             let productsToShow;
+            const productsPerPage = gridColumns * gridRows;
+
             if (isCarousel) {
-              const productsPerPage = 12;
               const start = carouselPage * productsPerPage;
               const end = start + productsPerPage;
               productsToShow = products.slice(start, end);
             } else {
-              // Dense: show up to 30 products
-              productsToShow = products.slice(0, 30);
+              // Dense: show up to grid capacity
+              productsToShow = products.slice(0, productsPerPage);
             }
 
-            // Grid classes based on mode
-            const gridClasses = isDense
-              ? 'grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4'
-              : 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8';
+            // Dynamic grid classes based on group settings
+            const gridClasses = `grid gap-4`;
+            const gridStyle = {
+              gridTemplateColumns: `repeat(${gridColumns}, minmax(0, 1fr))`,
+              gridTemplateRows: `repeat(${gridRows}, minmax(0, 1fr))`
+            };
 
             // Card padding based on mode
             const cardPadding = isDense ? 'p-4' : 'p-8';
 
             return (
               <>
-                <div className={`${gridClasses} flex-1 content-start`}>
+                <div className={`${gridClasses} flex-1 content-start`} style={gridStyle}>
                   {productsToShow.map((product: any, index: number) => (
                 <motion.div
                   key={product.id}
@@ -679,8 +769,30 @@ function TVDisplayContent() {
 
                   {/* Product Info */}
                   <div className="flex-1">
-                    {/* Strain Type Badge + Brand */}
-                    <div className="flex items-center gap-2 mb-2">
+                    {/* Category Badge + Strain Type + Brand */}
+                    <div className="flex items-center gap-2 mb-2 flex-wrap">
+                      {/* Show category badge if multiple categories are shown */}
+                      {groupMember?.assigned_categories && groupMember.assigned_categories.length > 1 && (() => {
+                        const productCategories = product.product_categories?.map((pc: any) => pc.category?.name).filter(Boolean) || [];
+                        const mainCategory = productCategories[0];
+
+                        if (mainCategory) {
+                          return (
+                            <div
+                              className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded"
+                              style={{
+                                background: 'rgba(236, 72, 153, 0.15)',
+                                color: '#ec4899',
+                                border: '1px solid rgba(236, 72, 153, 0.3)'
+                              }}
+                            >
+                              {mainCategory}
+                            </div>
+                          );
+                        }
+                        return null;
+                      })()}
+
                       {product.metadata?.strain_type && (() => {
                         const strainColors = {
                           indica: { bg: 'rgba(139, 92, 246, 0.15)', text: '#a78bfa', border: 'rgba(139, 92, 246, 0.3)' },
@@ -742,83 +854,113 @@ function TVDisplayContent() {
                       </div>
                     )}
 
-                    {/* Pricing Display */}
-                    {(() => {
-                      // If product has tiered pricing from blueprints
-                      if (product.pricing_tiers && product.pricing_blueprint) {
-                        const blueprint = product.pricing_blueprint;
-                        const priceBreaks = blueprint.price_breaks || [];
-                        const prices = product.pricing_tiers;
+                    {/* Pricing Display - Simplified */}
+                    <div className="mt-3">
+                      {(() => {
+                        // Debug logging
+                        console.log('💰 Product pricing debug:', {
+                          name: product.name,
+                          hasPricingTiers: !!product.pricing_tiers,
+                          hasBlueprint: !!product.pricing_blueprint,
+                          regularPrice: product.regular_price,
+                          price: product.price,
+                          pricingTiers: product.pricing_tiers
+                        });
 
-                        return (
-                          <div className={`flex flex-wrap gap-${isDense ? '1' : '2'} mt-2`}>
-                            {priceBreaks.map((priceBreak: any) => {
-                              const breakId = priceBreak.break_id;
-                              const priceData = prices[breakId];
+                        // If product has tiered pricing from blueprints
+                        if (product.pricing_tiers && product.pricing_blueprint) {
+                          const blueprint = product.pricing_blueprint;
+                          const priceBreaks = blueprint.price_breaks || [];
+                          const prices = product.pricing_tiers;
 
-                              if (!priceData || !priceData.price) return null;
+                          // Find the hero price (eighth - 3.5g)
+                          const heroBreak = priceBreaks.find((pb: any) => pb.break_id === '3_5g' || pb.break_id === '3.5g');
+                          const heroPriceData = heroBreak ? prices[heroBreak.break_id] : null;
 
-                              const price = parseFloat(priceData.price);
-                              const qty = priceBreak.qty || priceBreak.display_qty || 0;
-                              const isHighlighted = breakId === '3_5g' || breakId === '3.5g'; // Highlight eighth
+                          // Find supporting prices (1g and 7g)
+                          const supportingBreaks = priceBreaks.filter((pb: any) =>
+                            pb.break_id === '1g' || pb.break_id === '7g' || pb.break_id === '14g'
+                          ).slice(0, 2);
 
-                              return (
-                                <div
-                                  key={breakId}
-                                  className={`rounded-lg ${isDense ? 'px-2 py-1' : 'px-3 py-2'} text-center`}
-                                  style={{
-                                    background: isHighlighted ? theme.styles.price.color + '20' : theme.styles.productCard.background,
-                                    border: `1px solid ${isHighlighted ? theme.styles.price.color : theme.styles.productCard.borderColor}`,
-                                  }}
-                                >
+                          return (
+                            <>
+                              {/* Hero Price - Eighth */}
+                              {heroPriceData && heroPriceData.price ? (
+                                <div className="mb-2">
                                   <div
-                                    className={`${isDense ? 'text-[10px]' : 'text-xs'} font-bold opacity-70`}
-                                    style={{ color: theme.styles.productName.color }}
+                                    className="inline-block rounded-lg px-4 py-2"
+                                    style={{
+                                      background: theme.styles.price.color + '15',
+                                      border: `2px solid ${theme.styles.price.color}`
+                                    }}
                                   >
-                                    {priceBreak.display || `${qty}${priceBreak.display_unit || 'g'}`}
-                                  </div>
-                                  <div
-                                    className={`${isDense ? 'text-xs' : 'text-sm'} font-black`}
-                                    style={{ color: isHighlighted ? theme.styles.price.color : theme.styles.productName.color }}
-                                  >
-                                    ${price.toFixed(2)}
-                                  </div>
-                                  {!isDense && qty > 1 && (
                                     <div
-                                      className="text-[9px] opacity-40 mt-0.5"
-                                      style={{ color: theme.styles.productDescription.color }}
+                                      className="text-xs font-bold opacity-70 mb-1"
+                                      style={{ color: theme.styles.productName.color }}
                                     >
-                                      ${(price / qty).toFixed(1)}/g
+                                      {heroBreak.display || '3.5g'}
                                     </div>
-                                  )}
+                                    <div
+                                      className="text-2xl font-black"
+                                      style={{ color: theme.styles.price.color }}
+                                    >
+                                      ${parseFloat(heroPriceData.price).toFixed(2)}
+                                    </div>
+                                  </div>
                                 </div>
-                              );
-                            })}
+                              ) : (
+                                <div className="text-sm" style={{ color: theme.styles.productDescription.color, opacity: 0.5 }}>
+                                  No eighth price set
+                                </div>
+                              )}
+
+                              {/* Supporting Prices */}
+                              {supportingBreaks.length > 0 && (
+                                <div className="flex gap-2 flex-wrap">
+                                  {supportingBreaks.map((priceBreak: any) => {
+                                    const priceData = prices[priceBreak.break_id];
+                                    if (!priceData || !priceData.price) return null;
+
+                                    return (
+                                      <div
+                                        key={priceBreak.break_id}
+                                        className="text-xs"
+                                        style={{ color: theme.styles.productDescription.color }}
+                                      >
+                                        <span className="font-bold opacity-70">
+                                          {priceBreak.display || priceBreak.break_id}:
+                                        </span>{' '}
+                                        <span className="font-black" style={{ color: theme.styles.productName.color }}>
+                                          ${parseFloat(priceData.price).toFixed(2)}
+                                        </span>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              )}
+                            </>
+                          );
+                        }
+
+                        // Fallback to simple pricing
+                        const price = parseFloat(product.regular_price || product.price || 0);
+                        return (
+                          <div>
+                            <div
+                              className="text-2xl font-black"
+                              style={{ color: theme.styles.price.color }}
+                            >
+                              ${price.toFixed(2)}
+                            </div>
+                            {price === 0 && (
+                              <div className="text-xs mt-1" style={{ color: theme.styles.productDescription.color, opacity: 0.5 }}>
+                                Price not configured
+                              </div>
+                            )}
                           </div>
                         );
-                      }
-
-                      // Fallback to simple pricing
-                      const price = product.regular_price || product.price || 0;
-                      return (
-                        <div>
-                          <div
-                            className="inline-block"
-                            style={theme.styles.price}
-                          >
-                            ${parseFloat(price).toFixed(2)}
-                          </div>
-                          {!isDense && price > 0 && (
-                            <div
-                              className="text-[10px] opacity-30 mt-1"
-                              style={{ color: theme.styles.productDescription.color }}
-                            >
-                              Set pricing tiers in /vendor/pricing
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })()}
+                      })()}
+                    </div>
                   </div>
                 </motion.div>
                   ))}

@@ -60,8 +60,21 @@ function POSLayoutInner({
           overflow: hidden !important;
           height: 100% !important;
         }
+        /* iOS PWA - Full height viewport */
+        @supports (-webkit-touch-callout: none) {
+          html, body {
+            height: -webkit-fill-available !important;
+          }
+        }
       `}</style>
-      <div className="min-h-screen bg-black text-white antialiased overflow-x-hidden">
+      {/* PWA Safe Area Spacer for iOS status bar */}
+      <div
+        className="fixed top-0 left-0 right-0 z-[9999] pointer-events-none bg-black"
+        style={{
+          height: 'env(safe-area-inset-top, 0px)'
+        }}
+      />
+      <div className="min-h-screen bg-black text-white antialiased overflow-x-hidden safe-y">
         {children}
       </div>
     </>
