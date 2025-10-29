@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { DollarSign, Calculator, Plus, Trash2, Check } from 'lucide-react';
+import { DollarSign, Calculator, Plus, Trash2 } from 'lucide-react';
 import { showNotification } from '@/components/NotificationToast';
 import { useAppAuth } from '@/context/AppAuthContext';
+import PageHeader, { SectionHeader, FieldRow, Input, Select, Button } from '@/components/dashboard/PageHeader';
 
 // Unit conversion utilities
 const CONVERSIONS: any = {
@@ -351,29 +352,19 @@ export default function VendorPricingPage() {
 
   return (
     <div className="w-full px-4 lg:px-0">
-      {/* Header */}
-      <div className="mb-12 md:mb-16">
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-6">
-            <DollarSign size={64} className="md:hidden text-white" strokeWidth={1} />
-            <DollarSign size={80} className="hidden md:block text-white" strokeWidth={1} />
-            <div>
-              <h1 className="text-3xl md:text-5xl font-extralight text-white tracking-tight mb-2">
-                Pricing
-              </h1>
-              <p className="text-white/40 text-sm font-light">
-                Configure your pricing tiers
-              </p>
-            </div>
-          </div>
+      <PageHeader
+        title="Pricing"
+        subtitle="Configure your pricing tiers"
+        icon={DollarSign}
+        actions={
           <Link
             href="/vendor/cost-plus-pricing"
             className="text-white/40 hover:text-white transition-all duration-300 text-sm font-light"
           >
             Cost Plus Calculator
           </Link>
-        </div>
-      </div>
+        }
+      />
 
       {loading ? (
         <div className="flex items-center justify-center py-20">
@@ -389,45 +380,39 @@ export default function VendorPricingPage() {
 
             return (
               <div key={config.id} className="space-y-12 py-8">
-                {/* Config Header */}
-                <div className="flex items-center justify-between pb-8 border-b border-white/[0.06]">
-                  <div>
-                    <h2 className="text-2xl text-white font-extralight mb-2">{config.blueprint.name}</h2>
-                    <p className="text-white/40 text-sm font-light">{config.blueprint.description}</p>
-                  </div>
-                  <button
-                    onClick={() => disableConfig(config.id)}
-                    disabled={saving}
-                    className="text-white/30 hover:text-white transition-all text-sm font-light"
-                  >
-                    Remove
-                  </button>
-                </div>
+                <SectionHeader
+                  title={config.blueprint.name}
+                  subtitle={config.blueprint.description || undefined}
+                  actions={
+                    <button
+                      onClick={() => disableConfig(config.id)}
+                      disabled={saving}
+                      className="text-white/30 hover:text-white transition-all text-sm font-light"
+                    >
+                      Remove
+                    </button>
+                  }
+                />
 
                 {/* Settings */}
                 <div className="space-y-8">
-                  <div className="flex items-baseline justify-between">
-                    <span className="text-white/50 text-sm font-light">Pricing mode</span>
-                    <select
+                  <FieldRow
+                    label="Pricing mode"
+                    description={pricingMode[config.id] === 'cost_plus' ? 'Enter markup amounts to add on top of each product\'s cost. Example: Product cost $1000/lb + $200 markup = $1200/lb final price' : undefined}
+                  >
+                    <Select
                       value={pricingMode[config.id] || 'fixed'}
                       onChange={(e) => setPricingMode(prev => ({ ...prev, [config.id]: e.target.value as 'fixed' | 'cost_plus' }))}
-                      className="bg-transparent border-none text-white text-sm font-light focus:outline-none cursor-pointer text-right"
                     >
                       <option value="fixed">Fixed Price</option>
                       <option value="cost_plus">Cost Plus Markup</option>
-                    </select>
-                  </div>
-                  {pricingMode[config.id] === 'cost_plus' && (
-                    <div className="text-white/40 text-xs font-light leading-relaxed max-w-2xl">
-                      Enter markup amounts to add on top of each product's cost. Example: Product cost $1000/lb + $200 markup = $1200/lb final price
-                    </div>
-                  )}
-                  <div className="flex items-baseline justify-between">
-                    <span className="text-white/50 text-sm font-light">Unit of measure</span>
-                    <select
+                    </Select>
+                  </FieldRow>
+
+                  <FieldRow label="Unit of measure">
+                    <Select
                       value={displayUnits[config.id] || 'gram'}
                       onChange={(e) => setDisplayUnits(prev => ({ ...prev, [config.id]: e.target.value }))}
-                      className="bg-transparent border-none text-white text-sm font-light focus:outline-none cursor-pointer text-right"
                     >
                       <optgroup label="Weight">
                         <option value="gram">Grams</option>
@@ -441,8 +426,8 @@ export default function VendorPricingPage() {
                         <option value="fluid_ounce">Fluid Ounces</option>
                         <option value="gallon">Gallons</option>
                       </optgroup>
-                    </select>
-                  </div>
+                    </Select>
+                  </FieldRow>
                 </div>
 
                 {/* Price Tiers */}
@@ -532,21 +517,14 @@ export default function VendorPricingPage() {
 
                 {/* Actions */}
                 <div className="flex items-center gap-8 pt-8 border-t border-white/[0.06]">
-                  <button
-                    onClick={() => addTier(config.id)}
-                    className="text-white/40 hover:text-white transition-all text-sm font-light flex items-center gap-2"
-                  >
-                    <Plus size={18} strokeWidth={1} />
+                  <Button variant="ghost" onClick={() => addTier(config.id)}>
+                    <Plus size={18} strokeWidth={1} className="inline mr-2" />
                     Add Tier
-                  </button>
+                  </Button>
                   <div className="flex-1"></div>
-                  <button
-                    onClick={() => saveConfig(config)}
-                    disabled={saving}
-                    className="bg-white text-black px-8 py-3 text-sm font-light hover:bg-white/90 disabled:opacity-50 transition-all"
-                  >
+                  <Button onClick={() => saveConfig(config)} disabled={saving}>
                     {saving ? 'Saving...' : 'Save'}
-                  </button>
+                  </Button>
                 </div>
               </div>
             );

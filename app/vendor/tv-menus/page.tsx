@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase/client';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Tv, X, ExternalLink, Circle, Pencil, Trash2, Palette, LayoutGrid, RotateCw } from 'lucide-react';
 import { themes, getTheme, type TVTheme } from '@/lib/themes';
+import CategorySelector from '@/components/tv-menus/CategorySelector';
 
 interface Location {
   id: string;
@@ -52,6 +53,8 @@ export default function SimpleTVMenusPage() {
   const [editMenuDescription, setEditMenuDescription] = useState('');
   const [editMenuTheme, setEditMenuTheme] = useState('midnight-elegance');
   const [editMenuDisplayMode, setEditMenuDisplayMode] = useState<'dense' | 'carousel'>('dense');
+  const [editMenuCategories, setEditMenuCategories] = useState<string[]>([]);
+  const [availableCategories, setAvailableCategories] = useState<string[]>([]);
   const [deletingMenu, setDeletingMenu] = useState<TVMenu | null>(null);
   const [deletingDevice, setDeletingDevice] = useState<TVDevice | null>(null);
   const [updating, setUpdating] = useState(false);
@@ -297,13 +300,32 @@ export default function SimpleTVMenusPage() {
   };
 
   // Edit menu
-  const openEditMenu = (menu: TVMenu) => {
+  const openEditMenu = async (menu: TVMenu) => {
     setEditingMenu(menu);
     setEditMenuName(menu.name);
     setEditMenuDescription(menu.description || '');
     setEditMenuTheme(menu.theme || 'midnight-elegance');
     setEditMenuDisplayMode((menu as any).display_mode || 'dense');
+    setEditMenuCategories(menu.config_data?.categories || []);
     setError(null);
+
+    // Fetch available categories from products
+    if (vendor) {
+      try {
+        const { data: products } = await supabase
+          .from('products')
+          .select('category')
+          .eq('vendor_id', vendor.id)
+          .eq('status', 'published');
+
+        if (products) {
+          const categories = [...new Set(products.map(p => p.category).filter(Boolean))].sort();
+          setAvailableCategories(categories as string[]);
+        }
+      } catch (err) {
+        console.error('Error fetching categories:', err);
+      }
+    }
   };
 
   const updateMenu = async () => {
@@ -318,7 +340,8 @@ export default function SimpleTVMenusPage() {
         name: editMenuName,
         description: editMenuDescription,
         theme: editMenuTheme,
-        display_mode: editMenuDisplayMode
+        display_mode: editMenuDisplayMode,
+        categories: editMenuCategories
       });
 
       const response = await fetch('/api/vendor/tv-menus/update', {
@@ -331,7 +354,8 @@ export default function SimpleTVMenusPage() {
           name: editMenuName,
           description: editMenuDescription || null,
           theme: editMenuTheme,
-          display_mode: editMenuDisplayMode
+          display_mode: editMenuDisplayMode,
+          categories: editMenuCategories
         })
       });
 
@@ -974,6 +998,16 @@ export default function SimpleTVMenusPage() {
                     rows={3}
                     className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-white/20 transition-all resize-none"
                     disabled={updating}
+                  />
+                </div>
+
+                {/* Category Selector */}
+                <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+                  <CategorySelector
+                    availableCategories={availableCategories}
+                    selectedCategories={editMenuCategories}
+                    onCategoriesChange={setEditMenuCategories}
+                    showAllOption={true}
                   />
                 </div>
 

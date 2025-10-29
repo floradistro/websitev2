@@ -3,7 +3,7 @@ import { getServiceSupabase } from '@/lib/supabase/client';
 
 export async function POST(request: NextRequest) {
   try {
-    const { menuId, name, description, theme, display_mode } = await request.json();
+    const { menuId, name, description, theme, display_mode, categories } = await request.json();
 
     if (!menuId) {
       return NextResponse.json(
@@ -14,13 +14,20 @@ export async function POST(request: NextRequest) {
 
     const supabase = getServiceSupabase();
 
+    // Build config_data with categories
+    const config_data: any = {};
+    if (categories !== undefined) {
+      config_data.categories = categories;
+    }
+
     const { data, error } = await supabase
       .from('tv_menus')
       .update({
         name,
         description: description || null,
         theme,
-        display_mode: display_mode || 'dense'
+        display_mode: display_mode || 'dense',
+        config_data
       })
       .eq('id', menuId)
       .select();

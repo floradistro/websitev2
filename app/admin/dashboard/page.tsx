@@ -6,13 +6,14 @@ import dynamic from 'next/dynamic';
 import {
   Package, Users, DollarSign, TrendingUp, AlertCircle, Store, Activity,
   ShoppingCart, Database, Cpu, HardDrive, Terminal, RefreshCw, Code,
-  Zap, Eye, Wifi, Server, FileCode, Settings, Trash2, FlaskConical
+  Zap, Eye, Wifi, Server, FileCode, Settings, Trash2, FlaskConical, Home
 } from '@/lib/icons';
 import { StatsGridSkeleton, ChartSkeleton } from '@/components/AdminSkeleton';
 import { logger } from '@/lib/logger';
 import { StatCard } from '@/components/ui/StatCard';
 import { Card, CardHeader } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+import PageHeader from '@/components/dashboard/PageHeader';
 
 // Lazy load charts - 45KB saved from initial bundle
 const AreaChart = dynamic(() => import('recharts').then(m => ({ default: m.AreaChart })), { ssr: false });
@@ -102,16 +103,15 @@ export default function AdminDashboard() {
 
   return (
     <div className="w-full px-4 lg:px-0">
-      {/* Header */}
-      <div className="mb-6 md:mb-10">
-        <div className="flex items-center gap-4 md:gap-6 mb-4">
+      <div className="mb-12 md:mb-16">
+        <div className="flex items-center gap-6 mb-8">
           <img src="/whale.png" alt="WhaleTools" className="w-16 h-16 md:w-20 md:h-20 object-contain" />
           <div>
-            <h1 className="text-2xl md:text-4xl font-thin text-white tracking-tight mb-1">
+            <h1 className="text-3xl md:text-5xl font-extralight text-white tracking-tight mb-2">
               WhaleTools Overview
             </h1>
-            <p className="text-white/50 text-xs md:text-sm font-light tracking-wide">
-              PLATFORM COMMAND CENTER · {new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }).toUpperCase()}
+            <p className="text-sm font-light text-white/40">
+              Platform Command Center · {new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }).toUpperCase()}
             </p>
           </div>
         </div>

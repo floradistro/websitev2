@@ -349,18 +349,29 @@ function TVDisplayContent() {
         return productWithPricing;
       });
 
-      setProducts(enrichedProducts);
-      console.log(`✅ Loaded ${enrichedProducts.length} products with pricing`);
-      console.log('📊 Sample product pricing:', enrichedProducts[0] ? {
-        name: enrichedProducts[0].name,
-        has_assignment: !!enrichedProducts[0].pricing_assignments,
-        has_blueprint: !!enrichedProducts[0].pricing_blueprint,
-        has_tiers: !!enrichedProducts[0].pricing_tiers,
-        has_promotion: !!enrichedProducts[0].promotion_data,
-        tiers: enrichedProducts[0].pricing_tiers
+      // Filter products by selected categories (if any)
+      let filteredProducts = enrichedProducts;
+      const selectedCategories = menuData?.config_data?.categories;
+
+      if (selectedCategories && selectedCategories.length > 0) {
+        filteredProducts = enrichedProducts.filter((p: any) =>
+          selectedCategories.includes(p.category)
+        );
+        console.log(`🎯 Filtered to ${filteredProducts.length} products from ${enrichedProducts.length} (categories: ${selectedCategories.join(', ')})`);
+      }
+
+      setProducts(filteredProducts);
+      console.log(`✅ Loaded ${filteredProducts.length} products with pricing`);
+      console.log('📊 Sample product pricing:', filteredProducts[0] ? {
+        name: filteredProducts[0].name,
+        has_assignment: !!filteredProducts[0].pricing_assignments,
+        has_blueprint: !!filteredProducts[0].pricing_blueprint,
+        has_tiers: !!filteredProducts[0].pricing_tiers,
+        has_promotion: !!filteredProducts[0].promotion_data,
+        tiers: filteredProducts[0].pricing_tiers
       } : 'No products');
 
-      // Extract unique categories
+      // Extract unique categories (from ALL products, not just filtered)
       const uniqueCategories = [...new Set(enrichedProducts.map((p: any) => p.category).filter(Boolean))];
       setCategories(uniqueCategories as any[]);
     } catch (err: any) {

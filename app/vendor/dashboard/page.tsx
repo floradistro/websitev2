@@ -228,10 +228,10 @@ export default function VendorDashboard() {
 
               {/* Welcome Text */}
               <div>
-                <h1 className="text-2xl lg:text-4xl font-black text-white uppercase tracking-tight mb-1 bg-gradient-to-b from-white to-white/90 bg-clip-text text-transparent" style={{ fontWeight: 900 }}>
+                <h1 className="text-3xl lg:text-5xl font-extralight text-white tracking-tight mb-2">
                   {vendor?.store_name || 'Dashboard'}
                 </h1>
-                <p className="text-white/60 text-xs lg:text-sm">
+                <p className="text-sm font-light text-white/40">
                   {vendorBranding?.store_tagline || 'Vendor Portal'} · {new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }).toUpperCase()}
                 </p>
               </div>
