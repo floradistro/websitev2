@@ -305,6 +305,8 @@ export default function SimpleTVMenusPage() {
       }
 
       console.log('✅ Menu assigned successfully:', data);
+      // Force preview refresh immediately
+      setPreviewRefresh(Date.now());
       await loadData();
     } catch (err: any) {
       console.error('❌ Exception assigning menu:', err);
@@ -382,6 +384,9 @@ export default function SimpleTVMenusPage() {
       }
 
       console.log('✅ Menu updated successfully:', data.menu);
+
+      // Force preview refresh immediately
+      setPreviewRefresh(Date.now());
 
       setEditingMenu(null);
       setEditMenuName('');

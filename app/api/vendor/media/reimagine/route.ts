@@ -2,9 +2,16 @@ import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
 import { getServiceSupabase } from '@/lib/supabase/client';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+// Lazy-load OpenAI client to avoid build-time errors
+let openai: OpenAI | null = null;
+function getOpenAI() {
+  if (!openai) {
+    openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY || '',
+    });
+  }
+  return openai;
+}
 
 /**
  * POST /api/vendor/media/reimagine
@@ -31,7 +38,7 @@ export async function POST(request: NextRequest) {
       ? `Analyze this image and create a detailed DALL-E prompt to recreate it with these modifications: "${instructions}". Focus on: composition, style, colors, mood, subjects, lighting, and key visual elements. Make the prompt vivid and detailed (2-3 sentences max). Do not include any preamble, just the prompt.`
       : 'Analyze this image and create a detailed DALL-E prompt to recreate it. Focus on: composition, style, colors, mood, subjects, lighting, and key visual elements. Make the prompt vivid and detailed (2-3 sentences max). Do not include any preamble, just the prompt.';
 
-    const visionResponse = await openai.chat.completions.create({
+    const visionResponse = await getOpenAI().chat.completions.create({
       model: 'gpt-4o',
       messages: [
         {
@@ -63,7 +70,7 @@ export async function POST(request: NextRequest) {
     console.log('✨ Generated prompt:', generatedPrompt);
 
     // Step 2: Generate new image with DALL-E using the generated prompt
-    const dalleResponse = await openai.images.generate({
+    const dalleResponse = await getOpenAI().images.generate({
       model: 'dall-e-3',
       prompt: generatedPrompt,
       n: 1,
