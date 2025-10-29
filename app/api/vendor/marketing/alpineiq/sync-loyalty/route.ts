@@ -50,72 +50,80 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Fetch loyalty members from Alpine IQ (with limit)
-    console.log(`📥 Fetching up to ${limit} loyalty members from Alpine IQ...`);
-    const members = await alpineiq.getLoyaltyMembers({ limit });
+    // Get loyalty audience info
+    console.log('📊 Getting Alpine IQ loyalty program info...');
+    const audienceInfo = await alpineiq.getLoyaltyAudienceInfo();
+
+    if (!audienceInfo) {
+      return NextResponse.json({
+        success: false,
+        error: 'No loyalty program found in Alpine IQ',
+      });
+    }
+
+    console.log(`✅ Found ${audienceInfo.totalMembers} loyalty members in Alpine IQ`);
+
+    // Get existing customers from local database (with email or phone)
+    console.log(`📥 Fetching up to ${limit} customers from database...`);
+    const { data: customers } = await supabase
+      .from('customers')
+      .select('id, email, phone, first_name, last_name')
+      .eq('vendor_id', vendorId)
+      .not('email', 'is', null)
+      .limit(limit);
+
+    if (!customers || customers.length === 0) {
+      return NextResponse.json({
+        success: true,
+        synced: 0,
+        message: 'No customers found in database to sync',
+        audienceInfo,
+      });
+    }
+
+    console.log(`👥 Found ${customers.length} customers to sync`);
+
+    const members = [];
+    // Look up each customer in Alpine IQ
+    for (const customer of customers) {
+      try {
+        const loyaltyData = await alpineiq.lookupCustomerLoyalty(customer.email);
+
+        if (loyaltyData) {
+          members.push({
+            customerId: customer.id,
+            ...loyaltyData,
+          });
+        }
+      } catch (error) {
+        console.error(`Failed to lookup ${customer.email}:`, error);
+      }
+    }
 
     if (!members || members.length === 0) {
       return NextResponse.json({
         success: true,
         synced: 0,
-        message: 'No loyalty members found',
+        message: 'None of your customers were found in Alpine IQ loyalty program',
+        audienceInfo,
+        customersChecked: customers.length,
       });
     }
 
-    console.log(`📊 Found ${members.length} loyalty members`);
+    console.log(`✅ Found ${members.length} customers with loyalty data`);
 
-    // Sync each member
+    // Sync each member's loyalty data
     let synced = 0;
     let errors = 0;
     const results = [];
 
     for (const member of members) {
       try {
-        // Find or create customer in local database
-        let { data: customer } = await supabase
-          .from('customers')
-          .select('id')
-          .eq('email', member.email)
-          .eq('vendor_id', vendorId)
-          .single();
-
-        if (!customer) {
-          // Create new customer
-          const { data: newCustomer, error: createError } = await supabase
-            .from('customers')
-            .insert({
-              vendor_id: vendorId,
-              email: member.email,
-              phone: member.phone,
-              first_name: member.firstName,
-              last_name: member.lastName,
-              birthdate: member.birthdate,
-              created_at: new Date().toISOString(),
-            })
-            .select()
-            .single();
-
-          if (createError || !newCustomer) {
-            console.error('Failed to create customer:', createError);
-            errors++;
-            continue;
-          }
-
-          customer = newCustomer;
-        }
-
-        // Skip if customer is still null (shouldn't happen but TypeScript safety)
-        if (!customer) {
-          console.error('Customer is null after creation attempt');
-          errors++;
-          continue;
-        }
-
         // Upsert loyalty data
         const { error: loyaltyError } = await supabase
           .from('customer_loyalty')
           .upsert({
-            customer_id: customer.id,
+            customer_id: member.customerId,
             vendor_id: vendorId,
             provider: 'alpineiq',
             points_balance: member.points || 0,
@@ -147,7 +155,8 @@ export async function POST(request: NextRequest) {
       success: true,
       synced,
       errors,
-      total: members.length,
+      customersChecked: customers.length,
+      totalLoyaltyMembers: audienceInfo.totalMembers,
       sample: results.slice(0, 5),
     });
   } catch (error: any) {

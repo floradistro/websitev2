@@ -430,23 +430,15 @@ export class AlpineIQClient {
   // ----------------------------------------------------------------------------
 
   /**
-   * Get all loyalty program members
+   * Get loyalty program member count and audience ID
+   * Note: Alpine IQ doesn't provide a bulk export API for security reasons.
+   * Use lookupLoyaltyStatus() to get individual customer data by email/phone.
    */
-  async getLoyaltyMembers(options?: {
-    limit?: number;
-    audienceId?: string;
-  }): Promise<Array<{
-    id: string;
-    email: string;
-    phone: string;
-    firstName?: string;
-    lastName?: string;
-    birthdate?: string;
-    points?: number;
-    tier?: string;
-    tierLevel?: number;
-    lifetimePoints?: number;
-  }>> {
+  async getLoyaltyAudienceInfo(): Promise<{
+    audienceId: string;
+    totalMembers: number;
+    name: string;
+  } | null> {
     // Get audiences to find "Signed Up" loyalty members audience
     const audiences = await this.request<any>('GET', `/api/v1.1/audiences/${this.config.userId}`);
 
@@ -456,56 +448,57 @@ export class AlpineIQClient {
     );
 
     if (!loyaltyAudience) {
-      console.log('No loyalty audience found');
-      return [];
+      return null;
     }
 
-    console.log(`Found loyalty audience: ${loyaltyAudience.name} (${loyaltyAudience.audienceSize} members)`);
+    return {
+      audienceId: loyaltyAudience.id,
+      totalMembers: loyaltyAudience.audienceSize,
+      name: loyaltyAudience.name,
+    };
+  }
 
-    // Get contact IDs from the audience
-    const memberIds = await this.request<string[]>(
-      'GET',
-      `/api/v2/audience/members/${loyaltyAudience.id}`
-    );
+  /**
+   * Lookup loyalty status for a specific customer by email or phone
+   */
+  async lookupCustomerLoyalty(emailOrPhone: string): Promise<{
+    id: string;
+    email: string;
+    phone: string;
+    firstName?: string;
+    lastName?: string;
+    points: number;
+    tier: string;
+    tierLevel: number;
+    lifetimePoints: number;
+  } | null> {
+    try {
+      // Use the loyalty lookup endpoint
+      const response = await this.request<any>(
+        'POST',
+        `/api/v2/loyalty/lookup/${emailOrPhone}`,
+        {}
+      );
 
-    console.log(`Fetched ${memberIds.length} contact IDs`);
-
-    // For now, return sample data structure since we need to fetch individual contacts
-    // In production, we'd batch these lookups
-    const limit = options?.limit || 100;
-    const contacts = [];
-
-    // Fetch contact details in batches
-    for (let i = 0; i < Math.min(memberIds.length, limit); i++) {
-      try {
-        const contactId = memberIds[i];
-
-        // Get wallet info for this contact
-        const wallet = await this.request<any>(
-          'GET',
-          `/api/v1.1/wallet/${this.config.userId}/${contactId}`
-        );
-
-        if (wallet && wallet.contact) {
-          contacts.push({
-            id: contactId,
-            email: wallet.contact.email || '',
-            phone: wallet.contact.phone || '',
-            firstName: wallet.contact.firstName,
-            lastName: wallet.contact.lastName,
-            birthdate: wallet.contact.birthdate,
-            points: wallet.wallet?.points || 0,
-            tier: wallet.wallet?.tier || 'Member',
-            tierLevel: wallet.wallet?.tierLevel || 1,
-            lifetimePoints: wallet.wallet?.lifetimePoints || 0,
-          });
-        }
-      } catch (error) {
-        console.error(`Failed to fetch contact ${memberIds[i]}:`, error);
+      if (response && response.contact) {
+        return {
+          id: response.contact.id || response.contact.universalID,
+          email: response.contact.email || '',
+          phone: response.contact.phone || '',
+          firstName: response.contact.firstName,
+          lastName: response.contact.lastName,
+          points: response.wallet?.points || 0,
+          tier: response.wallet?.tier || 'Member',
+          tierLevel: response.wallet?.tierLevel || 1,
+          lifetimePoints: response.wallet?.lifetimePoints || 0,
+        };
       }
-    }
 
-    return contacts;
+      return null;
+    } catch (error) {
+      console.error(`Failed to lookup customer ${emailOrPhone}:`, error);
+      return null;
+    }
   }
 
   // ----------------------------------------------------------------------------
