@@ -69,6 +69,7 @@ export default function VendorPricingPage() {
   const [editingPrices, setEditingPrices] = useState<{ [configId: string]: any }>({});
   const [customTiers, setCustomTiers] = useState<{ [configId: string]: PriceBreak[] }>({});
   const [displayUnits, setDisplayUnits] = useState<{ [configId: string]: string }>({});
+  const [pricingMode, setPricingMode] = useState<{ [configId: string]: 'fixed' | 'cost_plus' }>({});
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -93,6 +94,7 @@ export default function VendorPricingPage() {
         const initialEditing: any = {};
         const initialTiers: any = {};
         const initialUnits: any = {};
+        const initialModes: any = {};
 
         data.configs?.forEach((config: PricingConfig) => {
           const pricingVals = config.pricing_values || {};
@@ -111,11 +113,13 @@ export default function VendorPricingPage() {
 
           const isWholesale = config.blueprint?.slug.includes('wholesale');
           initialUnits[config.id] = config.display_unit || (isWholesale ? 'pound' : 'gram');
+          initialModes[config.id] = isWholesale ? 'cost_plus' : 'fixed';
         });
 
         setEditingPrices(initialEditing);
         setCustomTiers(initialTiers);
         setDisplayUnits(initialUnits);
+        setPricingMode(initialModes);
       }
     } catch (error) {
       console.error('Error loading pricing:', error);
@@ -187,6 +191,8 @@ export default function VendorPricingPage() {
       };
     });
 
+    const isWholesale = blueprint.slug.includes('wholesale');
+
     try {
       setSaving(true);
       const response = await fetch('/api/vendor/pricing-config', {
@@ -196,7 +202,8 @@ export default function VendorPricingPage() {
           vendor_id: vendorId,
           blueprint_id: blueprintId,
           pricing_values: initialPricingValues,
-          display_unit: blueprint.slug.includes('wholesale') ? 'pound' : 'gram',
+          display_unit: isWholesale ? 'pound' : 'gram',
+          pricing_mode: isWholesale ? 'cost_plus' : 'fixed',
           is_active: true
         })
       });
@@ -250,6 +257,7 @@ export default function VendorPricingPage() {
           pricing_values: editingPrices[config.id],
           custom_price_breaks: customTiers[config.id],
           display_unit: displayUnits[config.id],
+          pricing_mode: pricingMode[config.id],
           is_active: true
         })
       });
@@ -397,27 +405,50 @@ export default function VendorPricingPage() {
                   </button>
                 </div>
 
-                {/* Unit Selector */}
-                <div className="flex items-center justify-between pb-4 border-b border-white/5">
-                  <span className="text-white/60 text-sm">Unit of measure</span>
-                  <select
-                    value={displayUnits[config.id] || 'gram'}
-                    onChange={(e) => setDisplayUnits(prev => ({ ...prev, [config.id]: e.target.value }))}
-                    className="bg-transparent border-none text-white text-sm focus:outline-none cursor-pointer"
-                  >
-                    <optgroup label="Weight">
-                      <option value="gram">Grams (g)</option>
-                      <option value="ounce">Ounces (oz)</option>
-                      <option value="pound">Pounds (lb)</option>
-                      <option value="kilogram">Kilograms (kg)</option>
-                    </optgroup>
-                    <optgroup label="Volume">
-                      <option value="milliliter">Milliliters (ml)</option>
-                      <option value="liter">Liters (L)</option>
-                      <option value="fluid_ounce">Fluid Ounces (fl oz)</option>
-                      <option value="gallon">Gallons (gal)</option>
-                    </optgroup>
-                  </select>
+                {/* Settings */}
+                <div className="space-y-3 pb-4 border-b border-white/5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-white/60 text-sm">Pricing mode</span>
+                    <select
+                      value={pricingMode[config.id] || 'fixed'}
+                      onChange={(e) => setPricingMode(prev => ({ ...prev, [config.id]: e.target.value as 'fixed' | 'cost_plus' }))}
+                      className="bg-transparent border-none text-white text-sm focus:outline-none cursor-pointer"
+                    >
+                      <option value="fixed">Fixed Price</option>
+                      <option value="cost_plus">Cost Plus Markup</option>
+                    </select>
+                  </div>
+                  {pricingMode[config.id] === 'cost_plus' && (
+                    <div className="bg-white/5 border border-white/10 rounded-lg p-3">
+                      <p className="text-white/70 text-xs mb-2">
+                        Enter markup amount to add on top of each product's cost
+                      </p>
+                      <p className="text-white/50 text-xs">
+                        Example: If product cost is $1000/lb and you enter +$200, final price = $1200/lb
+                      </p>
+                    </div>
+                  )}
+                  <div className="flex items-center justify-between">
+                    <span className="text-white/60 text-sm">Unit of measure</span>
+                    <select
+                      value={displayUnits[config.id] || 'gram'}
+                      onChange={(e) => setDisplayUnits(prev => ({ ...prev, [config.id]: e.target.value }))}
+                      className="bg-transparent border-none text-white text-sm focus:outline-none cursor-pointer"
+                    >
+                      <optgroup label="Weight">
+                        <option value="gram">Grams (g)</option>
+                        <option value="ounce">Ounces (oz)</option>
+                        <option value="pound">Pounds (lb)</option>
+                        <option value="kilogram">Kilograms (kg)</option>
+                      </optgroup>
+                      <optgroup label="Volume">
+                        <option value="milliliter">Milliliters (ml)</option>
+                        <option value="liter">Liters (L)</option>
+                        <option value="fluid_ounce">Fluid Ounces (fl oz)</option>
+                        <option value="gallon">Gallons (gal)</option>
+                      </optgroup>
+                    </select>
+                  </div>
                 </div>
 
                 {/* Price Tiers */}
@@ -449,13 +480,27 @@ export default function VendorPricingPage() {
                             </div>
                             <div className="text-white/50 text-xs">
                               {isWholesale && (priceBreak.min_qty || priceBreak.max_qty) ? (
-                                `${priceBreak.min_qty || 0}–${priceBreak.max_qty || '∞'} ${formatUnit(displayUnits[config.id] || 'pound')}`
+                                <>
+                                  {`${priceBreak.min_qty || 0}–${priceBreak.max_qty || '∞'} ${formatUnit(displayUnits[config.id] || 'pound')}`}
+                                  {pricingMode[config.id] === 'cost_plus' && currentPrice && tierEnabled && (
+                                    <span className="ml-2 text-green-400/70">
+                                      (Cost + ${currentPrice})
+                                    </span>
+                                  )}
+                                </>
                               ) : priceBreak.qty && priceBreak.unit ? (
-                                `${(() => {
-                                  const currentUnit = displayUnits[config.id] || 'gram';
-                                  const converted = convertUnits(priceBreak.qty, priceBreak.unit, currentUnit);
-                                  return `${converted.toFixed(converted < 1 ? 3 : converted < 10 ? 2 : 1)}${formatUnit(currentUnit)}`;
-                                })()}`
+                                <>
+                                  {`${(() => {
+                                    const currentUnit = displayUnits[config.id] || 'gram';
+                                    const converted = convertUnits(priceBreak.qty, priceBreak.unit, currentUnit);
+                                    return `${converted.toFixed(converted < 1 ? 3 : converted < 10 ? 2 : 1)}${formatUnit(currentUnit)}`;
+                                  })()}`}
+                                  {pricingMode[config.id] === 'cost_plus' && currentPrice && tierEnabled && (
+                                    <span className="ml-2 text-green-400/70">
+                                      (Cost + ${currentPrice})
+                                    </span>
+                                  )}
+                                </>
                               ) : ''}
                             </div>
                           </div>
@@ -463,13 +508,15 @@ export default function VendorPricingPage() {
                           {/* Price Input */}
                           <div className="w-32">
                             <div className="relative">
-                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40 text-sm">$</span>
+                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40 text-sm">
+                                {pricingMode[config.id] === 'cost_plus' ? '+' : '$'}
+                              </span>
                               <input
                                 type="number"
                                 step="0.01"
                                 value={currentPrice}
                                 onChange={(e) => updatePrice(config.id, priceBreak.break_id, e.target.value)}
-                                placeholder="0.00"
+                                placeholder={pricingMode[config.id] === 'cost_plus' ? '100' : '0.00'}
                                 disabled={!tierEnabled}
                                 className="w-full bg-transparent border-b border-white/10 text-white text-sm pl-6 pr-2 py-2 focus:outline-none focus:border-white/30 disabled:opacity-50"
                               />
