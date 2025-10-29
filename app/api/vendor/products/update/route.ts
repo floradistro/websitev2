@@ -52,7 +52,7 @@ export async function PATCH(request: NextRequest) {
     
     if (updates.name !== undefined) updateData.name = updates.name;
     if (updates.sku !== undefined) updateData.sku = updates.sku;
-    if (updates.price !== undefined) updateData.price = updates.price;
+    if (updates.regular_price !== undefined) updateData.regular_price = updates.regular_price;
     if (updates.cost_price !== undefined) updateData.cost_price = updates.cost_price;
     if (updates.description !== undefined) updateData.description = updates.description;
     

@@ -30,7 +30,9 @@ export async function GET(request: NextRequest) {
           slug,
           description,
           tier_type,
+          context,
           price_breaks,
+          applicable_to_categories,
           is_active
         )
       `)

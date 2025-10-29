@@ -237,16 +237,68 @@ export class AlpineIQClient {
 
   /**
    * Create or update a sale (order) in AlpineIQ
+   * Note: Submissions take 24 hours to appear in Alpine IQ dashboard
    */
-  async createSale(order: AlpineIQOrder): Promise<any> {
-    return this.request('POST', `/api/v1.1/sale/${this.config.userId}`, {
-      contactID: order.customerId,
-      orderID: order.orderId,
-      total: order.total,
-      items: order.items,
-      storeID: order.locationId,
-      timestamp: order.createdAt,
-      ...order.metadata,
+  async createSale(sale: {
+    member: {
+      email: string;
+      mobilePhone?: string;
+      firstName?: string;
+      lastName?: string;
+    };
+    visit: {
+      pos_id: string;
+      pos_user: string;
+      pos_type: string; // 'online' | 'in-store'
+      transaction_date: string; // 'YYYY-MM-DD HH:mm:ss +0000'
+      location: string;
+      budtenderName?: string;
+      budtenderID?: string;
+      visit_details_attributes: Array<{
+        sku: string;
+        size?: string;
+        category: string;
+        subcategory?: string;
+        brand?: string;
+        name: string;
+        strain?: string;
+        grade?: string;
+        species?: string;
+        price: number;
+        discount?: number;
+        quantity: number;
+        customAttributes?: Array<{
+          key: string;
+          value: string;
+        }>;
+      }>;
+      transaction_total: number;
+      send_notification?: boolean;
+    };
+  }): Promise<any> {
+    return this.request('POST', `/api/v1.1/createUpdateSale/${this.config.userId}`, sale);
+  }
+
+  /**
+   * Sign up a new loyalty member
+   */
+  async signupLoyaltyMember(member: {
+    email: string;
+    mobilePhone: string;
+    firstName?: string;
+    lastName?: string;
+    address?: string;
+    favoriteStore?: string;
+  }): Promise<any> {
+    return this.request('POST', '/api/v2/loyalty', {
+      uid: this.config.userId,
+      email: member.email,
+      mobilePhone: member.mobilePhone,
+      firstName: member.firstName,
+      lastName: member.lastName,
+      address: member.address,
+      favoriteStore: member.favoriteStore,
+      loyalty: true
     });
   }
 
@@ -440,14 +492,31 @@ export class AlpineIQClient {
     name: string;
   } | null> {
     // Get audiences to find "Signed Up" loyalty members audience
-    const audiences = await this.request<any>('GET', `/api/v1.1/audiences/${this.config.userId}`);
+    const response = await this.request<any>('GET', `/api/v1.1/audiences/${this.config.userId}`);
+
+    console.log('📊 Response from audiences endpoint:', response ? 'OK' : 'NULL');
+
+    const audiences = response.data || response;
+    console.log(`📊 Total audiences: ${audiences?.length || 0}`);
+
+    if (!audiences || audiences.length === 0) {
+      console.log('⚠️  No audiences found');
+      return null;
+    }
 
     // Find the "Signed Up" audience (loyaltyMember = true)
-    const loyaltyAudience = audiences.data?.find((a: any) =>
-      a.name === 'Signed Up' || a.traits?.some((t: any) => t.type === 'loyaltyMember' && t.value === true)
-    );
+    const loyaltyAudience = audiences.find((a: any) => {
+      const isSignedUp = a.name === 'Signed Up';
+      const hasLoyaltyTrait = a.traits?.some((t: any) => t.type === 'loyaltyMember' && t.value === true);
+      if (isSignedUp || hasLoyaltyTrait) {
+        console.log(`✅ Found loyalty audience: ${a.name} (ID: ${a.id}, Size: ${a.audienceSize})`);
+      }
+      return isSignedUp || hasLoyaltyTrait;
+    });
 
     if (!loyaltyAudience) {
+      console.log('⚠️  No loyalty audience found in', audiences.length, 'audiences');
+      console.log('First 3 audience names:', audiences.slice(0, 3).map((a: any) => a.name).join(', '));
       return null;
     }
 

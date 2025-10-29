@@ -364,21 +364,49 @@ function TVDisplayContent() {
 
       // Enrich products with actual prices and promotions
       const enrichedProducts = (productData || []).map((product: any) => {
-        let productWithPricing = product;
+        // Map database fields to expected fields
+        let productWithPricing = {
+          ...product,
+          image_url: product.featured_image || product.image_url, // Map featured_image to image_url
+          metadata: product.blueprint_fields ? product.blueprint_fields.reduce((acc: any, field: any) => {
+            // Map blueprint_fields to metadata format
+            const key = field.label.toLowerCase().replace(/\s+/g, '_');
+            acc[key] = field.value;
+            return acc;
+          }, {}) : {}
+        };
 
         if (product.pricing_assignments && product.pricing_assignments.length > 0) {
-          const assignment = product.pricing_assignments[0]; // Use first active assignment
-          const blueprint = assignment.blueprint;
-          const vendorPrices = configMap.get(assignment.blueprint_id) || {};
+          let assignment;
 
-          // Merge vendor prices with product overrides
-          const finalPrices = { ...vendorPrices, ...(assignment.price_overrides || {}) };
+          // Priority 1: If device is in a display group, use that group's pricing tier
+          if (displayGroup?.pricing_tier_id) {
+            assignment = product.pricing_assignments.find(
+              (a: any) => a.blueprint_id === displayGroup.pricing_tier_id && a.is_active
+            );
+            if (assignment) {
+              console.log(`💰 Using display group pricing tier for ${product.name}:`, displayGroup.name);
+            }
+          }
 
-          productWithPricing = {
-            ...product,
-            pricing_blueprint: blueprint,
-            pricing_tiers: finalPrices
-          };
+          // Priority 2: Fall back to first active assignment
+          if (!assignment) {
+            assignment = product.pricing_assignments[0];
+          }
+
+          if (assignment) {
+            const blueprint = assignment.blueprint;
+            const vendorPrices = configMap.get(assignment.blueprint_id) || {};
+
+            // Merge vendor prices with product overrides
+            const finalPrices = { ...vendorPrices, ...(assignment.price_overrides || {}) };
+
+            productWithPricing = {
+              ...product,
+              pricing_blueprint: blueprint,
+              pricing_tiers: finalPrices
+            };
+          }
         }
 
         // Apply promotions if any
@@ -424,10 +452,20 @@ function TVDisplayContent() {
 
       setProducts(filteredProducts);
       console.log(`✅ Loaded ${filteredProducts.length} products with pricing`);
+
+      // Count how many products are using the display group's pricing tier
+      if (displayGroup?.pricing_tier_id) {
+        const productsWithGroupPricing = filteredProducts.filter((p: any) =>
+          p.pricing_blueprint?.id === displayGroup.pricing_tier_id
+        );
+        console.log(`💰 ${productsWithGroupPricing.length}/${filteredProducts.length} products using display group pricing tier:`, displayGroup.name);
+      }
+
       console.log('📊 Sample product pricing:', filteredProducts[0] ? {
         name: filteredProducts[0].name,
         has_assignment: !!filteredProducts[0].pricing_assignments,
         has_blueprint: !!filteredProducts[0].pricing_blueprint,
+        blueprint_name: filteredProducts[0].pricing_blueprint?.name,
         has_tiers: !!filteredProducts[0].pricing_tiers,
         has_promotion: !!filteredProducts[0].promotion_data,
         tiers: filteredProducts[0].pricing_tiers

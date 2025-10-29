@@ -17,7 +17,8 @@ import {
   Layers,
   CreditCard,
   Tv,
-  Megaphone
+  Megaphone,
+  Users
 } from 'lucide-react';
 
 export interface NavItem {
@@ -48,12 +49,20 @@ export const vendorNavItems: NavItem[] = [
     isCore: true,
     group: 'core'
   },
-  { 
-    href: '/vendor/orders', 
-    icon: ShoppingBag, 
+  {
+    href: '/vendor/orders',
+    icon: ShoppingBag,
     label: 'Orders',
     description: 'Transactions',
     isCore: true,
+    group: 'sales'
+  },
+  {
+    href: '/vendor/customers',
+    icon: Users,
+    label: 'Customers',
+    description: 'Customer management',
+    isCore: false,
     group: 'sales'
   },
   { 

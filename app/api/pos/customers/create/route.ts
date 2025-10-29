@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
   try {
     const supabase = getServiceSupabase();
     const body = await request.json();
-    const { vendorId, firstName, lastName, phone, email } = body;
+    const { vendorId, firstName, lastName, phone, email, dateOfBirth, address, city, state, postalCode } = body;
 
     if (!vendorId || !firstName || !lastName) {
       return NextResponse.json(
@@ -26,17 +26,39 @@ export async function POST(request: NextRequest) {
     const customerNumber = `FLORA-${String((count || 0) + 1).padStart(4, '0')}`;
 
     // Create customer
-    const { data: customer, error: customerError } = await supabase
-      .from('customers')
-      .insert({
+    const customerData: any = {
+      first_name: firstName,
+      last_name: lastName,
+      email: email,
+      phone: phone,
+      display_name: `${firstName} ${lastName.charAt(0)}.`,
+      role: 'customer',
+      is_active: true,
+    };
+
+    // Add date of birth if provided
+    if (dateOfBirth) customerData.date_of_birth = dateOfBirth;
+
+    // Build billing address from ID scan data if provided
+    if (address || city || state || postalCode) {
+      customerData.billing_address = {
         first_name: firstName,
         last_name: lastName,
+        company: "",
+        address_1: address || "",
+        address_2: "",
+        city: city || "",
+        state: state || "",
+        postcode: postalCode || "",
+        country: "US",
         email: email,
-        phone: phone,
-        display_name: `${firstName} ${lastName.charAt(0)}.`,
-        role: 'customer',
-        is_active: true,
-      })
+        phone: phone || ""
+      };
+    }
+
+    const { data: customer, error: customerError } = await supabase
+      .from('customers')
+      .insert(customerData)
       .select()
       .single();
 

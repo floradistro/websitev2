@@ -49,7 +49,9 @@ interface Blueprint {
   slug: string;
   description: string;
   tier_type: string;
+  context: string;
   price_breaks: PriceBreak[];
+  applicable_to_categories?: string[];
 }
 
 interface PricingConfig {
@@ -377,14 +379,55 @@ export default function VendorPricingPage() {
         </div>
       ) : (
         <div className="space-y-12">
-          {/* Active Configs */}
-          {configs.map((config) => {
-            if (!config.blueprint) return null;
+          {/* Group configs by master context */}
+          {(() => {
+            // Group configs by context
+            const groupedConfigs: Record<string, PricingConfig[]> = {};
+            configs.forEach(config => {
+              if (!config.blueprint) return;
+              const context = config.blueprint.context || 'retail';
+              if (!groupedConfigs[context]) {
+                groupedConfigs[context] = [];
+              }
+              groupedConfigs[context].push(config);
+            });
 
-            const isWholesale = config.blueprint.slug.includes('wholesale');
+            // Define master group order and labels
+            const masterGroups = [
+              { key: 'retail', label: 'Retail Pricing', description: 'Direct-to-consumer pricing tiers', icon: '🛍️' },
+              { key: 'wholesale', label: 'Wholesale Pricing', description: 'Business-to-business bulk pricing', icon: '📦' },
+              { key: 'distributor', label: 'Distributor Pricing', description: 'Large volume distribution pricing', icon: '🚚' }
+            ];
 
-            return (
-              <div key={config.id} className="space-y-6 mb-8">
+            return masterGroups.map(masterGroup => {
+              const groupConfigs = groupedConfigs[masterGroup.key] || [];
+              if (groupConfigs.length === 0) return null;
+
+              return (
+                <div key={masterGroup.key} className="space-y-6">
+                  {/* Master Group Header */}
+                  <div className="border-b border-white/10 pb-4">
+                    <div className="flex items-center gap-3 mb-2">
+                      <span className="text-3xl">{masterGroup.icon}</span>
+                      <div>
+                        <h2 className="text-white text-xl font-thin tracking-tight">
+                          {masterGroup.label}
+                        </h2>
+                        <p className="text-white/40 text-[10px] uppercase tracking-[0.15em]">
+                          {masterGroup.description}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Pricing Tiers within this Master Group */}
+                  {groupConfigs.map((config) => {
+                    if (!config.blueprint) return null;
+
+                    const isWholesale = config.blueprint.slug.includes('wholesale');
+
+                    return (
+                      <div key={config.id} className="space-y-6 mb-8 pl-6 border-l-2 border-white/10">
                 <SectionHeader
                   title={config.blueprint.name}
                   subtitle={config.blueprint.description || undefined}
@@ -531,8 +574,12 @@ export default function VendorPricingPage() {
                   </Button>
                 </div>
               </div>
-            );
-          })}
+                    );
+                  })}
+                </div>
+              );
+            });
+          })()}
 
           {/* Available Blueprints */}
           {availableBlueprints.length > 0 && (

@@ -63,20 +63,60 @@ export async function POST(request: NextRequest) {
 
     console.log(`✅ Found ${audienceInfo.totalMembers} loyalty members in Alpine IQ`);
 
-    // Get existing customers from local database (with email or phone)
-    console.log(`📥 Fetching up to ${limit} customers from database...`);
+    // Get customers who have ordered from this vendor
+    // Since customers are platform-level (no vendor_id), we need to find them through orders
+    console.log(`📥 Finding customers who have ordered from this vendor (limit ${limit})...`);
+
+    // Query: Get unique customer IDs from orders that have items from this vendor
+    const { data: orderData, error: orderError } = await supabase
+      .from('order_items')
+      .select('order_id')
+      .eq('vendor_id', vendorId)
+      .limit(1000); // Get a large sample of orders
+
+    if (orderError || !orderData || orderData.length === 0) {
+      return NextResponse.json({
+        success: true,
+        synced: 0,
+        message: 'No orders found for this vendor',
+        audienceInfo,
+      });
+    }
+
+    // Get unique order IDs
+    const orderIds = [...new Set(orderData.map(item => item.order_id))];
+
+    // Get customers from those orders
+    const { data: orders } = await supabase
+      .from('orders')
+      .select('customer_id')
+      .in('id', orderIds)
+      .not('customer_id', 'is', null);
+
+    if (!orders || orders.length === 0) {
+      return NextResponse.json({
+        success: true,
+        synced: 0,
+        message: 'No customers found in orders',
+        audienceInfo,
+      });
+    }
+
+    // Get unique customer IDs
+    const customerIds = [...new Set(orders.map(o => o.customer_id))].slice(0, limit);
+
+    // Now get customer details
     const { data: customers } = await supabase
       .from('customers')
       .select('id, email, phone, first_name, last_name')
-      .eq('vendor_id', vendorId)
-      .not('email', 'is', null)
-      .limit(limit);
+      .in('id', customerIds)
+      .not('email', 'is', null);
 
     if (!customers || customers.length === 0) {
       return NextResponse.json({
         success: true,
         synced: 0,
-        message: 'No customers found in database to sync',
+        message: 'No customers with email addresses found',
         audienceInfo,
       });
     }

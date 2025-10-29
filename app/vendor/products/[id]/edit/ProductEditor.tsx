@@ -51,6 +51,16 @@ interface PricingTier {
   max_quantity?: number;
 }
 
+interface PricingBlueprint {
+  id: string;
+  name: string;
+  slug: string;
+  description: string;
+  context: string;
+  tier_type: string;
+  applicable_to_categories?: string[];
+}
+
 export default function ProductEditor() {
   const params = useParams();
   const router = useRouter();
@@ -78,7 +88,9 @@ export default function ProductEditor() {
   const [coas, setCoas] = useState<COA[]>([]);
   const [pricingTiers, setPricingTiers] = useState<PricingTier[]>([]);
   const [images, setImages] = useState<string[]>([]);
-  
+  const [availableBlueprints, setAvailableBlueprints] = useState<PricingBlueprint[]>([]);
+  const [selectedBlueprintIds, setSelectedBlueprintIds] = useState<string[]>([]);
+
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [activeSection, setActiveSection] = useState<'basic' | 'fields' | 'pricing' | 'coas' | 'images'>('basic');
@@ -125,6 +137,24 @@ export default function ProductEditor() {
         setCoas(p.coas || []);
         setPricingTiers(p.pricing_tiers || []);
         setImages(p.images || []);
+
+        // Load available pricing blueprints
+        const blueprintsRes = await axios.get(`/api/vendor/pricing-config?vendor_id=${vendorId}`);
+        if (blueprintsRes.data.success) {
+          const allBlueprints = blueprintsRes.data.configs
+            .filter((config: any) => config.blueprint && config.is_active)
+            .map((config: any) => config.blueprint);
+          setAvailableBlueprints(allBlueprints);
+        }
+
+        // Load current pricing tier assignments for this product
+        const assignmentsRes = await axios.get(`/api/vendor/product-pricing?product_id=${productId}`);
+        if (assignmentsRes.data.success) {
+          const assignedBlueprintIds = assignmentsRes.data.assignments
+            .filter((a: any) => a.is_active)
+            .map((a: any) => a.blueprint_id);
+          setSelectedBlueprintIds(assignedBlueprintIds);
+        }
       }
 
       setLoading(false);
@@ -178,6 +208,31 @@ export default function ProductEditor() {
       console.log('Save response:', response.data);
 
       if (response.data.success) {
+        // Save pricing tier assignments
+        if (selectedBlueprintIds.length > 0) {
+          try {
+            await axios.post('/api/vendor/product-pricing', {
+              vendor_id: vendorId,
+              product_ids: [productId],
+              blueprint_id: selectedBlueprintIds[0], // Start with first one
+              price_overrides: {}
+            });
+
+            // Assign remaining tiers if any
+            for (let i = 1; i < selectedBlueprintIds.length; i++) {
+              await axios.post('/api/vendor/product-pricing', {
+                vendor_id: vendorId,
+                product_ids: [productId],
+                blueprint_id: selectedBlueprintIds[i],
+                price_overrides: {}
+              });
+            }
+          } catch (pricingError) {
+            console.error('Error saving pricing assignments:', pricingError);
+            // Don't fail the whole save, just log it
+          }
+        }
+
         showNotification({
           type: 'success',
           title: 'Saved',
@@ -556,18 +611,126 @@ export default function ProductEditor() {
 
         {/* PRICING TIERS */}
         {activeSection === 'pricing' && (
-          <div className="minimal-glass p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-white/60 text-xs uppercase tracking-wider font-medium">Volume Pricing</h2>
-              <Link
-                href="/vendor/pricing"
-                className="px-4 py-2 bg-white/5 text-white/70 border border-white/10 hover:bg-white/10 hover:text-white transition-all rounded-2xl text-xs uppercase tracking-wider"
-              >
-                Manage Pricing
-              </Link>
+          <div className="space-y-6">
+            {/* Pricing Tier Assignment */}
+            <div className="minimal-glass p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-white/60 text-xs uppercase tracking-wider font-medium">Assign Pricing Tiers</h2>
+                <Link
+                  href="/vendor/pricing"
+                  className="px-4 py-2 bg-white/5 text-white/70 border border-white/10 hover:bg-white/10 hover:text-white transition-all rounded-2xl text-xs uppercase tracking-wider"
+                >
+                  Configure Tiers
+                </Link>
+              </div>
+
+              {availableBlueprints.length === 0 ? (
+                <div className="bg-white/5 border border-white/10 p-8 text-center rounded-2xl">
+                  <DollarSign size={48} className="text-white/20 mx-auto mb-4" />
+                  <p className="text-white/60 mb-2">No pricing tiers configured</p>
+                  <p className="text-white/40 text-sm mb-4">Set up your pricing structure first</p>
+                  <Link
+                    href="/vendor/pricing"
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-white/10 text-white border border-white/20 hover:bg-white/20 transition-all rounded-[12px] text-xs uppercase tracking-wider"
+                  >
+                    <Plus size={14} />
+                    Configure Pricing
+                  </Link>
+                </div>
+              ) : (
+                <>
+                  <p className="text-white/40 text-xs mb-4">Select which pricing tiers apply to this product (can select multiple)</p>
+
+                  {/* Group blueprints by context */}
+                  {(() => {
+                    const grouped: Record<string, PricingBlueprint[]> = {};
+                    availableBlueprints.forEach(bp => {
+                      const ctx = bp.context || 'retail';
+                      if (!grouped[ctx]) grouped[ctx] = [];
+                      grouped[ctx].push(bp);
+                    });
+
+                    const masterGroups = [
+                      { key: 'retail', label: 'Retail', icon: '🛍️' },
+                      { key: 'wholesale', label: 'Wholesale', icon: '📦' },
+                      { key: 'distributor', label: 'Distributor', icon: '🚚' }
+                    ];
+
+                    return masterGroups.map(mg => {
+                      const groupBlueprints = grouped[mg.key] || [];
+                      if (groupBlueprints.length === 0) return null;
+
+                      return (
+                        <div key={mg.key} className="mb-6 last:mb-0">
+                          <div className="flex items-center gap-2 mb-3">
+                            <span className="text-xl">{mg.icon}</span>
+                            <h3 className="text-white/80 text-sm font-medium uppercase tracking-wider">{mg.label}</h3>
+                          </div>
+
+                          <div className="space-y-2 pl-6">
+                            {groupBlueprints.map(blueprint => {
+                              const isSelected = selectedBlueprintIds.includes(blueprint.id);
+
+                              return (
+                                <label
+                                  key={blueprint.id}
+                                  className={`flex items-start gap-3 p-3 rounded-2xl border transition-all cursor-pointer ${
+                                    isSelected
+                                      ? 'bg-white/10 border-white/30 hover:bg-white/15'
+                                      : 'bg-white/5 border-white/10 hover:bg-white/8 hover:border-white/20'
+                                  }`}
+                                >
+                                  <input
+                                    type="checkbox"
+                                    checked={isSelected}
+                                    onChange={(e) => {
+                                      if (e.target.checked) {
+                                        setSelectedBlueprintIds([...selectedBlueprintIds, blueprint.id]);
+                                      } else {
+                                        setSelectedBlueprintIds(selectedBlueprintIds.filter(id => id !== blueprint.id));
+                                      }
+                                    }}
+                                    className="w-5 h-5 mt-0.5 cursor-pointer rounded"
+                                  />
+                                  <div className="flex-1">
+                                    <div className="text-white text-sm font-medium mb-1">{blueprint.name}</div>
+                                    {blueprint.description && (
+                                      <div className="text-white/40 text-xs">{blueprint.description}</div>
+                                    )}
+                                    {blueprint.applicable_to_categories && blueprint.applicable_to_categories.length > 0 && (
+                                      <div className="text-white/30 text-xs mt-1">
+                                        Applies to: {blueprint.applicable_to_categories.join(', ')}
+                                      </div>
+                                    )}
+                                  </div>
+                                </label>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      );
+                    });
+                  })()}
+
+                  <div className="mt-4 pt-4 border-t border-white/10">
+                    <p className="text-white/40 text-xs">
+                      {selectedBlueprintIds.length === 0
+                        ? 'No tiers selected - product will use base price only'
+                        : `${selectedBlueprintIds.length} tier${selectedBlueprintIds.length === 1 ? '' : 's'} selected`
+                      }
+                    </p>
+                  </div>
+                </>
+              )}
             </div>
 
-            {pricingTiers.length === 0 ? (
+            {/* Current Volume Pricing Display */}
+            <div className="minimal-glass p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-white/60 text-xs uppercase tracking-wider font-medium">Volume Pricing Preview</h2>
+              </div>
+
+              {pricingTiers.length === 0 ? (
               <div className="bg-white/5 border border-white/10 p-8 text-center rounded-2xl">
                 <DollarSign size={48} className="text-white/20 mx-auto mb-4" />
                 <p className="text-white/60 mb-2">No pricing tiers set</p>
@@ -593,6 +756,7 @@ export default function ProductEditor() {
                 ))}
               </div>
             )}
+            </div>
           </div>
         )}
 

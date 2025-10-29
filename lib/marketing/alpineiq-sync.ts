@@ -131,7 +131,7 @@ export class AlpineIQSyncService {
   }
 
   /**
-   * Push a customer to AlpineIQ
+   * Push a customer to AlpineIQ loyalty program
    */
   async pushCustomerToAlpineIQ(customer: any): Promise<void> {
     if (!this.alpineiq) return;
@@ -154,32 +154,21 @@ export class AlpineIQSyncService {
         return;
       }
 
-      // Upsert customer in AlpineIQ
-      const result = await this.alpineiq.upsertCustomer({
+      // Sign up customer for loyalty using correct endpoint
+      const result = await this.alpineiq.signupLoyaltyMember({
         email: customer.email,
-        phone: customer.phone,
-        firstName: customer.first_name,
-        lastName: customer.last_name,
-        birthdate: customer.birthdate,
-        metadata: {
-          pos_customer_id: customer.id,
-          total_orders: customer.total_orders || 0,
-          lifetime_value: customer.lifetime_value || 0,
-          last_order_date: customer.last_order_date,
-        },
+        mobilePhone: customer.phone,
+        firstName: customer.first_name || undefined,
+        lastName: customer.last_name || undefined,
+        address: customer.address || undefined,
+        favoriteStore: undefined
       });
 
-      // Get AlpineIQ contact ID
-      let alpineiqCustomerId = result.contactID;
-      if (!alpineiqCustomerId) {
-        // Lookup by phone or email
-        alpineiqCustomerId =
-          (await this.alpineiq.lookupCustomerByPhone(customer.phone)) ||
-          (await this.alpineiq.lookupCustomerByEmail(customer.email));
-      }
+      // Get AlpineIQ contact ID from result
+      const alpineiqCustomerId = result.contactID;
 
       if (!alpineiqCustomerId) {
-        throw new Error('Failed to get AlpineIQ contact ID');
+        throw new Error('Failed to get AlpineIQ contact ID from signup');
       }
 
       // Save or update mapping
@@ -201,7 +190,7 @@ export class AlpineIQSyncService {
         payload: customer,
       });
 
-      console.log(`✅ Customer synced to AlpineIQ: ${customer.email}`);
+      console.log(`✅ Customer synced to AlpineIQ: ${customer.email} (ID: ${alpineiqCustomerId})`);
     } catch (error: any) {
       console.error('Failed to sync customer:', error);
 
@@ -255,57 +244,87 @@ export class AlpineIQSyncService {
     if (!this.alpineiq) return;
 
     try {
-      // Get customer mapping
-      const { data: mapping } = await this.supabase
-        .from('alpineiq_customer_mapping')
-        .select('alpineiq_customer_id')
-        .eq('customer_id', order.customer_id)
+      // Get customer info
+      const { data: customer } = await this.supabase
+        .from('customers')
+        .select('*')
+        .eq('id', order.customer_id)
         .single();
 
-      if (!mapping) {
-        // Customer not synced yet, try to sync first
-        const { data: customer } = await this.supabase
-          .from('customers')
-          .select('*')
-          .eq('id', order.customer_id)
-          .single();
-
-        if (customer) {
-          await this.pushCustomerToAlpineIQ(customer);
-
-          // Try to get mapping again
-          const { data: newMapping } = await this.supabase
-            .from('alpineiq_customer_mapping')
-            .select('alpineiq_customer_id')
-            .eq('customer_id', order.customer_id)
-            .single();
-
-          if (!newMapping) {
-            throw new Error('Customer not synced to AlpineIQ');
-          }
-        } else {
-          throw new Error('Customer not found');
-        }
+      if (!customer) {
+        throw new Error('Customer not found');
       }
 
-      // Calculate loyalty points
-      // Assuming $1 = 10 points (from AlpineIQ config: accrual: 100 means 100 points per $10?)
-      const pointsEarned = Math.floor(order.total * 10);
+      // Get order items with product details
+      const { data: orderItems } = await this.supabase
+        .from('order_items')
+        .select(`
+          *,
+          products (
+            name,
+            sku,
+            category,
+            brand,
+            cannabis_type,
+            thc_percentage,
+            cbd_percentage
+          )
+        `)
+        .eq('order_id', order.id);
 
-      // Create sale in AlpineIQ
+      // Format items for Alpine IQ
+      const items = (orderItems || []).map((item: any) => ({
+        sku: item.products?.sku || item.product_id || 'UNKNOWN',
+        size: item.variant_name || '',
+        category: item.products?.category || 'MISC',
+        subcategory: item.products?.subcategory || '',
+        brand: item.products?.brand || '',
+        name: item.products?.name || item.product_name || 'Product',
+        strain: item.products?.strain || '',
+        grade: 'A',
+        species: item.products?.cannabis_type || item.products?.species || '',
+        price: parseFloat(item.unit_price || 0),
+        discount: parseFloat(item.discount_amount || 0),
+        quantity: parseInt(item.quantity || 1),
+        customAttributes: item.products?.thc_percentage ? [{
+          key: 'THC',
+          value: `${item.products.thc_percentage}%`
+        }] : []
+      }));
+
+      // Get location name
+      const { data: location } = await this.supabase
+        .from('locations')
+        .select('name')
+        .eq('id', order.location_id)
+        .single();
+
+      // Format transaction date (Alpine IQ format: 'YYYY-MM-DD HH:mm:ss +0000')
+      const transactionDate = new Date(order.created_at)
+        .toISOString()
+        .replace('T', ' ')
+        .split('.')[0] + ' +0000';
+
+      // Create sale in AlpineIQ with correct format
       await this.alpineiq.createSale({
-        customerId: mapping.alpineiq_customer_id,
-        orderId: order.id,
-        total: order.total,
-        items: order.items || [],
-        locationId: order.location_id,
-        createdAt: order.created_at,
-        pointsEarned,
-        metadata: {
-          pos_order_id: order.id,
-          payment_method: order.payment_method,
-          order_type: order.order_type,
+        member: {
+          email: customer.email,
+          mobilePhone: customer.phone || undefined,
+          firstName: customer.first_name || undefined,
+          lastName: customer.last_name || undefined,
         },
+        visit: {
+          pos_id: order.id,
+          pos_user: customer.email,
+          pos_type: order.order_type === 'delivery' ? 'online' : 'in-store',
+          transaction_date: transactionDate,
+          location: location?.name || 'Main Store',
+          budtenderName: order.employee_name,
+          budtenderID: order.employee_id,
+          visit_details_attributes: items,
+          transaction_total: parseFloat(order.total),
+          send_notification: false
+        }
       });
 
       // Log success
@@ -314,11 +333,10 @@ export class AlpineIQSyncService {
         entity_id: order.id,
         direction: 'to_alpineiq',
         status: 'success',
-        alpineiq_id: mapping.alpineiq_customer_id,
-        payload: { order_id: order.id, points: pointsEarned },
+        payload: { order_id: order.id, total: order.total, items: items.length },
       });
 
-      console.log(`✅ Order synced to AlpineIQ: ${order.id} (${pointsEarned} points)`);
+      console.log(`✅ Order synced to AlpineIQ: ${order.id} ($${order.total}, ${items.length} items)`);
     } catch (error: any) {
       console.error('Failed to sync order:', error);
 

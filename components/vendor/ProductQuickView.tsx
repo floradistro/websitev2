@@ -20,6 +20,9 @@ export function ProductQuickView({ product, vendorId, isOpen, onClose, onSave, o
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<'basic' | 'pricing' | 'details'>('basic');
+  const [availableBlueprints, setAvailableBlueprints] = useState<any[]>([]);
+  const [selectedBlueprintIds, setSelectedBlueprintIds] = useState<string[]>([]);
+  const [originalBlueprintIds, setOriginalBlueprintIds] = useState<string[]>([]);
 
   // Load full product details when modal opens
   useEffect(() => {
@@ -41,10 +44,45 @@ export function ProductQuickView({ product, vendorId, isOpen, onClose, onSave, o
               name: loadedProduct.name || '',
               sku: loadedProduct.sku || '',
               category: loadedProduct.category || '',
-              price: loadedProduct.price || 0,
+              regular_price: loadedProduct.regular_price || loadedProduct.price || 0,
               cost_price: loadedProduct.cost_price || 0,
               description: loadedProduct.description || ''
             });
+
+            // Load available pricing blueprints
+            try {
+              const blueprintsRes = await axios.get(`/api/vendor/pricing-config?vendor_id=${vendorId}`);
+              if (blueprintsRes.data.success) {
+                const allBlueprints = blueprintsRes.data.configs
+                  .filter((config: any) => config.blueprint && config.is_active)
+                  .map((config: any) => config.blueprint);
+                setAvailableBlueprints(allBlueprints);
+              }
+            } catch (err) {
+              console.error('Failed to load blueprints:', err);
+            }
+
+            // Load current pricing tier assignments
+            try {
+              console.log('🔍 Loading pricing assignments for product:', product.id);
+              const assignmentsRes = await axios.get(`/api/vendor/product-pricing?product_id=${product.id}`);
+              console.log('📦 Assignments response:', assignmentsRes.data);
+              if (assignmentsRes.data.success && assignmentsRes.data.assignments) {
+                const assignedIds = assignmentsRes.data.assignments
+                  .filter((a: any) => a.is_active)
+                  .map((a: any) => a.blueprint_id);
+                console.log('✅ Loaded assigned blueprint IDs:', assignedIds);
+                setSelectedBlueprintIds(assignedIds);
+                setOriginalBlueprintIds(assignedIds); // Track original state
+              } else {
+                console.log('ℹ️ No assignments found, setting empty array');
+                setSelectedBlueprintIds([]);
+                setOriginalBlueprintIds([]);
+              }
+            } catch (err) {
+              console.error('❌ Failed to load assignments (non-blocking):', err);
+              setSelectedBlueprintIds([]);
+            }
           }
         } catch (error) {
           console.error('Failed to load product details:', error);
@@ -74,6 +112,41 @@ export function ProductQuickView({ product, vendorId, isOpen, onClose, onSave, o
       });
 
       if (response.data.success) {
+        // Save pricing tier assignments
+        console.log('💾 Saving pricing tier assignments:', selectedBlueprintIds);
+        console.log('📋 Original assignments:', originalBlueprintIds);
+
+        // Find removed assignments (were selected, now unselected)
+        const removedIds = originalBlueprintIds.filter(id => !selectedBlueprintIds.includes(id));
+        console.log('🗑️ Removed assignments:', removedIds);
+
+        // Find added assignments (newly selected)
+        const addedIds = selectedBlueprintIds.filter(id => !originalBlueprintIds.includes(id));
+        console.log('➕ Added assignments:', addedIds);
+
+        try {
+          // Remove unassigned tiers
+          for (const blueprintId of removedIds) {
+            console.log('🗑️ Removing assignment for blueprint:', blueprintId);
+            await axios.delete(`/api/vendor/product-pricing?product_id=${product.id}&blueprint_id=${blueprintId}`);
+            console.log('✅ Assignment removed');
+          }
+
+          // Add new assignments
+          for (const blueprintId of addedIds) {
+            console.log('📤 Adding assignment for blueprint:', blueprintId);
+            const res = await axios.post('/api/vendor/product-pricing', {
+              vendor_id: vendorId,
+              product_ids: [product.id],
+              blueprint_id: blueprintId,
+              price_overrides: {}
+            });
+            console.log('✅ Assignment added:', res.data);
+          }
+        } catch (pricingError) {
+          console.error('❌ Error saving pricing assignments:', pricingError);
+        }
+
         showNotification({
           type: 'success',
           title: 'Saved',
@@ -283,8 +356,8 @@ export function ProductQuickView({ product, vendorId, isOpen, onClose, onSave, o
                     <input
                       type="number"
                       step="0.01"
-                      value={editedProduct.price || ''}
-                      onChange={(e) => setEditedProduct((prev: any) => ({ ...prev, price: parseFloat(e.target.value) || 0 }))}
+                      value={editedProduct.regular_price || ''}
+                      onChange={(e) => setEditedProduct((prev: any) => ({ ...prev, regular_price: parseFloat(e.target.value) || 0 }))}
                       className="w-full bg-black/20 border border-white/10 text-white px-4 py-3 rounded-[14px] focus:outline-none focus:border-white/30 transition-all"
                     />
                   </div>
@@ -311,15 +384,99 @@ export function ProductQuickView({ product, vendorId, isOpen, onClose, onSave, o
                       <div>
                         <div className="text-white/40 text-[10px] uppercase tracking-wider mb-2">Profit per Gram</div>
                         <div className="text-2xl font-light text-white">
-                          ${((editedProduct.price || 0) - (editedProduct.cost_price || 0)).toFixed(2)}
+                          ${((editedProduct.regular_price || 0) - (editedProduct.cost_price || 0)).toFixed(2)}
                         </div>
                       </div>
                       <div>
                         <div className="text-white/40 text-[10px] uppercase tracking-wider mb-2">Potential Revenue</div>
                         <div className="text-2xl font-light text-white">
-                          ${((editedProduct.price || 0) * (displayProduct.total_stock || displayProduct.stock_quantity || 0)).toLocaleString(undefined, {maximumFractionDigits: 0})}
+                          ${((editedProduct.regular_price || 0) * (displayProduct.total_stock || displayProduct.stock_quantity || 0)).toLocaleString(undefined, {maximumFractionDigits: 0})}
                         </div>
                       </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Assign Pricing Tiers */}
+                {availableBlueprints.length > 0 && (
+                  <div>
+                    <div className="flex items-center gap-2 mb-4">
+                      <DollarSign size={16} className="text-white/60" />
+                      <h4 className="text-white/60 text-[10px] uppercase tracking-wider font-medium">Assign Pricing Tiers</h4>
+                    </div>
+
+                    {(() => {
+                      const grouped: Record<string, any[]> = {};
+                      availableBlueprints.forEach(bp => {
+                        const ctx = bp.context || 'retail';
+                        if (!grouped[ctx]) grouped[ctx] = [];
+                        grouped[ctx].push(bp);
+                      });
+
+                      const masterGroups = [
+                        { key: 'retail', label: 'Retail', icon: '🛍️' },
+                        { key: 'wholesale', label: 'Wholesale', icon: '📦' },
+                        { key: 'distributor', label: 'Distributor', icon: '🚚' }
+                      ];
+
+                      return masterGroups.map(mg => {
+                        const groupBlueprints = grouped[mg.key] || [];
+                        if (groupBlueprints.length === 0) return null;
+
+                        return (
+                          <div key={mg.key} className="mb-4 last:mb-0">
+                            <div className="flex items-center gap-2 mb-2">
+                              <span className="text-sm">{mg.icon}</span>
+                              <h5 className="text-white/60 text-xs font-medium uppercase">{mg.label}</h5>
+                            </div>
+
+                            <div className="space-y-2 pl-4">
+                              {groupBlueprints.map(blueprint => {
+                                const isSelected = selectedBlueprintIds.includes(blueprint.id);
+
+                                return (
+                                  <label
+                                    key={blueprint.id}
+                                    className={`flex items-start gap-2 p-2 rounded-lg border cursor-pointer transition-all ${
+                                      isSelected
+                                        ? 'bg-white/10 border-white/30'
+                                        : 'bg-white/5 border-white/10 hover:bg-white/8'
+                                    }`}
+                                  >
+                                    <input
+                                      type="checkbox"
+                                      checked={isSelected}
+                                      onChange={(e) => {
+                                        if (e.target.checked) {
+                                          console.log('✓ Adding blueprint:', blueprint.name, blueprint.id);
+                                          setSelectedBlueprintIds([...selectedBlueprintIds, blueprint.id]);
+                                        } else {
+                                          console.log('✗ Removing blueprint:', blueprint.name, blueprint.id);
+                                          setSelectedBlueprintIds(selectedBlueprintIds.filter(id => id !== blueprint.id));
+                                        }
+                                      }}
+                                      className="w-4 h-4 mt-0.5 cursor-pointer"
+                                    />
+                                    <div className="flex-1">
+                                      <div className="text-white text-xs font-medium">{blueprint.name}</div>
+                                      {blueprint.description && (
+                                        <div className="text-white/40 text-[10px] mt-0.5">{blueprint.description}</div>
+                                      )}
+                                    </div>
+                                  </label>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        );
+                      });
+                    })()}
+
+                    <div className="mt-3 pt-3 border-t border-white/10 text-white/40 text-[10px]">
+                      {selectedBlueprintIds.length === 0
+                        ? 'No tiers selected'
+                        : `${selectedBlueprintIds.length} tier${selectedBlueprintIds.length === 1 ? '' : 's'} selected`
+                      }
                     </div>
                   </div>
                 )}

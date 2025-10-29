@@ -13,46 +13,90 @@ export async function GET(request: NextRequest) {
     const vendorId = searchParams.get('vendor_id');
     const productId = searchParams.get('product_id');
 
+    console.log('🔍 GET /api/vendor/product-pricing');
+    console.log('📦 Query params:', { vendorId, productId });
+
     if (!vendorId && !productId) {
+      console.log('❌ Missing required params');
       return NextResponse.json(
         { success: false, error: 'vendor_id or product_id is required' },
         { status: 400 }
       );
     }
 
-    let query = supabase
-      .from('product_pricing_assignments')
-      .select(`
-        *,
-        product:products!inner (
-          id,
-          name,
-          sku,
-          category,
-          vendor_id
-        ),
-        blueprint:pricing_tier_blueprints (
-          id,
-          name,
-          slug,
-          description,
-          tier_type,
-          price_breaks
-        )
-      `)
-      .eq('is_active', true);
+    // Build query based on filter type
+    let assignments, error;
 
     if (productId) {
-      query = query.eq('product_id', productId);
+      console.log('🔍 Filtering by product_id:', productId);
+      // Simple direct query by product_id
+      const result = await supabase
+        .from('product_pricing_assignments')
+        .select(`
+          *,
+          product:products!inner (
+            id,
+            name,
+            sku,
+            vendor_id
+          ),
+          blueprint:pricing_tier_blueprints (
+            id,
+            name,
+            slug,
+            description,
+            tier_type,
+            context,
+            price_breaks,
+            applicable_to_categories
+          )
+        `)
+        .eq('product_id', productId)
+        .eq('is_active', true);
+
+      assignments = result.data;
+      error = result.error;
     } else if (vendorId) {
-      query = query.eq('product.vendor_id', vendorId);
+      console.log('🔍 Filtering by vendor_id:', vendorId);
+      // For vendor filter, get all products first, then join
+      const result = await supabase
+        .from('product_pricing_assignments')
+        .select(`
+          *,
+          product:products!inner (
+            id,
+            name,
+            sku,
+            vendor_id
+          ),
+          blueprint:pricing_tier_blueprints (
+            id,
+            name,
+            slug,
+            description,
+            tier_type,
+            context,
+            price_breaks,
+            applicable_to_categories
+          )
+        `)
+        .eq('is_active', true);
+
+      // Filter by vendor_id in memory
+      assignments = result.data?.filter((a: any) => a.product?.vendor_id === vendorId) || [];
+      error = result.error;
     }
 
-    const { data: assignments, error } = await query;
+    console.log('📊 Query result - assignments:', assignments?.length || 0, 'error:', error);
 
     if (error) {
       console.error('❌ Supabase error fetching product pricing assignments:', error);
-      throw error;
+      console.error('Error details:', JSON.stringify(error, null, 2));
+      // Return empty array instead of throwing to prevent modal crashes
+      return NextResponse.json({
+        success: true,
+        assignments: []
+      });
     }
 
     console.log(`✅ Loaded ${assignments?.length || 0} pricing assignments for product ${productId || 'vendor ' + vendorId}`);
@@ -76,7 +120,11 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { vendor_id, product_ids, blueprint_id, price_overrides = {} } = body;
 
+    console.log('💾 POST /api/vendor/product-pricing');
+    console.log('📦 Request body:', JSON.stringify({ vendor_id, product_ids, blueprint_id, price_overrides }, null, 2));
+
     if (!vendor_id || !product_ids || !blueprint_id) {
+      console.log('❌ Missing required fields');
       return NextResponse.json(
         { success: false, error: 'vendor_id, product_ids, and blueprint_id are required' },
         { status: 400 }
@@ -129,23 +177,35 @@ export async function POST(request: NextRequest) {
 
     // Insert new assignments
     if (toInsert.length > 0) {
-      const { error: insertError } = await supabase
+      console.log('📤 Inserting new assignments:', JSON.stringify(toInsert, null, 2));
+      const { data: insertedData, error: insertError } = await supabase
         .from('product_pricing_assignments')
-        .insert(toInsert);
+        .insert(toInsert)
+        .select();
 
-      if (insertError) throw insertError;
+      if (insertError) {
+        console.log('❌ Insert error:', insertError);
+        throw insertError;
+      }
+      console.log('✅ Inserted assignments:', insertedData);
     }
 
     // Update existing assignments to active
     if (toUpdate.length > 0) {
+      console.log('🔄 Updating existing assignments to active:', toUpdate);
       const { error: updateError } = await supabase
         .from('product_pricing_assignments')
         .update({ is_active: true })
         .in('id', toUpdate);
 
-      if (updateError) throw updateError;
+      if (updateError) {
+        console.log('❌ Update error:', updateError);
+        throw updateError;
+      }
+      console.log('✅ Updated assignments to active');
     }
 
+    console.log(`✅ SUCCESS: Pricing tier assigned to ${validProductIds.length} product(s)`);
     return NextResponse.json({
       success: true,
       message: `Pricing tier assigned to ${validProductIds.length} product(s)`,

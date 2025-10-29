@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { Search, X, User, Plus } from 'lucide-react';
+import { Search, X, User, Plus, Scan } from 'lucide-react';
 import { NewCustomerForm } from './POSNewCustomerForm';
+import { POSIDScanner } from './POSIDScanner';
 
 interface Customer {
   id: string;
@@ -32,7 +33,9 @@ export function POSCustomerSelector({
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(false);
   const [showNewCustomerForm, setShowNewCustomerForm] = useState(false);
-  
+  const [showIDScanner, setShowIDScanner] = useState(false);
+  const [prefilledData, setPrefilledData] = useState<any>(null);
+
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Load customers for vendor
@@ -212,7 +215,18 @@ export function POSCustomerSelector({
           </div>
 
           {/* Actions */}
-          <div className="p-2 border-t border-white/5">
+          <div className="p-2 border-t border-white/5 space-y-2">
+            <button
+              onClick={() => {
+                setShowIDScanner(true);
+                setIsOpen(false);
+              }}
+              className="w-full bg-blue-500/20 text-blue-300 border-2 border-blue-500/40 rounded-2xl py-2.5 text-[10px] uppercase tracking-[0.15em] hover:bg-blue-500/30 hover:border-blue-500/60 font-black transition-all duration-300 flex items-center justify-center gap-2"
+              style={{ fontWeight: 900 }}
+            >
+              <Scan size={12} strokeWidth={2.5} />
+              Scan ID / License
+            </button>
             <button
               onClick={() => setShowNewCustomerForm(true)}
               className="w-full bg-white/10 text-white border-2 border-white/20 rounded-2xl py-2.5 text-[10px] uppercase tracking-[0.15em] hover:bg-white/20 hover:border-white/30 font-black transition-all duration-300 flex items-center justify-center gap-2"
@@ -225,16 +239,38 @@ export function POSCustomerSelector({
         </div>
       )}
 
+      {/* ID Scanner Modal */}
+      {showIDScanner && (
+        <POSIDScanner
+          vendorId={vendorId}
+          onCustomerFound={(customer) => {
+            handleSelectCustomer(customer);
+            setShowIDScanner(false);
+          }}
+          onNoMatchFoundWithData={(idData) => {
+            setPrefilledData(idData);
+            setShowIDScanner(false);
+            setShowNewCustomerForm(true);
+          }}
+          onClose={() => setShowIDScanner(false)}
+        />
+      )}
+
       {/* New Customer Form Modal */}
       {showNewCustomerForm && (
         <NewCustomerForm
           vendorId={vendorId}
+          prefilledData={prefilledData}
           onCustomerCreated={(customer) => {
             handleSelectCustomer(customer);
             setShowNewCustomerForm(false);
+            setPrefilledData(null);
             loadCustomers(); // Refresh list
           }}
-          onCancel={() => setShowNewCustomerForm(false)}
+          onCancel={() => {
+            setShowNewCustomerForm(false);
+            setPrefilledData(null);
+          }}
         />
       )}
     </div>

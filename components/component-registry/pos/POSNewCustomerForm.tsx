@@ -19,17 +19,32 @@ interface NewCustomerFormProps {
   vendorId: string;
   onCustomerCreated: (customer: Customer) => void;
   onCancel: () => void;
+  prefilledData?: {
+    firstName?: string;
+    lastName?: string;
+    dateOfBirth?: string;
+    address?: string;
+    city?: string;
+    state?: string;
+    postalCode?: string;
+  } | null;
 }
 
 export function NewCustomerForm({
   vendorId,
   onCustomerCreated,
   onCancel,
+  prefilledData = null,
 }: NewCustomerFormProps) {
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
+  const [firstName, setFirstName] = useState(prefilledData?.firstName || '');
+  const [lastName, setLastName] = useState(prefilledData?.lastName || '');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
+  const [dateOfBirth, setDateOfBirth] = useState(prefilledData?.dateOfBirth || '');
+  const [address, setAddress] = useState(prefilledData?.address || '');
+  const [city, setCity] = useState(prefilledData?.city || '');
+  const [state, setState] = useState(prefilledData?.state || '');
+  const [postalCode, setPostalCode] = useState(prefilledData?.postalCode || '');
   const [creating, setCreating] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -51,6 +66,11 @@ export function NewCustomerForm({
           lastName,
           phone: phone || null,
           email: email || `${firstName.toLowerCase()}.${lastName.toLowerCase()}@walk-in.local`,
+          dateOfBirth: dateOfBirth || null,
+          address: address || null,
+          city: city || null,
+          state: state || null,
+          postalCode: postalCode || null,
         }),
       });
 
@@ -139,6 +159,76 @@ export function NewCustomerForm({
               Auto-generated if empty
             </div>
           </div>
+
+          <div>
+            <label className="text-white/40 text-[10px] uppercase tracking-[0.15em] mb-2 block">
+              Date of Birth {prefilledData?.dateOfBirth && '(From ID)'}
+            </label>
+            <input
+              type="date"
+              value={dateOfBirth}
+              onChange={(e) => setDateOfBirth(e.target.value)}
+              className="w-full bg-white/5 border border-white/10 text-white px-3 py-2.5 rounded-2xl text-xs focus:outline-none focus:border-white/20 hover:bg-white/10 transition-all"
+            />
+          </div>
+
+          {prefilledData && (
+            <>
+              <div>
+                <label className="text-white/40 text-[10px] uppercase tracking-[0.15em] mb-2 block">
+                  Address (From ID)
+                </label>
+                <input
+                  type="text"
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  className="w-full bg-white/5 border border-white/10 text-white px-3 py-2.5 rounded-2xl text-xs focus:outline-none focus:border-white/20 hover:bg-white/10 transition-all"
+                  placeholder="Street address"
+                />
+              </div>
+
+              <div className="grid grid-cols-3 gap-2">
+                <div className="col-span-2">
+                  <label className="text-white/40 text-[10px] uppercase tracking-[0.15em] mb-2 block">
+                    City
+                  </label>
+                  <input
+                    type="text"
+                    value={city}
+                    onChange={(e) => setCity(e.target.value)}
+                    className="w-full bg-white/5 border border-white/10 text-white px-3 py-2.5 rounded-2xl text-xs focus:outline-none focus:border-white/20 hover:bg-white/10 transition-all"
+                    placeholder="City"
+                  />
+                </div>
+                <div>
+                  <label className="text-white/40 text-[10px] uppercase tracking-[0.15em] mb-2 block">
+                    State
+                  </label>
+                  <input
+                    type="text"
+                    value={state}
+                    onChange={(e) => setState(e.target.value)}
+                    className="w-full bg-white/5 border border-white/10 text-white px-3 py-2.5 rounded-2xl text-xs focus:outline-none focus:border-white/20 hover:bg-white/10 transition-all"
+                    placeholder="ST"
+                    maxLength={2}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-white/40 text-[10px] uppercase tracking-[0.15em] mb-2 block">
+                  Postal Code
+                </label>
+                <input
+                  type="text"
+                  value={postalCode}
+                  onChange={(e) => setPostalCode(e.target.value)}
+                  className="w-full bg-white/5 border border-white/10 text-white px-3 py-2.5 rounded-2xl text-xs focus:outline-none focus:border-white/20 hover:bg-white/10 transition-all"
+                  placeholder="ZIP code"
+                />
+              </div>
+            </>
+          )}
 
           <div className="flex gap-2 pt-4">
             <button
