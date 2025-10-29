@@ -352,26 +352,25 @@ export default function VendorPricingPage() {
   return (
     <div className="w-full px-4 lg:px-0">
       {/* Header */}
-      <div className="mb-8 md:mb-12">
-        <div className="flex items-center justify-between gap-4 flex-wrap">
-          <div className="flex items-center gap-4 md:gap-6">
-            <DollarSign size={56} className="md:hidden text-white/90" strokeWidth={1.5} />
-            <DollarSign size={72} className="hidden md:block text-white/90" strokeWidth={1.5} />
+      <div className="mb-12 md:mb-16">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-6">
+            <DollarSign size={64} className="md:hidden text-white" strokeWidth={1} />
+            <DollarSign size={80} className="hidden md:block text-white" strokeWidth={1} />
             <div>
-              <h1 className="text-2xl md:text-4xl font-thin text-white tracking-tight mb-1">
+              <h1 className="text-3xl md:text-5xl font-extralight text-white tracking-tight mb-2">
                 Pricing
               </h1>
-              <p className="text-white/50 text-xs md:text-sm font-light tracking-wide">
+              <p className="text-white/40 text-sm font-light">
                 Configure your pricing tiers
               </p>
             </div>
           </div>
           <Link
             href="/vendor/cost-plus-pricing"
-            className="flex items-center gap-2 text-white/60 hover:text-white transition-all duration-300 text-sm"
+            className="text-white/40 hover:text-white transition-all duration-300 text-sm font-light"
           >
-            <Calculator size={20} strokeWidth={1.5} />
-            Cost Plus
+            Cost Plus Calculator
           </Link>
         </div>
       </div>
@@ -389,70 +388,65 @@ export default function VendorPricingPage() {
             const isWholesale = config.blueprint.slug.includes('wholesale');
 
             return (
-              <div key={config.id} className="space-y-6">
+              <div key={config.id} className="space-y-12 py-8">
                 {/* Config Header */}
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between pb-8 border-b border-white/[0.06]">
                   <div>
-                    <h2 className="text-xl text-white font-light mb-1">{config.blueprint.name}</h2>
-                    <p className="text-white/50 text-sm">{config.blueprint.description}</p>
+                    <h2 className="text-2xl text-white font-extralight mb-2">{config.blueprint.name}</h2>
+                    <p className="text-white/40 text-sm font-light">{config.blueprint.description}</p>
                   </div>
                   <button
                     onClick={() => disableConfig(config.id)}
                     disabled={saving}
-                    className="text-white/40 hover:text-red-500 transition-all text-sm"
+                    className="text-white/30 hover:text-white transition-all text-sm font-light"
                   >
                     Remove
                   </button>
                 </div>
 
                 {/* Settings */}
-                <div className="space-y-3 pb-4 border-b border-white/5">
-                  <div className="flex items-center justify-between">
-                    <span className="text-white/60 text-sm">Pricing mode</span>
+                <div className="space-y-8">
+                  <div className="flex items-baseline justify-between">
+                    <span className="text-white/50 text-sm font-light">Pricing mode</span>
                     <select
                       value={pricingMode[config.id] || 'fixed'}
                       onChange={(e) => setPricingMode(prev => ({ ...prev, [config.id]: e.target.value as 'fixed' | 'cost_plus' }))}
-                      className="bg-transparent border-none text-white text-sm focus:outline-none cursor-pointer"
+                      className="bg-transparent border-none text-white text-sm font-light focus:outline-none cursor-pointer text-right"
                     >
                       <option value="fixed">Fixed Price</option>
                       <option value="cost_plus">Cost Plus Markup</option>
                     </select>
                   </div>
                   {pricingMode[config.id] === 'cost_plus' && (
-                    <div className="bg-white/5 border border-white/10 rounded-lg p-3">
-                      <p className="text-white/70 text-xs mb-2">
-                        Enter markup amount to add on top of each product's cost
-                      </p>
-                      <p className="text-white/50 text-xs">
-                        Example: If product cost is $1000/lb and you enter +$200, final price = $1200/lb
-                      </p>
+                    <div className="text-white/40 text-xs font-light leading-relaxed max-w-2xl">
+                      Enter markup amounts to add on top of each product's cost. Example: Product cost $1000/lb + $200 markup = $1200/lb final price
                     </div>
                   )}
-                  <div className="flex items-center justify-between">
-                    <span className="text-white/60 text-sm">Unit of measure</span>
+                  <div className="flex items-baseline justify-between">
+                    <span className="text-white/50 text-sm font-light">Unit of measure</span>
                     <select
                       value={displayUnits[config.id] || 'gram'}
                       onChange={(e) => setDisplayUnits(prev => ({ ...prev, [config.id]: e.target.value }))}
-                      className="bg-transparent border-none text-white text-sm focus:outline-none cursor-pointer"
+                      className="bg-transparent border-none text-white text-sm font-light focus:outline-none cursor-pointer text-right"
                     >
                       <optgroup label="Weight">
-                        <option value="gram">Grams (g)</option>
-                        <option value="ounce">Ounces (oz)</option>
-                        <option value="pound">Pounds (lb)</option>
-                        <option value="kilogram">Kilograms (kg)</option>
+                        <option value="gram">Grams</option>
+                        <option value="ounce">Ounces</option>
+                        <option value="pound">Pounds</option>
+                        <option value="kilogram">Kilograms</option>
                       </optgroup>
                       <optgroup label="Volume">
-                        <option value="milliliter">Milliliters (ml)</option>
-                        <option value="liter">Liters (L)</option>
-                        <option value="fluid_ounce">Fluid Ounces (fl oz)</option>
-                        <option value="gallon">Gallons (gal)</option>
+                        <option value="milliliter">Milliliters</option>
+                        <option value="liter">Liters</option>
+                        <option value="fluid_ounce">Fluid Ounces</option>
+                        <option value="gallon">Gallons</option>
                       </optgroup>
                     </select>
                   </div>
                 </div>
 
                 {/* Price Tiers */}
-                <div className="space-y-3">
+                <div className="space-y-6">
                   {(customTiers[config.id] || config.blueprint.price_breaks)
                     .sort((a, b) => a.sort_order - b.sort_order)
                     .map((priceBreak) => {
@@ -463,28 +457,28 @@ export default function VendorPricingPage() {
                       return (
                         <div
                           key={priceBreak.break_id}
-                          className={`flex items-center gap-4 py-4 border-b border-white/5 transition-opacity ${!tierEnabled ? 'opacity-40' : ''}`}
+                          className={`flex items-center gap-6 transition-opacity ${!tierEnabled ? 'opacity-30' : ''}`}
                         >
                           {/* Enable Toggle */}
                           <input
                             type="checkbox"
                             checked={tierEnabled}
                             onChange={() => toggleTierEnabled(config.id, priceBreak.break_id)}
-                            className="w-4 h-4 cursor-pointer"
+                            className="w-5 h-5 cursor-pointer rounded-sm"
                           />
 
                           {/* Tier Info */}
                           <div className="flex-1 min-w-0">
-                            <div className="text-white text-sm">
+                            <div className="text-white text-base font-light mb-1">
                               {priceBreak.label}
                             </div>
-                            <div className="text-white/50 text-xs">
+                            <div className="text-white/40 text-sm font-light">
                               {isWholesale && (priceBreak.min_qty || priceBreak.max_qty) ? (
                                 <>
                                   {`${priceBreak.min_qty || 0}–${priceBreak.max_qty || '∞'} ${formatUnit(displayUnits[config.id] || 'pound')}`}
                                   {pricingMode[config.id] === 'cost_plus' && currentPrice && tierEnabled && (
-                                    <span className="ml-2 text-green-400/70">
-                                      (Cost + ${currentPrice})
+                                    <span className="ml-2 text-white/50">
+                                      Cost + ${currentPrice}
                                     </span>
                                   )}
                                 </>
@@ -496,8 +490,8 @@ export default function VendorPricingPage() {
                                     return `${converted.toFixed(converted < 1 ? 3 : converted < 10 ? 2 : 1)}${formatUnit(currentUnit)}`;
                                   })()}`}
                                   {pricingMode[config.id] === 'cost_plus' && currentPrice && tierEnabled && (
-                                    <span className="ml-2 text-green-400/70">
-                                      (Cost + ${currentPrice})
+                                    <span className="ml-2 text-white/50">
+                                      Cost + ${currentPrice}
                                     </span>
                                   )}
                                 </>
@@ -506,19 +500,19 @@ export default function VendorPricingPage() {
                           </div>
 
                           {/* Price Input */}
-                          <div className="w-32">
+                          <div className="w-40">
                             <div className="relative">
-                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40 text-sm">
-                                {pricingMode[config.id] === 'cost_plus' ? '+' : '$'}
+                              <span className="absolute left-0 top-1/2 -translate-y-1/2 text-white/40 text-base font-light">
+                                {pricingMode[config.id] === 'cost_plus' ? '+$' : '$'}
                               </span>
                               <input
                                 type="number"
                                 step="0.01"
                                 value={currentPrice}
                                 onChange={(e) => updatePrice(config.id, priceBreak.break_id, e.target.value)}
-                                placeholder={pricingMode[config.id] === 'cost_plus' ? '100' : '0.00'}
+                                placeholder={pricingMode[config.id] === 'cost_plus' ? '100' : '1200'}
                                 disabled={!tierEnabled}
-                                className="w-full bg-transparent border-b border-white/10 text-white text-sm pl-6 pr-2 py-2 focus:outline-none focus:border-white/30 disabled:opacity-50"
+                                className="w-full bg-transparent border-b border-white/10 text-white text-base font-light pl-8 pr-2 py-3 focus:outline-none focus:border-white/30 disabled:opacity-50 transition-colors"
                               />
                             </div>
                           </div>
@@ -527,9 +521,9 @@ export default function VendorPricingPage() {
                           <button
                             onClick={() => removeTier(config.id, priceBreak.break_id)}
                             disabled={!tierEnabled}
-                            className="text-white/30 hover:text-white/60 disabled:opacity-20"
+                            className="text-white/20 hover:text-white transition-all disabled:opacity-10"
                           >
-                            <Trash2 size={16} strokeWidth={1.5} />
+                            <Trash2 size={18} strokeWidth={1} />
                           </button>
                         </div>
                       );
@@ -537,21 +531,20 @@ export default function VendorPricingPage() {
                 </div>
 
                 {/* Actions */}
-                <div className="flex items-center gap-4 pt-4">
+                <div className="flex items-center gap-8 pt-8 border-t border-white/[0.06]">
                   <button
                     onClick={() => addTier(config.id)}
-                    className="text-white/40 hover:text-white transition-all text-sm flex items-center gap-2"
+                    className="text-white/40 hover:text-white transition-all text-sm font-light flex items-center gap-2"
                   >
-                    <Plus size={16} strokeWidth={1.5} />
+                    <Plus size={18} strokeWidth={1} />
                     Add Tier
                   </button>
                   <div className="flex-1"></div>
                   <button
                     onClick={() => saveConfig(config)}
                     disabled={saving}
-                    className="bg-white text-black px-6 py-2 text-sm hover:bg-white/90 disabled:opacity-50 transition-all flex items-center gap-2"
+                    className="bg-white text-black px-8 py-3 text-sm font-light hover:bg-white/90 disabled:opacity-50 transition-all"
                   >
-                    <Check size={16} strokeWidth={2} />
                     {saving ? 'Saving...' : 'Save'}
                   </button>
                 </div>
@@ -561,17 +554,17 @@ export default function VendorPricingPage() {
 
           {/* Available Blueprints */}
           {availableBlueprints.length > 0 && (
-            <div className="space-y-4 pt-8 border-t border-white/5">
-              <h3 className="text-white/60 text-sm">Add pricing structure</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-8 pt-16 border-t border-white/[0.06]">
+              <h3 className="text-white/40 text-sm font-light">Add pricing structure</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {availableBlueprints.map((blueprint) => (
-                  <div key={blueprint.id} className="border border-white/10 p-6 hover:border-white/20 transition-all">
-                    <h4 className="text-white text-base mb-2">{blueprint.name}</h4>
-                    <p className="text-white/50 text-sm mb-4">{blueprint.description}</p>
+                  <div key={blueprint.id} className="group">
+                    <h4 className="text-white text-lg font-light mb-2">{blueprint.name}</h4>
+                    <p className="text-white/40 text-sm font-light mb-6">{blueprint.description}</p>
                     <button
                       onClick={() => enableBlueprint(blueprint.id)}
                       disabled={saving}
-                      className="text-white/60 hover:text-white text-sm transition-all"
+                      className="text-white/40 hover:text-white text-sm font-light transition-all"
                     >
                       Enable
                     </button>
@@ -583,9 +576,9 @@ export default function VendorPricingPage() {
 
           {/* Empty State */}
           {configs.length === 0 && availableBlueprints.length === 0 && (
-            <div className="text-center py-20">
-              <DollarSign size={48} className="text-white/20 mx-auto mb-4" strokeWidth={1.5} />
-              <p className="text-white/40 text-sm">No pricing structures available</p>
+            <div className="text-center py-32">
+              <DollarSign size={64} className="text-white/10 mx-auto mb-6" strokeWidth={1} />
+              <p className="text-white/30 text-sm font-light">No pricing structures available</p>
             </div>
           )}
         </div>
