@@ -81,6 +81,8 @@ export async function POST(request: NextRequest) {
       spacing,
       gridColumns,
       gridRows,
+      heroPriceTier,
+      priceDisplayMode,
       devices, // Array of { deviceId, position, categories }
     } = body;
 
@@ -115,6 +117,8 @@ export async function POST(request: NextRequest) {
         },
         shared_grid_columns: gridColumns || 4,
         shared_grid_rows: gridRows || 3,
+        shared_hero_price_tier: heroPriceTier || '3_5g',
+        shared_price_display_mode: priceDisplayMode || 'hero_with_supporting',
       })
       .select()
       .single();

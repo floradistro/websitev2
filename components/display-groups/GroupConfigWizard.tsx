@@ -420,6 +420,89 @@ export default function GroupConfigWizard({ vendorId, existingGroup, onComplete,
                     </div>
                   </div>
                 </div>
+
+                {/* Pricing Configuration */}
+                <div className="border-t border-white/10 pt-6 mt-6">
+                  <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                    <Palette className="w-5 h-5 text-purple-400" />
+                    Pricing Display
+                  </h3>
+
+                  {/* Hero Price Tier Selector */}
+                  <div className="mb-6">
+                    <label className="block text-sm font-medium text-white mb-3">
+                      Which price to highlight
+                    </label>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                      {PRICE_TIERS.map((tier) => (
+                        <button
+                          key={tier.id}
+                          onClick={() => setHeroPriceTier(tier.id)}
+                          className={`p-3 rounded-lg border-2 transition-all text-left ${
+                            heroPriceTier === tier.id
+                              ? 'border-purple-500 bg-purple-500/20'
+                              : 'border-white/10 bg-white/5 hover:border-white/20'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="font-semibold text-white text-sm">{tier.name}</span>
+                            {heroPriceTier === tier.id && (
+                              <div className="w-4 h-4 rounded-full bg-purple-500 flex items-center justify-center">
+                                <Check className="w-3 h-3 text-white" />
+                              </div>
+                            )}
+                          </div>
+                          <div className="text-xs text-white/60">{tier.description}</div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Price Display Mode */}
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-white mb-3">
+                      How to display prices
+                    </label>
+                    <div className="space-y-2">
+                      {PRICE_DISPLAY_MODES.map((mode) => (
+                        <button
+                          key={mode.id}
+                          onClick={() => setPriceDisplayMode(mode.id)}
+                          className={`w-full p-3 rounded-lg border-2 transition-all text-left ${
+                            priceDisplayMode === mode.id
+                              ? 'border-purple-500 bg-purple-500/20'
+                              : 'border-white/10 bg-white/5 hover:border-white/20'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <div className="font-semibold text-white text-sm mb-1">{mode.name}</div>
+                              <div className="text-xs text-white/60">{mode.description}</div>
+                            </div>
+                            {priceDisplayMode === mode.id && (
+                              <div className="w-5 h-5 rounded-full bg-purple-500 flex items-center justify-center">
+                                <Check className="w-3 h-3 text-white" />
+                              </div>
+                            )}
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+                    <div className="text-sm text-white/80">
+                      <div className="font-medium mb-1">Pricing Preview</div>
+                      <div className="text-white/60">
+                        Products will show <span className="font-semibold text-white">{PRICE_TIERS.find(t => t.id === heroPriceTier)?.name}</span> pricing
+                        {priceDisplayMode === 'hero_only' && ' only'}
+                        {priceDisplayMode === 'hero_with_supporting' && ' with 1-2 supporting tiers'}
+                        {priceDisplayMode === 'all_tiers' && ' with all available tiers'}
+                        {priceDisplayMode === 'minimal' && ', showing only the smallest tier'}
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </motion.div>
             )}
 

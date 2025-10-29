@@ -91,13 +91,20 @@ export async function POST(request: NextRequest) {
             .select()
             .single();
 
-          if (createError) {
+          if (createError || !newCustomer) {
             console.error('Failed to create customer:', createError);
             errors++;
             continue;
           }
 
           customer = newCustomer;
+        }
+
+        // Skip if customer is still null (shouldn't happen but TypeScript safety)
+        if (!customer) {
+          console.error('Customer is null after creation attempt');
+          errors++;
+          continue;
         }
 
         // Upsert loyalty data
