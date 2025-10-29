@@ -426,6 +426,62 @@ export class AlpineIQClient {
   }
 
   // ----------------------------------------------------------------------------
+  // LOYALTY MEMBERS
+  // ----------------------------------------------------------------------------
+
+  /**
+   * Get all loyalty program members
+   */
+  async getLoyaltyMembers(): Promise<Array<{
+    id: string;
+    email: string;
+    phone: string;
+    firstName?: string;
+    lastName?: string;
+    birthdate?: string;
+    points?: number;
+    tier?: string;
+    tierLevel?: number;
+    lifetimePoints?: number;
+  }>> {
+    // Get audiences (loyalty members are in audiences)
+    const audiences = await this.request<any>('GET', `/api/v1.1/audiences/${this.config.userId}`);
+
+    // Get contacts from the main audience
+    const contacts = [];
+    if (audiences.data && audiences.data.length > 0) {
+      for (const audience of audiences.data) {
+        try {
+          const audienceContacts = await this.request<any>(
+            'GET',
+            `/api/v1.1/contacts/${this.config.userId}?audienceId=${audience.id}&limit=1000`
+          );
+
+          if (audienceContacts.data) {
+            contacts.push(...audienceContacts.data);
+          }
+        } catch (error) {
+          console.error(`Failed to fetch audience ${audience.id}:`, error);
+        }
+      }
+    }
+
+    // Transform to standardized format
+    return contacts.map((contact: any) => ({
+      id: contact.id || contact.universalID,
+      email: contact.email,
+      phone: contact.phone,
+      firstName: contact.firstName,
+      lastName: contact.lastName,
+      birthdate: contact.birthdate,
+      points: contact.wallet?.points || 0,
+      tier: contact.wallet?.tier || 'Member',
+      tierLevel: contact.wallet?.tierLevel || 1,
+      lifetimePoints: contact.wallet?.lifetimePoints || 0,
+    }));
+  }
+
+  // ----------------------------------------------------------------------------
   // UTILITY METHODS
   // ----------------------------------------------------------------------------
 

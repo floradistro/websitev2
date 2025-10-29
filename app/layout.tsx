@@ -5,6 +5,7 @@ import "./globals.css";
 import "./(storefront)/storefront.css";
 import NotificationToast from "@/components/NotificationToast";
 import LoadingBar from "@/components/LoadingBar";
+import InstallPWAPrompt from "@/components/InstallPWAPrompt";
 import Providers from "./providers";
 
 // Enable static optimization for better performance
@@ -98,6 +99,7 @@ export default function RootLayout({
           </Suspense>
           {children}
           <NotificationToast />
+          <InstallPWAPrompt />
         </Providers>
       </body>
     </html>

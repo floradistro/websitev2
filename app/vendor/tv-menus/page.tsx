@@ -753,7 +753,7 @@ export default function SimpleTVMenusPage() {
                     {device.connection_status === 'online' && device.active_menu_id ? (
                       <iframe
                         key={`${device.id}-${device.active_menu_id}-${previewRefresh}`}
-                        src={`/tv-display?vendor_id=${vendor?.id}&location_id=${device.location_id || ''}&tv_number=${device.tv_number}&menu_id=${device.active_menu_id}&preview=true`}
+                        src={`/tv-display?vendor_id=${vendor?.id}&location_id=${device.location_id || ''}&tv_number=${device.tv_number}&device_id=${device.id}&menu_id=${device.active_menu_id}&preview=true`}
                         className="w-full h-full border-0 pointer-events-none"
                         title={device.device_name}
                       />

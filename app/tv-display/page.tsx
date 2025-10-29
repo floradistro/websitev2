@@ -23,6 +23,7 @@ function TVDisplayContent() {
   const tvNumberParam = searchParams.get('tv_number');
   const tvNumber = tvNumberParam && tvNumberParam !== '' ? tvNumberParam : '1';
   const menuIdParam = searchParams.get('menu_id');
+  const deviceIdParam = searchParams.get('device_id'); // For preview mode
   const isPreview = searchParams.get('preview') === 'true'; // Skip registration for iframe previews
 
   // State
@@ -43,10 +44,18 @@ function TVDisplayContent() {
    * Device Registration
    */
   useEffect(() => {
-    // Skip device registration in preview mode (dashboard iframes)
-    if (isPreview) {
-      console.log('👁️ Preview mode - skipping device registration');
+    // In preview mode, use the provided device_id instead of registering
+    if (isPreview && deviceIdParam) {
+      console.log('👁️ Preview mode - using provided device ID:', deviceIdParam);
+      setDeviceId(deviceIdParam);
       setConnectionStatus('online'); // Show as online for preview
+      return;
+    }
+
+    // Skip device registration if no vendor/tv_number
+    if (isPreview) {
+      console.log('👁️ Preview mode but no device_id - skipping registration');
+      setConnectionStatus('online');
       return;
     }
 
@@ -178,13 +187,14 @@ function TVDisplayContent() {
     }, 30000);
 
     return () => clearInterval(heartbeatInterval);
-  }, [vendorId, locationId, tvNumber, deviceId, isPreview]);
+  }, [vendorId, locationId, tvNumber, deviceId, isPreview, deviceIdParam]);
 
   /**
    * Check for Display Group Membership
    */
   useEffect(() => {
-    if (!deviceId || isPreview) return;
+    if (!deviceId) return;
+    // Allow preview mode to check groups too - just need deviceId
 
     const checkGroupMembership = async () => {
       try {
@@ -214,7 +224,7 @@ function TVDisplayContent() {
     };
 
     checkGroupMembership();
-  }, [deviceId, isPreview]);
+  }, [deviceId]);
 
   /**
    * Load Menu & Products

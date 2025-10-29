@@ -33,6 +33,26 @@ const DISPLAY_MODES = [
   { id: 'carousel', name: 'Carousel', description: 'Rotating pages with transitions' },
 ];
 
+const PRICE_TIERS = [
+  { id: '1g', name: 'Gram', description: 'Show 1g pricing' },
+  { id: '3_5g', name: 'Eighth (3.5g)', description: 'Show eighth pricing' },
+  { id: '7g', name: 'Quarter (7g)', description: 'Show quarter pricing' },
+  { id: '14g', name: 'Half (14g)', description: 'Show half ounce pricing' },
+  { id: '28g', name: 'Ounce (28g)', description: 'Show ounce pricing' },
+];
+
+const PRICE_DISPLAY_MODES = [
+  { id: 'hero_only', name: 'Hero Only', description: 'Show only the main price tier (cleanest)' },
+  { id: 'hero_with_supporting', name: 'Hero + Others', description: 'Main price + 1-2 supporting prices' },
+  { id: 'all_tiers', name: 'All Tiers', description: 'Show all available price tiers' },
+  { id: 'minimal', name: 'Minimal', description: 'Show only smallest tier' },
+];
+
+const PRICE_LOCATIONS = [
+  { id: 'on_card', name: 'On Product Card', description: 'Pricing shown within each product' },
+  { id: 'header', name: 'Header Banner', description: 'Pricing shown in header (coming soon)', disabled: true },
+];
+
 export default function GroupConfigWizard({ vendorId, existingGroup, onComplete, onClose }: GroupConfigWizardProps) {
   const [step, setStep] = useState(1);
   const [availableDevices, setAvailableDevices] = useState<Device[]>([]);
@@ -49,6 +69,11 @@ export default function GroupConfigWizard({ vendorId, existingGroup, onComplete,
   const [gridRows, setGridRows] = useState(3);
   const [deviceCategories, setDeviceCategories] = useState<{ [deviceId: string]: string[] }>({});
 
+  // Pricing configuration
+  const [heroPriceTier, setHeroPriceTier] = useState('3_5g');
+  const [priceDisplayMode, setPriceDisplayMode] = useState('hero_with_supporting');
+  const [priceLocation, setPriceLocation] = useState('on_card');
+
   useEffect(() => {
     loadData();
   }, [vendorId]);
@@ -62,6 +87,11 @@ export default function GroupConfigWizard({ vendorId, existingGroup, onComplete,
       setDisplayMode(existingGroup.shared_display_mode || 'dense');
       setGridColumns(existingGroup.shared_grid_columns || 4);
       setGridRows(existingGroup.shared_grid_rows || 3);
+
+      // Pricing configuration
+      setHeroPriceTier(existingGroup.shared_hero_price_tier || '3_5g');
+      setPriceDisplayMode(existingGroup.shared_price_display_mode || 'hero_with_supporting');
+      setPriceLocation('on_card'); // Default for now
 
       // Set selected devices and categories
       if (existingGroup.members) {
@@ -129,6 +159,8 @@ export default function GroupConfigWizard({ vendorId, existingGroup, onComplete,
       displayMode,
       gridColumns,
       gridRows,
+      heroPriceTier,
+      priceDisplayMode,
       devices,
     });
   };

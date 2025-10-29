@@ -2,6 +2,15 @@
   "framework": "nextjs",
   "regions": ["iad1"],
   "functions": {
+    "app/api/ai/**/*.ts": {
+      "maxDuration": 60
+    },
+    "app/api/vendor/marketing/**/*.ts": {
+      "maxDuration": 60
+    },
+    "app/api/vendor/media/**/*.ts": {
+      "maxDuration": 60
+    },
     "app/api/**/*.ts": {
       "maxDuration": 30
     }
