@@ -2,11 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { DollarSign, Save, AlertCircle, Check, Calculator, Package, Plus, Trash2 } from 'lucide-react';
+import { DollarSign, Calculator, Plus, Trash2, Check } from 'lucide-react';
 import { showNotification } from '@/components/NotificationToast';
 import { useAppAuth } from '@/context/AppAuthContext';
 
-// Unit conversion utilities (inline to avoid SSR issues)
+// Unit conversion utilities
 const CONVERSIONS: any = {
   gram: 1,
   ounce: 28.3495,
@@ -80,7 +80,6 @@ export default function VendorPricingPage() {
     }
   }, [authLoading, isAuthenticated]);
 
-
   async function loadPricingData(vendorId: string) {
     setLoading(true);
     try {
@@ -90,34 +89,30 @@ export default function VendorPricingPage() {
       if (data.success) {
         setConfigs(data.configs || []);
         setAvailableBlueprints(data.available_blueprints || []);
-        
-        // Initialize editing state
+
         const initialEditing: any = {};
         const initialTiers: any = {};
         const initialUnits: any = {};
-        
+
         data.configs?.forEach((config: PricingConfig) => {
-          // Initialize pricing values with enabled: true by default
           const pricingVals = config.pricing_values || {};
           const initializedVals: any = {};
-          
+
           config.blueprint?.price_breaks.forEach(pb => {
             const existingVal = pricingVals[pb.break_id];
-            // Ensure enabled field exists - default to true if not set
             initializedVals[pb.break_id] = {
               price: existingVal?.price || '',
               enabled: existingVal?.enabled !== undefined ? existingVal.enabled : true
             };
           });
-          
+
           initialEditing[config.id] = initializedVals;
           initialTiers[config.id] = config.blueprint?.price_breaks || [];
-          
-          // Set display unit (default based on blueprint type)
+
           const isWholesale = config.blueprint?.slug.includes('wholesale');
           initialUnits[config.id] = config.display_unit || (isWholesale ? 'pound' : 'gram');
         });
-        
+
         setEditingPrices(initialEditing);
         setCustomTiers(initialTiers);
         setDisplayUnits(initialUnits);
@@ -139,7 +134,7 @@ export default function VendorPricingPage() {
 
     const newTier: PriceBreak = {
       break_id: `custom_tier_${nextOrder}_${Date.now()}`,
-      label: isWholesale ? `Tier ${nextOrder} (Custom)` : `Custom ${nextOrder}`,
+      label: isWholesale ? `Tier ${nextOrder}` : `Custom ${nextOrder}`,
       min_qty: isWholesale ? nextOrder * 10 : undefined,
       max_qty: isWholesale ? null : undefined,
       qty: isWholesale ? undefined : 1,
@@ -159,7 +154,6 @@ export default function VendorPricingPage() {
       [configId]: prev[configId].filter(t => t.break_id !== breakId)
     }));
 
-    // Also remove from pricing values
     setEditingPrices(prev => {
       const updated = { ...prev };
       if (updated[configId]) {
@@ -182,11 +176,9 @@ export default function VendorPricingPage() {
     const vendorId = vendor?.id;
     if (!vendorId) return;
 
-    // Find the blueprint to initialize pricing_values properly
     const blueprint = availableBlueprints.find(b => b.id === blueprintId);
     if (!blueprint) return;
 
-    // Initialize pricing_values with all tiers enabled by default
     const initialPricingValues: any = {};
     blueprint.price_breaks.forEach(pb => {
       initialPricingValues[pb.break_id] = {
@@ -210,12 +202,12 @@ export default function VendorPricingPage() {
       });
 
       const data = await response.json();
-      
+
       if (data.success) {
         showNotification({
           type: 'success',
           title: 'Pricing Enabled',
-          message: 'Configure your prices below. They will apply to all your products.'
+          message: 'Configure your prices below'
         });
         loadPricingData(vendorId);
       }
@@ -234,24 +226,23 @@ export default function VendorPricingPage() {
     const vendorId = vendor?.id;
     if (!vendorId) return;
 
-    // Validate at least one tier is enabled with a price
     const prices = editingPrices[config.id] || {};
-    const hasAtLeastOnePrice = Object.values(prices).some((p: any) => 
+    const hasAtLeastOnePrice = Object.values(prices).some((p: any) =>
       p.enabled !== false && p.price && parseFloat(p.price) > 0
     );
-    
+
     if (!hasAtLeastOnePrice) {
       showNotification({
         type: 'warning',
         title: 'No Active Prices',
-        message: 'Please enable and set at least one tier price before saving.'
+        message: 'Please enable and set at least one tier price'
       });
       return;
     }
 
     try {
       setSaving(true);
-      
+
       const response = await fetch(`/api/vendor/pricing-config/${config.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -264,12 +255,12 @@ export default function VendorPricingPage() {
       });
 
       const data = await response.json();
-      
+
       if (data.success) {
         showNotification({
           type: 'success',
-          title: 'Prices Saved',
-          message: 'Your pricing has been updated and applies to all products.'
+          title: 'Saved',
+          message: 'Your pricing has been updated'
         });
         loadPricingData(vendorId);
       }
@@ -292,7 +283,7 @@ export default function VendorPricingPage() {
         [breakId]: {
           ...prev[configId]?.[breakId],
           price,
-          enabled: prev[configId]?.[breakId]?.enabled !== false ? true : prev[configId][breakId].enabled
+          enabled: prev[configId]?.[breakId]?.enabled !== false
         }
       }
     }));
@@ -302,43 +293,40 @@ export default function VendorPricingPage() {
     setEditingPrices(prev => {
       const current = prev[configId]?.[breakId] || {};
       const currentEnabled = current.enabled === true || current.enabled === undefined;
-      const newEnabled = !currentEnabled;
-      
+
       return {
         ...prev,
         [configId]: {
           ...prev[configId],
           [breakId]: {
             price: current.price || '',
-            enabled: newEnabled
+            enabled: !currentEnabled
           }
         }
       };
     });
   }
 
-  async function disableConfig(configId: string, configName: string) {
+  async function disableConfig(configId: string) {
     const vendorId = vendor?.id;
     if (!vendorId) return;
 
     try {
       setSaving(true);
-      
+
       const response = await fetch(`/api/vendor/pricing-config/${configId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          is_active: false
-        })
+        body: JSON.stringify({ is_active: false })
       });
 
       const data = await response.json();
-      
+
       if (data.success) {
         showNotification({
           type: 'success',
-          title: 'Pricing Disabled',
-          message: `${configName} has been disabled and removed from products.`
+          title: 'Disabled',
+          message: 'Pricing has been disabled'
         });
         loadPricingData(vendorId);
       }
@@ -353,450 +341,204 @@ export default function VendorPricingPage() {
     }
   }
 
-  const isRetailVendor = configs.some(c => c.blueprint?.slug?.includes('retail'));
-  const isWholesaleVendor = configs.some(c => c.blueprint?.slug?.includes('wholesale'));
-  const isHybrid = isRetailVendor && isWholesaleVendor;
-
   return (
     <div className="w-full px-4 lg:px-0">
       {/* Header */}
-      <div className="flex justify-between items-start gap-4 mb-12">
-        <div className="min-w-0">
-          <h1 className="text-3xl font-thin text-white/90 tracking-tight mb-2">
-            Pricing Configuration
-          </h1>
-          <p className="text-white/40 text-xs font-light tracking-wide">
-            CONFIGURE YOUR PRICING · AUTO-APPLIES TO ALL PRODUCTS
-          </p>
-        </div>
-        <Link
-          href="/vendor/cost-plus-pricing"
-          className="flex items-center gap-2 bg-gradient-to-r from-white/10 to-white/5 text-white/70 border border-white/10 hover:border-white/20 hover:text-white transition-all duration-300 rounded-[14px] px-4 py-3 text-xs font-light uppercase tracking-[0.15em] whitespace-nowrap"
-        >
-          <Calculator size={14} strokeWidth={1.5} />
-          <span className="hidden sm:inline">Cost-Plus</span>
-          <span className="sm:hidden">Cost+</span>
-        </Link>
-      </div>
-
-      {/* Info Banner */}
-      <div className="minimal-glass p-6 mb-8">
-        <div className="flex gap-3">
-          <AlertCircle size={20} className="text-white/60 flex-shrink-0 mt-0.5" />
-          <div>
-            <p className="text-white/90 text-sm mb-1">How Pricing Works</p>
-            <p className="text-white/50 text-xs leading-relaxed">
-              Enable a pricing structure below and set your prices. Your pricing automatically applies to <strong className="text-white/70">all your products</strong>. 
-              No need to assign individually. You can edit prices per product in the Inventory page if needed.
-            </p>
+      <div className="mb-8 md:mb-12">
+        <div className="flex items-center justify-between gap-4 flex-wrap">
+          <div className="flex items-center gap-4 md:gap-6">
+            <DollarSign size={56} className="md:hidden text-white/90" strokeWidth={1.5} />
+            <DollarSign size={72} className="hidden md:block text-white/90" strokeWidth={1.5} />
+            <div>
+              <h1 className="text-2xl md:text-4xl font-thin text-white tracking-tight mb-1">
+                Pricing
+              </h1>
+              <p className="text-white/50 text-xs md:text-sm font-light tracking-wide">
+                Configure your pricing tiers
+              </p>
+            </div>
           </div>
+          <Link
+            href="/vendor/cost-plus-pricing"
+            className="flex items-center gap-2 text-white/60 hover:text-white transition-all duration-300 text-sm"
+          >
+            <Calculator size={20} strokeWidth={1.5} />
+            Cost Plus
+          </Link>
         </div>
       </div>
-
-      {/* Vendor Type Indicator */}
-      {!loading && configs.length > 0 && (
-        <div className="flex items-center gap-2 mb-6 pb-6 border-b border-white/10">
-          <Package size={16} className="text-white/60" />
-          <span className="text-white/60 text-sm">Your Pricing Type:</span>
-          {isHybrid && (
-            <span className="px-3 py-1 bg-purple-500/20 text-purple-400 text-xs uppercase tracking-wider border border-purple-500/30">
-              Hybrid (Retail + Wholesale)
-            </span>
-          )}
-          {!isHybrid && isRetailVendor && (
-            <span className="px-3 py-1 bg-blue-500/20 text-blue-400 text-xs uppercase tracking-wider border border-blue-500/30">
-              Retail
-            </span>
-          )}
-          {!isHybrid && isWholesaleVendor && (
-            <span className="px-3 py-1 bg-green-500/20 text-green-400 text-xs uppercase tracking-wider border border-green-500/30">
-              Wholesale
-            </span>
-          )}
-        </div>
-      )}
 
       {loading ? (
-        <div className="text-center py-12">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-white/60 mb-4"></div>
-          <p className="text-white/60 text-sm">Loading pricing...</p>
+        <div className="flex items-center justify-center py-20">
+          <div className="text-white/40 text-sm">Loading...</div>
         </div>
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-12">
           {/* Active Configs */}
           {configs.map((config) => {
             if (!config.blueprint) return null;
-            
+
             const isWholesale = config.blueprint.slug.includes('wholesale');
-            
+
             return (
-              <div key={config.id} className="bg-black border border-white/10 overflow-hidden -mx-4 lg:mx-0">
-                {/* Header */}
-                <div className="p-6 border-b border-white/10">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <h3 className="text-white text-lg font-medium">{config.blueprint.name}</h3>
-                        {isWholesale && (
-                          <span className="px-2 py-1 bg-green-500/20 text-green-400 text-xs uppercase tracking-wider border border-green-500/30">
-                            Wholesale
-                          </span>
-                        )}
-                        {!isWholesale && (
-                          <span className="px-2 py-1 bg-blue-500/20 text-blue-400 text-xs uppercase tracking-wider border border-blue-500/30">
-                            Retail
-                          </span>
-                        )}
-                        <span className="px-2 py-1 bg-green-500/20 text-green-500 text-xs uppercase tracking-wider border border-green-500/30">
-                          Active
-                        </span>
-                      </div>
-                      <p className="text-white/50 text-sm">{config.blueprint.description}</p>
-                    </div>
-                    <button
-                      onClick={() => disableConfig(config.id, config.blueprint?.name || 'pricing')}
-                      disabled={saving}
-                      className="text-red-500/60 hover:text-red-500 text-xs uppercase tracking-wider px-3 py-1.5 border border-red-500/30 hover:border-red-500/50 transition-all disabled:opacity-50"
-                    >
-                      Disable
-                    </button>
+              <div key={config.id} className="space-y-6">
+                {/* Config Header */}
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-xl text-white font-light mb-1">{config.blueprint.name}</h2>
+                    <p className="text-white/50 text-sm">{config.blueprint.description}</p>
                   </div>
+                  <button
+                    onClick={() => disableConfig(config.id)}
+                    disabled={saving}
+                    className="text-white/40 hover:text-red-500 transition-all text-sm"
+                  >
+                    Remove
+                  </button>
                 </div>
 
-                {/* Price Configuration */}
-                <div className="p-6">
-                  {/* Unit of Measure Selector */}
-                  <div className="bg-white/5 border border-white/10 p-4 mb-6">
-                    <div className="flex flex-col md:flex-row md:items-center gap-4">
-                      <div className="flex-1">
-                        <label className="block text-white/90 text-sm font-medium mb-1">
-                          Unit of Measure
-                        </label>
-                        <p className="text-white/50 text-xs">
-                          Choose how you want to price and display this product (all units are synchronized)
-                        </p>
-                      </div>
-                      <div className="md:w-64">
-                        <select
-                          value={displayUnits[config.id] || 'gram'}
-                          onChange={(e) => setDisplayUnits(prev => ({ ...prev, [config.id]: e.target.value }))}
-                          className="w-full bg-black/98 border border-white/10 text-white px-4 py-3 rounded-[14px] focus:outline-none focus:border-white/30 text-sm"
+                {/* Unit Selector */}
+                <div className="flex items-center justify-between pb-4 border-b border-white/5">
+                  <span className="text-white/60 text-sm">Unit of measure</span>
+                  <select
+                    value={displayUnits[config.id] || 'gram'}
+                    onChange={(e) => setDisplayUnits(prev => ({ ...prev, [config.id]: e.target.value }))}
+                    className="bg-transparent border-none text-white text-sm focus:outline-none cursor-pointer"
+                  >
+                    <optgroup label="Weight">
+                      <option value="gram">Grams (g)</option>
+                      <option value="ounce">Ounces (oz)</option>
+                      <option value="pound">Pounds (lb)</option>
+                      <option value="kilogram">Kilograms (kg)</option>
+                    </optgroup>
+                    <optgroup label="Volume">
+                      <option value="milliliter">Milliliters (ml)</option>
+                      <option value="liter">Liters (L)</option>
+                      <option value="fluid_ounce">Fluid Ounces (fl oz)</option>
+                      <option value="gallon">Gallons (gal)</option>
+                    </optgroup>
+                  </select>
+                </div>
+
+                {/* Price Tiers */}
+                <div className="space-y-3">
+                  {(customTiers[config.id] || config.blueprint.price_breaks)
+                    .sort((a, b) => a.sort_order - b.sort_order)
+                    .map((priceBreak) => {
+                      const currentPrice = editingPrices[config.id]?.[priceBreak.break_id]?.price || '';
+                      const tierState = editingPrices[config.id]?.[priceBreak.break_id] || { price: '', enabled: true };
+                      const tierEnabled = Boolean(tierState.enabled !== false);
+
+                      return (
+                        <div
+                          key={priceBreak.break_id}
+                          className={`flex items-center gap-4 py-4 border-b border-white/5 transition-opacity ${!tierEnabled ? 'opacity-40' : ''}`}
                         >
-                          <optgroup label="Weight Units">
-                            <option value="milligram">Milligrams (mg)</option>
-                            <option value="gram">Grams (g)</option>
-                            <option value="ounce">Ounces (oz)</option>
-                            <option value="pound">Pounds (lb)</option>
-                            <option value="kilogram">Kilograms (kg)</option>
-                          </optgroup>
-                          <optgroup label="Volume Units">
-                            <option value="milliliter">Milliliters (ml)</option>
-                            <option value="liter">Liters (L)</option>
-                            <option value="fluid_ounce">Fluid Ounces (fl oz)</option>
-                            <option value="gallon">Gallons (gal)</option>
-                          </optgroup>
-                        </select>
-                      </div>
-                    </div>
-                    <div className="mt-3 bg-blue-500/10 border border-blue-500/30 px-3 py-2">
-                      <p className="text-blue-400 text-xs">
-                        💡 All units are synchronized: 453g = 1 lb, 1000ml = 1 L. Changing units updates the display only - stock levels stay the same.
-                      </p>
-                      {(() => {
-                        const currentUnit = displayUnits[config.id] || 'gram';
-                        if (currentUnit === 'pound') {
-                          return <p className="text-white/60 text-xs mt-1">Currently showing prices in pounds (lb). 1g tier = 0.002 lb tier.</p>;
-                        } else if (currentUnit === 'ounce') {
-                          return <p className="text-white/60 text-xs mt-1">Currently showing prices in ounces (oz). 28g = 1 oz.</p>;
-                        } else if (currentUnit === 'kilogram') {
-                          return <p className="text-white/60 text-xs mt-1">Currently showing prices in kilograms (kg). 1000g = 1 kg.</p>;
-                        }
-                        return null;
-                      })()}
-                    </div>
-                  </div>
+                          {/* Enable Toggle */}
+                          <input
+                            type="checkbox"
+                            checked={tierEnabled}
+                            onChange={() => toggleTierEnabled(config.id, priceBreak.break_id)}
+                            className="w-4 h-4 cursor-pointer"
+                          />
 
-                  {/* Helpful tip for tiered pricing */}
-                  {isWholesale && config.blueprint.slug.includes('tiered') && (
-                    <div className="bg-green-500/10 border border-green-500/30 p-4 mb-4">
-                      <div className="flex gap-2">
-                        <AlertCircle size={16} className="text-green-400 flex-shrink-0 mt-0.5" />
-                        <div>
-                          <p className="text-green-400 text-xs font-medium mb-1">Tiered Pricing Example:</p>
-                          <p className="text-white/60 text-xs leading-relaxed">
-                            Set different prices for different quantity ranges. Example: 1-10 lbs @ $1400/lb, 10-20 lbs @ $1200/lb, 20+ lbs @ $1000/lb.
-                            Larger orders automatically get better prices!
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="flex items-center justify-between mb-4">
-                    <div>
-                      <h4 className="text-white/90 text-sm uppercase tracking-wider mb-1">Configure Your Tiers & Prices</h4>
-                      {(() => {
-                        const allTiers = customTiers[config.id] || config.blueprint.price_breaks;
-                        const enabledCount = allTiers.filter(t => 
-                          editingPrices[config.id]?.[t.break_id]?.enabled !== false
-                        ).length;
-                        return (
-                          <p className="text-white/40 text-xs">
-                            {enabledCount} of {allTiers.length} tiers active
-                          </p>
-                        );
-                      })()}
-                    </div>
-                    <button
-                      onClick={() => addTier(config.id)}
-                      className="flex items-center gap-1.5 bg-white/10 border border-white/20 text-white px-3 py-2 text-xs uppercase tracking-wider hover:bg-white/20 transition-all"
-                    >
-                      <Plus size={14} />
-                      Add Tier
-                    </button>
-                  </div>
-                  
-                  <div className="space-y-3 mb-6">
-                    {(customTiers[config.id] || config.blueprint.price_breaks)
-                      .sort((a, b) => a.sort_order - b.sort_order)
-                      .map((priceBreak, index) => {
-                        const currentPrice = editingPrices[config.id]?.[priceBreak.break_id]?.price || '';
-                        const isWholesale = config.blueprint?.slug.includes('wholesale');
-                        const isCustom = priceBreak.break_id.startsWith('custom_tier_');
-                        
-                        const tierState = editingPrices[config.id]?.[priceBreak.break_id] || { price: '', enabled: true };
-                        const tierEnabled = Boolean(tierState.enabled !== false);
-                        
-                        if (index === 0) {
-                        }
-                        
-                        return (
-                          <div key={`${priceBreak.break_id}-${tierEnabled ? 'enabled' : 'disabled'}`} className={`bg-black/40 border border-white/10 p-4 transition-all ${!tierEnabled ? 'opacity-40' : ''}`}>
-                            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-end">
-                              {/* Enable Toggle */}
-                              <div className="lg:col-span-1 flex flex-col">
-                                <label className="block text-white/60 text-xs mb-2">Active</label>
-                                <div className="flex items-center">
-                                  <input
-                                    type="checkbox"
-                                    checked={tierEnabled}
-                                    onChange={(e) => {
-                                      e.stopPropagation();
-                                      toggleTierEnabled(config.id, priceBreak.break_id);
-                                    }}
-                                    className="w-4 h-4 rounded-[14px] border-white/20 cursor-pointer"
-                                  />
-                                </div>
-                              </div>
-
-                              {/* Tier Label */}
-                              <div className="lg:col-span-3">
-                                <label className="block text-white/60 text-xs mb-2">Tier Name</label>
-                                <input
-                                  type="text"
-                                  value={priceBreak.label}
-                                  onChange={(e) => updateTier(config.id, priceBreak.break_id, { label: e.target.value })}
-                                  placeholder="e.g., Bulk Tier"
-                                  disabled={!tierEnabled}
-                                  className="w-full bg-white/5 border border-white/10 text-white placeholder-white/30 px-3 py-2 text-sm rounded-[14px] focus:outline-none focus:border-white/30 disabled:opacity-50 disabled:cursor-not-allowed"
-                                />
-                              </div>
-
-                              {/* Quantity Range (for wholesale tiered) */}
-                              {isWholesale && config.blueprint?.slug.includes('tiered') ? (
-                                <>
-                                  <div className="lg:col-span-2">
-                                    <label className="block text-white/60 text-xs mb-2">Min Qty</label>
-                                    <input
-                                      type="number"
-                                      value={priceBreak.min_qty || ''}
-                                      onChange={(e) => updateTier(config.id, priceBreak.break_id, { min_qty: parseInt(e.target.value) || 1 })}
-                                      placeholder="1"
-                                      disabled={!tierEnabled}
-                                      className="w-full bg-white/5 border border-white/10 text-white placeholder-white/30 px-3 py-2 text-sm rounded-[14px] focus:outline-none focus:border-white/30 disabled:opacity-50 disabled:cursor-not-allowed"
-                                    />
-                                  </div>
-                                  <div className="lg:col-span-2">
-                                    <label className="block text-white/60 text-xs mb-2">Max Qty</label>
-                                    <input
-                                      type="number"
-                                      value={priceBreak.max_qty || ''}
-                                      onChange={(e) => updateTier(config.id, priceBreak.break_id, { max_qty: e.target.value ? parseInt(e.target.value) : null })}
-                                      placeholder="∞"
-                                      disabled={!tierEnabled}
-                                      className="w-full bg-white/5 border border-white/10 text-white placeholder-white/30 px-3 py-2 text-sm rounded-[14px] focus:outline-none focus:border-white/30 disabled:opacity-50 disabled:cursor-not-allowed"
-                                    />
-                                  </div>
-                                  <div className="lg:col-span-1">
-                                    <label className="block text-white/60 text-xs mb-2">Unit</label>
-                                    <div className="text-white/80 text-sm px-3 py-2">
-                                      {(() => {
-                                        const currentUnit = displayUnits[config.id] || 'gram';
-                                        const unitLabels: any = {
-                                          'milligram': 'mg', 'gram': 'g', 'ounce': 'oz', 'pound': 'lb', 'kilogram': 'kg',
-                                          'milliliter': 'ml', 'liter': 'L', 'fluid_ounce': 'fl oz', 'gallon': 'gal'
-                                        };
-                                        return unitLabels[currentUnit] || currentUnit;
-                                      })()}
-                                    </div>
-                                  </div>
-                                </>
-                              ) : (
-                                <div className="lg:col-span-2">
-                                  <label className="block text-white/60 text-xs mb-2">Quantity</label>
-                                  <div className="text-white/80 text-sm px-3 py-2">
-                                    {(() => {
-                                      const currentUnit = displayUnits[config.id] || 'gram';
-                                      if (priceBreak.qty && priceBreak.unit) {
-                                        const converted = convertUnits(priceBreak.qty, priceBreak.unit, currentUnit);
-                                        return `${converted.toFixed(converted < 1 ? 3 : converted < 10 ? 2 : 1)}${formatUnit(currentUnit)}`;
-                                      }
-                                      return `${priceBreak.qty}${priceBreak.unit}`;
-                                    })()}
-                                  </div>
-                                </div>
-                              )}
-
-                              {/* Price */}
-                              <div className="lg:col-span-3">
-                                <label className="block text-white/60 text-xs mb-2">
-                                  Price per {(() => {
-                                    const currentUnit = displayUnits[config.id] || 'gram';
-                                    const unitLabels: any = {
-                                      'milligram': 'mg',
-                                      'gram': 'g',
-                                      'ounce': 'oz',
-                                      'pound': 'lb',
-                                      'kilogram': 'kg',
-                                      'milliliter': 'ml',
-                                      'liter': 'L',
-                                      'fluid_ounce': 'fl oz',
-                                      'gallon': 'gal'
-                                    };
-                                    return unitLabels[currentUnit] || currentUnit;
-                                  })()}
-                                </label>
-                                <div className="relative">
-                                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/60">$</span>
-                                  <input
-                                    type="number"
-                                    step="0.01"
-                                    value={currentPrice}
-                                    onChange={(e) => updatePrice(config.id, priceBreak.break_id, e.target.value)}
-                                    placeholder="0.00"
-                                    disabled={!tierEnabled}
-                                    className="w-full bg-white/5 border border-white/10 text-white placeholder-white/30 pl-7 pr-3 py-2.5 rounded-[14px] focus:outline-none focus:border-white/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                  />
-                                </div>
-                              </div>
-
-                              {/* Remove Button */}
-                              <div className="lg:col-span-1 flex items-end">
-                                <button
-                                  onClick={() => removeTier(config.id, priceBreak.break_id)}
-                                  disabled={!tierEnabled}
-                                  className="w-full lg:w-auto p-2 hover:bg-red-500/10 text-red-500/60 hover:text-red-500 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
-                                  title="Remove tier"
-                                >
-                                  <Trash2 size={16} />
-                                </button>
-                              </div>
+                          {/* Tier Info */}
+                          <div className="flex-1 min-w-0">
+                            <div className="text-white text-sm">
+                              {priceBreak.label}
                             </div>
-
-                            {/* Tier Info */}
-                            <div className="mt-2 flex items-center justify-between">
-                              <div className="text-white/40 text-xs">
-                                {isWholesale && (priceBreak.min_qty || priceBreak.max_qty) && tierEnabled && (
-                                  <span>
-                                    Applies to orders of {priceBreak.min_qty || 1}–{priceBreak.max_qty || '∞'} {(() => {
-                                      const currentUnit = displayUnits[config.id] || 'pound';
-                                      const unitLabels: any = {
-                                        'milligram': 'mg', 'gram': 'g', 'ounce': 'oz', 'pound': 'lbs', 'kilogram': 'kg',
-                                        'milliliter': 'ml', 'liter': 'L', 'fluid_ounce': 'fl oz', 'gallon': 'gal'
-                                      };
-                                      return unitLabels[currentUnit] || currentUnit;
-                                    })()}
-                                  </span>
-                                )}
-                              </div>
-                              {!tierEnabled && (
-                                <span className="text-red-500/60 text-xs uppercase tracking-wider">
-                                  Disabled - Not shown to customers
-                                </span>
-                              )}
+                            <div className="text-white/50 text-xs">
+                              {isWholesale && (priceBreak.min_qty || priceBreak.max_qty) ? (
+                                `${priceBreak.min_qty || 0}–${priceBreak.max_qty || '∞'} ${formatUnit(displayUnits[config.id] || 'pound')}`
+                              ) : priceBreak.qty && priceBreak.unit ? (
+                                `${(() => {
+                                  const currentUnit = displayUnits[config.id] || 'gram';
+                                  const converted = convertUnits(priceBreak.qty, priceBreak.unit, currentUnit);
+                                  return `${converted.toFixed(converted < 1 ? 3 : converted < 10 ? 2 : 1)}${formatUnit(currentUnit)}`;
+                                })()}`
+                              ) : ''}
                             </div>
                           </div>
-                        );
-                      })}
-                  </div>
 
-                  <div className="flex justify-end gap-3">
-                    <button
-                      onClick={() => saveConfig(config)}
-                      disabled={saving}
-                      className="flex items-center gap-2 bg-white text-black px-6 py-3 text-xs font-medium uppercase tracking-wider hover:bg-white/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                    >
-                      <Save size={16} />
-                      {saving ? 'Saving...' : 'Save Configuration'}
-                    </button>
-                  </div>
+                          {/* Price Input */}
+                          <div className="w-32">
+                            <div className="relative">
+                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40 text-sm">$</span>
+                              <input
+                                type="number"
+                                step="0.01"
+                                value={currentPrice}
+                                onChange={(e) => updatePrice(config.id, priceBreak.break_id, e.target.value)}
+                                placeholder="0.00"
+                                disabled={!tierEnabled}
+                                className="w-full bg-transparent border-b border-white/10 text-white text-sm pl-6 pr-2 py-2 focus:outline-none focus:border-white/30 disabled:opacity-50"
+                              />
+                            </div>
+                          </div>
+
+                          {/* Remove */}
+                          <button
+                            onClick={() => removeTier(config.id, priceBreak.break_id)}
+                            disabled={!tierEnabled}
+                            className="text-white/30 hover:text-white/60 disabled:opacity-20"
+                          >
+                            <Trash2 size={16} strokeWidth={1.5} />
+                          </button>
+                        </div>
+                      );
+                    })}
+                </div>
+
+                {/* Actions */}
+                <div className="flex items-center gap-4 pt-4">
+                  <button
+                    onClick={() => addTier(config.id)}
+                    className="text-white/40 hover:text-white transition-all text-sm flex items-center gap-2"
+                  >
+                    <Plus size={16} strokeWidth={1.5} />
+                    Add Tier
+                  </button>
+                  <div className="flex-1"></div>
+                  <button
+                    onClick={() => saveConfig(config)}
+                    disabled={saving}
+                    className="bg-white text-black px-6 py-2 text-sm hover:bg-white/90 disabled:opacity-50 transition-all flex items-center gap-2"
+                  >
+                    <Check size={16} strokeWidth={2} />
+                    {saving ? 'Saving...' : 'Save'}
+                  </button>
                 </div>
               </div>
             );
           })}
 
-          {/* Available Blueprints to Enable */}
+          {/* Available Blueprints */}
           {availableBlueprints.length > 0 && (
-            <div className="bg-black border border-white/10 p-6 -mx-4 lg:mx-0">
-              <h3 className="text-white font-medium text-sm uppercase tracking-wider mb-4">
-                Add Pricing Structure
-              </h3>
-              <p className="text-white/50 text-xs mb-4">
-                Enable additional pricing structures if you sell both retail and wholesale.
-              </p>
-              
+            <div className="space-y-4 pt-8 border-t border-white/5">
+              <h3 className="text-white/60 text-sm">Add pricing structure</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {availableBlueprints.map((blueprint) => {
-                  const isWholesale = blueprint.slug.includes('wholesale');
-                  
-                  return (
-                    <div key={blueprint.id} className="bg-black/40 border border-white/10 p-4">
-                      <div className="flex items-start justify-between gap-3 mb-3">
-                        <div className="flex-1 min-w-0">
-                          <h4 className="text-white text-sm font-medium mb-1">{blueprint.name}</h4>
-                          <p className="text-white/40 text-xs leading-relaxed">{blueprint.description}</p>
-                        </div>
-                        {isWholesale ? (
-                          <span className="px-2 py-0.5 bg-green-500/20 text-green-400 text-[10px] uppercase tracking-wider border border-green-500/30 flex-shrink-0">
-                            Wholesale
-                          </span>
-                        ) : (
-                          <span className="px-2 py-0.5 bg-blue-500/20 text-blue-400 text-[10px] uppercase tracking-wider border border-blue-500/30 flex-shrink-0">
-                            Retail
-                          </span>
-                        )}
-                      </div>
-                      
-                      <button
-                        onClick={() => enableBlueprint(blueprint.id)}
-                        disabled={saving}
-                        className="w-full bg-white/10 border border-white/20 text-white px-4 py-2 text-xs uppercase tracking-wider hover:bg-white/20 disabled:opacity-50 transition-all"
-                      >
-                        Enable This Structure
-                      </button>
-                    </div>
-                  );
-                })}
+                {availableBlueprints.map((blueprint) => (
+                  <div key={blueprint.id} className="border border-white/10 p-6 hover:border-white/20 transition-all">
+                    <h4 className="text-white text-base mb-2">{blueprint.name}</h4>
+                    <p className="text-white/50 text-sm mb-4">{blueprint.description}</p>
+                    <button
+                      onClick={() => enableBlueprint(blueprint.id)}
+                      disabled={saving}
+                      className="text-white/60 hover:text-white text-sm transition-all"
+                    >
+                      Enable
+                    </button>
+                  </div>
+                ))}
               </div>
             </div>
           )}
 
           {/* Empty State */}
           {configs.length === 0 && availableBlueprints.length === 0 && (
-            <div className="text-center py-12 bg-black border border-white/10 -mx-4 lg:mx-0">
-              <DollarSign size={48} className="text-white/20 mx-auto mb-4" />
-              <p className="text-white/60 mb-2">No pricing structures available</p>
-              <p className="text-white/40 text-sm">Contact support to set up your pricing</p>
+            <div className="text-center py-20">
+              <DollarSign size={48} className="text-white/20 mx-auto mb-4" strokeWidth={1.5} />
+              <p className="text-white/40 text-sm">No pricing structures available</p>
             </div>
           )}
         </div>
