@@ -558,7 +558,12 @@ function TVDisplayContent() {
   // Loading State
   if (loading) {
     return (
-      <div className="w-screen h-screen flex items-center justify-center bg-black safe-all">
+      <div
+        className="w-screen h-screen flex items-center justify-center bg-black"
+        style={{
+          padding: 'env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px)'
+        }}
+      >
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-white mx-auto mb-4"></div>
           <p className="text-white text-xl">Loading display...</p>
@@ -570,7 +575,12 @@ function TVDisplayContent() {
   // Error State
   if (error) {
     return (
-      <div className="w-screen h-screen flex items-center justify-center bg-black safe-all">
+      <div
+        className="w-screen h-screen flex items-center justify-center bg-black"
+        style={{
+          padding: 'env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px)'
+        }}
+      >
         <div className="text-center">
           <div className="text-6xl mb-4">⚠️</div>
           <h1 className="text-red-500 text-2xl font-bold mb-2">Display Error</h1>
@@ -589,7 +599,12 @@ function TVDisplayContent() {
   // No Content State
   if (!activeMenu) {
     return (
-      <div className="w-screen h-screen flex items-center justify-center bg-black safe-all">
+      <div
+        className="w-screen h-screen flex items-center justify-center bg-black"
+        style={{
+          padding: 'env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px)'
+        }}
+      >
         <div className="text-center text-white">
           {/* Show vendor logo if available */}
           {vendor?.logo_url ? (
@@ -629,10 +644,11 @@ function TVDisplayContent() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.8 }}
-      className="w-screen h-screen overflow-hidden relative safe-all"
+      className="w-screen h-screen overflow-hidden relative"
       style={{
         background: theme.styles.background,
-        backgroundImage: theme.styles.backgroundImage
+        backgroundImage: theme.styles.backgroundImage,
+        padding: 'env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px)'
       }}
     >
       {/* Menu Content */}

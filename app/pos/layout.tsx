@@ -74,7 +74,13 @@ function POSLayoutInner({
           height: 'env(safe-area-inset-top, 0px)'
         }}
       />
-      <div className="min-h-screen bg-black text-white antialiased overflow-x-hidden safe-y">
+      <div
+        className="min-h-screen bg-black text-white antialiased overflow-x-hidden"
+        style={{
+          paddingTop: 'env(safe-area-inset-top, 0px)',
+          paddingBottom: 'env(safe-area-inset-bottom, 0px)'
+        }}
+      >
         {children}
       </div>
     </>
