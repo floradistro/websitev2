@@ -94,7 +94,6 @@ export default function NewProduct() {
   const [currentReviewIndex, setCurrentReviewIndex] = useState(0);
   const [pricingBlueprints, setPricingBlueprints] = useState<any[]>([]);
   const [bulkImages, setBulkImages] = useState<Array<{file: File, url: string, matchedTo: string | null}>>([]);
-  const [uploadingImages, setUploadingImages] = useState(false);
 
   // AI Autofill state
   const [aiSuggestions, setAiSuggestions] = useState<any>(null);
