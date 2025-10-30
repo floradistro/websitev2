@@ -18,7 +18,9 @@ import {
   CreditCard,
   Tv,
   Megaphone,
-  Users
+  Users,
+  FolderTree,
+  Sparkles
 } from 'lucide-react';
 
 export interface NavItem {
@@ -41,12 +43,20 @@ export const vendorNavItems: NavItem[] = [
     isCore: true,
     group: 'core'
   },
-  { 
-    href: '/vendor/products', 
-    icon: Package, 
+  {
+    href: '/vendor/products',
+    icon: Package,
     label: 'Products',
     description: 'Catalog & inventory',
     isCore: true,
+    group: 'core'
+  },
+  {
+    href: '/vendor/categories',
+    icon: FolderTree,
+    label: 'Categories',
+    description: 'Organize products',
+    isCore: false,
     group: 'core'
   },
   {
@@ -99,17 +109,25 @@ export const vendorNavItems: NavItem[] = [
     isCore: false,
     group: 'core'
   },
-  { 
-    href: '/vendor/pricing', 
-    icon: DollarSign, 
+  {
+    href: '/vendor/pricing',
+    icon: DollarSign,
     label: 'Pricing',
     description: 'Price management',
     isCore: false,
     group: 'core'
   },
-  { 
-    href: '/vendor/product-fields', 
-    icon: Layers, 
+  {
+    href: '/vendor/pricing-blueprints',
+    icon: Sparkles,
+    label: 'Pricing Templates',
+    description: 'Custom pricing structures',
+    isCore: false,
+    group: 'core'
+  },
+  {
+    href: '/vendor/product-fields',
+    icon: Layers,
     label: 'Fields',
     description: 'Custom product fields',
     isCore: false,
