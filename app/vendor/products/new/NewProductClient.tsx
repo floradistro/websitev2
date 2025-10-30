@@ -110,6 +110,7 @@ export default function NewProduct() {
     price: '',
     cost_price: '',
     initial_quantity: '',
+    product_visibility: 'internal' as 'internal' | 'marketplace', // TRUE MULTI-TENANT: Default to internal (auto-publish)
   });
 
   // Load categories on mount
@@ -991,6 +992,7 @@ export default function NewProduct() {
               name,
               category: bulkCategory,
               product_type: 'simple',
+              product_visibility: 'internal', // TRUE MULTI-TENANT: Bulk uploads default to internal (auto-publish)
               pricing_mode,
               image_urls: imageUrls,
               custom_fields,
@@ -1081,6 +1083,7 @@ export default function NewProduct() {
         description: formData.description,
         category: formData.category,
         cost_price: formData.cost_price || null,
+        product_visibility: formData.product_visibility, // TRUE MULTI-TENANT: Internal (auto-publish) or Marketplace (pending)
         image_urls: uploadedImageUrls,
         coa_url: uploadedCoaUrl,
         product_type: productType,
@@ -2365,6 +2368,57 @@ export default function NewProduct() {
                   Variable
                 </button>
               </div>
+            </div>
+
+            {/* Product Visibility - TRUE MULTI-TENANT */}
+            <div>
+              <label className="block text-white/40 text-[10px] uppercase tracking-[0.15em] mb-2 font-black" style={{ fontWeight: 900 }}>
+                Product Visibility <span className="text-red-400">*</span>
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setFormData({...formData, product_visibility: 'internal'})}
+                  className={`px-3 py-2.5 rounded-xl border transition-all text-[10px] uppercase tracking-[0.15em] font-black ${
+                    formData.product_visibility === 'internal'
+                      ? 'bg-white/10 border-white/20 text-white'
+                      : 'bg-[#0a0a0a] border-white/10 text-white/60 hover:border-white/20'
+                  }`}
+                  style={{ fontWeight: 900 }}
+                >
+                  <div className="flex flex-col items-center gap-1">
+                    <span>🔒 Internal</span>
+                    <span className="text-[7px] text-white/40 font-normal">POS, Inventory, TV</span>
+                  </div>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFormData({...formData, product_visibility: 'marketplace'})}
+                  className={`px-3 py-2.5 rounded-xl border transition-all text-[10px] uppercase tracking-[0.15em] font-black ${
+                    formData.product_visibility === 'marketplace'
+                      ? 'bg-white/10 border-white/20 text-white'
+                      : 'bg-[#0a0a0a] border-white/10 text-white/60 hover:border-white/20'
+                  }`}
+                  style={{ fontWeight: 900 }}
+                >
+                  <div className="flex flex-col items-center gap-1">
+                    <span>🌐 Marketplace</span>
+                    <span className="text-[7px] text-white/40 font-normal">Requires approval</span>
+                  </div>
+                </button>
+              </div>
+              {formData.product_visibility === 'internal' && (
+                <p className="text-green-400/60 text-[9px] mt-2 flex items-center gap-1.5 uppercase tracking-[0.15em]">
+                  <CheckCircle size={9} strokeWidth={2.5} />
+                  Will publish immediately
+                </p>
+              )}
+              {formData.product_visibility === 'marketplace' && (
+                <p className="text-orange-400/60 text-[9px] mt-2 flex items-center gap-1.5 uppercase tracking-[0.15em]">
+                  <AlertCircle size={9} strokeWidth={2.5} />
+                  Will require admin approval
+                </p>
+              )}
             </div>
 
             {/* Pricing Mode - Only for Simple Products */}
