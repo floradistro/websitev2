@@ -39,12 +39,10 @@ function VendorLayoutContent({
     }
   }, [isLoading, isAuthenticated, pathname, router]);
 
-  // Vendor logo - use default for now (can be added to Supabase vendors table later)
+  // Vendor logo - use custom logo if uploaded, otherwise fallback to default
   useEffect(() => {
     if (isAuthenticated && vendor) {
-      // Could fetch from Supabase vendors table if logo_url field is added
-      // For now, use default logo
-      setVendorLogo('/yacht-club-logo.png');
+      setVendorLogo(vendor.logo_url || '/yacht-club-logo.png');
     }
   }, [isAuthenticated, vendor]);
 

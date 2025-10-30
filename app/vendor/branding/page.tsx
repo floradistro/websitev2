@@ -5,7 +5,7 @@ import { Upload, Save, AlertCircle, CheckCircle, X } from 'lucide-react';
 import { useAppAuth } from '@/context/AppAuthContext';
 
 export default function VendorBranding() {
-  const { vendor } = useAppAuth();
+  const { vendor, refreshUserData } = useAppAuth();
   const [loading, setLoading] = useState(false);
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string>('');
@@ -245,7 +245,10 @@ export default function VendorBranding() {
       
       setSuccess('✅ Branding updated successfully!');
       await loadBranding();
-      
+
+      // Refresh user data to update logo in navigation immediately
+      await refreshUserData();
+
       setTimeout(() => setSuccess(''), 3000);
     } catch (err: any) {
       setError('❌ ' + (err.message || 'Failed to update branding'));
