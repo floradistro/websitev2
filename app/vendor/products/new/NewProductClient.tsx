@@ -79,6 +79,8 @@ export default function NewProduct() {
   const [inputMode, setInputMode] = useState<'single' | 'bulk'>('single');
   const [bulkInput, setBulkInput] = useState('');
   const [bulkProcessing, setBulkProcessing] = useState(false);
+  const [bulkEnrichedData, setBulkEnrichedData] = useState<Record<string, any>>({}); // Store AI data by product name
+  const [bulkAIProgress, setBulkAIProgress] = useState({ current: 0, total: 0 });
 
   // AI Autofill state
   const [aiSuggestions, setAiSuggestions] = useState<any>(null);
@@ -670,17 +672,35 @@ export default function NewProduct() {
         const [name, category, price, cost] = parts;
 
         try {
+          // Check if we have AI enriched data for this product
+          const enrichedData = bulkEnrichedData[name] || {};
+          const hasEnrichedData = Object.keys(enrichedData).length > 0;
+
+          // Build custom fields from AI data using expected field slugs
+          const customFields: Record<string, any> = {};
+          if (hasEnrichedData) {
+            if (enrichedData.strain_type) customFields['strain_type'] = enrichedData.strain_type;
+            if (enrichedData.lineage) customFields['lineage'] = enrichedData.lineage;
+            if (enrichedData.nose && Array.isArray(enrichedData.nose)) {
+              customFields['nose'] = enrichedData.nose.join(', ');
+            }
+            if (enrichedData.effects) customFields['effects'] = enrichedData.effects;
+            if (enrichedData.terpenes) customFields['terpene_profile'] = enrichedData.terpenes;
+          }
+
           const productData = {
             name,
             category,
             price: parseFloat(price),
             cost_price: cost ? parseFloat(cost) : null,
-            description: `Bulk imported product: ${name}`,
+            description: hasEnrichedData && enrichedData.description ? enrichedData.description : `Bulk imported product: ${name}`,
             product_type: 'simple',
             pricing_mode: 'single',
             image_urls: [],
-            custom_fields: {}
+            custom_fields: customFields
           };
+
+          console.log(`📦 Submitting ${name}${hasEnrichedData ? ' with AI data' : ''}:`, productData);
 
           const response = await axios.post('/api/vendor/products', productData, {
             headers: { 'x-vendor-id': vendor?.id },
@@ -1124,14 +1144,19 @@ export default function NewProduct() {
                     }
 
                     setLoadingAI(true);
+                    const enrichedData: Record<string, any> = {};
+
                     try {
                       const lines = bulkInput.split('\n').filter(line => line.trim());
-                      let enrichedLines: string[] = [];
+                      setBulkAIProgress({ current: 0, total: lines.length });
 
-                      for (const line of lines) {
+                      for (let i = 0; i < lines.length; i++) {
+                        const line = lines[i];
                         const parts = line.split(',').map(p => p.trim());
                         if (parts.length < 3) continue;
                         const [name, category, price, cost] = parts;
+
+                        setBulkAIProgress({ current: i + 1, total: lines.length });
 
                         try {
                           // Get AI suggestions
@@ -1142,29 +1167,31 @@ export default function NewProduct() {
 
                           if (response.data.success && response.data.suggestions) {
                             const suggestions = response.data.suggestions;
-                            // Keep original pricing but add AI description
-                            enrichedLines.push(`${name}, ${category}, ${price}, ${cost || price}`);
 
-                            showNotification({
-                              type: 'success',
-                              title: `Enriched: ${name}`,
-                              message: `Found ${suggestions.strain_type || 'strain'} data`,
-                              duration: 2000
-                            });
-                          } else {
-                            enrichedLines.push(line);
+                            // Store enriched data by product name
+                            enrichedData[name] = {
+                              strain_type: suggestions.strain_type,
+                              lineage: suggestions.lineage,
+                              nose: suggestions.nose,
+                              effects: suggestions.effects,
+                              terpenes: suggestions.terpenes,
+                              description: suggestions.description
+                            };
+
+                            console.log(`✅ Enriched: ${name}`, enrichedData[name]);
                           }
                         } catch (err) {
-                          console.error(`Failed to enrich ${name}:`, err);
-                          enrichedLines.push(line);
+                          console.error(`❌ Failed to enrich ${name}:`, err);
                         }
                       }
 
-                      setBulkInput(enrichedLines.join('\n'));
+                      setBulkEnrichedData(enrichedData);
+                      const enrichedCount = Object.keys(enrichedData).length;
+
                       showNotification({
                         type: 'success',
-                        title: 'AI Processing Complete',
-                        message: `Enriched ${enrichedLines.length} products`,
+                        title: 'AI Enrichment Complete',
+                        message: `Enriched ${enrichedCount}/${lines.length} products`,
                       });
                     } catch (error) {
                       console.error('Bulk AI error:', error);
@@ -1175,25 +1202,58 @@ export default function NewProduct() {
                       });
                     } finally {
                       setLoadingAI(false);
+                      setBulkAIProgress({ current: 0, total: 0 });
                     }
                   }}
                   disabled={bulkProcessing || loadingAI}
-                  className="px-4 py-2.5 bg-gradient-to-r from-purple-500/20 to-blue-500/20 text-purple-300 border border-purple-500/30 rounded-xl hover:from-purple-500/30 hover:to-blue-500/30 hover:border-purple-400/40 font-black transition-all text-[10px] uppercase tracking-[0.15em] disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+                  className="px-4 py-2.5 bg-white/10 text-white border border-white/20 rounded-xl hover:bg-white/20 hover:border-white/30 font-black transition-all text-[10px] uppercase tracking-[0.15em] disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-1.5"
                   style={{ fontWeight: 900 }}
                 >
                   {loadingAI ? (
                     <>
                       <Loader size={10} className="animate-spin" strokeWidth={3} />
-                      AI...
+                      {bulkAIProgress.total > 0 ? `${bulkAIProgress.current}/${bulkAIProgress.total}` : 'AI...'}
                     </>
                   ) : (
                     <>
                       <Sparkles size={10} strokeWidth={3} />
-                      AI Enrich
+                      {Object.keys(bulkEnrichedData).length > 0 ? `AI Enriched (${Object.keys(bulkEnrichedData).length})` : 'AI Enrich'}
                     </>
                   )}
                 </button>
               </div>
+
+              {/* AI Enrichment Status */}
+              {Object.keys(bulkEnrichedData).length > 0 && (
+                <div className="mt-3 bg-[#141414] border border-white/10 rounded-2xl p-3">
+                  <div className="text-white/40 text-[9px] uppercase tracking-[0.15em] mb-2 font-black" style={{ fontWeight: 900 }}>
+                    AI Enriched Products ({Object.keys(bulkEnrichedData).length})
+                  </div>
+                  <div className="space-y-1">
+                    {Object.entries(bulkEnrichedData).slice(0, 5).map(([name, data]: [string, any]) => (
+                      <div key={name} className="flex items-center gap-2 text-[10px]">
+                        <CheckCircle size={10} className="text-green-400" strokeWidth={2.5} />
+                        <span className="text-white font-black uppercase tracking-tight" style={{ fontWeight: 900 }}>{name}</span>
+                        <span className="text-white/40">-</span>
+                        <span className="text-white/60 text-[9px]">
+                          {[
+                            data.strain_type,
+                            data.lineage && 'lineage',
+                            data.nose?.length && `${data.nose.length} aromas`,
+                            data.effects?.length && `${data.effects.length} effects`,
+                            data.terpenes?.length && `${data.terpenes.length} terpenes`
+                          ].filter(Boolean).join(' • ')}
+                        </span>
+                      </div>
+                    ))}
+                    {Object.keys(bulkEnrichedData).length > 5 && (
+                      <div className="text-white/40 text-[9px] mt-1">
+                        +{Object.keys(bulkEnrichedData).length - 5} more...
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         ) : (
