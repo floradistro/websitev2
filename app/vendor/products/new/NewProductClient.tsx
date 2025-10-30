@@ -95,6 +95,7 @@ export default function NewProduct() {
   const [pricingConfigs, setPricingConfigs] = useState<any[]>([]); // Full configs with blueprints + pricing values
   const [bulkImages, setBulkImages] = useState<Array<{file: File, url: string, matchedTo: string | null}>>([]);
   const [lastSelectedPricingMode, setLastSelectedPricingMode] = useState<'single' | 'tiered'>('single'); // Track last pricing mode selection
+  const [explicitlySetPricingModes, setExplicitlySetPricingModes] = useState<Set<number>>(new Set()); // Track which products had pricing mode explicitly set
 
   // AI Autofill state
   const [aiSuggestions, setAiSuggestions] = useState<any>(null);
@@ -577,6 +578,7 @@ export default function NewProduct() {
       // Show review interface
       setShowBulkReview(true);
       setCurrentReviewIndex(0);
+      setExplicitlySetPricingModes(new Set()); // Reset for new batch
 
       showNotification({
         type: 'success',
@@ -1816,7 +1818,8 @@ export default function NewProduct() {
                               );
                               setBulkProducts(updated);
                               setLastSelectedPricingMode('single'); // Remember this choice
-                              console.log(`📊 Product ${currentReviewIndex} pricing mode set to: single`);
+                              setExplicitlySetPricingModes(new Set(explicitlySetPricingModes).add(currentReviewIndex)); // Mark as explicitly set
+                              console.log(`📊 Product ${currentReviewIndex} pricing mode set to: single (explicit)`);
                             }}
                             className={`flex-1 px-3 py-2 rounded-xl text-[9px] uppercase tracking-[0.15em] font-black transition-all ${
                               bulkProducts[currentReviewIndex].pricing_mode === 'single'
@@ -1838,7 +1841,8 @@ export default function NewProduct() {
                               );
                               setBulkProducts(updated);
                               setLastSelectedPricingMode('tiered'); // Remember this choice
-                              console.log(`📊 Product ${currentReviewIndex} pricing mode set to: tiered`);
+                              setExplicitlySetPricingModes(new Set(explicitlySetPricingModes).add(currentReviewIndex)); // Mark as explicitly set
+                              console.log(`📊 Product ${currentReviewIndex} pricing mode set to: tiered (explicit)`);
                             }}
                             className={`flex-1 px-3 py-2 rounded-xl text-[9px] uppercase tracking-[0.15em] font-black transition-all ${
                               bulkProducts[currentReviewIndex].pricing_mode === 'tiered'
@@ -1895,21 +1899,42 @@ export default function NewProduct() {
                               <div>
                                 <label className="block text-white/40 text-[9px] uppercase tracking-[0.15em] mb-2">Quick Apply Template</label>
                                 <div className="flex flex-wrap gap-2">
-                                  {pricingConfigs
-                                    .filter((config: any) => {
-                                      // Filter by category - check if blueprint is applicable to current bulk category
+                                  {(() => {
+                                    const currentCategory = categories.find(c => c.slug === bulkCategory);
+                                    console.log('🔍 Filtering pricing templates:', {
+                                      bulkCategory,
+                                      currentCategoryId: currentCategory?.id,
+                                      currentCategoryName: currentCategory?.name,
+                                      totalConfigs: pricingConfigs.length
+                                    });
+
+                                    const filtered = pricingConfigs.filter((config: any) => {
                                       const blueprint = config.blueprint;
-                                      if (!blueprint || !blueprint.applicable_to_categories) return true; // Show if no filter
+                                      if (!blueprint) {
+                                        console.log('❌ Config missing blueprint:', config.id);
+                                        return false;
+                                      }
 
-                                      // Find the category ID from bulkCategory slug
-                                      const currentCategory = categories.find(c => c.slug === bulkCategory);
-                                      if (!currentCategory) return true; // Show if no category selected
+                                      const applicableCategories = blueprint.applicable_to_categories || [];
+                                      console.log(`  ${blueprint.name}:`, {
+                                        applicableCategories,
+                                        isEmpty: applicableCategories.length === 0,
+                                        includes: currentCategory ? applicableCategories.includes(currentCategory.id) : 'no category'
+                                      });
 
-                                      // Check if this category is in the blueprint's applicable categories
-                                      return blueprint.applicable_to_categories.length === 0 ||
-                                             blueprint.applicable_to_categories.includes(currentCategory.id);
-                                    })
-                                    .map((config: any) => (
+                                      // Show if no category restrictions
+                                      if (applicableCategories.length === 0) return true;
+
+                                      // Show if no category selected yet
+                                      if (!currentCategory) return true;
+
+                                      // Check if current category is in applicable list
+                                      return applicableCategories.includes(currentCategory.id);
+                                    });
+
+                                    console.log(`✅ Filtered to ${filtered.length} templates`);
+                                    return filtered;
+                                  })().map((config: any) => (
                                     <button
                                       key={config.id}
                                       type="button"
@@ -2015,7 +2040,21 @@ export default function NewProduct() {
                       <div className="flex items-center gap-2 pt-3 border-t border-white/5">
                         <button
                           type="button"
-                          onClick={() => setCurrentReviewIndex(Math.max(0, currentReviewIndex - 1))}
+                          onClick={() => {
+                            const nextIndex = Math.max(0, currentReviewIndex - 1);
+                            // Apply last selected pricing mode to next product ONLY if it hasn't been explicitly set by user
+                            if (!explicitlySetPricingModes.has(nextIndex)) {
+                              const updated = bulkProducts.map((product, idx) => {
+                                if (idx === nextIndex) {
+                                  console.log(`📊 Auto-applying pricing mode "${lastSelectedPricingMode}" to product ${nextIndex}`);
+                                  return { ...product, pricing_mode: lastSelectedPricingMode };
+                                }
+                                return product;
+                              });
+                              setBulkProducts(updated);
+                            }
+                            setCurrentReviewIndex(nextIndex);
+                          }}
                           disabled={currentReviewIndex === 0}
                           className="px-3 py-2 bg-white/5 border border-white/10 text-white rounded-xl text-[9px] uppercase tracking-[0.15em] font-black hover:bg-white/10 hover:border-white/20 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
                           style={{ fontWeight: 900 }}
@@ -2024,7 +2063,21 @@ export default function NewProduct() {
                         </button>
                         <button
                           type="button"
-                          onClick={() => setCurrentReviewIndex(Math.min(bulkProducts.length - 1, currentReviewIndex + 1))}
+                          onClick={() => {
+                            const nextIndex = Math.min(bulkProducts.length - 1, currentReviewIndex + 1);
+                            // Apply last selected pricing mode to next product ONLY if it hasn't been explicitly set by user
+                            if (!explicitlySetPricingModes.has(nextIndex)) {
+                              const updated = bulkProducts.map((product, idx) => {
+                                if (idx === nextIndex) {
+                                  console.log(`📊 Auto-applying pricing mode "${lastSelectedPricingMode}" to product ${nextIndex}`);
+                                  return { ...product, pricing_mode: lastSelectedPricingMode };
+                                }
+                                return product;
+                              });
+                              setBulkProducts(updated);
+                            }
+                            setCurrentReviewIndex(nextIndex);
+                          }}
                           disabled={currentReviewIndex === bulkProducts.length - 1}
                           className="px-3 py-2 bg-white/5 border border-white/10 text-white rounded-xl text-[9px] uppercase tracking-[0.15em] font-black hover:bg-white/10 hover:border-white/20 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
                           style={{ fontWeight: 900 }}
