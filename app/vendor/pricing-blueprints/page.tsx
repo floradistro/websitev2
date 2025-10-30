@@ -48,7 +48,8 @@ export default function VendorPricingBlueprintsPage() {
   const [formName, setFormName] = useState('');
   const [formDescription, setFormDescription] = useState('');
   const [formContext, setFormContext] = useState<'retail' | 'wholesale' | 'distributor'>('retail');
-  const [formTierType, setFormTierType] = useState<'exotic' | 'top-shelf' | 'mid-shelf' | 'value'>('top-shelf');
+  const [formTierType, setFormTierType] = useState<'weight' | 'quantity' | 'percentage' | 'flat' | 'custom'>('weight');
+  const [formQualityTier, setFormQualityTier] = useState<'exotic' | 'top-shelf' | 'mid-shelf' | 'value'>('top-shelf');
   const [formPriceBreaks, setFormPriceBreaks] = useState<PriceBreak[]>([]);
   const [formCategories, setFormCategories] = useState<string[]>([]);
 
@@ -93,7 +94,8 @@ export default function VendorPricingBlueprintsPage() {
     setFormName('');
     setFormDescription('');
     setFormContext('retail');
-    setFormTierType('top-shelf');
+    setFormTierType('weight');
+    setFormQualityTier('top-shelf');
     setFormPriceBreaks([
       { break_id: '1g', label: '1 Gram', qty: 1, unit: 'gram', sort_order: 1 },
       { break_id: '3.5g', label: '3.5 Grams', qty: 3.5, unit: 'gram', sort_order: 2 },

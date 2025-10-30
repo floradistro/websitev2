@@ -56,15 +56,16 @@ export async function POST(request: NextRequest) {
     const {
       name,
       description,
-      tier_type,
+      tier_type, // Pricing calculation method: weight, quantity, percentage, flat, custom
+      quality_tier, // Quality level: exotic, top-shelf, mid-shelf, value
       context,
       price_breaks,
       applicable_to_categories
     } = body;
 
-    if (!name || !tier_type || !context || !price_breaks) {
+    if (!name || !context || !price_breaks) {
       return NextResponse.json(
-        { error: 'Name, tier_type, context, and price_breaks are required' },
+        { error: 'Name, context, and price_breaks are required' },
         { status: 400 }
       );
     }
@@ -106,7 +107,8 @@ export async function POST(request: NextRequest) {
         name,
         slug: finalSlug,
         description: description || null,
-        tier_type,
+        tier_type: tier_type || 'weight', // Default to weight-based pricing
+        quality_tier: quality_tier || null, // Optional quality level
         context,
         price_breaks,
         applicable_to_categories: applicable_to_categories || [],
@@ -144,7 +146,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { id, name, description, tier_type, price_breaks, applicable_to_categories } = body;
+    const { id, name, description, tier_type, quality_tier, price_breaks, applicable_to_categories } = body;
 
     if (!id) {
       return NextResponse.json({ error: 'Blueprint ID is required' }, { status: 400 });
@@ -172,6 +174,7 @@ export async function PUT(request: NextRequest) {
     if (name) updateData.name = name;
     if (description !== undefined) updateData.description = description;
     if (tier_type) updateData.tier_type = tier_type;
+    if (quality_tier !== undefined) updateData.quality_tier = quality_tier;
     if (price_breaks) updateData.price_breaks = price_breaks;
     if (applicable_to_categories !== undefined) updateData.applicable_to_categories = applicable_to_categories;
 
