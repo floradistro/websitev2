@@ -25,7 +25,8 @@ export async function GET(request: NextRequest) {
     }
 
     // Build query based on filter type
-    let assignments, error;
+    let assignments: any[] | null | undefined = [];
+    let error: any = null;
 
     if (productId) {
       console.log('🔍 Filtering by product_id:', productId);
