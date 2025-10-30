@@ -2,15 +2,6 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { Camera, X, AlertCircle, CheckCircle2, Scan } from 'lucide-react';
-// @ts-ignore - parse-usdl doesn't have TypeScript definitions
-import parseUSDL from 'parse-usdl';
-
-// Dynamsoft types (loaded from CDN, not npm)
-declare global {
-  interface Window {
-    Dynamsoft: any;
-  }
-}
 
 interface ScannedIDData {
   firstName: string;
@@ -38,155 +29,233 @@ export function POSIDScanner({
   onNoMatchFoundWithData,
   onClose,
 }: POSIDScannerProps) {
-  const [scanner, setScanner] = useState<any>(null);
   const [status, setStatus] = useState<'idle' | 'initializing' | 'scanning' | 'processing' | 'success' | 'no-match' | 'error'>('idle');
   const [message, setMessage] = useState('');
   const [cameraError, setCameraError] = useState('');
-  const videoContainerRef = useRef<HTMLDivElement>(null);
-  const [dynamusoftLoaded, setDynamusoftLoaded] = useState(false);
+  const [isClient, setIsClient] = useState(false);
 
-  // Load Dynamsoft library
+  const viewRef = useRef<HTMLDivElement>(null);
+  const contextRef = useRef<any>(null);
+  const cameraRef = useRef<any>(null);
+  const idCaptureRef = useRef<any>(null);
+
+  // Client-side detection
   useEffect(() => {
-    const loadDynamsoft = async () => {
-      if (typeof window === 'undefined') return;
-
-      try {
-        // Load from CDN if not already loaded
-        if (!window.Dynamsoft) {
-          const script = document.createElement('script');
-          script.src = 'https://cdn.jsdelivr.net/npm/dynamsoft-barcode-reader-bundle@11.0.3000/dist/dbr.bundle.js';
-          script.async = true;
-          script.onload = () => {
-            setDynamusoftLoaded(true);
-          };
-          document.body.appendChild(script);
-        } else {
-          setDynamusoftLoaded(true);
-        }
-      } catch (error) {
-        console.error('Failed to load Dynamsoft:', error);
-        setStatus('error');
-        setCameraError('Failed to load barcode scanner library');
-      }
-    };
-
-    loadDynamsoft();
+    setIsClient(true);
   }, []);
 
-  // Initialize scanner when library is loaded
-  useEffect(() => {
-    if (dynamusoftLoaded) {
-      initializeScanner();
-    }
-
-    return () => {
-      if (scanner) {
-        try {
-          scanner.close();
-        } catch (e) {
-          console.error('Error closing scanner:', e);
-        }
-      }
-    };
-  }, [dynamusoftLoaded]);
-
-  const parseDateToISO = (aamvaDate: string): string => {
-    // AAMVA format is MMDDYYYY
-    if (aamvaDate && aamvaDate.length === 8) {
-      const month = aamvaDate.substring(0, 2);
-      const day = aamvaDate.substring(2, 4);
-      const year = aamvaDate.substring(4, 8);
-      return `${year}-${month}-${day}`;
-    }
-    return '';
-  };
-
-  const initializeScanner = async () => {
-    if (!window.Dynamsoft) {
-      setCameraError('Barcode scanner library not loaded');
-      return;
-    }
+  // Initialize Scandit SDK
+  const initializeScandit = async () => {
+    if (!isClient) return;
 
     try {
       setStatus('initializing');
-      setMessage('Starting camera...');
+      setMessage('Loading scanner...');
+      setCameraError('');
+      console.log('🔍 Starting Scandit initialization...');
 
-      // Initialize license
-      await window.Dynamsoft.License.LicenseManager.initLicense(
-        'DLS2eyJoYW5kc2hha2VDb2RlIjoiMjAwMDAxLTE2NDk4Mjk3OTI2MzUiLCJvcmdhbml6YXRpb25JRCI6IjIwMDAwMSIsInNlc3Npb25QYXNzd29yZCI6IndTcGR6Vm05WDJrcEQ5YUoifQ=='
-      );
+      // Dynamic import of Scandit modules (client-side only)
+      console.log('📦 Loading Scandit modules...');
+      const [SDCCore, SDCId] = await Promise.all([
+        import('@scandit/web-datacapture-core'),
+        import('@scandit/web-datacapture-id')
+      ]);
+      console.log('✅ Scandit modules loaded successfully');
 
-      // Create scanner instance
-      const barcodeScanner = await window.Dynamsoft.DBR.BarcodeScanner.createInstance();
+      setMessage('Configuring scanner...');
+      console.log('⚙️ Configuring Scandit SDK...');
 
-      // Configure to only scan PDF417 (driver license barcode)
-      const settings = await barcodeScanner.getRuntimeSettings();
-      settings.barcodeFormatIds = window.Dynamsoft.DBR.EnumBarcodeFormat.BF_PDF417;
-      await barcodeScanner.updateRuntimeSettings(settings);
+      // Configure Scandit with license key and library location
+      await SDCCore.configure({
+        licenseKey: 'AsvGeB0cOkafNr8Eev9LLk0BjSadOa3TlgqmfiM6AzKQTICt2n+6DlZnnoN6U5wqSG0MkR969h4+GCNxiyUjY796W70rWUyngnDaLPoZyFJFDOWOBiKWZz8nHopTb3G3rGSeh7R2GGzqUEPo21xMoZJIYpfncVKVcHu/ga1pX95odw6/vU57J7ZzPS3PQy+fn0rKYh5u5y6yd5i5p01+m+ZrB7hWEzXEaXpQZHx4PmYHTz1btla/nHZInE0IFGMmNk3k3mxAFNH6FsHJcGNXOdNC/K0HUX9+iX0D+8ZQqBB0Uiek4Empl6h+AytfEZAyAn9z2sZKgM0aaBoJzgk/aEROVOJDWKe+ZF+7/xthK27obRjmD2clUKF6Q1kCeyxKST0ybrJeVWJgVCD+8mQVgeJDDKhra72LsV9wR4QX5InDaokBxWsOgJxOcZSDG2xxSFBtSHdO9JbnRaiihB7WubsFMyFwXW/CoS+IgtFq5n83VPN5t25Ym50gJE2lb7j5hU8fX+NcOckWNbIhNSaYAecHNboW6me4E5Z2qSaRNC0sdwa7hqawntwqnG4N3bmyETauNmn48Ql32mjfGb5XkICaMe4A0ax6Og7IqydBZRFibKTB8eejeNOoevAaUu9EHJJkP03qkNCiSH/eE+s4uxgbV7iLiQW9VBWaSeMIify04jU1APzAhs/VsJVMzvdjf1j5l4VkvPD/SG1XWvmOrSp0bceK4tm7c4y5qFJJeOf+v8oquAFMrHbs8eDdGkgdHCTLDNGqy4A+fbmX3UwxBDEzMC82wegJYuW6wknrLb0m2TCt5BX18o5sJvSSgrBbPgrA44GKI6TEI0T/Pa8xSUcYFA81bPG2WWnDz0wldnqARIWq4lLA4oPXrq1ZH3baaUjjLlCncn+XdVyOiCmaGWc4K1crGsYnRq74wcQCle6RB8us3ymW/svabWtF/6svPK2hbD6iQc8mkCCN92VrW6Cn0V8p+lryDgCp8HxxHNS+NdkhMbZTtqjpHjCNWc8lOMaiaKPzH8t9FIYzheaKd37QUNk1srkeCefxdy4oGo0iedXkfu8NrT44lt0rYfQNX/l0Okdf0SZ7khgtHQOnZ1/pgdk4u1dArZHSMcfuCkzQ3z07DyxV1ctcSWH57gt8w3/LlgSSOTrXY1Mlc/PqPP1DogULa17sfVN94DDilCf2pIq69sLIQ3LCknkIBgB0x0M=',
+        libraryLocation: new URL('/scandit/', window.location.origin).href,
+        moduleLoaders: [SDCId.idCaptureLoader()]
+      });
+      console.log('✅ Scandit SDK configured successfully');
 
-      // Set up UI
-      if (videoContainerRef.current) {
-        barcodeScanner.setUIElement(videoContainerRef.current);
+      // Create data capture context
+      console.log('🏗️ Creating data capture context...');
+      const context = await SDCCore.DataCaptureContext.create();
+      contextRef.current = context;
+      console.log('✅ Data capture context created');
+
+      // Create camera and use it on the context
+      console.log('📹 Setting up camera...');
+      const camera = SDCCore.Camera.default;
+      if (!camera) {
+        throw new Error('Default camera not available');
       }
 
-      // Set up scan callback
-      barcodeScanner.onUnduplicatedRead = async (txt: string, result: any) => {
-        await handleBarcodeDetected(txt);
+      await context.setFrameSource(camera);
+      cameraRef.current = camera;
+      console.log('✅ Camera set as frame source');
+
+      // Create ID capture settings
+      console.log('⚙️ Creating ID capture settings...');
+      const settings = new SDCId.IdCaptureSettings();
+
+      // Set up accepted documents - US driver's licenses and ID cards
+      settings.acceptedDocuments = [
+        new SDCId.DriverLicense(SDCId.Region.Us),
+        new SDCId.IdCard(SDCId.Region.Us),
+        new SDCId.DriverLicense(SDCId.Region.Any),
+        new SDCId.IdCard(SDCId.Region.Any)
+      ];
+
+      // Use SingleSideScanner with all capabilities enabled
+      settings.scannerType = new SDCId.SingleSideScanner(
+        true,  // barcode
+        true,  // machineReadableZone
+        true   // visualInspectionZone
+      );
+
+      console.log('✅ ID capture settings configured');
+
+      // Create ID capture mode
+      console.log('🔧 Creating ID capture mode...');
+      const idCapture = await SDCId.IdCapture.forContext(context, settings);
+      idCaptureRef.current = idCapture;
+      console.log('✅ ID capture mode created');
+
+      // Add listener for ID capture results
+      console.log('📱 Adding ID capture listener...');
+      const listener = {
+        didCaptureId: async (capturedId: any) => {
+          console.log('🎉 didCaptureId callback triggered!');
+          await handleIdCaptured(capturedId);
+        },
+        didFailWithError: (idCapture: any, error: any) => {
+          console.error('❌ didFailWithError callback triggered:', error);
+          setCameraError(`ID capture failed: ${error.message}`);
+          setStatus('error');
+        },
+        didLocalizeId: (localization: any) => {
+          console.log('📍 ID detected, processing...');
+          setMessage('ID detected, processing...');
+        }
       };
 
-      setScanner(barcodeScanner);
+      idCapture.addListener(listener);
+      console.log('✅ ID capture listener added successfully');
 
-      // Start scanning
-      await barcodeScanner.open();
+      // Create the data capture view
+      if (viewRef.current) {
+        console.log('📺 Creating data capture view...');
+        const view = await SDCCore.DataCaptureView.forContext(context);
+        console.log('✅ Data capture view created');
+
+        view.connectToElement(viewRef.current);
+        console.log('✅ View connected to DOM element');
+
+        const overlay = await SDCId.IdCaptureOverlay.withIdCapture(idCapture);
+        await view.addOverlay(overlay);
+        console.log('✅ ID capture overlay added to view');
+      }
+
       setStatus('scanning');
       setMessage('Point camera at the barcode on the back of the ID');
 
-    } catch (error: any) {
-      console.error('Camera initialization error:', error);
+      // Enable ID capture mode and start scanning
+      await idCapture.setEnabled(true);
+      await camera.switchToDesiredState(SDCCore.FrameSourceState.On);
+      console.log('✅ Camera started');
+
+    } catch (err) {
+      console.error('Scandit initialization error:', err);
       setStatus('error');
-      setCameraError(error.message || 'Failed to access camera');
-      setMessage('Camera access denied or not available');
+      setCameraError(`Failed to initialize scanner: ${err instanceof Error ? err.message : 'Unknown error'}`);
+      setMessage('Initialization failed');
     }
   };
 
-  const handleBarcodeDetected = async (barcodeData: string) => {
-    if (!barcodeData || barcodeData.length < 50) {
-      return;
-    }
-
-    // Stop scanning while processing
-    if (scanner) {
-      try {
-        await scanner.close();
-      } catch (e) {
-        console.error('Error closing scanner:', e);
-      }
-    }
-
-    setStatus('processing');
-    setMessage('Parsing ID data...');
+  // Handle captured ID
+  const handleIdCaptured = async (capturedId: any) => {
+    console.log('🎯 ID captured - raw data:', capturedId);
 
     try {
-      // Parse the barcode data
-      const parsed = parseUSDL(barcodeData);
-
-      if (!parsed || !parsed.firstName || !parsed.lastName) {
-        throw new Error('Unable to parse ID data');
+      // Stop scanning
+      if (cameraRef.current) {
+        const SDCCore = await import('@scandit/web-datacapture-core');
+        await cameraRef.current.switchToDesiredState(SDCCore.FrameSourceState.Off);
       }
 
-      // Extract and format the data
+      setStatus('processing');
+      setMessage('Processing ID data...');
+
+      // Extract data from captured ID
+      let firstName = capturedId.firstName;
+      let lastName = capturedId.lastName;
+      let middleName = capturedId.middleName;
+      let documentNumber = capturedId.documentNumber;
+      let dateOfBirth = capturedId.dateOfBirth;
+      let dateOfExpiry = capturedId.dateOfExpiry;
+      let address = capturedId.address;
+      let city = capturedId.city;
+      let state = capturedId.state;
+      let zipCode = capturedId.zipCode || capturedId.postalCode;
+
+      // Try barcode result first (most reliable for US IDs)
+      if (capturedId.barcode) {
+        const barcode = capturedId.barcode;
+        firstName = firstName || barcode.firstName;
+        lastName = lastName || barcode.lastName;
+        middleName = middleName || barcode.middleName;
+        documentNumber = documentNumber || barcode.documentNumber;
+        dateOfBirth = dateOfBirth || barcode.dateOfBirth;
+        dateOfExpiry = dateOfExpiry || barcode.dateOfExpiry;
+        address = address || barcode.address;
+        city = city || barcode.city;
+        state = state || barcode.state;
+        zipCode = zipCode || barcode.postalCode || barcode.zipCode;
+      }
+
+      // Handle DateResult objects or string dates
+      let dobString = '';
+      if (dateOfBirth) {
+        if (typeof dateOfBirth === 'object' && dateOfBirth.year) {
+          dobString = `${dateOfBirth.year}-${String(dateOfBirth.month).padStart(2, '0')}-${String(dateOfBirth.day).padStart(2, '0')}`;
+        } else if (typeof dateOfBirth === 'string') {
+          // Parse various date formats to YYYY-MM-DD
+          if (/^\d{8}$/.test(dateOfBirth)) {
+            // MMDDYYYY format
+            dobString = `${dateOfBirth.substring(4, 8)}-${dateOfBirth.substring(0, 2)}-${dateOfBirth.substring(2, 4)}`;
+          } else if (/^\d{4}-\d{2}-\d{2}$/.test(dateOfBirth)) {
+            dobString = dateOfBirth;
+          }
+        }
+      }
+
+      let expString = '';
+      if (dateOfExpiry) {
+        if (typeof dateOfExpiry === 'object' && dateOfExpiry.year) {
+          expString = `${dateOfExpiry.year}-${String(dateOfExpiry.month).padStart(2, '0')}-${String(dateOfExpiry.day).padStart(2, '0')}`;
+        } else if (typeof dateOfExpiry === 'string') {
+          if (/^\d{8}$/.test(dateOfExpiry)) {
+            expString = `${dateOfExpiry.substring(4, 8)}-${dateOfExpiry.substring(0, 2)}-${dateOfExpiry.substring(2, 4)}`;
+          } else if (/^\d{4}-\d{2}-\d{2}$/.test(dateOfExpiry)) {
+            expString = dateOfExpiry;
+          }
+        }
+      }
+
       const idData: ScannedIDData = {
-        firstName: parsed.firstName || '',
-        lastName: parsed.lastName || '',
-        middleName: parsed.middleName || '',
-        dateOfBirth: parseDateToISO(parsed.dateOfBirth),
-        address: parsed.addressStreet || '',
-        city: parsed.addressCity || '',
-        state: parsed.addressState || '',
-        postalCode: parsed.addressPostalCode || '',
-        licenseNumber: parsed.licenseNumber || '',
-        expirationDate: parseDateToISO(parsed.expirationDate),
+        firstName: firstName || '',
+        lastName: lastName || '',
+        middleName: middleName || '',
+        dateOfBirth: dobString,
+        address: address || '',
+        city: city || '',
+        state: state || '',
+        postalCode: zipCode || '',
+        licenseNumber: documentNumber || '',
+        expirationDate: expString,
       };
+
+      console.log('✅ Extracted result:', idData);
+
+      if (!idData.firstName && !idData.lastName) {
+        throw new Error('Unable to extract name from ID');
+      }
 
       setMessage('Searching for existing customer...');
 
@@ -227,24 +296,26 @@ export function POSIDScanner({
       }
 
     } catch (error: any) {
-      console.error('ID scan error:', error);
+      console.error('ID processing error:', error);
       setStatus('error');
       setMessage(error.message || 'Failed to process ID. Please try again.');
-
-      // Restart scanning after 3 seconds
-      setTimeout(async () => {
-        if (scanner) {
-          try {
-            await scanner.open();
-            setStatus('scanning');
-            setMessage('Point camera at the barcode on the back of the ID');
-          } catch (e) {
-            console.error('Error reopening scanner:', e);
-          }
-        }
-      }, 3000);
+      setCameraError(error.message || 'Failed to process ID');
     }
   };
+
+  // Initialize when component mounts
+  useEffect(() => {
+    if (isClient) {
+      initializeScandit();
+    }
+
+    return () => {
+      // Clean up when component unmounts
+      if (contextRef.current) {
+        contextRef.current.dispose();
+      }
+    };
+  }, [isClient]);
 
   const getStatusIcon = () => {
     switch (status) {
@@ -273,6 +344,19 @@ export function POSIDScanner({
       default: return 'text-white/60';
     }
   };
+
+  if (!isClient) {
+    return (
+      <div className="fixed inset-0 bg-black/95 backdrop-blur-xl z-[60] flex items-center justify-center p-4">
+        <div className="bg-[#0a0a0a] border border-white/10 rounded-2xl max-w-2xl w-full overflow-hidden p-8">
+          <div className="text-center">
+            <div className="animate-spin w-8 h-8 border-2 border-white border-t-transparent rounded-full mx-auto mb-4"></div>
+            <div className="text-white/60 text-sm">Initializing scanner...</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 bg-black/95 backdrop-blur-xl z-[60] flex items-center justify-center p-4">
@@ -310,7 +394,7 @@ export function POSIDScanner({
             </div>
           ) : (
             <div
-              ref={videoContainerRef}
+              ref={viewRef}
               className="aspect-video"
               style={{ minHeight: '400px' }}
             />

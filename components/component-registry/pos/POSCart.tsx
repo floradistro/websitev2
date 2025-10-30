@@ -84,11 +84,14 @@ export function POSCart({
             Customer
           </label>
           <button
-            onClick={() => setShowIDScanner(true)}
-            className="bg-blue-500/20 text-blue-300 border border-blue-500/40 rounded-lg px-2 py-1 text-[9px] uppercase tracking-wider hover:bg-blue-500/30 hover:border-blue-500/60 font-black transition-all flex items-center gap-1"
+            onClick={() => {
+              console.log('🔵 Scan ID button clicked!');
+              setShowIDScanner(true);
+            }}
+            className="bg-white/10 text-white border border-white/20 rounded-xl px-2.5 py-1.5 text-[9px] uppercase tracking-[0.15em] hover:bg-white/20 hover:border-white/30 font-black transition-all flex items-center gap-1.5"
             style={{ fontWeight: 900 }}
           >
-            <Scan size={10} strokeWidth={2.5} />
+            <Scan size={11} strokeWidth={2.5} />
             Scan ID
           </button>
         </div>
