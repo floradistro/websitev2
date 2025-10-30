@@ -93,6 +93,8 @@ export default function NewProduct() {
   const [showBulkReview, setShowBulkReview] = useState(false);
   const [currentReviewIndex, setCurrentReviewIndex] = useState(0);
   const [pricingBlueprints, setPricingBlueprints] = useState<any[]>([]);
+  const [bulkImages, setBulkImages] = useState<Array<{file: File, url: string, matchedTo: string | null}>>([]);
+  const [uploadingImages, setUploadingImages] = useState(false);
 
   // AI Autofill state
   const [aiSuggestions, setAiSuggestions] = useState<any>(null);
@@ -680,6 +682,104 @@ export default function NewProduct() {
     });
   };
 
+  // Match image filename to product name using fuzzy matching
+  const matchImageToProduct = (filename: string, productNames: string[]): string | null => {
+    // Remove file extension and clean filename
+    const cleanFilename = filename.replace(/\.(jpg|jpeg|png|gif|webp)$/i, '')
+      .toLowerCase()
+      .replace(/[-_]/g, ' ')
+      .trim();
+
+    console.log(`🔍 Matching image: "${filename}" → cleaned: "${cleanFilename}"`);
+
+    // Try exact match first
+    for (const productName of productNames) {
+      const cleanProductName = productName.toLowerCase().trim();
+      if (cleanFilename === cleanProductName) {
+        console.log(`✅ Exact match: "${filename}" → "${productName}"`);
+        return productName;
+      }
+    }
+
+    // Try partial match (filename contains product name or vice versa)
+    for (const productName of productNames) {
+      const cleanProductName = productName.toLowerCase().replace(/[-_]/g, ' ').trim();
+      if (cleanFilename.includes(cleanProductName) || cleanProductName.includes(cleanFilename)) {
+        console.log(`✅ Partial match: "${filename}" → "${productName}"`);
+        return productName;
+      }
+    }
+
+    // Try word-based matching
+    const filenameWords = cleanFilename.split(' ').filter(Boolean);
+    for (const productName of productNames) {
+      const productWords = productName.toLowerCase().split(' ').filter(Boolean);
+      const matchingWords = filenameWords.filter(word => productWords.includes(word));
+      if (matchingWords.length >= 2 || (matchingWords.length === 1 && productWords.length === 1)) {
+        console.log(`✅ Word match: "${filename}" → "${productName}"`);
+        return productName;
+      }
+    }
+
+    console.log(`❌ No match found for: "${filename}"`);
+    return null;
+  };
+
+  // Handle image uploads
+  const handleImageUpload = async (files: FileList | File[]) => {
+    if (!bulkProducts.length) {
+      showNotification({
+        type: 'warning',
+        title: 'No Products',
+        message: 'Add products first, then upload images',
+      });
+      return;
+    }
+
+    setUploadingImages(true);
+    const productNames = bulkProducts.map(p => p.name);
+    const newImages: Array<{file: File, url: string, matchedTo: string | null}> = [];
+
+    try {
+      // Convert to array if FileList
+      const filesArray = Array.from(files);
+
+      for (const file of filesArray) {
+        // Create preview URL
+        const url = URL.createObjectURL(file);
+
+        // Match to product
+        const matchedProduct = matchImageToProduct(file.name, productNames);
+
+        newImages.push({
+          file,
+          url,
+          matchedTo: matchedProduct
+        });
+      }
+
+      setBulkImages([...bulkImages, ...newImages]);
+
+      const matchedCount = newImages.filter(img => img.matchedTo).length;
+      showNotification({
+        type: 'success',
+        title: 'Images Uploaded',
+        message: `${matchedCount}/${newImages.length} images auto-matched to products`,
+      });
+
+      console.log('📸 Images uploaded:', newImages);
+    } catch (error) {
+      console.error('Image upload error:', error);
+      showNotification({
+        type: 'error',
+        title: 'Upload Failed',
+        message: 'Could not process images',
+      });
+    } finally {
+      setUploadingImages(false);
+    }
+  };
+
   const handleBulkSubmit = async () => {
     // If products have been reviewed, use bulkProducts array
     if (bulkProducts.length > 0) {
@@ -707,12 +807,38 @@ export default function NewProduct() {
             const enrichedData = bulkEnrichedData[name] || {};
             const description = enrichedData.description || `Bulk imported product: ${name}`;
 
+            // Upload matched images for this product
+            const matchedImages = bulkImages.filter(img => img.matchedTo === name);
+            const imageUrls: string[] = [];
+
+            for (const img of matchedImages) {
+              try {
+                const formData = new FormData();
+                formData.append('file', img.file);
+                formData.append('type', 'product');
+
+                const uploadResponse = await axios.post('/api/supabase/vendor/upload', formData, {
+                  headers: {
+                    'x-vendor-id': vendor?.id,
+                    'Content-Type': 'multipart/form-data'
+                  }
+                });
+
+                if (uploadResponse.data.success && uploadResponse.data.url) {
+                  imageUrls.push(uploadResponse.data.url);
+                  console.log(`📸 Uploaded image for ${name}:`, uploadResponse.data.url);
+                }
+              } catch (imgError) {
+                console.error(`Failed to upload image for ${name}:`, imgError);
+              }
+            }
+
             const productData: any = {
               name,
               category: bulkCategory,
               product_type: 'simple',
               pricing_mode,
-              image_urls: [],
+              image_urls: imageUrls,
               custom_fields,
               description
             };
@@ -1187,6 +1313,109 @@ export default function NewProduct() {
                 disabled={!bulkCategory}
                 className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl text-white placeholder-white/20 px-3 py-2.5 focus:outline-none focus:border-white/20 transition-all resize-none text-xs font-mono disabled:opacity-30"
               />
+
+              {/* Image Upload Zone */}
+              <div className="mt-4">
+                <label className="block text-white/40 text-[10px] mb-2 font-black uppercase tracking-[0.15em]" style={{ fontWeight: 900 }}>
+                  Product Images (Optional)
+                </label>
+                <div
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    e.currentTarget.classList.add('border-white/30', 'bg-white/5');
+                  }}
+                  onDragLeave={(e) => {
+                    e.currentTarget.classList.remove('border-white/30', 'bg-white/5');
+                  }}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    e.currentTarget.classList.remove('border-white/30', 'bg-white/5');
+                    if (e.dataTransfer.files.length > 0) {
+                      handleImageUpload(e.dataTransfer.files);
+                    }
+                  }}
+                  className="border-2 border-dashed border-white/10 rounded-xl p-6 text-center transition-all"
+                >
+                  <input
+                    type="file"
+                    id="bulk-image-upload"
+                    multiple
+                    accept="image/*"
+                    onChange={(e) => {
+                      if (e.target.files && e.target.files.length > 0) {
+                        handleImageUpload(e.target.files);
+                      }
+                    }}
+                    className="hidden"
+                  />
+                  <label
+                    htmlFor="bulk-image-upload"
+                    className="cursor-pointer"
+                  >
+                    {uploadingImages ? (
+                      <div className="text-white/60 text-[10px]">
+                        <Loader size={16} className="animate-spin mx-auto mb-2" />
+                        Uploading...
+                      </div>
+                    ) : (
+                      <>
+                        <div className="text-white/40 text-[10px] uppercase tracking-[0.15em] mb-2">
+                          Drag & drop images or click to browse
+                        </div>
+                        <div className="text-white/30 text-[9px]">
+                          Images auto-match to products by filename
+                        </div>
+                      </>
+                    )}
+                  </label>
+                </div>
+
+                {/* Uploaded Images Preview */}
+                {bulkImages.length > 0 && (
+                  <div className="mt-3 bg-[#0a0a0a] border border-white/5 rounded-xl p-3">
+                    <div className="text-white/40 text-[9px] uppercase tracking-[0.15em] mb-2 font-black" style={{ fontWeight: 900 }}>
+                      Uploaded Images ({bulkImages.length})
+                    </div>
+                    <div className="grid grid-cols-4 gap-2">
+                      {bulkImages.map((img, idx) => (
+                        <div key={idx} className="relative group">
+                          <img
+                            src={img.url}
+                            alt={img.file.name}
+                            className="w-full h-20 object-cover rounded-xl border border-white/10"
+                          />
+                          <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl flex flex-col items-center justify-center p-1">
+                            <div className="text-white text-[8px] text-center truncate w-full px-1">
+                              {img.file.name}
+                            </div>
+                            {img.matchedTo && (
+                              <div className="text-green-400 text-[8px] font-black mt-1">
+                                → {img.matchedTo}
+                              </div>
+                            )}
+                            {!img.matchedTo && (
+                              <div className="text-white/40 text-[8px] mt-1">
+                                No match
+                              </div>
+                            )}
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              URL.revokeObjectURL(img.url);
+                              setBulkImages(bulkImages.filter((_, i) => i !== idx));
+                            }}
+                            className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-[10px] opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
               <div className="mt-3 flex gap-2">
                 <button
                   type="button"
@@ -1388,6 +1617,33 @@ export default function NewProduct() {
                       <div className="text-white text-sm font-black uppercase tracking-tight mb-4" style={{ fontWeight: 900 }}>
                         {bulkProducts[currentReviewIndex].name}
                       </div>
+
+                      {/* Matched Images */}
+                      {bulkImages.filter(img => img.matchedTo === bulkProducts[currentReviewIndex].name).length > 0 && (
+                        <div className="bg-[#0a0a0a] border border-white/5 rounded-xl p-3">
+                          <div className="text-white/40 text-[9px] uppercase tracking-[0.15em] mb-2 font-black" style={{ fontWeight: 900 }}>
+                            Product Images ({bulkImages.filter(img => img.matchedTo === bulkProducts[currentReviewIndex].name).length})
+                          </div>
+                          <div className="grid grid-cols-4 gap-2">
+                            {bulkImages
+                              .filter(img => img.matchedTo === bulkProducts[currentReviewIndex].name)
+                              .map((img, idx) => (
+                                <div key={idx} className="relative group">
+                                  <img
+                                    src={img.url}
+                                    alt={img.file.name}
+                                    className="w-full h-20 object-cover rounded-xl border border-white/10"
+                                  />
+                                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl flex items-center justify-center">
+                                    <div className="text-white text-[8px] text-center px-1">
+                                      {img.file.name}
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                          </div>
+                        </div>
+                      )}
 
                       {/* Editable Custom Fields */}
                       <div className="bg-[#0a0a0a] border border-white/5 rounded-xl p-3 space-y-3">
