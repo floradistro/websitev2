@@ -146,12 +146,12 @@ export default function MarketingPage() {
     },
     {
       name: 'Wallet Passes',
-      description: 'Coming soon - Apple & Google Wallet cards',
+      description: 'Manage Apple & Google Wallet loyalty cards',
       icon: Wallet,
       route: '/vendor/marketing/wallet',
       color: 'from-indigo-500/20 to-indigo-600/20',
       iconColor: 'text-indigo-400',
-      available: false,
+      available: true,
     },
   ];
 
