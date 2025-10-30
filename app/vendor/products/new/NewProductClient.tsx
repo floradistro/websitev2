@@ -508,21 +508,9 @@ export default function NewProduct() {
       }
     }
 
-    // Map THC percentage
-    if (aiSuggestions.thc_percentage) {
-      const field = findFieldByKeywords(['thc', 'thca', 'thc_percentage', 'thca_percentage', 'thc %', 'thca %']);
-      if (field) {
-        updates[field.name] = aiSuggestions.thc_percentage.toString();
-      }
-    }
-
-    // Map CBD percentage
-    if (aiSuggestions.cbd_percentage) {
-      const field = findFieldByKeywords(['cbd', 'cbd_percentage', 'cbd %']);
-      if (field) {
-        updates[field.name] = aiSuggestions.cbd_percentage.toString();
-      }
-    }
+    // DO NOT MAP THC/CBD/Δ9 - these must come from lab COA only, not web estimates
+    // Web-scraped cannabinoid data is unreliable and should not be auto-filled
+    // Vendors must enter this from their Certificate of Analysis
 
     // Map terpenes
     if (aiSuggestions.terpenes && aiSuggestions.terpenes.length > 0) {
@@ -546,20 +534,29 @@ export default function NewProduct() {
       }
     }
 
-    // Map lineage
+    // Map lineage (genetics/parents/cross)
     if (aiSuggestions.lineage) {
-      const field = findFieldByKeywords(['lineage', 'genetics', 'parent']);
+      const field = findFieldByKeywords(['lineage', 'genetics', 'parent', 'cross', 'bred']);
       if (field) {
         updates[field.name] = aiSuggestions.lineage;
       }
     }
 
-    // Update description
+    // Map nose/aroma field (NEW)
     if (aiSuggestions.description) {
+      const noseField = findFieldByKeywords(['nose', 'aroma', 'smell', 'scent', 'fragrance']);
+      if (noseField) {
+        // Use first sentence or first ~100 chars for nose field
+        const shortDesc = aiSuggestions.description.split('.')[0].substring(0, 100);
+        updates[noseField.name] = shortDesc;
+      }
+
+      // Also update main description
       setFormData({ ...formData, description: aiSuggestions.description });
     }
 
-    console.log('AI field mapping:', updates);
+    console.log('🔍 AI field mapping:', updates);
+    console.log('📋 Available fields:', dynamicFields.map(f => ({ name: f.name, label: f.label, type: f.type })));
     setCustomFieldValues({ ...customFieldValues, ...updates });
     setShowSuggestions(false);
 
@@ -1251,27 +1248,15 @@ export default function NewProduct() {
                   </div>
 
                   <div className="grid grid-cols-2 gap-2 text-[10px]">
-                    {/* Only show suggestions for fields that actually exist */}
+                    {/* Only show suggestions for fields that actually exist AND will be applied */}
                     {aiSuggestions.strain_type && dynamicFields.some(f => ['strain', 'type', 'strain_type'].some(k => (f.name || '').toLowerCase().includes(k) || (f.label || '').toLowerCase().includes(k))) && (
                       <div>
                         <span className="text-white/40 uppercase tracking-[0.15em]">Type:</span>
                         <span className="text-white ml-1 font-black">{aiSuggestions.strain_type}</span>
                       </div>
                     )}
-                    {aiSuggestions.thc_percentage && dynamicFields.some(f => ['thc', 'thca'].some(k => (f.name || '').toLowerCase().includes(k) || (f.label || '').toLowerCase().includes(k))) && (
-                      <div>
-                        <span className="text-white/40 uppercase tracking-[0.15em]">THC:</span>
-                        <span className="text-green-400 ml-1 font-black">{aiSuggestions.thc_percentage}%</span>
-                      </div>
-                    )}
-                    {/* Only show CBD if a CBD field exists */}
-                    {aiSuggestions.cbd_percentage && dynamicFields.some(f => ['cbd'].some(k => (f.name || '').toLowerCase().includes(k) || (f.label || '').toLowerCase().includes(k))) && (
-                      <div>
-                        <span className="text-white/40 uppercase tracking-[0.15em]">CBD:</span>
-                        <span className="text-blue-400 ml-1 font-black">{aiSuggestions.cbd_percentage}%</span>
-                      </div>
-                    )}
-                    {aiSuggestions.lineage && dynamicFields.some(f => ['lineage', 'genetics', 'parent'].some(k => (f.name || '').toLowerCase().includes(k) || (f.label || '').toLowerCase().includes(k))) && (
+                    {/* THC/CBD/Δ9 are NEVER shown - these must come from lab COA, not web estimates */}
+                    {aiSuggestions.lineage && dynamicFields.some(f => ['lineage', 'genetics', 'parent', 'cross', 'bred'].some(k => (f.name || '').toLowerCase().includes(k) || (f.label || '').toLowerCase().includes(k))) && (
                       <div className="col-span-2">
                         <span className="text-white/40 uppercase tracking-[0.15em]">Lineage:</span>
                         <span className="text-white ml-1 font-black">{aiSuggestions.lineage}</span>
@@ -1290,15 +1275,40 @@ export default function NewProduct() {
                     </div>
                   )}
 
-                  {/* Show hidden suggestions count */}
-                  {(() => {
-                    let hiddenCount = 0;
-                    if (aiSuggestions.cbd_percentage && !dynamicFields.some(f => ['cbd'].some(k => (f.name || '').toLowerCase().includes(k) || (f.label || '').toLowerCase().includes(k)))) hiddenCount++;
-                    if (aiSuggestions.terpenes && aiSuggestions.terpenes.length > 0 && !dynamicFields.some(f => ['terpene', 'terp'].some(k => (f.name || '').toLowerCase().includes(k) || (f.label || '').toLowerCase().includes(k)))) hiddenCount++;
+                  {/* Show terpenes if they exist */}
+                  {aiSuggestions.terpenes && aiSuggestions.terpenes.length > 0 && dynamicFields.some(f => ['terpene', 'terp'].some(k => (f.name || '').toLowerCase().includes(k) || (f.label || '').toLowerCase().includes(k))) && (
+                    <div className="flex flex-wrap gap-1">
+                      {aiSuggestions.terpenes.slice(0, 5).map((terpene: string, idx: number) => (
+                        <span key={idx} className="bg-purple-500/20 border border-purple-500/30 rounded px-2 py-0.5 text-[9px] text-purple-300 uppercase tracking-wider">
+                          {terpene}
+                        </span>
+                      ))}
+                      {aiSuggestions.terpenes.length > 5 && (
+                        <span className="text-white/40 text-[9px]">+{aiSuggestions.terpenes.length - 5} more</span>
+                      )}
+                    </div>
+                  )}
 
-                    return hiddenCount > 0 ? (
-                      <div className="text-white/40 text-[9px] italic">
-                        {hiddenCount} suggestion(s) hidden (no matching field)
+                  {/* Show count of data not used (THC/CBD excluded from autofill) */}
+                  {(() => {
+                    let skippedCount = 0;
+                    const skippedReasons = [];
+
+                    // Always skip cannabinoids
+                    if (aiSuggestions.thc_percentage || aiSuggestions.cbd_percentage) {
+                      skippedCount++;
+                      skippedReasons.push('cannabinoids (use COA data)');
+                    }
+
+                    // Check for fields without matches
+                    if (aiSuggestions.terpenes && aiSuggestions.terpenes.length > 0 && !dynamicFields.some(f => ['terpene', 'terp'].some(k => (f.name || '').toLowerCase().includes(k) || (f.label || '').toLowerCase().includes(k)))) {
+                      skippedCount++;
+                      skippedReasons.push('terpenes (no field)');
+                    }
+
+                    return skippedCount > 0 ? (
+                      <div className="text-white/40 text-[9px] italic" title={skippedReasons.join(', ')}>
+                        {skippedCount} item(s) not auto-filled
                       </div>
                     ) : null;
                   })()}
