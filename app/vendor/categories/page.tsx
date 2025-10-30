@@ -1,10 +1,11 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { FolderTree, Plus, Edit2, Trash2, Globe, Lock, Save, X, Upload, Image as ImageIcon, CheckSquare, Square } from 'lucide-react';
+import { FolderTree, Plus, Edit2, Trash2, Lock, Save, X, Upload, Image as ImageIcon, CheckSquare, Square, Sparkles, ArrowRight } from 'lucide-react';
 import { showNotification } from '@/components/NotificationToast';
 import { useAppAuth } from '@/context/AppAuthContext';
 import PageHeader, { Button } from '@/components/dashboard/PageHeader';
+import Link from 'next/link';
 
 interface Category {
   id: string;
@@ -317,8 +318,7 @@ export default function VendorCategoriesPage() {
     }
   }
 
-  // Separate global and custom categories
-  const globalCategories = categories.filter(c => !c.vendor_id);
+  // Only show vendor's custom categories
   const customCategories = categories.filter(c => c.vendor_id);
 
   const commonEmojis = ['📦', '🌿', '🍃', '💨', '🔥', '💊', '🍪', '🍬', '🧪', '💎', '🎯', '✨', '🌟', '🎁', '🏆', '⚡'];
@@ -493,49 +493,26 @@ export default function VendorCategoriesPage() {
             )}
           </div>
 
-          {/* Global Categories */}
-          {globalCategories.length > 0 && (
-            <div>
-              <div className="flex items-center gap-2 mb-4">
-                <Globe size={16} className="text-white/60" strokeWidth={2} />
-                <h2 className="text-white/80 text-sm uppercase tracking-[0.15em] font-black" style={{ fontWeight: 900 }}>
-                  Global Categories
-                </h2>
-                <span className="text-white/40 text-[10px] uppercase tracking-[0.15em]">
-                  {globalCategories.length} available
-                </span>
+          {/* Template Library CTA */}
+          <Link href="/vendor/templates">
+            <div className="bg-gradient-to-br from-white/10 to-white/5 border-2 border-white/20 rounded-2xl p-8 text-center hover:border-white/30 transition-all group cursor-pointer">
+              <div className="flex items-center justify-center mb-4">
+                <div className="w-16 h-16 bg-gradient-to-br from-white/20 to-white/10 rounded-2xl flex items-center justify-center border border-white/20 group-hover:scale-110 transition-transform">
+                  <Sparkles size={32} className="text-white" strokeWidth={2} />
+                </div>
               </div>
-
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                {globalCategories.map((category) => (
-                  <div
-                    key={category.id}
-                    className="bg-white/5 border border-white/10 rounded-xl p-3 opacity-60"
-                  >
-                    <div className="flex items-center gap-2">
-                      {category.image_url ? (
-                        <img
-                          src={category.image_url}
-                          alt={category.name}
-                          className="w-8 h-8 rounded-lg object-cover border border-white/10"
-                        />
-                      ) : (
-                        <span className="text-xl">{category.icon || '📦'}</span>
-                      )}
-                      <div className="flex-1 min-w-0">
-                        <h3 className="text-white text-xs font-black tracking-tight truncate" style={{ fontWeight: 900 }}>
-                          {category.name}
-                        </h3>
-                        <p className="text-white/40 text-[8px] uppercase tracking-[0.15em]">
-                          System
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+              <h3 className="text-white text-lg font-black tracking-tight mb-2" style={{ fontWeight: 900 }}>
+                Need Categories to Start?
+              </h3>
+              <p className="text-white/60 text-sm mb-4 max-w-md mx-auto">
+                Browse our template library with pre-configured categories and fields for cannabis, beverages, and more
+              </p>
+              <div className="inline-flex items-center gap-2 px-6 py-3 bg-white text-black rounded-xl text-[10px] uppercase tracking-[0.15em] font-black group-hover:bg-white/90 transition-all">
+                <span style={{ fontWeight: 900 }}>Browse Template Library</span>
+                <ArrowRight size={14} strokeWidth={2.5} />
               </div>
             </div>
-          )}
+          </Link>
         </div>
       )}
 

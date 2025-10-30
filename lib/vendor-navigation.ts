@@ -133,6 +133,14 @@ export const vendorNavItems: NavItem[] = [
     isCore: false,
     group: 'core'
   },
+  {
+    href: '/vendor/templates',
+    icon: Sparkles,
+    label: 'Template Library',
+    description: 'Pre-configured business templates',
+    isCore: false,
+    group: 'core'
+  },
   
   // Content & Media (3)
   {
