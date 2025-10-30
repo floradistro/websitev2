@@ -78,9 +78,13 @@ export default function NewProduct() {
   // Bulk input state
   const [inputMode, setInputMode] = useState<'single' | 'bulk'>('single');
   const [bulkInput, setBulkInput] = useState('');
+  const [bulkCategory, setBulkCategory] = useState(''); // Category for entire bulk batch
   const [bulkProcessing, setBulkProcessing] = useState(false);
   const [bulkEnrichedData, setBulkEnrichedData] = useState<Record<string, any>>({}); // Store AI data by product name
   const [bulkAIProgress, setBulkAIProgress] = useState({ current: 0, total: 0 });
+  const [bulkProducts, setBulkProducts] = useState<Array<{name: string, price: string, cost_price: string}>>([]);
+  const [showBulkReview, setShowBulkReview] = useState(false);
+  const [currentReviewIndex, setCurrentReviewIndex] = useState(0);
 
   // AI Autofill state
   const [aiSuggestions, setAiSuggestions] = useState<any>(null);
@@ -646,6 +650,103 @@ export default function NewProduct() {
   };
 
   const handleBulkSubmit = async () => {
+    // If products have been reviewed, use bulkProducts array
+    if (bulkProducts.length > 0) {
+      if (!bulkCategory) {
+        showNotification({
+          type: 'warning',
+          title: 'Category Required',
+          message: 'Select a category for this bulk batch',
+        });
+        return;
+      }
+
+      setBulkProcessing(true);
+      setError('');
+
+      try {
+        let successCount = 0;
+        let failCount = 0;
+
+        for (const product of bulkProducts) {
+          const { name, price, cost_price } = product;
+
+          try {
+            // Check if we have AI enriched data for this product
+            const enrichedData = bulkEnrichedData[name] || {};
+            const hasEnrichedData = Object.keys(enrichedData).length > 0;
+
+            // Build custom fields from AI data using expected field slugs
+            const customFields: Record<string, any> = {};
+            if (hasEnrichedData) {
+              if (enrichedData.strain_type) customFields['strain_type'] = enrichedData.strain_type;
+              if (enrichedData.lineage) customFields['lineage'] = enrichedData.lineage;
+              if (enrichedData.nose && Array.isArray(enrichedData.nose)) {
+                customFields['nose'] = enrichedData.nose.join(', ');
+              }
+              if (enrichedData.effects) customFields['effects'] = enrichedData.effects;
+              if (enrichedData.terpenes) customFields['terpene_profile'] = enrichedData.terpenes;
+            }
+
+            const productData = {
+              name,
+              category: bulkCategory,
+              price: price ? parseFloat(price) : null,
+              cost_price: cost_price ? parseFloat(cost_price) : null,
+              description: hasEnrichedData && enrichedData.description ? enrichedData.description : `Bulk imported product: ${name}`,
+              product_type: 'simple',
+              pricing_mode: 'single',
+              image_urls: [],
+              custom_fields: customFields
+            };
+
+            console.log(`📦 Submitting ${name}${hasEnrichedData ? ' with AI data' : ''}:`, productData);
+
+            const response = await axios.post('/api/vendor/products', productData, {
+              headers: { 'x-vendor-id': vendor?.id },
+            });
+
+            if (response.data.success) {
+              successCount++;
+            } else {
+              failCount++;
+            }
+          } catch (err) {
+            failCount++;
+            console.error(`Failed to create product: ${name}`, err);
+          }
+        }
+
+        setBulkProcessing(false);
+        setShowBulkReview(false);
+        setBulkProducts([]);
+        setBulkEnrichedData({});
+        setBulkInput('');
+        setBulkCategory('');
+
+        showNotification({
+          type: 'success',
+          title: 'Bulk Import Complete',
+          message: `Success: ${successCount} | Failed: ${failCount}`,
+        });
+
+        if (successCount > 0) {
+          setTimeout(() => router.push('/vendor/products'), 1500);
+        }
+      } catch (err: any) {
+        console.error('Bulk import error:', err);
+        setBulkProcessing(false);
+        setError('Bulk import failed');
+        showNotification({
+          type: 'error',
+          title: 'Import Failed',
+          message: 'Could not process bulk products',
+        });
+      }
+      return;
+    }
+
+    // Fallback: Old direct submission flow (if no review used)
     if (!bulkInput.trim()) {
       showNotification({
         type: 'warning',
@@ -655,88 +756,11 @@ export default function NewProduct() {
       return;
     }
 
-    setBulkProcessing(true);
-    setError('');
-
-    try {
-      // Parse CSV format: Name, Category, Price, Cost (optional)
-      const lines = bulkInput.split('\n').filter(line => line.trim());
-      const products = [];
-      let successCount = 0;
-      let failCount = 0;
-
-      for (const line of lines) {
-        const parts = line.split(',').map(p => p.trim());
-        if (parts.length < 3) continue;
-
-        const [name, category, price, cost] = parts;
-
-        try {
-          // Check if we have AI enriched data for this product
-          const enrichedData = bulkEnrichedData[name] || {};
-          const hasEnrichedData = Object.keys(enrichedData).length > 0;
-
-          // Build custom fields from AI data using expected field slugs
-          const customFields: Record<string, any> = {};
-          if (hasEnrichedData) {
-            if (enrichedData.strain_type) customFields['strain_type'] = enrichedData.strain_type;
-            if (enrichedData.lineage) customFields['lineage'] = enrichedData.lineage;
-            if (enrichedData.nose && Array.isArray(enrichedData.nose)) {
-              customFields['nose'] = enrichedData.nose.join(', ');
-            }
-            if (enrichedData.effects) customFields['effects'] = enrichedData.effects;
-            if (enrichedData.terpenes) customFields['terpene_profile'] = enrichedData.terpenes;
-          }
-
-          const productData = {
-            name,
-            category,
-            price: parseFloat(price),
-            cost_price: cost ? parseFloat(cost) : null,
-            description: hasEnrichedData && enrichedData.description ? enrichedData.description : `Bulk imported product: ${name}`,
-            product_type: 'simple',
-            pricing_mode: 'single',
-            image_urls: [],
-            custom_fields: customFields
-          };
-
-          console.log(`📦 Submitting ${name}${hasEnrichedData ? ' with AI data' : ''}:`, productData);
-
-          const response = await axios.post('/api/vendor/products', productData, {
-            headers: { 'x-vendor-id': vendor?.id },
-          });
-
-          if (response.data.success) {
-            successCount++;
-          } else {
-            failCount++;
-          }
-        } catch (err) {
-          failCount++;
-          console.error(`Failed to create product: ${name}`, err);
-        }
-      }
-
-      setBulkProcessing(false);
-      showNotification({
-        type: 'success',
-        title: 'Bulk Import Complete',
-        message: `Success: ${successCount} | Failed: ${failCount}`,
-      });
-
-      if (successCount > 0) {
-        setTimeout(() => router.push('/vendor/products'), 1500);
-      }
-    } catch (err: any) {
-      console.error('Bulk import error:', err);
-      setBulkProcessing(false);
-      setError('Bulk import failed');
-      showNotification({
-        type: 'error',
-        title: 'Import Failed',
-        message: 'Could not process bulk products',
-      });
-    }
+    showNotification({
+      type: 'info',
+      title: 'Use AI Enrich',
+      message: 'Click "AI Enrich" to review products before submitting',
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -1101,18 +1125,41 @@ export default function NewProduct() {
         {inputMode === 'bulk' ? (
           <div className="space-y-4">
             <div className="bg-[#141414] border border-white/5 rounded-2xl p-4">
-              <h2 className="text-[10px] uppercase tracking-[0.15em] text-white/40 mb-2 font-black" style={{ fontWeight: 900 }}>
+              <h2 className="text-[10px] uppercase tracking-[0.15em] text-white/40 mb-4 font-black" style={{ fontWeight: 900 }}>
                 Bulk Product Import
               </h2>
-              <p className="text-white/40 text-[10px] mb-4">
-                Format: Name, Category, Price, Cost (optional) - One per line
+
+              {/* Category Selector for entire batch */}
+              <div className="mb-4">
+                <label className="block text-white/40 text-[10px] uppercase tracking-[0.15em] mb-2 font-black" style={{ fontWeight: 900 }}>
+                  Category for All Products <span className="text-red-400">*</span>
+                </label>
+                <select
+                  value={bulkCategory}
+                  onChange={(e) => setBulkCategory(e.target.value)}
+                  className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl text-white px-3 py-2.5 focus:outline-none focus:border-white/20 transition-all text-xs"
+                >
+                  <option value="">Select category...</option>
+                  {categories.map(cat => (
+                    <option key={cat.id} value={cat.name}>{cat.name}</option>
+                  ))}
+                </select>
+                <p className="text-white/30 text-[9px] mt-1">All products in this batch will use this category</p>
+              </div>
+
+              <p className="text-white/40 text-[10px] mb-2 font-black" style={{ fontWeight: 900 }}>
+                Product List
+              </p>
+              <p className="text-white/40 text-[9px] mb-3">
+                Format: Name, Price (optional), Cost (optional) - One per line
               </p>
               <textarea
                 value={bulkInput}
                 onChange={(e) => setBulkInput(e.target.value)}
-                placeholder="Blue Dream, Flower, 15.00, 10.00&#10;OG Kush, Flower, 18.00, 12.00&#10;Wedding Cake, Flower, 20.00, 14.00"
+                placeholder="Blue Dream, 45&#10;OG Kush, 50, 35&#10;Wedding Cake, 55, 40&#10;White Widow&#10;Gelato, 60"
                 rows={10}
-                className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl text-white placeholder-white/20 px-3 py-2.5 focus:outline-none focus:border-white/20 transition-all resize-none text-xs font-mono"
+                disabled={!bulkCategory}
+                className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl text-white placeholder-white/20 px-3 py-2.5 focus:outline-none focus:border-white/20 transition-all resize-none text-xs font-mono disabled:opacity-30"
               />
               <div className="mt-3 flex gap-2">
                 <button
@@ -1143,8 +1190,18 @@ export default function NewProduct() {
                       return;
                     }
 
+                    if (!bulkCategory) {
+                      showNotification({
+                        type: 'warning',
+                        title: 'Category Required',
+                        message: 'Select a category for this bulk batch',
+                      });
+                      return;
+                    }
+
                     setLoadingAI(true);
                     const enrichedData: Record<string, any> = {};
+                    const parsedProducts: Array<{name: string, price: string, cost_price: string}> = [];
 
                     try {
                       const lines = bulkInput.split('\n').filter(line => line.trim());
@@ -1153,16 +1210,25 @@ export default function NewProduct() {
                       for (let i = 0; i < lines.length; i++) {
                         const line = lines[i];
                         const parts = line.split(',').map(p => p.trim());
-                        if (parts.length < 3) continue;
-                        const [name, category, price, cost] = parts;
+                        if (parts.length < 1) continue;
+
+                        // New format: Name, Price (optional), Cost (optional)
+                        const [name, price, cost] = parts;
+
+                        // Add to parsed products
+                        parsedProducts.push({
+                          name,
+                          price: price || '',
+                          cost_price: cost || price || ''
+                        });
 
                         setBulkAIProgress({ current: i + 1, total: lines.length });
 
                         try {
-                          // Get AI suggestions
+                          // Get AI suggestions using bulkCategory
                           const response = await axios.post('/api/ai/quick-autofill', {
                             productName: name,
-                            category
+                            category: bulkCategory
                           });
 
                           if (response.data.success && response.data.suggestions) {
@@ -1186,12 +1252,17 @@ export default function NewProduct() {
                       }
 
                       setBulkEnrichedData(enrichedData);
+                      setBulkProducts(parsedProducts);
                       const enrichedCount = Object.keys(enrichedData).length;
+
+                      // Show review interface
+                      setShowBulkReview(true);
+                      setCurrentReviewIndex(0);
 
                       showNotification({
                         type: 'success',
                         title: 'AI Enrichment Complete',
-                        message: `Enriched ${enrichedCount}/${lines.length} products`,
+                        message: `Enriched ${enrichedCount}/${lines.length} products - Review pricing`,
                       });
                     } catch (error) {
                       console.error('Bulk AI error:', error);
@@ -1252,6 +1323,136 @@ export default function NewProduct() {
                       </div>
                     )}
                   </div>
+                </div>
+              )}
+
+              {/* Bulk Review Interface - Flip through products */}
+              {showBulkReview && bulkProducts.length > 0 && (
+                <div className="mt-4 bg-[#141414] border border-white/10 rounded-2xl p-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-white text-[10px] uppercase tracking-[0.15em] font-black" style={{ fontWeight: 900 }}>
+                      Review & Price Products
+                    </h3>
+                    <div className="text-white/40 text-[9px] uppercase tracking-[0.15em]">
+                      {currentReviewIndex + 1} / {bulkProducts.length}
+                    </div>
+                  </div>
+
+                  {/* Current Product Card */}
+                  {bulkProducts[currentReviewIndex] && (
+                    <div className="space-y-4">
+                      {/* Product Name */}
+                      <div>
+                        <div className="text-white text-xs font-black uppercase tracking-tight mb-2" style={{ fontWeight: 900 }}>
+                          {bulkProducts[currentReviewIndex].name}
+                        </div>
+                        {bulkEnrichedData[bulkProducts[currentReviewIndex].name] && (
+                          <div className="bg-[#0a0a0a] border border-white/5 rounded-xl p-3 space-y-2">
+                            <div className="text-white/40 text-[9px] uppercase tracking-[0.15em] mb-2 font-black" style={{ fontWeight: 900 }}>
+                              AI Data
+                            </div>
+                            {bulkEnrichedData[bulkProducts[currentReviewIndex].name].strain_type && (
+                              <div className="flex items-center gap-2">
+                                <span className="text-white/40 text-[9px] uppercase w-16">Type</span>
+                                <span className="text-white text-[10px] font-black uppercase" style={{ fontWeight: 900 }}>
+                                  {bulkEnrichedData[bulkProducts[currentReviewIndex].name].strain_type}
+                                </span>
+                              </div>
+                            )}
+                            {bulkEnrichedData[bulkProducts[currentReviewIndex].name].lineage && (
+                              <div className="flex items-center gap-2">
+                                <span className="text-white/40 text-[9px] uppercase w-16">Lineage</span>
+                                <span className="text-white text-[10px] font-black uppercase" style={{ fontWeight: 900 }}>
+                                  {bulkEnrichedData[bulkProducts[currentReviewIndex].name].lineage}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Pricing Inputs */}
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-white/40 text-[9px] uppercase tracking-[0.15em] mb-2 font-black" style={{ fontWeight: 900 }}>
+                            Selling Price
+                          </label>
+                          <input
+                            type="number"
+                            step="0.01"
+                            value={bulkProducts[currentReviewIndex].price}
+                            onChange={(e) => {
+                              const updated = [...bulkProducts];
+                              updated[currentReviewIndex].price = e.target.value;
+                              setBulkProducts(updated);
+                            }}
+                            placeholder="45.00"
+                            className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl text-white px-3 py-2.5 focus:outline-none focus:border-white/20 transition-all text-xs"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-white/40 text-[9px] uppercase tracking-[0.15em] mb-2 font-black" style={{ fontWeight: 900 }}>
+                            Cost Price
+                          </label>
+                          <input
+                            type="number"
+                            step="0.01"
+                            value={bulkProducts[currentReviewIndex].cost_price}
+                            onChange={(e) => {
+                              const updated = [...bulkProducts];
+                              updated[currentReviewIndex].cost_price = e.target.value;
+                              setBulkProducts(updated);
+                            }}
+                            placeholder="30.00"
+                            className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl text-white px-3 py-2.5 focus:outline-none focus:border-white/20 transition-all text-xs"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Navigation & Actions */}
+                      <div className="flex items-center gap-2 pt-3 border-t border-white/5">
+                        <button
+                          type="button"
+                          onClick={() => setCurrentReviewIndex(Math.max(0, currentReviewIndex - 1))}
+                          disabled={currentReviewIndex === 0}
+                          className="px-3 py-2 bg-white/5 border border-white/10 text-white rounded-xl text-[9px] uppercase tracking-[0.15em] font-black hover:bg-white/10 hover:border-white/20 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                          style={{ fontWeight: 900 }}
+                        >
+                          ← Prev
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setCurrentReviewIndex(Math.min(bulkProducts.length - 1, currentReviewIndex + 1))}
+                          disabled={currentReviewIndex === bulkProducts.length - 1}
+                          className="px-3 py-2 bg-white/5 border border-white/10 text-white rounded-xl text-[9px] uppercase tracking-[0.15em] font-black hover:bg-white/10 hover:border-white/20 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                          style={{ fontWeight: 900 }}
+                        >
+                          Next →
+                        </button>
+                        <div className="flex-1"></div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setShowBulkReview(false);
+                            setCurrentReviewIndex(0);
+                          }}
+                          className="px-3 py-2 border border-white/10 text-white rounded-xl text-[9px] uppercase tracking-[0.15em] font-black hover:bg-white/5 hover:border-white/20 transition-all"
+                          style={{ fontWeight: 900 }}
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleBulkSubmit}
+                          disabled={bulkProcessing}
+                          className="px-4 py-2 bg-white/10 border-2 border-white/20 text-white rounded-xl text-[9px] uppercase tracking-[0.15em] font-black hover:bg-white/20 hover:border-white/30 transition-all disabled:opacity-30"
+                          style={{ fontWeight: 900 }}
+                        >
+                          {bulkProcessing ? 'Submitting...' : `Submit All (${bulkProducts.length})`}
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
