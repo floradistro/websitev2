@@ -1516,13 +1516,7 @@ export default function NewProduct() {
                             onClick={() => {
                               const updated = [...bulkProducts];
                               updated[currentReviewIndex].pricing_mode = 'tiered';
-                              // Initialize with basic tiers if empty
-                              if (updated[currentReviewIndex].pricing_tiers.length === 0) {
-                                updated[currentReviewIndex].pricing_tiers = [
-                                  { weight: '1g', qty: 1, price: '' },
-                                  { weight: '3.5g', qty: 1, price: '' }
-                                ];
-                              }
+                              // Don't auto-initialize - let user add tiers manually or via templates
                               setBulkProducts(updated);
                             }}
                             className={`flex-1 px-3 py-2 rounded-xl text-[9px] uppercase tracking-[0.15em] font-black transition-all ${
