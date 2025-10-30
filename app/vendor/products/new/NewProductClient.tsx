@@ -1807,9 +1807,14 @@ export default function NewProduct() {
                           <button
                             type="button"
                             onClick={() => {
-                              const updated = [...bulkProducts];
-                              updated[currentReviewIndex].pricing_mode = 'single';
+                              // Proper immutable update
+                              const updated = bulkProducts.map((product, idx) =>
+                                idx === currentReviewIndex
+                                  ? { ...product, pricing_mode: 'single' as 'single' | 'tiered' }
+                                  : product
+                              );
                               setBulkProducts(updated);
+                              console.log(`📊 Product ${currentReviewIndex} pricing mode set to: single`);
                             }}
                             className={`flex-1 px-3 py-2 rounded-xl text-[9px] uppercase tracking-[0.15em] font-black transition-all ${
                               bulkProducts[currentReviewIndex].pricing_mode === 'single'
@@ -1823,10 +1828,14 @@ export default function NewProduct() {
                           <button
                             type="button"
                             onClick={() => {
-                              const updated = [...bulkProducts];
-                              updated[currentReviewIndex].pricing_mode = 'tiered';
-                              // Don't auto-initialize - let user add tiers manually or via templates
+                              // Proper immutable update
+                              const updated = bulkProducts.map((product, idx) =>
+                                idx === currentReviewIndex
+                                  ? { ...product, pricing_mode: 'tiered' as 'single' | 'tiered' }
+                                  : product
+                              );
                               setBulkProducts(updated);
+                              console.log(`📊 Product ${currentReviewIndex} pricing mode set to: tiered`);
                             }}
                             className={`flex-1 px-3 py-2 rounded-xl text-[9px] uppercase tracking-[0.15em] font-black transition-all ${
                               bulkProducts[currentReviewIndex].pricing_mode === 'tiered'
