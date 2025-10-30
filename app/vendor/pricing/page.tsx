@@ -75,6 +75,8 @@ export default function VendorPricingPage() {
   const [pricingMode, setPricingMode] = useState<{ [configId: string]: 'fixed' | 'cost_plus' }>({});
   const [saving, setSaving] = useState(false);
   const [categories, setCategories] = useState<any[]>([]);
+  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
+  const [expandedContexts, setExpandedContexts] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (!authLoading && isAuthenticated) {
@@ -387,56 +389,118 @@ export default function VendorPricingPage() {
           <span className="text-[10px] uppercase tracking-[0.15em]">Loading pricing</span>
         </div>
       ) : (
-        <div className="space-y-12">
-          {/* Group configs by master context */}
-          {(() => {
-            // Group configs by context
-            const groupedConfigs: Record<string, PricingConfig[]> = {};
-            configs.forEach(config => {
-              if (!config.blueprint) return;
-              const context = config.blueprint.context || 'retail';
-              if (!groupedConfigs[context]) {
-                groupedConfigs[context] = [];
-              }
-              groupedConfigs[context].push(config);
-            });
+        <div className="space-y-6">
+          {/* Show ALL categories, organized */}
+          {categories.map(category => {
+            const categoryId = category.id;
+            const isExpanded = expandedCategories.has(categoryId);
 
-            // Define master group order and labels
-            const masterGroups = [
-              { key: 'retail', label: 'Retail Pricing', description: 'Direct-to-consumer pricing tiers', icon: '🛍️' },
-              { key: 'wholesale', label: 'Wholesale Pricing', description: 'Business-to-business bulk pricing', icon: '📦' },
-              { key: 'distributor', label: 'Distributor Pricing', description: 'Large volume distribution pricing', icon: '🚚' }
-            ];
+            // Get configs for this category
+            const categoryConfigs = configs.filter(config =>
+              config.blueprint?.applicable_to_categories?.includes(categoryId)
+            );
 
-            return masterGroups.map(masterGroup => {
-              const groupConfigs = groupedConfigs[masterGroup.key] || [];
-              if (groupConfigs.length === 0) return null;
+            // Get available blueprints for this category
+            const categoryBlueprints = availableBlueprints.filter(blueprint =>
+              blueprint.applicable_to_categories?.includes(categoryId)
+            );
 
-              return (
-                <div key={masterGroup.key} className="space-y-6">
-                  {/* Master Group Header */}
-                  <div className="border-b border-white/10 pb-4">
-                    <div className="flex items-center gap-3 mb-2">
-                      <span className="text-3xl">{masterGroup.icon}</span>
-                      <div>
-                        <h2 className="text-white text-xl font-thin tracking-tight">
-                          {masterGroup.label}
-                        </h2>
-                        <p className="text-white/40 text-[10px] uppercase tracking-[0.15em]">
-                          {masterGroup.description}
-                        </p>
-                      </div>
+            // Group by context
+            const contexts = ['retail', 'wholesale', 'distributor'];
+            const contextData = contexts.map(contextKey => ({
+              key: contextKey,
+              configs: categoryConfigs.filter(c => c.blueprint?.context === contextKey),
+              blueprints: categoryBlueprints.filter(b => b.context === contextKey)
+            })).filter(ctx => ctx.configs.length > 0 || ctx.blueprints.length > 0);
+
+            const hasAnyContent = contextData.length > 0;
+
+            return (
+              <div key={categoryId} className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
+                {/* Category Header - Always Visible */}
+                <button
+                  onClick={() => {
+                    const newExpanded = new Set(expandedCategories);
+                    if (isExpanded) {
+                      newExpanded.delete(categoryId);
+                    } else {
+                      newExpanded.add(categoryId);
+                    }
+                    setExpandedCategories(newExpanded);
+                  }}
+                  className="w-full px-6 py-4 flex items-center justify-between hover:bg-white/5 transition-all"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">{category.icon || '📦'}</span>
+                    <div className="text-left">
+                      <h3 className="text-white text-lg font-thin tracking-tight">
+                        {category.name}
+                      </h3>
+                      <p className="text-white/40 text-[10px] uppercase tracking-[0.15em]">
+                        {hasAnyContent ? `${contextData.length} pricing ${contextData.length === 1 ? 'tier' : 'tiers'}` : 'No pricing configured'}
+                      </p>
                     </div>
                   </div>
+                  <span className={`text-white/40 transition-transform ${isExpanded ? 'rotate-180' : ''}`}>
+                    ▼
+                  </span>
+                </button>
 
-                  {/* Pricing Tiers within this Master Group */}
-                  {groupConfigs.map((config) => {
-                    if (!config.blueprint) return null;
+                {/* Category Content - Collapsible */}
+                {isExpanded && (
+                  <div className="px-6 pb-6 space-y-6">
+                    {contextData.length > 0 ? (
+                      contextData.map(({ key: contextKey, configs: contextConfigs, blueprints: contextBlueprints }) => {
+                        const contextId = `${categoryId}-${contextKey}`;
+                        const isContextExpanded = expandedContexts.has(contextId);
 
-                    const isWholesale = config.blueprint.slug.includes('wholesale');
+                        const contextInfo = {
+                          retail: { label: 'Retail Pricing', icon: '🛍️', description: 'Direct-to-consumer' },
+                          wholesale: { label: 'Wholesale Pricing', icon: '📦', description: 'Business-to-business bulk' },
+                          distributor: { label: 'Distributor Pricing', icon: '🚚', description: 'Large volume distribution' }
+                        }[contextKey] || { label: contextKey, icon: '📋', description: '' };
 
-                    return (
-                      <div key={config.id} className="space-y-6 mb-8 pl-6 border-l-2 border-white/10">
+                        return (
+                          <div key={contextKey} className="border-l-2 border-white/10 pl-4">
+                            {/* Context Header */}
+                            <button
+                              onClick={() => {
+                                const newExpanded = new Set(expandedContexts);
+                                if (isContextExpanded) {
+                                  newExpanded.delete(contextId);
+                                } else {
+                                  newExpanded.add(contextId);
+                                }
+                                setExpandedContexts(newExpanded);
+                              }}
+                              className="w-full flex items-center justify-between py-3 hover:bg-white/5 rounded-xl px-3 transition-all"
+                            >
+                              <div className="flex items-center gap-2">
+                                <span className="text-xl">{contextInfo.icon}</span>
+                                <div className="text-left">
+                                  <h4 className="text-white/80 text-sm uppercase tracking-[0.15em]">
+                                    {contextInfo.label}
+                                  </h4>
+                                  <p className="text-white/40 text-[9px] uppercase tracking-[0.15em]">
+                                    {contextConfigs.length} active, {contextBlueprints.length} available
+                                  </p>
+                                </div>
+                              </div>
+                              <span className={`text-white/40 text-sm transition-transform ${isContextExpanded ? 'rotate-180' : ''}`}>
+                                ▼
+                              </span>
+                            </button>
+
+                            {/* Context Content */}
+                            {isContextExpanded && (
+                              <div className="mt-4 space-y-4 pl-4">
+                                {/* Active Configs */}
+                                {contextConfigs.map((config) => {
+                                  if (!config.blueprint) return null;
+                                  const isWholesale = config.blueprint.slug.includes('wholesale');
+
+                                  return (
+                                    <div key={config.id} className="space-y-6 mb-8">
                 <SectionHeader
                   title={config.blueprint.name}
                   subtitle={config.blueprint.description || undefined}
@@ -583,110 +647,65 @@ export default function VendorPricingPage() {
                   </Button>
                 </div>
               </div>
-                    );
-                  })}
-                </div>
-              );
-            });
-          })()}
+                                  );
+                                })}
 
-          {/* Available Blueprints - Grouped by Category > Context */}
-          {availableBlueprints.length > 0 && (
-            <div className="space-y-8 pt-8 border-t border-white/5">
-              <h3 className="text-white/40 text-[10px] uppercase tracking-[0.15em]">Add pricing structure</h3>
-
-              {(() => {
-                // Group blueprints by category first, then by context
-                const categoryGroups: Record<string, Record<string, Blueprint[]>> = {};
-
-                availableBlueprints.forEach(blueprint => {
-                  const blueprintCategories = blueprint.applicable_to_categories || [];
-                  const context = blueprint.context || 'retail';
-
-                  // If no categories, put in "All Categories"
-                  const categoryKeys = blueprintCategories.length > 0 ? blueprintCategories : ['all'];
-
-                  categoryKeys.forEach(catId => {
-                    if (!categoryGroups[catId]) {
-                      categoryGroups[catId] = {};
-                    }
-                    if (!categoryGroups[catId][context]) {
-                      categoryGroups[catId][context] = [];
-                    }
-                    categoryGroups[catId][context].push(blueprint);
-                  });
-                });
-
-                const contextLabels: Record<string, { label: string, icon: string }> = {
-                  retail: { label: 'Retail Pricing', icon: '🛍️' },
-                  wholesale: { label: 'Wholesale Pricing', icon: '📦' },
-                  distributor: { label: 'Distributor Pricing', icon: '🚚' }
-                };
-
-                return Object.entries(categoryGroups).map(([catId, contexts]) => {
-                  const categoryName = catId === 'all'
-                    ? 'All Categories'
-                    : categories.find(c => c.id === catId)?.name || 'Unknown Category';
-
-                  return (
-                    <div key={catId} className="space-y-6">
-                      {/* Category Header */}
-                      <div className="border-b border-white/10 pb-3">
-                        <h4 className="text-white text-lg font-thin tracking-tight">
-                          {categoryName}
-                        </h4>
-                      </div>
-
-                      {/* Contexts within Category */}
-                      {Object.entries(contexts).map(([contextKey, blueprints]) => {
-                        const contextInfo = contextLabels[contextKey] || { label: contextKey, icon: '📋' };
-
-                        return (
-                          <div key={contextKey} className="pl-4 space-y-3">
-                            {/* Context Subheader */}
-                            <div className="flex items-center gap-2 mb-3">
-                              <span className="text-xl">{contextInfo.icon}</span>
-                              <h5 className="text-white/60 text-sm uppercase tracking-[0.15em]">
-                                {contextInfo.label}
-                              </h5>
-                            </div>
-
-                            {/* Blueprints */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pl-6">
-                              {blueprints.map((blueprint) => (
-                                <div key={blueprint.id} className="bg-white/5 border border-white/10 rounded-2xl p-4 hover:border-white/20 transition-all">
-                                  <h6 className="text-white font-black text-xs uppercase tracking-tight mb-1" style={{ fontWeight: 900 }}>
-                                    {blueprint.name}
-                                  </h6>
-                                  <p className="text-white/40 text-[10px] uppercase tracking-[0.15em] mb-3">
-                                    {blueprint.description}
-                                  </p>
-                                  <button
-                                    onClick={() => enableBlueprint(blueprint.id)}
-                                    disabled={saving}
-                                    className="bg-white text-black px-4 py-2 rounded-2xl text-[10px] uppercase tracking-[0.15em] font-black hover:bg-white/90 transition-all disabled:opacity-50"
-                                    style={{ fontWeight: 900 }}
-                                  >
-                                    Enable
-                                  </button>
-                                </div>
-                              ))}
-                            </div>
+                                {/* Available Blueprints for this Context */}
+                                {contextBlueprints.length > 0 && (
+                                  <div className="space-y-3 pt-4 border-t border-white/5">
+                                    <h5 className="text-white/40 text-[9px] uppercase tracking-[0.15em]">
+                                      Available to Enable
+                                    </h5>
+                                    <div className="grid grid-cols-1 gap-3">
+                                      {contextBlueprints.map((blueprint) => (
+                                        <div key={blueprint.id} className="bg-white/5 border border-white/10 rounded-xl p-3 hover:border-white/20 transition-all">
+                                          <div className="flex items-center justify-between">
+                                            <div className="flex-1">
+                                              <h6 className="text-white font-black text-xs uppercase tracking-tight mb-0.5" style={{ fontWeight: 900 }}>
+                                                {blueprint.name}
+                                              </h6>
+                                              <p className="text-white/40 text-[9px] uppercase tracking-[0.15em]">
+                                                {blueprint.description}
+                                              </p>
+                                            </div>
+                                            <button
+                                              onClick={() => enableBlueprint(blueprint.id)}
+                                              disabled={saving}
+                                              className="bg-white text-black px-3 py-1.5 rounded-xl text-[9px] uppercase tracking-[0.15em] font-black hover:bg-white/90 transition-all disabled:opacity-50 ml-3"
+                                              style={{ fontWeight: 900 }}
+                                            >
+                                              Enable
+                                            </button>
+                                          </div>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            )}
                           </div>
                         );
-                      })}
-                    </div>
-                  );
-                });
-              })()}
-            </div>
-          )}
+                      })
+                    ) : (
+                      <div className="text-center py-8 text-white/40">
+                        <div className="text-3xl mb-2">💰</div>
+                        <p className="text-[10px] uppercase tracking-[0.15em]">No pricing configured</p>
+                        <p className="text-[9px] text-white/30 mt-1">Enable a pricing structure to get started</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
 
-          {/* Empty State */}
-          {configs.length === 0 && availableBlueprints.length === 0 && (
+          {/* Empty State - No Categories Loaded */}
+          {categories.length === 0 && !loading && (
             <div className="bg-white/5 border border-white/10 rounded-2xl p-12 text-center">
-              <div className="text-5xl mb-4">💰</div>
-              <div className="text-[10px] uppercase tracking-[0.15em] text-white/60">No pricing structures available</div>
+              <div className="text-5xl mb-4">📦</div>
+              <div className="text-[10px] uppercase tracking-[0.15em] text-white/60">No categories found</div>
+              <p className="text-[9px] text-white/30 mt-2">Create product categories to set up pricing</p>
             </div>
           )}
         </div>
