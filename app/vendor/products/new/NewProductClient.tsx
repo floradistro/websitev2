@@ -75,6 +75,11 @@ export default function NewProduct() {
   const [customFieldValues, setCustomFieldValues] = useState<Record<string, any>>({});
   const [loadingFields, setLoadingFields] = useState(false);
 
+  // Bulk input state
+  const [inputMode, setInputMode] = useState<'single' | 'bulk'>('single');
+  const [bulkInput, setBulkInput] = useState('');
+  const [bulkProcessing, setBulkProcessing] = useState(false);
+
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -406,6 +411,82 @@ export default function NewProduct() {
     }));
   };
 
+  const handleBulkSubmit = async () => {
+    if (!bulkInput.trim()) {
+      showNotification({
+        type: 'warning',
+        title: 'No Data',
+        message: 'Please enter product data',
+      });
+      return;
+    }
+
+    setBulkProcessing(true);
+    setError('');
+
+    try {
+      // Parse CSV format: Name, Category, Price, Cost (optional)
+      const lines = bulkInput.split('\n').filter(line => line.trim());
+      const products = [];
+      let successCount = 0;
+      let failCount = 0;
+
+      for (const line of lines) {
+        const parts = line.split(',').map(p => p.trim());
+        if (parts.length < 3) continue;
+
+        const [name, category, price, cost] = parts;
+
+        try {
+          const productData = {
+            name,
+            category,
+            price: parseFloat(price),
+            cost_price: cost ? parseFloat(cost) : null,
+            description: `Bulk imported product: ${name}`,
+            product_type: 'simple',
+            pricing_mode: 'single',
+            image_urls: [],
+            custom_fields: {}
+          };
+
+          const response = await axios.post('/api/vendor/products', productData, {
+            headers: { 'x-vendor-id': vendor?.id },
+          });
+
+          if (response.data.success) {
+            successCount++;
+          } else {
+            failCount++;
+          }
+        } catch (err) {
+          failCount++;
+          console.error(`Failed to create product: ${name}`, err);
+        }
+      }
+
+      setBulkProcessing(false);
+      showNotification({
+        type: 'success',
+        title: 'Bulk Import Complete',
+        message: `Success: ${successCount} | Failed: ${failCount}`,
+      });
+
+      if (successCount > 0) {
+        setTimeout(() => router.push('/vendor/products'), 1500);
+      }
+    } catch (err: any) {
+      console.error('Bulk import error:', err);
+      setBulkProcessing(false);
+      setError('Bulk import failed');
+      showNotification({
+        type: 'error',
+        title: 'Import Failed',
+        message: 'Could not process bulk products',
+      });
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -678,7 +759,75 @@ export default function NewProduct() {
 
       {/* Form Container */}
       <div className="max-w-5xl mx-auto px-4 py-4">
-        <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Input Mode Toggle */}
+        <div className="mb-4 flex items-center justify-between">
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => setInputMode('single')}
+              className={`px-3 py-2 rounded-xl border transition-all text-[10px] uppercase tracking-[0.15em] font-black ${
+                inputMode === 'single'
+                  ? 'bg-white/10 border-white/20 text-white'
+                  : 'bg-[#0a0a0a] border-white/10 text-white/60 hover:border-white/20'
+              }`}
+              style={{ fontWeight: 900 }}
+            >
+              Single
+            </button>
+            <button
+              type="button"
+              onClick={() => setInputMode('bulk')}
+              className={`px-3 py-2 rounded-xl border transition-all text-[10px] uppercase tracking-[0.15em] font-black ${
+                inputMode === 'bulk'
+                  ? 'bg-white/10 border-white/20 text-white'
+                  : 'bg-[#0a0a0a] border-white/10 text-white/60 hover:border-white/20'
+              }`}
+              style={{ fontWeight: 900 }}
+            >
+              Bulk
+            </button>
+          </div>
+        </div>
+
+        {/* Bulk Input Mode */}
+        {inputMode === 'bulk' ? (
+          <div className="space-y-4">
+            <div className="bg-[#141414] border border-white/5 rounded-2xl p-4">
+              <h2 className="text-[10px] uppercase tracking-[0.15em] text-white/40 mb-2 font-black" style={{ fontWeight: 900 }}>
+                Bulk Product Import
+              </h2>
+              <p className="text-white/40 text-[10px] mb-4">
+                Format: Name, Category, Price, Cost (optional) - One per line
+              </p>
+              <textarea
+                value={bulkInput}
+                onChange={(e) => setBulkInput(e.target.value)}
+                placeholder="Blue Dream, Flower, 15.00, 10.00&#10;OG Kush, Flower, 18.00, 12.00&#10;Wedding Cake, Flower, 20.00, 14.00"
+                rows={10}
+                className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl text-white placeholder-white/20 px-3 py-2.5 focus:outline-none focus:border-white/20 transition-all resize-none text-xs font-mono"
+              />
+              <div className="mt-3 flex gap-2">
+                <button
+                  type="button"
+                  onClick={handleBulkSubmit}
+                  disabled={bulkProcessing}
+                  className="px-4 py-2.5 bg-white/10 text-white border border-white/20 rounded-xl hover:bg-white/20 hover:border-white/30 font-black transition-all text-[10px] uppercase tracking-[0.15em] disabled:opacity-50"
+                  style={{ fontWeight: 900 }}
+                >
+                  {bulkProcessing ? (
+                    <span className="flex items-center gap-1.5">
+                      <Loader size={10} className="animate-spin" strokeWidth={3} />
+                      Processing...
+                    </span>
+                  ) : (
+                    'Import Products'
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="space-y-4">
           {/* Success Message */}
           {success && (
             <div className="bg-[#141414] border border-green-500/20 rounded-2xl p-4 flex items-start gap-3">
@@ -841,33 +990,31 @@ export default function NewProduct() {
               <>
               {/* COST PRICE (Private - Vendor Only) */}
               <div>
-                <label className="block text-white/90 text-sm font-medium mb-3">
-                  Cost Price (Your Cost)
-                  <span className="ml-2 text-emerald-400 text-xs">🔒 Private</span>
+                <label className="block text-white/40 text-[10px] uppercase tracking-[0.15em] mb-2 font-black" style={{ fontWeight: 900 }}>
+                  Cost Price
+                  <span className="ml-1.5 text-emerald-400 text-[9px]">🔒</span>
                 </label>
                 <div className="relative">
-                  <span className="absolute left-5 top-1/2 -translate-y-1/2 text-white/50 font-medium">$</span>
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40 text-[10px] font-black" style={{ fontWeight: 900 }}>$</span>
                   <input
                     type="number"
                     step="0.01"
                     value={formData.cost_price}
                     onChange={(e) => setFormData({...formData, cost_price: e.target.value})}
                     placeholder="10.00"
-                    className="w-full bg-black/50 border border-white/10 rounded-2xl text-white placeholder-white/30 pl-10 pr-5 py-4 focus:outline-none focus:border-white/30 focus:bg-black/70 transition-all text-base hover:border-white/20"
+                    className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl text-white placeholder-white/20 pl-7 pr-3 py-2.5 focus:outline-none focus:border-white/20 transition-all text-xs"
                   />
                 </div>
-                <p className="text-white/40 text-xs mt-2">
-                  Your cost per unit (not visible to customers)
-                </p>
+                <p className="text-white/40 text-[10px] mt-1.5">Private</p>
               </div>
 
               {/* SELLING PRICE */}
               <div>
-                <label className="block text-white/90 text-sm font-medium mb-3">
+                <label className="block text-white/40 text-[10px] uppercase tracking-[0.15em] mb-2 font-black" style={{ fontWeight: 900 }}>
                   Selling Price <span className="text-red-400">*</span>
                 </label>
                 <div className="relative">
-                  <span className="absolute left-5 top-1/2 -translate-y-1/2 text-white/50 font-medium">$</span>
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40 text-[10px] font-black" style={{ fontWeight: 900 }}>$</span>
                   <input
                     type="number"
                     step="0.01"
@@ -875,25 +1022,25 @@ export default function NewProduct() {
                     value={formData.price}
                     onChange={(e) => setFormData({...formData, price: e.target.value})}
                     placeholder="14.99"
-                    className="w-full bg-black/50 border border-white/10 rounded-2xl text-white placeholder-white/30 pl-10 pr-5 py-4 focus:outline-none focus:border-white/30 focus:bg-black/70 transition-all text-base hover:border-white/20"
+                    className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl text-white placeholder-white/20 pl-7 pr-3 py-2.5 focus:outline-none focus:border-white/20 transition-all text-xs"
                   />
                 </div>
 
                 {/* SHOW MARGIN CALCULATION */}
                 {formData.cost_price && formData.price && parseFloat(formData.cost_price) > 0 && parseFloat(formData.price) > 0 && (
-                  <div className="mt-3 flex items-center gap-4 bg-black/30 border border-white/10 rounded-2xl px-4 py-3">
-                    <div className={`font-bold text-sm ${
+                  <div className="mt-2 flex items-center gap-2 bg-[#0a0a0a] border border-white/10 rounded-xl px-3 py-2">
+                    <div className={`font-black text-[10px] uppercase tracking-[0.15em] ${
                       ((parseFloat(formData.price) - parseFloat(formData.cost_price)) / parseFloat(formData.price) * 100) >= 40
                         ? 'text-green-400'
                         : ((parseFloat(formData.price) - parseFloat(formData.cost_price)) / parseFloat(formData.price) * 100) >= 25
                         ? 'text-yellow-400'
                         : 'text-red-400'
-                    }`}>
-                      Margin: {((parseFloat(formData.price) - parseFloat(formData.cost_price)) / parseFloat(formData.price) * 100).toFixed(1)}%
+                    }`} style={{ fontWeight: 900 }}>
+                      {((parseFloat(formData.price) - parseFloat(formData.cost_price)) / parseFloat(formData.price) * 100).toFixed(1)}%
                     </div>
-                    <div className="w-px h-4 bg-white/20" />
-                    <div className="text-emerald-400 font-medium text-sm">
-                      Profit: ${(parseFloat(formData.price) - parseFloat(formData.cost_price)).toFixed(2)}/unit
+                    <div className="w-px h-3 bg-white/20" />
+                    <div className="text-emerald-400 font-black text-[10px] uppercase tracking-[0.15em]" style={{ fontWeight: 900 }}>
+                      ${(parseFloat(formData.price) - parseFloat(formData.cost_price)).toFixed(2)}
                     </div>
                   </div>
                 )}
@@ -1365,18 +1512,15 @@ export default function NewProduct() {
 
         {/* Category-Specific Fields */}
         {categoryId && (
-          <div className="bg-gradient-to-br from-white/[0.08] to-white/[0.02] backdrop-blur-xl border border-white/10 rounded-3xl p-6 lg:p-8">
-            <h2 className="text-xl font-black text-white mb-6 tracking-tight flex items-center gap-3" style={{ fontWeight: 900 }}>
-              <div className="w-8 h-8 bg-white/10 rounded-2xl flex items-center justify-center">
-                <Package size={16} className="text-white/80" />
-              </div>
+          <div className="bg-[#141414] border border-white/5 rounded-2xl p-4">
+            <h2 className="text-[10px] uppercase tracking-[0.15em] text-white/40 mb-4 font-black" style={{ fontWeight: 900 }}>
               Product Details
             </h2>
 
             {dynamicFields.length === 0 && !loadingFields && (
-              <div className="text-center py-8">
-                <p className="text-white/40 text-sm">
-                  No additional fields configured for this category.
+              <div className="text-center py-6">
+                <p className="text-white/40 text-[10px] uppercase tracking-[0.15em]">
+                  No fields configured
                 </p>
               </div>
             )}
@@ -1389,7 +1533,7 @@ export default function NewProduct() {
               {/* Initial Quantity - Always show for Simple Products */}
               {productType === 'simple' && (
                 <div>
-                  <label className="block text-white/90 text-sm font-medium mb-3">
+                  <label className="block text-white/40 text-[10px] uppercase tracking-[0.15em] mb-2 font-black" style={{ fontWeight: 900 }}>
                     Initial Quantity (grams)
                   </label>
                   <input
@@ -1398,7 +1542,7 @@ export default function NewProduct() {
                     value={formData.initial_quantity}
                     onChange={(e) => setFormData({...formData, initial_quantity: e.target.value})}
                     placeholder="100"
-                    className="w-full bg-black/50 border border-white/10 rounded-2xl text-white placeholder-white/30 px-5 py-4 focus:outline-none focus:border-white/30 focus:bg-black/70 transition-all text-base hover:border-white/20"
+                    className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl text-white placeholder-white/20 px-3 py-2.5 focus:outline-none focus:border-white/20 transition-all text-xs"
                   />
                 </div>
               )}
@@ -1434,6 +1578,7 @@ export default function NewProduct() {
           </div>
         </div>
       </form>
+        )}
       </div>
     </div>
   );
