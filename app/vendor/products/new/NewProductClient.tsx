@@ -515,19 +515,23 @@ export default function NewProduct() {
     }
   };
 
-  // Render dynamic field based on type
+  // Render dynamic field based on type (POS-style)
   const renderDynamicField = (field: DynamicField, index: number) => {
     const fieldValue = customFieldValues[field.name] || '';
     const handleChange = (value: any) => {
       setCustomFieldValues({ ...customFieldValues, [field.name]: value });
     };
 
+    const labelClasses = "block text-white/40 text-[10px] uppercase tracking-[0.15em] mb-2 font-black";
+    const inputClasses = "w-full bg-[#0a0a0a] border border-white/10 rounded-xl text-white placeholder-white/20 px-3 py-2.5 focus:outline-none focus:border-white/20 transition-all text-xs";
+    const descClasses = "text-white/40 text-[10px] mt-1.5";
+
     switch (field.type) {
       case 'text':
       case 'url':
         return (
           <div key={index}>
-            <label className="block text-white/90 text-sm font-medium mb-3">
+            <label className={labelClasses} style={{ fontWeight: 900 }}>
               {field.label} {field.required && <span className="text-red-400">*</span>}
             </label>
             <input
@@ -536,18 +540,16 @@ export default function NewProduct() {
               value={fieldValue}
               onChange={(e) => handleChange(e.target.value)}
               placeholder={field.placeholder}
-              className="w-full bg-black/50 border border-white/10 rounded-2xl text-white placeholder-white/30 px-5 py-4 focus:outline-none focus:border-white/30 focus:bg-black/70 transition-all text-base hover:border-white/20"
+              className={inputClasses}
             />
-            {field.description && (
-              <p className="text-white/40 text-xs mt-2">{field.description}</p>
-            )}
+            {field.description && <p className={descClasses}>{field.description}</p>}
           </div>
         );
 
       case 'textarea':
         return (
           <div key={index} className="lg:col-span-2">
-            <label className="block text-white/90 text-sm font-medium mb-3">
+            <label className={labelClasses} style={{ fontWeight: 900 }}>
               {field.label} {field.required && <span className="text-red-400">*</span>}
             </label>
             <textarea
@@ -555,19 +557,17 @@ export default function NewProduct() {
               value={fieldValue}
               onChange={(e) => handleChange(e.target.value)}
               placeholder={field.placeholder}
-              rows={4}
-              className="w-full bg-black/50 border border-white/10 rounded-2xl text-white placeholder-white/30 px-5 py-4 focus:outline-none focus:border-white/30 focus:bg-black/70 transition-all text-base hover:border-white/20 resize-none"
+              rows={3}
+              className={`${inputClasses} resize-none`}
             />
-            {field.description && (
-              <p className="text-white/40 text-xs mt-2">{field.description}</p>
-            )}
+            {field.description && <p className={descClasses}>{field.description}</p>}
           </div>
         );
 
       case 'number':
         return (
           <div key={index}>
-            <label className="block text-white/90 text-sm font-medium mb-3">
+            <label className={labelClasses} style={{ fontWeight: 900 }}>
               {field.label} {field.required && <span className="text-red-400">*</span>}
             </label>
             <div className="relative">
@@ -580,60 +580,54 @@ export default function NewProduct() {
                 min={field.min}
                 max={field.max}
                 step="0.1"
-                className="w-full bg-black/50 border border-white/10 rounded-2xl text-white placeholder-white/30 px-5 py-4 focus:outline-none focus:border-white/30 focus:bg-black/70 transition-all text-base hover:border-white/20"
+                className={inputClasses}
               />
               {field.suffix && (
-                <span className="absolute right-5 top-1/2 -translate-y-1/2 text-white/50 font-medium">
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 text-[10px] font-black uppercase tracking-[0.15em]" style={{ fontWeight: 900 }}>
                   {field.suffix}
                 </span>
               )}
             </div>
-            {field.description && (
-              <p className="text-white/40 text-xs mt-2">{field.description}</p>
-            )}
+            {field.description && <p className={descClasses}>{field.description}</p>}
           </div>
         );
 
       case 'select':
         return (
           <div key={index}>
-            <label className="block text-white/90 text-sm font-medium mb-3">
+            <label className={labelClasses} style={{ fontWeight: 900 }}>
               {field.label} {field.required && <span className="text-red-400">*</span>}
             </label>
             <select
               required={field.required}
               value={fieldValue}
               onChange={(e) => handleChange(e.target.value)}
-              className="w-full bg-black/50 border border-white/10 rounded-2xl text-white px-5 py-4 focus:outline-none focus:border-white/30 focus:bg-black/70 transition-all text-base hover:border-white/20 cursor-pointer"
+              className={`${inputClasses} cursor-pointer`}
             >
-              <option value="">Select {field.label?.toLowerCase() || 'option'}</option>
+              <option value="">Select...</option>
               {field.options?.map((option, idx) => (
                 <option key={idx} value={option}>
                   {option}
                 </option>
               ))}
             </select>
-            {field.description && (
-              <p className="text-white/40 text-xs mt-2">{field.description}</p>
-            )}
+            {field.description && <p className={descClasses}>{field.description}</p>}
           </div>
         );
 
       case 'checkbox':
         return (
           <div key={index} className="lg:col-span-2">
-            <label className="flex items-center gap-3 cursor-pointer">
+            <label className="flex items-center gap-2 cursor-pointer">
               <input
                 type="checkbox"
                 checked={fieldValue === true || fieldValue === 'true'}
                 onChange={(e) => handleChange(e.target.checked)}
-                className="w-5 h-5 rounded border-white/20 bg-black/50"
+                className="w-4 h-4 rounded border-white/20 bg-[#0a0a0a]"
               />
               <div>
-                <span className="text-white/90 font-medium">{field.label}</span>
-                {field.description && (
-                  <p className="text-white/40 text-xs mt-1">{field.description}</p>
-                )}
+                <span className="text-white text-[10px] uppercase tracking-[0.15em] font-black" style={{ fontWeight: 900 }}>{field.label}</span>
+                {field.description && <p className={descClasses}>{field.description}</p>}
               </div>
             </label>
           </div>
@@ -642,7 +636,7 @@ export default function NewProduct() {
       default:
         return (
           <div key={index}>
-            <label className="block text-white/90 text-sm font-medium mb-3">
+            <label className={labelClasses} style={{ fontWeight: 900 }}>
               {field.label} {field.required && <span className="text-red-400">*</span>}
             </label>
             <input
@@ -651,11 +645,9 @@ export default function NewProduct() {
               value={fieldValue}
               onChange={(e) => handleChange(e.target.value)}
               placeholder={field.placeholder}
-              className="w-full bg-black/50 border border-white/10 rounded-2xl text-white placeholder-white/30 px-5 py-4 focus:outline-none focus:border-white/30 focus:bg-black/70 transition-all text-base hover:border-white/20"
+              className={inputClasses}
             />
-            {field.description && (
-              <p className="text-white/40 text-xs mt-2">{field.description}</p>
-            )}
+            {field.description && <p className={descClasses}>{field.description}</p>}
           </div>
         );
     }
@@ -663,86 +655,62 @@ export default function NewProduct() {
 
   return (
     <div className="min-h-screen bg-black">
-      {/* Ultra-Modern Header */}
-      <div className="relative overflow-hidden border-b border-white/5">
-        <div className="absolute inset-0 bg-gradient-to-b from-white/[0.02] to-transparent pointer-events-none" />
-
-        <div className="relative max-w-5xl mx-auto px-6 lg:px-12 py-8 lg:py-12">
+      {/* POS-Style Header */}
+      <div className="border-b border-white/5">
+        <div className="max-w-5xl mx-auto px-4 py-4">
           <Link
             href="/vendor/products"
-            className="inline-flex items-center gap-2 text-white/40 hover:text-white text-xs uppercase tracking-widest mb-6 transition-all hover:gap-3 font-medium"
+            className="inline-flex items-center gap-1.5 text-white/40 hover:text-white text-[9px] uppercase tracking-[0.15em] mb-3 transition-all font-black"
+            style={{ fontWeight: 900 }}
           >
-            <ArrowLeft size={14} />
-            Back to Products
+            <ArrowLeft size={10} strokeWidth={3} />
+            Back
           </Link>
 
-          <div className="flex items-center gap-6 mb-6">
-            <div className="w-16 h-16 bg-gradient-to-br from-white/10 to-white/5 border border-white/10 rounded-3xl flex items-center justify-center backdrop-blur-sm">
-              <Plus size={32} className="text-white/80" strokeWidth={2} />
-            </div>
-
-            <div>
-              <h1 className="text-4xl lg:text-5xl font-black text-white mb-2 tracking-tight" style={{ fontWeight: 900 }}>
-                Add New Product
-              </h1>
-              <p className="text-white/40 text-sm">
-                Submit a new product for admin approval
-              </p>
-            </div>
-          </div>
-
-          {/* Progress Pills */}
-          <div className="flex flex-wrap gap-3">
-            <div className="inline-flex items-center gap-2 bg-white/5 backdrop-blur-sm border border-white/10 rounded-full px-4 py-2">
-              <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-              <span className="text-xs text-white/90 font-medium">Live Form</span>
-            </div>
-            <div className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-500/20 to-blue-500/20 backdrop-blur-sm border border-purple-500/30 rounded-full px-4 py-2">
-              <Upload size={12} className="text-purple-300" />
-              <span className="text-xs text-purple-200 font-medium">Auto-Save Uploads</span>
-            </div>
-          </div>
+          <h1 className="text-xs uppercase tracking-[0.15em] text-white font-black mb-1" style={{ fontWeight: 900 }}>
+            Add New Product
+          </h1>
+          <p className="text-white/40 text-[10px] uppercase tracking-[0.15em]">
+            Submit for approval
+          </p>
         </div>
       </div>
 
       {/* Form Container */}
-      <div className="max-w-5xl mx-auto px-6 lg:px-12 py-12">
-        <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="max-w-5xl mx-auto px-4 py-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
           {/* Success Message */}
           {success && (
-            <div className="bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-500/20 rounded-3xl p-6 flex items-start gap-4 backdrop-blur-sm">
-              <CheckCircle size={24} className="text-green-400 flex-shrink-0 mt-0.5" />
+            <div className="bg-[#141414] border border-green-500/20 rounded-2xl p-4 flex items-start gap-3">
+              <CheckCircle size={16} className="text-green-400 flex-shrink-0 mt-0.5" />
               <div>
-                <p className="text-green-400 font-bold mb-1 text-lg">Product Submitted Successfully!</p>
-                <p className="text-green-400/70 text-sm">Your product has been submitted for admin approval. Redirecting...</p>
+                <p className="text-green-400 font-black text-[10px] uppercase tracking-[0.15em] mb-1" style={{ fontWeight: 900 }}>Submitted</p>
+                <p className="text-green-400/70 text-[10px] text-white/60">Redirecting...</p>
               </div>
             </div>
           )}
 
           {/* Error Message */}
           {error && (
-            <div className="bg-gradient-to-r from-red-500/10 to-pink-500/10 border border-red-500/20 rounded-3xl p-6 flex items-start gap-4 backdrop-blur-sm">
-              <AlertCircle size={24} className="text-red-400 flex-shrink-0 mt-0.5" />
+            <div className="bg-[#141414] border border-red-500/20 rounded-2xl p-4 flex items-start gap-3">
+              <AlertCircle size={16} className="text-red-400 flex-shrink-0 mt-0.5" />
               <div>
-                <p className="text-red-400 font-bold mb-1 text-lg">Submission Failed</p>
-                <p className="text-red-400/70 text-sm">{error}</p>
+                <p className="text-red-400 font-black text-[10px] uppercase tracking-[0.15em] mb-1" style={{ fontWeight: 900 }}>Failed</p>
+                <p className="text-red-400/70 text-[10px]">{error}</p>
               </div>
             </div>
           )}
 
           {/* Basic Information */}
-          <div className="bg-gradient-to-br from-white/[0.08] to-white/[0.02] backdrop-blur-xl border border-white/10 rounded-3xl p-6 lg:p-8">
-            <h2 className="text-xl font-black text-white mb-6 tracking-tight flex items-center gap-3" style={{ fontWeight: 900 }}>
-              <div className="w-8 h-8 bg-white/10 rounded-2xl flex items-center justify-center">
-                <FileText size={16} className="text-white/80" />
-              </div>
+          <div className="bg-[#141414] border border-white/5 rounded-2xl p-4">
+            <h2 className="text-[10px] uppercase tracking-[0.15em] text-white/40 mb-4 font-black" style={{ fontWeight: 900 }}>
               Basic Information
             </h2>
           
           <div className="space-y-4">
             {/* Product Name */}
             <div>
-              <label className="block text-white/90 text-sm font-medium mb-3">
+              <label className="block text-white/40 text-[10px] uppercase tracking-[0.15em] mb-2 font-black" style={{ fontWeight: 900 }}>
                 Product Name <span className="text-red-400">*</span>
               </label>
               <input
@@ -751,28 +719,28 @@ export default function NewProduct() {
                 value={formData.name}
                 onChange={(e) => setFormData({...formData, name: e.target.value})}
                 placeholder="e.g., Blue Dream"
-                className="w-full bg-black/50 border border-white/10 rounded-2xl text-white placeholder-white/30 px-5 py-4 focus:outline-none focus:border-white/30 focus:bg-black/70 transition-all text-base hover:border-white/20"
+                className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl text-white placeholder-white/20 px-3 py-2.5 focus:outline-none focus:border-white/20 transition-all text-xs"
               />
             </div>
 
             {/* Description */}
             <div>
-              <label className="block text-white/90 text-sm font-medium mb-3">
+              <label className="block text-white/40 text-[10px] uppercase tracking-[0.15em] mb-2 font-black" style={{ fontWeight: 900 }}>
                 Description <span className="text-red-400">*</span>
               </label>
               <textarea
                 required
-                rows={4}
+                rows={3}
                 value={formData.description}
                 onChange={(e) => setFormData({...formData, description: e.target.value})}
                 placeholder="Describe your product..."
-                className="w-full bg-black/50 border border-white/10 rounded-2xl text-white placeholder-white/30 px-5 py-4 focus:outline-none focus:border-white/30 focus:bg-black/70 transition-all resize-none text-base hover:border-white/20"
+                className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl text-white placeholder-white/20 px-3 py-2.5 focus:outline-none focus:border-white/20 transition-all resize-none text-xs"
               />
             </div>
 
             {/* Category */}
             <div>
-              <label className="block text-white/90 text-sm font-medium mb-3">
+              <label className="block text-white/40 text-[10px] uppercase tracking-[0.15em] mb-2 font-black" style={{ fontWeight: 900 }}>
                 Category <span className="text-red-400">*</span>
               </label>
               <select
@@ -783,7 +751,7 @@ export default function NewProduct() {
                   setCategoryId(e.target.value);
                   setFormData({...formData, category: selectedCategory?.name || ''});
                 }}
-                className="w-full bg-black/50 border border-white/10 rounded-2xl text-white px-5 py-4 focus:outline-none focus:border-white/30 focus:bg-black/70 transition-all text-base hover:border-white/20 cursor-pointer"
+                className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl text-white px-3 py-2.5 focus:outline-none focus:border-white/20 transition-all text-xs cursor-pointer"
               >
                 <option value="">Select category</option>
                 {categories.map((cat) => (
@@ -793,42 +761,42 @@ export default function NewProduct() {
                 ))}
               </select>
               {loadingFields && (
-                <p className="text-white/40 text-xs mt-2 flex items-center gap-2">
-                  <Loader size={12} className="animate-spin" />
-                  Loading category fields...
+                <p className="text-white/40 text-[10px] mt-2 flex items-center gap-1.5 uppercase tracking-[0.15em]">
+                  <Loader size={10} className="animate-spin" />
+                  Loading...
                 </p>
               )}
             </div>
 
             {/* Product Type */}
             <div>
-              <label className="block text-white/90 text-sm font-medium mb-3">
+              <label className="block text-white/40 text-[10px] uppercase tracking-[0.15em] mb-2 font-black" style={{ fontWeight: 900 }}>
                 Product Type <span className="text-red-400">*</span>
               </label>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-2">
                 <button
                   type="button"
                   onClick={() => setProductType('simple')}
-                  className={`px-6 py-4 rounded-2xl border transition-all group ${
+                  className={`px-3 py-2.5 rounded-xl border transition-all text-[10px] uppercase tracking-[0.15em] font-black ${
                     productType === 'simple'
-                      ? 'bg-gradient-to-br from-white/20 to-white/10 border-white/30 text-white shadow-lg'
-                      : 'bg-black/30 border-white/10 text-white/60 hover:border-white/20 hover:bg-black/50'
+                      ? 'bg-white/10 border-white/20 text-white'
+                      : 'bg-[#0a0a0a] border-white/10 text-white/60 hover:border-white/20'
                   }`}
+                  style={{ fontWeight: 900 }}
                 >
-                  <div className="font-bold text-base">Simple Product</div>
-                  <div className="text-xs text-white/50 mt-1">Single price point</div>
+                  Simple
                 </button>
                 <button
                   type="button"
                   onClick={() => setProductType('variable')}
-                  className={`px-6 py-4 rounded-2xl border transition-all group ${
+                  className={`px-3 py-2.5 rounded-xl border transition-all text-[10px] uppercase tracking-[0.15em] font-black ${
                     productType === 'variable'
-                      ? 'bg-gradient-to-br from-white/20 to-white/10 border-white/30 text-white shadow-lg'
-                      : 'bg-black/30 border-white/10 text-white/60 hover:border-white/20 hover:bg-black/50'
+                      ? 'bg-white/10 border-white/20 text-white'
+                      : 'bg-[#0a0a0a] border-white/10 text-white/60 hover:border-white/20'
                   }`}
+                  style={{ fontWeight: 900 }}
                 >
-                  <div className="font-bold text-base">Variable Product</div>
-                  <div className="text-xs text-white/50 mt-1">Multiple variations</div>
+                  Variable
                 </button>
               </div>
             </div>
@@ -836,33 +804,33 @@ export default function NewProduct() {
             {/* Pricing Mode - Only for Simple Products */}
             {productType === 'simple' && (
               <div>
-                <label className="block text-white/90 text-sm font-medium mb-3">
+                <label className="block text-white/40 text-[10px] uppercase tracking-[0.15em] mb-2 font-black" style={{ fontWeight: 900 }}>
                   Pricing Mode <span className="text-red-400">*</span>
                 </label>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-2">
                   <button
                     type="button"
                     onClick={() => setPricingMode('single')}
-                    className={`px-6 py-4 rounded-2xl border transition-all group ${
+                    className={`px-3 py-2.5 rounded-xl border transition-all text-[10px] uppercase tracking-[0.15em] font-black ${
                       pricingMode === 'single'
-                        ? 'bg-gradient-to-br from-white/20 to-white/10 border-white/30 text-white shadow-lg'
-                        : 'bg-black/30 border-white/10 text-white/60 hover:border-white/20 hover:bg-black/50'
+                        ? 'bg-white/10 border-white/20 text-white'
+                        : 'bg-[#0a0a0a] border-white/10 text-white/60 hover:border-white/20'
                     }`}
+                    style={{ fontWeight: 900 }}
                   >
-                    <div className="font-bold text-base">Single Price</div>
-                    <div className="text-xs text-white/50 mt-1">One price for all</div>
+                    Single
                   </button>
                   <button
                     type="button"
                     onClick={() => setPricingMode('tiered')}
-                    className={`px-6 py-4 rounded-2xl border transition-all group ${
+                    className={`px-3 py-2.5 rounded-xl border transition-all text-[10px] uppercase tracking-[0.15em] font-black ${
                       pricingMode === 'tiered'
-                        ? 'bg-gradient-to-br from-white/20 to-white/10 border-white/30 text-white shadow-lg'
-                        : 'bg-black/30 border-white/10 text-white/60 hover:border-white/20 hover:bg-black/50'
+                        ? 'bg-white/10 border-white/20 text-white'
+                        : 'bg-[#0a0a0a] border-white/10 text-white/60 hover:border-white/20'
                     }`}
+                    style={{ fontWeight: 900 }}
                   >
-                    <div className="font-bold text-base">Tier Pricing</div>
-                    <div className="text-xs text-white/50 mt-1">Different quantities</div>
+                    Tiered
                   </button>
                 </div>
               </div>
@@ -1438,35 +1406,30 @@ export default function NewProduct() {
           </div>
         )}
 
-        {/* Submit - Fixed at bottom */}
-        <div className="sticky bottom-0 z-10 bg-black/80 backdrop-blur-xl border-t border-white/10 -mx-6 lg:-mx-12 px-6 lg:px-12 py-6">
-          <div className="max-w-5xl mx-auto flex flex-col-reverse lg:flex-row justify-end gap-3 lg:gap-4">
+        {/* Submit - POS Style */}
+        <div className="sticky bottom-0 z-10 bg-[#0a0a0a] border-t border-white/5 -mx-4 px-4 py-3">
+          <div className="max-w-5xl mx-auto flex gap-2">
             <Link
               href="/vendor/products"
-              className="w-full lg:w-auto text-center px-8 py-4 bg-black/50 text-white/80 border border-white/20 rounded-2xl hover:bg-white/10 hover:text-white hover:border-white/30 font-medium transition-all duration-300"
+              className="flex-1 lg:flex-none text-center px-4 py-2.5 bg-[#141414] text-white/60 border border-white/10 rounded-xl hover:bg-white/5 hover:text-white hover:border-white/20 font-black transition-all text-[10px] uppercase tracking-[0.15em]"
+              style={{ fontWeight: 900 }}
             >
               Cancel
             </Link>
             <button
               type="submit"
               disabled={loading}
-              className="group w-full lg:w-auto px-8 py-4 bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 rounded-2xl text-white font-bold transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:scale-105 disabled:transform-none"
+              className="flex-1 lg:flex-none px-4 py-2.5 bg-white/10 text-white border border-white/20 rounded-xl hover:bg-white/20 hover:border-white/30 font-black transition-all text-[10px] uppercase tracking-[0.15em] disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{ fontWeight: 900 }}
             >
-              <span className="flex items-center justify-center gap-3">
-                {loading ? (
-                  <>
-                    <Loader size={20} className="animate-spin" />
-                    Submitting...
-                  </>
-                ) : (
-                  <>
-                    Submit for Review
-                    <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                    </svg>
-                  </>
-                )}
-              </span>
+              {loading ? (
+                <span className="flex items-center justify-center gap-1.5">
+                  <Loader size={10} className="animate-spin" strokeWidth={3} />
+                  Submitting...
+                </span>
+              ) : (
+                'Submit for Review'
+              )}
             </button>
           </div>
         </div>
