@@ -8,7 +8,7 @@ RULES:
 - Be fast and accurate
 - Use null for missing data
 - Extract key cannabinoids and terpenes
-- Suggest pricing tier if mentioned
+- Extract aroma/flavor descriptors (single words like "Candy", "Cake", "Glue", "Gas", "Sherb", "Pine", "Citrus")
 
 JSON format:
 {
@@ -18,6 +18,7 @@ JSON format:
   "terpenes": ["Myrcene", "Limonene"] | [],
   "effects": ["Relaxing", "Euphoric"] | [],
   "lineage": "Parent1 x Parent2" | null,
+  "nose": ["Candy", "Cake", "Glue"] | [],
   "description": "brief description" | null,
   "suggested_pricing": {
     "tier_type": "exotic" | "top-shelf" | "mid-shelf" | "value" | null,

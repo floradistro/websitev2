@@ -562,18 +562,20 @@ export default function NewProduct() {
       }
     }
 
-    // 5. NOSE / AROMA
-    if (aiSuggestions.description) {
+    // 5. NOSE / AROMA (now expects array like ["Candy", "Cake", "Glue"])
+    if (aiSuggestions.nose && Array.isArray(aiSuggestions.nose) && aiSuggestions.nose.length > 0) {
       const field = findField(['nose', 'aroma', 'scent']);
       if (field) {
-        // Use first sentence for nose
-        const firstSentence = aiSuggestions.description.split(/[.!?]/)[0].trim();
-        updates[field.name] = firstSentence;
+        // Store as comma-separated string
+        const noseString = aiSuggestions.nose.join(', ');
+        updates[field.name] = noseString;
         appliedCount++;
-        console.log(`  → ${field.name} = "${firstSentence.substring(0, 50)}..."`);
+        console.log(`  → ${field.name} = "${noseString}"`);
       }
+    }
 
-      // Always update main description
+    // 6. DESCRIPTION
+    if (aiSuggestions.description) {
       setFormData({ ...formData, description: aiSuggestions.description });
       console.log(`  → description = "${aiSuggestions.description.substring(0, 50)}..."`);
     }
@@ -1258,13 +1260,13 @@ export default function NewProduct() {
                 className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl text-white placeholder-white/20 px-3 py-2.5 focus:outline-none focus:border-white/20 transition-all text-xs"
               />
 
-              {/* AI Suggestions Panel */}
+              {/* AI Suggestions Panel - SIMPLIFIED */}
               {showSuggestions && aiSuggestions && (
-                <div className="mt-3 bg-gradient-to-br from-purple-500/10 to-blue-500/10 border border-purple-500/20 rounded-xl p-3 space-y-2">
+                <div className="mt-3 bg-gradient-to-br from-purple-500/10 to-blue-500/10 border border-purple-500/20 rounded-xl p-3 space-y-3">
                   <div className="flex items-center justify-between">
                     <div className="text-purple-300 text-[10px] uppercase tracking-[0.15em] font-black flex items-center gap-1.5" style={{ fontWeight: 900 }}>
                       <Sparkles size={11} strokeWidth={2.5} />
-                      AI Suggestions
+                      {formData.name} - AI Data
                     </div>
                     <button
                       type="button"
@@ -1275,80 +1277,72 @@ export default function NewProduct() {
                     </button>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2 text-[10px]">
-                    {/* Only show suggestions for fields that actually exist AND will be applied */}
-                    {aiSuggestions.strain_type && dynamicFields.some(f => ['strain', 'type', 'strain_type'].some(k => (f.name || '').toLowerCase().includes(k) || (f.label || '').toLowerCase().includes(k))) && (
-                      <div>
+                  {/* Show ALL data */}
+                  <div className="space-y-2">
+                    {aiSuggestions.strain_type && (
+                      <div className="text-[10px]">
                         <span className="text-white/40 uppercase tracking-[0.15em]">Type:</span>
                         <span className="text-white ml-1 font-black">{aiSuggestions.strain_type}</span>
                       </div>
                     )}
-                    {/* THC/CBD/Δ9 are NEVER shown - these must come from lab COA, not web estimates */}
-                    {aiSuggestions.lineage && dynamicFields.some(f => ['lineage', 'genetics', 'parent', 'cross', 'bred'].some(k => (f.name || '').toLowerCase().includes(k) || (f.label || '').toLowerCase().includes(k))) && (
-                      <div className="col-span-2">
+                    {aiSuggestions.lineage && (
+                      <div className="text-[10px]">
                         <span className="text-white/40 uppercase tracking-[0.15em]">Lineage:</span>
                         <span className="text-white ml-1 font-black">{aiSuggestions.lineage}</span>
                       </div>
                     )}
-                  </div>
-
-                  {/* Only show effects if effects field exists */}
-                  {aiSuggestions.effects && aiSuggestions.effects.length > 0 && dynamicFields.some(f => ['effect'].some(k => (f.name || '').toLowerCase().includes(k) || (f.label || '').toLowerCase().includes(k))) && (
-                    <div className="flex flex-wrap gap-1">
-                      {aiSuggestions.effects.map((effect: string, idx: number) => (
-                        <span key={idx} className="bg-white/10 border border-white/20 rounded px-2 py-0.5 text-[9px] text-white uppercase tracking-wider">
-                          {effect}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Show terpenes if they exist */}
-                  {aiSuggestions.terpenes && aiSuggestions.terpenes.length > 0 && dynamicFields.some(f => ['terpene', 'terp'].some(k => (f.name || '').toLowerCase().includes(k) || (f.label || '').toLowerCase().includes(k))) && (
-                    <div className="flex flex-wrap gap-1">
-                      {aiSuggestions.terpenes.slice(0, 5).map((terpene: string, idx: number) => (
-                        <span key={idx} className="bg-purple-500/20 border border-purple-500/30 rounded px-2 py-0.5 text-[9px] text-purple-300 uppercase tracking-wider">
-                          {terpene}
-                        </span>
-                      ))}
-                      {aiSuggestions.terpenes.length > 5 && (
-                        <span className="text-white/40 text-[9px]">+{aiSuggestions.terpenes.length - 5} more</span>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Show count of data not used (THC/CBD excluded from autofill) */}
-                  {(() => {
-                    let skippedCount = 0;
-                    const skippedReasons = [];
-
-                    // Always skip cannabinoids
-                    if (aiSuggestions.thc_percentage || aiSuggestions.cbd_percentage) {
-                      skippedCount++;
-                      skippedReasons.push('cannabinoids (use COA data)');
-                    }
-
-                    // Check for fields without matches
-                    if (aiSuggestions.terpenes && aiSuggestions.terpenes.length > 0 && !dynamicFields.some(f => ['terpene', 'terp'].some(k => (f.name || '').toLowerCase().includes(k) || (f.label || '').toLowerCase().includes(k)))) {
-                      skippedCount++;
-                      skippedReasons.push('terpenes (no field)');
-                    }
-
-                    return skippedCount > 0 ? (
-                      <div className="text-white/40 text-[9px] italic" title={skippedReasons.join(', ')}>
-                        {skippedCount} item(s) not auto-filled
+                    {aiSuggestions.nose && aiSuggestions.nose.length > 0 && (
+                      <div className="text-[10px]">
+                        <span className="text-white/40 uppercase tracking-[0.15em]">Nose:</span>
+                        <div className="mt-1 flex flex-wrap gap-1">
+                          {aiSuggestions.nose.map((aroma: string, idx: number) => (
+                            <span key={idx} className="bg-yellow-500/20 border border-yellow-500/30 rounded px-2 py-0.5 text-[9px] text-yellow-300 uppercase tracking-wider">
+                              {aroma}
+                            </span>
+                          ))}
+                        </div>
                       </div>
-                    ) : null;
-                  })()}
+                    )}
+                    {aiSuggestions.effects && aiSuggestions.effects.length > 0 && (
+                      <div className="text-[10px]">
+                        <span className="text-white/40 uppercase tracking-[0.15em]">Effects:</span>
+                        <div className="mt-1 flex flex-wrap gap-1">
+                          {aiSuggestions.effects.map((effect: string, idx: number) => (
+                            <span key={idx} className="bg-green-500/20 border border-green-500/30 rounded px-2 py-0.5 text-[9px] text-green-300 uppercase tracking-wider">
+                              {effect}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {aiSuggestions.terpenes && aiSuggestions.terpenes.length > 0 && (
+                      <div className="text-[10px]">
+                        <span className="text-white/40 uppercase tracking-[0.15em]">Terpenes:</span>
+                        <div className="mt-1 flex flex-wrap gap-1">
+                          {aiSuggestions.terpenes.map((terpene: string, idx: number) => (
+                            <span key={idx} className="bg-purple-500/20 border border-purple-500/30 rounded px-2 py-0.5 text-[9px] text-purple-300 uppercase tracking-wider">
+                              {terpene}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {aiSuggestions.description && (
+                      <div className="text-[10px]">
+                        <span className="text-white/40 uppercase tracking-[0.15em]">Description:</span>
+                        <p className="text-white/70 mt-1 text-[10px] leading-relaxed">{aiSuggestions.description}</p>
+                      </div>
+                    )}
+                  </div>
 
                   <button
                     type="button"
                     onClick={applyAISuggestions}
-                    className="w-full bg-gradient-to-r from-purple-500 to-blue-500 text-white border border-purple-400/30 rounded-xl px-3 py-2 text-[10px] uppercase tracking-[0.15em] hover:from-purple-600 hover:to-blue-600 font-black transition-all flex items-center justify-center gap-1.5"
+                    className="w-full bg-gradient-to-r from-purple-500 to-blue-500 text-white border border-purple-400/30 rounded-xl px-3 py-2.5 text-[10px] uppercase tracking-[0.15em] hover:from-purple-600 hover:to-blue-600 font-black transition-all flex items-center justify-center gap-1.5"
                     style={{ fontWeight: 900 }}
                   >
                     <CheckCircle size={11} strokeWidth={2.5} />
-                    Apply to Form
+                    Fill All Fields
                   </button>
                 </div>
               )}
