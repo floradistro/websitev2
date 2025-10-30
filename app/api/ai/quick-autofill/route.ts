@@ -29,16 +29,35 @@ JSON format:
 
 export async function POST(request: NextRequest) {
   try {
+    // Check for required API keys
+    if (!process.env.ANTHROPIC_API_KEY) {
+      console.error('❌ Missing ANTHROPIC_API_KEY');
+      return NextResponse.json({
+        error: 'AI service not configured',
+        suggestions: null
+      }, { status: 500 });
+    }
+
+    if (!process.env.EXASEARCH_API_KEY) {
+      console.error('❌ Missing EXASEARCH_API_KEY');
+      return NextResponse.json({
+        error: 'Search service not configured',
+        suggestions: null
+      }, { status: 500 });
+    }
+
     const anthropic = new Anthropic({
-      apiKey: process.env.ANTHROPIC_API_KEY!
+      apiKey: process.env.ANTHROPIC_API_KEY
     });
-    const exa = new Exa(process.env.EXASEARCH_API_KEY!);
+    const exa = new Exa(process.env.EXASEARCH_API_KEY);
 
     const { productName, category } = await request.json();
 
     if (!productName) {
       return NextResponse.json({ error: 'Product name required' }, { status: 400 });
     }
+
+    console.log(`🔍 AI Autofill request: ${productName} (${category || 'no category'})`);
 
     // Quick web search
     const searchResults = await exa.searchAndContents(
@@ -104,10 +123,16 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error: any) {
-    console.error('Quick autofill error:', error);
+    console.error('❌ Quick autofill error:', error);
+    console.error('Error details:', {
+      message: error.message,
+      stack: error.stack,
+      response: error.response?.data
+    });
     return NextResponse.json({
-      error: error.message,
-      suggestions: null
+      error: error.message || 'AI autofill failed',
+      suggestions: null,
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
     }, { status: 500 });
   }
 }
