@@ -346,16 +346,20 @@ function TVDisplayContent() {
 
       if (error) throw error;
 
-      // Load vendor pricing configs to get actual prices
-      const { data: vendorConfigs, error: configError } = await supabase
-        .from('vendor_pricing_configs')
-        .select('blueprint_id, pricing_values')
-        .eq('vendor_id', vendorId)
-        .eq('is_active', true);
+      // Load vendor pricing configs via API (bypasses RLS)
+      const configsResponse = await fetch(`/api/vendor/pricing-configs-for-display?vendor_id=${vendorId}`);
+      const configsData = await configsResponse.json();
 
-      if (configError) {
-        console.warn('⚠️ Could not load vendor pricing configs:', configError);
+      const vendorConfigs = configsData.success ? configsData.configs : [];
+
+      if (!configsData.success) {
+        console.error('❌ Error loading vendor pricing configs:', configsData.error);
       }
+
+      console.log('💵 Loaded pricing configs via API:', {
+        count: vendorConfigs?.length || 0,
+        configs: vendorConfigs
+      });
 
       // Create a map of blueprint_id -> pricing_values
       const configMap = new Map(
