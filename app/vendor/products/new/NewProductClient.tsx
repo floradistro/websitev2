@@ -483,88 +483,116 @@ export default function NewProduct() {
     }
   };
 
-  // Apply AI suggestions to form
+  // Apply AI suggestions to form - COMPLETELY REWRITTEN
   const applyAISuggestions = () => {
-    if (!aiSuggestions) return;
+    if (!aiSuggestions) {
+      console.error('❌ No AI suggestions to apply');
+      return;
+    }
+
+    console.log('🎯 Starting AI autofill...');
+    console.log('📦 AI Suggestions:', aiSuggestions);
+    console.log('📋 Available Fields:', dynamicFields.map(f => ({
+      name: f.name,
+      slug: f.slug,
+      label: f.label,
+      type: f.type
+    })));
 
     const updates: Record<string, any> = {};
+    let appliedCount = 0;
 
-    // Smart field mapping - find the actual field names from dynamic fields
-    const findFieldByKeywords = (keywords: string[]) => {
-      return dynamicFields.find(field => {
-        const fieldNameLower = (field.name || '').toLowerCase();
-        const fieldLabelLower = (field.label || '').toLowerCase();
-        return keywords.some(keyword =>
-          fieldNameLower.includes(keyword) || fieldLabelLower.includes(keyword)
+    // Helper: Find field by exact slug or name match
+    const findField = (slugs: string[]) => {
+      for (const slug of slugs) {
+        const field = dynamicFields.find(f =>
+          f.name === slug ||
+          f.slug === slug ||
+          (f.name || '').toLowerCase() === slug.toLowerCase() ||
+          (f.slug || '').toLowerCase() === slug.toLowerCase()
         );
-      });
+        if (field) {
+          console.log(`✅ Found field for "${slug}":`, field.name, `(${field.type})`);
+          return field;
+        }
+      }
+      console.warn(`❌ No field found for any of: ${slugs.join(', ')}`);
+      return null;
     };
 
-    // Map strain type
+    // 1. STRAIN TYPE
     if (aiSuggestions.strain_type) {
-      const field = findFieldByKeywords(['strain', 'type', 'strain_type', 'straintype']);
+      const field = findField(['strain_type', 'straintype', 'strain type']);
       if (field) {
         updates[field.name] = aiSuggestions.strain_type;
+        appliedCount++;
+        console.log(`  → ${field.name} = "${aiSuggestions.strain_type}"`);
       }
     }
 
-    // DO NOT MAP THC/CBD/Δ9 - these must come from lab COA only, not web estimates
-    // Web-scraped cannabinoid data is unreliable and should not be auto-filled
-    // Vendors must enter this from their Certificate of Analysis
-
-    // Map terpenes
-    if (aiSuggestions.terpenes && aiSuggestions.terpenes.length > 0) {
-      const field = findFieldByKeywords(['terpene', 'terp', 'terpenes', 'terpene_profile']);
+    // 2. TERPENE PROFILE (multiselect array)
+    if (aiSuggestions.terpenes && Array.isArray(aiSuggestions.terpenes) && aiSuggestions.terpenes.length > 0) {
+      const field = findField(['terpene_profile', 'terpenes', 'terpene profile']);
       if (field) {
-        // If multiselect, store as array; otherwise as comma-separated string
-        updates[field.name] = field.type === 'multiselect'
-          ? aiSuggestions.terpenes
-          : aiSuggestions.terpenes.join(', ');
+        // Always store as array for multiselect
+        updates[field.name] = aiSuggestions.terpenes;
+        appliedCount++;
+        console.log(`  → ${field.name} = [${aiSuggestions.terpenes.join(', ')}] (${aiSuggestions.terpenes.length} items)`);
       }
     }
 
-    // Map effects
-    if (aiSuggestions.effects && aiSuggestions.effects.length > 0) {
-      const field = findFieldByKeywords(['effect', 'effects']);
+    // 3. EFFECTS (multiselect array)
+    if (aiSuggestions.effects && Array.isArray(aiSuggestions.effects) && aiSuggestions.effects.length > 0) {
+      const field = findField(['effects', 'effect']);
       if (field) {
-        // If multiselect, store as array; otherwise as comma-separated string
-        updates[field.name] = field.type === 'multiselect'
-          ? aiSuggestions.effects
-          : aiSuggestions.effects.join(', ');
+        // Always store as array for multiselect
+        updates[field.name] = aiSuggestions.effects;
+        appliedCount++;
+        console.log(`  → ${field.name} = [${aiSuggestions.effects.join(', ')}] (${aiSuggestions.effects.length} items)`);
       }
     }
 
-    // Map lineage (genetics/parents/cross)
+    // 4. LINEAGE
     if (aiSuggestions.lineage) {
-      const field = findFieldByKeywords(['lineage', 'genetics', 'parent', 'cross', 'bred']);
+      const field = findField(['lineage', 'genetics', 'parentage']);
       if (field) {
         updates[field.name] = aiSuggestions.lineage;
+        appliedCount++;
+        console.log(`  → ${field.name} = "${aiSuggestions.lineage}"`);
       }
     }
 
-    // Map nose/aroma field (NEW)
+    // 5. NOSE / AROMA
     if (aiSuggestions.description) {
-      const noseField = findFieldByKeywords(['nose', 'aroma', 'smell', 'scent', 'fragrance']);
-      if (noseField) {
-        // Use first sentence or first ~100 chars for nose field
-        const shortDesc = aiSuggestions.description.split('.')[0].substring(0, 100);
-        updates[noseField.name] = shortDesc;
+      const field = findField(['nose', 'aroma', 'scent']);
+      if (field) {
+        // Use first sentence for nose
+        const firstSentence = aiSuggestions.description.split(/[.!?]/)[0].trim();
+        updates[field.name] = firstSentence;
+        appliedCount++;
+        console.log(`  → ${field.name} = "${firstSentence.substring(0, 50)}..."`);
       }
 
-      // Also update main description
+      // Always update main description
       setFormData({ ...formData, description: aiSuggestions.description });
+      console.log(`  → description = "${aiSuggestions.description.substring(0, 50)}..."`);
     }
 
-    console.log('🔍 AI field mapping:', updates);
-    console.log('📋 Available fields:', dynamicFields.map(f => ({ name: f.name, label: f.label, type: f.type })));
+    // Apply all updates at once
+    console.log('💾 Final updates object:', updates);
+    console.log(`✨ Applying ${appliedCount} field updates...`);
+
     setCustomFieldValues({ ...customFieldValues, ...updates });
     setShowSuggestions(false);
 
     showNotification({
       type: 'success',
-      title: 'Applied',
-      message: `${Object.keys(updates).length} fields populated`,
+      title: 'AI Applied',
+      message: `${appliedCount} fields populated`,
+      duration: 3000
     });
+
+    console.log('✅ AI autofill complete!');
   };
 
   // Quick pricing templates for common cannabis weights
