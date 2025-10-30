@@ -969,18 +969,6 @@ function TVDisplayContent() {
                         const heroPriceTier = displayGroup?.shared_hero_price_tier || activeMenu?.hero_price_tier || '3_5g';
                         const priceDisplayMode = displayGroup?.shared_price_display_mode || activeMenu?.price_display_mode || 'hero_with_supporting';
 
-                        // Debug logging
-                        console.log('💰 Product pricing debug:', {
-                          name: product.name,
-                          heroPriceTier,
-                          priceDisplayMode,
-                          hasPricingTiers: !!product.pricing_tiers,
-                          hasBlueprint: !!product.pricing_blueprint,
-                          regularPrice: product.regular_price,
-                          price: product.price,
-                          pricingTiers: product.pricing_tiers
-                        });
-
                         // If product has tiered pricing from blueprints
                         if (product.pricing_tiers && product.pricing_blueprint) {
                           const blueprint = product.pricing_blueprint;
