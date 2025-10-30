@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { FolderTree, Plus, Edit2, Trash2, Globe, Lock, Save, X } from 'lucide-react';
+import { FolderTree, Plus, Edit2, Trash2, Globe, Lock, Save, X, Upload, Image as ImageIcon } from 'lucide-react';
 import { showNotification } from '@/components/NotificationToast';
 import { useAppAuth } from '@/context/AppAuthContext';
 import PageHeader, { Button } from '@/components/dashboard/PageHeader';
@@ -12,6 +12,7 @@ interface Category {
   slug: string;
   description: string | null;
   icon: string | null;
+  image_url: string | null;
   vendor_id: string | null;
   parent_id: string | null;
 }
@@ -28,6 +29,9 @@ export default function VendorCategoriesPage() {
   const [formName, setFormName] = useState('');
   const [formDescription, setFormDescription] = useState('');
   const [formIcon, setFormIcon] = useState('📦');
+  const [formIconType, setFormIconType] = useState<'emoji' | 'image'>('emoji');
+  const [iconFile, setIconFile] = useState<File | null>(null);
+  const [iconPreview, setIconPreview] = useState<string>('');
 
   useEffect(() => {
     if (!authLoading && isAuthenticated && vendor?.id) {
@@ -60,6 +64,9 @@ export default function VendorCategoriesPage() {
     setFormName('');
     setFormDescription('');
     setFormIcon('📦');
+    setFormIconType('emoji');
+    setIconFile(null);
+    setIconPreview('');
     setShowCreateModal(true);
   }
 
@@ -68,6 +75,9 @@ export default function VendorCategoriesPage() {
     setFormName(category.name);
     setFormDescription(category.description || '');
     setFormIcon(category.icon || '📦');
+    setFormIconType(category.image_url ? 'image' : 'emoji');
+    setIconFile(null);
+    setIconPreview(category.image_url || '');
     setShowCreateModal(true);
   }
 
@@ -77,6 +87,20 @@ export default function VendorCategoriesPage() {
     setFormName('');
     setFormDescription('');
     setFormIcon('📦');
+    setFormIconType('emoji');
+    setIconFile(null);
+    setIconPreview('');
+  }
+
+  function handleIconFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (file) {
+      setIconFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => setIconPreview(reader.result as string);
+      reader.readAsDataURL(file);
+      setFormIconType('image');
+    }
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -94,10 +118,47 @@ export default function VendorCategoriesPage() {
     setSaving(true);
 
     try {
+      let imageUrl = '';
+
+      // Upload image if custom icon selected
+      if (formIconType === 'image' && iconFile) {
+        const formData = new FormData();
+        formData.append('file', iconFile);
+        formData.append('type', 'category-icon');
+
+        const uploadRes = await fetch('/api/supabase/vendor/upload', {
+          method: 'POST',
+          headers: { 'x-vendor-id': vendor?.id || '' },
+          body: formData
+        });
+
+        if (!uploadRes.ok) {
+          const errorData = await uploadRes.json().catch(() => ({}));
+          throw new Error(errorData.error || 'Icon upload failed');
+        }
+
+        const uploadData = await uploadRes.json();
+        imageUrl = uploadData.file.url;
+      }
+
       const method = editingCategory ? 'PUT' : 'POST';
-      const body = editingCategory
-        ? { id: editingCategory.id, name: formName, description: formDescription, icon: formIcon }
-        : { name: formName, description: formDescription, icon: formIcon };
+      const body: any = {
+        name: formName,
+        description: formDescription,
+      };
+
+      if (editingCategory) {
+        body.id = editingCategory.id;
+      }
+
+      // Set icon based on type
+      if (formIconType === 'image') {
+        body.image_url = imageUrl || iconPreview; // Use new upload or existing preview
+        body.icon = null; // Clear emoji if using custom image
+      } else {
+        body.icon = formIcon;
+        body.image_url = null; // Clear custom image if using emoji
+      }
 
       const res = await fetch('/api/categories', {
         method,
@@ -249,7 +310,15 @@ export default function VendorCategoriesPage() {
                   >
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex items-center gap-3">
-                        <span className="text-3xl">{category.icon || '📦'}</span>
+                        {category.image_url ? (
+                          <img
+                            src={category.image_url}
+                            alt={category.name}
+                            className="w-10 h-10 rounded-xl object-cover border border-white/10"
+                          />
+                        ) : (
+                          <span className="text-3xl">{category.icon || '📦'}</span>
+                        )}
                         <div>
                           <h3 className="text-white font-black text-sm tracking-tight" style={{ fontWeight: 900 }}>
                             {category.name}
@@ -308,7 +377,15 @@ export default function VendorCategoriesPage() {
                     className="bg-white/5 border border-white/10 rounded-xl p-3 opacity-60"
                   >
                     <div className="flex items-center gap-2">
-                      <span className="text-xl">{category.icon || '📦'}</span>
+                      {category.image_url ? (
+                        <img
+                          src={category.image_url}
+                          alt={category.name}
+                          className="w-8 h-8 rounded-lg object-cover border border-white/10"
+                        />
+                      ) : (
+                        <span className="text-xl">{category.icon || '📦'}</span>
+                      )}
                       <div className="flex-1 min-w-0">
                         <h3 className="text-white text-xs font-black tracking-tight truncate" style={{ fontWeight: 900 }}>
                           {category.name}
@@ -345,33 +422,104 @@ export default function VendorCategoriesPage() {
 
             {/* Form */}
             <form onSubmit={handleSubmit} className="p-6 space-y-6">
-              {/* Icon Picker */}
+              {/* Icon Type Selector */}
               <div>
                 <label className="text-white/40 text-[10px] uppercase tracking-[0.15em] block mb-3">
-                  Icon
+                  Icon Type
                 </label>
-                <div className="flex items-center gap-4 mb-3">
-                  <div className="text-5xl">{formIcon}</div>
-                  <div className="text-white/60 text-[10px] uppercase tracking-[0.15em]">
-                    Select an icon
+                <div className="grid grid-cols-2 gap-3 mb-4">
+                  <button
+                    type="button"
+                    onClick={() => setFormIconType('emoji')}
+                    className={`p-4 rounded-2xl border-2 transition-all ${
+                      formIconType === 'emoji'
+                        ? 'bg-white/10 border-white/30'
+                        : 'bg-white/5 border-white/10 hover:bg-white/10'
+                    }`}
+                  >
+                    <div className="text-2xl mb-1">📦</div>
+                    <div className="text-white/80 text-[10px] uppercase tracking-[0.15em] font-black">Emoji</div>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFormIconType('image')}
+                    className={`p-4 rounded-2xl border-2 transition-all ${
+                      formIconType === 'image'
+                        ? 'bg-white/10 border-white/30'
+                        : 'bg-white/5 border-white/10 hover:bg-white/10'
+                    }`}
+                  >
+                    <ImageIcon size={24} className="mx-auto mb-1 text-white/60" />
+                    <div className="text-white/80 text-[10px] uppercase tracking-[0.15em] font-black">Custom</div>
+                  </button>
+                </div>
+
+                {/* Emoji Picker */}
+                {formIconType === 'emoji' && (
+                  <div>
+                    <div className="flex items-center gap-4 mb-3">
+                      <div className="text-5xl">{formIcon}</div>
+                      <div className="text-white/60 text-[10px] uppercase tracking-[0.15em]">
+                        Select an icon
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-8 gap-2">
+                      {commonEmojis.map((emoji) => (
+                        <button
+                          key={emoji}
+                          type="button"
+                          onClick={() => setFormIcon(emoji)}
+                          className={`text-2xl p-2 rounded-xl transition-all ${
+                            formIcon === emoji
+                              ? 'bg-white/20 border-2 border-white/30'
+                              : 'bg-white/5 border border-white/10 hover:bg-white/10'
+                          }`}
+                        >
+                          {emoji}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                </div>
-                <div className="grid grid-cols-8 gap-2">
-                  {commonEmojis.map((emoji) => (
-                    <button
-                      key={emoji}
-                      type="button"
-                      onClick={() => setFormIcon(emoji)}
-                      className={`text-2xl p-2 rounded-xl transition-all ${
-                        formIcon === emoji
-                          ? 'bg-white/20 border-2 border-white/30'
-                          : 'bg-white/5 border border-white/10 hover:bg-white/10'
-                      }`}
-                    >
-                      {emoji}
-                    </button>
-                  ))}
-                </div>
+                )}
+
+                {/* Custom Image Upload */}
+                {formIconType === 'image' && (
+                  <div className="space-y-4">
+                    {iconPreview && (
+                      <div className="relative w-24 h-24 bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
+                        <img src={iconPreview} alt="Icon preview" className="w-full h-full object-cover" />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setIconPreview('');
+                            setIconFile(null);
+                          }}
+                          className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-lg hover:bg-red-600"
+                        >
+                          <X size={14} />
+                        </button>
+                      </div>
+                    )}
+
+                    <label className="block cursor-pointer">
+                      <div className="border-2 border-dashed border-white/10 p-6 text-center hover:border-white/20 transition-colors bg-black/50 rounded-2xl">
+                        <Upload size={24} className="text-white/40 mx-auto mb-2" />
+                        <div className="text-white/80 text-[10px] uppercase tracking-[0.15em] font-black">
+                          Upload Custom Icon
+                        </div>
+                        <div className="text-white/40 text-[9px] mt-1">
+                          PNG, JPG, SVG • Max 5MB
+                        </div>
+                      </div>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleIconFileChange}
+                        className="hidden"
+                      />
+                    </label>
+                  </div>
+                )}
               </div>
 
               {/* Name */}

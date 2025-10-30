@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
     // TRUE MULTI-TENANT: Return global categories (vendor_id IS NULL) + vendor-specific categories
     let query = supabase
       .from('categories')
-      .select('id, name, slug, description, icon, vendor_id, parent_id');
+      .select('id, name, slug, description, icon, image_url, vendor_id, parent_id');
 
     if (vendorId) {
       // Get global categories OR categories owned by this vendor
@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { name, slug, description, icon, parent_id } = body;
+    const { name, slug, description, icon, image_url, parent_id } = body;
 
     if (!name) {
       return NextResponse.json({ error: 'Category name is required' }, { status: 400 });
@@ -90,6 +90,7 @@ export async function POST(request: NextRequest) {
         slug: finalSlug,
         description: description || null,
         icon: icon || null,
+        image_url: image_url || null,
         parent_id: parent_id || null,
         vendor_id: vendorId // TRUE MULTI-TENANT: Vendor owns this category
       })
@@ -120,7 +121,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { id, name, description, icon } = body;
+    const { id, name, description, icon, image_url } = body;
 
     if (!id) {
       return NextResponse.json({ error: 'Category ID is required' }, { status: 400 });
@@ -144,13 +145,15 @@ export async function PUT(request: NextRequest) {
       );
     }
 
+    const updateData: any = {};
+    if (name) updateData.name = name;
+    if (description !== undefined) updateData.description = description;
+    if (icon !== undefined) updateData.icon = icon;
+    if (image_url !== undefined) updateData.image_url = image_url;
+
     const { data: category, error } = await supabase
       .from('categories')
-      .update({
-        name: name || undefined,
-        description: description !== undefined ? description : undefined,
-        icon: icon !== undefined ? icon : undefined
-      })
+      .update(updateData)
       .eq('id', id)
       .select()
       .single();
