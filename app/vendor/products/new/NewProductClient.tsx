@@ -124,12 +124,16 @@ export default function NewProduct() {
         });
 
         if (response.data.success) {
+          console.log('Raw API response:', response.data);
+          console.log('Admin fields:', response.data.adminFields);
+          console.log('Merged fields:', response.data.merged);
+
           const fields = (response.data.merged || []).map((field: any) => ({
             ...field,
             label: field.label || field.name, // Map name to label if label doesn't exist
             name: field.slug || field.name // Use slug as the field name/key
           }));
-          console.log('Loaded dynamic fields:', fields);
+          console.log('Processed dynamic fields:', fields);
           setDynamicFields(fields);
         }
       } catch (error) {
@@ -506,7 +510,7 @@ export default function NewProduct() {
 
     // Map THC percentage
     if (aiSuggestions.thc_percentage) {
-      const field = findFieldByKeywords(['thc', 'thca', 'thc_percentage', 'thc %']);
+      const field = findFieldByKeywords(['thc', 'thca', 'thc_percentage', 'thca_percentage', 'thc %', 'thca %']);
       if (field) {
         updates[field.name] = aiSuggestions.thc_percentage.toString();
       }
@@ -524,7 +528,10 @@ export default function NewProduct() {
     if (aiSuggestions.terpenes && aiSuggestions.terpenes.length > 0) {
       const field = findFieldByKeywords(['terpene', 'terp', 'terpenes', 'terpene_profile']);
       if (field) {
-        updates[field.name] = aiSuggestions.terpenes.join(', ');
+        // If multiselect, store as array; otherwise as comma-separated string
+        updates[field.name] = field.type === 'multiselect'
+          ? aiSuggestions.terpenes
+          : aiSuggestions.terpenes.join(', ');
       }
     }
 
@@ -532,7 +539,10 @@ export default function NewProduct() {
     if (aiSuggestions.effects && aiSuggestions.effects.length > 0) {
       const field = findFieldByKeywords(['effect', 'effects']);
       if (field) {
-        updates[field.name] = aiSuggestions.effects.join(', ');
+        // If multiselect, store as array; otherwise as comma-separated string
+        updates[field.name] = field.type === 'multiselect'
+          ? aiSuggestions.effects
+          : aiSuggestions.effects.join(', ');
       }
     }
 
@@ -795,6 +805,10 @@ export default function NewProduct() {
       setCustomFieldValues({ ...customFieldValues, [field.name]: value });
     };
 
+    // Ensure we have a display label
+    const displayLabel = field.label || field.name || 'Field';
+    const isRequired = field.required || field.isRequired;
+
     const labelClasses = "block text-white/40 text-[10px] uppercase tracking-[0.15em] mb-2 font-black";
     const inputClasses = "w-full bg-[#0a0a0a] border border-white/10 rounded-xl text-white placeholder-white/20 px-3 py-2.5 focus:outline-none focus:border-white/20 transition-all text-xs";
     const descClasses = "text-white/40 text-[10px] mt-1.5";
@@ -805,11 +819,11 @@ export default function NewProduct() {
         return (
           <div key={index}>
             <label className={labelClasses} style={{ fontWeight: 900 }}>
-              {field.label} {field.required && <span className="text-red-400">*</span>}
+              {displayLabel} {isRequired && <span className="text-red-400">*</span>}
             </label>
             <input
               type={field.type}
-              required={field.required}
+              required={isRequired}
               value={fieldValue}
               onChange={(e) => handleChange(e.target.value)}
               placeholder={field.placeholder}
@@ -823,10 +837,10 @@ export default function NewProduct() {
         return (
           <div key={index} className="lg:col-span-2">
             <label className={labelClasses} style={{ fontWeight: 900 }}>
-              {field.label} {field.required && <span className="text-red-400">*</span>}
+              {displayLabel} {isRequired && <span className="text-red-400">*</span>}
             </label>
             <textarea
-              required={field.required}
+              required={isRequired}
               value={fieldValue}
               onChange={(e) => handleChange(e.target.value)}
               placeholder={field.placeholder}
@@ -841,12 +855,12 @@ export default function NewProduct() {
         return (
           <div key={index}>
             <label className={labelClasses} style={{ fontWeight: 900 }}>
-              {field.label} {field.required && <span className="text-red-400">*</span>}
+              {displayLabel} {isRequired && <span className="text-red-400">*</span>}
             </label>
             <div className="relative">
               <input
                 type="number"
-                required={field.required}
+                required={isRequired}
                 value={fieldValue}
                 onChange={(e) => handleChange(e.target.value)}
                 placeholder={field.placeholder}
@@ -869,10 +883,10 @@ export default function NewProduct() {
         return (
           <div key={index}>
             <label className={labelClasses} style={{ fontWeight: 900 }}>
-              {field.label} {field.required && <span className="text-red-400">*</span>}
+              {displayLabel} {isRequired && <span className="text-red-400">*</span>}
             </label>
             <select
-              required={field.required}
+              required={isRequired}
               value={fieldValue}
               onChange={(e) => handleChange(e.target.value)}
               className={`${inputClasses} cursor-pointer`}
@@ -888,6 +902,58 @@ export default function NewProduct() {
           </div>
         );
 
+      case 'multiselect':
+        return (
+          <div key={index}>
+            <label className={labelClasses} style={{ fontWeight: 900 }}>
+              {displayLabel} {isRequired && <span className="text-red-400">*</span>}
+            </label>
+            <div className="space-y-2">
+              {/* Selected items */}
+              {fieldValue && Array.isArray(fieldValue) && fieldValue.length > 0 && (
+                <div className="flex flex-wrap gap-1.5">
+                  {fieldValue.map((item: string, idx: number) => (
+                    <div key={idx} className="bg-white/10 border border-white/20 rounded px-2 py-1 flex items-center gap-1.5 text-[10px] text-white">
+                      <span>{item}</span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const newValue = fieldValue.filter((_: string, i: number) => i !== idx);
+                          handleChange(newValue);
+                        }}
+                        className="text-white/60 hover:text-red-400 transition-colors"
+                      >
+                        <X size={10} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {/* Dropdown to add more */}
+              <select
+                value=""
+                onChange={(e) => {
+                  if (e.target.value) {
+                    const currentValues = Array.isArray(fieldValue) ? fieldValue : [];
+                    if (!currentValues.includes(e.target.value)) {
+                      handleChange([...currentValues, e.target.value]);
+                    }
+                  }
+                }}
+                className={`${inputClasses} cursor-pointer`}
+              >
+                <option value="">Add {displayLabel}...</option>
+                {field.options?.map((option, idx) => (
+                  <option key={idx} value={option} disabled={Array.isArray(fieldValue) && fieldValue.includes(option)}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </div>
+            {field.description && <p className={descClasses}>{field.description}</p>}
+          </div>
+        );
+
       case 'checkbox':
         return (
           <div key={index} className="lg:col-span-2">
@@ -899,7 +965,7 @@ export default function NewProduct() {
                 className="w-4 h-4 rounded border-white/20 bg-[#0a0a0a]"
               />
               <div>
-                <span className="text-white text-[10px] uppercase tracking-[0.15em] font-black" style={{ fontWeight: 900 }}>{field.label}</span>
+                <span className="text-white text-[10px] uppercase tracking-[0.15em] font-black" style={{ fontWeight: 900 }}>{displayLabel}</span>
                 {field.description && <p className={descClasses}>{field.description}</p>}
               </div>
             </label>
@@ -910,11 +976,11 @@ export default function NewProduct() {
         return (
           <div key={index}>
             <label className={labelClasses} style={{ fontWeight: 900 }}>
-              {field.label} {field.required && <span className="text-red-400">*</span>}
+              {displayLabel} {isRequired && <span className="text-red-400">*</span>}
             </label>
             <input
               type="text"
-              required={field.required}
+              required={isRequired}
               value={fieldValue}
               onChange={(e) => handleChange(e.target.value)}
               placeholder={field.placeholder}
@@ -1937,7 +2003,14 @@ export default function NewProduct() {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               {dynamicFields
-                .filter(field => field && field.name && field.type && field.label)
+                .filter(field => {
+                  // More lenient filter - just need name and type
+                  const isValid = field && (field.name || field.slug) && field.type;
+                  if (!isValid) {
+                    console.warn('Filtered out invalid field:', field);
+                  }
+                  return isValid;
+                })
                 .map((field, index) => renderDynamicField(field, index))}
 
               {/* Initial Quantity - Always show for Simple Products */}
