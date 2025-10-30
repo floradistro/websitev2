@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Upload, X, Plus, FileText, CheckCircle, AlertCircle, Loader, Package, DollarSign } from 'lucide-react';
+import { ArrowLeft, Upload, X, Plus, FileText, CheckCircle, AlertCircle, Loader, Package, DollarSign, Sparkles, Zap } from 'lucide-react';
 import Link from 'next/link';
 import axios from 'axios';
 import { showNotification } from '@/components/NotificationToast';
@@ -79,6 +79,11 @@ export default function NewProduct() {
   const [inputMode, setInputMode] = useState<'single' | 'bulk'>('single');
   const [bulkInput, setBulkInput] = useState('');
   const [bulkProcessing, setBulkProcessing] = useState(false);
+
+  // AI Autofill state
+  const [aiSuggestions, setAiSuggestions] = useState<any>(null);
+  const [loadingAI, setLoadingAI] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -409,6 +414,133 @@ export default function NewProduct() {
       }
       return tier;
     }));
+  };
+
+  // AI Autofill - Quick product data extraction
+  const handleAIAutofill = async () => {
+    if (!formData.name.trim()) {
+      showNotification({
+        type: 'warning',
+        title: 'Product Name Required',
+        message: 'Enter a product name to autofill data',
+      });
+      return;
+    }
+
+    try {
+      setLoadingAI(true);
+      const response = await axios.post('/api/ai/quick-autofill', {
+        productName: formData.name,
+        category: formData.category
+      });
+
+      if (response.data.success && response.data.suggestions) {
+        setAiSuggestions(response.data.suggestions);
+        setShowSuggestions(true);
+        showNotification({
+          type: 'success',
+          title: 'AI Suggestions Ready',
+          message: 'Review and apply suggestions below',
+        });
+      } else {
+        showNotification({
+          type: 'info',
+          title: 'No Data Found',
+          message: 'Try a different product name',
+        });
+      }
+    } catch (error: any) {
+      console.error('AI autofill error:', error);
+      showNotification({
+        type: 'error',
+        title: 'Autofill Failed',
+        message: 'Could not fetch product data',
+      });
+    } finally {
+      setLoadingAI(false);
+    }
+  };
+
+  // Apply AI suggestions to form
+  const applyAISuggestions = () => {
+    if (!aiSuggestions) return;
+
+    const updates: Record<string, any> = {};
+
+    // Map AI suggestions to dynamic fields
+    if (aiSuggestions.strain_type) {
+      updates['strain_type'] = aiSuggestions.strain_type;
+    }
+    if (aiSuggestions.thc_percentage) {
+      updates['thc_percentage'] = aiSuggestions.thc_percentage.toString();
+    }
+    if (aiSuggestions.cbd_percentage) {
+      updates['cbd_percentage'] = aiSuggestions.cbd_percentage.toString();
+    }
+    if (aiSuggestions.terpenes && aiSuggestions.terpenes.length > 0) {
+      updates['terpenes'] = aiSuggestions.terpenes.join(', ');
+    }
+    if (aiSuggestions.effects && aiSuggestions.effects.length > 0) {
+      updates['effects'] = aiSuggestions.effects.join(', ');
+    }
+    if (aiSuggestions.lineage) {
+      updates['lineage'] = aiSuggestions.lineage;
+    }
+    if (aiSuggestions.description) {
+      setFormData({ ...formData, description: aiSuggestions.description });
+    }
+
+    setCustomFieldValues({ ...customFieldValues, ...updates });
+    setShowSuggestions(false);
+
+    showNotification({
+      type: 'success',
+      title: 'Applied',
+      message: 'AI suggestions applied to form',
+    });
+  };
+
+  // Quick pricing templates for common cannabis weights
+  const applyPricingTemplate = (template: 'budget' | 'mid' | 'premium' | 'exotic') => {
+    const templates = {
+      budget: [
+        { weight: '1g', qty: 1, price: '8.00' },
+        { weight: '3.5g', qty: 1, price: '25.00' },
+        { weight: '7g', qty: 1, price: '45.00' },
+        { weight: '14g', qty: 1, price: '80.00' },
+        { weight: '28g', qty: 1, price: '140.00' }
+      ],
+      mid: [
+        { weight: '1g', qty: 1, price: '12.00' },
+        { weight: '3.5g', qty: 1, price: '35.00' },
+        { weight: '7g', qty: 1, price: '65.00' },
+        { weight: '14g', qty: 1, price: '120.00' },
+        { weight: '28g', qty: 1, price: '200.00' }
+      ],
+      premium: [
+        { weight: '1g', qty: 1, price: '15.00' },
+        { weight: '3.5g', qty: 1, price: '45.00' },
+        { weight: '7g', qty: 1, price: '85.00' },
+        { weight: '14g', qty: 1, price: '160.00' },
+        { weight: '28g', qty: 1, price: '280.00' }
+      ],
+      exotic: [
+        { weight: '1g', qty: 1, price: '20.00' },
+        { weight: '3.5g', qty: 1, price: '60.00' },
+        { weight: '7g', qty: 1, price: '110.00' },
+        { weight: '14g', qty: 1, price: '200.00' },
+        { weight: '28g', qty: 1, price: '350.00' }
+      ]
+    };
+
+    setPricingTiers(templates[template]);
+    setPricingMode('tiered');
+
+    showNotification({
+      type: 'success',
+      title: 'Template Applied',
+      message: `${template.charAt(0).toUpperCase() + template.slice(1)} pricing tier loaded`,
+    });
   };
 
   const handleBulkSubmit = async () => {
@@ -810,17 +942,99 @@ export default function NewProduct() {
                 <button
                   type="button"
                   onClick={handleBulkSubmit}
-                  disabled={bulkProcessing}
-                  className="px-4 py-2.5 bg-white/10 text-white border border-white/20 rounded-xl hover:bg-white/20 hover:border-white/30 font-black transition-all text-[10px] uppercase tracking-[0.15em] disabled:opacity-50"
+                  disabled={bulkProcessing || loadingAI}
+                  className="flex-1 px-4 py-2.5 bg-white/10 text-white border border-white/20 rounded-xl hover:bg-white/20 hover:border-white/30 font-black transition-all text-[10px] uppercase tracking-[0.15em] disabled:opacity-50 disabled:cursor-not-allowed"
                   style={{ fontWeight: 900 }}
                 >
                   {bulkProcessing ? (
-                    <span className="flex items-center gap-1.5">
+                    <span className="flex items-center justify-center gap-1.5">
                       <Loader size={10} className="animate-spin" strokeWidth={3} />
                       Processing...
                     </span>
                   ) : (
                     'Import Products'
+                  )}
+                </button>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    if (!bulkInput.trim()) {
+                      showNotification({
+                        type: 'warning',
+                        title: 'No Data',
+                        message: 'Enter product data first',
+                      });
+                      return;
+                    }
+
+                    setLoadingAI(true);
+                    try {
+                      const lines = bulkInput.split('\n').filter(line => line.trim());
+                      let enrichedLines: string[] = [];
+
+                      for (const line of lines) {
+                        const parts = line.split(',').map(p => p.trim());
+                        if (parts.length < 3) continue;
+                        const [name, category, price, cost] = parts;
+
+                        try {
+                          // Get AI suggestions
+                          const response = await axios.post('/api/ai/quick-autofill', {
+                            productName: name,
+                            category
+                          });
+
+                          if (response.data.success && response.data.suggestions) {
+                            const suggestions = response.data.suggestions;
+                            // Keep original pricing but add AI description
+                            enrichedLines.push(`${name}, ${category}, ${price}, ${cost || price}`);
+
+                            showNotification({
+                              type: 'success',
+                              title: `Enriched: ${name}`,
+                              message: `Found ${suggestions.strain_type || 'strain'} data`,
+                              duration: 2000
+                            });
+                          } else {
+                            enrichedLines.push(line);
+                          }
+                        } catch (err) {
+                          console.error(`Failed to enrich ${name}:`, err);
+                          enrichedLines.push(line);
+                        }
+                      }
+
+                      setBulkInput(enrichedLines.join('\n'));
+                      showNotification({
+                        type: 'success',
+                        title: 'AI Processing Complete',
+                        message: `Enriched ${enrichedLines.length} products`,
+                      });
+                    } catch (error) {
+                      console.error('Bulk AI error:', error);
+                      showNotification({
+                        type: 'error',
+                        title: 'AI Processing Failed',
+                        message: 'Could not process all products',
+                      });
+                    } finally {
+                      setLoadingAI(false);
+                    }
+                  }}
+                  disabled={bulkProcessing || loadingAI}
+                  className="px-4 py-2.5 bg-gradient-to-r from-purple-500/20 to-blue-500/20 text-purple-300 border border-purple-500/30 rounded-xl hover:from-purple-500/30 hover:to-blue-500/30 hover:border-purple-400/40 font-black transition-all text-[10px] uppercase tracking-[0.15em] disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+                  style={{ fontWeight: 900 }}
+                >
+                  {loadingAI ? (
+                    <>
+                      <Loader size={10} className="animate-spin" strokeWidth={3} />
+                      AI...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles size={10} strokeWidth={3} />
+                      AI Enrich
+                    </>
                   )}
                 </button>
               </div>
@@ -859,9 +1073,30 @@ export default function NewProduct() {
           <div className="space-y-4">
             {/* Product Name */}
             <div>
-              <label className="block text-white/40 text-[10px] uppercase tracking-[0.15em] mb-2 font-black" style={{ fontWeight: 900 }}>
-                Product Name <span className="text-red-400">*</span>
-              </label>
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-white/40 text-[10px] uppercase tracking-[0.15em] font-black" style={{ fontWeight: 900 }}>
+                  Product Name <span className="text-red-400">*</span>
+                </label>
+                <button
+                  type="button"
+                  onClick={handleAIAutofill}
+                  disabled={loadingAI || !formData.name.trim()}
+                  className="bg-gradient-to-r from-purple-500/20 to-blue-500/20 text-purple-300 border border-purple-500/30 rounded-xl px-2.5 py-1.5 text-[9px] uppercase tracking-[0.15em] hover:from-purple-500/30 hover:to-blue-500/30 hover:border-purple-400/40 font-black transition-all flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{ fontWeight: 900 }}
+                >
+                  {loadingAI ? (
+                    <>
+                      <Loader size={11} className="animate-spin" strokeWidth={2.5} />
+                      Loading...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles size={11} strokeWidth={2.5} />
+                      AI Autofill
+                    </>
+                  )}
+                </button>
+              </div>
               <input
                 type="text"
                 required
@@ -870,6 +1105,72 @@ export default function NewProduct() {
                 placeholder="e.g., Blue Dream"
                 className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl text-white placeholder-white/20 px-3 py-2.5 focus:outline-none focus:border-white/20 transition-all text-xs"
               />
+
+              {/* AI Suggestions Panel */}
+              {showSuggestions && aiSuggestions && (
+                <div className="mt-3 bg-gradient-to-br from-purple-500/10 to-blue-500/10 border border-purple-500/20 rounded-xl p-3 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="text-purple-300 text-[10px] uppercase tracking-[0.15em] font-black flex items-center gap-1.5" style={{ fontWeight: 900 }}>
+                      <Sparkles size={11} strokeWidth={2.5} />
+                      AI Suggestions
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setShowSuggestions(false)}
+                      className="text-white/40 hover:text-white/60 transition-colors"
+                    >
+                      <X size={12} />
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 text-[10px]">
+                    {aiSuggestions.strain_type && (
+                      <div>
+                        <span className="text-white/40 uppercase tracking-[0.15em]">Type:</span>
+                        <span className="text-white ml-1 font-black">{aiSuggestions.strain_type}</span>
+                      </div>
+                    )}
+                    {aiSuggestions.thc_percentage && (
+                      <div>
+                        <span className="text-white/40 uppercase tracking-[0.15em]">THC:</span>
+                        <span className="text-green-400 ml-1 font-black">{aiSuggestions.thc_percentage}%</span>
+                      </div>
+                    )}
+                    {aiSuggestions.cbd_percentage && (
+                      <div>
+                        <span className="text-white/40 uppercase tracking-[0.15em]">CBD:</span>
+                        <span className="text-blue-400 ml-1 font-black">{aiSuggestions.cbd_percentage}%</span>
+                      </div>
+                    )}
+                    {aiSuggestions.lineage && (
+                      <div className="col-span-2">
+                        <span className="text-white/40 uppercase tracking-[0.15em]">Lineage:</span>
+                        <span className="text-white ml-1 font-black">{aiSuggestions.lineage}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {aiSuggestions.effects && aiSuggestions.effects.length > 0 && (
+                    <div className="flex flex-wrap gap-1">
+                      {aiSuggestions.effects.map((effect: string, idx: number) => (
+                        <span key={idx} className="bg-white/10 border border-white/20 rounded px-2 py-0.5 text-[9px] text-white uppercase tracking-wider">
+                          {effect}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={applyAISuggestions}
+                    className="w-full bg-gradient-to-r from-purple-500 to-blue-500 text-white border border-purple-400/30 rounded-xl px-3 py-2 text-[10px] uppercase tracking-[0.15em] hover:from-purple-600 hover:to-blue-600 font-black transition-all flex items-center justify-center gap-1.5"
+                    style={{ fontWeight: 900 }}
+                  >
+                    <CheckCircle size={11} strokeWidth={2.5} />
+                    Apply to Form
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Description */}
@@ -1052,109 +1353,151 @@ export default function NewProduct() {
 
         {/* Pricing Tiers - Only for Simple Products with Tiered Pricing */}
         {productType === 'simple' && pricingMode === 'tiered' && (
-          <div className="bg-gradient-to-br from-white/[0.08] to-white/[0.02] backdrop-blur-xl border border-white/10 rounded-3xl p-6 lg:p-8">
-            <h2 className="text-xl font-black text-white mb-2 tracking-tight flex items-center gap-3" style={{ fontWeight: 900 }}>
-              <div className="w-8 h-8 bg-white/10 rounded-2xl flex items-center justify-center">
-                <DollarSign size={16} className="text-white/80" />
+          <div className="bg-[#141414] border border-white/5 rounded-2xl p-4">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-[10px] uppercase tracking-[0.15em] text-white/40 font-black" style={{ fontWeight: 900 }}>
+                Pricing Tiers
+              </h2>
+              <div className="flex items-center gap-1.5">
+                <Zap size={11} strokeWidth={2.5} className="text-yellow-400" />
+                <span className="text-yellow-400 text-[9px] uppercase tracking-[0.15em] font-black" style={{ fontWeight: 900 }}>
+                  Quick Pick
+                </span>
               </div>
-              Pricing Tiers
-            </h2>
-            <p className="text-white/50 text-sm mb-6">
-              Offer different prices for different quantities (e.g., 1g at $15, 3.5g at $45, 7g at $80).
+            </div>
+
+            {/* Quick-Pick Pricing Templates */}
+            <div className="grid grid-cols-4 gap-2 mb-4">
+              <button
+                type="button"
+                onClick={() => applyPricingTemplate('budget')}
+                className="bg-[#0a0a0a] border border-white/10 rounded-xl px-2.5 py-2 text-[9px] uppercase tracking-[0.15em] text-white/60 hover:text-white hover:border-white/20 hover:bg-white/5 font-black transition-all"
+                style={{ fontWeight: 900 }}
+              >
+                Budget
+              </button>
+              <button
+                type="button"
+                onClick={() => applyPricingTemplate('mid')}
+                className="bg-[#0a0a0a] border border-white/10 rounded-xl px-2.5 py-2 text-[9px] uppercase tracking-[0.15em] text-white/60 hover:text-white hover:border-white/20 hover:bg-white/5 font-black transition-all"
+                style={{ fontWeight: 900 }}
+              >
+                Mid-Shelf
+              </button>
+              <button
+                type="button"
+                onClick={() => applyPricingTemplate('premium')}
+                className="bg-[#0a0a0a] border border-white/10 rounded-xl px-2.5 py-2 text-[9px] uppercase tracking-[0.15em] text-white/60 hover:text-white hover:border-white/20 hover:bg-white/5 font-black transition-all"
+                style={{ fontWeight: 900 }}
+              >
+                Premium
+              </button>
+              <button
+                type="button"
+                onClick={() => applyPricingTemplate('exotic')}
+                className="bg-[#0a0a0a] border border-white/10 rounded-xl px-2.5 py-2 text-[9px] uppercase tracking-[0.15em] text-white/60 hover:text-white hover:border-white/20 hover:bg-white/5 font-black transition-all"
+                style={{ fontWeight: 900 }}
+              >
+                Exotic
+              </button>
+            </div>
+
+            <p className="text-white/40 text-[10px] mb-4 uppercase tracking-[0.15em]">
+              Or add custom tiers below
             </p>
 
             {/* Add Pricing Tier */}
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-3 mb-6">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-3 mb-4">
               <div>
-                <label className="block text-white/90 text-xs font-medium mb-2">Weight/Size (Optional)</label>
+                <label className="block text-white/40 text-[10px] uppercase tracking-[0.15em] mb-2 font-black" style={{ fontWeight: 900 }}>Weight</label>
                 <input
                   type="text"
                   value={newTierWeight}
                   onChange={(e) => setNewTierWeight(e.target.value)}
-                  placeholder="e.g., 1g, 3.5g"
-                  className="w-full bg-black/50 border border-white/10 rounded-xl text-white placeholder-white/30 px-4 py-3 text-sm focus:outline-none focus:border-white/30 focus:bg-black/70 transition-all hover:border-white/20"
+                  placeholder="1g"
+                  className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl text-white placeholder-white/20 px-3 py-2.5 text-xs focus:outline-none focus:border-white/20 transition-all"
                 />
               </div>
               <div>
-                <label className="block text-white/90 text-xs font-medium mb-2">Quantity <span className="text-red-400">*</span></label>
+                <label className="block text-white/40 text-[10px] uppercase tracking-[0.15em] mb-2 font-black" style={{ fontWeight: 900 }}>Qty <span className="text-red-400">*</span></label>
                 <input
                   type="number"
                   value={newTierQty}
                   onChange={(e) => setNewTierQty(e.target.value)}
                   placeholder="1"
-                  className="w-full bg-black/50 border border-white/10 rounded-xl text-white placeholder-white/30 px-4 py-3 text-sm focus:outline-none focus:border-white/30 focus:bg-black/70 transition-all hover:border-white/20"
+                  className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl text-white placeholder-white/20 px-3 py-2.5 text-xs focus:outline-none focus:border-white/20 transition-all"
                 />
               </div>
               <div>
-                <label className="block text-white/90 text-xs font-medium mb-2">Price ($) <span className="text-red-400">*</span></label>
-                <input
-                  type="number"
-                  step="0.01"
-                  value={newTierPrice}
-                  onChange={(e) => setNewTierPrice(e.target.value)}
-                  placeholder="14.99"
-                  className="w-full bg-black/50 border border-white/10 rounded-xl text-white placeholder-white/30 px-4 py-3 text-sm focus:outline-none focus:border-white/30 focus:bg-black/70 transition-all hover:border-white/20"
-                />
+                <label className="block text-white/40 text-[10px] uppercase tracking-[0.15em] mb-2 font-black" style={{ fontWeight: 900 }}>Price <span className="text-red-400">*</span></label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40 text-[10px] font-black" style={{ fontWeight: 900 }}>$</span>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={newTierPrice}
+                    onChange={(e) => setNewTierPrice(e.target.value)}
+                    placeholder="14.99"
+                    className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl text-white placeholder-white/20 pl-7 pr-3 py-2.5 text-xs focus:outline-none focus:border-white/20 transition-all"
+                  />
+                </div>
               </div>
               <div className="flex items-end">
                 <button
                   type="button"
                   onClick={addPricingTier}
-                  className="w-full px-4 py-3 bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 rounded-xl text-white font-medium transition-all flex items-center justify-center gap-2 text-sm shadow-lg hover:shadow-xl transform hover:scale-105"
+                  className="w-full px-3 py-2.5 bg-white/10 border border-white/20 rounded-xl text-white hover:bg-white/20 hover:border-white/30 font-black transition-all flex items-center justify-center gap-1.5 text-[10px] uppercase tracking-[0.15em]"
+                  style={{ fontWeight: 900 }}
                 >
-                  <Plus size={16} />
-                  Add Tier
+                  <Plus size={11} strokeWidth={2.5} />
+                  Add
                 </button>
               </div>
             </div>
 
             {/* Pricing Tiers List */}
             {pricingTiers.length > 0 && (
-              <div className="space-y-4">
-                <h3 className="text-white font-bold text-sm">Current Pricing Tiers ({pricingTiers.length})</h3>
-                <div className="space-y-3">
+              <div className="space-y-2">
+                <h3 className="text-white/40 text-[10px] uppercase tracking-[0.15em] font-black" style={{ fontWeight: 900 }}>Current ({pricingTiers.length})</h3>
+                <div className="space-y-2">
                   {pricingTiers.map((tier, index) => (
-                    <div key={index} className="bg-black/30 border border-white/10 rounded-2xl p-4 flex items-center gap-4">
-                      <div className="flex-1 grid grid-cols-3 gap-3">
-                        <div>
-                          <input
-                            type="text"
-                            value={tier.weight || ''}
-                            onChange={(e) => updatePricingTier(index, 'weight', e.target.value)}
-                            placeholder="Weight"
-                            className="w-full bg-black/50 border border-white/10 rounded-xl text-white placeholder-white/30 px-3 py-2 text-sm focus:outline-none focus:border-white/30"
-                          />
-                        </div>
-                        <div>
-                          <input
-                            type="number"
-                            value={tier.qty}
-                            onChange={(e) => updatePricingTier(index, 'qty', e.target.value)}
-                            placeholder="Qty"
-                            className="w-full bg-black/50 border border-white/10 rounded-xl text-white placeholder-white/30 px-3 py-2 text-sm focus:outline-none focus:border-white/30"
-                          />
-                        </div>
+                    <div key={index} className="bg-[#0a0a0a] border border-white/10 rounded-xl p-3 flex items-center gap-3">
+                      <div className="flex-1 grid grid-cols-3 gap-2">
+                        <input
+                          type="text"
+                          value={tier.weight || ''}
+                          onChange={(e) => updatePricingTier(index, 'weight', e.target.value)}
+                          placeholder="Weight"
+                          className="w-full bg-black border border-white/10 rounded-xl text-white placeholder-white/20 px-2.5 py-2 text-xs focus:outline-none focus:border-white/20"
+                        />
+                        <input
+                          type="number"
+                          value={tier.qty}
+                          onChange={(e) => updatePricingTier(index, 'qty', e.target.value)}
+                          placeholder="Qty"
+                          className="w-full bg-black border border-white/10 rounded-xl text-white placeholder-white/20 px-2.5 py-2 text-xs focus:outline-none focus:border-white/20"
+                        />
                         <div className="relative">
-                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/50 text-xs font-medium">$</span>
+                          <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-white/40 text-[10px] font-black" style={{ fontWeight: 900 }}>$</span>
                           <input
                             type="number"
                             step="0.01"
                             value={tier.price}
                             onChange={(e) => updatePricingTier(index, 'price', e.target.value)}
                             placeholder="Price"
-                            className="w-full bg-black/50 border border-white/10 rounded-xl text-white placeholder-white/30 pl-7 pr-3 py-2 text-sm focus:outline-none focus:border-white/30"
+                            className="w-full bg-black border border-white/10 rounded-xl text-white placeholder-white/20 pl-6 pr-2.5 py-2 text-xs focus:outline-none focus:border-white/20"
                           />
                         </div>
                       </div>
-                      <div className="text-white/70 text-sm font-medium min-w-[100px]">
-                        {tier.weight || `${tier.qty} units`} - ${parseFloat(tier.price.toString()).toFixed(2)}
+                      <div className="text-white text-[10px] font-black uppercase tracking-[0.15em] min-w-[80px]" style={{ fontWeight: 900 }}>
+                        {tier.weight || `${tier.qty}x`} ${parseFloat(tier.price.toString()).toFixed(2)}
                       </div>
                       <button
                         type="button"
                         onClick={() => removePricingTier(index)}
-                        className="text-red-400 hover:text-red-300 p-2 rounded-xl hover:bg-red-500/10 transition-all"
+                        className="text-red-400 hover:text-red-300 p-1.5 rounded-xl hover:bg-red-500/10 transition-all"
                       >
-                        <X size={18} />
+                        <X size={14} />
                       </button>
                     </div>
                   ))}
@@ -1163,9 +1506,9 @@ export default function NewProduct() {
             )}
 
             {pricingTiers.length === 0 && (
-              <div className="bg-gradient-to-r from-blue-500/10 to-cyan-500/10 border border-blue-500/20 rounded-2xl p-6 text-center">
-                <p className="text-blue-300 text-sm font-medium">
-                  No pricing tiers added yet. Add at least one pricing tier to continue.
+              <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-4 text-center">
+                <p className="text-blue-300 text-[10px] uppercase tracking-[0.15em]">
+                  No tiers added
                 </p>
               </div>
             )}
