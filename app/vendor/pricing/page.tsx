@@ -74,6 +74,7 @@ export default function VendorPricingPage() {
   const [displayUnits, setDisplayUnits] = useState<{ [configId: string]: string }>({});
   const [pricingMode, setPricingMode] = useState<{ [configId: string]: 'fixed' | 'cost_plus' }>({});
   const [saving, setSaving] = useState(false);
+  const [categories, setCategories] = useState<any[]>([]);
 
   useEffect(() => {
     if (!authLoading && isAuthenticated) {
@@ -83,6 +84,14 @@ export default function VendorPricingPage() {
       }
     }
   }, [authLoading, isAuthenticated]);
+
+  useEffect(() => {
+    // Load categories for grouping
+    fetch('/api/categories')
+      .then(res => res.json())
+      .then(data => setCategories(data.categories || []))
+      .catch(err => console.error('Failed to load categories:', err));
+  }, []);
 
   async function loadPricingData(vendorId: string) {
     setLoading(true);
@@ -581,26 +590,95 @@ export default function VendorPricingPage() {
             });
           })()}
 
-          {/* Available Blueprints */}
+          {/* Available Blueprints - Grouped by Category > Context */}
           {availableBlueprints.length > 0 && (
-            <div className="space-y-4 pt-8 border-t border-white/5">
+            <div className="space-y-8 pt-8 border-t border-white/5">
               <h3 className="text-white/40 text-[10px] uppercase tracking-[0.15em]">Add pricing structure</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {availableBlueprints.map((blueprint) => (
-                  <div key={blueprint.id} className="bg-white/5 border border-white/10 rounded-2xl p-4 hover:border-white/20 transition-all">
-                    <h4 className="text-white font-black text-xs uppercase tracking-tight mb-1" style={{ fontWeight: 900 }}>{blueprint.name}</h4>
-                    <p className="text-white/40 text-[10px] uppercase tracking-[0.15em] mb-3">{blueprint.description}</p>
-                    <button
-                      onClick={() => enableBlueprint(blueprint.id)}
-                      disabled={saving}
-                      className="bg-white text-black px-4 py-2 rounded-2xl text-[10px] uppercase tracking-[0.15em] font-black hover:bg-white/90 transition-all disabled:opacity-50"
-                      style={{ fontWeight: 900 }}
-                    >
-                      Enable
-                    </button>
-                  </div>
-                ))}
-              </div>
+
+              {(() => {
+                // Group blueprints by category first, then by context
+                const categoryGroups: Record<string, Record<string, Blueprint[]>> = {};
+
+                availableBlueprints.forEach(blueprint => {
+                  const blueprintCategories = blueprint.applicable_to_categories || [];
+                  const context = blueprint.context || 'retail';
+
+                  // If no categories, put in "All Categories"
+                  const categoryKeys = blueprintCategories.length > 0 ? blueprintCategories : ['all'];
+
+                  categoryKeys.forEach(catId => {
+                    if (!categoryGroups[catId]) {
+                      categoryGroups[catId] = {};
+                    }
+                    if (!categoryGroups[catId][context]) {
+                      categoryGroups[catId][context] = [];
+                    }
+                    categoryGroups[catId][context].push(blueprint);
+                  });
+                });
+
+                const contextLabels: Record<string, { label: string, icon: string }> = {
+                  retail: { label: 'Retail Pricing', icon: '🛍️' },
+                  wholesale: { label: 'Wholesale Pricing', icon: '📦' },
+                  distributor: { label: 'Distributor Pricing', icon: '🚚' }
+                };
+
+                return Object.entries(categoryGroups).map(([catId, contexts]) => {
+                  const categoryName = catId === 'all'
+                    ? 'All Categories'
+                    : categories.find(c => c.id === catId)?.name || 'Unknown Category';
+
+                  return (
+                    <div key={catId} className="space-y-6">
+                      {/* Category Header */}
+                      <div className="border-b border-white/10 pb-3">
+                        <h4 className="text-white text-lg font-thin tracking-tight">
+                          {categoryName}
+                        </h4>
+                      </div>
+
+                      {/* Contexts within Category */}
+                      {Object.entries(contexts).map(([contextKey, blueprints]) => {
+                        const contextInfo = contextLabels[contextKey] || { label: contextKey, icon: '📋' };
+
+                        return (
+                          <div key={contextKey} className="pl-4 space-y-3">
+                            {/* Context Subheader */}
+                            <div className="flex items-center gap-2 mb-3">
+                              <span className="text-xl">{contextInfo.icon}</span>
+                              <h5 className="text-white/60 text-sm uppercase tracking-[0.15em]">
+                                {contextInfo.label}
+                              </h5>
+                            </div>
+
+                            {/* Blueprints */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pl-6">
+                              {blueprints.map((blueprint) => (
+                                <div key={blueprint.id} className="bg-white/5 border border-white/10 rounded-2xl p-4 hover:border-white/20 transition-all">
+                                  <h6 className="text-white font-black text-xs uppercase tracking-tight mb-1" style={{ fontWeight: 900 }}>
+                                    {blueprint.name}
+                                  </h6>
+                                  <p className="text-white/40 text-[10px] uppercase tracking-[0.15em] mb-3">
+                                    {blueprint.description}
+                                  </p>
+                                  <button
+                                    onClick={() => enableBlueprint(blueprint.id)}
+                                    disabled={saving}
+                                    className="bg-white text-black px-4 py-2 rounded-2xl text-[10px] uppercase tracking-[0.15em] font-black hover:bg-white/90 transition-all disabled:opacity-50"
+                                    style={{ fontWeight: 900 }}
+                                  >
+                                    Enable
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                });
+              })()}
             </div>
           )}
 
