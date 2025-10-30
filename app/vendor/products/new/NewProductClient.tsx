@@ -427,6 +427,24 @@ export default function NewProduct() {
       return;
     }
 
+    if (!categoryId || !formData.category) {
+      showNotification({
+        type: 'warning',
+        title: 'Category Required',
+        message: 'Select a category first to load fields',
+      });
+      return;
+    }
+
+    if (dynamicFields.length === 0) {
+      showNotification({
+        type: 'warning',
+        title: 'Loading Fields',
+        message: 'Wait for category fields to load',
+      });
+      return;
+    }
+
     try {
       setLoadingAI(true);
       const response = await axios.post('/api/ai/quick-autofill', {
@@ -467,36 +485,78 @@ export default function NewProduct() {
 
     const updates: Record<string, any> = {};
 
-    // Map AI suggestions to dynamic fields
+    // Smart field mapping - find the actual field names from dynamic fields
+    const findFieldByKeywords = (keywords: string[]) => {
+      return dynamicFields.find(field => {
+        const fieldNameLower = (field.name || '').toLowerCase();
+        const fieldLabelLower = (field.label || '').toLowerCase();
+        return keywords.some(keyword =>
+          fieldNameLower.includes(keyword) || fieldLabelLower.includes(keyword)
+        );
+      });
+    };
+
+    // Map strain type
     if (aiSuggestions.strain_type) {
-      updates['strain_type'] = aiSuggestions.strain_type;
+      const field = findFieldByKeywords(['strain', 'type', 'strain_type', 'straintype']);
+      if (field) {
+        updates[field.name] = aiSuggestions.strain_type;
+      }
     }
+
+    // Map THC percentage
     if (aiSuggestions.thc_percentage) {
-      updates['thc_percentage'] = aiSuggestions.thc_percentage.toString();
+      const field = findFieldByKeywords(['thc', 'thca', 'thc_percentage', 'thc %']);
+      if (field) {
+        updates[field.name] = aiSuggestions.thc_percentage.toString();
+      }
     }
+
+    // Map CBD percentage
     if (aiSuggestions.cbd_percentage) {
-      updates['cbd_percentage'] = aiSuggestions.cbd_percentage.toString();
+      const field = findFieldByKeywords(['cbd', 'cbd_percentage', 'cbd %']);
+      if (field) {
+        updates[field.name] = aiSuggestions.cbd_percentage.toString();
+      }
     }
+
+    // Map terpenes
     if (aiSuggestions.terpenes && aiSuggestions.terpenes.length > 0) {
-      updates['terpenes'] = aiSuggestions.terpenes.join(', ');
+      const field = findFieldByKeywords(['terpene', 'terp', 'terpenes', 'terpene_profile']);
+      if (field) {
+        updates[field.name] = aiSuggestions.terpenes.join(', ');
+      }
     }
+
+    // Map effects
     if (aiSuggestions.effects && aiSuggestions.effects.length > 0) {
-      updates['effects'] = aiSuggestions.effects.join(', ');
+      const field = findFieldByKeywords(['effect', 'effects']);
+      if (field) {
+        updates[field.name] = aiSuggestions.effects.join(', ');
+      }
     }
+
+    // Map lineage
     if (aiSuggestions.lineage) {
-      updates['lineage'] = aiSuggestions.lineage;
+      const field = findFieldByKeywords(['lineage', 'genetics', 'parent']);
+      if (field) {
+        updates[field.name] = aiSuggestions.lineage;
+      }
     }
+
+    // Update description
     if (aiSuggestions.description) {
       setFormData({ ...formData, description: aiSuggestions.description });
     }
 
+    console.log('AI field mapping:', updates);
     setCustomFieldValues({ ...customFieldValues, ...updates });
     setShowSuggestions(false);
 
     showNotification({
       type: 'success',
       title: 'Applied',
-      message: 'AI suggestions applied to form',
+      message: `${Object.keys(updates).length} fields populated`,
     });
   };
 
@@ -1080,7 +1140,8 @@ export default function NewProduct() {
                 <button
                   type="button"
                   onClick={handleAIAutofill}
-                  disabled={loadingAI || !formData.name.trim()}
+                  disabled={loadingAI || !formData.name.trim() || !categoryId || dynamicFields.length === 0}
+                  title={!categoryId ? "Select a category first" : !formData.name.trim() ? "Enter product name" : dynamicFields.length === 0 ? "Loading fields..." : ""}
                   className="bg-gradient-to-r from-purple-500/20 to-blue-500/20 text-purple-300 border border-purple-500/30 rounded-xl px-2.5 py-1.5 text-[9px] uppercase tracking-[0.15em] hover:from-purple-500/30 hover:to-blue-500/30 hover:border-purple-400/40 font-black transition-all flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
                   style={{ fontWeight: 900 }}
                 >
@@ -1213,7 +1274,13 @@ export default function NewProduct() {
               {loadingFields && (
                 <p className="text-white/40 text-[10px] mt-2 flex items-center gap-1.5 uppercase tracking-[0.15em]">
                   <Loader size={10} className="animate-spin" />
-                  Loading...
+                  Loading fields...
+                </p>
+              )}
+              {categoryId && dynamicFields.length > 0 && (
+                <p className="text-green-400/60 text-[9px] mt-2 flex items-center gap-1.5 uppercase tracking-[0.15em]">
+                  <Sparkles size={9} strokeWidth={2.5} />
+                  AI autofill ready
                 </p>
               )}
             </div>
