@@ -41,13 +41,15 @@ export async function GET(request: NextRequest) {
     if (configError) throw configError;
 
     // Get available blueprints that vendor hasn't configured yet
+    // TRUE MULTI-TENANT: Show global blueprints + vendor's custom blueprints
     const configuredBlueprintIds = (configs || []).map((c: any) => c.blueprint_id);
-    
+
     let blueprintsQuery = supabase
       .from('pricing_tier_blueprints')
       .select('*')
-      .eq('is_active', true);
-    
+      .eq('is_active', true)
+      .or(`vendor_id.is.null,vendor_id.eq.${vendorId}`); // Get global + vendor-specific
+
     // Only apply the NOT IN filter if there are configured blueprints
     if (configuredBlueprintIds.length > 0) {
       blueprintsQuery = blueprintsQuery.not('id', 'in', `(${configuredBlueprintIds.join(',')})`);

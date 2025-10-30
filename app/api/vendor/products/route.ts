@@ -87,13 +87,20 @@ export async function POST(request: NextRequest) {
       return 'outofstock';
     };
     
+    // TRUE MULTI-TENANT: Vendor autonomy based on product visibility
+    // - internal products: auto-publish (vendor has full control)
+    // - marketplace products: pending approval (admin quality control)
+    const productVisibility = productData.product_visibility || 'internal';
+    const productStatus = productVisibility === 'internal' ? 'published' : 'pending';
+
     const newProduct: any = {
       name: productData.name,
       slug: slug,
       description: productData.description || '',
       short_description: productData.short_description || '',
       type: productData.product_type || 'simple',
-      status: 'pending', // Requires admin approval (marketplace pattern)
+      status: productStatus,
+      product_visibility: productVisibility,
       vendor_id: vendorId,
       regular_price: productData.price ? parseFloat(productData.price) : null,
       cost_price: productData.cost_price ? parseFloat(productData.cost_price) : null,  // ← ADD COST TRACKING
