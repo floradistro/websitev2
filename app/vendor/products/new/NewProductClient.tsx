@@ -92,6 +92,7 @@ export default function NewProduct() {
   }>>([]);
   const [showBulkReview, setShowBulkReview] = useState(false);
   const [currentReviewIndex, setCurrentReviewIndex] = useState(0);
+  const [pricingBlueprints, setPricingBlueprints] = useState<any[]>([]);
 
   // AI Autofill state
   const [aiSuggestions, setAiSuggestions] = useState<any>(null);
@@ -121,6 +122,29 @@ export default function NewProduct() {
     };
     loadCategories();
   }, []);
+
+  // Load pricing blueprints for vendor
+  useEffect(() => {
+    const loadPricingBlueprints = async () => {
+      if (!vendor?.id) return;
+
+      try {
+        const response = await axios.get(`/api/vendor/pricing-config?vendor_id=${vendor.id}`);
+        if (response.data.success) {
+          // Extract blueprints from vendor configs
+          const blueprints = (response.data.configs || [])
+            .map((config: any) => config.blueprint)
+            .filter(Boolean);
+
+          setPricingBlueprints(blueprints);
+          console.log('📊 Loaded pricing blueprints:', blueprints.length);
+        }
+      } catch (error) {
+        console.error('Failed to load pricing blueprints:', error);
+      }
+    };
+    loadPricingBlueprints();
+  }, [vendor?.id]);
 
   // Load dynamic fields when category changes
   useEffect(() => {
@@ -1550,7 +1574,37 @@ export default function NewProduct() {
 
                         {/* Tiered Pricing */}
                         {bulkProducts[currentReviewIndex].pricing_mode === 'tiered' && (
-                          <div className="space-y-2">
+                          <div className="space-y-3">
+                            {/* Pricing Templates */}
+                            {pricingBlueprints.length > 0 && (
+                              <div>
+                                <label className="block text-white/40 text-[9px] uppercase tracking-[0.15em] mb-2">Quick Apply Template</label>
+                                <div className="flex flex-wrap gap-2">
+                                  {pricingBlueprints.map((blueprint: any) => (
+                                    <button
+                                      key={blueprint.id}
+                                      type="button"
+                                      onClick={() => {
+                                        const updated = [...bulkProducts];
+                                        // Convert price_breaks to pricing_tiers format
+                                        updated[currentReviewIndex].pricing_tiers = (blueprint.price_breaks || []).map((pb: any) => ({
+                                          weight: pb.weight || pb.quantity || '',
+                                          qty: 1,
+                                          price: pb.price || ''
+                                        }));
+                                        setBulkProducts(updated);
+                                      }}
+                                      className="px-3 py-1.5 bg-white/5 border border-white/10 text-white rounded-xl text-[9px] uppercase tracking-[0.15em] hover:bg-white/10 hover:border-white/20 transition-all"
+                                    >
+                                      {blueprint.name}
+                                    </button>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Tier Inputs */}
+                            <div className="space-y-2">
                             {bulkProducts[currentReviewIndex].pricing_tiers.map((tier, idx) => (
                               <div key={idx} className="flex items-center gap-2">
                                 <input
@@ -1604,6 +1658,7 @@ export default function NewProduct() {
                             >
                               + Add Tier
                             </button>
+                            </div>
                           </div>
                         )}
                       </div>
