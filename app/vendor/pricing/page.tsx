@@ -405,15 +405,16 @@ export default function VendorPricingPage() {
               blueprint.applicable_to_categories?.includes(categoryId)
             );
 
-            // Group by context
+            // Group by context - SHOW ALL CONTEXTS even if empty
             const contexts = ['retail', 'wholesale', 'distributor'];
             const contextData = contexts.map(contextKey => ({
               key: contextKey,
               configs: categoryConfigs.filter(c => c.blueprint?.context === contextKey),
               blueprints: categoryBlueprints.filter(b => b.context === contextKey)
-            })).filter(ctx => ctx.configs.length > 0 || ctx.blueprints.length > 0);
+            }));
+            // Don't filter - show all contexts
 
-            const hasAnyContent = contextData.length > 0;
+            const hasAnyContent = categoryConfigs.length > 0 || categoryBlueprints.length > 0;
 
             return (
               <div key={categoryId} className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
@@ -651,7 +652,7 @@ export default function VendorPricingPage() {
                                 })}
 
                                 {/* Available Blueprints for this Context */}
-                                {contextBlueprints.length > 0 && (
+                                {contextBlueprints.length > 0 ? (
                                   <div className="space-y-3 pt-4 border-t border-white/5">
                                     <h5 className="text-white/40 text-[9px] uppercase tracking-[0.15em]">
                                       Available to Enable
@@ -681,7 +682,16 @@ export default function VendorPricingPage() {
                                       ))}
                                     </div>
                                   </div>
-                                )}
+                                ) : contextConfigs.length === 0 ? (
+                                  <div className="text-center py-6 border border-dashed border-white/10 rounded-xl">
+                                    <div className="text-white/40 text-[10px] uppercase tracking-[0.15em] mb-2">
+                                      No pricing structures available
+                                    </div>
+                                    <p className="text-white/30 text-[9px]">
+                                      Contact support to add custom pricing tiers
+                                    </p>
+                                  </div>
+                                ) : null}
                               </div>
                             )}
                           </div>
