@@ -7,6 +7,7 @@ const SYSTEM_PROMPT = `Extract cannabis product data from web sources. Return ON
 RULES:
 - Be fast and accurate
 - Use null for missing data
+- IMPORTANT: Always extract lineage/genetics if mentioned (e.g., "Parent1 x Parent2")
 - Extract key cannabinoids and terpenes
 - Extract aroma/flavor descriptors (single words like "Candy", "Cake", "Glue", "Gas", "Sherb", "Pine", "Citrus")
 
@@ -41,7 +42,7 @@ export async function POST(request: NextRequest) {
 
     // Quick web search
     const searchResults = await exa.searchAndContents(
-      `${productName} ${category || 'cannabis'} strain THC terpenes`,
+      `${productName} ${category || 'cannabis'} strain genetics lineage terpenes effects`,
       {
         type: 'auto',
         useAutoprompt: true,
@@ -66,13 +67,13 @@ export async function POST(request: NextRequest) {
     // Fast Claude extraction
     const response = await anthropic.messages.create({
       model: 'claude-sonnet-4-20250514',
-      max_tokens: 800,
+      max_tokens: 1000,
       temperature: 0, // Deterministic for speed
       system: SYSTEM_PROMPT,
       messages: [
         {
           role: 'user',
-          content: `Extract data for "${productName}". Be concise.\n\nSOURCES:\n${context.substring(0, 3000)}\n\nReturn ONLY JSON.`
+          content: `Extract data for "${productName}". Pay special attention to genetics/lineage.\n\nSOURCES:\n${context.substring(0, 4500)}\n\nReturn ONLY JSON.`
         }
       ]
     });
