@@ -114,7 +114,11 @@ export default function NewProduct() {
         });
 
         if (response.data.success) {
-          const fields = response.data.merged || [];
+          const fields = (response.data.merged || []).map((field: any) => ({
+            ...field,
+            label: field.label || field.name, // Map name to label if label doesn't exist
+            name: field.slug || field.name // Use slug as the field name/key
+          }));
           console.log('Loaded dynamic fields:', fields);
           setDynamicFields(fields);
         }
@@ -1392,7 +1396,7 @@ export default function NewProduct() {
         </div>
 
         {/* Category-Specific Fields */}
-        {dynamicFields.length > 0 && (
+        {categoryId && (
           <div className="bg-gradient-to-br from-white/[0.08] to-white/[0.02] backdrop-blur-xl border border-white/10 rounded-3xl p-6 lg:p-8">
             <h2 className="text-xl font-black text-white mb-6 tracking-tight flex items-center gap-3" style={{ fontWeight: 900 }}>
               <div className="w-8 h-8 bg-white/10 rounded-2xl flex items-center justify-center">
@@ -1400,6 +1404,14 @@ export default function NewProduct() {
               </div>
               Product Details
             </h2>
+
+            {dynamicFields.length === 0 && !loadingFields && (
+              <div className="text-center py-8">
+                <p className="text-white/40 text-sm">
+                  No additional fields configured for this category.
+                </p>
+              </div>
+            )}
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               {dynamicFields
