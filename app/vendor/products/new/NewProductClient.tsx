@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Upload, X, Plus, FileText, CheckCircle, AlertCircle, Loader } from 'lucide-react';
+import { ArrowLeft, Upload, X, Plus, FileText, CheckCircle, AlertCircle, Loader, Package, DollarSign } from 'lucide-react';
 import Link from 'next/link';
 import axios from 'axios';
 import { showNotification } from '@/components/NotificationToast';
