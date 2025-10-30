@@ -375,7 +375,12 @@ function TVDisplayContent() {
           image_url: product.featured_image || product.image_url, // Map featured_image to image_url
           metadata: product.blueprint_fields ? product.blueprint_fields.reduce((acc: any, field: any) => {
             // Map blueprint_fields to metadata format
-            const key = field.label.toLowerCase().replace(/\s+/g, '_');
+            let key = field.label.toLowerCase().replace(/\s+/g, '_');
+
+            // Normalize specific fields for consistency
+            if (key === 'thc_content') key = 'thc_percentage';
+            if (key === 'cbd_content') key = 'cbd_percentage';
+
             acc[key] = field.value;
             return acc;
           }, {}) : {}
@@ -492,14 +497,18 @@ function TVDisplayContent() {
         console.log(`💰 ${productsWithGroupPricing.length}/${filteredProducts.length} products using display group pricing tier:`, displayGroup.name);
       }
 
-      console.log('📊 Sample product pricing:', filteredProducts[0] ? {
+      console.log('📊 Sample product data:', filteredProducts[0] ? {
         name: filteredProducts[0].name,
+        has_image: !!filteredProducts[0].image_url,
+        image_url: filteredProducts[0].image_url,
+        has_metadata: !!filteredProducts[0].metadata,
+        metadata: filteredProducts[0].metadata,
         has_assignment: !!filteredProducts[0].pricing_assignments,
         has_blueprint: !!filteredProducts[0].pricing_blueprint,
         blueprint_name: filteredProducts[0].pricing_blueprint?.name,
         has_tiers: !!filteredProducts[0].pricing_tiers,
-        has_promotion: !!filteredProducts[0].promotion_data,
-        tiers: filteredProducts[0].pricing_tiers
+        tiers: filteredProducts[0].pricing_tiers,
+        has_promotion: !!filteredProducts[0].promotion_data
       } : 'No products');
 
       // Extract unique categories (from ALL products, not just filtered)
