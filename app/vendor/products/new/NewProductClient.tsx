@@ -1,12 +1,35 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Upload, X, Plus, FileText, CheckCircle, AlertCircle, Loader, Package, DollarSign } from 'lucide-react';
 import Link from 'next/link';
 import axios from 'axios';
 import { showNotification } from '@/components/NotificationToast';
 import { useAppAuth } from '@/context/AppAuthContext';
+
+interface Category {
+  id: string;
+  name: string;
+  slug: string;
+}
+
+interface DynamicField {
+  name: string;
+  type: string;
+  label: string;
+  placeholder?: string;
+  description?: string;
+  required?: boolean;
+  options?: string[];
+  min?: number;
+  max?: number;
+  suffix?: string;
+  source?: string;
+  groupName?: string;
+  isRequired?: boolean;
+  readonly?: boolean;
+}
 
 export default function NewProduct() {
   const router = useRouter();
@@ -21,7 +44,7 @@ export default function NewProduct() {
   const [uploadedImageUrls, setUploadedImageUrls] = useState<string[]>([]);
   const [coaFile, setCoAFile] = useState<File | null>(null);
   const [uploadedCoaUrl, setUploadedCoaUrl] = useState<string | null>(null);
-  
+
   const [productType, setProductType] = useState<'simple' | 'variable'>('simple');
   const [attributes, setAttributes] = useState<{name: string, values: string[]}[]>([]);
   const [newAttributeName, setNewAttributeName] = useState('');
@@ -33,7 +56,7 @@ export default function NewProduct() {
     sku: string;
     stock: string;
   }[]>([]);
-  
+
   // Pricing Tiers state
   const [pricingMode, setPricingMode] = useState<'single' | 'tiered'>('single');
   const [pricingTiers, setPricingTiers] = useState<{
@@ -44,21 +67,64 @@ export default function NewProduct() {
   const [newTierWeight, setNewTierWeight] = useState('');
   const [newTierQty, setNewTierQty] = useState('');
   const [newTierPrice, setNewTierPrice] = useState('');
-  
+
+  // Category and dynamic fields state
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [categoryId, setCategoryId] = useState('');
+  const [dynamicFields, setDynamicFields] = useState<DynamicField[]>([]);
+  const [customFieldValues, setCustomFieldValues] = useState<Record<string, any>>({});
+  const [loadingFields, setLoadingFields] = useState(false);
+
   const [formData, setFormData] = useState({
     name: '',
     description: '',
     category: '',
     price: '',
-    cost_price: '',  // ← ADD COST TRACKING
-    thc_percentage: '',
-    cbd_percentage: '',
-    strain_type: '',
-    lineage: '',
-    terpenes: '',
-    effects: '',
+    cost_price: '',
     initial_quantity: '',
   });
+
+  // Load categories on mount
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const response = await axios.get('/api/supabase/categories');
+        if (response.data.success) {
+          setCategories(response.data.categories || []);
+        }
+      } catch (error) {
+        console.error('Failed to load categories:', error);
+      }
+    };
+    loadCategories();
+  }, []);
+
+  // Load dynamic fields when category changes
+  useEffect(() => {
+    const loadFields = async () => {
+      if (!categoryId || !vendor?.id) {
+        setDynamicFields([]);
+        return;
+      }
+
+      try {
+        setLoadingFields(true);
+        const response = await axios.get(`/api/vendor/product-fields?category_id=${categoryId}`, {
+          headers: { 'x-vendor-id': vendor.id }
+        });
+
+        if (response.data.success) {
+          setDynamicFields(response.data.merged || []);
+        }
+      } catch (error) {
+        console.error('Failed to load product fields:', error);
+      } finally {
+        setLoadingFields(false);
+      }
+    };
+
+    loadFields();
+  }, [categoryId, vendor?.id]);
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -345,16 +411,12 @@ export default function NewProduct() {
         name: formData.name,
         description: formData.description,
         category: formData.category,
-        cost_price: formData.cost_price || null,  // ← ADD COST TRACKING
-        thc_percentage: formData.thc_percentage,
-        cbd_percentage: formData.cbd_percentage,
-        strain_type: formData.strain_type,
-        lineage: formData.lineage,
-        terpenes: formData.terpenes,
-        effects: formData.effects,
+        cost_price: formData.cost_price || null,
         image_urls: uploadedImageUrls,
         coa_url: uploadedCoaUrl,
-        product_type: productType
+        product_type: productType,
+        // Add dynamic blueprint fields
+        custom_fields: customFieldValues
       };
 
       if (productType === 'simple') {
@@ -444,6 +506,152 @@ export default function NewProduct() {
       });
       setError(err.response?.data?.error || err.response?.data?.message || 'Failed to create product. Please try again.');
       setLoading(false);
+    }
+  };
+
+  // Render dynamic field based on type
+  const renderDynamicField = (field: DynamicField, index: number) => {
+    const fieldValue = customFieldValues[field.name] || '';
+    const handleChange = (value: any) => {
+      setCustomFieldValues({ ...customFieldValues, [field.name]: value });
+    };
+
+    switch (field.type) {
+      case 'text':
+      case 'url':
+        return (
+          <div key={index}>
+            <label className="block text-white/90 text-sm font-medium mb-3">
+              {field.label} {field.required && <span className="text-red-400">*</span>}
+            </label>
+            <input
+              type={field.type}
+              required={field.required}
+              value={fieldValue}
+              onChange={(e) => handleChange(e.target.value)}
+              placeholder={field.placeholder}
+              className="w-full bg-black/50 border border-white/10 rounded-2xl text-white placeholder-white/30 px-5 py-4 focus:outline-none focus:border-white/30 focus:bg-black/70 transition-all text-base hover:border-white/20"
+            />
+            {field.description && (
+              <p className="text-white/40 text-xs mt-2">{field.description}</p>
+            )}
+          </div>
+        );
+
+      case 'textarea':
+        return (
+          <div key={index} className="lg:col-span-2">
+            <label className="block text-white/90 text-sm font-medium mb-3">
+              {field.label} {field.required && <span className="text-red-400">*</span>}
+            </label>
+            <textarea
+              required={field.required}
+              value={fieldValue}
+              onChange={(e) => handleChange(e.target.value)}
+              placeholder={field.placeholder}
+              rows={4}
+              className="w-full bg-black/50 border border-white/10 rounded-2xl text-white placeholder-white/30 px-5 py-4 focus:outline-none focus:border-white/30 focus:bg-black/70 transition-all text-base hover:border-white/20 resize-none"
+            />
+            {field.description && (
+              <p className="text-white/40 text-xs mt-2">{field.description}</p>
+            )}
+          </div>
+        );
+
+      case 'number':
+        return (
+          <div key={index}>
+            <label className="block text-white/90 text-sm font-medium mb-3">
+              {field.label} {field.required && <span className="text-red-400">*</span>}
+            </label>
+            <div className="relative">
+              <input
+                type="number"
+                required={field.required}
+                value={fieldValue}
+                onChange={(e) => handleChange(e.target.value)}
+                placeholder={field.placeholder}
+                min={field.min}
+                max={field.max}
+                step="0.1"
+                className="w-full bg-black/50 border border-white/10 rounded-2xl text-white placeholder-white/30 px-5 py-4 focus:outline-none focus:border-white/30 focus:bg-black/70 transition-all text-base hover:border-white/20"
+              />
+              {field.suffix && (
+                <span className="absolute right-5 top-1/2 -translate-y-1/2 text-white/50 font-medium">
+                  {field.suffix}
+                </span>
+              )}
+            </div>
+            {field.description && (
+              <p className="text-white/40 text-xs mt-2">{field.description}</p>
+            )}
+          </div>
+        );
+
+      case 'select':
+        return (
+          <div key={index}>
+            <label className="block text-white/90 text-sm font-medium mb-3">
+              {field.label} {field.required && <span className="text-red-400">*</span>}
+            </label>
+            <select
+              required={field.required}
+              value={fieldValue}
+              onChange={(e) => handleChange(e.target.value)}
+              className="w-full bg-black/50 border border-white/10 rounded-2xl text-white px-5 py-4 focus:outline-none focus:border-white/30 focus:bg-black/70 transition-all text-base hover:border-white/20 cursor-pointer"
+            >
+              <option value="">Select {field.label.toLowerCase()}</option>
+              {field.options?.map((option, idx) => (
+                <option key={idx} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
+            {field.description && (
+              <p className="text-white/40 text-xs mt-2">{field.description}</p>
+            )}
+          </div>
+        );
+
+      case 'checkbox':
+        return (
+          <div key={index} className="lg:col-span-2">
+            <label className="flex items-center gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={fieldValue === true || fieldValue === 'true'}
+                onChange={(e) => handleChange(e.target.checked)}
+                className="w-5 h-5 rounded border-white/20 bg-black/50"
+              />
+              <div>
+                <span className="text-white/90 font-medium">{field.label}</span>
+                {field.description && (
+                  <p className="text-white/40 text-xs mt-1">{field.description}</p>
+                )}
+              </div>
+            </label>
+          </div>
+        );
+
+      default:
+        return (
+          <div key={index}>
+            <label className="block text-white/90 text-sm font-medium mb-3">
+              {field.label} {field.required && <span className="text-red-400">*</span>}
+            </label>
+            <input
+              type="text"
+              required={field.required}
+              value={fieldValue}
+              onChange={(e) => handleChange(e.target.value)}
+              placeholder={field.placeholder}
+              className="w-full bg-black/50 border border-white/10 rounded-2xl text-white placeholder-white/30 px-5 py-4 focus:outline-none focus:border-white/30 focus:bg-black/70 transition-all text-base hover:border-white/20"
+            />
+            {field.description && (
+              <p className="text-white/40 text-xs mt-2">{field.description}</p>
+            )}
+          </div>
+        );
     }
   };
 
@@ -563,16 +771,27 @@ export default function NewProduct() {
               </label>
               <select
                 required
-                value={formData.category}
-                onChange={(e) => setFormData({...formData, category: e.target.value})}
+                value={categoryId}
+                onChange={(e) => {
+                  const selectedCategory = categories.find(c => c.id === e.target.value);
+                  setCategoryId(e.target.value);
+                  setFormData({...formData, category: selectedCategory?.name || ''});
+                }}
                 className="w-full bg-black/50 border border-white/10 rounded-2xl text-white px-5 py-4 focus:outline-none focus:border-white/30 focus:bg-black/70 transition-all text-base hover:border-white/20 cursor-pointer"
               >
                 <option value="">Select category</option>
-                <option value="Flower">Flower</option>
-                <option value="Concentrate">Concentrate</option>
-                <option value="Edibles">Edibles</option>
-                <option value="Vape">Vape</option>
+                {categories.map((cat) => (
+                  <option key={cat.id} value={cat.id}>
+                    {cat.name}
+                  </option>
+                ))}
               </select>
+              {loadingFields && (
+                <p className="text-white/40 text-xs mt-2 flex items-center gap-2">
+                  <Loader size={12} className="animate-spin" />
+                  Loading category fields...
+                </p>
+              )}
             </div>
 
             {/* Product Type */}
@@ -1170,129 +1389,38 @@ export default function NewProduct() {
           </div>
         </div>
 
-        {/* Strain Details */}
-        <div className="bg-gradient-to-br from-white/[0.08] to-white/[0.02] backdrop-blur-xl border border-white/10 rounded-3xl p-6 lg:p-8">
-          <h2 className="text-xl font-black text-white mb-6 tracking-tight flex items-center gap-3" style={{ fontWeight: 900 }}>
-            <div className="w-8 h-8 bg-white/10 rounded-2xl flex items-center justify-center">
-              <Package size={16} className="text-white/80" />
-            </div>
-            Strain Details
-          </h2>
-          
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {/* THC % */}
-            <div>
-              <label className="block text-white/90 text-sm font-medium mb-3">
-                THC Percentage
-              </label>
-              <div className="relative">
-                <input
-                  type="number"
-                  step="0.1"
-                  value={formData.thc_percentage}
-                  onChange={(e) => setFormData({...formData, thc_percentage: e.target.value})}
-                  placeholder="24.5"
-                  className="w-full bg-black/50 border border-white/10 rounded-2xl text-white placeholder-white/30 px-5 py-4 focus:outline-none focus:border-white/30 focus:bg-black/70 transition-all text-base hover:border-white/20"
-                />
-                <span className="absolute right-5 top-1/2 -translate-y-1/2 text-white/50 font-medium">%</span>
+        {/* Category-Specific Fields */}
+        {dynamicFields.length > 0 && (
+          <div className="bg-gradient-to-br from-white/[0.08] to-white/[0.02] backdrop-blur-xl border border-white/10 rounded-3xl p-6 lg:p-8">
+            <h2 className="text-xl font-black text-white mb-6 tracking-tight flex items-center gap-3" style={{ fontWeight: 900 }}>
+              <div className="w-8 h-8 bg-white/10 rounded-2xl flex items-center justify-center">
+                <Package size={16} className="text-white/80" />
               </div>
-            </div>
+              Product Details
+            </h2>
 
-            {/* CBD % */}
-            <div>
-              <label className="block text-white/90 text-sm font-medium mb-3">
-                CBD Percentage
-              </label>
-              <div className="relative">
-                <input
-                  type="number"
-                  step="0.1"
-                  value={formData.cbd_percentage}
-                  onChange={(e) => setFormData({...formData, cbd_percentage: e.target.value})}
-                  placeholder="0.5"
-                  className="w-full bg-black/50 border border-white/10 rounded-2xl text-white placeholder-white/30 px-5 py-4 focus:outline-none focus:border-white/30 focus:bg-black/70 transition-all text-base hover:border-white/20"
-                />
-                <span className="absolute right-5 top-1/2 -translate-y-1/2 text-white/50 font-medium">%</span>
-              </div>
-            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {dynamicFields.map((field, index) => renderDynamicField(field, index))}
 
-            {/* Strain Type */}
-            <div>
-              <label className="block text-white/90 text-sm font-medium mb-3">
-                Strain Type
-              </label>
-              <select
-                value={formData.strain_type}
-                onChange={(e) => setFormData({...formData, strain_type: e.target.value})}
-                className="w-full bg-black/50 border border-white/10 rounded-2xl text-white px-5 py-4 focus:outline-none focus:border-white/30 focus:bg-black/70 transition-all text-base hover:border-white/20 cursor-pointer"
-              >
-                <option value="">Select type</option>
-                <option value="indica">Indica</option>
-                <option value="sativa">Sativa</option>
-                <option value="hybrid">Hybrid</option>
-              </select>
-            </div>
-
-            {/* Initial Quantity - Only for Simple Products */}
-            {productType === 'simple' && (
-              <div>
-                <label className="block text-white/90 text-sm font-medium mb-3">
-                  Initial Quantity (grams)
-                </label>
-                <input
-                  type="number"
-                  step="0.1"
-                  value={formData.initial_quantity}
-                  onChange={(e) => setFormData({...formData, initial_quantity: e.target.value})}
-                  placeholder="100"
-                  className="w-full bg-black/50 border border-white/10 rounded-2xl text-white placeholder-white/30 px-5 py-4 focus:outline-none focus:border-white/30 focus:bg-black/70 transition-all text-base hover:border-white/20"
-                />
-              </div>
-            )}
-
-            {/* Lineage */}
-            <div className="lg:col-span-2">
-              <label className="block text-white/90 text-sm font-medium mb-3">
-                Lineage / Genetics
-              </label>
-              <input
-                type="text"
-                value={formData.lineage}
-                onChange={(e) => setFormData({...formData, lineage: e.target.value})}
-                placeholder="e.g., Blueberry × Haze"
-                className="w-full bg-black/50 border border-white/10 rounded-2xl text-white placeholder-white/30 px-5 py-4 focus:outline-none focus:border-white/30 focus:bg-black/70 transition-all text-base hover:border-white/20"
-              />
-            </div>
-
-            {/* Terpenes */}
-            <div className="lg:col-span-2">
-              <label className="block text-white/90 text-sm font-medium mb-3">
-                Dominant Terpenes
-              </label>
-              <input
-                type="text"
-                value={formData.terpenes}
-                onChange={(e) => setFormData({...formData, terpenes: e.target.value})}
-                placeholder="e.g., Myrcene, Pinene, Caryophyllene"
-                className="w-full bg-black/50 border border-white/10 rounded-2xl text-white placeholder-white/30 px-5 py-4 focus:outline-none focus:border-white/30 focus:bg-black/70 transition-all text-base hover:border-white/20"
-              />
-            </div>
-
-            {/* Effects */}
-            <div className="lg:col-span-2">
-              <label className="block text-white/90 text-sm font-medium mb-3">
-                Effects
-              </label>
-              <input
-                type="text"
-                value={formData.effects}
-                onChange={(e) => setFormData({...formData, effects: e.target.value})}
-                placeholder="e.g., Relaxed, Creative, Euphoric"
-                className="w-full bg-black/50 border border-white/10 rounded-2xl text-white placeholder-white/30 px-5 py-4 focus:outline-none focus:border-white/30 focus:bg-black/70 transition-all text-base hover:border-white/20"
-              />
+              {/* Initial Quantity - Always show for Simple Products */}
+              {productType === 'simple' && (
+                <div>
+                  <label className="block text-white/90 text-sm font-medium mb-3">
+                    Initial Quantity (grams)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    value={formData.initial_quantity}
+                    onChange={(e) => setFormData({...formData, initial_quantity: e.target.value})}
+                    placeholder="100"
+                    className="w-full bg-black/50 border border-white/10 rounded-2xl text-white placeholder-white/30 px-5 py-4 focus:outline-none focus:border-white/30 focus:bg-black/70 transition-all text-base hover:border-white/20"
+                  />
+                </div>
+              )}
             </div>
           </div>
-        </div>
+        )}
 
         {/* Submit - Fixed at bottom */}
         <div className="sticky bottom-0 z-10 bg-black/80 backdrop-blur-xl border-t border-white/10 -mx-6 lg:-mx-12 px-6 lg:px-12 py-6">
