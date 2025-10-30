@@ -725,7 +725,7 @@ export default function NewProduct() {
   };
 
   // Handle image uploads
-  const handleImageUpload = async (files: FileList | File[]) => {
+  const handleBulkImageUpload = async (files: FileList | File[]) => {
     if (!bulkProducts.length) {
       showNotification({
         type: 'warning',
@@ -1330,7 +1330,7 @@ export default function NewProduct() {
                     e.preventDefault();
                     e.currentTarget.classList.remove('border-white/30', 'bg-white/5');
                     if (e.dataTransfer.files.length > 0) {
-                      handleImageUpload(e.dataTransfer.files);
+                      handleBulkImageUpload(e.dataTransfer.files);
                     }
                   }}
                   className="border-2 border-dashed border-white/10 rounded-xl p-6 text-center transition-all"
@@ -1342,7 +1342,7 @@ export default function NewProduct() {
                     accept="image/*"
                     onChange={(e) => {
                       if (e.target.files && e.target.files.length > 0) {
-                        handleImageUpload(e.target.files);
+                        handleBulkImageUpload(e.target.files);
                       }
                     }}
                     className="hidden"
