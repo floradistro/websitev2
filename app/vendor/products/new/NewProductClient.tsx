@@ -114,7 +114,9 @@ export default function NewProduct() {
         });
 
         if (response.data.success) {
-          setDynamicFields(response.data.merged || []);
+          const fields = response.data.merged || [];
+          console.log('Loaded dynamic fields:', fields);
+          setDynamicFields(fields);
         }
       } catch (error) {
         console.error('Failed to load product fields:', error);
@@ -600,7 +602,7 @@ export default function NewProduct() {
               onChange={(e) => handleChange(e.target.value)}
               className="w-full bg-black/50 border border-white/10 rounded-2xl text-white px-5 py-4 focus:outline-none focus:border-white/30 focus:bg-black/70 transition-all text-base hover:border-white/20 cursor-pointer"
             >
-              <option value="">Select {field.label.toLowerCase()}</option>
+              <option value="">Select {field.label?.toLowerCase() || 'option'}</option>
               {field.options?.map((option, idx) => (
                 <option key={idx} value={option}>
                   {option}
@@ -1400,7 +1402,9 @@ export default function NewProduct() {
             </h2>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              {dynamicFields.map((field, index) => renderDynamicField(field, index))}
+              {dynamicFields
+                .filter(field => field && field.name && field.type && field.label)
+                .map((field, index) => renderDynamicField(field, index))}
 
               {/* Initial Quantity - Always show for Simple Products */}
               {productType === 'simple' && (
