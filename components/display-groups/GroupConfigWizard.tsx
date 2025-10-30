@@ -57,6 +57,7 @@ export default function GroupConfigWizard({ vendorId, existingGroup, onComplete,
   const [step, setStep] = useState(1);
   const [availableDevices, setAvailableDevices] = useState<Device[]>([]);
   const [availableCategories, setAvailableCategories] = useState<string[]>([]);
+  const [availablePricingTiers, setAvailablePricingTiers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Form state
@@ -70,6 +71,7 @@ export default function GroupConfigWizard({ vendorId, existingGroup, onComplete,
   const [deviceCategories, setDeviceCategories] = useState<{ [deviceId: string]: string[] }>({});
 
   // Pricing configuration
+  const [pricingTierId, setPricingTierId] = useState<string>('');
   const [heroPriceTier, setHeroPriceTier] = useState('3_5g');
   const [priceDisplayMode, setPriceDisplayMode] = useState('hero_with_supporting');
   const [priceLocation, setPriceLocation] = useState('on_card');
@@ -89,6 +91,7 @@ export default function GroupConfigWizard({ vendorId, existingGroup, onComplete,
       setGridRows(existingGroup.shared_grid_rows || 3);
 
       // Pricing configuration
+      setPricingTierId(existingGroup.pricing_tier_id || '');
       setHeroPriceTier(existingGroup.shared_hero_price_tier || '3_5g');
       setPriceDisplayMode(existingGroup.shared_price_display_mode || 'hero_with_supporting');
       setPriceLocation('on_card'); // Default for now
@@ -121,6 +124,27 @@ export default function GroupConfigWizard({ vendorId, existingGroup, onComplete,
       const categoriesData = await categoriesResponse.json();
       if (categoriesData.success) {
         setAvailableCategories(categoriesData.categories);
+      }
+
+      // Load available pricing tier blueprints
+      const pricingResponse = await fetch(`/api/vendor/pricing-config?vendor_id=${vendorId}`);
+      const pricingData = await pricingResponse.json();
+      if (pricingData.success && pricingData.configs) {
+        const activeTiers = pricingData.configs
+          .filter((config: any) => config.is_active && config.blueprint)
+          .map((config: any) => ({
+            id: config.blueprint.id,
+            name: config.blueprint.name,
+            description: config.blueprint.description,
+            context: config.blueprint.context,
+            price_breaks: config.blueprint.price_breaks
+          }));
+        setAvailablePricingTiers(activeTiers);
+
+        // Auto-select first tier if none selected
+        if (activeTiers.length > 0 && !pricingTierId) {
+          setPricingTierId(activeTiers[0].id);
+        }
       }
     } catch (error) {
       console.error('Error loading data:', error);
@@ -159,6 +183,7 @@ export default function GroupConfigWizard({ vendorId, existingGroup, onComplete,
       displayMode,
       gridColumns,
       gridRows,
+      pricingTierId,
       heroPriceTier,
       priceDisplayMode,
       devices,
@@ -428,6 +453,51 @@ export default function GroupConfigWizard({ vendorId, existingGroup, onComplete,
                     Pricing Display
                   </h3>
 
+                  {/* Pricing Tier Blueprint Selector */}
+                  <div className="mb-6">
+                    <label className="block text-sm font-medium text-white mb-3">
+                      Which pricing tier to use *
+                    </label>
+                    {availablePricingTiers.length > 0 ? (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {availablePricingTiers.map((tier) => (
+                          <button
+                            key={tier.id}
+                            onClick={() => setPricingTierId(tier.id)}
+                            className={`p-4 rounded-lg border-2 transition-all text-left ${
+                              pricingTierId === tier.id
+                                ? 'border-purple-500 bg-purple-500/20'
+                                : 'border-white/10 bg-white/5 hover:border-white/20'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between mb-1">
+                              <span className="font-semibold text-white">{tier.name}</span>
+                              {pricingTierId === tier.id && (
+                                <div className="w-5 h-5 rounded-full bg-purple-500 flex items-center justify-center">
+                                  <Check className="w-3 h-3 text-white" />
+                                </div>
+                              )}
+                            </div>
+                            {tier.description && (
+                              <div className="text-xs text-white/60 mb-2">{tier.description}</div>
+                            )}
+                            <div className="text-xs text-white/40">
+                              {tier.context === 'display' && '📺 Display Pricing'}
+                              {tier.context === 'pos' && '💰 POS Pricing'}
+                              {tier.context === 'storefront' && '🛍️ Storefront Pricing'}
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
+                        <p className="text-sm text-yellow-200">
+                          No pricing tiers configured yet. Please set up pricing tiers in your vendor settings first.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
                   {/* Hero Price Tier Selector */}
                   <div className="mb-6">
                     <label className="block text-sm font-medium text-white mb-3">
@@ -493,12 +563,19 @@ export default function GroupConfigWizard({ vendorId, existingGroup, onComplete,
                   <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
                     <div className="text-sm text-white/80">
                       <div className="font-medium mb-1">Pricing Preview</div>
-                      <div className="text-white/60">
-                        Products will show <span className="font-semibold text-white">{PRICE_TIERS.find(t => t.id === heroPriceTier)?.name}</span> pricing
-                        {priceDisplayMode === 'hero_only' && ' only'}
-                        {priceDisplayMode === 'hero_with_supporting' && ' with 1-2 supporting tiers'}
-                        {priceDisplayMode === 'all_tiers' && ' with all available tiers'}
-                        {priceDisplayMode === 'minimal' && ', showing only the smallest tier'}
+                      <div className="text-white/60 space-y-1">
+                        {pricingTierId && (
+                          <div>
+                            Using <span className="font-semibold text-white">{availablePricingTiers.find(t => t.id === pricingTierId)?.name}</span> pricing tier
+                          </div>
+                        )}
+                        <div>
+                          Highlighting <span className="font-semibold text-white">{PRICE_TIERS.find(t => t.id === heroPriceTier)?.name}</span> pricing
+                          {priceDisplayMode === 'hero_only' && ' only'}
+                          {priceDisplayMode === 'hero_with_supporting' && ' with 1-2 supporting tiers'}
+                          {priceDisplayMode === 'all_tiers' && ' with all available tiers'}
+                          {priceDisplayMode === 'minimal' && ', showing only the smallest tier'}
+                        </div>
                       </div>
                     </div>
                   </div>

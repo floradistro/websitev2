@@ -402,7 +402,7 @@ function TVDisplayContent() {
             const finalPrices = { ...vendorPrices, ...(assignment.price_overrides || {}) };
 
             productWithPricing = {
-              ...product,
+              ...productWithPricing,  // Keep the mapped fields (image_url, metadata)
               pricing_blueprint: blueprint,
               pricing_tiers: finalPrices
             };
@@ -448,6 +448,19 @@ function TVDisplayContent() {
           return productCategories.some((cat: string) => selectedCategories.includes(cat));
         });
         console.log(`🎯 Filtered to ${filteredProducts.length} products from ${enrichedProducts.length} (${filterSource} categories: ${selectedCategories.join(', ')})`);
+      }
+
+      // Filter by display group's pricing tier (if configured)
+      if (displayGroup?.pricing_tier_id) {
+        const beforeCount = filteredProducts.length;
+        filteredProducts = filteredProducts.filter((p: any) => {
+          // Only show products assigned to this display group's pricing tier
+          const matchesTier = p.pricing_blueprint?.id === displayGroup.pricing_tier_id;
+          // And has actual pricing data (not empty)
+          const hasPricing = p.pricing_tiers && Object.keys(p.pricing_tiers).length > 0;
+          return matchesTier && hasPricing;
+        });
+        console.log(`💰 Filtered to ${filteredProducts.length} products from ${beforeCount} using pricing tier: ${displayGroup.name}`);
       }
 
       setProducts(filteredProducts);
@@ -863,7 +876,11 @@ function TVDisplayContent() {
                           sativa: { bg: 'rgba(34, 197, 94, 0.15)', text: '#4ade80', border: 'rgba(34, 197, 94, 0.3)' },
                           hybrid: { bg: 'rgba(234, 179, 8, 0.15)', text: '#fbbf24', border: 'rgba(234, 179, 8, 0.3)' }
                         };
-                        const colors = strainColors[product.metadata.strain_type as keyof typeof strainColors];
+                        const strainType = product.metadata.strain_type.toLowerCase();
+                        const colors = strainColors[strainType as keyof typeof strainColors];
+
+                        // Only render if we have valid colors
+                        if (!colors) return null;
 
                         return (
                           <div

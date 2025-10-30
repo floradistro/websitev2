@@ -58,6 +58,7 @@ export async function PUT(
       gridRows,
       typography,
       spacing,
+      pricingTierId,
       heroPriceTier,
       priceDisplayMode,
       devices, // Array of { deviceId, position, categories }
@@ -77,6 +78,7 @@ export async function PUT(
         shared_grid_rows: gridRows,
         shared_typography: typography,
         shared_spacing: spacing,
+        pricing_tier_id: pricingTierId || null,
         shared_hero_price_tier: heroPriceTier,
         shared_price_display_mode: priceDisplayMode,
         updated_at: new Date().toISOString(),
