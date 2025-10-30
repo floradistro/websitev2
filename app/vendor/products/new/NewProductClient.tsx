@@ -82,7 +82,14 @@ export default function NewProduct() {
   const [bulkProcessing, setBulkProcessing] = useState(false);
   const [bulkEnrichedData, setBulkEnrichedData] = useState<Record<string, any>>({}); // Store AI data by product name
   const [bulkAIProgress, setBulkAIProgress] = useState({ current: 0, total: 0 });
-  const [bulkProducts, setBulkProducts] = useState<Array<{name: string, price: string, cost_price: string}>>([]);
+  const [bulkProducts, setBulkProducts] = useState<Array<{
+    name: string,
+    price: string,
+    cost_price: string,
+    pricing_mode: 'single' | 'tiered',
+    pricing_tiers: Array<{weight: string, qty: number, price: string}>,
+    custom_fields: Record<string, any>
+  }>>([]);
   const [showBulkReview, setShowBulkReview] = useState(false);
   const [currentReviewIndex, setCurrentReviewIndex] = useState(0);
 
@@ -669,37 +676,32 @@ export default function NewProduct() {
         let failCount = 0;
 
         for (const product of bulkProducts) {
-          const { name, price, cost_price } = product;
+          const { name, price, cost_price, pricing_mode, pricing_tiers, custom_fields } = product;
 
           try {
-            // Check if we have AI enriched data for this product
+            // Get description from enriched data if available
             const enrichedData = bulkEnrichedData[name] || {};
-            const hasEnrichedData = Object.keys(enrichedData).length > 0;
+            const description = enrichedData.description || `Bulk imported product: ${name}`;
 
-            // Build custom fields from AI data using expected field slugs
-            const customFields: Record<string, any> = {};
-            if (hasEnrichedData) {
-              if (enrichedData.strain_type) customFields['strain_type'] = enrichedData.strain_type;
-              if (enrichedData.lineage) customFields['lineage'] = enrichedData.lineage;
-              if (enrichedData.nose && Array.isArray(enrichedData.nose)) {
-                customFields['nose'] = enrichedData.nose.join(', ');
-              }
-              if (enrichedData.effects) customFields['effects'] = enrichedData.effects;
-              if (enrichedData.terpenes) customFields['terpene_profile'] = enrichedData.terpenes;
-            }
-
-            const productData = {
+            const productData: any = {
               name,
               category: bulkCategory,
-              price: price ? parseFloat(price) : null,
-              cost_price: cost_price ? parseFloat(cost_price) : null,
-              description: hasEnrichedData && enrichedData.description ? enrichedData.description : `Bulk imported product: ${name}`,
               product_type: 'simple',
-              pricing_mode: 'single',
+              pricing_mode,
               image_urls: [],
-              custom_fields: customFields
+              custom_fields,
+              description
             };
 
+            // Add pricing based on mode
+            if (pricing_mode === 'single') {
+              productData.price = price ? parseFloat(price) : null;
+              productData.cost_price = cost_price ? parseFloat(cost_price) : null;
+            } else if (pricing_mode === 'tiered') {
+              productData.pricing_tiers = pricing_tiers;
+            }
+
+            const hasEnrichedData = Object.keys(custom_fields).length > 0;
             console.log(`📦 Submitting ${name}${hasEnrichedData ? ' with AI data' : ''}:`, productData);
 
             const response = await axios.post('/api/vendor/products', productData, {
@@ -1215,11 +1217,14 @@ export default function NewProduct() {
                         // New format: Name, Price (optional), Cost (optional)
                         const [name, price, cost] = parts;
 
-                        // Add to parsed products
+                        // Add to parsed products with default values
                         parsedProducts.push({
                           name,
                           price: price || '',
-                          cost_price: cost || price || ''
+                          cost_price: cost || price || '',
+                          pricing_mode: 'single',
+                          pricing_tiers: [],
+                          custom_fields: {}
                         });
 
                         setBulkAIProgress({ current: i + 1, total: lines.length });
@@ -1248,6 +1253,20 @@ export default function NewProduct() {
                           }
                         } catch (err) {
                           console.error(`❌ Failed to enrich ${name}:`, err);
+                        }
+                      }
+
+                      // Populate custom_fields from AI data
+                      for (const product of parsedProducts) {
+                        const aiData = enrichedData[product.name];
+                        if (aiData) {
+                          product.custom_fields = {
+                            strain_type: aiData.strain_type || '',
+                            lineage: aiData.lineage || '',
+                            nose: Array.isArray(aiData.nose) ? aiData.nose.join(', ') : '',
+                            effects: aiData.effects || [],
+                            terpene_profile: aiData.terpenes || []
+                          };
                         }
                       }
 
@@ -1342,71 +1361,211 @@ export default function NewProduct() {
                   {bulkProducts[currentReviewIndex] && (
                     <div className="space-y-4">
                       {/* Product Name */}
-                      <div>
-                        <div className="text-white text-xs font-black uppercase tracking-tight mb-2" style={{ fontWeight: 900 }}>
-                          {bulkProducts[currentReviewIndex].name}
-                        </div>
-                        {bulkEnrichedData[bulkProducts[currentReviewIndex].name] && (
-                          <div className="bg-[#0a0a0a] border border-white/5 rounded-xl p-3 space-y-2">
-                            <div className="text-white/40 text-[9px] uppercase tracking-[0.15em] mb-2 font-black" style={{ fontWeight: 900 }}>
-                              AI Data
-                            </div>
-                            {bulkEnrichedData[bulkProducts[currentReviewIndex].name].strain_type && (
-                              <div className="flex items-center gap-2">
-                                <span className="text-white/40 text-[9px] uppercase w-16">Type</span>
-                                <span className="text-white text-[10px] font-black uppercase" style={{ fontWeight: 900 }}>
-                                  {bulkEnrichedData[bulkProducts[currentReviewIndex].name].strain_type}
-                                </span>
-                              </div>
-                            )}
-                            {bulkEnrichedData[bulkProducts[currentReviewIndex].name].lineage && (
-                              <div className="flex items-center gap-2">
-                                <span className="text-white/40 text-[9px] uppercase w-16">Lineage</span>
-                                <span className="text-white text-[10px] font-black uppercase" style={{ fontWeight: 900 }}>
-                                  {bulkEnrichedData[bulkProducts[currentReviewIndex].name].lineage}
-                                </span>
-                              </div>
-                            )}
-                          </div>
-                        )}
+                      <div className="text-white text-sm font-black uppercase tracking-tight mb-4" style={{ fontWeight: 900 }}>
+                        {bulkProducts[currentReviewIndex].name}
                       </div>
 
-                      {/* Pricing Inputs */}
-                      <div className="grid grid-cols-2 gap-3">
+                      {/* Editable Custom Fields */}
+                      <div className="bg-[#0a0a0a] border border-white/5 rounded-xl p-3 space-y-3">
+                        <div className="text-white/40 text-[9px] uppercase tracking-[0.15em] mb-2 font-black" style={{ fontWeight: 900 }}>
+                          Product Fields
+                        </div>
+
+                        {/* Strain Type */}
                         <div>
-                          <label className="block text-white/40 text-[9px] uppercase tracking-[0.15em] mb-2 font-black" style={{ fontWeight: 900 }}>
-                            Selling Price
-                          </label>
-                          <input
-                            type="number"
-                            step="0.01"
-                            value={bulkProducts[currentReviewIndex].price}
+                          <label className="block text-white/40 text-[9px] uppercase tracking-[0.15em] mb-1.5">Strain Type</label>
+                          <select
+                            value={bulkProducts[currentReviewIndex].custom_fields.strain_type || ''}
                             onChange={(e) => {
                               const updated = [...bulkProducts];
-                              updated[currentReviewIndex].price = e.target.value;
+                              updated[currentReviewIndex].custom_fields.strain_type = e.target.value;
                               setBulkProducts(updated);
                             }}
-                            placeholder="45.00"
-                            className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl text-white px-3 py-2.5 focus:outline-none focus:border-white/20 transition-all text-xs"
-                          />
+                            className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl text-white px-3 py-2 text-[10px]"
+                          >
+                            <option value="">Select...</option>
+                            <option value="Sativa">Sativa</option>
+                            <option value="Indica">Indica</option>
+                            <option value="Hybrid">Hybrid</option>
+                          </select>
                         </div>
+
+                        {/* Lineage */}
                         <div>
-                          <label className="block text-white/40 text-[9px] uppercase tracking-[0.15em] mb-2 font-black" style={{ fontWeight: 900 }}>
-                            Cost Price
-                          </label>
+                          <label className="block text-white/40 text-[9px] uppercase tracking-[0.15em] mb-1.5">Lineage</label>
                           <input
-                            type="number"
-                            step="0.01"
-                            value={bulkProducts[currentReviewIndex].cost_price}
+                            type="text"
+                            value={bulkProducts[currentReviewIndex].custom_fields.lineage || ''}
                             onChange={(e) => {
                               const updated = [...bulkProducts];
-                              updated[currentReviewIndex].cost_price = e.target.value;
+                              updated[currentReviewIndex].custom_fields.lineage = e.target.value;
                               setBulkProducts(updated);
                             }}
-                            placeholder="30.00"
-                            className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl text-white px-3 py-2.5 focus:outline-none focus:border-white/20 transition-all text-xs"
+                            placeholder="Parent1 x Parent2"
+                            className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl text-white px-3 py-2 text-[10px]"
                           />
                         </div>
+
+                        {/* Nose */}
+                        <div>
+                          <label className="block text-white/40 text-[9px] uppercase tracking-[0.15em] mb-1.5">Nose</label>
+                          <input
+                            type="text"
+                            value={bulkProducts[currentReviewIndex].custom_fields.nose || ''}
+                            onChange={(e) => {
+                              const updated = [...bulkProducts];
+                              updated[currentReviewIndex].custom_fields.nose = e.target.value;
+                              setBulkProducts(updated);
+                            }}
+                            placeholder="Candy, Cake, Glue"
+                            className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl text-white px-3 py-2 text-[10px]"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Pricing Mode */}
+                      <div className="bg-[#0a0a0a] border border-white/5 rounded-xl p-3 space-y-3">
+                        <div className="text-white/40 text-[9px] uppercase tracking-[0.15em] mb-2 font-black" style={{ fontWeight: 900 }}>
+                          Pricing
+                        </div>
+
+                        {/* Pricing Mode Selector */}
+                        <div className="flex gap-2">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const updated = [...bulkProducts];
+                              updated[currentReviewIndex].pricing_mode = 'single';
+                              setBulkProducts(updated);
+                            }}
+                            className={`flex-1 px-3 py-2 rounded-xl text-[9px] uppercase tracking-[0.15em] font-black transition-all ${
+                              bulkProducts[currentReviewIndex].pricing_mode === 'single'
+                                ? 'bg-white/10 border-2 border-white/20 text-white'
+                                : 'bg-white/5 border border-white/10 text-white/60'
+                            }`}
+                            style={{ fontWeight: 900 }}
+                          >
+                            Single
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const updated = [...bulkProducts];
+                              updated[currentReviewIndex].pricing_mode = 'tiered';
+                              // Initialize with basic tiers if empty
+                              if (updated[currentReviewIndex].pricing_tiers.length === 0) {
+                                updated[currentReviewIndex].pricing_tiers = [
+                                  { weight: '1g', qty: 1, price: '' },
+                                  { weight: '3.5g', qty: 1, price: '' }
+                                ];
+                              }
+                              setBulkProducts(updated);
+                            }}
+                            className={`flex-1 px-3 py-2 rounded-xl text-[9px] uppercase tracking-[0.15em] font-black transition-all ${
+                              bulkProducts[currentReviewIndex].pricing_mode === 'tiered'
+                                ? 'bg-white/10 border-2 border-white/20 text-white'
+                                : 'bg-white/5 border border-white/10 text-white/60'
+                            }`}
+                            style={{ fontWeight: 900 }}
+                          >
+                            Tiered
+                          </button>
+                        </div>
+
+                        {/* Single Pricing */}
+                        {bulkProducts[currentReviewIndex].pricing_mode === 'single' && (
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <label className="block text-white/40 text-[9px] uppercase tracking-[0.15em] mb-1.5">Selling Price</label>
+                              <input
+                                type="number"
+                                step="0.01"
+                                value={bulkProducts[currentReviewIndex].price}
+                                onChange={(e) => {
+                                  const updated = [...bulkProducts];
+                                  updated[currentReviewIndex].price = e.target.value;
+                                  setBulkProducts(updated);
+                                }}
+                                placeholder="45.00"
+                                className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl text-white px-3 py-2 text-[10px]"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-white/40 text-[9px] uppercase tracking-[0.15em] mb-1.5">Cost Price</label>
+                              <input
+                                type="number"
+                                step="0.01"
+                                value={bulkProducts[currentReviewIndex].cost_price}
+                                onChange={(e) => {
+                                  const updated = [...bulkProducts];
+                                  updated[currentReviewIndex].cost_price = e.target.value;
+                                  setBulkProducts(updated);
+                                }}
+                                placeholder="30.00"
+                                className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl text-white px-3 py-2 text-[10px]"
+                              />
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Tiered Pricing */}
+                        {bulkProducts[currentReviewIndex].pricing_mode === 'tiered' && (
+                          <div className="space-y-2">
+                            {bulkProducts[currentReviewIndex].pricing_tiers.map((tier, idx) => (
+                              <div key={idx} className="flex items-center gap-2">
+                                <input
+                                  type="text"
+                                  value={tier.weight}
+                                  onChange={(e) => {
+                                    const updated = [...bulkProducts];
+                                    updated[currentReviewIndex].pricing_tiers[idx].weight = e.target.value;
+                                    setBulkProducts(updated);
+                                  }}
+                                  placeholder="1g"
+                                  className="w-20 bg-[#0a0a0a] border border-white/10 rounded-xl text-white px-2 py-1.5 text-[10px]"
+                                />
+                                <input
+                                  type="number"
+                                  step="0.01"
+                                  value={tier.price}
+                                  onChange={(e) => {
+                                    const updated = [...bulkProducts];
+                                    updated[currentReviewIndex].pricing_tiers[idx].price = e.target.value;
+                                    setBulkProducts(updated);
+                                  }}
+                                  placeholder="Price"
+                                  className="flex-1 bg-[#0a0a0a] border border-white/10 rounded-xl text-white px-3 py-1.5 text-[10px]"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const updated = [...bulkProducts];
+                                    updated[currentReviewIndex].pricing_tiers.splice(idx, 1);
+                                    setBulkProducts(updated);
+                                  }}
+                                  className="text-white/40 hover:text-red-400 text-xs"
+                                >
+                                  ✕
+                                </button>
+                              </div>
+                            ))}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const updated = [...bulkProducts];
+                                updated[currentReviewIndex].pricing_tiers.push({
+                                  weight: '',
+                                  qty: 1,
+                                  price: ''
+                                });
+                                setBulkProducts(updated);
+                              }}
+                              className="w-full px-3 py-2 bg-white/5 border border-white/10 text-white rounded-xl text-[9px] uppercase tracking-[0.15em] hover:bg-white/10 hover:border-white/20 transition-all"
+                            >
+                              + Add Tier
+                            </button>
+                          </div>
+                        )}
                       </div>
 
                       {/* Navigation & Actions */}
