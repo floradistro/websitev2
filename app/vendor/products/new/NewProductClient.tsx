@@ -99,6 +99,7 @@ export default function NewProduct() {
   const [aiSuggestions, setAiSuggestions] = useState<any>(null);
   const [loadingAI, setLoadingAI] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [aiAbortController, setAiAbortController] = useState<AbortController | null>(null);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -455,6 +456,150 @@ export default function NewProduct() {
     }));
   };
 
+  // Cancel AI autofill
+  const cancelAIAutofill = () => {
+    if (aiAbortController) {
+      aiAbortController.abort();
+      setAiAbortController(null);
+      setLoadingAI(false);
+      setBulkAIProgress({ current: 0, total: 0 });
+      showNotification({
+        type: 'info',
+        title: 'AI Cancelled',
+        message: 'Autofill operation cancelled',
+      });
+    }
+  };
+
+  // Bulk AI enrichment
+  const handleBulkAIEnrich = async () => {
+    if (!bulkInput.trim()) {
+      showNotification({
+        type: 'warning',
+        title: 'No Data',
+        message: 'Enter product data first',
+      });
+      return;
+    }
+
+    if (!bulkCategory) {
+      showNotification({
+        type: 'warning',
+        title: 'Category Required',
+        message: 'Select a category for this bulk batch',
+      });
+      return;
+    }
+
+    const abortController = new AbortController();
+    setAiAbortController(abortController);
+    setLoadingAI(true);
+
+    const enrichedData: Record<string, any> = {};
+    const parsedProducts: Array<{name: string, price: string, cost_price: string, pricing_mode: 'single' | 'tiered', pricing_tiers: any[], custom_fields: Record<string, any>}> = [];
+
+    try {
+      const lines = bulkInput.split('\n').filter(line => line.trim());
+      setBulkAIProgress({ current: 0, total: lines.length });
+
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        const parts = line.split(',').map(p => p.trim());
+        if (parts.length < 1) continue;
+
+        // New format: Name, Price (optional), Cost (optional)
+        const [name, price, cost] = parts;
+
+        // Add to parsed products with default values
+        parsedProducts.push({
+          name,
+          price: price || '',
+          cost_price: cost || price || '',
+          pricing_mode: 'single',
+          pricing_tiers: [],
+          custom_fields: {}
+        });
+
+        setBulkAIProgress({ current: i + 1, total: lines.length });
+
+        try {
+          // Get AI suggestions using bulkCategory
+          const response = await axios.post('/api/ai/quick-autofill', {
+            productName: name,
+            category: bulkCategory
+          }, {
+            signal: abortController.signal
+          });
+
+          if (response.data.success && response.data.suggestions) {
+            const suggestions = response.data.suggestions;
+
+            // Store enriched data by product name
+            enrichedData[name] = {
+              strain_type: suggestions.strain_type,
+              lineage: suggestions.lineage,
+              nose: suggestions.nose,
+              effects: suggestions.effects,
+              terpenes: suggestions.terpenes,
+              description: suggestions.description
+            };
+
+            console.log(`✅ Enriched: ${name}`, enrichedData[name]);
+          }
+        } catch (err: any) {
+          if (axios.isCancel(err)) {
+            console.log('Bulk AI enrichment cancelled');
+            return;
+          }
+          console.error(`❌ Failed to enrich ${name}:`, err);
+        }
+      }
+
+      // Populate custom_fields from AI data
+      for (const product of parsedProducts) {
+        const aiData = enrichedData[product.name];
+        if (aiData) {
+          product.custom_fields = {
+            strain_type: aiData.strain_type || '',
+            lineage: aiData.lineage || '',
+            nose: Array.isArray(aiData.nose) ? aiData.nose.join(', ') : '',
+            effects: aiData.effects || [],
+            terpene_profile: aiData.terpenes || []
+          };
+        }
+      }
+
+      setBulkEnrichedData(enrichedData);
+      setBulkProducts(parsedProducts);
+      const enrichedCount = Object.keys(enrichedData).length;
+
+      // Show review interface
+      setShowBulkReview(true);
+      setCurrentReviewIndex(0);
+
+      showNotification({
+        type: 'success',
+        title: 'AI Enrichment Complete',
+        message: `Enriched ${enrichedCount}/${lines.length} products - Review pricing`,
+      });
+    } catch (error: any) {
+      if (axios.isCancel(error)) {
+        console.log('Bulk AI enrichment cancelled');
+        return;
+      }
+      console.error('Bulk AI error:', error);
+      showNotification({
+        type: 'error',
+        title: 'AI Processing Failed',
+        message: 'Could not process all products',
+      });
+    } finally {
+      setLoadingAI(false);
+      setBulkAIProgress({ current: 0, total: 0 });
+      setAiAbortController(null);
+    }
+  };
+
   // AI Autofill - Quick product data extraction
   const handleAIAutofill = async () => {
     if (!formData.name.trim()) {
@@ -484,11 +629,16 @@ export default function NewProduct() {
       return;
     }
 
+    const abortController = new AbortController();
+    setAiAbortController(abortController);
+
     try {
       setLoadingAI(true);
       const response = await axios.post('/api/ai/quick-autofill', {
         productName: formData.name,
         category: formData.category
+      }, {
+        signal: abortController.signal
       });
 
       if (response.data.success && response.data.suggestions) {
@@ -510,6 +660,10 @@ export default function NewProduct() {
         });
       }
     } catch (error: any) {
+      if (axios.isCancel(error)) {
+        console.log('AI autofill cancelled');
+        return;
+      }
       console.error('AI autofill error:', error);
       showNotification({
         type: 'error',
@@ -518,6 +672,7 @@ export default function NewProduct() {
       });
     } finally {
       setLoadingAI(false);
+      setAiAbortController(null);
     }
   };
 
@@ -1429,137 +1584,39 @@ export default function NewProduct() {
                     'Import Products'
                   )}
                 </button>
-                <button
-                  type="button"
-                  onClick={async () => {
-                    if (!bulkInput.trim()) {
-                      showNotification({
-                        type: 'warning',
-                        title: 'No Data',
-                        message: 'Enter product data first',
-                      });
-                      return;
-                    }
-
-                    if (!bulkCategory) {
-                      showNotification({
-                        type: 'warning',
-                        title: 'Category Required',
-                        message: 'Select a category for this bulk batch',
-                      });
-                      return;
-                    }
-
-                    setLoadingAI(true);
-                    const enrichedData: Record<string, any> = {};
-                    const parsedProducts: Array<{name: string, price: string, cost_price: string}> = [];
-
-                    try {
-                      const lines = bulkInput.split('\n').filter(line => line.trim());
-                      setBulkAIProgress({ current: 0, total: lines.length });
-
-                      for (let i = 0; i < lines.length; i++) {
-                        const line = lines[i];
-                        const parts = line.split(',').map(p => p.trim());
-                        if (parts.length < 1) continue;
-
-                        // New format: Name, Price (optional), Cost (optional)
-                        const [name, price, cost] = parts;
-
-                        // Add to parsed products with default values
-                        parsedProducts.push({
-                          name,
-                          price: price || '',
-                          cost_price: cost || price || '',
-                          pricing_mode: 'single',
-                          pricing_tiers: [],
-                          custom_fields: {}
-                        });
-
-                        setBulkAIProgress({ current: i + 1, total: lines.length });
-
-                        try {
-                          // Get AI suggestions using bulkCategory
-                          const response = await axios.post('/api/ai/quick-autofill', {
-                            productName: name,
-                            category: bulkCategory
-                          });
-
-                          if (response.data.success && response.data.suggestions) {
-                            const suggestions = response.data.suggestions;
-
-                            // Store enriched data by product name
-                            enrichedData[name] = {
-                              strain_type: suggestions.strain_type,
-                              lineage: suggestions.lineage,
-                              nose: suggestions.nose,
-                              effects: suggestions.effects,
-                              terpenes: suggestions.terpenes,
-                              description: suggestions.description
-                            };
-
-                            console.log(`✅ Enriched: ${name}`, enrichedData[name]);
-                          }
-                        } catch (err) {
-                          console.error(`❌ Failed to enrich ${name}:`, err);
-                        }
-                      }
-
-                      // Populate custom_fields from AI data
-                      for (const product of parsedProducts) {
-                        const aiData = enrichedData[product.name];
-                        if (aiData) {
-                          product.custom_fields = {
-                            strain_type: aiData.strain_type || '',
-                            lineage: aiData.lineage || '',
-                            nose: Array.isArray(aiData.nose) ? aiData.nose.join(', ') : '',
-                            effects: aiData.effects || [],
-                            terpene_profile: aiData.terpenes || []
-                          };
-                        }
-                      }
-
-                      setBulkEnrichedData(enrichedData);
-                      setBulkProducts(parsedProducts);
-                      const enrichedCount = Object.keys(enrichedData).length;
-
-                      // Show review interface
-                      setShowBulkReview(true);
-                      setCurrentReviewIndex(0);
-
-                      showNotification({
-                        type: 'success',
-                        title: 'AI Enrichment Complete',
-                        message: `Enriched ${enrichedCount}/${lines.length} products - Review pricing`,
-                      });
-                    } catch (error) {
-                      console.error('Bulk AI error:', error);
-                      showNotification({
-                        type: 'error',
-                        title: 'AI Processing Failed',
-                        message: 'Could not process all products',
-                      });
-                    } finally {
-                      setLoadingAI(false);
-                      setBulkAIProgress({ current: 0, total: 0 });
-                    }
-                  }}
-                  disabled={bulkProcessing || loadingAI}
-                  className="px-4 py-2.5 bg-white/10 text-white border border-white/20 rounded-xl hover:bg-white/20 hover:border-white/30 font-black transition-all text-[10px] uppercase tracking-[0.15em] disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-1.5"
-                  style={{ fontWeight: 900 }}
-                >
-                  {loadingAI ? (
-                    <>
+                {loadingAI ? (
+                  <>
+                    <button
+                      type="button"
+                      disabled
+                      className="px-4 py-2.5 bg-white/10 text-white border border-white/20 rounded-xl font-black text-[10px] uppercase tracking-[0.15em] flex items-center gap-1.5 opacity-60"
+                      style={{ fontWeight: 900 }}
+                    >
                       <Loader size={10} className="animate-spin" strokeWidth={3} />
                       {bulkAIProgress.total > 0 ? `${bulkAIProgress.current}/${bulkAIProgress.total}` : 'AI...'}
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles size={10} strokeWidth={3} />
-                      {Object.keys(bulkEnrichedData).length > 0 ? `AI Enriched (${Object.keys(bulkEnrichedData).length})` : 'AI Enrich'}
-                    </>
-                  )}
-                </button>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={cancelAIAutofill}
+                      className="px-4 py-2.5 bg-red-500/10 text-red-400 border border-red-500/20 rounded-xl hover:bg-red-500/20 hover:border-red-500/30 font-black transition-all text-[10px] uppercase tracking-[0.15em] flex items-center gap-1.5"
+                      style={{ fontWeight: 900 }}
+                    >
+                      <X size={10} strokeWidth={3} />
+                      Cancel
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleBulkAIEnrich}
+                    disabled={bulkProcessing}
+                    className="px-4 py-2.5 bg-white/10 text-white border border-white/20 rounded-xl hover:bg-white/20 hover:border-white/30 font-black transition-all text-[10px] uppercase tracking-[0.15em] disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-1.5"
+                    style={{ fontWeight: 900 }}
+                  >
+                    <Sparkles size={10} strokeWidth={3} />
+                    {Object.keys(bulkEnrichedData).length > 0 ? `AI Enriched (${Object.keys(bulkEnrichedData).length})` : 'AI Enrich'}
+                  </button>
+                )}
               </div>
 
               {/* AI Enrichment Status */}
@@ -2013,26 +2070,42 @@ export default function NewProduct() {
                 <label className="block text-white/40 text-[10px] uppercase tracking-[0.15em] font-black" style={{ fontWeight: 900 }}>
                   Product Name <span className="text-red-400">*</span>
                 </label>
-                <button
-                  type="button"
-                  onClick={handleAIAutofill}
-                  disabled={loadingAI || !formData.name.trim() || !categoryId || dynamicFields.length === 0}
-                  title={!categoryId ? "Select a category first" : !formData.name.trim() ? "Enter product name" : dynamicFields.length === 0 ? "Loading fields..." : ""}
-                  className="bg-white/10 text-white border border-white/20 rounded-xl px-2.5 py-1.5 text-[9px] uppercase tracking-[0.15em] hover:bg-white/20 hover:border-white/30 font-black transition-all flex items-center gap-1.5 disabled:opacity-30 disabled:cursor-not-allowed"
-                  style={{ fontWeight: 900 }}
-                >
+                <div className="flex items-center gap-2">
                   {loadingAI ? (
                     <>
-                      <Loader size={11} className="animate-spin" strokeWidth={2.5} />
-                      Loading...
+                      <button
+                        type="button"
+                        disabled
+                        className="bg-white/10 text-white border border-white/20 rounded-xl px-2.5 py-1.5 text-[9px] uppercase tracking-[0.15em] font-black flex items-center gap-1.5 opacity-60"
+                        style={{ fontWeight: 900 }}
+                      >
+                        <Loader size={11} className="animate-spin" strokeWidth={2.5} />
+                        Loading...
+                      </button>
+                      <button
+                        type="button"
+                        onClick={cancelAIAutofill}
+                        className="bg-red-500/10 text-red-400 border border-red-500/20 rounded-xl px-2.5 py-1.5 text-[9px] uppercase tracking-[0.15em] hover:bg-red-500/20 hover:border-red-500/30 font-black transition-all flex items-center gap-1.5"
+                        style={{ fontWeight: 900 }}
+                      >
+                        <X size={11} strokeWidth={2.5} />
+                        Cancel
+                      </button>
                     </>
                   ) : (
-                    <>
+                    <button
+                      type="button"
+                      onClick={handleAIAutofill}
+                      disabled={!formData.name.trim() || !categoryId || dynamicFields.length === 0}
+                      title={!categoryId ? "Select a category first" : !formData.name.trim() ? "Enter product name" : dynamicFields.length === 0 ? "Loading fields..." : ""}
+                      className="bg-white/10 text-white border border-white/20 rounded-xl px-2.5 py-1.5 text-[9px] uppercase tracking-[0.15em] hover:bg-white/20 hover:border-white/30 font-black transition-all flex items-center gap-1.5 disabled:opacity-30 disabled:cursor-not-allowed"
+                      style={{ fontWeight: 900 }}
+                    >
                       <Sparkles size={11} strokeWidth={2.5} />
                       AI Autofill
-                    </>
+                    </button>
                   )}
-                </button>
+                </div>
               </div>
               <input
                 type="text"
