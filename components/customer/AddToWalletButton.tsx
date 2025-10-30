@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { Wallet, Smartphone, AlertCircle, CheckCircle2, Loader2 } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Wallet, Smartphone, AlertCircle, CheckCircle2, Loader2, QrCode } from 'lucide-react';
 
 interface AddToWalletButtonProps {
   customerId: string;
@@ -13,6 +13,18 @@ export default function AddToWalletButton({ customerId, variant = 'full' }: AddT
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [walletLinks, setWalletLinks] = useState<{ apple?: string; google?: string } | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
+  const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Detect if user is on mobile device
+    const checkMobile = () => {
+      const userAgent = navigator.userAgent.toLowerCase();
+      const mobileKeywords = ['android', 'iphone', 'ipad', 'ipod', 'mobile'];
+      return mobileKeywords.some(keyword => userAgent.includes(keyword));
+    };
+    setIsMobile(checkMobile());
+  }, []);
 
   async function handleGetWalletPass() {
     setLoading(true);
@@ -25,7 +37,6 @@ export default function AddToWalletButton({ customerId, variant = 'full' }: AddT
 
       if (!data.success) {
         if (data.needsEnrollment) {
-          // Special handling for enrollment needed
           setError('Make your first purchase to join our loyalty program and get your digital wallet card!');
         } else {
           setError(data.error || 'Failed to get wallet pass');
@@ -37,8 +48,16 @@ export default function AddToWalletButton({ customerId, variant = 'full' }: AddT
       setWalletLinks(data.walletPass);
       setSuccess(true);
 
-      // Don't auto-redirect - user needs to open on mobile device
-      // Alpine IQ wallet URLs only work properly on mobile devices
+      // Generate QR code for desktop users
+      if (data.webWalletUrl) {
+        const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(data.webWalletUrl)}`;
+        setQrCodeUrl(qrUrl);
+      }
+
+      // If on mobile, auto-redirect to Alpine IQ wallet page
+      if (isMobile && data.webWalletUrl) {
+        window.location.href = data.webWalletUrl;
+      }
 
     } catch (err: any) {
       console.error('Failed to get wallet pass:', err);
@@ -93,18 +112,35 @@ export default function AddToWalletButton({ customerId, variant = 'full' }: AddT
         </div>
       )}
 
-      {success && walletLinks && (
-        <div className="mb-4 p-3 bg-blue-500/20 border border-blue-500/30 rounded-xl">
-          <div className="flex items-start gap-2 mb-2">
-            <Smartphone className="w-4 h-4 text-blue-400 mt-0.5" />
+      {success && walletLinks && isMobile && (
+        <div className="mb-4 p-4 bg-green-500/20 border border-green-500/30 rounded-xl">
+          <div className="flex items-center gap-3 mb-2">
+            <CheckCircle2 className="w-5 h-5 text-green-400" />
             <div>
-              <p className="text-[10px] uppercase tracking-[0.15em] text-blue-300 font-black mb-1">
-                Open on Your Phone
-              </p>
-              <p className="text-[10px] uppercase tracking-[0.15em] text-blue-300/80">
-                This link must be opened on your mobile device to add to Apple Wallet or Google Wallet
+              <p className="text-[10px] uppercase tracking-[0.15em] text-green-300 font-black">
+                Redirecting to Add Wallet Pass...
               </p>
             </div>
+          </div>
+          <p className="text-[9px] uppercase tracking-[0.15em] text-green-300/70 mt-2">
+            You'll see an "Add to {navigator.userAgent.toLowerCase().includes('iphone') ? 'Apple' : 'Google'} Wallet" button on the next page
+          </p>
+        </div>
+      )}
+
+      {success && walletLinks && !isMobile && qrCodeUrl && (
+        <div className="mb-4 p-4 bg-blue-500/20 border border-blue-500/30 rounded-xl">
+          <div className="flex flex-col items-center text-center">
+            <QrCode className="w-5 h-5 text-blue-400 mb-3" />
+            <p className="text-[10px] uppercase tracking-[0.15em] text-blue-300 font-black mb-2">
+              Scan with Your Phone
+            </p>
+            <div className="bg-white p-3 rounded-lg mb-3">
+              <img src={qrCodeUrl} alt="Wallet Pass QR Code" className="w-48 h-48" />
+            </div>
+            <p className="text-[9px] uppercase tracking-[0.15em] text-blue-300/80">
+              Open your phone camera and scan this code to add your loyalty card to Apple Wallet or Google Wallet
+            </p>
           </div>
         </div>
       )}
@@ -118,64 +154,48 @@ export default function AddToWalletButton({ customerId, variant = 'full' }: AddT
           {loading ? (
             <>
               <Loader2 className="w-5 h-5 animate-spin" />
-              Generating Wallet Pass...
+              Loading...
+            </>
+          ) : isMobile ? (
+            <>
+              <Wallet className="w-5 h-5" />
+              Add to Wallet
             </>
           ) : (
             <>
-              <Smartphone className="w-5 h-5" />
-              Get Wallet Pass
+              <QrCode className="w-5 h-5" />
+              Get QR Code
             </>
           )}
         </button>
-      ) : (
+      ) : !isMobile ? (
         <div className="space-y-3">
-          <button
-            onClick={() => {
-              if (walletLinks.apple) {
-                navigator.clipboard.writeText(walletLinks.apple);
-                alert('Wallet pass link copied! Open it on your phone to add to Apple Wallet or Google Wallet.');
-              }
-            }}
-            className="w-full bg-white/5 border border-white/10 px-6 py-4 rounded-xl hover:bg-white/10 transition-all flex items-center justify-center gap-3"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-            </svg>
-            <div className="text-left">
-              <div className="text-[10px] uppercase tracking-[0.15em] font-black text-white">Copy Link to Clipboard</div>
-              <div className="text-[8px] uppercase tracking-[0.15em] text-white/60">Then paste in your phone's browser</div>
-            </div>
-          </button>
-
-          <div className="grid grid-cols-2 gap-3">
-            <a
-              href={`sms:?&body=Add my loyalty card to your wallet: ${walletLinks.apple || ''}`}
-              className="bg-white/5 border border-white/10 px-4 py-3 rounded-xl hover:bg-white/10 transition-all flex flex-col items-center justify-center gap-2 text-center"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-              </svg>
-              <div className="text-[8px] uppercase tracking-[0.15em] font-black text-white">Text Me</div>
-            </a>
-
-            <a
-              href={`mailto:?subject=My Loyalty Wallet Pass&body=Add your loyalty card to wallet: ${walletLinks.apple || ''}`}
-              className="bg-white/5 border border-white/10 px-4 py-3 rounded-xl hover:bg-white/10 transition-all flex flex-col items-center justify-center gap-2 text-center"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-              </svg>
-              <div className="text-[8px] uppercase tracking-[0.15em] font-black text-white">Email Me</div>
-            </a>
-          </div>
-
-          <div className="p-3 bg-white/5 rounded-xl">
-            <p className="text-[9px] uppercase tracking-[0.15em] text-white/60 break-all">
-              {walletLinks.apple || ''}
+          <div className="text-center p-3 bg-white/5 rounded-xl">
+            <p className="text-[9px] uppercase tracking-[0.15em] text-white/60 mb-2">
+              Or send to your phone:
             </p>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={() => {
+                  if (walletLinks.apple) {
+                    navigator.clipboard.writeText(walletLinks.apple);
+                    alert('Link copied! Paste it in your phone browser.');
+                  }
+                }}
+                className="bg-white/5 border border-white/10 px-3 py-2 rounded-lg hover:bg-white/10 transition-all text-[8px] uppercase tracking-[0.15em] font-black"
+              >
+                Copy Link
+              </button>
+              <a
+                href={`sms:?&body=${encodeURIComponent(walletLinks.apple || '')}`}
+                className="bg-white/5 border border-white/10 px-3 py-2 rounded-lg hover:bg-white/10 transition-all text-[8px] uppercase tracking-[0.15em] font-black flex items-center justify-center"
+              >
+                Text Me
+              </a>
+            </div>
           </div>
         </div>
-      )}
+      ) : null}
 
       <div className="mt-4 p-3 bg-blue-500/10 border border-blue-500/20 rounded-xl">
         <p className="text-[10px] uppercase tracking-[0.15em] text-blue-300">
