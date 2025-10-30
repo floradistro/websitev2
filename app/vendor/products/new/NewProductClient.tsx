@@ -1251,25 +1251,27 @@ export default function NewProduct() {
                   </div>
 
                   <div className="grid grid-cols-2 gap-2 text-[10px]">
-                    {aiSuggestions.strain_type && (
+                    {/* Only show suggestions for fields that actually exist */}
+                    {aiSuggestions.strain_type && dynamicFields.some(f => ['strain', 'type', 'strain_type'].some(k => (f.name || '').toLowerCase().includes(k) || (f.label || '').toLowerCase().includes(k))) && (
                       <div>
                         <span className="text-white/40 uppercase tracking-[0.15em]">Type:</span>
                         <span className="text-white ml-1 font-black">{aiSuggestions.strain_type}</span>
                       </div>
                     )}
-                    {aiSuggestions.thc_percentage && (
+                    {aiSuggestions.thc_percentage && dynamicFields.some(f => ['thc', 'thca'].some(k => (f.name || '').toLowerCase().includes(k) || (f.label || '').toLowerCase().includes(k))) && (
                       <div>
                         <span className="text-white/40 uppercase tracking-[0.15em]">THC:</span>
                         <span className="text-green-400 ml-1 font-black">{aiSuggestions.thc_percentage}%</span>
                       </div>
                     )}
-                    {aiSuggestions.cbd_percentage && (
+                    {/* Only show CBD if a CBD field exists */}
+                    {aiSuggestions.cbd_percentage && dynamicFields.some(f => ['cbd'].some(k => (f.name || '').toLowerCase().includes(k) || (f.label || '').toLowerCase().includes(k))) && (
                       <div>
                         <span className="text-white/40 uppercase tracking-[0.15em]">CBD:</span>
                         <span className="text-blue-400 ml-1 font-black">{aiSuggestions.cbd_percentage}%</span>
                       </div>
                     )}
-                    {aiSuggestions.lineage && (
+                    {aiSuggestions.lineage && dynamicFields.some(f => ['lineage', 'genetics', 'parent'].some(k => (f.name || '').toLowerCase().includes(k) || (f.label || '').toLowerCase().includes(k))) && (
                       <div className="col-span-2">
                         <span className="text-white/40 uppercase tracking-[0.15em]">Lineage:</span>
                         <span className="text-white ml-1 font-black">{aiSuggestions.lineage}</span>
@@ -1277,7 +1279,8 @@ export default function NewProduct() {
                     )}
                   </div>
 
-                  {aiSuggestions.effects && aiSuggestions.effects.length > 0 && (
+                  {/* Only show effects if effects field exists */}
+                  {aiSuggestions.effects && aiSuggestions.effects.length > 0 && dynamicFields.some(f => ['effect'].some(k => (f.name || '').toLowerCase().includes(k) || (f.label || '').toLowerCase().includes(k))) && (
                     <div className="flex flex-wrap gap-1">
                       {aiSuggestions.effects.map((effect: string, idx: number) => (
                         <span key={idx} className="bg-white/10 border border-white/20 rounded px-2 py-0.5 text-[9px] text-white uppercase tracking-wider">
@@ -1286,6 +1289,19 @@ export default function NewProduct() {
                       ))}
                     </div>
                   )}
+
+                  {/* Show hidden suggestions count */}
+                  {(() => {
+                    let hiddenCount = 0;
+                    if (aiSuggestions.cbd_percentage && !dynamicFields.some(f => ['cbd'].some(k => (f.name || '').toLowerCase().includes(k) || (f.label || '').toLowerCase().includes(k)))) hiddenCount++;
+                    if (aiSuggestions.terpenes && aiSuggestions.terpenes.length > 0 && !dynamicFields.some(f => ['terpene', 'terp'].some(k => (f.name || '').toLowerCase().includes(k) || (f.label || '').toLowerCase().includes(k)))) hiddenCount++;
+
+                    return hiddenCount > 0 ? (
+                      <div className="text-white/40 text-[9px] italic">
+                        {hiddenCount} suggestion(s) hidden (no matching field)
+                      </div>
+                    ) : null;
+                  })()}
 
                   <button
                     type="button"
