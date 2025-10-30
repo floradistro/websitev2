@@ -457,6 +457,9 @@ export default function NewProduct() {
       });
 
       if (response.data.success && response.data.suggestions) {
+        console.log('🤖 AI SUGGESTIONS RECEIVED:', response.data.suggestions);
+        console.log('📊 Lineage:', response.data.suggestions.lineage);
+        console.log('👃 Nose:', response.data.suggestions.nose);
         setAiSuggestions(response.data.suggestions);
         setShowSuggestions(true);
         showNotification({
@@ -1235,7 +1238,7 @@ export default function NewProduct() {
                   onClick={handleAIAutofill}
                   disabled={loadingAI || !formData.name.trim() || !categoryId || dynamicFields.length === 0}
                   title={!categoryId ? "Select a category first" : !formData.name.trim() ? "Enter product name" : dynamicFields.length === 0 ? "Loading fields..." : ""}
-                  className="bg-gradient-to-r from-purple-500/20 to-blue-500/20 text-purple-300 border border-purple-500/30 rounded-xl px-2.5 py-1.5 text-[9px] uppercase tracking-[0.15em] hover:from-purple-500/30 hover:to-blue-500/30 hover:border-purple-400/40 font-black transition-all flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="bg-white/10 text-white border border-white/20 rounded-xl px-2.5 py-1.5 text-[9px] uppercase tracking-[0.15em] hover:bg-white/20 hover:border-white/30 font-black transition-all flex items-center gap-1.5 disabled:opacity-30 disabled:cursor-not-allowed"
                   style={{ fontWeight: 900 }}
                 >
                   {loadingAI ? (
@@ -1260,43 +1263,43 @@ export default function NewProduct() {
                 className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl text-white placeholder-white/20 px-3 py-2.5 focus:outline-none focus:border-white/20 transition-all text-xs"
               />
 
-              {/* AI Suggestions Panel - SIMPLIFIED */}
+              {/* AI Suggestions Panel - POS THEME */}
               {showSuggestions && aiSuggestions && (
-                <div className="mt-3 bg-gradient-to-br from-purple-500/10 to-blue-500/10 border border-purple-500/20 rounded-xl p-3 space-y-3">
+                <div className="mt-3 bg-[#141414] border border-white/10 rounded-2xl p-3 space-y-3">
                   <div className="flex items-center justify-between">
-                    <div className="text-purple-300 text-[10px] uppercase tracking-[0.15em] font-black flex items-center gap-1.5" style={{ fontWeight: 900 }}>
-                      <Sparkles size={11} strokeWidth={2.5} />
-                      {formData.name} - AI Data
+                    <div className="text-white text-[9px] uppercase tracking-[0.15em] font-black flex items-center gap-1.5" style={{ fontWeight: 900 }}>
+                      <Sparkles size={10} strokeWidth={2.5} />
+                      AI Data
                     </div>
                     <button
                       type="button"
                       onClick={() => setShowSuggestions(false)}
-                      className="text-white/40 hover:text-white/60 transition-colors"
+                      className="text-white/40 hover:text-white transition-colors"
                     >
-                      <X size={12} />
+                      <X size={10} />
                     </button>
                   </div>
 
-                  {/* Show ALL data */}
-                  <div className="space-y-2">
+                  {/* Show ALL data - POS THEME */}
+                  <div className="space-y-2.5">
                     {aiSuggestions.strain_type && (
-                      <div className="text-[10px]">
-                        <span className="text-white/40 uppercase tracking-[0.15em]">Type:</span>
-                        <span className="text-white ml-1 font-black">{aiSuggestions.strain_type}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-white/40 text-[9px] uppercase tracking-[0.15em] w-16">Type</span>
+                        <span className="text-white text-[10px] font-black uppercase tracking-tight" style={{ fontWeight: 900 }}>{aiSuggestions.strain_type}</span>
                       </div>
                     )}
                     {aiSuggestions.lineage && (
-                      <div className="text-[10px]">
-                        <span className="text-white/40 uppercase tracking-[0.15em]">Lineage:</span>
-                        <span className="text-white ml-1 font-black">{aiSuggestions.lineage}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-white/40 text-[9px] uppercase tracking-[0.15em] w-16">Lineage</span>
+                        <span className="text-white text-[10px] font-black uppercase tracking-tight" style={{ fontWeight: 900 }}>{aiSuggestions.lineage}</span>
                       </div>
                     )}
                     {aiSuggestions.nose && aiSuggestions.nose.length > 0 && (
-                      <div className="text-[10px]">
-                        <span className="text-white/40 uppercase tracking-[0.15em]">Nose:</span>
-                        <div className="mt-1 flex flex-wrap gap-1">
+                      <div>
+                        <div className="text-white/40 text-[9px] uppercase tracking-[0.15em] mb-1">Nose</div>
+                        <div className="flex flex-wrap gap-1">
                           {aiSuggestions.nose.map((aroma: string, idx: number) => (
-                            <span key={idx} className="bg-yellow-500/20 border border-yellow-500/30 rounded px-2 py-0.5 text-[9px] text-yellow-300 uppercase tracking-wider">
+                            <span key={idx} className="bg-white/5 border border-white/10 rounded px-2 py-0.5 text-[9px] text-white uppercase tracking-wider font-black" style={{ fontWeight: 900 }}>
                               {aroma}
                             </span>
                           ))}
@@ -1304,11 +1307,11 @@ export default function NewProduct() {
                       </div>
                     )}
                     {aiSuggestions.effects && aiSuggestions.effects.length > 0 && (
-                      <div className="text-[10px]">
-                        <span className="text-white/40 uppercase tracking-[0.15em]">Effects:</span>
-                        <div className="mt-1 flex flex-wrap gap-1">
+                      <div>
+                        <div className="text-white/40 text-[9px] uppercase tracking-[0.15em] mb-1">Effects</div>
+                        <div className="flex flex-wrap gap-1">
                           {aiSuggestions.effects.map((effect: string, idx: number) => (
-                            <span key={idx} className="bg-green-500/20 border border-green-500/30 rounded px-2 py-0.5 text-[9px] text-green-300 uppercase tracking-wider">
+                            <span key={idx} className="bg-white/5 border border-white/10 rounded px-2 py-0.5 text-[9px] text-white/70 uppercase tracking-wider">
                               {effect}
                             </span>
                           ))}
@@ -1316,11 +1319,11 @@ export default function NewProduct() {
                       </div>
                     )}
                     {aiSuggestions.terpenes && aiSuggestions.terpenes.length > 0 && (
-                      <div className="text-[10px]">
-                        <span className="text-white/40 uppercase tracking-[0.15em]">Terpenes:</span>
-                        <div className="mt-1 flex flex-wrap gap-1">
+                      <div>
+                        <div className="text-white/40 text-[9px] uppercase tracking-[0.15em] mb-1">Terpenes</div>
+                        <div className="flex flex-wrap gap-1">
                           {aiSuggestions.terpenes.map((terpene: string, idx: number) => (
-                            <span key={idx} className="bg-purple-500/20 border border-purple-500/30 rounded px-2 py-0.5 text-[9px] text-purple-300 uppercase tracking-wider">
+                            <span key={idx} className="bg-white/5 border border-white/10 rounded px-2 py-0.5 text-[9px] text-white/70 uppercase tracking-wider">
                               {terpene}
                             </span>
                           ))}
@@ -1328,9 +1331,9 @@ export default function NewProduct() {
                       </div>
                     )}
                     {aiSuggestions.description && (
-                      <div className="text-[10px]">
-                        <span className="text-white/40 uppercase tracking-[0.15em]">Description:</span>
-                        <p className="text-white/70 mt-1 text-[10px] leading-relaxed">{aiSuggestions.description}</p>
+                      <div>
+                        <div className="text-white/40 text-[9px] uppercase tracking-[0.15em] mb-1">Description</div>
+                        <p className="text-white/60 text-[10px] leading-relaxed">{aiSuggestions.description}</p>
                       </div>
                     )}
                   </div>
@@ -1338,7 +1341,7 @@ export default function NewProduct() {
                   <button
                     type="button"
                     onClick={applyAISuggestions}
-                    className="w-full bg-gradient-to-r from-purple-500 to-blue-500 text-white border border-purple-400/30 rounded-xl px-3 py-2.5 text-[10px] uppercase tracking-[0.15em] hover:from-purple-600 hover:to-blue-600 font-black transition-all flex items-center justify-center gap-1.5"
+                    className="w-full bg-white/10 border-2 border-white/20 text-white rounded-2xl px-3 py-3 text-[10px] uppercase tracking-[0.15em] hover:bg-white/20 hover:border-white/30 font-black transition-all flex items-center justify-center gap-1.5"
                     style={{ fontWeight: 900 }}
                   >
                     <CheckCircle size={11} strokeWidth={2.5} />
