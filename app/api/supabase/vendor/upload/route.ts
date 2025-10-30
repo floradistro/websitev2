@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
     
     const formData = await request.formData();
     const file = formData.get('file') as File;
-    const uploadType = formData.get('type') as string; // 'logo', 'banner', 'product', 'coa'
+    const uploadType = formData.get('type') as string; // 'logo', 'banner', 'product', 'coa', 'category-icon'
     const productId = formData.get('product_id') as string;
     
     if (!file) {
@@ -36,6 +36,10 @@ export async function POST(request: NextRequest) {
       case 'banner':
         bucket = 'vendor-logos';
         folder = `${vendorId}/banners`;
+        break;
+      case 'category-icon':
+        bucket = 'vendor-product-images';
+        folder = `${vendorId}/category-icons`;
         break;
       case 'product':
         bucket = 'vendor-product-images';
