@@ -1421,6 +1421,46 @@ export default function NewProduct() {
                             className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl text-white px-3 py-2 text-[10px]"
                           />
                         </div>
+
+                        {/* Effects */}
+                        <div>
+                          <label className="block text-white/40 text-[9px] uppercase tracking-[0.15em] mb-1.5">Effects</label>
+                          <input
+                            type="text"
+                            value={Array.isArray(bulkProducts[currentReviewIndex].custom_fields.effects)
+                              ? bulkProducts[currentReviewIndex].custom_fields.effects.join(', ')
+                              : bulkProducts[currentReviewIndex].custom_fields.effects || ''}
+                            onChange={(e) => {
+                              const updated = [...bulkProducts];
+                              // Store as array
+                              updated[currentReviewIndex].custom_fields.effects = e.target.value.split(',').map(s => s.trim()).filter(Boolean);
+                              setBulkProducts(updated);
+                            }}
+                            placeholder="Relaxing, Euphoric, Creative"
+                            className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl text-white px-3 py-2 text-[10px]"
+                          />
+                          <p className="text-white/30 text-[8px] mt-1">Separate with commas</p>
+                        </div>
+
+                        {/* Terpenes */}
+                        <div>
+                          <label className="block text-white/40 text-[9px] uppercase tracking-[0.15em] mb-1.5">Terpenes</label>
+                          <input
+                            type="text"
+                            value={Array.isArray(bulkProducts[currentReviewIndex].custom_fields.terpene_profile)
+                              ? bulkProducts[currentReviewIndex].custom_fields.terpene_profile.join(', ')
+                              : bulkProducts[currentReviewIndex].custom_fields.terpene_profile || ''}
+                            onChange={(e) => {
+                              const updated = [...bulkProducts];
+                              // Store as array
+                              updated[currentReviewIndex].custom_fields.terpene_profile = e.target.value.split(',').map(s => s.trim()).filter(Boolean);
+                              setBulkProducts(updated);
+                            }}
+                            placeholder="Myrcene, Limonene, Caryophyllene"
+                            className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl text-white px-3 py-2 text-[10px]"
+                          />
+                          <p className="text-white/30 text-[8px] mt-1">Separate with commas</p>
+                        </div>
                       </div>
 
                       {/* Pricing Mode */}
