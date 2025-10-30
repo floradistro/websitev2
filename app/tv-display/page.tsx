@@ -362,6 +362,11 @@ function TVDisplayContent() {
         (vendorConfigs || []).map((config: any) => [config.blueprint_id, config.pricing_values])
       );
 
+      console.log(`💵 Loaded ${configMap.size} vendor pricing configs`);
+      if (configMap.size > 0) {
+        console.log(`💵 Config blueprint IDs:`, Array.from(configMap.keys()));
+      }
+
       // Enrich products with actual prices and promotions
       const enrichedProducts = (productData || []).map((product: any) => {
         // Map database fields to expected fields
@@ -453,12 +458,25 @@ function TVDisplayContent() {
       // Filter by display group's pricing tier (if configured)
       if (displayGroup?.pricing_tier_id) {
         const beforeCount = filteredProducts.length;
+        console.log(`🔍 Filtering products by pricing tier. Before: ${beforeCount} products`);
+        console.log(`🔍 Display group pricing_tier_id:`, displayGroup.pricing_tier_id);
+
+        // Debug: check first few products
+        filteredProducts.slice(0, 3).forEach((p: any) => {
+          console.log(`🔍 Product "${p.name}":`, {
+            has_pricing_blueprint: !!p.pricing_blueprint,
+            blueprint_id: p.pricing_blueprint?.id,
+            blueprint_name: p.pricing_blueprint?.name,
+            matches_tier: p.pricing_blueprint?.id === displayGroup.pricing_tier_id,
+            has_pricing_tiers: !!p.pricing_tiers,
+            pricing_tiers_keys: p.pricing_tiers ? Object.keys(p.pricing_tiers) : [],
+            has_pricing: p.pricing_tiers && Object.keys(p.pricing_tiers).length > 0
+          });
+        });
+
         filteredProducts = filteredProducts.filter((p: any) => {
           // Only show products assigned to this display group's pricing tier
-          const matchesTier = p.pricing_blueprint?.id === displayGroup.pricing_tier_id;
-          // And has actual pricing data (not empty)
-          const hasPricing = p.pricing_tiers && Object.keys(p.pricing_tiers).length > 0;
-          return matchesTier && hasPricing;
+          return p.pricing_blueprint?.id === displayGroup.pricing_tier_id;
         });
         console.log(`💰 Filtered to ${filteredProducts.length} products from ${beforeCount} using pricing tier: ${displayGroup.name}`);
       }
