@@ -94,6 +94,7 @@ export default function NewProduct() {
   const [currentReviewIndex, setCurrentReviewIndex] = useState(0);
   const [pricingConfigs, setPricingConfigs] = useState<any[]>([]); // Full configs with blueprints + pricing values
   const [bulkImages, setBulkImages] = useState<Array<{file: File, url: string, matchedTo: string | null}>>([]);
+  const [lastSelectedPricingMode, setLastSelectedPricingMode] = useState<'single' | 'tiered'>('single'); // Track last pricing mode selection
 
   // AI Autofill state
   const [aiSuggestions, setAiSuggestions] = useState<any>(null);
@@ -510,12 +511,12 @@ export default function NewProduct() {
         // New format: Name, Price (optional), Cost (optional)
         const [name, price, cost] = parts;
 
-        // Add to parsed products with default values
+        // Add to parsed products with default values (use last selected pricing mode)
         parsedProducts.push({
           name,
           price: price || '',
           cost_price: cost || price || '',
-          pricing_mode: 'single',
+          pricing_mode: lastSelectedPricingMode,
           pricing_tiers: [],
           custom_fields: {}
         });
@@ -1814,6 +1815,7 @@ export default function NewProduct() {
                                   : product
                               );
                               setBulkProducts(updated);
+                              setLastSelectedPricingMode('single'); // Remember this choice
                               console.log(`📊 Product ${currentReviewIndex} pricing mode set to: single`);
                             }}
                             className={`flex-1 px-3 py-2 rounded-xl text-[9px] uppercase tracking-[0.15em] font-black transition-all ${
@@ -1835,6 +1837,7 @@ export default function NewProduct() {
                                   : product
                               );
                               setBulkProducts(updated);
+                              setLastSelectedPricingMode('tiered'); // Remember this choice
                               console.log(`📊 Product ${currentReviewIndex} pricing mode set to: tiered`);
                             }}
                             className={`flex-1 px-3 py-2 rounded-xl text-[9px] uppercase tracking-[0.15em] font-black transition-all ${
@@ -1892,7 +1895,21 @@ export default function NewProduct() {
                               <div>
                                 <label className="block text-white/40 text-[9px] uppercase tracking-[0.15em] mb-2">Quick Apply Template</label>
                                 <div className="flex flex-wrap gap-2">
-                                  {pricingConfigs.map((config: any) => (
+                                  {pricingConfigs
+                                    .filter((config: any) => {
+                                      // Filter by category - check if blueprint is applicable to current bulk category
+                                      const blueprint = config.blueprint;
+                                      if (!blueprint || !blueprint.applicable_to_categories) return true; // Show if no filter
+
+                                      // Find the category ID from bulkCategory slug
+                                      const currentCategory = categories.find(c => c.slug === bulkCategory);
+                                      if (!currentCategory) return true; // Show if no category selected
+
+                                      // Check if this category is in the blueprint's applicable categories
+                                      return blueprint.applicable_to_categories.length === 0 ||
+                                             blueprint.applicable_to_categories.includes(currentCategory.id);
+                                    })
+                                    .map((config: any) => (
                                     <button
                                       key={config.id}
                                       type="button"
