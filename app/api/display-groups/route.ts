@@ -84,6 +84,7 @@ export async function POST(request: NextRequest) {
       pricingTierId,
       heroPriceTier,
       priceDisplayMode,
+      displayConfig,
       devices, // Array of { deviceId, position, categories }
     } = body;
 
@@ -121,6 +122,14 @@ export async function POST(request: NextRequest) {
         pricing_tier_id: pricingTierId || null,
         shared_hero_price_tier: heroPriceTier || '3_5g',
         shared_price_display_mode: priceDisplayMode || 'hero_with_supporting',
+        display_config: displayConfig || {
+          show_images: true,
+          show_header: false,
+          show_strain_type: true,
+          show_thc: true,
+          show_cbd: true,
+          show_brand: false,
+        },
       })
       .select()
       .single();

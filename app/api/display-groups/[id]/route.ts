@@ -61,28 +61,36 @@ export async function PUT(
       pricingTierId,
       heroPriceTier,
       priceDisplayMode,
+      displayConfig,
       devices, // Array of { deviceId, position, categories }
     } = body;
 
     const supabase = getServiceSupabase();
 
     // Update group
+    const updateData: any = {
+      name,
+      description,
+      shared_theme: theme,
+      shared_display_mode: displayMode,
+      shared_grid_columns: gridColumns,
+      shared_grid_rows: gridRows,
+      shared_typography: typography,
+      shared_spacing: spacing,
+      pricing_tier_id: pricingTierId || null,
+      shared_hero_price_tier: heroPriceTier,
+      shared_price_display_mode: priceDisplayMode,
+      updated_at: new Date().toISOString(),
+    };
+
+    // Only include display_config if it was provided
+    if (displayConfig !== undefined) {
+      updateData.display_config = displayConfig;
+    }
+
     const { data: group, error: groupError } = await supabase
       .from('tv_display_groups')
-      .update({
-        name,
-        description,
-        shared_theme: theme,
-        shared_display_mode: displayMode,
-        shared_grid_columns: gridColumns,
-        shared_grid_rows: gridRows,
-        shared_typography: typography,
-        shared_spacing: spacing,
-        pricing_tier_id: pricingTierId || null,
-        shared_hero_price_tier: heroPriceTier,
-        shared_price_display_mode: priceDisplayMode,
-        updated_at: new Date().toISOString(),
-      })
+      .update(updateData)
       .eq('id', id)
       .select()
       .single();

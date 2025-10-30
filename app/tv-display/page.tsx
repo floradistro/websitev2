@@ -5,7 +5,7 @@
 
 'use client';
 
-import { useEffect, useState, useCallback, Suspense } from 'react';
+import { useEffect, useState, useCallback, useMemo, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
 import { motion } from 'framer-motion';
@@ -39,6 +39,18 @@ function TVDisplayContent() {
   const [promotions, setPromotions] = useState<Promotion[]>([]);
   const [displayGroup, setDisplayGroup] = useState<any>(null);
   const [groupMember, setGroupMember] = useState<any>(null);
+  const [vendorConfigs, setVendorConfigs] = useState<any[]>([]);
+
+  /**
+   * Memoized pricing config map for better performance
+   */
+  const configMap = useMemo(() => {
+    const map = new Map(
+      (vendorConfigs || []).map((config: any) => [config.blueprint_id, config.pricing_values])
+    );
+    console.log('🗺️ Created pricing config map with', map.size, 'entries');
+    return map;
+  }, [vendorConfigs]);
 
   /**
    * Device Registration
@@ -227,6 +239,32 @@ function TVDisplayContent() {
   }, [deviceId]);
 
   /**
+   * Load Vendor Pricing Configs (once, cached)
+   */
+  useEffect(() => {
+    if (!vendorId) return;
+
+    const loadVendorConfigs = async () => {
+      try {
+        console.log('💵 Loading vendor pricing configs (cached)...');
+        const configsResponse = await fetch(`/api/vendor/pricing-configs-for-display?vendor_id=${vendorId}`);
+        const configsData = await configsResponse.json();
+
+        if (configsData.success) {
+          setVendorConfigs(configsData.configs || []);
+          console.log('💵 Cached vendor pricing configs:', configsData.configs?.length || 0);
+        } else {
+          console.error('❌ Error loading vendor pricing configs:', configsData.error);
+        }
+      } catch (err) {
+        console.error('❌ Failed to load vendor configs:', err);
+      }
+    };
+
+    loadVendorConfigs();
+  }, [vendorId]);
+
+  /**
    * Load Menu & Products
    */
   const loadMenuAndProducts = useCallback(async () => {
@@ -346,30 +384,8 @@ function TVDisplayContent() {
 
       if (error) throw error;
 
-      // Load vendor pricing configs via API (bypasses RLS)
-      const configsResponse = await fetch(`/api/vendor/pricing-configs-for-display?vendor_id=${vendorId}`);
-      const configsData = await configsResponse.json();
-
-      const vendorConfigs = configsData.success ? configsData.configs : [];
-
-      if (!configsData.success) {
-        console.error('❌ Error loading vendor pricing configs:', configsData.error);
-      }
-
-      console.log('💵 Loaded pricing configs via API:', {
-        count: vendorConfigs?.length || 0,
-        configs: vendorConfigs
-      });
-
-      // Create a map of blueprint_id -> pricing_values
-      const configMap = new Map(
-        (vendorConfigs || []).map((config: any) => [config.blueprint_id, config.pricing_values])
-      );
-
-      console.log(`💵 Loaded ${configMap.size} vendor pricing configs`);
-      if (configMap.size > 0) {
-        console.log(`💵 Config blueprint IDs:`, Array.from(configMap.keys()));
-      }
+      // Use memoized pricing config map
+      console.log('💵 Using cached pricing configs:', configMap.size, 'entries');
 
       // Enrich products with actual prices and promotions
       const enrichedProducts = (productData || []).map((product: any) => {
@@ -529,7 +545,7 @@ function TVDisplayContent() {
     } catch (err: any) {
       console.error('❌ Failed to load products:', err);
     }
-  };
+  }, [deviceId, menuIdParam, groupMember, configMap, displayGroup]);
 
   useEffect(() => {
     loadMenuAndProducts();
@@ -614,6 +630,49 @@ function TVDisplayContent() {
       supabase.removeChannel(channel);
     };
   }, [activeMenu?.id, activeMenu?.theme, isPreview]);
+
+  /**
+   * Real-time subscription for display group changes (pricing tier, display config, etc.)
+   */
+  useEffect(() => {
+    if (!displayGroup?.id) return;
+
+    console.log('🎯 Setting up real-time subscription for display group:', displayGroup.id);
+
+    const channel = supabase
+      .channel(`display-group-${displayGroup.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'tv_display_groups',
+          filter: `id=eq.${displayGroup.id}`,
+        },
+        (payload) => {
+          console.log('🎯 DISPLAY GROUP UPDATED!', payload);
+          console.log('   Old config:', displayGroup);
+          console.log('   New config:', payload.new);
+
+          // Update display group immediately
+          setDisplayGroup(payload.new);
+
+          // Force products reload with new configuration
+          if (activeMenu) {
+            console.log('🔄 Reloading products with new display group config...');
+            loadProducts(activeMenu);
+          }
+        }
+      )
+      .subscribe((status) => {
+        console.log('🎯 Display group subscription status:', status);
+      });
+
+    return () => {
+      console.log('🎯 Cleaning up display group subscription');
+      supabase.removeChannel(channel);
+    };
+  }, [displayGroup?.id, activeMenu]);
 
   /**
    * Carousel Auto-Rotation
@@ -746,50 +805,52 @@ function TVDisplayContent() {
       {/* Menu Content */}
       <div className="absolute inset-0" style={{ padding: '3rem 4rem' }}>
         <div className="h-full flex flex-col">
-          {/* Header */}
-          <div className="text-center mb-12">
-            {/* Display Group Mode: Show only category */}
-            {groupMember?.assigned_categories && groupMember.assigned_categories.length > 0 ? (
-              <div className="mb-6">
-                <h1
-                  className="uppercase tracking-[0.2em] font-black text-white"
-                  style={{
-                    fontSize: '2rem',
-                    lineHeight: 1,
-                    letterSpacing: '0.2em',
-                    opacity: 0.9
-                  }}
-                >
-                  {groupMember.assigned_categories.join(' • ')}
-                </h1>
-              </div>
-            ) : (
-              /* Regular Mode: Show menu name and description */
-              <>
-                <h1
-                  className="uppercase tracking-[0.15em]"
-                  style={{
-                    ...theme.styles.menuTitle,
-                    lineHeight: 1,
-                    letterSpacing: '0.15em'
-                  }}
-                >
-                  {activeMenu.name}
-                </h1>
-                {activeMenu.description && (
-                  <p
-                    className="mt-4 uppercase tracking-wider font-medium"
+          {/* Header - Conditional based on display config */}
+          {(displayGroup?.display_config?.show_header !== false) && (
+            <div className="text-center mb-12">
+              {/* Display Group Mode: Show only category */}
+              {groupMember?.assigned_categories && groupMember.assigned_categories.length > 0 ? (
+                <div className="mb-6">
+                  <h1
+                    className="uppercase tracking-[0.2em] font-black text-white"
                     style={{
-                      ...theme.styles.menuDescription,
-                      letterSpacing: '0.1em'
+                      fontSize: '2rem',
+                      lineHeight: 1,
+                      letterSpacing: '0.2em',
+                      opacity: 0.9
                     }}
                   >
-                    {activeMenu.description}
-                  </p>
-                )}
-              </>
-            )}
-          </div>
+                    {groupMember.assigned_categories.join(' • ')}
+                  </h1>
+                </div>
+              ) : (
+                /* Regular Mode: Show menu name and description */
+                <>
+                  <h1
+                    className="uppercase tracking-[0.15em]"
+                    style={{
+                      ...theme.styles.menuTitle,
+                      lineHeight: 1,
+                      letterSpacing: '0.15em'
+                    }}
+                  >
+                    {activeMenu.name}
+                  </h1>
+                  {activeMenu.description && (
+                    <p
+                      className="mt-4 uppercase tracking-wider font-medium"
+                      style={{
+                        ...theme.styles.menuDescription,
+                        letterSpacing: '0.1em'
+                      }}
+                    >
+                      {activeMenu.description}
+                    </p>
+                  )}
+                </>
+              )}
+            </div>
+          )}
 
           {/* Products Grid */}
           {products.length > 0 ? (() => {
@@ -864,8 +925,8 @@ function TVDisplayContent() {
                     </motion.div>
                   )}
 
-                  {/* Product Image */}
-                  {product.image_url && (
+                  {/* Product Image - Conditional */}
+                  {(displayGroup?.display_config?.show_images !== false) && product.image_url && (
                     <div className="w-full aspect-square rounded-xl mb-6 overflow-hidden bg-white/5">
                       <img
                         src={product.image_url}
@@ -901,7 +962,7 @@ function TVDisplayContent() {
                         return null;
                       })()}
 
-                      {product.metadata?.strain_type && (() => {
+                      {(displayGroup?.display_config?.show_strain_type !== false) && product.metadata?.strain_type && (() => {
                         const strainColors = {
                           indica: { bg: 'rgba(139, 92, 246, 0.15)', text: '#a78bfa', border: 'rgba(139, 92, 246, 0.3)' },
                           sativa: { bg: 'rgba(34, 197, 94, 0.15)', text: '#4ade80', border: 'rgba(34, 197, 94, 0.3)' },
@@ -926,7 +987,7 @@ function TVDisplayContent() {
                           </div>
                         );
                       })()}
-                      {product.metadata?.brand && (
+                      {(displayGroup?.display_config?.show_brand !== false) && product.metadata?.brand && (
                         <div
                           className="text-[10px] font-bold uppercase tracking-wider opacity-60"
                           style={{ color: theme.styles.productDescription.color }}
@@ -944,10 +1005,10 @@ function TVDisplayContent() {
                       {product.name}
                     </h3>
 
-                    {/* THC/CBD % */}
+                    {/* THC/CBD % - Conditional */}
                     {(product.metadata?.thc_percentage || product.metadata?.cbd_percentage) && (
                       <div className="flex gap-2 mb-3">
-                        {product.metadata?.thc_percentage && (
+                        {(displayGroup?.display_config?.show_thc !== false) && product.metadata?.thc_percentage && (
                           <div
                             className="text-xs font-black"
                             style={{ color: theme.styles.price.color }}
@@ -955,7 +1016,7 @@ function TVDisplayContent() {
                             {product.metadata.thc_percentage}% THC
                           </div>
                         )}
-                        {product.metadata?.cbd_percentage && (
+                        {(displayGroup?.display_config?.show_cbd !== false) && product.metadata?.cbd_percentage && (
                           <div
                             className="text-xs font-black opacity-60"
                             style={{ color: theme.styles.productDescription.color }}

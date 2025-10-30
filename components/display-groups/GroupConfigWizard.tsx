@@ -76,6 +76,14 @@ export default function GroupConfigWizard({ vendorId, existingGroup, onComplete,
   const [priceDisplayMode, setPriceDisplayMode] = useState('hero_with_supporting');
   const [priceLocation, setPriceLocation] = useState('on_card');
 
+  // Display configuration
+  const [showImages, setShowImages] = useState(true);
+  const [showHeader, setShowHeader] = useState(false);
+  const [showStrainType, setShowStrainType] = useState(true);
+  const [showThc, setShowThc] = useState(true);
+  const [showCbd, setShowCbd] = useState(true);
+  const [showBrand, setShowBrand] = useState(false);
+
   useEffect(() => {
     loadData();
   }, [vendorId]);
@@ -95,6 +103,16 @@ export default function GroupConfigWizard({ vendorId, existingGroup, onComplete,
       setHeroPriceTier(existingGroup.shared_hero_price_tier || '3_5g');
       setPriceDisplayMode(existingGroup.shared_price_display_mode || 'hero_with_supporting');
       setPriceLocation('on_card'); // Default for now
+
+      // Display configuration
+      if (existingGroup.display_config) {
+        setShowImages(existingGroup.display_config.show_images !== false);
+        setShowHeader(existingGroup.display_config.show_header === true);
+        setShowStrainType(existingGroup.display_config.show_strain_type !== false);
+        setShowThc(existingGroup.display_config.show_thc !== false);
+        setShowCbd(existingGroup.display_config.show_cbd !== false);
+        setShowBrand(existingGroup.display_config.show_brand === true);
+      }
 
       // Set selected devices and categories
       if (existingGroup.members) {
@@ -187,6 +205,14 @@ export default function GroupConfigWizard({ vendorId, existingGroup, onComplete,
       heroPriceTier,
       priceDisplayMode,
       devices,
+      displayConfig: {
+        show_images: showImages,
+        show_header: showHeader,
+        show_strain_type: showStrainType,
+        show_thc: showThc,
+        show_cbd: showCbd,
+        show_brand: showBrand,
+      },
     });
   };
 
@@ -576,6 +602,155 @@ export default function GroupConfigWizard({ vendorId, existingGroup, onComplete,
                           {priceDisplayMode === 'all_tiers' && ' with all available tiers'}
                           {priceDisplayMode === 'minimal' && ', showing only the smallest tier'}
                         </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Display Configuration */}
+                <div className="border-t border-white/10 pt-6 mt-6">
+                  <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                    <Monitor className="w-5 h-5 text-purple-400" />
+                    What to Display
+                  </h3>
+                  <p className="text-sm text-white/60 mb-4">
+                    Customize what information appears on your TV displays
+                  </p>
+
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    {/* Product Images */}
+                    <button
+                      onClick={() => setShowImages(!showImages)}
+                      className={`p-4 rounded-lg border-2 transition-all text-left ${
+                        showImages
+                          ? 'border-purple-500 bg-purple-500/20'
+                          : 'border-white/10 bg-white/5 hover:border-white/20'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="font-medium text-white text-sm">Images</span>
+                        {showImages && (
+                          <div className="w-4 h-4 rounded-full bg-purple-500 flex items-center justify-center">
+                            <Check className="w-3 h-3 text-white" />
+                          </div>
+                        )}
+                      </div>
+                      <p className="text-xs text-white/60">Product photos</p>
+                    </button>
+
+                    {/* Header */}
+                    <button
+                      onClick={() => setShowHeader(!showHeader)}
+                      className={`p-4 rounded-lg border-2 transition-all text-left ${
+                        showHeader
+                          ? 'border-purple-500 bg-purple-500/20'
+                          : 'border-white/10 bg-white/5 hover:border-white/20'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="font-medium text-white text-sm">Header</span>
+                        {showHeader && (
+                          <div className="w-4 h-4 rounded-full bg-purple-500 flex items-center justify-center">
+                            <Check className="w-3 h-3 text-white" />
+                          </div>
+                        )}
+                      </div>
+                      <p className="text-xs text-white/60">Menu name</p>
+                    </button>
+
+                    {/* Strain Type */}
+                    <button
+                      onClick={() => setShowStrainType(!showStrainType)}
+                      className={`p-4 rounded-lg border-2 transition-all text-left ${
+                        showStrainType
+                          ? 'border-purple-500 bg-purple-500/20'
+                          : 'border-white/10 bg-white/5 hover:border-white/20'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="font-medium text-white text-sm">Strain Type</span>
+                        {showStrainType && (
+                          <div className="w-4 h-4 rounded-full bg-purple-500 flex items-center justify-center">
+                            <Check className="w-3 h-3 text-white" />
+                          </div>
+                        )}
+                      </div>
+                      <p className="text-xs text-white/60">I/S/H badge</p>
+                    </button>
+
+                    {/* THC % */}
+                    <button
+                      onClick={() => setShowThc(!showThc)}
+                      className={`p-4 rounded-lg border-2 transition-all text-left ${
+                        showThc
+                          ? 'border-purple-500 bg-purple-500/20'
+                          : 'border-white/10 bg-white/5 hover:border-white/20'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="font-medium text-white text-sm">THC %</span>
+                        {showThc && (
+                          <div className="w-4 h-4 rounded-full bg-purple-500 flex items-center justify-center">
+                            <Check className="w-3 h-3 text-white" />
+                          </div>
+                        )}
+                      </div>
+                      <p className="text-xs text-white/60">THC content</p>
+                    </button>
+
+                    {/* CBD % */}
+                    <button
+                      onClick={() => setShowCbd(!showCbd)}
+                      className={`p-4 rounded-lg border-2 transition-all text-left ${
+                        showCbd
+                          ? 'border-purple-500 bg-purple-500/20'
+                          : 'border-white/10 bg-white/5 hover:border-white/20'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="font-medium text-white text-sm">CBD %</span>
+                        {showCbd && (
+                          <div className="w-4 h-4 rounded-full bg-purple-500 flex items-center justify-center">
+                            <Check className="w-3 h-3 text-white" />
+                          </div>
+                        )}
+                      </div>
+                      <p className="text-xs text-white/60">CBD content</p>
+                    </button>
+
+                    {/* Brand */}
+                    <button
+                      onClick={() => setShowBrand(!showBrand)}
+                      className={`p-4 rounded-lg border-2 transition-all text-left ${
+                        showBrand
+                          ? 'border-purple-500 bg-purple-500/20'
+                          : 'border-white/10 bg-white/5 hover:border-white/20'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="font-medium text-white text-sm">Brand</span>
+                        {showBrand && (
+                          <div className="w-4 h-4 rounded-full bg-purple-500 flex items-center justify-center">
+                            <Check className="w-3 h-3 text-white" />
+                          </div>
+                        )}
+                      </div>
+                      <p className="text-xs text-white/60">Brand name</p>
+                    </button>
+                  </div>
+
+                  <div className="mt-4 p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+                    <div className="text-sm text-white/80">
+                      <div className="font-medium mb-1">Display Options</div>
+                      <div className="text-white/60">
+                        {[
+                          showImages && 'Product images',
+                          showHeader && 'Menu header',
+                          showStrainType && 'Strain type',
+                          showThc && 'THC%',
+                          showCbd && 'CBD%',
+                          showBrand && 'Brand'
+                        ].filter(Boolean).join(', ') || 'Nothing selected'}
                       </div>
                     </div>
                   </div>

@@ -11,6 +11,7 @@ import {
   BarChart3,
   Users,
   Megaphone,
+  Code2,
   LucideIcon
 } from 'lucide-react';
 import { useAppAuth } from '@/context/AppAuthContext';
@@ -97,6 +98,15 @@ const APPS: App[] = [
     route: '/vendor/marketing',
     category: 'marketing',
     gradient: 'from-fuchsia-500/20 to-purple-500/20'
+  },
+  {
+    key: 'code',
+    name: 'Code',
+    description: 'Build custom apps with AI - storefronts, admin panels, mobile apps, and more',
+    icon: Code2,
+    route: '/vendor/code',
+    category: 'development',
+    gradient: 'from-emerald-500/20 to-teal-500/20'
   },
 ];
 
