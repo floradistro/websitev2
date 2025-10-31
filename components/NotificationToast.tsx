@@ -19,7 +19,7 @@ interface ConfirmDialog {
   message: string;
   confirmText?: string;
   cancelText?: string;
-  onConfirm: () => void;
+  onConfirm?: () => void;
   onCancel?: () => void;
   type?: "danger" | "warning" | "info";
 }
@@ -126,7 +126,7 @@ export default function NotificationToast() {
   };
 
   const handleConfirm = (dialog: ConfirmDialog) => {
-    dialog.onConfirm();
+    dialog.onConfirm?.();
     removeConfirm(dialog.id);
   };
 
