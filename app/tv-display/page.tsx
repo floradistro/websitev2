@@ -399,6 +399,16 @@ function TVDisplayContent() {
       const productData = productsData.products || [];
       console.log(`✅ Fetched ${productData.length} published products from API`);
 
+      // Debug first product's raw data
+      if (productData.length > 0) {
+        console.log('🔍 First product raw data:', {
+          name: productData[0].name,
+          has_pricing_assignments: !!productData[0].pricing_assignments,
+          pricing_assignments_count: productData[0].pricing_assignments?.length || 0,
+          first_assignment: productData[0].pricing_assignments?.[0]
+        });
+      }
+
       // Use memoized pricing config map
       console.log('💵 Using cached pricing configs:', configMap.size, 'entries');
 
@@ -442,9 +452,23 @@ function TVDisplayContent() {
           if (assignment) {
             const blueprint = assignment.blueprint;
             const vendorPrices = configMap.get(assignment.blueprint_id) || {};
+            const productOverrides = assignment.price_overrides || {};
 
-            // Merge vendor prices with product overrides
-            const finalPrices = { ...vendorPrices, ...(assignment.price_overrides || {}) };
+            // Merge vendor prices with product overrides (product overrides take priority)
+            const finalPrices = { ...vendorPrices, ...productOverrides };
+
+            // Debug first product's pricing
+            if (productWithPricing.name === enrichedProducts[0]?.name) {
+              console.log('💰 First product pricing:', {
+                product: productWithPricing.name,
+                blueprint_id: assignment.blueprint_id,
+                has_vendor_prices: Object.keys(vendorPrices).length > 0,
+                vendor_prices: vendorPrices,
+                has_product_overrides: Object.keys(productOverrides).length > 0,
+                product_overrides: productOverrides,
+                final_prices: finalPrices
+              });
+            }
 
             productWithPricing = {
               ...productWithPricing,  // Keep the mapped fields (image_url, metadata)
