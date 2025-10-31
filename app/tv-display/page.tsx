@@ -480,42 +480,32 @@ function TVDisplayContent() {
         console.log(`🎯 Filtered to ${filteredProducts.length} products from ${enrichedProducts.length} (${filterSource} categories: ${selectedCategories.join(', ')})`);
       }
 
-      // Filter by display group's pricing tier (if configured)
+      // Log display group's pricing tier (if configured) but DON'T filter products
+      // The pricing tier is used for DISPLAYING prices, not filtering products
       if (displayGroup?.pricing_tier_id) {
-        const beforeCount = filteredProducts.length;
-        console.log(`🔍 Filtering products by pricing tier. Before: ${beforeCount} products`);
-        console.log(`🔍 Display group pricing_tier_id:`, displayGroup.pricing_tier_id);
+        console.log(`💰 Display group uses pricing tier:`, displayGroup.pricing_tier_id, `(${displayGroup.name})`);
 
-        // Debug: check first few products
+        // Debug: check how many products have this pricing tier
+        const productsWithGroupPricing = filteredProducts.filter((p: any) =>
+          p.pricing_blueprint?.id === displayGroup.pricing_tier_id
+        );
+        console.log(`💰 ${productsWithGroupPricing.length}/${filteredProducts.length} products have the group's pricing tier assigned`);
+
+        // Log first few products for debugging
         filteredProducts.slice(0, 3).forEach((p: any) => {
           console.log(`🔍 Product "${p.name}":`, {
             has_pricing_blueprint: !!p.pricing_blueprint,
             blueprint_id: p.pricing_blueprint?.id,
             blueprint_name: p.pricing_blueprint?.name,
-            matches_tier: p.pricing_blueprint?.id === displayGroup.pricing_tier_id,
+            matches_group_tier: p.pricing_blueprint?.id === displayGroup.pricing_tier_id,
             has_pricing_tiers: !!p.pricing_tiers,
-            pricing_tiers_keys: p.pricing_tiers ? Object.keys(p.pricing_tiers) : [],
-            has_pricing: p.pricing_tiers && Object.keys(p.pricing_tiers).length > 0
+            pricing_tiers_keys: p.pricing_tiers ? Object.keys(p.pricing_tiers) : []
           });
         });
-
-        filteredProducts = filteredProducts.filter((p: any) => {
-          // Only show products assigned to this display group's pricing tier
-          return p.pricing_blueprint?.id === displayGroup.pricing_tier_id;
-        });
-        console.log(`💰 Filtered to ${filteredProducts.length} products from ${beforeCount} using pricing tier: ${displayGroup.name}`);
       }
 
       setProducts(filteredProducts);
       console.log(`✅ Loaded ${filteredProducts.length} products with pricing`);
-
-      // Count how many products are using the display group's pricing tier
-      if (displayGroup?.pricing_tier_id) {
-        const productsWithGroupPricing = filteredProducts.filter((p: any) =>
-          p.pricing_blueprint?.id === displayGroup.pricing_tier_id
-        );
-        console.log(`💰 ${productsWithGroupPricing.length}/${filteredProducts.length} products using display group pricing tier:`, displayGroup.name);
-      }
 
       console.log('📊 Sample product data:', filteredProducts[0] ? {
         name: filteredProducts[0].name,
