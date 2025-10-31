@@ -70,41 +70,8 @@ Just tell me what you want in plain English, and I'll write the code for you.`
     loadApp()
   }, [vendor?.id, params.appId])
 
-  // Ensure preview machine is provisioned and running
-  useEffect(() => {
-    if (!app) return
-
-    async function ensurePreview() {
-      if (!app) return // Type guard for nested function
-      try {
-        // If no preview machine exists, provision one
-        if (!app.preview_url) {
-          console.log('📦 Provisioning preview machine...')
-          const response = await fetch(`/api/vendor/apps/${params.appId}/provision-preview`, {
-            method: 'POST'
-          })
-
-          const data = await response.json()
-          if (data.success) {
-            console.log('✅ Preview provisioned:', data.previewUrl)
-            await loadApp() // Reload to get preview URL
-          } else {
-            console.error('❌ Failed to provision preview:', data.error)
-          }
-        }
-        // If preview exists but is sleeping, wake it up
-        else if (app.preview_status === 'sleeping' || app.preview_status === 'stopped') {
-          console.log('⏰ Waking preview machine...')
-          await fetch(`/api/vendor/apps/${params.appId}/wake-preview`, { method: 'POST' })
-          await loadApp()
-        }
-      } catch (error) {
-        console.error('Error ensuring preview:', error)
-      }
-    }
-
-    ensurePreview()
-  }, [app?.id])
+  // Multi-tenant preview URL - no provisioning needed!
+  const previewUrl = app ? `https://whaletools-preview-runtime.fly.dev?appId=${app.id}` : null
 
   // Poll for deployment status when building
   useEffect(() => {
@@ -176,7 +143,7 @@ Just tell me what you want in plain English, and I'll write the code for you.`
         })
 
         // Refresh preview if files changed - instant updates!
-        if (data.filesChanged?.length > 0 && app.preview_url) {
+        if (data.filesChanged?.length > 0 && previewUrl) {
           // Update activity to keep machine alive
           fetch(`/api/vendor/apps/${app.id}/activity`, { method: 'POST' })
 
@@ -268,9 +235,9 @@ Just tell me what you want in plain English, and I'll write the code for you.`
           </div>
 
           <div className="flex items-center gap-3">
-            {app.preview_url && (
+            {previewUrl && (
               <a
-                href={app.preview_url}
+                href={previewUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-sm text-white/80 transition-all"
@@ -319,11 +286,11 @@ Just tell me what you want in plain English, and I'll write the code for you.`
           </div>
 
           <div className="flex-1 bg-white/[0.02] relative">
-            {app.preview_url ? (
+            {previewUrl ? (
               <iframe
-                key={app.preview_url} // Force reload when URL changes
+                key={previewUrl} // Force reload when URL changes
                 ref={previewRef}
-                src={app.preview_url}
+                src={previewUrl}
                 className="w-full h-full border-0"
                 sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
                 onLoad={() => {
