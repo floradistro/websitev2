@@ -486,7 +486,7 @@ export default function NewProduct() {
   };
 
   // Bulk AI enrichment - OPTIMIZED with batch processing
-  const handleBulkAIEnrich = async () => {
+  const handleBulkAIEnrich = async (selectedFields: string[], customPrompt: string) => {
     if (!bulkInput.trim()) {
       showNotification({
         type: 'warning',
@@ -501,6 +501,15 @@ export default function NewProduct() {
         type: 'warning',
         title: 'Category Required',
         message: 'Select a category for this bulk batch',
+      });
+      return;
+    }
+
+    if (selectedFields.length === 0) {
+      showNotification({
+        type: 'warning',
+        title: 'No Fields Selected',
+        message: 'Select at least one field to autofill',
       });
       return;
     }
@@ -561,7 +570,9 @@ export default function NewProduct() {
         },
         body: JSON.stringify({
           products: productsToEnrich,
-          category: categoryName
+          category: categoryName,
+          selectedFields: selectedFields,
+          customPrompt: customPrompt || undefined
         }),
         signal: abortController.signal,
       });

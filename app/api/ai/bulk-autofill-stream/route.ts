@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
         });
         const exa = new Exa(process.env.EXASEARCH_API_KEY);
 
-        const { products, category } = await request.json();
+        const { products, category, selectedFields, customPrompt } = await request.json();
 
         if (!products || !Array.isArray(products) || products.length === 0) {
           sendMessage({ type: 'error', message: 'Products array required' });
@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
           return;
         }
 
-        console.log(`🔍 Bulk AI Autofill (Streaming): ${products.length} products`);
+        console.log(`🔍 Bulk AI Autofill (Streaming): ${products.length} products${customPrompt ? ' [custom prompt]' : ''}${selectedFields ? ` [${selectedFields.length} fields]` : ''}`);
 
         // Send start message
         sendMessage({
@@ -166,6 +166,23 @@ export async function POST(request: NextRequest) {
               message: `🤖 AI extracting data for batch ${batchNum}...`
             });
 
+            // Build user prompt with optional custom instructions and field focus
+            let userPrompt = `Extract STRAIN DATA for these ${batch.length} products:\n${batch.map((p: any, idx: number) => `${idx + 1}. ${p.name}`).join('\n')}\n\n`;
+
+            // Add field focus if selectedFields provided
+            if (selectedFields && selectedFields.length > 0) {
+              userPrompt += `FOCUS ON THESE FIELDS:\n${selectedFields.map((f: string) => `- ${f.replace('_', ' ').toUpperCase()}`).join('\n')}\n\n`;
+            } else {
+              userPrompt += `FOCUS ON:\n- LINEAGE/GENETICS (Parent1 x Parent2) - MOST IMPORTANT\n- Terpene profile (Myrcene, Limonene, etc.)\n- Effects (Relaxing, Euphoric, etc.)\n- Nose/Aroma (Candy, Gas, Pine, etc.)\n- Strain type (Sativa/Indica/Hybrid)\n\n`;
+            }
+
+            // Add custom prompt if provided
+            if (customPrompt) {
+              userPrompt += `ADDITIONAL INSTRUCTIONS: ${customPrompt}\n\n`;
+            }
+
+            userPrompt += `Search THOROUGHLY in sources for lineage and genetics information.\n\nSOURCES:\n${context.substring(0, 15000)}\n\nReturn ONLY a JSON array with ${batch.length} objects, one per product in order.`;
+
             // Claude extraction for entire batch
             const response = await anthropic.messages.create({
               model: 'claude-sonnet-4-20250514',
@@ -175,7 +192,7 @@ export async function POST(request: NextRequest) {
               messages: [
                 {
                   role: 'user',
-                  content: `Extract STRAIN DATA for these ${batch.length} products:\n${batch.map((p: any, idx: number) => `${idx + 1}. ${p.name}`).join('\n')}\n\nFOCUS ON:\n- LINEAGE/GENETICS (Parent1 x Parent2) - MOST IMPORTANT\n- Terpene profile (Myrcene, Limonene, etc.)\n- Effects (Relaxing, Euphoric, etc.)\n- Nose/Aroma (Candy, Gas, Pine, etc.)\n- Strain type (Sativa/Indica/Hybrid)\n\nSearch THOROUGHLY in sources for lineage and genetics information.\n\nSOURCES:\n${context.substring(0, 15000)}\n\nReturn ONLY a JSON array with ${batch.length} objects, one per product in order.`
+                  content: userPrompt
                 }
               ]
             });
