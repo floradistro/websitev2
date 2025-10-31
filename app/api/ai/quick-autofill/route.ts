@@ -51,13 +51,13 @@ export async function POST(request: NextRequest) {
     });
     const exa = new Exa(process.env.EXASEARCH_API_KEY);
 
-    const { productName, category } = await request.json();
+    const { productName, category, selectedFields, customPrompt } = await request.json();
 
     if (!productName) {
       return NextResponse.json({ error: 'Product name required' }, { status: 400 });
     }
 
-    console.log(`🔍 AI Autofill request: ${productName} (${category || 'no category'})`);
+    console.log(`🔍 AI Autofill request: ${productName} (${category || 'no category'})${customPrompt ? ' [custom prompt]' : ''}`);
 
     // Quick web search
     const searchResults = await exa.searchAndContents(
@@ -83,6 +83,19 @@ export async function POST(request: NextRequest) {
       .map((r) => r.text)
       .join('\n---\n');
 
+    // Build user prompt with optional custom instructions
+    let userPrompt = `Extract data for "${productName}". Pay special attention to genetics/lineage.`;
+
+    if (customPrompt) {
+      userPrompt += `\n\nADDITIONAL INSTRUCTIONS: ${customPrompt}`;
+    }
+
+    if (selectedFields && selectedFields.length > 0) {
+      userPrompt += `\n\nFOCUS ON THESE FIELDS: ${selectedFields.join(', ')}`;
+    }
+
+    userPrompt += `\n\nSOURCES:\n${context.substring(0, 4500)}\n\nReturn ONLY JSON.`;
+
     // Fast Claude extraction
     const response = await anthropic.messages.create({
       model: 'claude-sonnet-4-20250514',
@@ -92,7 +105,7 @@ export async function POST(request: NextRequest) {
       messages: [
         {
           role: 'user',
-          content: `Extract data for "${productName}". Pay special attention to genetics/lineage.\n\nSOURCES:\n${context.substring(0, 4500)}\n\nReturn ONLY JSON.`
+          content: userPrompt
         }
       ]
     });

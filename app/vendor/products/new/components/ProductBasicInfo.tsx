@@ -1,6 +1,6 @@
 "use client";
 
-import { Sparkles, X, Loader, CheckCircle, AlertCircle } from 'lucide-react';
+import { CheckCircle, AlertCircle, Loader } from 'lucide-react';
 import AIAutofillPanel from './AIAutofillPanel';
 import SectionHeader from '@/components/ui/SectionHeader';
 
@@ -28,9 +28,8 @@ interface ProductBasicInfoProps {
   onFormDataChange: (formData: any) => void;
   onCategoryChange: (categoryId: string) => void;
   onProductTypeChange: (type: 'simple' | 'variable') => void;
-  onAIAutofill: () => void;
-  onCancelAI: () => void;
-  onApplySuggestions: () => void;
+  onAIAutofill: (selectedFields: string[], customPrompt: string) => Promise<void>;
+  onApplySuggestions: (selectedFields: string[]) => void;
   onCloseSuggestions: () => void;
 }
 
@@ -48,7 +47,6 @@ export default function ProductBasicInfo({
   onCategoryChange,
   onProductTypeChange,
   onAIAutofill,
-  onCancelAI,
   onApplySuggestions,
   onCloseSuggestions
 }: ProductBasicInfoProps) {
@@ -59,47 +57,9 @@ export default function ProductBasicInfo({
       <div className="space-y-4">
         {/* Product Name */}
         <div>
-          <div className="flex items-center justify-between mb-2">
-            <label className="block text-white/40 text-[10px] uppercase tracking-[0.15em] font-black" style={{ fontWeight: 900 }}>
-              Product Name <span className="text-red-400">*</span>
-            </label>
-            <div className="flex items-center gap-2">
-              {loadingAI ? (
-                <>
-                  <button
-                    type="button"
-                    disabled
-                    className="bg-white/10 text-white border border-white/20 rounded-xl px-2.5 py-1.5 text-[9px] uppercase tracking-[0.15em] font-black flex items-center gap-1.5 opacity-60"
-                    style={{ fontWeight: 900 }}
-                  >
-                    <Loader size={11} className="animate-spin" strokeWidth={2.5} />
-                    Loading...
-                  </button>
-                  <button
-                    type="button"
-                    onClick={onCancelAI}
-                    className="bg-red-500/10 text-red-400 border border-red-500/20 rounded-xl px-2.5 py-1.5 text-[9px] uppercase tracking-[0.15em] hover:bg-red-500/20 hover:border-red-500/30 font-black transition-all flex items-center gap-1.5"
-                    style={{ fontWeight: 900 }}
-                  >
-                    <X size={11} strokeWidth={2.5} />
-                    Cancel
-                  </button>
-                </>
-              ) : (
-                <button
-                  type="button"
-                  onClick={onAIAutofill}
-                  disabled={!formData.name.trim() || !categoryId || dynamicFields.length === 0}
-                  title={!categoryId ? "Select a category first" : !formData.name.trim() ? "Enter product name" : dynamicFields.length === 0 ? "Loading fields..." : ""}
-                  className="bg-white/10 text-white border border-white/20 rounded-xl px-2.5 py-1.5 text-[9px] uppercase tracking-[0.15em] hover:bg-white/20 hover:border-white/30 font-black transition-all flex items-center gap-1.5 disabled:opacity-30 disabled:cursor-not-allowed"
-                  style={{ fontWeight: 900 }}
-                >
-                  <Sparkles size={11} strokeWidth={2.5} />
-                  AI Autofill
-                </button>
-              )}
-            </div>
-          </div>
+          <label className="block text-white/40 text-[10px] uppercase tracking-[0.15em] mb-2 font-black" style={{ fontWeight: 900 }}>
+            Product Name <span className="text-red-400">*</span>
+          </label>
           <input
             type="text"
             required
@@ -109,8 +69,13 @@ export default function ProductBasicInfo({
             className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl text-white placeholder-white/20 px-3 py-2.5 focus:outline-none focus:border-white/20 transition-all text-xs"
           />
 
-          {/* AI Suggestions Panel */}
+          {/* AI Autofill Panel - Enhanced with field selection and custom prompts */}
           <AIAutofillPanel
+            productName={formData.name}
+            category={formData.category}
+            dynamicFields={dynamicFields}
+            onAutofill={onAIAutofill}
+            loading={loadingAI}
             aiSuggestions={aiSuggestions}
             showSuggestions={showSuggestions}
             onClose={onCloseSuggestions}
@@ -155,12 +120,6 @@ export default function ProductBasicInfo({
             <p className="text-white/40 text-[10px] mt-2 flex items-center gap-1.5 uppercase tracking-[0.15em]">
               <Loader size={10} className="animate-spin" />
               Loading fields...
-            </p>
-          )}
-          {categoryId && dynamicFields.length > 0 && (
-            <p className="text-green-400/60 text-[9px] mt-2 flex items-center gap-1.5 uppercase tracking-[0.15em]">
-              <Sparkles size={9} strokeWidth={2.5} />
-              AI autofill ready
             </p>
           )}
         </div>

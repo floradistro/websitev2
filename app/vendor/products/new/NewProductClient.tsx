@@ -14,6 +14,7 @@ import DynamicFieldsPanel from './components/DynamicFieldsPanel';
 import PricingPanel from './components/PricingPanel';
 import ImageUploadPanel from './components/ImageUploadPanel';
 import COAUploadPanel from './components/COAUploadPanel';
+import BulkImportPanel from './components/BulkImportPanel';
 
 interface Category {
   id: string;
@@ -724,7 +725,7 @@ export default function NewProduct() {
   };
 
   // AI Autofill - Quick product data extraction
-  const handleAIAutofill = async () => {
+  const handleAIAutofill = async (selectedFields: string[], customPrompt: string) => {
     if (!formData.name.trim()) {
       showNotification({
         type: 'warning',
@@ -759,7 +760,9 @@ export default function NewProduct() {
       setLoadingAI(true);
       const response = await axios.post('/api/ai/quick-autofill', {
         productName: formData.name,
-        category: formData.category
+        category: formData.category,
+        selectedFields: selectedFields, // NEW: pass selected fields
+        customPrompt: customPrompt || undefined // NEW: pass custom prompt if provided
       }, {
         signal: abortController.signal
       });
@@ -799,8 +802,8 @@ export default function NewProduct() {
     }
   };
 
-  // Apply AI suggestions to form - COMPLETELY REWRITTEN
-  const applyAISuggestions = () => {
+  // Apply AI suggestions to form - with field selection support
+  const applyAISuggestions = (selectedFields: string[]) => {
     if (!aiSuggestions) {
       console.error('❌ No AI suggestions to apply');
       return;
@@ -808,6 +811,7 @@ export default function NewProduct() {
 
     console.log('🎯 Starting AI autofill...');
     console.log('📦 AI Suggestions:', aiSuggestions);
+    console.log('✅ Selected Fields:', selectedFields);
     console.log('📋 Available Fields:', dynamicFields.map(f => ({
       name: f.name,
       label: f.label,
@@ -836,7 +840,7 @@ export default function NewProduct() {
     };
 
     // 1. STRAIN TYPE
-    if (aiSuggestions.strain_type) {
+    if (selectedFields.includes('strain_type') && aiSuggestions.strain_type) {
       const field = findField(['strain_type', 'straintype', 'strain type']);
       if (field) {
         updates[field.name] = aiSuggestions.strain_type;
@@ -846,7 +850,7 @@ export default function NewProduct() {
     }
 
     // 2. TERPENE PROFILE (multiselect array)
-    if (aiSuggestions.terpenes && Array.isArray(aiSuggestions.terpenes) && aiSuggestions.terpenes.length > 0) {
+    if (selectedFields.includes('terpene_profile') && aiSuggestions.terpenes && Array.isArray(aiSuggestions.terpenes) && aiSuggestions.terpenes.length > 0) {
       const field = findField(['terpene_profile', 'terpenes', 'terpene profile']);
       if (field) {
         // Always store as array for multiselect
@@ -857,7 +861,7 @@ export default function NewProduct() {
     }
 
     // 3. EFFECTS (multiselect array)
-    if (aiSuggestions.effects && Array.isArray(aiSuggestions.effects) && aiSuggestions.effects.length > 0) {
+    if (selectedFields.includes('effects') && aiSuggestions.effects && Array.isArray(aiSuggestions.effects) && aiSuggestions.effects.length > 0) {
       const field = findField(['effects', 'effect']);
       if (field) {
         // Always store as array for multiselect
@@ -868,7 +872,7 @@ export default function NewProduct() {
     }
 
     // 4. LINEAGE
-    if (aiSuggestions.lineage) {
+    if (selectedFields.includes('lineage') && aiSuggestions.lineage) {
       const field = findField(['lineage', 'genetics', 'parentage']);
       if (field) {
         updates[field.name] = aiSuggestions.lineage;
@@ -878,7 +882,7 @@ export default function NewProduct() {
     }
 
     // 5. NOSE / AROMA (now expects array like ["Candy", "Cake", "Glue"])
-    if (aiSuggestions.nose && Array.isArray(aiSuggestions.nose) && aiSuggestions.nose.length > 0) {
+    if (selectedFields.includes('nose') && aiSuggestions.nose && Array.isArray(aiSuggestions.nose) && aiSuggestions.nose.length > 0) {
       const field = findField(['nose', 'aroma', 'scent']);
       if (field) {
         // Store as comma-separated string
@@ -890,8 +894,9 @@ export default function NewProduct() {
     }
 
     // 6. DESCRIPTION
-    if (aiSuggestions.description) {
+    if (selectedFields.includes('description') && aiSuggestions.description) {
       setFormData({ ...formData, description: aiSuggestions.description });
+      appliedCount++;
       console.log(`  → description = "${aiSuggestions.description.substring(0, 50)}..."`);
     }
 
@@ -2107,7 +2112,6 @@ export default function NewProduct() {
             }}
             onProductTypeChange={setProductType}
             onAIAutofill={handleAIAutofill}
-            onCancelAI={cancelAIAutofill}
             onApplySuggestions={applyAISuggestions}
             onCloseSuggestions={() => setShowSuggestions(false)}
           />
