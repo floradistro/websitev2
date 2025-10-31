@@ -88,10 +88,23 @@ export function ProductQuickView({ product, vendorId, isOpen, onClose, onSave, o
                   setCategoryFields(fieldsRes.data.fields || []);
 
                   // Initialize edited fields from product's blueprint_fields
+                  // blueprint_fields is stored as an object: { field_name: value }
                   const initialFields: Record<string, string> = {};
-                  (loadedProduct.blueprint_fields || []).forEach((bf: any) => {
-                    initialFields[bf.field_name] = bf.field_value || '';
-                  });
+                  const blueprintFieldsData = loadedProduct.blueprint_fields || {};
+
+                  // Handle both object format (new) and array format (legacy)
+                  if (Array.isArray(blueprintFieldsData)) {
+                    // Legacy array format: [{ field_name: 'x', field_value: 'y' }]
+                    blueprintFieldsData.forEach((bf: any) => {
+                      initialFields[bf.field_name] = bf.field_value || '';
+                    });
+                  } else if (typeof blueprintFieldsData === 'object') {
+                    // New object format: { field_name: value }
+                    Object.entries(blueprintFieldsData).forEach(([key, value]) => {
+                      initialFields[key] = String(value || '');
+                    });
+                  }
+
                   setEditedBlueprintFields(initialFields);
                 }
               }

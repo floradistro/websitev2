@@ -2136,40 +2136,38 @@ export default function NewProduct() {
 
         {/* Attributes & Variants - Only for Variable Products */}
         {productType === 'variable' && (
-          <div className="bg-gradient-to-br from-white/[0.08] to-white/[0.02] backdrop-blur-xl border border-white/10 rounded-3xl p-6 lg:p-8">
-            <h2 className="text-xl font-black text-white mb-2 tracking-tight flex items-center gap-3" style={{ fontWeight: 900 }}>
-              <div className="w-8 h-8 bg-white/10 rounded-2xl flex items-center justify-center">
-                <Package size={16} className="text-white/80" />
-              </div>
+          <div className="bg-[#141414] border border-white/5 rounded-2xl p-4">
+            <h2 className="text-[10px] uppercase tracking-[0.15em] text-white/40 mb-4 font-black" style={{ fontWeight: 900 }}>
               Product Attributes & Variations
             </h2>
-            <p className="text-white/50 text-sm mb-4">
+            <p className="text-white/40 text-[10px] mb-4 uppercase tracking-[0.15em]">
               Define attributes (like Flavor, Size, Strength) and their values to create product variations.
             </p>
-            <div className="bg-gradient-to-r from-blue-500/10 to-cyan-500/10 border border-blue-500/20 rounded-2xl p-4 mb-6">
-              <p className="text-blue-300/90 text-xs leading-relaxed">
-                <strong className="font-bold">How it works:</strong> 1) Add attribute (e.g., "Strength"), 2) Add values (e.g., "5MG", "10MG", "30MG"), 3) Click "Generate Variants", 4) Fill prices for each variant
+            <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-3 mb-4">
+              <p className="text-blue-300/90 text-[9px] leading-relaxed">
+                <strong className="font-black" style={{ fontWeight: 900 }}>How it works:</strong> 1) Add attribute (e.g., "Strength"), 2) Add values (e.g., "5MG", "10MG", "30MG"), 3) Click "Generate Variants", 4) Fill prices for each variant
               </p>
             </div>
 
             {/* Add Attribute */}
-            <div className="mb-6">
-              <label className="block text-white/90 text-sm font-medium mb-3">Add Attribute</label>
-              <div className="flex gap-3">
+            <div className="mb-4">
+              <label className="block text-white/40 text-[10px] uppercase tracking-[0.15em] mb-2 font-black" style={{ fontWeight: 900 }}>Add Attribute</label>
+              <div className="flex gap-2">
                 <input
                   type="text"
                   value={newAttributeName}
                   onChange={(e) => setNewAttributeName(e.target.value)}
                   placeholder="e.g., Flavor, Size, Strength"
-                  className="flex-1 bg-black/50 border border-white/10 rounded-2xl text-white placeholder-white/30 px-5 py-4 focus:outline-none focus:border-white/30 focus:bg-black/70 transition-all text-base hover:border-white/20"
+                  className="flex-1 bg-[#0a0a0a] border border-white/10 rounded-xl text-white placeholder-white/20 px-3 py-2.5 focus:outline-none focus:border-white/20 transition-all text-xs"
                   onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addAttribute())}
                 />
                 <button
                   type="button"
                   onClick={addAttribute}
-                  className="px-6 py-4 bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 rounded-2xl text-white font-medium transition-all flex items-center gap-2 shadow-lg hover:shadow-xl transform hover:scale-105"
+                  className="px-3 py-2.5 bg-white/10 border border-white/20 rounded-xl text-white hover:bg-white/20 hover:border-white/30 font-black transition-all flex items-center gap-1.5 text-[10px] uppercase tracking-[0.15em]"
+                  style={{ fontWeight: 900 }}
                 >
-                  <Plus size={16} />
+                  <Plus size={11} strokeWidth={2.5} />
                   Add
                 </button>
               </div>
@@ -2177,46 +2175,47 @@ export default function NewProduct() {
 
             {/* Attributes List */}
             {attributes.length > 0 && (
-              <div className="space-y-4 mb-6">
+              <div className="space-y-3 mb-4">
                 {attributes.map((attr) => (
-                  <div key={attr.name} className="bg-black/30 border border-white/10 rounded-2xl p-5">
-                    <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-white font-bold text-base">{attr.name}</h3>
+                  <div key={attr.name} className="bg-[#0a0a0a] border border-white/10 rounded-xl p-3">
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="text-white text-[10px] uppercase tracking-[0.15em] font-black" style={{ fontWeight: 900 }}>{attr.name}</h3>
                       <button
                         type="button"
                         onClick={() => removeAttribute(attr.name)}
-                        className="text-red-400 hover:text-red-300 p-2 rounded-xl hover:bg-red-500/10 transition-all"
+                        className="text-red-400 hover:text-red-300 p-1.5 rounded-lg hover:bg-red-500/10 transition-all"
                       >
-                        <X size={18} />
+                        <X size={14} strokeWidth={2.5} />
                       </button>
                     </div>
 
                     {/* Add Value */}
-                    <div className="flex gap-2 mb-4">
+                    <div className="flex gap-2 mb-3">
                       <input
                         type="text"
                         value={newAttributeValue}
                         onChange={(e) => setNewAttributeValue(e.target.value)}
                         placeholder={`Add ${attr.name} value...`}
-                        className="flex-1 bg-black/50 border border-white/10 rounded-xl text-white placeholder-white/30 px-4 py-3 focus:outline-none focus:border-white/30 focus:bg-black/70 transition-all text-sm hover:border-white/20"
+                        className="flex-1 bg-black border border-white/10 rounded-xl text-white placeholder-white/20 px-3 py-2 focus:outline-none focus:border-white/20 transition-all text-xs"
                         onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addAttributeValue(attr.name))}
                       />
                       <button
                         type="button"
                         onClick={() => addAttributeValue(attr.name)}
-                        className="px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white hover:bg-white/20 transition-all"
+                        className="px-3 py-2 bg-white/10 border border-white/20 rounded-xl text-white hover:bg-white/20 transition-all"
                       >
-                        <Plus size={16} />
+                        <Plus size={14} strokeWidth={2.5} />
                       </button>
                     </div>
 
                     {/* Values */}
                     {attr.values.length > 0 && (
-                      <div className="flex flex-wrap gap-2">
+                      <div className="flex flex-wrap gap-1.5">
                         {attr.values.map((value) => (
                           <div
                             key={value}
-                            className="bg-gradient-to-br from-white/10 to-white/5 border border-white/20 rounded-xl px-4 py-2 flex items-center gap-2 text-sm text-white font-medium"
+                            className="bg-white/10 border border-white/20 rounded px-2 py-1 flex items-center gap-1.5 text-[10px] text-white font-black uppercase tracking-tight"
+                            style={{ fontWeight: 900 }}
                           >
                             {value}
                             <button
@@ -2224,7 +2223,7 @@ export default function NewProduct() {
                               onClick={() => removeAttributeValue(attr.name, value)}
                               className="text-white/60 hover:text-red-400 transition-colors"
                             >
-                              <X size={14} />
+                              <X size={10} strokeWidth={2.5} />
                             </button>
                           </div>
                         ))}
@@ -2242,13 +2241,14 @@ export default function NewProduct() {
                   <button
                     type="button"
                     onClick={generateVariants}
-                    className="w-full px-6 py-4 bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 rounded-2xl text-white font-bold transition-all shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center justify-center gap-3"
+                    className="w-full px-3 py-2.5 bg-white/10 border-2 border-white/20 rounded-xl text-white hover:bg-white/20 hover:border-white/30 font-black transition-all flex items-center justify-center gap-1.5 text-[10px] uppercase tracking-[0.15em]"
+                    style={{ fontWeight: 900 }}
                   >
-                    <Plus size={20} />
+                    <Plus size={11} strokeWidth={2.5} />
                     Generate Variants ({attributes.reduce((acc, a) => acc * a.values.length, 1)} combinations)
                   </button>
                 ) : (
-                  <div className="w-full px-6 py-4 bg-gradient-to-r from-blue-500/10 to-cyan-500/10 border border-blue-500/20 rounded-2xl text-blue-300 text-center text-sm font-medium">
+                  <div className="w-full px-3 py-2.5 bg-blue-500/10 border border-blue-500/20 rounded-xl text-blue-300 text-center text-[10px] uppercase tracking-[0.15em] font-black" style={{ fontWeight: 900 }}>
                     Add values to all attributes above, then generate variants
                   </div>
                 )}
@@ -2257,72 +2257,72 @@ export default function NewProduct() {
 
             {/* Variants Table */}
             {variants.length > 0 && (
-              <div className="mt-6">
-                <h3 className="text-white font-bold text-base mb-4">Manage Variants ({variants.length})</h3>
+              <div className="mt-4">
+                <h3 className="text-white/40 text-[10px] uppercase tracking-[0.15em] mb-3 font-black" style={{ fontWeight: 900 }}>Manage Variants ({variants.length})</h3>
                 <div className="overflow-x-auto">
                   <div className="inline-block min-w-full align-middle">
-                    <div className="bg-black/30 border border-white/10 rounded-2xl overflow-hidden">
+                    <div className="bg-[#0a0a0a] border border-white/10 rounded-xl overflow-hidden">
                       <table className="min-w-full">
                         <thead>
                           <tr className="border-b border-white/10 bg-white/5">
-                            <th className="px-5 py-4 text-left text-xs font-bold text-white/70 uppercase tracking-wider">
+                            <th className="px-3 py-2.5 text-left text-[10px] font-black text-white/40 uppercase tracking-[0.15em]" style={{ fontWeight: 900 }}>
                               Variant
                             </th>
-                            <th className="px-5 py-4 text-left text-xs font-bold text-white/70 uppercase tracking-wider">
+                            <th className="px-3 py-2.5 text-left text-[10px] font-black text-white/40 uppercase tracking-[0.15em]" style={{ fontWeight: 900 }}>
                               Price ($)
                             </th>
-                            <th className="px-5 py-4 text-left text-xs font-bold text-white/70 uppercase tracking-wider">
+                            <th className="px-3 py-2.5 text-left text-[10px] font-black text-white/40 uppercase tracking-[0.15em]" style={{ fontWeight: 900 }}>
                               SKU
                             </th>
-                            <th className="px-5 py-4 text-left text-xs font-bold text-white/70 uppercase tracking-wider">
+                            <th className="px-3 py-2.5 text-left text-[10px] font-black text-white/40 uppercase tracking-[0.15em]" style={{ fontWeight: 900 }}>
                               Stock
                             </th>
-                            <th className="px-5 py-4"></th>
+                            <th className="px-3 py-2.5"></th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-white/5">
                           {variants.map((variant, index) => (
-                            <tr key={index} className="hover:bg-white/[0.02] transition-colors">
-                              <td className="px-5 py-4 text-sm text-white font-medium whitespace-nowrap">
+                            <tr key={index} className="hover:bg-white/5 transition-colors">
+                              <td className="px-3 py-2.5 text-[10px] text-white font-black uppercase tracking-tight whitespace-nowrap" style={{ fontWeight: 900 }}>
                                 {variant.name}
                               </td>
-                              <td className="px-5 py-4">
+                              <td className="px-3 py-2.5">
                                 <input
                                   type="number"
                                   step="0.01"
                                   value={variant.price}
                                   onChange={(e) => updateVariant(index, 'price', e.target.value)}
                                   placeholder="Required"
-                                  className={`w-28 bg-black/50 border rounded-xl text-white placeholder-white/30 px-3 py-2 text-sm focus:outline-none focus:border-white/30 transition-all ${
+                                  className={`w-28 bg-[#0a0a0a] border rounded-xl text-white placeholder-white/20 px-2.5 py-2 text-xs focus:outline-none focus:border-white/20 transition-all ${
                                     !variant.price ? 'border-red-400/50' : 'border-white/10'
                                   }`}
                                 />
                               </td>
-                              <td className="px-5 py-4">
+                              <td className="px-3 py-2.5">
                                 <input
                                   type="text"
                                   value={variant.sku}
                                   onChange={(e) => updateVariant(index, 'sku', e.target.value)}
                                   placeholder="SKU-001"
-                                  className="w-32 bg-black/50 border border-white/10 rounded-xl text-white placeholder-white/30 px-3 py-2 text-sm focus:outline-none focus:border-white/30 transition-all"
+                                  className="w-32 bg-[#0a0a0a] border border-white/10 rounded-xl text-white placeholder-white/20 px-2.5 py-2 text-xs focus:outline-none focus:border-white/20 transition-all"
                                 />
                               </td>
-                              <td className="px-5 py-4">
+                              <td className="px-3 py-2.5">
                                 <input
                                   type="number"
                                   value={variant.stock}
                                   onChange={(e) => updateVariant(index, 'stock', e.target.value)}
                                   placeholder="0"
-                                  className="w-24 bg-black/50 border border-white/10 rounded-xl text-white placeholder-white/30 px-3 py-2 text-sm focus:outline-none focus:border-white/30 transition-all"
+                                  className="w-24 bg-[#0a0a0a] border border-white/10 rounded-xl text-white placeholder-white/20 px-2.5 py-2 text-xs focus:outline-none focus:border-white/20 transition-all"
                                 />
                               </td>
-                              <td className="px-5 py-4">
+                              <td className="px-3 py-2.5">
                                 <button
                                   type="button"
                                   onClick={() => removeVariant(index)}
-                                  className="text-red-400 hover:text-red-300 p-2 rounded-xl hover:bg-red-500/10 transition-all"
+                                  className="text-red-400 hover:text-red-300 p-1.5 rounded-lg hover:bg-red-500/10 transition-all"
                                 >
-                                  <X size={18} />
+                                  <X size={14} strokeWidth={2.5} />
                                 </button>
                               </td>
                             </tr>

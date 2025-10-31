@@ -107,20 +107,30 @@ export async function GET(
 
     console.log(`[Product API] Extracted pricing tiers:`, pricing);
 
-    // Extract custom fields - handle both formats
+    // Extract custom fields - handle both array and object formats
     const custom_fields: any = {};
-    if (product.blueprint_fields && Array.isArray(product.blueprint_fields)) {
-      product.blueprint_fields.forEach((field: any) => {
-        if (field) {
-          // Handle both field_name/field_value and label/value formats
-          const name = field.field_name || field.label || '';
-          const value = field.field_value || field.value || '';
-          
-          if (name && value) {
-            custom_fields[name.toLowerCase().replace(/\s+/g, '_')] = value;
+    if (product.blueprint_fields) {
+      if (Array.isArray(product.blueprint_fields)) {
+        // Legacy array format: [{ field_name: 'x', field_value: 'y' }]
+        product.blueprint_fields.forEach((field: any) => {
+          if (field) {
+            // Handle both field_name/field_value and label/value formats
+            const name = field.field_name || field.label || '';
+            const value = field.field_value || field.value || '';
+
+            if (name && value) {
+              custom_fields[name.toLowerCase().replace(/\s+/g, '_')] = value;
+            }
           }
-        }
-      });
+        });
+      } else if (typeof product.blueprint_fields === 'object') {
+        // New object format: { field_name: value }
+        Object.entries(product.blueprint_fields).forEach(([key, value]) => {
+          if (key && value) {
+            custom_fields[key.toLowerCase().replace(/\s+/g, '_')] = value;
+          }
+        });
+      }
     }
 
     // Get images
@@ -150,7 +160,7 @@ export async function GET(
         stock_quantity: parseFloat(product.stock_quantity) || 0,
         total_stock: parseFloat(product.stock_quantity) || 0,
         custom_fields,
-        blueprint_fields: product.blueprint_fields || [],
+        blueprint_fields: product.blueprint_fields || {},
         coas: (coas || []).map(coa => ({
           id: coa.id,
           file_name: coa.file_name,
@@ -226,13 +236,9 @@ export async function PUT(
     if (body.price !== undefined) updateData.price = body.price;
     if (body.cost_price !== undefined) updateData.cost_price = body.cost_price;
 
-    // Update custom fields
+    // Update custom fields - store as object format { field_name: value }
     if (body.custom_fields) {
-      const fieldsArray = Object.entries(body.custom_fields).map(([field_name, field_value]) => ({
-        field_name,
-        field_value
-      }));
-      updateData.blueprint_fields = fieldsArray;
+      updateData.blueprint_fields = body.custom_fields;
     }
 
     // Update product
