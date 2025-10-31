@@ -2,6 +2,7 @@
 
 import { Sparkles, X, Loader, CheckCircle, AlertCircle } from 'lucide-react';
 import AIAutofillPanel from './AIAutofillPanel';
+import SectionHeader from '@/components/ui/SectionHeader';
 
 interface Category {
   id: string;
@@ -53,9 +54,7 @@ export default function ProductBasicInfo({
 }: ProductBasicInfoProps) {
   return (
     <div className="bg-[#141414] border border-white/5 rounded-2xl p-4">
-      <h2 className="text-[10px] uppercase tracking-[0.15em] text-white/40 mb-4 font-black" style={{ fontWeight: 900 }}>
-        Basic Information
-      </h2>
+      <SectionHeader>Basic Information</SectionHeader>
 
       <div className="space-y-4">
         {/* Product Name */}

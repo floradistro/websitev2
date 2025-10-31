@@ -1,6 +1,7 @@
 "use client";
 
 import { FileText, X, CheckCircle, Loader } from 'lucide-react';
+import SectionHeader from '@/components/ui/SectionHeader';
 
 interface COAUploadPanelProps {
   coaFile: File | null;
@@ -19,14 +20,15 @@ export default function COAUploadPanel({
 }: COAUploadPanelProps) {
   return (
     <div className="bg-[#141414] border border-white/5 rounded-2xl p-4">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-[10px] uppercase tracking-[0.15em] text-white/40 font-black" style={{ fontWeight: 900 }}>
-          Certificate of Analysis (COA)
-        </h2>
-        <span className="text-red-400 text-[9px] uppercase tracking-wider font-black bg-red-500/10 border border-red-500/20 px-2 py-1 rounded-lg" style={{ fontWeight: 900 }}>
-          Required
-        </span>
-      </div>
+      <SectionHeader
+        rightContent={
+          <span className="text-red-400 text-[9px] uppercase tracking-wider font-black bg-red-500/10 border border-red-500/20 px-2 py-1 rounded-lg" style={{ fontWeight: 900 }}>
+            Required
+          </span>
+        }
+      >
+        Certificate of Analysis (COA)
+      </SectionHeader>
 
       {coaFile ? (
         <div className="bg-[#0a0a0a] border border-white/10 rounded-xl p-4 flex items-center justify-between">

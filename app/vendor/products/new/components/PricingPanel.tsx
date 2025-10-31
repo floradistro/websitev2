@@ -1,6 +1,7 @@
 "use client";
 
 import { Plus, X, Zap } from 'lucide-react';
+import SectionHeader from '@/components/ui/SectionHeader';
 
 interface PricingTier {
   weight?: string;
@@ -54,9 +55,7 @@ export default function PricingPanel({
 
   return (
     <div className="bg-[#141414] border border-white/5 rounded-2xl p-4">
-      <h2 className="text-[10px] uppercase tracking-[0.15em] text-white/40 mb-4 font-black" style={{ fontWeight: 900 }}>
-        Pricing
-      </h2>
+      <SectionHeader>Pricing</SectionHeader>
 
       <div className="space-y-4">
         {/* Pricing Mode */}
@@ -155,17 +154,21 @@ export default function PricingPanel({
       {/* Tiered Pricing Panel */}
       {pricingMode === 'tiered' && (
         <div className="mt-4 bg-[#0a0a0a] border border-white/10 rounded-2xl p-4">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-[10px] uppercase tracking-[0.15em] text-white/40 font-black" style={{ fontWeight: 900 }}>
-              Pricing Tiers
-            </h3>
-            <div className="flex items-center gap-1.5">
-              <Zap size={11} strokeWidth={2.5} className="text-yellow-400" />
-              <span className="text-yellow-400 text-[9px] uppercase tracking-[0.15em] font-black" style={{ fontWeight: 900 }}>
-                Quick Pick
-              </span>
-            </div>
-          </div>
+          <SectionHeader
+            as="h3"
+            withMargin={false}
+            className="mb-3"
+            rightContent={
+              <div className="flex items-center gap-1.5">
+                <Zap size={11} strokeWidth={2.5} className="text-yellow-400" />
+                <span className="text-yellow-400 text-[9px] uppercase tracking-[0.15em] font-black" style={{ fontWeight: 900 }}>
+                  Quick Pick
+                </span>
+              </div>
+            }
+          >
+            Pricing Tiers
+          </SectionHeader>
 
           {/* Quick-Pick Pricing Templates */}
           <div className="grid grid-cols-4 gap-2 mb-4">

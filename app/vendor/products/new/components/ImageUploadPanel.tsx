@@ -1,6 +1,7 @@
 "use client";
 
 import { Upload, X, CheckCircle, Loader } from 'lucide-react';
+import SectionHeader from '@/components/ui/SectionHeader';
 
 interface ImageUploadPanelProps {
   imagePreviews: string[];
@@ -19,9 +20,7 @@ export default function ImageUploadPanel({
 }: ImageUploadPanelProps) {
   return (
     <div className="bg-[#141414] border border-white/5 rounded-2xl p-4">
-      <h2 className="text-[10px] uppercase tracking-[0.15em] text-white/40 mb-4 font-black" style={{ fontWeight: 900 }}>
-        Product Images
-      </h2>
+      <SectionHeader>Product Images</SectionHeader>
 
       <div className="space-y-4">
         {/* Image Grid */}
