@@ -82,7 +82,7 @@ export async function PUT(
       app_id: appId,
       filepath: file.filepath,
       content: file.content,
-      file_type: file.filepath.split('.').pop() || 'unknown'
+      file_type: file.filepath?.split('.').pop() || 'unknown'
     }))
 
     const { error: upsertError } = await supabase
@@ -94,6 +94,23 @@ export async function PUT(
     if (upsertError) {
       console.error('Error upserting files:', upsertError)
       return NextResponse.json({ success: false, error: upsertError.message }, { status: 500 })
+    }
+
+    // Push files to preview runtime for instant updates
+    try {
+      const pushResponse = await fetch('https://whaletools-preview-runtime.fly.dev/api/push', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ appId, files })
+      })
+
+      if (!pushResponse.ok) {
+        console.warn('Failed to push to preview runtime:', await pushResponse.text())
+      } else {
+        console.log('✅ Pushed files to preview runtime')
+      }
+    } catch (pushError: any) {
+      console.warn('Preview push failed (non-critical):', pushError.message)
     }
 
     return NextResponse.json({

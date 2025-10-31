@@ -1,6 +1,6 @@
 /**
  * API: Vendor Pricing Blueprints (Multi-Tenant)
- * GET - Get global blueprints + vendor-specific blueprints
+ * GET - Get vendor-specific blueprints only
  * POST - Create vendor-specific pricing blueprint
  * PUT - Update vendor-specific pricing blueprint
  * DELETE - Delete vendor-specific pricing blueprint
@@ -19,47 +19,21 @@ export async function GET(request: NextRequest) {
 
     const supabase = getServiceSupabase();
 
-    // Get all blueprints with hierarchy info
+    // Get only vendor-specific blueprints
     const { data: blueprints, error } = await supabase
       .from('pricing_tier_blueprints')
       .select('*')
-      .or(`vendor_id.is.null,vendor_id.eq.${vendorId}`)
+      .eq('vendor_id', vendorId)
       .eq('is_active', true)
       .order('display_order', { ascending: true });
 
     if (error) throw error;
 
-    // Build hierarchy structure
-    const rootTemplates = (blueprints || []).filter(b => !b.vendor_id && !b.parent_template_id && b.is_template_root);
-    const systemVariations = (blueprints || []).filter(b => !b.vendor_id && b.parent_template_id);
-    const vendorBlueprints = (blueprints || []).filter(b => b.vendor_id === vendorId);
-
-    // Group system variations by parent
-    const variationsByParent = systemVariations.reduce((acc: any, variation) => {
-      const parentId = variation.parent_template_id;
-      if (!acc[parentId]) acc[parentId] = [];
-      acc[parentId].push(variation);
-      return acc;
-    }, {});
-
-    // Build structured response
-    const structuredTemplates = rootTemplates.map(root => ({
-      ...root,
-      variations: variationsByParent[root.id] || []
-    }));
-
     return NextResponse.json({
       success: true,
       blueprints: blueprints || [],
-      structured: {
-        rootTemplates: structuredTemplates,
-        vendorBlueprints: vendorBlueprints
-      },
       counts: {
-        total: blueprints?.length || 0,
-        rootTemplates: rootTemplates.length,
-        systemVariations: systemVariations.length,
-        vendorCustom: vendorBlueprints.length
+        total: blueprints?.length || 0
       }
     });
   } catch (error: any) {
@@ -110,7 +84,7 @@ export async function POST(request: NextRequest) {
       .from('pricing_tier_blueprints')
       .select('slug')
       .eq('slug', baseSlug)
-      .or(`vendor_id.is.null,vendor_id.eq.${vendorId}`)
+      .eq('vendor_id', vendorId)
       .single();
 
     if (existing) {

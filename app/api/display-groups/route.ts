@@ -81,9 +81,8 @@ export async function POST(request: NextRequest) {
       spacing,
       gridColumns,
       gridRows,
-      pricingTierId,
-      heroPriceTier,
-      priceDisplayMode,
+      pricingTierId, // Which pricing tier (filters products)
+      visible_price_breaks, // Which sizes to show (e.g., ['1g', '3_5g'])
       displayConfig,
       devices, // Array of { deviceId, position, categories }
     } = body;
@@ -117,11 +116,10 @@ export async function POST(request: NextRequest) {
           gridGap: 16,
           margins: 24,
         },
-        shared_grid_columns: gridColumns || 4,
-        shared_grid_rows: gridRows || 3,
-        pricing_tier_id: pricingTierId || null,
-        shared_hero_price_tier: heroPriceTier || '3_5g',
-        shared_price_display_mode: priceDisplayMode || 'hero_with_supporting',
+        shared_grid_columns: gridColumns || 6, // Default to 6 columns (6×5 = 30 products)
+        shared_grid_rows: gridRows || 5, // Default to 5 rows
+        pricing_tier_id: pricingTierId || null, // Which tier of products to show
+        visible_price_breaks: visible_price_breaks || [], // Which sizes to show
         display_config: displayConfig || {
           show_images: true,
           show_header: false,

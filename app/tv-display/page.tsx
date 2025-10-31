@@ -562,28 +562,22 @@ function TVDisplayContent() {
         console.log('📋 No category filter - showing all products');
       }
 
-      // Log display group's pricing tier (if configured) but DON'T filter products
-      // The pricing tier is used for DISPLAYING prices, not filtering products
+      // Filter by pricing tier if configured
       if (displayGroup?.pricing_tier_id) {
-        console.log(`💰 Display group uses pricing tier:`, displayGroup.pricing_tier_id, `(${displayGroup.name})`);
+        console.log(`💰 Display group pricing tier filter:`, displayGroup.pricing_tier_id, `(${displayGroup.name})`);
 
-        // Debug: check how many products have this pricing tier
-        const productsWithGroupPricing = filteredProducts.filter((p: any) =>
+        const beforeFilterCount = filteredProducts.length;
+
+        // Filter to only show products with this pricing tier
+        filteredProducts = filteredProducts.filter((p: any) =>
           p.pricing_blueprint?.id === displayGroup.pricing_tier_id
         );
-        console.log(`💰 ${productsWithGroupPricing.length}/${filteredProducts.length} products have the group's pricing tier assigned`);
 
-        // Log first few products for debugging
-        filteredProducts.slice(0, 3).forEach((p: any) => {
-          console.log(`🔍 Product "${p.name}":`, {
-            has_pricing_blueprint: !!p.pricing_blueprint,
-            blueprint_id: p.pricing_blueprint?.id,
-            blueprint_name: p.pricing_blueprint?.name,
-            matches_group_tier: p.pricing_blueprint?.id === displayGroup.pricing_tier_id,
-            has_pricing_tiers: !!p.pricing_tiers,
-            pricing_tiers_keys: p.pricing_tiers ? Object.keys(p.pricing_tiers) : []
-          });
-        });
+        console.log(`💰 Filtered by pricing tier: ${filteredProducts.length}/${beforeFilterCount} products match tier`);
+
+        if (filteredProducts.length === 0) {
+          console.warn(`⚠️ No products match pricing tier "${displayGroup.pricing_tier_id}"`);
+        }
       }
 
       setProducts(filteredProducts);
@@ -747,36 +741,39 @@ function TVDisplayContent() {
   }, [displayGroup?.id, activeMenu]);
 
   /**
-   * Carousel Auto-Rotation
-   * Only runs when display_mode is 'carousel'
+   * AUTO CAROUSEL: Rotates pages every 5 seconds when products exceed grid capacity
    */
   useEffect(() => {
-    if (!activeMenu || activeMenu.display_mode !== 'carousel' || products.length === 0) {
+    if (products.length === 0 || !displayGroup) {
       return;
     }
 
-    const productsPerPage = 12;
+    // Calculate grid capacity
+    const gridColumns = displayGroup.shared_grid_columns || 6;
+    const gridRows = displayGroup.shared_grid_rows || 5;
+    const productsPerPage = gridColumns * gridRows;
     const totalPages = Math.ceil(products.length / productsPerPage);
 
+    // Only enable carousel if products exceed capacity
     if (totalPages <= 1) {
-      return; // No rotation needed if only one page
+      setCarouselPage(0); // Reset to first page
+      return;
     }
 
-    console.log(`🎠 Starting carousel rotation: ${totalPages} pages, ${products.length} products`);
+    console.log(`🎠 AUTO CAROUSEL: ${totalPages} pages, rotating every 5 seconds`);
 
     const interval = setInterval(() => {
       setCarouselPage((prev) => {
         const next = (prev + 1) % totalPages;
-        console.log(`🎠 Rotating to page ${next + 1} of ${totalPages}`);
+        console.log(`🎠 Page ${next + 1}/${totalPages}`);
         return next;
       });
-    }, 20000); // 20 seconds per page
+    }, 5000); // 5 seconds per page
 
     return () => {
-      console.log('🎠 Cleaning up carousel rotation');
       clearInterval(interval);
     };
-  }, [activeMenu, activeMenu?.display_mode, products.length]);
+  }, [products.length, displayGroup?.shared_grid_columns, displayGroup?.shared_grid_rows]);
 
   // Loading State
   if (loading) {
@@ -871,55 +868,57 @@ function TVDisplayContent() {
       style={{
         background: theme.styles.background,
         backgroundImage: theme.styles.backgroundImage,
-        padding: 'env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px)'
+        padding: 'env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px)',
+        // Zoom-independent rendering: Use CSS transform scale based on viewport size
+        // This ensures consistent display across different browsers and zoom levels
+        transformOrigin: 'center center',
       }}
     >
       {/* Menu Content */}
-      <div className="absolute inset-0" style={{ padding: '3rem 4rem' }}>
-        <div className="h-full flex flex-col">
-          {/* Header - Conditional based on display config */}
-          {(displayGroup?.display_config?.show_header !== false) && (
-            <div className="text-center mb-12">
-              {/* Display Group Mode: Show only category */}
-              {groupMember?.assigned_categories && groupMember.assigned_categories.length > 0 ? (
-                <div className="mb-6">
-                  <h1
-                    className="uppercase tracking-[0.2em] font-black text-white"
-                    style={{
-                      fontSize: '2rem',
-                      lineHeight: 1,
-                      letterSpacing: '0.2em',
-                      opacity: 0.9
-                    }}
-                  >
-                    {groupMember.assigned_categories.join(' • ')}
-                  </h1>
-                </div>
-              ) : (
-                /* Regular Mode: Show menu name and description */
-                <>
-                  <h1
-                    className="uppercase tracking-[0.15em]"
-                    style={{
-                      ...theme.styles.menuTitle,
-                      lineHeight: 1,
-                      letterSpacing: '0.15em'
-                    }}
-                  >
-                    {activeMenu.name}
-                  </h1>
-                  {activeMenu.description && (
-                    <p
-                      className="mt-4 uppercase tracking-wider font-medium"
-                      style={{
-                        ...theme.styles.menuDescription,
-                        letterSpacing: '0.1em'
-                      }}
-                    >
-                      {activeMenu.description}
-                    </p>
-                  )}
-                </>
+      <div className="absolute inset-0 overflow-hidden p-4">
+        <div className="h-full w-full flex flex-col">
+          {/* Category Header - Compact and always on top */}
+          {(displayGroup?.display_config?.show_category_header === true && groupMember?.assigned_categories && groupMember.assigned_categories.length > 0) && (
+            <div className="text-center flex-shrink-0 mb-3">
+              <h1
+                className="uppercase tracking-[0.2em] font-black text-white"
+                style={{
+                  fontSize: '4.5rem',
+                  lineHeight: 1,
+                  letterSpacing: '0.2em',
+                  opacity: 0.9
+                }}
+              >
+                {groupMember.assigned_categories.join(' • ')}
+              </h1>
+            </div>
+          )}
+
+          {/* Menu Header - Full header with name and description */}
+          {(displayGroup?.display_config?.show_header === true) && (
+            <div className="text-center flex-shrink-0 mb-4">
+              <h1
+                className="uppercase tracking-[0.15em]"
+                style={{
+                  ...theme.styles.menuTitle,
+                  fontSize: '5rem',
+                  lineHeight: 1,
+                  letterSpacing: '0.15em'
+                }}
+              >
+                {activeMenu.name}
+              </h1>
+              {activeMenu.description && (
+                <p
+                  className="uppercase tracking-wider font-medium mt-2"
+                  style={{
+                    ...theme.styles.menuDescription,
+                    fontSize: '2rem',
+                    letterSpacing: '0.1em',
+                  }}
+                >
+                  {activeMenu.description}
+                </p>
               )}
             </div>
           )}
@@ -929,65 +928,92 @@ function TVDisplayContent() {
             // Use display group settings if available, otherwise fall back to menu settings
             const displayMode = displayGroup?.shared_display_mode || activeMenu.display_mode || 'dense';
 
-            // Auto-adjust grid based on orientation - DENSE for TV menus
+            // SMART GRID: Default to 30 products, user can adjust manually
+            const totalProducts = products.length;
+            const maxProductsToShow = 30; // Default limit
+
             let gridColumns, gridRows;
-            if (isPortrait) {
-              // Portrait: 5 columns x 10 rows = 50 products
-              gridColumns = displayGroup?.shared_grid_columns ? Math.max(4, Math.floor(displayGroup.shared_grid_columns * 0.75)) : 5;
-              gridRows = displayGroup?.shared_grid_rows ? Math.ceil(displayGroup.shared_grid_rows * 1.5) : 10;
+
+            // Check if user has manually configured the grid
+            if (displayGroup?.shared_grid_columns && displayGroup?.shared_grid_rows) {
+              // User manual configuration - respect it exactly
+              gridColumns = displayGroup.shared_grid_columns;
+              gridRows = displayGroup.shared_grid_rows;
+              console.log('📐 Using manual grid configuration:', { gridColumns, gridRows, capacity: gridColumns * gridRows });
             } else {
-              // Landscape: 8 columns x 6 rows = 48 products
-              gridColumns = displayGroup?.shared_grid_columns || 8;
-              gridRows = displayGroup?.shared_grid_rows || 6;
+              // Smart auto-optimization for default 30 products
+              const productsToFit = Math.min(totalProducts, maxProductsToShow);
+
+              if (isPortrait) {
+                // Portrait: Optimize for vertical displays (9:16 aspect ratio)
+                // Example: 30 products → 5 cols × 6 rows
+                gridColumns = Math.ceil(Math.sqrt(productsToFit * 0.5625)); // 9/16 = 0.5625
+                gridRows = Math.ceil(productsToFit / gridColumns);
+              } else {
+                // Landscape: Optimize for horizontal displays (16:9 aspect ratio)
+                // Example: 30 products → 6 cols × 5 rows
+                gridColumns = Math.ceil(Math.sqrt(productsToFit * 1.78)); // 16/9 = 1.78
+                gridRows = Math.ceil(productsToFit / gridColumns);
+              }
+
+              console.log('🤖 Smart auto-optimization:', {
+                orientation: isPortrait ? 'portrait' : 'landscape',
+                totalProducts,
+                showing: Math.min(totalProducts, maxProductsToShow),
+                gridColumns,
+                gridRows,
+                capacity: gridColumns * gridRows
+              });
             }
 
-            const isCarousel = displayMode === 'carousel';
-            const isDense = displayMode === 'dense';
+            const productsPerPage = gridColumns * gridRows;
+            const needsCarousel = products.length > productsPerPage;
 
             console.log('📐 Grid settings:', {
               orientation: isPortrait ? 'portrait' : 'landscape',
-              displayMode,
               gridColumns,
               gridRows,
-              total: gridColumns * gridRows,
+              capacity: productsPerPage,
+              totalProducts: products.length,
+              needsCarousel,
               source: displayGroup ? 'group' : 'menu'
             });
 
-            // Calculate products to show
+            // AUTO CAROUSEL: If products exceed grid capacity, enable carousel
             let productsToShow;
-            const productsPerPage = gridColumns * gridRows;
-
-            if (isCarousel) {
+            if (needsCarousel) {
+              // Carousel mode - rotate through pages every 5 seconds
               const start = carouselPage * productsPerPage;
               const end = start + productsPerPage;
               productsToShow = products.slice(start, end);
+              console.log(`🎠 Carousel: Page ${carouselPage + 1}/${Math.ceil(products.length / productsPerPage)} (${start + 1}-${Math.min(end, products.length)} of ${products.length})`);
             } else {
-              // Dense: show up to grid capacity
-              productsToShow = products.slice(0, productsPerPage);
+              // All products fit - show them all
+              productsToShow = products;
+              console.log(`📦 Static: Showing all ${products.length} products`);
             }
 
             // Dynamic grid classes based on group settings
-            const gridClasses = `grid gap-4`;
+            const gridClasses = `grid gap-3`;
             const gridStyle = {
-              gridTemplateColumns: `repeat(${gridColumns}, minmax(0, 1fr))`,
-              gridTemplateRows: `repeat(${gridRows}, minmax(0, 1fr))`
+              gridTemplateColumns: `repeat(${gridColumns}, 1fr)`,
+              gridTemplateRows: `repeat(${gridRows}, 1fr)`,
+              maxHeight: '100%',
+              maxWidth: '100%',
             };
 
             // Get visible price breaks from display group or menu config
-            // Default to empty array - user MUST configure which tiers to show
-            let visiblePriceBreaks = displayGroup?.visible_price_breaks || activeMenu?.config_data?.visible_price_breaks || [];
+            const visiblePriceBreaks = displayGroup?.visible_price_breaks || activeMenu?.config_data?.visible_price_breaks || [];
 
-            // TEMPORARY: For testing, use 1g and 3.5g if not configured
-            // TODO: Remove this once UI for configuring visible_price_breaks is built
-            if (visiblePriceBreaks.length === 0) {
-              visiblePriceBreaks = ['1g', '3_5g'];
-              console.log('⚠️  No visible_price_breaks configured - using temporary defaults:', visiblePriceBreaks);
-              console.log('   Configure visible_price_breaks in display group or menu settings');
-            }
+            console.log('💰 Visible price breaks:', visiblePriceBreaks.length > 0 ? visiblePriceBreaks : 'none configured (will show no pricing)');
 
             return (
               <>
-                <div className={`${gridClasses} flex-1 content-start`} style={gridStyle}>
+                <div className={`${gridClasses} w-full`} style={{
+                  ...gridStyle,
+                  flex: '1 1 0',
+                  minHeight: 0, // Critical: allows grid to shrink
+                }}>
                   {productsToShow.map((product: any, index: number) => (
                     <MinimalProductCard
                       key={product.id}
@@ -995,25 +1021,26 @@ function TVDisplayContent() {
                       theme={theme}
                       index={index}
                       visiblePriceBreaks={visiblePriceBreaks}
+                      displayConfig={displayGroup?.display_config}
                     />
                   ))}
                 </div>
 
                 {/* Carousel Page Indicators */}
-                {isCarousel && (() => {
+                {needsCarousel && (() => {
                   const productsPerPage = gridColumns * gridRows;
                   const totalPages = Math.ceil(products.length / productsPerPage);
 
                   if (totalPages <= 1) return null;
 
                   return (
-                    <div className="flex justify-center gap-2 mt-6">
+                    <div className="flex justify-center gap-2 mt-3 flex-shrink-0">
                       {Array.from({ length: totalPages }).map((_, i) => (
                         <div
                           key={i}
                           className="rounded-full transition-all"
                           style={{
-                            width: i === carouselPage ? '32px' : '8px',
+                            width: i === carouselPage ? '28px' : '8px',
                             height: '8px',
                             background: i === carouselPage ? theme.styles.price.color : theme.styles.productDescription.color,
                             opacity: i === carouselPage ? 1 : 0.3
@@ -1028,8 +1055,8 @@ function TVDisplayContent() {
           })() : (
             <div className="text-center flex-1 flex items-center justify-center" style={{ color: theme.styles.productDescription.color }}>
               <div>
-                <div className="text-6xl mb-4">📦</div>
-                <p className="text-2xl uppercase tracking-wider font-bold">No products available</p>
+                <div className="text-8xl mb-6">📦</div>
+                <p className="text-3xl uppercase tracking-wider font-bold">No products available</p>
               </div>
             </div>
           )}
@@ -1037,9 +1064,9 @@ function TVDisplayContent() {
       </div>
 
       {/* Connection Status Indicator */}
-      <div className="absolute bottom-6 right-6 flex items-center gap-3 bg-black/70 backdrop-blur-md rounded-full px-6 py-3 border border-white/10">
+      <div className="absolute bottom-4 right-4 flex items-center gap-3 bg-black/70 backdrop-blur-md rounded-full px-4 py-2 border border-white/10">
         <div
-          className={`w-3 h-3 rounded-full ${
+          className={`w-2 h-2 rounded-full ${
             connectionStatus === 'online'
               ? 'bg-green-400 shadow-lg shadow-green-400/50'
               : connectionStatus === 'error'

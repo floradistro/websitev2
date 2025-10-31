@@ -75,9 +75,11 @@ export default function DisplayGroupManager({ vendorId }: DisplayGroupManagerPro
   };
 
   const handleCreateGroup = async (groupData: any) => {
+    console.log('💾 Saving display group configuration:', groupData);
     try {
       if (selectedGroup) {
         // Update existing group
+        console.log('📝 Updating existing group:', selectedGroup.id);
         const response = await fetch(`/api/display-groups/${selectedGroup.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
@@ -85,10 +87,14 @@ export default function DisplayGroupManager({ vendorId }: DisplayGroupManagerPro
         });
 
         const data = await response.json();
+        console.log('✅ Update response:', data);
         if (data.success) {
+          console.log('✅ Display group updated successfully');
           await loadGroups();
           setShowWizard(false);
           setSelectedGroup(null);
+        } else {
+          console.error('❌ Failed to update display group:', data.error);
         }
       } else {
         // Create new group

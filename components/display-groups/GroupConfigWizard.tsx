@@ -66,18 +66,20 @@ export default function GroupConfigWizard({ vendorId, existingGroup, onComplete,
   const [selectedDevices, setSelectedDevices] = useState<string[]>([]);
   const [theme, setTheme] = useState('midnight-elegance');
   const [displayMode, setDisplayMode] = useState('dense');
-  const [gridColumns, setGridColumns] = useState(4);
-  const [gridRows, setGridRows] = useState(3);
+  const [gridColumns, setGridColumns] = useState(6);
+  const [gridRows, setGridRows] = useState(5);
   const [deviceCategories, setDeviceCategories] = useState<{ [deviceId: string]: string[] }>({});
 
-  // Pricing configuration
+  // Pricing tier selection (which tier of products to show - e.g., "Budget", "Mid", "Premium")
   const [pricingTierId, setPricingTierId] = useState<string>('');
-  const [heroPriceTier, setHeroPriceTier] = useState('3_5g');
-  const [priceDisplayMode, setPriceDisplayMode] = useState('hero_with_supporting');
-  const [priceLocation, setPriceLocation] = useState('on_card');
+  const [pricingTiers, setPricingTiers] = useState<any[]>([]);
 
-  // Display configuration
+  // Visible price breaks (which sizes to show - e.g., ['1g', '3_5g', '28g'])
+  const [visiblePriceBreaks, setVisiblePriceBreaks] = useState<string[]>([]);
+
+  // Display configuration - all enabled by default
   const [showImages, setShowImages] = useState(true);
+  const [showCategoryHeader, setShowCategoryHeader] = useState(true);
   const [showHeader, setShowHeader] = useState(false);
   const [showStrainType, setShowStrainType] = useState(true);
   const [showThc, setShowThc] = useState(true);
@@ -100,13 +102,12 @@ export default function GroupConfigWizard({ vendorId, existingGroup, onComplete,
 
       // Pricing configuration
       setPricingTierId(existingGroup.pricing_tier_id || '');
-      setHeroPriceTier(existingGroup.shared_hero_price_tier || '3_5g');
-      setPriceDisplayMode(existingGroup.shared_price_display_mode || 'hero_with_supporting');
-      setPriceLocation('on_card'); // Default for now
+      setVisiblePriceBreaks(existingGroup.visible_price_breaks || []);
 
       // Display configuration
       if (existingGroup.display_config) {
         setShowImages(existingGroup.display_config.show_images !== false);
+        setShowCategoryHeader(existingGroup.display_config.show_category_header !== false);
         setShowHeader(existingGroup.display_config.show_header === true);
         setShowStrainType(existingGroup.display_config.show_strain_type !== false);
         setShowThc(existingGroup.display_config.show_thc !== false);
@@ -149,25 +150,11 @@ export default function GroupConfigWizard({ vendorId, existingGroup, onComplete,
         setAvailableCategories([]);
       }
 
-      // Load available pricing tier blueprints
-      const pricingResponse = await fetch(`/api/vendor/pricing-config?vendor_id=${vendorId}`);
-      const pricingData = await pricingResponse.json();
-      if (pricingData.success && pricingData.configs) {
-        const activeTiers = pricingData.configs
-          .filter((config: any) => config.is_active && config.blueprint)
-          .map((config: any) => ({
-            id: config.blueprint.id,
-            name: config.blueprint.name,
-            description: config.blueprint.description,
-            context: config.blueprint.context,
-            price_breaks: config.blueprint.price_breaks
-          }));
-        setAvailablePricingTiers(activeTiers);
-
-        // Auto-select first tier if none selected
-        if (activeTiers.length > 0 && !pricingTierId) {
-          setPricingTierId(activeTiers[0].id);
-        }
+      // Load pricing tier blueprints (for filtering products by tier)
+      const blueprintsResponse = await fetch(`/api/vendor/pricing/blueprints?vendor_id=${vendorId}`);
+      const blueprintsData = await blueprintsResponse.json();
+      if (blueprintsData.success) {
+        setPricingTiers(blueprintsData.blueprints || []);
       }
     } catch (error) {
       console.error('Error loading data:', error);
@@ -206,12 +193,12 @@ export default function GroupConfigWizard({ vendorId, existingGroup, onComplete,
       displayMode,
       gridColumns,
       gridRows,
-      pricingTierId,
-      heroPriceTier,
-      priceDisplayMode,
+      pricingTierId: pricingTierId || null, // Which pricing tier (filters products)
+      visible_price_breaks: visiblePriceBreaks, // Which sizes to show (1g, 3.5g, etc.)
       devices,
       displayConfig: {
         show_images: showImages,
+        show_category_header: showCategoryHeader,
         show_header: showHeader,
         show_strain_type: showStrainType,
         show_thc: showThc,
@@ -440,12 +427,13 @@ export default function GroupConfigWizard({ vendorId, existingGroup, onComplete,
                     </label>
                     <input
                       type="number"
-                      min="2"
-                      max="6"
-                      value={gridColumns}
-                      onChange={(e) => setGridColumns(parseInt(e.target.value))}
+                      min="3"
+                      max="12"
+                      value={gridColumns || 6}
+                      onChange={(e) => setGridColumns(parseInt(e.target.value) || 6)}
                       className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
                     />
+                    <p className="text-xs text-white/40 mt-1">3-12 columns</p>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-white mb-2">
@@ -453,12 +441,13 @@ export default function GroupConfigWizard({ vendorId, existingGroup, onComplete,
                     </label>
                     <input
                       type="number"
-                      min="2"
-                      max="5"
-                      value={gridRows}
-                      onChange={(e) => setGridRows(parseInt(e.target.value))}
+                      min="3"
+                      max="10"
+                      value={gridRows || 5}
+                      onChange={(e) => setGridRows(parseInt(e.target.value) || 5)}
                       className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
                     />
+                    <p className="text-xs text-white/40 mt-1">3-10 rows</p>
                   </div>
                 </div>
 
@@ -481,134 +470,85 @@ export default function GroupConfigWizard({ vendorId, existingGroup, onComplete,
                 <div className="border-t border-white/10 pt-6 mt-6">
                   <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
                     <Palette className="w-5 h-5 text-purple-400" />
-                    Pricing Display
+                    Pricing Configuration
                   </h3>
 
-                  {/* Pricing Tier Blueprint Selector */}
+                  {/* Step 1: Which pricing tier (which products to show) */}
                   <div className="mb-6">
                     <label className="block text-sm font-medium text-white mb-3">
-                      Which pricing tier to use *
+                      Which pricing tier to show
                     </label>
-                    {availablePricingTiers.length > 0 ? (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        {availablePricingTiers.map((tier) => (
+                    <p className="text-xs text-white/50 mb-3">
+                      Choose which tier of products to display (e.g., Budget, Mid-tier, Premium). Leave empty to show all tiers.
+                    </p>
+                    <select
+                      value={pricingTierId}
+                      onChange={(e) => setPricingTierId(e.target.value)}
+                      className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:border-purple-500"
+                    >
+                      <option value="">Show all pricing tiers</option>
+                      {pricingTiers.map((tier) => (
+                        <option key={tier.id} value={tier.id}>
+                          {tier.name} {tier.description ? `- ${tier.description}` : ''}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Step 2: Which price breaks to show (1g, 3.5g, etc.) */}
+                  <div className="mb-6">
+                    <label className="block text-sm font-medium text-white mb-3">
+                      Which sizes to show
+                    </label>
+                    <p className="text-xs text-white/50 mb-4">
+                      Select which sizes/weights to display (e.g., 1g, 3.5g, 28g)
+                    </p>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                      {PRICE_TIERS.map((tier) => {
+                        const isSelected = visiblePriceBreaks.includes(tier.id);
+                        return (
                           <button
                             key={tier.id}
-                            onClick={() => setPricingTierId(tier.id)}
-                            className={`p-4 rounded-lg border-2 transition-all text-left ${
-                              pricingTierId === tier.id
+                            onClick={() => {
+                              if (isSelected) {
+                                setVisiblePriceBreaks(visiblePriceBreaks.filter(id => id !== tier.id));
+                              } else {
+                                setVisiblePriceBreaks([...visiblePriceBreaks, tier.id]);
+                              }
+                            }}
+                            className={`p-3 rounded-lg border-2 transition-all text-left ${
+                              isSelected
                                 ? 'border-purple-500 bg-purple-500/20'
                                 : 'border-white/10 bg-white/5 hover:border-white/20'
                             }`}
                           >
                             <div className="flex items-center justify-between mb-1">
-                              <span className="font-semibold text-white">{tier.name}</span>
-                              {pricingTierId === tier.id && (
+                              <span className="font-semibold text-white text-sm">{tier.name}</span>
+                              {isSelected && (
                                 <div className="w-5 h-5 rounded-full bg-purple-500 flex items-center justify-center">
                                   <Check className="w-3 h-3 text-white" />
                                 </div>
                               )}
                             </div>
-                            {tier.description && (
-                              <div className="text-xs text-white/60 mb-2">{tier.description}</div>
-                            )}
-                            <div className="text-xs text-white/40">
-                              {tier.context === 'display' && '📺 Display Pricing'}
-                              {tier.context === 'pos' && '💰 POS Pricing'}
-                              {tier.context === 'storefront' && '🛍️ Storefront Pricing'}
-                            </div>
+                            <div className="text-xs text-white/60">{tier.description}</div>
                           </button>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
-                        <p className="text-sm text-yellow-200">
-                          No pricing tiers configured yet. Please set up pricing tiers in your vendor settings first.
+                        );
+                      })}
+                    </div>
+                    {visiblePriceBreaks.length === 0 && (
+                      <div className="mt-3 p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
+                        <p className="text-xs text-yellow-200">
+                          Select at least one price tier to display
                         </p>
                       </div>
                     )}
-                  </div>
-
-                  {/* Hero Price Tier Selector */}
-                  <div className="mb-6">
-                    <label className="block text-sm font-medium text-white mb-3">
-                      Which price to highlight
-                    </label>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                      {PRICE_TIERS.map((tier) => (
-                        <button
-                          key={tier.id}
-                          onClick={() => setHeroPriceTier(tier.id)}
-                          className={`p-3 rounded-lg border-2 transition-all text-left ${
-                            heroPriceTier === tier.id
-                              ? 'border-purple-500 bg-purple-500/20'
-                              : 'border-white/10 bg-white/5 hover:border-white/20'
-                          }`}
-                        >
-                          <div className="flex items-center justify-between mb-1">
-                            <span className="font-semibold text-white text-sm">{tier.name}</span>
-                            {heroPriceTier === tier.id && (
-                              <div className="w-4 h-4 rounded-full bg-purple-500 flex items-center justify-center">
-                                <Check className="w-3 h-3 text-white" />
-                              </div>
-                            )}
-                          </div>
-                          <div className="text-xs text-white/60">{tier.description}</div>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Price Display Mode */}
-                  <div className="mb-4">
-                    <label className="block text-sm font-medium text-white mb-3">
-                      How to display prices
-                    </label>
-                    <div className="space-y-2">
-                      {PRICE_DISPLAY_MODES.map((mode) => (
-                        <button
-                          key={mode.id}
-                          onClick={() => setPriceDisplayMode(mode.id)}
-                          className={`w-full p-3 rounded-lg border-2 transition-all text-left ${
-                            priceDisplayMode === mode.id
-                              ? 'border-purple-500 bg-purple-500/20'
-                              : 'border-white/10 bg-white/5 hover:border-white/20'
-                          }`}
-                        >
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <div className="font-semibold text-white text-sm mb-1">{mode.name}</div>
-                              <div className="text-xs text-white/60">{mode.description}</div>
-                            </div>
-                            {priceDisplayMode === mode.id && (
-                              <div className="w-5 h-5 rounded-full bg-purple-500 flex items-center justify-center">
-                                <Check className="w-3 h-3 text-white" />
-                              </div>
-                            )}
-                          </div>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
-                    <div className="text-sm text-white/80">
-                      <div className="font-medium mb-1">Pricing Preview</div>
-                      <div className="text-white/60 space-y-1">
-                        {pricingTierId && (
-                          <div>
-                            Using <span className="font-semibold text-white">{availablePricingTiers.find(t => t.id === pricingTierId)?.name}</span> pricing tier
-                          </div>
-                        )}
-                        <div>
-                          Highlighting <span className="font-semibold text-white">{PRICE_TIERS.find(t => t.id === heroPriceTier)?.name}</span> pricing
-                          {priceDisplayMode === 'hero_only' && ' only'}
-                          {priceDisplayMode === 'hero_with_supporting' && ' with 1-2 supporting tiers'}
-                          {priceDisplayMode === 'all_tiers' && ' with all available tiers'}
-                          {priceDisplayMode === 'minimal' && ', showing only the smallest tier'}
-                        </div>
+                    {visiblePriceBreaks.length > 0 && (
+                      <div className="mt-3 p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+                        <p className="text-xs text-white/70">
+                          <span className="font-semibold">Selected:</span> {visiblePriceBreaks.map(id => PRICE_TIERS.find(t => t.id === id)?.name).join(', ')}
+                        </p>
                       </div>
-                    </div>
+                    )}
                   </div>
                 </div>
 
@@ -643,7 +583,27 @@ export default function GroupConfigWizard({ vendorId, existingGroup, onComplete,
                       <p className="text-xs text-white/60">Product photos</p>
                     </button>
 
-                    {/* Header */}
+                    {/* Category Header */}
+                    <button
+                      onClick={() => setShowCategoryHeader(!showCategoryHeader)}
+                      className={`p-4 rounded-lg border-2 transition-all text-left ${
+                        showCategoryHeader
+                          ? 'border-purple-500 bg-purple-500/20'
+                          : 'border-white/10 bg-white/5 hover:border-white/20'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="font-medium text-white text-sm">Category</span>
+                        {showCategoryHeader && (
+                          <div className="w-4 h-4 rounded-full bg-purple-500 flex items-center justify-center">
+                            <Check className="w-3 h-3 text-white" />
+                          </div>
+                        )}
+                      </div>
+                      <p className="text-xs text-white/60">Show category name</p>
+                    </button>
+
+                    {/* Menu Header */}
                     <button
                       onClick={() => setShowHeader(!showHeader)}
                       className={`p-4 rounded-lg border-2 transition-all text-left ${
@@ -653,19 +613,22 @@ export default function GroupConfigWizard({ vendorId, existingGroup, onComplete,
                       }`}
                     >
                       <div className="flex items-center justify-between mb-1">
-                        <span className="font-medium text-white text-sm">Header</span>
+                        <span className="font-medium text-white text-sm">Menu Header</span>
                         {showHeader && (
                           <div className="w-4 h-4 rounded-full bg-purple-500 flex items-center justify-center">
                             <Check className="w-3 h-3 text-white" />
                           </div>
                         )}
                       </div>
-                      <p className="text-xs text-white/60">Menu name</p>
+                      <p className="text-xs text-white/60">Menu name & desc</p>
                     </button>
 
                     {/* Strain Type */}
                     <button
-                      onClick={() => setShowStrainType(!showStrainType)}
+                      onClick={() => {
+                        console.log('🔄 Toggling Strain Type:', !showStrainType);
+                        setShowStrainType(!showStrainType);
+                      }}
                       className={`p-4 rounded-lg border-2 transition-all text-left ${
                         showStrainType
                           ? 'border-purple-500 bg-purple-500/20'

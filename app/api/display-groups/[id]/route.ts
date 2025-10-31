@@ -58,9 +58,8 @@ export async function PUT(
       gridRows,
       typography,
       spacing,
-      pricingTierId,
-      heroPriceTier,
-      priceDisplayMode,
+      pricingTierId, // Which pricing tier (filters products)
+      visible_price_breaks, // Which sizes to show (e.g., ['1g', '3_5g'])
       displayConfig,
       devices, // Array of { deviceId, position, categories }
     } = body;
@@ -77,9 +76,8 @@ export async function PUT(
       shared_grid_rows: gridRows,
       shared_typography: typography,
       shared_spacing: spacing,
-      pricing_tier_id: pricingTierId || null,
-      shared_hero_price_tier: heroPriceTier,
-      shared_price_display_mode: priceDisplayMode,
+      pricing_tier_id: pricingTierId || null, // Which tier of products to show
+      visible_price_breaks: visible_price_breaks || [], // Which sizes to show
       updated_at: new Date().toISOString(),
     };
 

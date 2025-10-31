@@ -80,6 +80,76 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: error.message }, { status: 500 })
     }
 
+    // Create starter files for instant preview
+    try {
+      const starterFiles = [
+        {
+          filepath: 'app/page.tsx',
+          content: `export default function HomePage() {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+      <div className="text-center max-w-2xl">
+        <h1 className="text-5xl font-bold text-gray-900 mb-4">
+          Welcome to ${name}
+        </h1>
+        <p className="text-xl text-gray-600 mb-8">
+          Your ${app_type} is ready to customize!
+        </p>
+        <div className="bg-white rounded-lg shadow-lg p-8">
+          <h2 className="text-2xl font-semibold mb-4">Getting Started</h2>
+          <p className="text-gray-700 mb-4">
+            This is your starter template. Start editing to make it your own.
+          </p>
+          <div className="flex gap-4 justify-center">
+            <button className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+              Get Started
+            </button>
+            <button className="px-6 py-3 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition">
+              Learn More
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}`,
+          file_type: 'tsx'
+        },
+        {
+          filepath: 'app/layout.tsx',
+          content: `export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en">
+      <body>{children}</body>
+    </html>
+  )
+}`,
+          file_type: 'tsx'
+        }
+      ]
+
+      const fileInserts = starterFiles.map(file => ({
+        app_id: app.id,
+        filepath: file.filepath,
+        content: file.content,
+        file_type: file.file_type
+      }))
+
+      const { error: filesError } = await supabase
+        .from('app_files')
+        .insert(fileInserts)
+
+      if (filesError) {
+        console.error('Error creating starter files:', filesError)
+        // Don't fail the whole request, just log the error
+      } else {
+        console.log(`Created ${starterFiles.length} starter files for app ${app.id}`)
+      }
+    } catch (fileError: any) {
+      console.error('Unexpected error creating starter files:', fileError)
+      // Don't fail the whole request
+    }
+
     // Create GitHub repo and deploy to Vercel
     try {
       const { createRepositoryFromTemplate } = await import('@/lib/deployment/github')

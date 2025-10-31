@@ -11,22 +11,23 @@ interface MinimalProductCardProps {
   theme: any;
   index: number;
   visiblePriceBreaks?: string[]; // e.g. ['1g', '3_5g'] - which tiers to show
+  displayConfig?: any; // Display configuration (show_strain_type, show_thc, etc.)
 }
 
-export function MinimalProductCard({ product, theme, index, visiblePriceBreaks }: MinimalProductCardProps) {
+export function MinimalProductCard({ product, theme, index, visiblePriceBreaks, displayConfig }: MinimalProductCardProps) {
   const pricing_tiers = product.pricing_tiers || {};
   const blueprint = product.pricing_blueprint;
   const priceBreaks = blueprint?.price_breaks || [];
 
   // Debug logging for first product
   if (index === 0) {
-    console.log('🔍 Product pricing debug:', {
+    console.log('🔍 Product card debug:', {
       name: product.name,
-      has_pricing_tiers: !!product.pricing_tiers,
-      pricing_tiers: product.pricing_tiers,
-      has_blueprint: !!product.pricing_blueprint,
-      blueprint: product.pricing_blueprint,
-      price_breaks: priceBreaks,
+      metadata: product.metadata,
+      thc_percentage: product.metadata?.thc_percentage,
+      thc_type: typeof product.metadata?.thc_percentage,
+      strain_type: product.metadata?.strain_type,
+      displayConfig: displayConfig,
       visible_price_breaks: visiblePriceBreaks
     });
   }
@@ -57,80 +58,106 @@ export function MinimalProductCard({ product, theme, index, visiblePriceBreaks }
       initial={{ opacity: 0, y: 5 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.2, delay: index * 0.01 }}
-      className="p-1.5 flex flex-col h-full"
+      className="flex flex-col h-full justify-between overflow-hidden"
       style={{
         background: theme.styles.productCard.background,
         borderColor: theme.styles.productCard.borderColor,
         borderWidth: '1px',
-        backdropFilter: theme.styles.productCard.backdropBlur ? `blur(${theme.styles.productCard.backdropBlur})` : undefined
+        backdropFilter: theme.styles.productCard.backdropBlur ? `blur(${theme.styles.productCard.backdropBlur})` : undefined,
+        padding: '3%',
       }}
     >
-      {/* Product Name - Super Compact */}
+      {/* Product Name */}
       <h3
-        className="font-medium uppercase tracking-wide leading-tight mb-0.5 line-clamp-2"
+        className="font-black uppercase tracking-wide leading-none line-clamp-2"
         style={{
           color: theme.styles.productName.color,
-          fontSize: '0.625rem', // 10px
-          opacity: 0.95
+          opacity: 0.95,
+          fontSize: 'clamp(0.875rem, 1.8vw, 2.5rem)',
+          marginBottom: '3%',
         }}
       >
         {product.name}
       </h3>
 
-      {/* Strain + THC - One Line */}
-      <div className="flex items-center gap-1.5 mb-1">
-        {product.metadata?.strain_type && (
-          <span
-            className="text-[7px] font-medium uppercase"
+      {/* Product Metadata - Flexible middle section */}
+      <div className="flex-1 flex flex-col justify-center overflow-hidden" style={{ gap: '2%' }}>
+        {displayConfig?.show_strain_type === true && product.metadata?.strain_type && (
+          <div
+            className="font-bold uppercase truncate"
             style={{
               color: theme.styles.productDescription.color,
-              opacity: 0.5,
-              letterSpacing: '0.03em'
+              opacity: 0.7,
+              letterSpacing: '0.05em',
+              fontSize: 'clamp(0.75rem, 1.2vw, 1.75rem)',
             }}
           >
-            {product.metadata.strain_type.slice(0, 3)}
-          </span>
+            {product.metadata.strain_type}
+          </div>
         )}
-        {product.metadata?.thc_percentage && (
-          <span
-            className="text-[7px] font-semibold"
+        {displayConfig?.show_thc === true && product.metadata?.thc_percentage && (
+          <div
+            className="font-black truncate"
             style={{
               color: theme.styles.price.color,
-              opacity: 0.8
+              opacity: 1,
+              fontSize: 'clamp(0.75rem, 1.2vw, 1.75rem)',
             }}
           >
-            {product.metadata.thc_percentage}%
-          </span>
+            THC: {typeof product.metadata.thc_percentage === 'string' && product.metadata.thc_percentage.includes('%')
+              ? product.metadata.thc_percentage
+              : `${product.metadata.thc_percentage}%`}
+          </div>
+        )}
+        {displayConfig?.show_cbd === true && product.metadata?.cbd_percentage && (
+          <div
+            className="font-black truncate"
+            style={{
+              color: theme.styles.price.color,
+              opacity: 0.9,
+              fontSize: 'clamp(0.75rem, 1.2vw, 1.75rem)',
+            }}
+          >
+            CBD: {typeof product.metadata.cbd_percentage === 'string' && product.metadata.cbd_percentage.includes('%')
+              ? product.metadata.cbd_percentage
+              : `${product.metadata.cbd_percentage}%`}
+          </div>
         )}
       </div>
 
-      {/* Pricing - Ultra Compact (show max 2 tiers) */}
-      <div className="mt-auto">
+      {/* Pricing */}
+      <div style={{ marginTop: '3%' }}>
         {availablePrices.length > 0 ? (
-          <div className="grid grid-cols-2 gap-0.5">
+          <div className="grid grid-cols-2" style={{ gap: '2%' }}>
             {availablePrices.slice(0, 2).map((item: any) => (
               <div
                 key={item.id}
-                className="text-center py-0.5 px-1"
+                className="text-center flex flex-col justify-center overflow-hidden"
                 style={{
                   background: `${theme.styles.price.color}08`,
                   borderWidth: '1px',
-                  borderColor: `${theme.styles.price.color}20`
+                  borderColor: `${theme.styles.price.color}30`,
+                  padding: '6% 2%',
                 }}
               >
                 <div
-                  className="text-[6px] uppercase font-medium"
+                  className="uppercase font-bold leading-none truncate"
                   style={{
                     color: theme.styles.productDescription.color,
-                    opacity: 0.4,
-                    letterSpacing: '0.02em'
+                    opacity: 0.65,
+                    letterSpacing: '0.05em',
+                    fontSize: 'clamp(0.5rem, 0.8vw, 1.25rem)',
+                    marginBottom: '4%',
                   }}
                 >
                   {item.label}
                 </div>
                 <div
-                  className="text-[10px] font-semibold"
-                  style={{ color: theme.styles.price.color }}
+                  className="font-black leading-none"
+                  style={{
+                    color: theme.styles.price.color,
+                    fontSize: 'clamp(1.25rem, 2.2vw, 3.5rem)',
+                  }}
                 >
                   ${item.price.toFixed(0)}
                 </div>
@@ -139,8 +166,13 @@ export function MinimalProductCard({ product, theme, index, visiblePriceBreaks }
           </div>
         ) : (
           <div
-            className="text-[7px] text-center py-1"
-            style={{ color: theme.styles.productDescription.color, opacity: 0.3 }}
+            className="text-center"
+            style={{
+              color: theme.styles.productDescription.color,
+              opacity: 0.3,
+              padding: '4% 0',
+              fontSize: 'clamp(0.75rem, 1.2vw, 1.5rem)',
+            }}
           >
             No pricing
           </div>

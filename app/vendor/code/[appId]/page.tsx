@@ -70,8 +70,8 @@ Just tell me what you want in plain English, and I'll write the code for you.`
     loadApp()
   }, [vendor?.id, params.appId])
 
-  // Multi-tenant preview URL - no provisioning needed!
-  const previewUrl = app ? `https://whaletools-preview-runtime.fly.dev?appId=${app.id}` : null
+  // Use Vercel deployment - works reliably
+  const previewUrl = app?.deployment_url || null
 
   // Poll for deployment status when building
   useEffect(() => {
@@ -142,14 +142,9 @@ Just tell me what you want in plain English, and I'll write the code for you.`
           return newMessages
         })
 
-        // Refresh preview if files changed - instant updates!
-        if (data.filesChanged?.length > 0 && previewUrl) {
-          // Update activity to keep machine alive
-          fetch(`/api/vendor/apps/${app.id}/activity`, { method: 'POST' })
-
-          // No need to manually refresh!
-          // The file-sync-daemon detects changes and Next.js HMR updates automatically
-          console.log('✅ Files updated, preview will refresh automatically via HMR')
+        // Files saved - to see changes, publish to Vercel
+        if (data.filesChanged?.length > 0) {
+          console.log('✅ Files updated - click "Publish to Production" to deploy changes')
         }
       } else {
         // Show error message
