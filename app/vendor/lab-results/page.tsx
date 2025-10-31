@@ -1,35 +1,48 @@
 "use client";
 
-import { useEffect, useState } from 'react';
-import { Search, FileText, CheckCircle, XCircle, AlertCircle, Upload, Download, Eye } from 'lucide-react';
-import Link from 'next/link';
+import { useEffect, useState, useRef } from 'react';
 import { useAppAuth } from '@/context/AppAuthContext';
+import {
+  Upload,
+  Trash2,
+  Download,
+  Search,
+  Grid3x3,
+  List,
+  CheckSquare,
+  Square,
+  FileText,
+  X,
+  AlertCircle,
+  Eye,
+  Package,
+  Loader2,
+  Calendar,
+  Beaker,
+  ExternalLink,
+  AlertTriangle,
+  Filter
+} from 'lucide-react';
+import Image from 'next/image';
 
 interface COA {
-  id: string | number;
+  id: string;
   productId: string | null;
   productName: string | null;
   productNameOnCoa?: string | null;
   productSku?: string | null;
   productImage?: string | null;
-  productPrice?: number | null;
   productCategory?: string | null;
-  productCategorySlug?: string | null;
-  productSlug?: string | null;
-  productStatus?: string | null;
-  productStockStatus?: string | null;
   coaNumber: string;
   testDate: string;
   uploadDate: string;
   expiryDate?: string;
-  status: 'approved' | 'pending' | 'rejected' | 'expired';
+  isExpired?: boolean;
   fileUrl: string;
   fileName?: string;
   fileSize?: number;
-  fileType?: string;
   testingLab: string;
   batchNumber: string;
-  // Cannabinoids
   thc: string;
   cbd: string;
   thca?: string | null;
@@ -37,677 +50,1037 @@ interface COA {
   cbg?: string | null;
   cbn?: string | null;
   totalCannabinoids?: string | null;
-  // Terpenes
   terpenes?: any;
   totalTerpenes?: string | null;
-  // Safety tests
   pesticides?: boolean | null;
   heavyMetals?: boolean | null;
   microbials?: boolean | null;
   mycotoxins?: boolean | null;
   solvents?: boolean | null;
-  // Metadata
   metadata?: any;
   rawTestResults?: any;
 }
 
+type ViewMode = 'grid' | 'list';
+type LinkFilter = 'all' | 'linked' | 'unlinked';
+
 export default function VendorLabResults() {
-  const { vendor } = useAppAuth();
+  const { vendor, isAuthenticated, isLoading: authLoading } = useAppAuth();
   const [coas, setCoas] = useState<COA[]>([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [selectedCOA, setSelectedCOA] = useState<COA | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [viewMode, setViewMode] = useState<ViewMode>('grid');
+  const [selectedCOAs, setSelectedCOAs] = useState<Set<string>>(new Set());
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [quickViewCOA, setQuickViewCOA] = useState<COA | null>(null);
+  const [linkFilter, setLinkFilter] = useState<LinkFilter>('all');
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
 
+  // Load COAs
   useEffect(() => {
-    async function fetchCOAs() {
-      try {
-        const vendorId = vendor?.id;
-        if (!vendorId) {
-          setLoading(false);
-          return;
-        }
+    if (!authLoading && isAuthenticated && vendor) {
+      loadCOAs();
+    }
+  }, [authLoading, isAuthenticated, vendor]);
+
+  const loadCOAs = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const response = await fetch('/api/vendor/coas', {
+        headers: {
+          'x-vendor-id': vendor?.id || '',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to load COAs');
+      }
+
+      const data = await response.json();
+      setCoas(data.coas || []);
+    } catch (err: any) {
+      console.error('❌ Error loading COAs:', err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // File upload handler
+  const handleFileUpload = async (fileList: FileList | null) => {
+    if (!fileList || fileList.length === 0) return;
+
+    setUploading(true);
+
+    try {
+      for (let i = 0; i < fileList.length; i++) {
+        const file = fileList[i];
+        const formData = new FormData();
+        formData.append('file', file);
+
+        // For now, just basic upload - you can add a modal for full COA metadata
+        formData.append('lab_name', 'TBD');
+        formData.append('test_date', new Date().toISOString().split('T')[0]);
+        formData.append('batch_number', `BATCH-${Date.now()}`);
 
         const response = await fetch('/api/vendor/coas', {
+          method: 'POST',
           headers: {
-            'x-vendor-id': vendorId
-          }
+            'x-vendor-id': vendor?.id || '',
+          },
+          body: formData,
         });
 
-        const data = await response.json();
-
-        if (data.success) {
-          setCoas(data.coas || []);
-        } else {
-          console.error('Failed to fetch COAs:', data.error);
+        if (!response.ok) {
+          throw new Error('Failed to upload COA');
         }
-      } catch (error) {
-        console.error('Error fetching COAs:', error);
-      } finally {
-        setLoading(false);
+      }
+
+      await loadCOAs();
+      setSelectedCOAs(new Set());
+    } catch (err) {
+      console.error('❌ Error uploading COAs:', err);
+      setError('Failed to upload COAs');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  // Drag and drop handlers
+  const handleDragEnter = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    const files = e.dataTransfer.files;
+    handleFileUpload(files);
+  };
+
+  // Delete COAs
+  const handleDelete = async () => {
+    if (selectedCOAs.size === 0) return;
+
+    if (!confirm(`Delete ${selectedCOAs.size} COA(s)?`)) return;
+
+    try {
+      for (const coaId of selectedCOAs) {
+        await fetch(`/api/vendor/coas?id=${encodeURIComponent(coaId)}`, {
+          method: 'DELETE',
+          headers: {
+            'x-vendor-id': vendor?.id || '',
+          },
+        });
+      }
+
+      await loadCOAs();
+      setSelectedCOAs(new Set());
+    } catch (err) {
+      console.error('❌ Error deleting COAs:', err);
+      setError('Failed to delete COAs');
+    }
+  };
+
+  // Download COA
+  const handleDownload = (coa: COA) => {
+    const a = document.createElement('a');
+    a.href = coa.fileUrl;
+    a.download = coa.fileName || `COA-${coa.coaNumber}.pdf`;
+    a.target = '_blank';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  };
+
+  // Selection handlers
+  const toggleCOASelection = (coaId: string) => {
+    const newSelection = new Set(selectedCOAs);
+    if (newSelection.has(coaId)) {
+      newSelection.delete(coaId);
+    } else {
+      newSelection.add(coaId);
+    }
+    setSelectedCOAs(newSelection);
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedCOAs.size === filteredCOAs.length) {
+      setSelectedCOAs(new Set());
+    } else {
+      setSelectedCOAs(new Set(filteredCOAs.map(c => c.id)));
+    }
+  };
+
+  // Filter COAs by search and link status
+  const filteredCOAs = coas.filter(coa => {
+    // Link filter
+    if (linkFilter === 'linked' && !coa.productId) return false;
+    if (linkFilter === 'unlinked' && coa.productId) return false;
+
+    // Search filter
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      const matchesName = coa.productName?.toLowerCase().includes(query);
+      const matchesCOA = coa.coaNumber.toLowerCase().includes(query);
+      const matchesSKU = coa.productSku?.toLowerCase().includes(query);
+      const matchesBatch = coa.batchNumber.toLowerCase().includes(query);
+      const matchesLab = coa.testingLab.toLowerCase().includes(query);
+
+      if (!matchesName && !matchesCOA && !matchesSKU && !matchesBatch && !matchesLab) {
+        return false;
       }
     }
 
-    fetchCOAs();
-  }, [vendor]);
-
-  const getStatusBadge = (status: string) => {
-    const styles = {
-      approved: { bg: "bg-white/5", text: "text-white/60", border: "border-white/10", icon: CheckCircle },
-      pending: { bg: "bg-white/5", text: "text-white/60", border: "border-white/10", icon: AlertCircle },
-      rejected: { bg: "bg-red-500/10", text: "text-red-500", border: "border-red-500/20", icon: XCircle },
-      expired: { bg: "bg-red-500/10", text: "text-red-500", border: "border-red-500/20", icon: AlertCircle },
-    };
-
-    const style = styles[status as keyof typeof styles];
-    const Icon = style.icon;
-
-    return (
-      <span className={`px-3 py-1.5 text-xs font-medium uppercase tracking-wider border ${style.bg} ${style.text} ${style.border} inline-flex items-center gap-1.5`}>
-        <Icon size={12} />
-        {status}
-      </span>
-    );
-  };
-
-  const filteredCOAs = coas.filter(coa => {
-    if (statusFilter !== 'all' && coa.status !== statusFilter) return false;
-    if (search) {
-      const searchLower = search.toLowerCase();
-      const matchesName = coa.productName?.toLowerCase().includes(searchLower);
-      const matchesCoaProductName = coa.productNameOnCoa?.toLowerCase().includes(searchLower);
-      const matchesCOA = coa.coaNumber.toLowerCase().includes(searchLower);
-      const matchesSKU = coa.productSku?.toLowerCase().includes(searchLower);
-      const matchesCategory = coa.productCategory?.toLowerCase().includes(searchLower);
-      const matchesBatch = coa.batchNumber.toLowerCase().includes(searchLower);
-      
-      if (!matchesName && !matchesCoaProductName && !matchesCOA && !matchesSKU && !matchesCategory && !matchesBatch) return false;
-    }
     return true;
   });
 
+  // Stats
   const stats = {
     total: coas.length,
-    approved: coas.filter(c => c.status === 'approved').length,
-    pending: coas.filter(c => c.status === 'pending').length,
-    expired: coas.filter(c => c.status === 'expired').length,
+    withProducts: coas.filter(c => c.productId).length,
+    expired: coas.filter(c => c.isExpired).length,
+    recent: coas.filter(c => {
+      const uploadDate = new Date(c.uploadDate);
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      return uploadDate >= thirtyDaysAgo;
+    }).length,
   };
 
+  // Loading state
+  if (authLoading || loading) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 md:w-16 md:h-16 border-4 border-white/20 border-t-white rounded-full animate-spin mx-auto mb-3 md:mb-4"></div>
+          <p className="text-white/60 text-[10px] uppercase tracking-[0.15em]">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Auth check
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <p className="text-white/60 text-[10px] uppercase tracking-[0.15em]">Please log in</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="w-full max-w-full animate-fadeIn px-4 lg:px-0 py-6 lg:py-0 overflow-x-hidden">
-      {/* Header */}
-      <div className="mb-6 lg:mb-8 pb-6 border-b border-white/5" style={{ animation: 'fadeInUp 0.5s ease-out' }}>
-        <h1 className="text-xs uppercase tracking-[0.15em] text-white font-black mb-1" style={{ fontWeight: 900 }}>
-          Lab Results & COAs
-        </h1>
-        <p className="text-[10px] uppercase tracking-[0.15em] text-white/40">
-          Manage Certificates · Product Testing
-        </p>
-      </div>
-
-      {/* Summary Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4 mb-6" style={{ animation: 'fadeInUp 0.6s ease-out 0.1s both' }}>
-        <div className="bg-black border border-white/5 p-4 lg:p-6 active:bg-white/5 lg:hover:border-white/10 lg:hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
-          <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-          <div className="relative">
-            <div className="flex items-center justify-between mb-2 lg:mb-4">
-              <div className="text-white/60 text-[10px] lg:text-xs uppercase tracking-wider">Total COAs</div>
-              <FileText size={18} className="lg:hidden text-white/40" />
-              <FileText size={20} className="hidden lg:block text-white/40" />
+    <>
+      <div
+        className="min-h-screen bg-black"
+        onDragEnter={handleDragEnter}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+      >
+        {/* Header */}
+        <div className="px-4 pt-4 pb-3 border-b border-white/5">
+          <div className="flex items-center justify-between mb-1">
+            <h1 className="text-[10px] uppercase tracking-[0.15em] text-white font-black" style={{ fontWeight: 900 }}>
+              Lab Results & COAs
+            </h1>
+            <div className="flex items-center gap-1 md:gap-2 text-white/40 text-[10px] uppercase tracking-[0.15em]">
+              <FileText className="w-3 h-3" />
+              <span>{coas.length}</span>
             </div>
-            <div className="text-2xl lg:text-3xl font-light text-white mb-0.5 lg:mb-1">{loading ? '—' : stats.total}</div>
-            <div className="text-white/40 text-[10px] lg:text-xs">All certificates</div>
           </div>
         </div>
 
-        <div className="bg-black border border-white/5 p-6 hover:border-white/10 hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
-          <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-          <div className="relative">
-            <div className="flex items-center justify-between mb-4">
-              <div className="text-white/60 text-xs uppercase tracking-wider">Approved</div>
-              <CheckCircle size={20} className="text-white/40" />
+        {/* Main Content */}
+        <div className="p-4">
+          {/* Stats Cards */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-4 mb-4">
+            <div className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-3 md:p-4">
+              <div className="text-[10px] uppercase tracking-[0.15em] mb-1" style={{ color: 'rgba(255, 255, 255, 0.4)' }}>Total</div>
+              <div className="text-xl md:text-2xl font-black text-white" style={{ fontWeight: 900 }}>{stats.total}</div>
             </div>
-            <div className="text-3xl font-light text-white mb-1">{loading ? '—' : stats.approved}</div>
-            <div className="text-white/40 text-xs">Ready to sell</div>
-          </div>
-        </div>
-
-        <div className="bg-black border border-white/5 p-6 hover:border-white/10 hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
-          <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-          <div className="relative">
-            <div className="flex items-center justify-between mb-4">
-              <div className="text-white/60 text-xs uppercase tracking-wider">Pending Review</div>
-              <AlertCircle size={20} className="text-white/40" />
+            <div className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-3 md:p-4">
+              <div className="text-[10px] uppercase tracking-[0.15em] mb-1" style={{ color: 'rgba(255, 255, 255, 0.4)' }}>Linked</div>
+              <div className="text-xl md:text-2xl font-black" style={{ fontWeight: 900, color: '#22c55e' }}>{stats.withProducts}</div>
             </div>
-            <div className="text-3xl font-light text-white mb-1">{loading ? '—' : stats.pending}</div>
-            <div className="text-white/40 text-xs">Under review</div>
-          </div>
-        </div>
-
-        <div className="bg-black border border-white/5 p-6 hover:border-white/10 hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
-          <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-          <div className="relative">
-            <div className="flex items-center justify-between mb-4">
-              <div className="text-white/60 text-xs uppercase tracking-wider">Expired</div>
-              <AlertCircle size={20} className="text-red-500" />
+            <div className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-3 md:p-4">
+              <div className="text-[10px] uppercase tracking-[0.15em] mb-1" style={{ color: 'rgba(255, 255, 255, 0.4)' }}>Recent</div>
+              <div className="text-xl md:text-2xl font-black" style={{ fontWeight: 900, color: '#3b82f6' }}>{stats.recent}</div>
             </div>
-            <div className="text-3xl font-light text-white mb-1">{loading ? '—' : stats.expired}</div>
-            <div className="text-red-500 text-xs">Need renewal</div>
-          </div>
-        </div>
-      </div>
-
-      {/* Filters */}
-      <div className="bg-black lg:border border-t border-b border-white/5 p-4 mb-6 -mx-4 lg:mx-0" style={{ animation: 'fadeInUp 0.6s ease-out 0.2s both' }}>
-        <div className="flex flex-col lg:flex-row gap-3 lg:gap-4">
-          {/* Search */}
-          <div className="flex-1 relative">
-            <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" />
-            <input
-              type="text"
-              placeholder="Search by product name or COA number..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-black border border-white/5 text-white placeholder-white/40 pl-10 pr-4 py-3 focus:outline-none focus:border-white/10 transition-colors text-base"
-            />
+            <div className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-3 md:p-4">
+              <div className="text-[10px] uppercase tracking-[0.15em] mb-1" style={{ color: 'rgba(255, 255, 255, 0.4)' }}>Expired</div>
+              <div className="text-xl md:text-2xl font-black" style={{ fontWeight: 900, color: '#ef4444' }}>{stats.expired}</div>
+            </div>
           </div>
 
-          {/* Status Filter */}
-          <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 lg:mx-0 lg:px-0 lg:pb-0 scrollbar-hide">
-            <button
-              onClick={() => setStatusFilter('all')}
-              className={`px-4 py-2 text-xs uppercase tracking-wider transition-all whitespace-nowrap ${
-                statusFilter === 'all'
-                  ? 'bg-white text-black border border-white'
-                  : 'bg-black text-white/60 hover:text-white border border-white/5 hover:border-white/10'
-              }`}
-            >
-              All
-            </button>
-            <button
-              onClick={() => setStatusFilter('approved')}
-              className={`px-4 py-2 text-xs uppercase tracking-wider transition-all whitespace-nowrap ${
-                statusFilter === 'approved'
-                  ? 'bg-white/10 text-white border border-white/20'
-                  : 'bg-black text-white/60 hover:text-white border border-white/5 hover:border-white/10'
-              }`}
-            >
-              Approved
-            </button>
-            <button
-              onClick={() => setStatusFilter('pending')}
-              className={`px-4 py-2 text-xs uppercase tracking-wider transition-all whitespace-nowrap ${
-                statusFilter === 'pending'
-                  ? 'bg-white/10 text-white border border-white/20'
-                  : 'bg-black text-white/60 hover:text-white border border-white/5 hover:border-white/10'
-              }`}
-            >
-              Pending
-            </button>
-            <button
-              onClick={() => setStatusFilter('expired')}
-              className={`px-4 py-2 text-xs uppercase tracking-wider transition-all whitespace-nowrap ${
-                statusFilter === 'expired'
-                  ? 'bg-red-500/10 text-red-500 border border-red-500/20'
-                  : 'bg-black text-white/60 hover:text-white border border-white/5 hover:border-white/10'
-              }`}
-            >
-              Expired
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* COAs Table */}
-      {loading ? (
-        <div className="bg-black lg:border border-white/5 p-12">
-          <div className="text-center text-white/60">Loading lab results...</div>
-        </div>
-      ) : filteredCOAs.length === 0 ? (
-        <div className="bg-black lg:border border-white/5 p-12">
-          <div className="text-center">
-            <FileText size={48} className="text-white/20 mx-auto mb-4" />
-            <div className="text-white/60 mb-4">No lab results found</div>
-            <p className="text-white/40 text-sm">Upload COAs in your product edit pages</p>
-          </div>
-        </div>
-      ) : (
-        <>
-          {/* Mobile List View */}
-          <div className="lg:hidden divide-y divide-white/5 -mx-4" style={{ animation: 'fadeInUp 0.6s ease-out 0.3s both' }}>
-            {filteredCOAs.map((coa) => (
-              <div
-                key={coa.id}
-                className="px-4 py-3 bg-black"
+          {/* Error Display */}
+          {error && (
+            <div className="mb-4 bg-red-500/10 border border-red-500/20 rounded-2xl p-3 flex items-center gap-3">
+              <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0" />
+              <p className="text-red-500 text-[10px] uppercase tracking-[0.15em]">{error}</p>
+              <button
+                onClick={() => setError(null)}
+                className="ml-auto text-red-500 hover:text-red-400"
               >
-                <div className="flex gap-3 mb-2">
-                  {coa.productImage && (
-                    <img 
-                      src={coa.productImage} 
-                      alt={coa.productName || ''}
-                      className="w-12 h-12 object-cover bg-white/5"
-                    />
-                  )}
-                  <div className="flex-1">
-                    <div className="flex items-start justify-between mb-1">
-                      <div>
-                        <div className="text-white text-sm font-medium">{coa.productName || 'Not Assigned'}</div>
-                        {coa.productNameOnCoa && (
-                          <div className="text-white/60 text-xs">COA Product: {coa.productNameOnCoa}</div>
-                        )}
-                        {coa.productSku && <div className="text-white/40 text-xs">SKU: {coa.productSku}</div>}
-                        {coa.productCategory && <div className="text-white/40 text-xs">{coa.productCategory}</div>}
-                      </div>
-                      {getStatusBadge(coa.status)}
-                    </div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 text-xs text-white/40 mb-2">
-                  <span>THC: <span className="text-white/60">{coa.thc}</span></span>
-                  <span>•</span>
-                  <span>CBD: <span className="text-white/60">{coa.cbd}</span></span>
-                  {coa.totalTerpenes && (
-                    <>
-                      <span>•</span>
-                      <span>Terps: <span className="text-white/60">{coa.totalTerpenes}</span></span>
-                    </>
-                  )}
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="text-xs text-white/40 font-mono">{coa.coaNumber}</div>
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => setSelectedCOA(coa)}
-                      className="w-24 py-2 bg-white/5 border border-white/10 hover:bg-white/10 text-white text-xs uppercase tracking-wider transition-all text-center"
-                    >
-                      Details
-                    </button>
-                    <a
-                      href={coa.fileUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="w-24 py-2 bg-white/5 border border-white/10 hover:bg-white/10 text-white text-xs uppercase tracking-wider transition-all text-center block leading-none"
-                    >
-                      View PDF
-                    </a>
-                  </div>
-                </div>
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          )}
+
+          {/* Toolbar - Single Row */}
+          <div className="mb-4">
+            <div className="flex gap-2">
+              {/* Left: Upload + Select */}
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+                className="flex-shrink-0 bg-white/10 text-white border border-white/20 rounded-2xl px-4 py-2.5 text-[10px] uppercase tracking-[0.15em] hover:bg-white/20 hover:border-white/30 font-black transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                style={{ fontWeight: 900 }}
+              >
+                {uploading ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <span className="hidden md:inline">Uploading...</span>
+                  </>
+                ) : (
+                  <>
+                    <Upload className="w-3.5 h-3.5" />
+                    <span className="hidden md:inline">Upload COA</span>
+                  </>
+                )}
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                accept="application/pdf,image/*"
+                onChange={(e) => handleFileUpload(e.target.files)}
+                className="hidden"
+              />
+
+              <button
+                onClick={toggleSelectAll}
+                disabled={coas.length === 0}
+                className="flex-shrink-0 flex items-center gap-2 px-3 py-2.5 bg-white/5 border border-white/10 rounded-2xl text-white/60 hover:bg-white/10 hover:border-white/20 hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+              >
+                {selectedCOAs.size === filteredCOAs.length && filteredCOAs.length > 0 ? (
+                  <CheckSquare className="w-3.5 h-3.5" />
+                ) : (
+                  <Square className="w-3.5 h-3.5" />
+                )}
+                <span className="text-[10px] uppercase tracking-[0.15em] hidden md:inline">
+                  {selectedCOAs.size === 0 ? 'Select' : selectedCOAs.size}
+                </span>
+              </button>
+
+              {/* Center: Search */}
+              <div className="flex-1 relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 text-white/40" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="SEARCH COAS..."
+                  className="w-full bg-white/5 border border-white/10 text-white pl-9 pr-3 py-2.5 rounded-2xl text-[10px] uppercase tracking-[0.15em] focus:outline-none focus:border-white/20 placeholder-white/40 hover:bg-white/10 transition-all"
+                />
               </div>
-            ))}
-          </div>
 
-          {/* Desktop Table View */}
-          <div className="hidden lg:block bg-black border border-white/5 overflow-hidden" style={{ animation: 'fadeInUp 0.6s ease-out 0.3s both' }}>
-          <table className="w-full">
-            <thead className="border-b border-white/5 bg-black">
-              <tr>
-                <th className="text-left text-xs font-medium text-white/60 uppercase tracking-wider p-4">Product</th>
-                <th className="text-left text-xs font-medium text-white/60 uppercase tracking-wider p-4">COA Number</th>
-                <th className="text-left text-xs font-medium text-white/60 uppercase tracking-wider p-4">Test Results</th>
-                <th className="text-left text-xs font-medium text-white/60 uppercase tracking-wider p-4">Test Date</th>
-                <th className="text-left text-xs font-medium text-white/60 uppercase tracking-wider p-4">Lab</th>
-                <th className="text-left text-xs font-medium text-white/60 uppercase tracking-wider p-4">Status</th>
-                <th className="text-left text-xs font-medium text-white/60 uppercase tracking-wider p-4">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-white/5">
-              {filteredCOAs.map((coa) => (
-                <tr key={coa.id} className="hover:bg-white/[0.02] transition-all group">
-                  <td className="p-4">
-                    <Link 
-                      href={`/vendor/products/${coa.productId}/edit`}
-                      className="flex items-center gap-3 hover:text-white transition-colors"
-                    >
-                      {coa.productImage ? (
-                        <img 
-                          src={coa.productImage} 
-                          alt={coa.productName || ''}
-                          className="w-10 h-10 object-cover bg-white/5"
-                        />
-                      ) : (
-                        <div className="w-10 h-10 bg-white/5 flex items-center justify-center">
-                          <FileText size={16} className="text-white/40" />
-                        </div>
-                      )}
-                      <div>
-                        <div className="text-white text-sm">{coa.productName || 'Not Assigned'}</div>
-                        {coa.productNameOnCoa && (
-                          <div className="text-white/60 text-xs">COA Product: {coa.productNameOnCoa}</div>
-                        )}
-                        <div className="text-white/40 text-xs">
-                          {coa.productSku && <span>SKU: {coa.productSku}</span>}
-                          {coa.productSku && coa.productCategory && <span> • </span>}
-                          {coa.productCategory && <span>{coa.productCategory}</span>}
-                        </div>
-                      </div>
-                    </Link>
-                  </td>
-                  <td className="p-4">
-                    <span className="text-white/60 font-mono text-xs">{coa.coaNumber}</span>
-                  </td>
-                  <td className="p-4">
-                    <div className="flex flex-col gap-1 text-xs">
-                      <div className="flex gap-3">
-                        <span className="text-white/60">THC: <span className="text-white font-medium">{coa.thc}</span></span>
-                        <span className="text-white/60">CBD: <span className="text-white font-medium">{coa.cbd}</span></span>
-                      </div>
-                      {coa.totalTerpenes && (
-                        <div className="text-white/40">Terpenes: {coa.totalTerpenes}</div>
-                      )}
-                    </div>
-                  </td>
-                  <td className="p-4">
-                    <span className="text-white/60 text-sm">{new Date(coa.testDate).toLocaleDateString()}</span>
-                  </td>
-                  <td className="p-4">
-                    <span className="text-white/60 text-xs">{coa.testingLab}</span>
-                  </td>
-                  <td className="p-4">
-                    {getStatusBadge(coa.status)}
-                  </td>
-                  <td className="p-4">
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => setSelectedCOA(coa)}
-                        className="w-24 py-2 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-white/80 hover:text-white text-xs uppercase tracking-wider text-center"
-                      >
-                        Details
-                      </button>
-                      <a
-                        href={coa.fileUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="w-24 py-2 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-white/80 hover:text-white text-xs uppercase tracking-wider text-center block leading-none"
-                      >
-                        View PDF
-                      </a>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        </>
-      )}
+              {/* Right: Filter + View Toggle */}
+              <button
+                onClick={() => setShowMobileFilters(!showMobileFilters)}
+                className={`flex-shrink-0 p-2.5 rounded-2xl border transition-all ${
+                  linkFilter !== 'all' || showMobileFilters
+                    ? 'bg-white/10 border-white/20 text-white'
+                    : 'bg-white/5 border-white/10 text-white/60 hover:bg-white/10 hover:border-white/20'
+                }`}
+              >
+                <Filter className="w-3.5 h-3.5" />
+              </button>
 
-      {/* COA Detail Modal */}
-      {selectedCOA && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setSelectedCOA(null)}>
-          <div className="bg-black border border-white/10 max-w-3xl w-full max-h-[90vh] overflow-y-auto animate-fadeIn" onClick={(e) => e.stopPropagation()}>
-            {/* Header */}
-            <div className="border-b border-white/5 p-6">
-              <div className="flex justify-between items-start">
-                <div>
-                  <h2 className="text-xl font-light text-white mb-1">Certificate of Analysis</h2>
-                  <p className="text-white/60 text-sm">{selectedCOA.productName}</p>
-                </div>
+              <div className="hidden lg:flex gap-2">
                 <button
-                  onClick={() => setSelectedCOA(null)}
-                  className="text-white/60 hover:text-white transition-colors"
+                  onClick={() => setViewMode('grid')}
+                  className={`p-2.5 rounded-2xl border transition-all ${
+                    viewMode === 'grid'
+                      ? 'bg-white/10 border-white/20 text-white'
+                      : 'bg-white/5 border-white/10 text-white/40 hover:bg-white/10 hover:border-white/20'
+                  }`}
                 >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                  </svg>
+                  <Grid3x3 className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  onClick={() => setViewMode('list')}
+                  className={`p-2.5 rounded-2xl border transition-all ${
+                    viewMode === 'list'
+                      ? 'bg-white/10 border-white/20 text-white'
+                      : 'bg-white/5 border-white/10 text-white/40 hover:bg-white/10 hover:border-white/20'
+                  }`}
+                >
+                  <List className="w-3.5 h-3.5" />
                 </button>
               </div>
             </div>
 
-            {/* COA Content */}
-            <div className="p-6">
-              {/* Product Info */}
-              {(selectedCOA.productImage || selectedCOA.productName || selectedCOA.productNameOnCoa) && (
-                <div className="flex gap-4 mb-6 pb-6 border-b border-white/5">
-                  {selectedCOA.productImage && (
-                    <img 
-                      src={selectedCOA.productImage} 
-                      alt={selectedCOA.productName || selectedCOA.productNameOnCoa || 'Product'}
-                      className="w-20 h-20 object-cover bg-white/5"
-                    />
-                  )}
-                  <div>
-                    <div className="text-white text-lg font-medium mb-1">{selectedCOA.productName || 'Not Assigned'}</div>
-                    {selectedCOA.productNameOnCoa && (
-                      <div className="text-white/80 text-sm mb-1">COA Product: {selectedCOA.productNameOnCoa}</div>
-                    )}
-                    {selectedCOA.productSku && (
-                      <div className="text-white/60 text-xs mb-1">SKU: {selectedCOA.productSku}</div>
-                    )}
-                    {selectedCOA.productCategory && (
-                      <div className="text-white/60 text-xs mb-1">Category: {selectedCOA.productCategory}</div>
-                    )}
-                    {selectedCOA.productPrice && (
-                      <div className="text-white/60 text-xs">Price: ${selectedCOA.productPrice}</div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* COA Header */}
-              <div className="bg-white/5 border border-white/5 p-4 mb-6">
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <div className="text-white/60 text-xs mb-1">COA Number</div>
-                    <div className="text-white font-mono">{selectedCOA.coaNumber}</div>
-                  </div>
-                  <div>
-                    <div className="text-white/60 text-xs mb-1">Batch Number</div>
-                    <div className="text-white font-mono">{selectedCOA.batchNumber}</div>
-                  </div>
-                  <div>
-                    <div className="text-white/60 text-xs mb-1">Test Date</div>
-                    <div className="text-white">{new Date(selectedCOA.testDate).toLocaleDateString()}</div>
-                  </div>
-                  <div>
-                    <div className="text-white/60 text-xs mb-1">Testing Laboratory</div>
-                    <div className="text-white">{selectedCOA.testingLab}</div>
-                  </div>
-                  {selectedCOA.expiryDate && (
-                    <div>
-                      <div className="text-white/60 text-xs mb-1">Expiry Date</div>
-                      <div className="text-white">{new Date(selectedCOA.expiryDate).toLocaleDateString()}</div>
-                    </div>
-                  )}
-                  {selectedCOA.fileName && (
-                    <div>
-                      <div className="text-white/60 text-xs mb-1">File</div>
-                      <div className="text-white text-xs truncate">{selectedCOA.fileName}</div>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Main Cannabinoid Profile */}
-              <div className="mb-6">
-                <h3 className="text-xs uppercase tracking-wider text-white/60 mb-3">Primary Cannabinoids</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-white/5 border border-white/5 p-4">
-                    <div className="text-white/60 text-xs mb-2">Total THC</div>
-                    <div className="text-2xl font-light text-white">{selectedCOA.thc}</div>
-                  </div>
-                  <div className="bg-white/5 border border-white/5 p-4">
-                    <div className="text-white/60 text-xs mb-2">Total CBD</div>
-                    <div className="text-2xl font-light text-white">{selectedCOA.cbd}</div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Additional Cannabinoids */}
-              {(selectedCOA.thca || selectedCOA.cbda || selectedCOA.cbg || selectedCOA.cbn || selectedCOA.totalCannabinoids) && (
-                <div className="mb-6">
-                  <h3 className="text-xs uppercase tracking-wider text-white/60 mb-3">Additional Cannabinoids</h3>
-                  <div className="grid grid-cols-3 gap-3">
-                    {selectedCOA.thca && (
-                      <div className="bg-white/5 border border-white/5 p-3">
-                        <div className="text-white/40 text-xs mb-1">THCa</div>
-                        <div className="text-lg font-light text-white">{selectedCOA.thca}</div>
-                      </div>
-                    )}
-                    {selectedCOA.cbda && (
-                      <div className="bg-white/5 border border-white/5 p-3">
-                        <div className="text-white/40 text-xs mb-1">CBDa</div>
-                        <div className="text-lg font-light text-white">{selectedCOA.cbda}</div>
-                      </div>
-                    )}
-                    {selectedCOA.cbg && (
-                      <div className="bg-white/5 border border-white/5 p-3">
-                        <div className="text-white/40 text-xs mb-1">CBG</div>
-                        <div className="text-lg font-light text-white">{selectedCOA.cbg}</div>
-                      </div>
-                    )}
-                    {selectedCOA.cbn && (
-                      <div className="bg-white/5 border border-white/5 p-3">
-                        <div className="text-white/40 text-xs mb-1">CBN</div>
-                        <div className="text-lg font-light text-white">{selectedCOA.cbn}</div>
-                      </div>
-                    )}
-                    {selectedCOA.totalCannabinoids && (
-                      <div className="bg-white/5 border border-white/5 p-3">
-                        <div className="text-white/40 text-xs mb-1">Total</div>
-                        <div className="text-lg font-light text-white">{selectedCOA.totalCannabinoids}</div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Terpenes */}
-              {selectedCOA.totalTerpenes && (
-                <div className="mb-6">
-                  <h3 className="text-xs uppercase tracking-wider text-white/60 mb-3">Terpene Profile</h3>
-                  <div className="bg-white/5 border border-white/5 p-4 mb-3">
-                    <div className="text-white/60 text-xs mb-2">Total Terpenes</div>
-                    <div className="text-2xl font-light text-white">{selectedCOA.totalTerpenes}</div>
-                  </div>
-                  {selectedCOA.terpenes && typeof selectedCOA.terpenes === 'object' && (
-                    <div className="grid grid-cols-3 gap-2">
-                      {Object.entries(selectedCOA.terpenes).map(([name, value]) => (
-                        <div key={name} className="bg-white/5 border border-white/5 p-2">
-                          <div className="text-white/40 text-xs capitalize">{name}</div>
-                          <div className="text-white text-sm">{String(value)}%</div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Safety Tests */}
-              {(selectedCOA.pesticides !== null || selectedCOA.heavyMetals !== null || selectedCOA.microbials !== null || selectedCOA.mycotoxins !== null || selectedCOA.solvents !== null) && (
-                <div className="mb-6">
-                  <h3 className="text-xs uppercase tracking-wider text-white/60 mb-3">Safety & Compliance Tests</h3>
-                  <div className="grid grid-cols-2 gap-3">
-                    {selectedCOA.pesticides !== null && (
-                      <div className={`border p-3 flex items-center justify-between ${selectedCOA.pesticides ? 'bg-green-500/10 border-green-500/20' : 'bg-red-500/10 border-red-500/20'}`}>
-                        <span className="text-white/80 text-sm">Pesticides</span>
-                        {selectedCOA.pesticides ? (
-                          <CheckCircle size={16} className="text-green-500" />
-                        ) : (
-                          <XCircle size={16} className="text-red-500" />
-                        )}
-                      </div>
-                    )}
-                    {selectedCOA.heavyMetals !== null && (
-                      <div className={`border p-3 flex items-center justify-between ${selectedCOA.heavyMetals ? 'bg-green-500/10 border-green-500/20' : 'bg-red-500/10 border-red-500/20'}`}>
-                        <span className="text-white/80 text-sm">Heavy Metals</span>
-                        {selectedCOA.heavyMetals ? (
-                          <CheckCircle size={16} className="text-green-500" />
-                        ) : (
-                          <XCircle size={16} className="text-red-500" />
-                        )}
-                      </div>
-                    )}
-                    {selectedCOA.microbials !== null && (
-                      <div className={`border p-3 flex items-center justify-between ${selectedCOA.microbials ? 'bg-green-500/10 border-green-500/20' : 'bg-red-500/10 border-red-500/20'}`}>
-                        <span className="text-white/80 text-sm">Microbials</span>
-                        {selectedCOA.microbials ? (
-                          <CheckCircle size={16} className="text-green-500" />
-                        ) : (
-                          <XCircle size={16} className="text-red-500" />
-                        )}
-                      </div>
-                    )}
-                    {selectedCOA.mycotoxins !== null && (
-                      <div className={`border p-3 flex items-center justify-between ${selectedCOA.mycotoxins ? 'bg-green-500/10 border-green-500/20' : 'bg-red-500/10 border-red-500/20'}`}>
-                        <span className="text-white/80 text-sm">Mycotoxins</span>
-                        {selectedCOA.mycotoxins ? (
-                          <CheckCircle size={16} className="text-green-500" />
-                        ) : (
-                          <XCircle size={16} className="text-red-500" />
-                        )}
-                      </div>
-                    )}
-                    {selectedCOA.solvents !== null && (
-                      <div className={`border p-3 flex items-center justify-between ${selectedCOA.solvents ? 'bg-green-500/10 border-green-500/20' : 'bg-red-500/10 border-red-500/20'}`}>
-                        <span className="text-white/80 text-sm">Residual Solvents</span>
-                        {selectedCOA.solvents ? (
-                          <CheckCircle size={16} className="text-green-500" />
-                        ) : (
-                          <XCircle size={16} className="text-red-500" />
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Status */}
-              <div className="mb-6">
-                <h3 className="text-xs uppercase tracking-wider text-white/60 mb-3">Verification Status</h3>
-                <div className="flex items-center gap-3">
-                  {getStatusBadge(selectedCOA.status)}
-                  {selectedCOA.status === 'approved' && (
-                    <span className="text-white/60 text-xs">Verified by Yacht Club Quality Team</span>
-                  )}
-                  {selectedCOA.status === 'expired' && (
-                    <span className="text-red-500 text-xs">COA is older than 90 days - renewal required</span>
-                  )}
-                  {selectedCOA.status === 'rejected' && (
-                    <span className="text-red-500 text-xs">COA rejected - please contact support</span>
-                  )}
-                </div>
-              </div>
-
-              {/* Actions */}
-              <div className="flex gap-3">
-                <a
-                  href={selectedCOA.fileUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  download
-                  className="flex items-center gap-2 px-6 py-3 bg-black text-white border border-white/20 hover:bg-white hover:text-black hover:border-white text-xs font-medium uppercase tracking-[0.2em] transition-all duration-300"
+            {/* Filter Dropdown */}
+            {showMobileFilters && (
+              <div className="flex gap-2 overflow-x-auto pb-1 mt-2">
+                <button
+                  onClick={() => {
+                    setLinkFilter('all');
+                    setShowMobileFilters(false);
+                  }}
+                  className={`flex-shrink-0 px-3 py-2 rounded-2xl text-[10px] uppercase tracking-[0.15em] transition-all border ${
+                    linkFilter === 'all'
+                      ? 'bg-white/10 text-white border-white/20'
+                      : 'bg-white/5 text-white/60 border-white/10 hover:bg-white/10'
+                  }`}
                 >
-                  <Download size={16} />
-                  Download PDF
-                </a>
-                <Link
-                  href={`/vendor/products/${selectedCOA.productId}/edit`}
-                  className="flex items-center gap-2 px-6 py-3 bg-black text-white border border-white/20 hover:bg-white hover:text-black hover:border-white text-xs font-medium uppercase tracking-[0.2em] transition-all duration-300"
+                  All COAs
+                </button>
+                <button
+                  onClick={() => {
+                    setLinkFilter('linked');
+                    setShowMobileFilters(false);
+                  }}
+                  className={`flex-shrink-0 px-3 py-2 rounded-2xl text-[10px] uppercase tracking-[0.15em] transition-all border ${
+                    linkFilter === 'linked'
+                      ? 'border-green-500/20'
+                      : 'bg-white/5 text-white/60 border-white/10 hover:bg-white/10'
+                  }`}
+                  style={linkFilter === 'linked' ? { backgroundColor: 'rgba(34, 197, 94, 0.1)', color: '#22c55e' } : {}}
                 >
-                  View Product
-                </Link>
+                  Linked
+                </button>
+                <button
+                  onClick={() => {
+                    setLinkFilter('unlinked');
+                    setShowMobileFilters(false);
+                  }}
+                  className={`flex-shrink-0 px-3 py-2 rounded-2xl text-[10px] uppercase tracking-[0.15em] transition-all border ${
+                    linkFilter === 'unlinked'
+                      ? 'border-yellow-500/20'
+                      : 'bg-white/5 text-white/60 border-white/10 hover:bg-white/10'
+                  }`}
+                  style={linkFilter === 'unlinked' ? { backgroundColor: 'rgba(234, 179, 8, 0.1)', color: '#eab308' } : {}}
+                >
+                  Not Linked
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* COAs Display */}
+          {filteredCOAs.length === 0 ? (
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-12 text-center">
+              <div className="max-w-md mx-auto">
+                {coas.length === 0 ? (
+                  <>
+                    <FileText className="w-12 h-12 text-white/20 mx-auto mb-3" />
+                    <h2 className="text-white/60 mb-2 font-black uppercase tracking-tight text-xs" style={{ fontWeight: 900 }}>
+                      No COAs Yet
+                    </h2>
+                    <p className="text-white/40 mb-4 text-[10px] uppercase tracking-[0.15em]">
+                      Upload certificates
+                    </p>
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
+                      className="bg-white/10 text-white border border-white/20 rounded-2xl px-4 py-2.5 text-[10px] uppercase tracking-[0.15em] hover:bg-white/20 hover:border-white/30 font-black transition-all inline-flex items-center gap-2"
+                      style={{ fontWeight: 900 }}
+                    >
+                      <Upload className="w-3.5 h-3.5" />
+                      Upload First COA
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <Search className="w-12 h-12 text-white/20 mx-auto mb-3" />
+                    <h2 className="text-white/60 mb-2 font-black uppercase tracking-tight text-xs" style={{ fontWeight: 900 }}>
+                      No Results
+                    </h2>
+                    <p className="text-white/40 text-[10px] uppercase tracking-[0.15em]">
+                      No COAs match &quot;{searchQuery}&quot;
+                    </p>
+                  </>
+                )}
               </div>
             </div>
+          ) : viewMode === 'grid' ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4">
+              {filteredCOAs.map((coa) => (
+                <COACard
+                  key={coa.id}
+                  coa={coa}
+                  selected={selectedCOAs.has(coa.id)}
+                  onToggleSelect={() => toggleCOASelection(coa.id)}
+                  onDownload={() => handleDownload(coa)}
+                  onQuickView={() => setQuickViewCOA(coa)}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {filteredCOAs.map((coa) => (
+                <COAListItem
+                  key={coa.id}
+                  coa={coa}
+                  selected={selectedCOAs.has(coa.id)}
+                  onToggleSelect={() => toggleCOASelection(coa.id)}
+                  onDownload={() => handleDownload(coa)}
+                  onQuickView={() => setQuickViewCOA(coa)}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Drag & Drop Overlay */}
+        {isDragging && (
+          <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center border-4 border-dashed border-white/40">
+            <div className="text-center">
+              <Upload className="w-16 h-16 text-white mx-auto mb-4 animate-bounce" />
+              <p className="text-white font-black uppercase tracking-tight text-xl" style={{ fontWeight: 900 }}>
+                Drop Files
+              </p>
+              <p className="text-white/60 text-[10px] uppercase tracking-[0.15em] mt-2">PDF or images</p>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Quick View Modal */}
+      {quickViewCOA && (
+        <COAQuickViewModal
+          coa={quickViewCOA}
+          onClose={() => setQuickViewCOA(null)}
+          onDownload={() => handleDownload(quickViewCOA)}
+          onDelete={async () => {
+            if (confirm(`Delete COA "${quickViewCOA.coaNumber}"?`)) {
+              await fetch(`/api/vendor/coas?id=${encodeURIComponent(quickViewCOA.id)}`, {
+                method: 'DELETE',
+                headers: { 'x-vendor-id': vendor?.id || '' },
+              });
+              await loadCOAs();
+              setQuickViewCOA(null);
+            }
+          }}
+          vendorId={vendor?.id || ''}
+        />
+      )}
+    </>
+  );
+}
+
+// COA Card Component (Grid View)
+interface COACardProps {
+  coa: COA;
+  selected: boolean;
+  onToggleSelect: () => void;
+  onDownload: () => void;
+  onQuickView: () => void;
+}
+
+function COACard({ coa, selected, onToggleSelect, onDownload, onQuickView }: COACardProps) {
+  return (
+    <div
+      className={`group flex flex-col bg-[#0a0a0a] hover:bg-[#141414] border rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1 ${
+        selected ? 'border-white/20' : 'border-white/5 hover:border-white/10'
+      }`}
+    >
+      {/* Selection Checkbox */}
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          onToggleSelect();
+        }}
+        className="absolute top-2 left-2 z-10 w-7 h-7 rounded-xl bg-black/70 backdrop-blur-sm border border-white/20 flex items-center justify-center hover:bg-black/80 transition-all"
+      >
+        {selected ? (
+          <CheckSquare className="w-4 h-4 text-white" />
+        ) : (
+          <Square className="w-4 h-4 text-white/60" />
+        )}
+      </button>
+
+      {/* Expiry Warning */}
+      {coa.isExpired && (
+        <div className="absolute top-2 right-2 z-10">
+          <div className="flex items-center gap-1 px-2 py-1 rounded-xl bg-red-500/20 backdrop-blur-sm border border-red-500/30">
+            <AlertTriangle className="w-3 h-3 text-red-500" />
+            <span className="text-[9px] uppercase tracking-[0.15em] font-black text-red-500" style={{ fontWeight: 900 }}>Expired</span>
           </div>
         </div>
       )}
 
-      {/* Info Box */}
-      <div className="mt-6 bg-white/5 lg:border border-t border-b border-white/10 p-4 -mx-4 lg:mx-0">
-        <div className="flex gap-3">
-          <div className="text-white/60 flex-shrink-0">
-            <FileText size={20} />
+      {/* Preview Area - Click to Quick View */}
+      <div
+        onClick={onQuickView}
+        className="aspect-[4/3] bg-black relative cursor-pointer overflow-hidden"
+      >
+        {/* PDF Preview */}
+        {coa.fileUrl && coa.fileUrl.toLowerCase().endsWith('.pdf') ? (
+          <div className="w-full h-full relative pointer-events-none">
+            <iframe
+              src={`${coa.fileUrl}#page=1&view=FitH&toolbar=0&navpanes=0&scrollbar=0`}
+              className="w-full h-full border-0 scale-110 origin-top-left"
+              title={`COA Preview: ${coa.coaNumber}`}
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/60" />
+          </div>
+        ) : coa.productImage ? (
+          <Image
+            src={coa.productImage}
+            alt={coa.productName || 'Product'}
+            fill
+            sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            className="object-contain p-4"
+            unoptimized
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center">
+            <FileText className="w-12 h-12 text-white/20" />
+          </div>
+        )}
+
+        {/* Quick View Hint */}
+        <div className="hidden lg:flex absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-all items-center justify-center pointer-events-none">
+          <div className="text-white text-[10px] uppercase tracking-[0.15em] flex items-center gap-2">
+            <Eye className="w-3.5 h-3.5" />
+            View
+          </div>
+        </div>
+      </div>
+
+      {/* COA Info */}
+      <div className="flex-1 p-3 border-t border-white/5">
+        <div className="mb-2">
+          <p className="text-white text-xs font-black uppercase tracking-tight line-clamp-2" style={{ fontWeight: 900 }}>
+            {coa.productName || 'Unassigned'}
+          </p>
+          <p className="text-white/40 text-[10px] uppercase tracking-[0.15em] font-mono">
+            {coa.coaNumber}
+          </p>
+        </div>
+
+        {/* Cannabinoid Quick Info */}
+        <div className="flex items-center gap-3 mb-2 pb-2 border-b border-white/5">
+          <div>
+            <div className="text-white/40 text-[9px] uppercase tracking-[0.15em]">THC</div>
+            <div className="text-white text-xs font-black" style={{ fontWeight: 900 }}>{coa.thc}</div>
           </div>
           <div>
-            <div className="text-white/80 text-sm font-medium mb-1 uppercase tracking-wider">COA Requirements</div>
-            <div className="text-white/60 text-xs leading-relaxed">
-              All products must have a valid Certificate of Analysis from an accredited lab. COAs expire after 90 days and must be renewed. 
-              Products without approved COAs cannot be sold on the marketplace.
+            <div className="text-white/40 text-[9px] uppercase tracking-[0.15em]">CBD</div>
+            <div className="text-white text-xs font-black" style={{ fontWeight: 900 }}>{coa.cbd}</div>
+          </div>
+          {coa.totalTerpenes && (
+            <div>
+              <div className="text-white/40 text-[9px] uppercase tracking-[0.15em]">Terps</div>
+              <div className="text-white text-xs font-black" style={{ fontWeight: 900 }}>{coa.totalTerpenes}</div>
+            </div>
+          )}
+        </div>
+
+        {/* Lab & Date */}
+        <div className="flex items-center justify-between text-[10px] uppercase tracking-[0.15em]">
+          <div className="flex items-center gap-1 text-white/40">
+            <Beaker className="w-3 h-3" />
+            <span className="truncate max-w-[100px]">{coa.testingLab}</span>
+          </div>
+          <div className="flex items-center gap-1 text-white/40">
+            <Calendar className="w-3 h-3" />
+            <span>{new Date(coa.testDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Download Button */}
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          onDownload();
+        }}
+        className="w-full py-2.5 bg-white/5 border-t border-white/5 hover:bg-white/10 transition-all flex items-center justify-center gap-2 text-white/60 hover:text-white text-[10px] uppercase tracking-[0.15em]"
+      >
+        <Download className="w-3 h-3" />
+        Download
+      </button>
+    </div>
+  );
+}
+
+// COA List Item Component (List View)
+interface COAListItemProps {
+  coa: COA;
+  selected: boolean;
+  onToggleSelect: () => void;
+  onDownload: () => void;
+  onQuickView: () => void;
+}
+
+function COAListItem({ coa, selected, onToggleSelect, onDownload, onQuickView }: COAListItemProps) {
+  return (
+    <div
+      className={`flex items-center gap-3 bg-[#0a0a0a] hover:bg-[#141414] border rounded-2xl p-3 transition-all ${
+        selected ? 'border-white/20' : 'border-white/5 hover:border-white/10'
+      }`}
+    >
+      {/* Checkbox */}
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          onToggleSelect();
+        }}
+        className="flex-shrink-0 w-7 h-7 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-all"
+      >
+        {selected ? (
+          <CheckSquare className="w-4 h-4 text-white" />
+        ) : (
+          <Square className="w-4 h-4 text-white/60" />
+        )}
+      </button>
+
+      {/* Thumbnail */}
+      <div
+        onClick={onQuickView}
+        className="flex-shrink-0 w-16 h-16 bg-black rounded-xl overflow-hidden relative cursor-pointer hover:ring-2 ring-white/20 transition-all"
+      >
+        {/* PDF Preview */}
+        {coa.fileUrl && coa.fileUrl.toLowerCase().endsWith('.pdf') ? (
+          <div className="w-full h-full relative pointer-events-none">
+            <iframe
+              src={`${coa.fileUrl}#page=1&view=FitH&toolbar=0&navpanes=0&scrollbar=0`}
+              className="w-full h-full border-0 scale-125 origin-top-left"
+              title={`COA Preview: ${coa.coaNumber}`}
+            />
+          </div>
+        ) : coa.productImage ? (
+          <Image
+            src={coa.productImage}
+            alt={coa.productName || ''}
+            fill
+            sizes="64px"
+            className="object-contain p-2"
+            unoptimized
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center">
+            <FileText className="w-6 h-6 text-white/20" />
+          </div>
+        )}
+      </div>
+
+      {/* Info */}
+      <div className="flex-1 min-w-0">
+        <div className="flex items-start gap-2 mb-1">
+          <p className="text-white text-xs font-black uppercase tracking-tight truncate flex-1" style={{ fontWeight: 900 }}>
+            {coa.productName || 'Unassigned'}
+          </p>
+          {coa.isExpired && (
+            <div className="flex items-center gap-1 flex-shrink-0">
+              <AlertTriangle className="w-3 h-3 text-red-500" />
+              <span className="text-[9px] uppercase tracking-[0.15em] font-black text-red-500" style={{ fontWeight: 900 }}>Expired</span>
+            </div>
+          )}
+        </div>
+        <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.15em] text-white/40">
+          <span className="font-mono">{coa.coaNumber}</span>
+          <span className="hidden sm:inline">•</span>
+          <span className="hidden sm:inline">THC: {coa.thc}</span>
+          <span className="hidden md:inline">•</span>
+          <span className="hidden md:inline">{coa.testingLab}</span>
+        </div>
+      </div>
+
+      {/* Download Button */}
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          onDownload();
+        }}
+        className="flex-shrink-0 w-9 h-9 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 hover:border-white/20 transition-all"
+      >
+        <Download className="w-3.5 h-3.5 text-white" />
+      </button>
+    </div>
+  );
+}
+
+// Quick View Modal Component
+interface COAQuickViewModalProps {
+  coa: COA;
+  onClose: () => void;
+  onDownload: () => void;
+  onDelete: () => void;
+  vendorId: string;
+}
+
+function COAQuickViewModal({ coa, onClose, onDownload, onDelete }: COAQuickViewModalProps) {
+  // Handle ESC key
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleEscape);
+    return () => window.removeEventListener('keydown', handleEscape);
+  }, [onClose]);
+
+  const handleBackdropClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) onClose();
+  };
+
+  return (
+    <div
+      onClick={handleBackdropClick}
+      className="fixed inset-0 bg-black/95 z-[250] flex items-end lg:items-center justify-center p-0 lg:p-4 overflow-hidden"
+    >
+      <div className="bg-black lg:bg-[#0a0a0a] lg:border lg:border-white/10 lg:rounded-2xl w-full h-[95vh] lg:h-auto lg:max-w-4xl lg:max-h-[90vh] overflow-hidden flex flex-col">
+        {/* Header */}
+        <div className="flex items-center justify-between p-4 border-b border-white/10 flex-shrink-0">
+          <div className="flex-1 min-w-0 mr-4">
+            <div className="flex items-center gap-2 mb-1">
+              <h2 className="text-white font-black uppercase tracking-tight text-[10px]" style={{ fontWeight: 900 }}>
+                Certificate of Analysis
+              </h2>
+              {coa.isExpired && (
+                <div className="flex items-center gap-1 px-2 py-1 rounded-xl bg-red-500/10 border border-red-500/20">
+                  <AlertTriangle className="w-3 h-3 text-red-500" />
+                  <span className="text-[9px] uppercase tracking-[0.15em] font-black text-red-500" style={{ fontWeight: 900 }}>Expired</span>
+                </div>
+              )}
+            </div>
+            <p className="text-white/40 text-[10px] uppercase tracking-[0.15em] font-mono">
+              {coa.coaNumber}
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            className="flex-shrink-0 w-9 h-9 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center hover:bg-white/20 transition-all"
+          >
+            <X className="w-4 h-4 text-white" />
+          </button>
+        </div>
+
+        {/* Content - Scrollable */}
+        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          {/* PDF Preview */}
+          {coa.fileUrl && coa.fileUrl.toLowerCase().endsWith('.pdf') && (
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-4">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <FileText className="w-4 h-4 text-white/60" />
+                  <h3 className="text-[10px] uppercase tracking-[0.15em] text-white/80 font-black" style={{ fontWeight: 900 }}>
+                    Certificate Preview
+                  </h3>
+                </div>
+                <a
+                  href={coa.fileUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-white/60 hover:text-white text-[10px] uppercase tracking-[0.15em] transition-colors flex items-center gap-1"
+                >
+                  <ExternalLink className="w-3 h-3" />
+                  <span className="hidden md:inline">Open</span>
+                </a>
+              </div>
+              <div className="w-full aspect-[8.5/11] bg-black rounded-xl overflow-hidden border border-white/10">
+                <iframe
+                  src={`${coa.fileUrl}#page=1&view=FitH&toolbar=1&navpanes=1`}
+                  className="w-full h-full border-0"
+                  title={`Full COA: ${coa.coaNumber}`}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Product Info */}
+          {coa.productName && (
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Package className="w-4 h-4 text-white/60" />
+                <h3 className="text-[10px] uppercase tracking-[0.15em] text-white/80 font-black" style={{ fontWeight: 900 }}>
+                  Product
+                </h3>
+              </div>
+              <div className="flex items-center gap-3">
+                {coa.productImage && (
+                  <div className="w-16 h-16 bg-black rounded-xl overflow-hidden relative flex-shrink-0">
+                    <Image
+                      src={coa.productImage}
+                      alt={coa.productName}
+                      fill
+                      sizes="64px"
+                      className="object-contain p-2"
+                      unoptimized
+                    />
+                  </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <p className="text-white text-xs font-black uppercase tracking-tight" style={{ fontWeight: 900 }}>{coa.productName}</p>
+                  {coa.productSku && (
+                    <p className="text-white/40 text-[10px] uppercase tracking-[0.15em]">SKU: {coa.productSku}</p>
+                  )}
+                  {coa.productCategory && (
+                    <p className="text-white/40 text-[10px] uppercase tracking-[0.15em]">{coa.productCategory}</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Test Information */}
+          <div className="bg-white/5 border border-white/10 rounded-2xl p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <Beaker className="w-4 h-4 text-white/60" />
+              <h3 className="text-[10px] uppercase tracking-[0.15em] text-white/80 font-black" style={{ fontWeight: 900 }}>
+                Test Info
+              </h3>
+            </div>
+            <div className="grid grid-cols-2 gap-3 text-[10px] uppercase tracking-[0.15em]">
+              <div>
+                <div className="text-white/40 mb-1">Lab</div>
+                <div className="text-white font-black" style={{ fontWeight: 900 }}>{coa.testingLab}</div>
+              </div>
+              <div>
+                <div className="text-white/40 mb-1">Batch</div>
+                <div className="text-white font-black font-mono" style={{ fontWeight: 900 }}>{coa.batchNumber}</div>
+              </div>
+              <div>
+                <div className="text-white/40 mb-1">Test Date</div>
+                <div className="text-white font-black" style={{ fontWeight: 900 }}>{new Date(coa.testDate).toLocaleDateString()}</div>
+              </div>
+              {coa.expiryDate && (
+                <div>
+                  <div className="text-white/40 mb-1">Expiry</div>
+                  <div className={`font-black ${coa.isExpired ? 'text-red-500' : 'text-white'}`} style={{ fontWeight: 900 }}>
+                    {new Date(coa.expiryDate).toLocaleDateString()}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
+
+          {/* Cannabinoid Profile */}
+          <div className="bg-white/5 border border-white/10 rounded-2xl p-4">
+            <h3 className="text-[10px] uppercase tracking-[0.15em] text-white/80 font-black mb-3" style={{ fontWeight: 900 }}>
+              Cannabinoids
+            </h3>
+            <div className="grid grid-cols-2 gap-3 mb-3">
+              <div className="bg-black/40 border border-white/10 rounded-xl p-3">
+                <div className="text-white/40 text-[10px] uppercase tracking-[0.15em] mb-1">THC</div>
+                <div className="text-white text-xl font-black" style={{ fontWeight: 900 }}>{coa.thc}</div>
+              </div>
+              <div className="bg-black/40 border border-white/10 rounded-xl p-3">
+                <div className="text-white/40 text-[10px] uppercase tracking-[0.15em] mb-1">CBD</div>
+                <div className="text-white text-xl font-black" style={{ fontWeight: 900 }}>{coa.cbd}</div>
+              </div>
+            </div>
+            {(coa.thca || coa.cbda || coa.cbg || coa.cbn || coa.totalCannabinoids) && (
+              <div className="grid grid-cols-3 gap-2">
+                {coa.thca && (
+                  <div className="bg-black/20 rounded-xl p-2">
+                    <div className="text-white/40 text-[9px] uppercase tracking-[0.15em]">THCa</div>
+                    <div className="text-white text-xs font-black" style={{ fontWeight: 900 }}>{coa.thca}</div>
+                  </div>
+                )}
+                {coa.cbda && (
+                  <div className="bg-black/20 rounded-xl p-2">
+                    <div className="text-white/40 text-[9px] uppercase tracking-[0.15em]">CBDa</div>
+                    <div className="text-white text-xs font-black" style={{ fontWeight: 900 }}>{coa.cbda}</div>
+                  </div>
+                )}
+                {coa.cbg && (
+                  <div className="bg-black/20 rounded-xl p-2">
+                    <div className="text-white/40 text-[9px] uppercase tracking-[0.15em]">CBG</div>
+                    <div className="text-white text-xs font-black" style={{ fontWeight: 900 }}>{coa.cbg}</div>
+                  </div>
+                )}
+                {coa.cbn && (
+                  <div className="bg-black/20 rounded-xl p-2">
+                    <div className="text-white/40 text-[9px] uppercase tracking-[0.15em]">CBN</div>
+                    <div className="text-white text-xs font-black" style={{ fontWeight: 900 }}>{coa.cbn}</div>
+                  </div>
+                )}
+                {coa.totalCannabinoids && (
+                  <div className="bg-black/20 rounded-xl p-2">
+                    <div className="text-white/40 text-[9px] uppercase tracking-[0.15em]">Total</div>
+                    <div className="text-white text-xs font-black" style={{ fontWeight: 900 }}>{coa.totalCannabinoids}</div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Terpene Profile */}
+          {coa.totalTerpenes && (
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-4">
+              <h3 className="text-[10px] uppercase tracking-[0.15em] text-white/80 font-black mb-3" style={{ fontWeight: 900 }}>
+                Terpenes
+              </h3>
+              <div className="bg-black/40 border border-white/10 rounded-xl p-3 mb-3">
+                <div className="text-white/40 text-[10px] uppercase tracking-[0.15em] mb-1">Total</div>
+                <div className="text-white text-xl font-black" style={{ fontWeight: 900 }}>{coa.totalTerpenes}</div>
+              </div>
+              {coa.terpenes && typeof coa.terpenes === 'object' && (
+                <div className="grid grid-cols-3 gap-2">
+                  {Object.entries(coa.terpenes).map(([name, value]) => (
+                    <div key={name} className="bg-black/20 rounded-xl p-2">
+                      <div className="text-white/40 text-[9px] uppercase tracking-[0.15em] capitalize">{name}</div>
+                      <div className="text-white text-xs font-black" style={{ fontWeight: 900 }}>{String(value)}%</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Footer Actions */}
+        <div className="flex items-center gap-2 p-4 border-t border-white/10 bg-black/40 flex-shrink-0">
+          <button
+            onClick={onDownload}
+            className="flex-1 bg-white/10 text-white border border-white/20 rounded-2xl px-4 py-2.5 text-[10px] uppercase tracking-[0.15em] hover:bg-white/20 hover:border-white/30 font-black transition-all flex items-center justify-center gap-2"
+            style={{ fontWeight: 900 }}
+          >
+            <Download className="w-3.5 h-3.5" />
+            Download
+          </button>
+          <button
+            onClick={onDelete}
+            className="flex-1 bg-red-500/10 text-red-500 border border-red-500/20 rounded-2xl px-4 py-2.5 text-[10px] uppercase tracking-[0.15em] hover:bg-red-500/20 hover:border-red-500/30 font-black transition-all flex items-center justify-center gap-2"
+            style={{ fontWeight: 900 }}
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+            Delete
+          </button>
+          {coa.productId && (
+            <a
+              href={`/vendor/products/${coa.productId}/edit`}
+              className="flex-shrink-0 p-2.5 bg-white/5 border border-white/10 rounded-2xl text-white/60 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all"
+            >
+              <ExternalLink className="w-3.5 h-3.5" />
+            </a>
+          )}
         </div>
       </div>
     </div>
   );
 }
-
