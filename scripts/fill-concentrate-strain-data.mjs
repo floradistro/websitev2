@@ -19,7 +19,7 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 
 const FLORA_DISTRO_VENDOR_ID = 'cd2e1122-d511-4edb-be5d-98ef274b4baf';
 
-// Curated strain data based on common cannabis strain profiles
+// Verified strain data from web research
 const STRAIN_DATA = {
   'Apple Kush': {
     genetics: 'Sour Diesel x Pure Kush',
@@ -52,10 +52,10 @@ const STRAIN_DATA = {
     terpenes: 'Myrcene, Linalool, Caryophyllene'
   },
   'Guava Cake': {
-    genetics: 'Wedding Cake x Guava',
-    nose: 'Sweet guava, tropical fruit, vanilla',
-    strain_type: 'Hybrid',
-    terpenes: 'Limonene, Caryophyllene, Linalool'
+    genetics: 'Gold Leaf backcross (Wedding Cake lineage)',
+    nose: 'Sweet guava, tropical fruit, creamy vanilla',
+    strain_type: 'Indica',
+    terpenes: 'Caryophyllene, Limonene, Myrcene'
   },
   'Hot Gas Fudge': {
     genetics: 'Hot Rod x Fudge Brownies',
@@ -76,10 +76,10 @@ const STRAIN_DATA = {
     terpenes: 'Limonene, Caryophyllene, Linalool'
   },
   'Lemon Cherry Runtz': {
-    genetics: 'Lemon Cherry Gelato x Runtz',
-    nose: 'Lemon zest, cherry candy, sweet berries',
+    genetics: 'Runtz x Lemon Tree',
+    nose: 'Tart lemon zest, sweet cherry, candy sweetness',
     strain_type: 'Hybrid',
-    terpenes: 'Limonene, Caryophyllene, Linalool'
+    terpenes: 'Limonene, Caryophyllene, Humulene'
   },
   'Mac Cocktail': {
     genetics: 'Miracle Alien Cookies (MAC) x Fruit Cocktail',
@@ -94,10 +94,10 @@ const STRAIN_DATA = {
     terpenes: 'Caryophyllene, Limonene, Myrcene'
   },
   'Sinmint': {
-    genetics: 'Sin City Kush x Blue Power',
-    nose: 'Mint, pine, earthy sweetness',
+    genetics: 'Girl Scout Cookies x Blue Power',
+    nose: 'Fresh mint, sweet earth, pungent spice',
     strain_type: 'Indica',
-    terpenes: 'Pinene, Myrcene, Caryophyllene'
+    terpenes: 'Myrcene, Pinene, Caryophyllene'
   },
   'Strawberry Shortcake': {
     genetics: 'Juliet x Strawberry Diesel',
