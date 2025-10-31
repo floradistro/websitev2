@@ -46,11 +46,17 @@ export async function POST(request: NextRequest) {
 
     const supabase = getServiceSupabase();
 
-    // Upload with "-no-bg" suffix to create NEW file (keep original)
+    // REPLACE original file with same filename (convert to PNG if not already)
     const fileNameWithoutExt = fileName.replace(/\.[^/.]+$/, '');
-    const newFileName = `${fileNameWithoutExt}-no-bg.png`;
+    const newFileName = `${fileNameWithoutExt}.png`; // Always save as PNG for transparency
     const filePath = `${vendorId}/${newFileName}`;
-    
+
+    // Delete original if it exists (to handle extension changes like .jpg -> .png)
+    await supabase.storage
+      .from('vendor-product-images')
+      .remove([`${vendorId}/${fileName}`]);
+
+    // Upload with same name (as PNG)
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from('vendor-product-images')
       .upload(filePath, removeBgResponse.data, {
@@ -58,24 +64,26 @@ export async function POST(request: NextRequest) {
         cacheControl: '3600',
         upsert: true
       });
-    
+
     if (uploadError) {
       console.error('❌ Upload error:', uploadError);
       return NextResponse.json({ error: uploadError.message }, { status: 500 });
     }
-    
-    // Get public URL
+
+    // Get public URL with cache-busting timestamp
     const { data: { publicUrl } } = supabase.storage
       .from('vendor-product-images')
       .getPublicUrl(filePath);
-    
-    console.log('✅ Created:', newFileName);
-    
+
+    const cacheBustedUrl = `${publicUrl}?t=${Date.now()}`;
+
+    console.log('✅ Replaced:', newFileName);
+
     return NextResponse.json({
       success: true,
       file: {
         name: newFileName,
-        url: publicUrl,
+        url: cacheBustedUrl,
         originalFileName: fileName
       }
     });
@@ -140,14 +148,20 @@ async function processImage(file: { url: string; name: string }, vendorId: strin
       if (removeBgResponse.headers) {
         removeBgRateLimiter.updateFromHeaders(removeBgResponse.headers);
       }
-    
+
     const supabase = getServiceSupabase();
 
-    // Upload with "-no-bg" suffix to create NEW file (keep original)
+    // REPLACE original file with same filename (convert to PNG if not already)
     const fileNameWithoutExt = file.name.replace(/\.[^/.]+$/, '');
-    const newFileName = `${fileNameWithoutExt}-no-bg.png`;
+    const newFileName = `${fileNameWithoutExt}.png`; // Always save as PNG for transparency
     const filePath = `${vendorId}/${newFileName}`;
-    
+
+    // Delete original if it exists (to handle extension changes like .jpg -> .png)
+    await supabase.storage
+      .from('vendor-product-images')
+      .remove([`${vendorId}/${file.name}`]);
+
+    // Upload with same name (as PNG)
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from('vendor-product-images')
       .upload(filePath, removeBgResponse.data, {
@@ -155,20 +169,22 @@ async function processImage(file: { url: string; name: string }, vendorId: strin
         cacheControl: '3600',
         upsert: true
       });
-    
+
     if (uploadError) throw uploadError;
-    
+
     const { data: { publicUrl } } = supabase.storage
       .from('vendor-product-images')
       .getPublicUrl(filePath);
-    
-    console.log(`✅ Created: ${newFileName}`);
-    
+
+    const cacheBustedUrl = `${publicUrl}?t=${Date.now()}`;
+
+    console.log(`✅ Replaced: ${newFileName}`);
+
       return {
         success: true,
         originalName: file.name,
         newName: newFileName,
-        url: publicUrl
+        url: cacheBustedUrl
       };
       
     } catch (error: any) {

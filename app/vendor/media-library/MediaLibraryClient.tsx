@@ -31,7 +31,8 @@ import {
   TrendingUp,
   AlertTriangle,
   Archive,
-  Filter
+  Filter,
+  Link2
 } from 'lucide-react';
 import AIActivityMonitor from '@/components/AIActivityMonitor';
 import AIImageGenerator from '@/components/vendor/AIImageGenerator';
@@ -129,6 +130,8 @@ export default function VendorMediaLibrary() {
   const [quickViewFile, setQuickViewFile] = useState<MediaFile | null>(null);
   const [showAIGenerator, setShowAIGenerator] = useState(false);
   const [showReimaginModal, setShowReimaginModal] = useState(false);
+  const [autoMatching, setAutoMatching] = useState(false);
+  const [autoMatchResult, setAutoMatchResult] = useState<{matched: number, unmatched: number, total: number} | null>(null);
 
   // Filter state
   const [selectedCategory, setSelectedCategory] = useState<MediaCategory>(null);
@@ -282,7 +285,65 @@ export default function VendorMediaLibrary() {
     document.body.removeChild(a);
   };
 
-  // AI Operations
+  // Bulk Auto-Match images to products
+  const handleBulkAutoMatch = async () => {
+    setAutoMatching(true);
+    setAutoMatchResult(null);
+
+    // Dispatch AI start event for monitor
+    window.dispatchEvent(new CustomEvent('ai-autofill-start'));
+
+    try {
+      const response = await fetch('/api/vendor/media/bulk-auto-match', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-vendor-id': vendor?.id || '',
+        },
+        body: JSON.stringify({
+          onlyUnlinked: true,
+          categoryFilter: selectedCategory
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to auto-match images');
+      }
+
+      const data = await response.json();
+      console.log('✅ Auto-match results:', data);
+
+      setAutoMatchResult({
+        matched: data.matched,
+        unmatched: data.unmatched,
+        total: data.total
+      });
+
+      // Show success notification
+      if (data.matched > 0) {
+        alert(`Successfully matched ${data.matched} of ${data.total} images to products!`);
+      } else {
+        alert(`No matches found. Try renaming your images to match product names.`);
+      }
+
+      // Reload media to show updated links
+      await loadMedia();
+
+      // Dispatch AI complete event
+      window.dispatchEvent(new CustomEvent('ai-autofill-complete'));
+
+    } catch (err: any) {
+      console.error('❌ Error auto-matching:', err);
+      alert(`Failed to auto-match images: ${err.message}`);
+
+      // Dispatch AI complete event even on error
+      window.dispatchEvent(new CustomEvent('ai-autofill-complete'));
+    } finally {
+      setAutoMatching(false);
+    }
+  };
+
+  // AI Operations with batch processing
   const handleAIOperation = async (operation: 'remove-bg' | 'enhance' | 'upscale' | 'reimagine') => {
     if (selectedFiles.size === 0) {
       alert('Please select files first');
@@ -311,54 +372,125 @@ export default function VendorMediaLibrary() {
         name: f.file_name
       }));
 
+      // Determine endpoint
       let endpoint = '';
-      let body: any = {};
-
       switch (operation) {
         case 'remove-bg':
           endpoint = '/api/vendor/media/remove-bg';
-          body = { files: filesData };
           break;
         case 'enhance':
           endpoint = '/api/vendor/media/bulk-enhance';
-          body = { files: filesData };
           break;
         case 'upscale':
           endpoint = '/api/vendor/media/upscale';
-          body = { files: filesData };
           break;
       }
 
-      window.dispatchEvent(new CustomEvent('ai-autofill-progress', {
-        detail: { message: `# ${operation.toUpperCase()}\n\nProcessing ${fileNames.length} file(s)...` }
-      }));
-
-      const response = await fetch(endpoint, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-vendor-id': vendor?.id || '',
-        },
-        body: JSON.stringify(body),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || `Failed to ${operation}`);
+      // Split into batches of 10
+      const BATCH_SIZE = 10;
+      const batches: Array<Array<{url: string, name: string}>> = [];
+      for (let i = 0; i < filesData.length; i += BATCH_SIZE) {
+        batches.push(filesData.slice(i, i + BATCH_SIZE));
       }
-
-      const result = await response.json();
 
       window.dispatchEvent(new CustomEvent('ai-autofill-progress', {
         detail: {
-          message: `\n## ✅ Complete\n\n- Processed: ${result.processed || result.successful?.length || 0}\n- Failed: ${result.failed || result.errors?.length || 0}`
+          message: `# ${operation.toUpperCase().replace('-', ' ')}\n\n📦 Processing ${filesData.length} images in ${batches.length} batch${batches.length > 1 ? 'es' : ''} (${BATCH_SIZE} per batch)\n`
         }
       }));
 
-      // Reload media
+      let totalProcessed = 0;
+      let totalFailed = 0;
+      const allErrors: any[] = [];
+
+      // Process batches sequentially
+      for (let batchIndex = 0; batchIndex < batches.length; batchIndex++) {
+        const batch = batches[batchIndex];
+        const batchNum = batchIndex + 1;
+
+        setOperationProgress(`Processing batch ${batchNum}/${batches.length} (${batch.length} images)...`);
+
+        window.dispatchEvent(new CustomEvent('ai-autofill-progress', {
+          detail: {
+            message: `\n## Batch ${batchNum}/${batches.length}\n\n⏳ Processing ${batch.length} images...`
+          }
+        }));
+
+        try {
+          const response = await fetch(endpoint, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-vendor-id': vendor?.id || '',
+            },
+            body: JSON.stringify({ files: batch }),
+          });
+
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || `Failed to ${operation}`);
+          }
+
+          const result = await response.json();
+          const processed = result.processed || result.successful?.length || 0;
+          const failed = result.failed || result.errors?.length || 0;
+
+          totalProcessed += processed;
+          totalFailed += failed;
+
+          if (result.errors && result.errors.length > 0) {
+            allErrors.push(...result.errors);
+          }
+
+          window.dispatchEvent(new CustomEvent('ai-autofill-progress', {
+            detail: {
+              message: `✅ Batch ${batchNum} complete: ${processed} successful, ${failed} failed\n`
+            }
+          }));
+
+        } catch (err: any) {
+          console.error(`❌ Error in batch ${batchNum}:`, err);
+          totalFailed += batch.length;
+
+          window.dispatchEvent(new CustomEvent('ai-autofill-progress', {
+            detail: {
+              message: `❌ Batch ${batchNum} failed: ${err.message}\n`
+            }
+          }));
+        }
+
+        // Small delay between batches to avoid overwhelming the API
+        if (batchIndex < batches.length - 1) {
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+      }
+
+      // Final summary
+      window.dispatchEvent(new CustomEvent('ai-autofill-progress', {
+        detail: {
+          message: `\n## 🎉 All Batches Complete\n\n- **Total Processed:** ${totalProcessed}\n- **Total Failed:** ${totalFailed}\n- **Total Images:** ${filesData.length}`
+        }
+      }));
+
+      if (allErrors.length > 0) {
+        window.dispatchEvent(new CustomEvent('ai-autofill-progress', {
+          detail: {
+            message: `\n### Failed Images:\n${allErrors.map(e => `- ${e.fileName}: ${e.error}`).join('\n')}`
+          }
+        }));
+      }
+
+      // Reload media with cache-busting to ensure updated images display
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1s for storage to sync
       await loadMedia();
       setSelectedFiles(new Set());
       setOperationProgress('');
+
+      // Force browser to refresh cached images by updating file list
+      setFiles(prev => prev.map(f => ({
+        ...f,
+        file_url: `${f.file_url.split('?')[0]}?t=${Date.now()}` // Cache bust
+      })));
 
     } catch (err: any) {
       console.error('❌ Error in AI operation:', err);
@@ -627,7 +759,30 @@ export default function VendorMediaLibrary() {
             )}
 
             {/* Bottom Row: Action Buttons */}
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
+              {/* Magic Auto-Match Button */}
+              <button
+                onClick={handleBulkAutoMatch}
+                disabled={autoMatching || files.length === 0}
+                className="flex-1 md:flex-initial bg-gradient-to-r from-purple-500 to-pink-500 text-white border-2 border-purple-400 rounded-2xl px-4 md:px-6 py-2.5 md:py-3 text-[10px] md:text-xs uppercase tracking-[0.15em] hover:from-purple-600 hover:to-pink-600 font-black transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                style={{ fontWeight: 900 }}
+                title="Automatically match images to products based on filename"
+              >
+                {autoMatching ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 md:w-4 md:h-4 animate-spin" />
+                    <span className="hidden sm:inline">Matching...</span>
+                    <span className="sm:hidden">Matching</span>
+                  </>
+                ) : (
+                  <>
+                    <Link2 className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                    <span className="hidden sm:inline">Magic Auto-Match</span>
+                    <span className="sm:hidden">Auto-Match</span>
+                  </>
+                )}
+              </button>
+
               {/* Generate with AI Button */}
               <button
                 onClick={() => setShowAIGenerator(true)}

@@ -13,7 +13,9 @@ interface AdminModalProps {
   onSubmit?: () => void;
   submitText?: string;
   cancelText?: string;
-  maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl';
+  maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl';
+  variant?: 'default' | 'form' | 'confirmation';
+  hideFooter?: boolean;
 }
 
 export default function AdminModal({
@@ -25,7 +27,9 @@ export default function AdminModal({
   onSubmit,
   submitText = 'Save',
   cancelText = 'Cancel',
-  maxWidth = 'lg'
+  maxWidth = 'lg',
+  variant = 'default',
+  hideFooter = false
 }: AdminModalProps) {
   useEffect(() => {
     if (isOpen) {
@@ -45,41 +49,46 @@ export default function AdminModal({
     md: 'max-w-md',
     lg: 'max-w-lg',
     xl: 'max-w-xl',
-    '2xl': 'max-w-2xl'
+    '2xl': 'max-w-2xl',
+    '3xl': 'max-w-3xl',
+    '4xl': 'max-w-4xl'
   };
 
   const modalContent = (
-    <div 
-      className="fixed inset-0 z-[99999] flex items-center justify-center p-6 bg-black/10 backdrop-blur-xl"
-      style={{ 
+    <div
+      className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+      style={{
         position: 'fixed',
         top: 0,
         left: 0,
         right: 0,
-        bottom: 0
+        bottom: 0,
+        animation: 'fade-in 0.2s ease-out'
       }}
       onClick={onClose}
     >
-      <div 
-        className={`bg-[#0a0a0a] border border-white/20 w-full ${widthClasses[maxWidth]} shadow-2xl shadow-black/50`}
-        style={{ 
+      <div
+        className={`bg-black/95 backdrop-blur-xl border border-white/10 w-full ${widthClasses[maxWidth]} shadow-2xl rounded-2xl overflow-hidden`}
+        style={{
           maxHeight: '85vh',
           display: 'flex',
-          flexDirection: 'column'
+          flexDirection: 'column',
+          animation: 'fade-in 0.3s ease-out',
+          boxShadow: '0 0 60px rgba(255,255,255,0.05)'
         }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header - Fixed */}
-        <div className="flex items-center justify-between border-b border-white/10 p-6 flex-shrink-0 bg-[#0a0a0a]">
+        <div className="flex items-center justify-between border-b border-white/5 p-6 flex-shrink-0 bg-black">
           <div className="flex-1 min-w-0 pr-4">
-            <h2 className="text-xl text-white font-medium">{title}</h2>
+            <h2 className="text-xs uppercase tracking-[0.15em] text-white mb-2 font-black" style={{ fontWeight: 900 }}>{title}</h2>
             {description && (
-              <p className="text-white/60 text-sm mt-1">{description}</p>
+              <p className="text-white/40 text-[10px] uppercase tracking-wider">{description}</p>
             )}
           </div>
           <button
             onClick={onClose}
-            className="flex-shrink-0 p-2 text-white/60 hover:text-white hover:bg-white/10 rounded transition-all"
+            className="flex-shrink-0 p-2 text-white/40 hover:text-white transition-colors"
           >
             <X size={20} />
           </button>
@@ -91,31 +100,36 @@ export default function AdminModal({
         </div>
 
         {/* Footer - Fixed */}
-        {onSubmit ? (
-          <div className="border-t border-white/10 p-6 flex gap-3 flex-shrink-0 bg-[#0a0a0a]">
-            <button
-              onClick={onClose}
-              className="flex-1 px-4 py-2.5 bg-transparent border border-white/20 text-white hover:bg-white/5 transition-all text-sm uppercase tracking-wider"
-            >
-              {cancelText}
-            </button>
-            <button
-              onClick={onSubmit}
-              className="flex-1 px-4 py-2.5 bg-white text-black hover:bg-white/90 transition-all text-sm uppercase tracking-wider font-medium"
-            >
-              {submitText}
-            </button>
+        {!hideFooter && (onSubmit ? (
+          <div className="border-t border-white/5 p-6 flex items-center justify-between flex-shrink-0 bg-black">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={onClose}
+                className="px-6 py-3 bg-black/20 border border-white/5 text-white/60 hover:bg-white/5 hover:text-white transition-colors rounded-xl text-[10px] uppercase tracking-[0.15em] font-black"
+                style={{ fontWeight: 900 }}
+              >
+                {cancelText}
+              </button>
+              <button
+                onClick={onSubmit}
+                className="px-8 py-3 bg-white/10 text-white border border-white/20 hover:bg-white/20 transition-all rounded-xl text-[10px] uppercase tracking-[0.15em] font-black"
+                style={{ fontWeight: 900 }}
+              >
+                {submitText}
+              </button>
+            </div>
           </div>
         ) : (
-          <div className="border-t border-white/10 p-6 flex justify-end flex-shrink-0 bg-[#0a0a0a]">
+          <div className="border-t border-white/5 p-6 flex justify-end flex-shrink-0 bg-black">
             <button
               onClick={onClose}
-              className="px-6 py-2.5 bg-white text-black hover:bg-white/90 transition-all text-sm uppercase tracking-wider font-medium"
+              className="px-6 py-3 bg-white/10 text-white border border-white/20 hover:bg-white/20 transition-all rounded-xl text-[10px] uppercase tracking-[0.15em] font-black"
+              style={{ fontWeight: 900 }}
             >
               Close
             </button>
           </div>
-        )}
+        ))}
       </div>
 
       <style jsx global>{`

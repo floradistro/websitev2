@@ -59,12 +59,22 @@ function POSLayoutInner({
         html, body {
           overflow: hidden !important;
           height: 100% !important;
+          position: fixed !important;
+          width: 100% !important;
         }
         /* iOS PWA - Full height viewport */
         @supports (-webkit-touch-callout: none) {
           html, body {
             height: -webkit-fill-available !important;
           }
+        }
+        /* Smooth touch scrolling for mobile */
+        * {
+          -webkit-overflow-scrolling: touch;
+        }
+        /* Disable pull-to-refresh */
+        body {
+          overscroll-behavior: none;
         }
       `}</style>
       {/* PWA Safe Area Spacer for iOS status bar */}
@@ -75,7 +85,7 @@ function POSLayoutInner({
         }}
       />
       <div
-        className="min-h-screen bg-black text-white antialiased overflow-x-hidden"
+        className="h-screen bg-black text-white antialiased overflow-hidden"
         style={{
           paddingTop: 'env(safe-area-inset-top, 0px)',
           paddingBottom: 'env(safe-area-inset-bottom, 0px)'

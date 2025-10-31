@@ -55,8 +55,13 @@ export async function PATCH(request: NextRequest) {
     if (updates.regular_price !== undefined) updateData.regular_price = updates.regular_price;
     if (updates.cost_price !== undefined) updateData.cost_price = updates.cost_price;
     if (updates.description !== undefined) updateData.description = updates.description;
-    
-    // Handle custom fields - save to blueprint_fields in proper format
+
+    // Handle blueprint_fields directly (NEW SYSTEM)
+    if (updates.blueprint_fields !== undefined) {
+      updateData.blueprint_fields = updates.blueprint_fields;
+    }
+
+    // Handle custom fields (LEGACY - for backwards compatibility)
     if (updates.custom_fields) {
       const fieldsArray = Object.entries(updates.custom_fields).map(([field_name, field_value]) => {
         // Convert field_name to proper label format (e.g., thc_percentage → THC Content)
@@ -70,14 +75,14 @@ export async function PATCH(request: NextRequest) {
           'nose': 'Aroma',
           'taste': 'Flavors'
         };
-        
+
         return {
           type: 'text',
           label: labelMap[field_name] || field_name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
           value: field_value
         };
       }).filter(f => f.value); // Only include non-empty values
-      
+
       updateData.blueprint_fields = fieldsArray;
     }
     

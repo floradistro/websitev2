@@ -51,6 +51,14 @@ export const vendorNavItems: NavItem[] = [
     group: 'core'
   },
   {
+    href: '/vendor/lab-results',
+    icon: FileText,
+    label: 'Lab Results',
+    description: 'COAs & compliance',
+    isCore: false,
+    group: 'core'
+  },
+  {
     href: '/vendor/orders',
     icon: ShoppingBag,
     label: 'Orders',
@@ -153,13 +161,11 @@ export const secondaryFeatures = [
   { href: '/vendor/locations', parent: '/vendor/settings', label: 'Locations' },
   { href: '/vendor/employees', parent: '/vendor/settings', label: 'Team' },
   { href: '/vendor/domains', parent: '/vendor/branding', label: 'Custom Domains' },
-  { href: '/vendor/lab-results', parent: '/vendor/products', label: 'Lab Results' },
   { href: '/vendor/purchase-orders', parent: '/vendor/inventory', label: 'Purchase Orders' },
   { href: '/vendor/suppliers', parent: '/vendor/inventory', label: 'Suppliers' },
   { href: '/vendor/wholesale-customers', parent: '/vendor/inventory', label: 'Wholesale Customers' },
   { href: '/vendor/reviews', parent: '/vendor/products', label: 'Reviews' },
   { href: '/vendor/component-editor', parent: '/vendor/branding', label: 'Visual Editor' },
-  { href: '/vendor/pricing-blueprints', parent: '/vendor/products', label: 'Advanced Pricing' },
 ];
 
 // Mobile bottom navigation (4 core items)

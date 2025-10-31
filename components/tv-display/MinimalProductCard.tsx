@@ -19,14 +19,32 @@ export function MinimalProductCard({ product, theme, index, visiblePriceBreaks, 
   const blueprint = product.pricing_blueprint;
   const priceBreaks = blueprint?.price_breaks || [];
 
+  // Helper to get field value from blueprint_fields array (NEW SYSTEM ONLY)
+  const getFieldValue = (fieldName: string): string | null => {
+    if (!product.blueprint_fields || !Array.isArray(product.blueprint_fields)) {
+      return null;
+    }
+
+    const field = product.blueprint_fields.find((f: any) =>
+      f.field_name?.toLowerCase() === fieldName.toLowerCase() ||
+      f.field_name?.toLowerCase().replace(/[^a-z0-9]/g, '_') === fieldName.toLowerCase()
+    );
+
+    return field?.field_value || null;
+  };
+
+  // Get field values
+  const strain_type = getFieldValue('strain_type') || getFieldValue('Strain Type');
+  const thc_percentage = getFieldValue('thca_percentage') || getFieldValue('THCa %') || getFieldValue('thc_percentage');
+  const cbd_percentage = getFieldValue('cbd_percentage') || getFieldValue('CBD %');
+
   // Debug logging for first product
   if (index === 0) {
     console.log('🔍 Product card debug:', {
       name: product.name,
-      metadata: product.metadata,
-      thc_percentage: product.metadata?.thc_percentage,
-      thc_type: typeof product.metadata?.thc_percentage,
-      strain_type: product.metadata?.strain_type,
+      blueprint_fields: product.blueprint_fields,
+      extracted_strain_type: strain_type,
+      extracted_thc: thc_percentage,
       displayConfig: displayConfig,
       visible_price_breaks: visiblePriceBreaks
     });
@@ -82,7 +100,7 @@ export function MinimalProductCard({ product, theme, index, visiblePriceBreaks, 
 
       {/* Product Metadata - Flexible middle section */}
       <div className="flex-1 flex flex-col justify-center overflow-hidden" style={{ gap: '2%' }}>
-        {displayConfig?.show_strain_type === true && product.metadata?.strain_type && (
+        {displayConfig?.show_strain_type === true && strain_type && (
           <div
             className="font-bold uppercase truncate"
             style={{
@@ -92,10 +110,10 @@ export function MinimalProductCard({ product, theme, index, visiblePriceBreaks, 
               fontSize: 'clamp(0.75rem, 1.2vw, 1.75rem)',
             }}
           >
-            {product.metadata.strain_type}
+            {strain_type}
           </div>
         )}
-        {displayConfig?.show_thc === true && product.metadata?.thc_percentage && (
+        {displayConfig?.show_thc === true && thc_percentage && (
           <div
             className="font-black truncate"
             style={{
@@ -104,12 +122,12 @@ export function MinimalProductCard({ product, theme, index, visiblePriceBreaks, 
               fontSize: 'clamp(0.75rem, 1.2vw, 1.75rem)',
             }}
           >
-            THC: {typeof product.metadata.thc_percentage === 'string' && product.metadata.thc_percentage.includes('%')
-              ? product.metadata.thc_percentage
-              : `${product.metadata.thc_percentage}%`}
+            THC: {typeof thc_percentage === 'string' && thc_percentage.includes('%')
+              ? thc_percentage
+              : `${thc_percentage}%`}
           </div>
         )}
-        {displayConfig?.show_cbd === true && product.metadata?.cbd_percentage && (
+        {displayConfig?.show_cbd === true && cbd_percentage && (
           <div
             className="font-black truncate"
             style={{
@@ -118,9 +136,9 @@ export function MinimalProductCard({ product, theme, index, visiblePriceBreaks, 
               fontSize: 'clamp(0.75rem, 1.2vw, 1.75rem)',
             }}
           >
-            CBD: {typeof product.metadata.cbd_percentage === 'string' && product.metadata.cbd_percentage.includes('%')
-              ? product.metadata.cbd_percentage
-              : `${product.metadata.cbd_percentage}%`}
+            CBD: {typeof cbd_percentage === 'string' && cbd_percentage.includes('%')
+              ? cbd_percentage
+              : `${cbd_percentage}%`}
           </div>
         )}
       </div>

@@ -22,11 +22,11 @@ export async function GET(request: NextRequest) {
     
     console.log(`[Products API] Fetching for vendor: ${vendorId}`);
     
-    // Fetch products - essential fields including images
+    // Fetch products - essential fields including images and category
     const productsStart = Date.now();
     const { data: products, error: productsError } = await supabase
       .from('products')
-      .select('id, name, sku, price, cost_price, description, status, featured_image, image_gallery')
+      .select('id, name, sku, price, cost_price, description, status, featured_image_storage, image_gallery_storage, primary_category_id, categories:primary_category_id(name)')
       .eq('vendor_id', vendorId)
       .order('name');
 
@@ -45,38 +45,15 @@ export async function GET(request: NextRequest) {
 
     const productIds = products.map(p => p.id);
 
-    // Fetch related data in parallel including LIVE inventory
+    // Fetch LIVE inventory in parallel
     const relatedStart = Date.now();
-    const [categoriesResult, inventoryResult] = await Promise.allSettled([
-      supabase
-        .from('product_categories')
-        .select('product_id, categories(name)')
-        .in('product_id', productIds)
-        .limit(1000),
+    const { data: inventoryRecords } = await supabase
+      .from('inventory')
+      .select('product_id, quantity')
+      .in('product_id', productIds);
 
-      // Query live inventory quantities - only product_id and quantity
-      // No need to filter by vendor_id since productIds are already vendor-filtered
-      supabase
-        .from('inventory')
-        .select('product_id, quantity')
-        .in('product_id', productIds)
-    ]);
-    
     console.log(`[Products API] Related data fetched in ${Date.now() - relatedStart}ms`);
-
-    // Extract data from settled promises
-    const categories = categoriesResult.status === 'fulfilled' ? categoriesResult.value.data || [] : [];
-    const inventoryRecords = inventoryResult.status === 'fulfilled' ? inventoryResult.value.data || [] : [];
-    
-    console.log(`[Products API] Categories: ${categories.length}, Inventory: ${inventoryRecords.length}`);
-
-    // Build maps for fast lookup
-    const categoryMap = new Map(
-      categories.map((pc: any) => [
-        pc.product_id,
-        pc.categories?.name || 'Uncategorized'
-      ])
-    );
+    console.log(`[Products API] Inventory: ${inventoryRecords?.length || 0} records`);
 
     // Build inventory map - sum quantities across all locations per product
     const inventoryMap = new Map<string, number>();
@@ -91,14 +68,14 @@ export async function GET(request: NextRequest) {
       const images: string[] = [];
 
       // Add featured image
-      if (product.featured_image) {
-        images.push(product.featured_image);
+      if (product.featured_image_storage) {
+        images.push(product.featured_image_storage);
       }
 
       // Add gallery images if they exist
-      if (product.image_gallery && Array.isArray(product.image_gallery)) {
+      if (product.image_gallery_storage && Array.isArray(product.image_gallery_storage)) {
         // Filter out featured image to avoid duplicates
-        const additionalImages = product.image_gallery.filter((img: string) => img && img !== product.featured_image);
+        const additionalImages = product.image_gallery_storage.filter((img: string) => img && img !== product.featured_image_storage);
         images.push(...additionalImages);
       }
 
@@ -106,7 +83,7 @@ export async function GET(request: NextRequest) {
         id: product.id,
         name: product.name,
         sku: product.sku || '',
-        category: categoryMap.get(product.id) || 'Uncategorized',
+        category: product.categories?.name || 'Uncategorized', // Get category from primary_category_id relation
         price: parseFloat(product.price) || 0,
         cost_price: product.cost_price ? parseFloat(product.cost_price) : undefined,
         description: product.description || '',

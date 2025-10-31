@@ -16,34 +16,6 @@ export async function GET(request: NextRequest) {
     }
 
     const supabase = getServiceSupabase();
-    
-    // Get admin-defined field groups for category
-    let adminFieldsQuery = supabase
-      .from('category_field_groups')
-      .select(`
-        id,
-        is_required,
-        display_order,
-        field_group:field_groups(
-          id,
-          name,
-          slug,
-          description,
-          fields,
-          scope,
-          is_active
-        ),
-        category:categories(id, name, slug)
-      `)
-      .eq('field_group.is_active', true);
-
-    if (categoryId) {
-      adminFieldsQuery = adminFieldsQuery.eq('category_id', categoryId);
-    }
-
-    const { data: adminAssignments, error: adminError } = await adminFieldsQuery;
-    
-    if (adminError) throw adminError;
 
     // Get vendor's custom product fields
     let vendorFieldsQuery = supabase
@@ -61,63 +33,19 @@ export async function GET(request: NextRequest) {
     
     if (vendorError) throw vendorError;
 
-    // Format response
-    const response = {
-      adminFields: (adminAssignments || []).map((assignment: any) => ({
-        id: assignment.field_group?.id,
-        name: assignment.field_group?.name,
-        slug: assignment.field_group?.slug,
-        description: assignment.field_group?.description,
-        fields: assignment.field_group?.fields,
-        scope: assignment.field_group?.scope,
-        isRequired: assignment.is_required,
-        category: assignment.category,
-        source: 'admin'
-      })),
-      vendorFields: (vendorFields || []).map(field => ({
-        id: field.id,
-        fieldId: field.field_id,
-        definition: field.field_definition,
-        categoryId: field.category_id,
-        sortOrder: field.sort_order,
-        source: 'vendor'
-      })),
-      merged: [] as any[]
-    };
-
-    // Merge fields for easy consumption
-    const mergedFields = [];
-    
-    // Add admin fields first
-    for (const adminFieldGroup of response.adminFields) {
-      if (Array.isArray(adminFieldGroup.fields)) {
-        for (const field of adminFieldGroup.fields) {
-          mergedFields.push({
-            ...field,
-            source: 'admin',
-            groupName: adminFieldGroup.name,
-            isRequired: adminFieldGroup.isRequired,
-            readonly: true // Vendors can't edit admin fields
-          });
-        }
-      }
-    }
-    
-    // Add vendor fields
-    for (const vendorField of response.vendorFields) {
-      mergedFields.push({
-        ...vendorField.definition,
-        id: vendorField.fieldId,
-        source: 'vendor',
-        readonly: false // Vendors can edit their own fields
-      });
-    }
-
-    response.merged = mergedFields;
+    // Format response - ONLY vendor fields
+    const fields = (vendorFields || []).map(field => ({
+      id: field.id,
+      fieldId: field.field_id,
+      definition: field.field_definition,
+      categoryId: field.category_id,
+      sortOrder: field.sort_order,
+      ...field.field_definition // Spread definition fields at top level
+    }));
 
     return NextResponse.json({
       success: true,
-      ...response
+      fields
     });
   } catch (error: any) {
     console.error('Error fetching product fields:', error);

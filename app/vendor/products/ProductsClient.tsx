@@ -10,6 +10,7 @@ import {
 import { useAppAuth } from '@/context/AppAuthContext';
 import { showNotification, showConfirm } from '@/components/NotificationToast';
 import { ProductQuickView } from '@/components/vendor/ProductQuickView';
+import { PricingBlueprintModal } from '@/components/vendor/PricingBlueprintModal';
 import axios from 'axios';
 
 // Supabase image transformation helper - uses render API for proper thumbnails
@@ -79,12 +80,14 @@ interface Category {
 
 interface FieldGroup {
   id: string;
-  vendor_id: string;
+  vendor_id: string | null;
   name: string;
   slug: string;
   description?: string;
   fields: any[];
   is_active: boolean;
+  category_id?: string; // For admin field groups assigned to categories
+  category_name?: string; // For display purposes
 }
 
 interface PricingBlueprint {
@@ -94,7 +97,9 @@ interface PricingBlueprint {
   description?: string;
   context: string;
   tier_type: string;
+  quality_tier?: string;
   price_breaks: any[];
+  applicable_to_categories?: string[];
   is_active: boolean;
 }
 
@@ -212,7 +217,10 @@ export default function ProductsClient() {
       });
 
       if (response.data.success) {
-        setProducts(response.data.products || []);
+        const prods = response.data.products || [];
+        console.log('📦 Loaded products:', prods.length);
+        console.log('🏷️ Sample categories:', prods.slice(0, 5).map(p => ({ name: p.name, category: p.category })));
+        setProducts(prods);
       }
     } catch (error: any) {
       console.error('Products load error:', error);
@@ -250,16 +258,19 @@ export default function ProductsClient() {
         headers: { 'x-vendor-id': vendor.id }
       });
       if (response.data.success) {
-        // Map the API response to match our FieldGroup interface
-        const mappedGroups = response.data.vendorFields?.map((vf: any) => ({
-          id: vf.id,
+        // Map vendor fields to field groups (one per field)
+        const fieldGroups = (response.data.fields || []).map((field: any) => ({
+          id: field.id,
           vendor_id: vendor.id,
-          name: vf.definition?.label || 'Unnamed',
-          slug: vf.fieldId,
-          fields: [vf.definition],
-          is_active: true
-        })) || [];
-        setFieldGroups(mappedGroups);
+          name: field.label || field.definition?.label || 'Unnamed',
+          slug: field.fieldId || field.slug,
+          description: field.description || field.definition?.description,
+          fields: [field],
+          is_active: true,
+          category_id: field.categoryId
+        }));
+
+        setFieldGroups(fieldGroups);
       }
     } catch (error) {
       console.error('Error loading field groups:', error);
@@ -311,7 +322,16 @@ export default function ProductsClient() {
     }
 
     if (categoryFilter !== 'all') {
-      items = items.filter(p => p.category === categoryFilter);
+      console.log('🔍 Filtering by category:', categoryFilter);
+      console.log('📦 Sample product categories:', items.slice(0, 3).map(p => ({ name: p.name, category: p.category })));
+      items = items.filter(p => {
+        const matches = p.category === categoryFilter;
+        if (!matches && items.length < 20) {
+          console.log(`❌ Product "${p.name}" category "${p.category}" doesn't match filter "${categoryFilter}"`);
+        }
+        return matches;
+      });
+      console.log('✅ Filtered to', items.length, 'products');
     }
 
     return items;
@@ -329,7 +349,9 @@ export default function ProductsClient() {
   // Get unique categories from products
   const productCategories = useMemo(() => {
     const cats = new Set(products.map(p => p.category));
-    return ['all', ...Array.from(cats)];
+    const result = ['all', ...Array.from(cats)];
+    console.log('🏷️ Available categories:', result);
+    return result;
   }, [products]);
 
   // Stats
@@ -495,12 +517,12 @@ export default function ProductsClient() {
       )}
 
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center justify-between mb-6 pb-4 border-b border-white/5">
         <div>
-          <h1 className="text-white text-2xl font-black tracking-tight" style={{ fontWeight: 900 }}>
+          <h1 className="text-xs uppercase tracking-[0.15em] text-white font-black mb-1" style={{ fontWeight: 900 }}>
             Products
           </h1>
-          <p className="text-white/60 text-sm mt-1">
+          <p className="text-white/40 text-[10px] uppercase tracking-wider">
             Manage your catalog, categories, and pricing
           </p>
         </div>
@@ -508,28 +530,30 @@ export default function ProductsClient() {
         {activeTab === 'catalog' && (
           <Link
             href="/vendor/products/new"
-            className="px-4 py-2 bg-white text-black rounded-xl text-sm font-bold hover:bg-white/90 transition-colors inline-flex items-center gap-2"
+            className="bg-white/10 text-white border border-white/20 rounded-xl px-3 py-2 text-[10px] uppercase tracking-[0.15em] hover:bg-white/20 hover:border-white/30 font-black transition-all inline-flex items-center gap-2"
+            style={{ fontWeight: 900 }}
           >
-            <Plus size={16} strokeWidth={2.5} />
+            <Plus size={12} strokeWidth={2.5} />
             Add Product
           </Link>
         )}
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-2 mb-6 border-b border-white/10">
+      <div className="flex gap-2 mb-6 border-b border-white/5">
         <button
           onClick={() => setActiveTab('catalog')}
-          className={`px-4 py-3 text-sm font-bold transition-all ${
+          className={`px-4 py-3 text-[10px] uppercase tracking-[0.15em] font-black transition-all ${
             activeTab === 'catalog'
               ? 'text-white border-b-2 border-white'
               : 'text-white/40 hover:text-white/60'
           }`}
+          style={{ fontWeight: 900 }}
         >
           <div className="flex items-center gap-2">
-            <Package size={16} />
+            <Package size={14} />
             Catalog
-            <span className="px-2 py-0.5 bg-white/10 rounded-full text-[10px]">
+            <span className="px-2 py-0.5 bg-white/10 rounded text-[8px]">
               {stats.total}
             </span>
           </div>
@@ -537,16 +561,17 @@ export default function ProductsClient() {
 
         <button
           onClick={() => setActiveTab('categories')}
-          className={`px-4 py-3 text-sm font-bold transition-all ${
+          className={`px-4 py-3 text-[10px] uppercase tracking-[0.15em] font-black transition-all ${
             activeTab === 'categories'
               ? 'text-white border-b-2 border-white'
               : 'text-white/40 hover:text-white/60'
           }`}
+          style={{ fontWeight: 900 }}
         >
           <div className="flex items-center gap-2">
-            <FolderTree size={16} />
+            <FolderTree size={14} />
             Categories
-            <span className="px-2 py-0.5 bg-white/10 rounded-full text-[10px]">
+            <span className="px-2 py-0.5 bg-white/10 rounded text-[8px]">
               {categories.length}
             </span>
           </div>
@@ -554,16 +579,17 @@ export default function ProductsClient() {
 
         <button
           onClick={() => setActiveTab('pricing')}
-          className={`px-4 py-3 text-sm font-bold transition-all ${
+          className={`px-4 py-3 text-[10px] uppercase tracking-[0.15em] font-black transition-all ${
             activeTab === 'pricing'
               ? 'text-white border-b-2 border-white'
               : 'text-white/40 hover:text-white/60'
           }`}
+          style={{ fontWeight: 900 }}
         >
           <div className="flex items-center gap-2">
-            <DollarSign size={16} />
+            <DollarSign size={14} />
             Pricing Rules
-            <span className="px-2 py-0.5 bg-white/10 rounded-full text-[10px]">
+            <span className="px-2 py-0.5 bg-white/10 rounded text-[8px]">
               {pricingBlueprints.filter(b => b.vendor_id === vendor?.id).length}
             </span>
           </div>
@@ -673,42 +699,42 @@ function CatalogTab({
   return (
     <div>
       {/* Stats */}
-      <div className="grid grid-cols-4 gap-4 mb-6">
-        <div className="bg-white/5 border border-white/10 rounded-xl p-4">
-          <div className="text-white/60 text-xs uppercase tracking-wider mb-1">Total</div>
-          <div className="text-white text-2xl font-black">{stats.total}</div>
+      <div className="grid grid-cols-4 gap-3 mb-6">
+        <div className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-4">
+          <div className="text-white/40 text-[9px] uppercase tracking-[0.15em] mb-2">Total</div>
+          <div className="text-white text-2xl font-black" style={{ fontWeight: 900 }}>{stats.total}</div>
         </div>
-        <div className="bg-white/5 border border-white/10 rounded-xl p-4">
-          <div className="text-white/60 text-xs uppercase tracking-wider mb-1">Active</div>
-          <div className="text-white text-2xl font-black">{stats.approved}</div>
+        <div className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-4">
+          <div className="text-white/40 text-[9px] uppercase tracking-[0.15em] mb-2">Active</div>
+          <div className="text-white text-2xl font-black" style={{ fontWeight: 900 }}>{stats.approved}</div>
         </div>
-        <div className="bg-white/5 border border-white/10 rounded-xl p-4">
-          <div className="text-white/60 text-xs uppercase tracking-wider mb-1">Pending</div>
-          <div className="text-white text-2xl font-black">{stats.pending}</div>
+        <div className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-4">
+          <div className="text-white/40 text-[9px] uppercase tracking-[0.15em] mb-2">Pending</div>
+          <div className="text-white text-2xl font-black" style={{ fontWeight: 900 }}>{stats.pending}</div>
         </div>
-        <div className="bg-white/5 border border-white/10 rounded-xl p-4">
-          <div className="text-white/60 text-xs uppercase tracking-wider mb-1">Rejected</div>
-          <div className="text-white text-2xl font-black">{stats.rejected}</div>
+        <div className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-4">
+          <div className="text-white/40 text-[9px] uppercase tracking-[0.15em] mb-2">Rejected</div>
+          <div className="text-white text-2xl font-black" style={{ fontWeight: 900 }}>{stats.rejected}</div>
         </div>
       </div>
 
       {/* Filters */}
       <div className="flex gap-3 mb-6">
         <div className="flex-1 relative">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" />
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" />
           <input
             type="text"
-            placeholder="Search products..."
+            placeholder="SEARCH PRODUCTS..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-white/40 text-sm focus:outline-none focus:border-white/30"
+            className="w-full pl-10 pr-4 py-2 bg-[#0a0a0a] border border-white/5 rounded-xl text-white placeholder:text-white/30 text-[10px] uppercase tracking-[0.15em] focus:outline-none focus:border-white/10"
           />
         </div>
 
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:border-white/30"
+          className="px-4 py-2 bg-[#0a0a0a] border border-white/5 rounded-xl text-white text-[10px] uppercase tracking-[0.15em] focus:outline-none focus:border-white/10"
         >
           <option value="all">All Status</option>
           <option value="approved">Active</option>
@@ -719,7 +745,7 @@ function CatalogTab({
         <select
           value={categoryFilter}
           onChange={(e) => setCategoryFilter(e.target.value)}
-          className="px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:border-white/30"
+          className="px-4 py-2 bg-[#0a0a0a] border border-white/5 rounded-xl text-white text-[10px] uppercase tracking-[0.15em] focus:outline-none focus:border-white/10"
         >
           {productCategories.map(cat => (
             <option key={cat} value={cat}>
@@ -732,63 +758,67 @@ function CatalogTab({
       {/* Products List */}
       {loading ? (
         <div className="text-center py-12">
-          <div className="text-white/60">Loading products...</div>
+          <div className="text-white/40 text-[10px] uppercase tracking-wider">Loading products...</div>
         </div>
       ) : products.length === 0 ? (
-        <div className="text-center py-12 bg-white/5 border border-white/10 rounded-2xl">
+        <div className="text-center py-16 bg-[#0a0a0a] border border-white/5 rounded-2xl">
           <Package size={48} className="mx-auto mb-4 text-white/20" />
-          <div className="text-white/60 mb-4">No products found</div>
+          <div className="text-white text-xs uppercase tracking-[0.15em] mb-2 font-black" style={{ fontWeight: 900 }}>No products found</div>
+          <div className="text-white/40 text-[10px] uppercase tracking-wider mb-6">Start adding products to your catalog</div>
           <Link
             href="/vendor/products/new"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-white text-black rounded-xl text-sm font-bold hover:bg-white/90"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded-xl text-[10px] uppercase tracking-[0.15em] font-black transition-all"
+            style={{ fontWeight: 900 }}
           >
-            <Plus size={16} />
+            <Plus size={12} />
             Add Your First Product
           </Link>
         </div>
       ) : (
         <>
-          <div className="space-y-2">
+          <div className="space-y-3">
             {products.map((product) => (
               <div
                 key={product.id}
-                className="bg-white/5 border border-white/10 hover:border-white/20 rounded-xl p-4 transition-all group"
+                className="bg-[#0a0a0a] border border-white/5 hover:border-white/10 rounded-2xl p-4 transition-all group"
               >
                 <div className="flex items-center gap-4">
                   {product.images && product.images.length > 0 && product.images[0] ? (
-                    <div className="w-16 h-16 relative rounded-lg overflow-hidden bg-white/5 flex-shrink-0">
+                    <div className="w-14 h-14 relative rounded-xl overflow-hidden bg-white/5 flex-shrink-0 border border-white/5">
                       <Image
-                        src={getSupabaseImageUrl(product.images[0], 128, 128)}
+                        src={getSupabaseImageUrl(product.images[0], 112, 112)}
                         alt={product.name}
                         fill
-                        sizes="64px"
+                        sizes="56px"
                         className="object-cover"
                       />
                     </div>
                   ) : (
-                    <div className="w-16 h-16 bg-white/5 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <Package size={24} className="text-white/20" />
+                    <div className="w-14 h-14 bg-white/5 rounded-xl flex items-center justify-center flex-shrink-0 border border-white/5">
+                      <Package size={20} className="text-white/20" />
                     </div>
                   )}
 
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-white font-bold text-sm truncate">{product.name}</h3>
-                    <div className="flex items-center gap-3 mt-1">
-                      <span className="text-white/60 text-xs">{product.sku}</span>
-                      <span className="text-white/40 text-xs">•</span>
-                      <span className="text-white/60 text-xs">{product.category}</span>
+                    <h3 className="text-white text-xs uppercase tracking-tight truncate font-black" style={{ fontWeight: 900 }}>
+                      {product.name}
+                    </h3>
+                    <div className="flex items-center gap-3 mt-1.5">
+                      <span className="text-white/40 text-[9px] uppercase tracking-[0.15em]">{product.sku}</span>
+                      <span className="text-white/20 text-[9px]">•</span>
+                      <span className="text-white/40 text-[9px] uppercase tracking-[0.15em]">{product.category}</span>
                       {product.status === 'approved' && (
                         <>
-                          <span className="text-white/40 text-xs">•</span>
-                          <span className="text-green-400 text-xs">Active</span>
+                          <span className="text-white/20 text-[9px]">•</span>
+                          <span className="text-green-400/80 text-[8px] uppercase tracking-wider px-2 py-0.5 bg-green-500/10 rounded">Active</span>
                         </>
                       )}
                     </div>
                   </div>
 
                   <div className="text-right">
-                    <div className="text-white font-bold">${product.price.toFixed(2)}</div>
-                    <div className="text-white/40 text-xs">
+                    <div className="text-white text-lg font-black" style={{ fontWeight: 900 }}>${product.price.toFixed(2)}</div>
+                    <div className="text-white/30 text-[9px] uppercase tracking-wider mt-0.5">
                       Stock: {product.total_stock}
                     </div>
                   </div>
@@ -799,21 +829,14 @@ function CatalogTab({
                       className="p-2 hover:bg-white/10 rounded-lg transition-colors"
                       title="Quick View"
                     >
-                      <Eye size={16} className="text-white/60" />
+                      <Eye size={14} className="text-white/60" />
                     </button>
-                    <Link
-                      href={`/vendor/products/${product.id}`}
-                      className="p-2 hover:bg-white/10 rounded-lg transition-colors"
-                      title="Edit"
-                    >
-                      <Edit2 size={16} className="text-white/60" />
-                    </Link>
                     <button
                       onClick={() => handleDeleteProduct(product.id, product.name)}
                       className="p-2 hover:bg-red-500/20 rounded-lg transition-colors"
                       title="Delete"
                     >
-                      <Trash2 size={16} className="text-red-400" />
+                      <Trash2 size={14} className="text-red-400" />
                     </button>
                   </div>
                 </div>
@@ -827,17 +850,19 @@ function CatalogTab({
               <button
                 onClick={() => setPage(page - 1)}
                 disabled={page === 1}
-                className="px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-white text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white/10"
+                className="px-4 py-2 bg-[#0a0a0a] border border-white/5 rounded-xl text-white text-[10px] uppercase tracking-[0.15em] font-black disabled:opacity-30 disabled:cursor-not-allowed hover:bg-white/5 hover:border-white/10 transition-all"
+                style={{ fontWeight: 900 }}
               >
                 Previous
               </button>
-              <div className="px-4 py-2 text-white/60 text-sm">
+              <div className="px-4 py-2 text-white/40 text-[10px] uppercase tracking-wider">
                 Page {page} of {totalPages}
               </div>
               <button
                 onClick={() => setPage(page + 1)}
                 disabled={page === totalPages}
-                className="px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-white text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white/10"
+                className="px-4 py-2 bg-[#0a0a0a] border border-white/5 rounded-xl text-white text-[10px] uppercase tracking-[0.15em] font-black disabled:opacity-30 disabled:cursor-not-allowed hover:bg-white/5 hover:border-white/10 transition-all"
+                style={{ fontWeight: 900 }}
               >
                 Next
               </button>
@@ -915,7 +940,7 @@ function CategoriesTab({
 
   const openCreateModal = () => {
     setEditingCategory(null);
-    setFormData({ name: '', icon: '📦', description: '', imageFile: null });
+    setFormData({ name: '', icon: '', description: '', imageFile: null });
     setShowModal(true);
   };
 
@@ -923,7 +948,7 @@ function CategoriesTab({
     setEditingCategory(category);
     setFormData({
       name: category.name,
-      icon: category.icon || '📦',
+      icon: category.icon || '',
       description: category.description || '',
       imageFile: null
     });
@@ -933,7 +958,7 @@ function CategoriesTab({
   const closeModal = () => {
     setShowModal(false);
     setEditingCategory(null);
-    setFormData({ name: '', icon: '📦', description: '', imageFile: null });
+    setFormData({ name: '', icon: '', description: '', imageFile: null });
   };
 
   const openFieldModal = async (category: Category) => {
@@ -956,7 +981,8 @@ function CategoriesTab({
       });
 
       if (response.data.success) {
-        setCategoryFields(response.data.vendorFields || []);
+        // Use new simplified fields response
+        setCategoryFields(response.data.fields || []);
       }
     } catch (error) {
       console.error('Error loading category fields:', error);
@@ -1226,19 +1252,20 @@ function CategoriesTab({
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h3 className="text-white text-lg font-black tracking-tight mb-1" style={{ fontWeight: 900 }}>
+          <h3 className="text-xs uppercase tracking-[0.15em] text-white mb-1 font-black" style={{ fontWeight: 900 }}>
             Your Categories
           </h3>
-          <p className="text-white/60 text-sm">
+          <p className="text-white/40 text-[10px] uppercase tracking-wider">
             Organize your products and configure custom fields
           </p>
         </div>
         <div className="flex gap-2">
           <button
             onClick={openCreateModal}
-            className="px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white rounded-lg text-sm font-bold transition-all flex items-center gap-2 border border-white/20"
+            className="px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white rounded-xl text-[10px] uppercase tracking-[0.15em] font-black transition-all flex items-center gap-2 border border-white/20"
+            style={{ fontWeight: 900 }}
           >
-            <Plus size={16} />
+            <Plus size={12} />
             NEW CATEGORY
           </button>
         </div>
@@ -1246,97 +1273,105 @@ function CategoriesTab({
 
       {loading ? (
         <div className="text-center py-12">
-          <div className="text-white/60">Loading categories...</div>
+          <div className="text-white/40 text-[10px] uppercase tracking-wider">Loading categories...</div>
         </div>
       ) : vendorCategories.length === 0 ? (
-        <div className="text-center py-16 bg-[#0a0a0a] border border-white/[0.08] rounded-2xl">
+        <div className="text-center py-16 bg-[#0a0a0a] border border-white/5 rounded-2xl">
           <div className="w-20 h-20 rounded-2xl bg-white/5 flex items-center justify-center mx-auto mb-6">
             <FolderTree size={40} className="text-white/40" />
           </div>
-          <h4 className="text-white text-lg font-bold mb-2">
+          <h4 className="text-white text-xs uppercase tracking-[0.15em] mb-2 font-black" style={{ fontWeight: 900 }}>
             No Categories Yet
           </h4>
-          <p className="text-white/40 text-sm mb-6 max-w-md mx-auto">
+          <p className="text-white/40 text-[10px] uppercase tracking-wider mb-6 max-w-md mx-auto">
             Create categories to organize your products and add custom fields like THC%, strain type, etc.
           </p>
           <button
             onClick={openCreateModal}
-            className="px-6 py-3 bg-white/10 hover:bg-white/20 text-white rounded-lg font-bold transition-all inline-flex items-center gap-2 border border-white/20"
+            className="px-6 py-3 bg-white/10 hover:bg-white/20 text-white rounded-xl text-[10px] uppercase tracking-[0.15em] font-black transition-all inline-flex items-center gap-2 border border-white/20"
+            style={{ fontWeight: 900 }}
           >
-            <Plus size={18} />
+            <Plus size={12} />
             Create Your First Category
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="space-y-3">
           {vendorCategories.map((category) => {
             const isExpanded = expandedCategory === category.id;
+            const categoryFields = fieldGroups.filter(fg => fg.category_id === category.id);
 
             return (
               <div
                 key={category.id}
-                className="bg-[#0a0a0a] border border-white/10 rounded-xl overflow-hidden hover:border-white/20 transition-all group"
+                className="bg-white/[0.02] border border-white/10 rounded-xl hover:border-white/20 transition-all"
               >
-                <div className="p-5">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-3 flex-1">
+                <div className="px-6 py-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4 flex-1">
                       {category.image_url ? (
-                        <div className="w-12 h-12 relative rounded-lg overflow-hidden border border-white/10 flex-shrink-0 bg-white/5">
+                        <div className="w-10 h-10 relative rounded-lg overflow-hidden border border-white/10 flex-shrink-0">
                           <Image
-                            src={getSupabaseImageUrl(category.image_url, 96, 96)}
+                            src={getSupabaseImageUrl(category.image_url, 80, 80)}
                             alt={category.name}
                             fill
-                            sizes="48px"
+                            sizes="40px"
                             className="object-cover"
                           />
                         </div>
                       ) : (
-                        <div
-                          className="w-12 h-12 rounded-lg flex items-center justify-center text-2xl border border-white/10 flex-shrink-0 bg-white/5"
-                        >
-                          {category.icon || '📦'}
+                        <div className="w-10 h-10 rounded-lg border border-white/10 flex-shrink-0 bg-white/5 flex items-center justify-center">
+                          <Package size={20} className="text-white/40" />
                         </div>
                       )}
-                      <div className="min-w-0 flex-1">
-                        <h3 className="text-white font-bold text-base">
+
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-white text-xs uppercase tracking-tight font-black" style={{ fontWeight: 900 }}>
                           {category.name}
                         </h3>
                         {category.description && (
-                          <p className="text-white/50 text-xs mt-1 line-clamp-1">
+                          <p className="text-white/40 text-[10px] uppercase tracking-wider mt-0.5 line-clamp-1">
                             {category.description}
                           </p>
                         )}
                       </div>
-                    </div>
-                  </div>
 
-                  {/* Action buttons */}
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => openEditModal(category)}
-                      className="flex-1 px-3 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-white text-xs font-medium transition-all flex items-center justify-center gap-2"
-                    >
-                      <Edit2 size={12} />
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => setExpandedCategory(isExpanded ? null : category.id)}
-                      className={`flex-1 px-3 py-2 rounded-lg text-xs font-medium transition-all flex items-center justify-center gap-1.5 ${
-                        isExpanded
-                          ? 'bg-white/20 hover:bg-white/30 text-white border border-white/20'
-                          : 'bg-white/5 hover:bg-white/10 border border-white/10 text-white/80'
-                      }`}
-                    >
-                      <Layers size={12} />
-                      Fields
-                      {isExpanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
-                    </button>
-                    <button
-                      onClick={() => handleDeleteCategory(category.id, category.name)}
-                      className="p-2 hover:bg-white/10 rounded-lg transition-colors border border-white/10"
-                    >
-                      <Trash2 size={14} className="text-white/60" />
-                    </button>
+                      <div className="flex items-center gap-4 text-white/40 text-[9px] uppercase tracking-[0.15em]">
+                        <span>{categoryFields.length} field{categoryFields.length !== 1 ? 's' : ''}</span>
+                      </div>
+                    </div>
+
+                    {/* Action buttons */}
+                    <div className="flex items-center gap-2 ml-4">
+                      <button
+                        onClick={() => openEditModal(category)}
+                        className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                        title="Edit"
+                      >
+                        <Edit2 size={14} className="text-white/60" />
+                      </button>
+                      <button
+                        onClick={() => openFieldModal(category)}
+                        className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                        title="Configure Fields"
+                      >
+                        <Layers size={14} className="text-white/60" />
+                      </button>
+                      <button
+                        onClick={() => setExpandedCategory(isExpanded ? null : category.id)}
+                        className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                        title={isExpanded ? 'Collapse' : 'Expand'}
+                      >
+                        {isExpanded ? <ChevronDown size={14} className="text-white/60" /> : <ChevronRight size={14} className="text-white/60" />}
+                      </button>
+                      <button
+                        onClick={() => handleDeleteCategory(category.id, category.name)}
+                        className="p-2 hover:bg-red-500/20 rounded-lg transition-colors"
+                        title="Delete"
+                      >
+                        <Trash2 size={14} className="text-red-400" />
+                      </button>
+                    </div>
                   </div>
                 </div>
 
@@ -1358,42 +1393,50 @@ function CategoriesTab({
                         </button>
                       </div>
 
-                      {fieldGroups.length === 0 ? (
-                        <div className="text-center py-8 bg-white/[0.02] rounded-lg border border-white/[0.05]">
-                          <Layers size={32} className="mx-auto mb-3 text-white/20" />
-                          <p className="text-white/40 text-sm mb-2">No custom fields configured</p>
-                          <button
-                            onClick={() => openFieldModal(category)}
-                            className="text-white/60 hover:text-white text-xs font-medium"
-                          >
-                            Set up custom fields →
-                          </button>
-                        </div>
-                      ) : (
-                        <div className="space-y-2">
-                          {fieldGroups.map((fg) => (
-                            <div
-                              key={fg.id}
-                              className="bg-white/[0.03] border border-white/[0.08] rounded-lg p-4 hover:border-white/20 transition-all"
+                      {(() => {
+                        // Filter field groups for this specific category
+                        const categoryFieldGroups = fieldGroups.filter(fg =>
+                          fg.category_id === category.id ||
+                          (!fg.category_id && fg.vendor_id === vendorId) // Include vendor custom fields with no category
+                        );
+
+                        return categoryFieldGroups.length === 0 ? (
+                          <div className="text-center py-8 bg-white/[0.02] rounded-lg border border-white/[0.05]">
+                            <Layers size={32} className="mx-auto mb-3 text-white/20" />
+                            <p className="text-white/40 text-sm mb-2">No custom fields configured</p>
+                            <button
+                              onClick={() => openFieldModal(category)}
+                              className="text-white/60 hover:text-white text-xs font-medium"
                             >
-                              <div className="flex items-center justify-between">
-                                <div>
-                                  <div className="text-white font-medium text-sm mb-1">{fg.name}</div>
-                                  <div className="text-white/40 text-xs">
-                                    {fg.fields.length} {fg.fields.length === 1 ? 'field' : 'fields'}
+                              Set up custom fields →
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="space-y-2">
+                            {categoryFieldGroups.map((fg) => (
+                              <div
+                                key={fg.id}
+                                className="bg-white/[0.03] border border-white/[0.08] rounded-lg p-4 hover:border-white/20 transition-all"
+                              >
+                                <div className="flex items-center justify-between">
+                                  <div>
+                                    <div className="text-white font-medium text-sm mb-1">{fg.name}</div>
+                                    <div className="text-white/40 text-xs">
+                                      {fg.fields.length} {fg.fields.length === 1 ? 'field' : 'fields'}
+                                    </div>
                                   </div>
+                                  <button
+                                    onClick={() => openFieldModal(category)}
+                                    className="text-white/60 hover:text-white text-xs font-medium"
+                                  >
+                                    View →
+                                  </button>
                                 </div>
-                                <button
-                                  onClick={() => openFieldModal(category)}
-                                  className="text-white/60 hover:text-white text-xs font-medium"
-                                >
-                                  Edit →
-                                </button>
                               </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
+                            ))}
+                          </div>
+                        );
+                      })()}
                     </div>
                   </div>
                 )}
@@ -1406,37 +1449,37 @@ function CategoriesTab({
       {/* Create/Edit Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-[#0a0a0a] border border-white/20 rounded-2xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center gap-3 mb-6">
-              <FolderTree size={28} className="text-white/60" />
+          <div className="bg-[#0a0a0a] border border-white/10 rounded-2xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center gap-3 mb-6 pb-6 border-b border-white/5">
+              <FolderTree size={20} className="text-white/40" />
               <div>
-                <h2 className="text-white text-2xl font-bold">
+                <h2 className="text-xs uppercase tracking-[0.15em] text-white font-black mb-1" style={{ fontWeight: 900 }}>
                   {editingCategory ? 'Edit Category' : 'Create Category'}
                 </h2>
-                <p className="text-white/50 text-sm mt-1">
+                <p className="text-white/40 text-[10px] uppercase tracking-wider">
                   {editingCategory ? 'Update category details' : 'Add a new product category'}
                 </p>
               </div>
             </div>
 
-            <div className="space-y-4 mb-6">
+            <div className="space-y-5 mb-6">
               {/* Name */}
               <div>
-                <label className="block text-white/80 text-sm font-bold mb-2">
+                <label className="block text-white/40 text-[10px] uppercase tracking-wider mb-2">
                   Category Name *
                 </label>
                 <input
                   type="text"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="e.g., Flower, Edibles, Concentrates"
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-white/30 focus:outline-none focus:border-white/30 transition-colors"
+                  placeholder="E.G., FLOWER, EDIBLES, CONCENTRATES"
+                  className="w-full px-4 py-3 bg-black/20 border border-white/5 rounded-xl text-white placeholder-white/20 text-sm focus:outline-none focus:border-white/10 transition-colors"
                 />
               </div>
 
               {/* Description */}
               <div>
-                <label className="block text-white/80 text-sm font-bold mb-2">
+                <label className="block text-white/40 text-[10px] uppercase tracking-wider mb-2">
                   Description
                 </label>
                 <textarea
@@ -1444,14 +1487,14 @@ function CategoriesTab({
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   placeholder="Brief description of this category..."
                   rows={2}
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-white/30 focus:outline-none focus:border-white/30 transition-colors resize-none"
+                  className="w-full px-4 py-3 bg-black/20 border border-white/5 rounded-xl text-white placeholder-white/20 text-sm focus:outline-none focus:border-white/10 transition-colors resize-none"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 {/* Icon */}
                 <div>
-                  <label className="block text-white/80 text-sm font-bold mb-2">
+                  <label className="block text-white/40 text-[10px] uppercase tracking-wider mb-2">
                     Icon (Emoji)
                   </label>
                   <input
@@ -1459,17 +1502,17 @@ function CategoriesTab({
                     value={formData.icon}
                     onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
                     placeholder="📦"
-                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white text-center text-2xl focus:outline-none focus:border-white/30 transition-colors"
+                    className="w-full px-4 py-3 bg-black/20 border border-white/5 rounded-xl text-white text-center text-2xl focus:outline-none focus:border-white/10 transition-colors"
                   />
                 </div>
 
                 {/* Image Upload */}
                 <div>
-                  <label className="block text-white/80 text-sm font-bold mb-2">
+                  <label className="block text-white/40 text-[10px] uppercase tracking-wider mb-2">
                     Category Image
                   </label>
-                  <label className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white/60 hover:bg-white/10 transition-colors cursor-pointer flex items-center justify-center gap-2 h-[52px]">
-                    <Upload size={16} />
+                  <label className="w-full px-4 py-3 bg-black/20 border border-white/5 rounded-xl text-white/40 hover:bg-white/5 transition-colors cursor-pointer flex items-center justify-center gap-2 h-[52px] text-[10px] uppercase tracking-wider">
+                    <Upload size={14} />
                     {formData.imageFile ? formData.imageFile.name : 'Upload Image'}
                     <input
                       type="file"
@@ -1516,27 +1559,29 @@ function CategoriesTab({
             </div>
 
             {/* Actions */}
-            <div className="flex gap-3 pt-4 border-t border-white/10">
+            <div className="flex gap-3 pt-6 border-t border-white/5">
               <button
                 onClick={closeModal}
                 disabled={saving || uploading}
-                className="flex-1 px-6 py-3 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-lg font-bold transition-colors disabled:opacity-50"
+                className="flex-1 px-6 py-3 bg-black/20 hover:bg-white/5 border border-white/5 text-white rounded-xl text-[10px] uppercase tracking-[0.15em] font-black transition-colors disabled:opacity-30"
+                style={{ fontWeight: 900 }}
               >
                 Cancel
               </button>
               <button
                 onClick={handleSaveCategory}
                 disabled={saving || uploading || !formData.name.trim()}
-                className="flex-1 px-6 py-3 bg-white/20 hover:bg-white/30 text-white rounded-lg font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 border border-white/20"
+                className="flex-1 px-6 py-3 bg-white/10 hover:bg-white/20 text-white rounded-xl text-[10px] uppercase tracking-[0.15em] font-black transition-colors disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2 border border-white/20"
+                style={{ fontWeight: 900 }}
               >
                 {saving || uploading ? (
                   <>
-                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                     {uploading ? 'Uploading...' : 'Saving...'}
                   </>
                 ) : (
                   <>
-                    <Check size={16} />
+                    <Check size={12} />
                     {editingCategory ? 'Update Category' : 'Create Category'}
                   </>
                 )}
@@ -1548,83 +1593,102 @@ function CategoriesTab({
 
       {/* Field Configuration Modal */}
       {showFieldModal && fieldCategory && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-[#0a0a0a] border border-white/20 rounded-2xl p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-lg flex items-center justify-center bg-white/5 border border-white/10 text-2xl">
-                  {fieldCategory.icon || '📦'}
-                </div>
+        <div className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-[#0a0a0a] border border-white/10 rounded-2xl max-w-3xl w-full max-h-[75vh] overflow-hidden flex flex-col">
+            {/* Header */}
+            <div className="flex-shrink-0 px-6 py-4 border-b border-white/5 bg-black">
+              <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-white text-2xl font-bold">
-                    Configure Fields: {fieldCategory.name}
+                  <h2 className="text-xs uppercase tracking-[0.15em] text-white font-black mb-1" style={{ fontWeight: 900 }}>
+                    Configure Fields
                   </h2>
-                  <p className="text-white/50 text-sm mt-1">
-                    Add custom fields for products in this category
-                  </p>
+                  <div className="text-white/40 text-[10px] uppercase tracking-wider">
+                    {fieldCategory.name}
+                  </div>
                 </div>
+                <button
+                  onClick={closeFieldModal}
+                  className="p-2 hover:bg-white/10 rounded-xl transition-colors"
+                >
+                  <X size={16} className="text-white/60" />
+                </button>
               </div>
-              <button
-                onClick={closeFieldModal}
-                className="p-2 hover:bg-white/10 rounded-lg transition-colors"
-              >
-                <X size={24} className="text-white/60" />
-              </button>
             </div>
+
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto px-6 py-6"  style={{ minHeight: 0 }}>
 
             {loadingFields ? (
               <div className="text-center py-12">
                 <div className="w-8 h-8 border-2 border-white/30 border-t-white rounded-full animate-spin mx-auto mb-4" />
-                <p className="text-white/60">Loading fields...</p>
+                <p className="text-white/40 text-[10px] uppercase tracking-wider">Loading fields...</p>
               </div>
             ) : (
               <>
                 {/* Existing Fields */}
                 {categoryFields.length > 0 && (
                   <div className="mb-6">
-                    <h3 className="text-white/80 font-bold text-sm mb-3 flex items-center gap-2">
-                      <Layers size={14} className="text-white/60" />
-                      CONFIGURED FIELDS ({categoryFields.length})
+                    <h3 className="text-white font-black text-[10px] uppercase tracking-[0.15em] mb-4" style={{ fontWeight: 900 }}>
+                      Configured Fields ({categoryFields.length})
                     </h3>
-                    <div className="space-y-2">
+                    <div className="space-y-3">
                       {categoryFields.map((field) => (
                         <div
                           key={field.id}
-                          className="bg-white/[0.03] border border-white/[0.08] rounded-lg p-4 hover:border-white/20 transition-all"
+                          className="bg-[#0a0a0a] border border-white/10 rounded-xl overflow-hidden"
                         >
-                          <div className="flex items-start justify-between">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2 mb-1">
-                                <h4 className="text-white font-medium text-sm">{field.definition?.label || field.fieldId}</h4>
-                                <span className="px-2 py-0.5 bg-white/10 border border-white/10 rounded text-white/60 text-[10px] font-medium uppercase tracking-wide">
-                                  {field.definition?.type || 'text'}
-                                </span>
-                                {field.definition?.required && (
-                                  <span className="px-2 py-0.5 bg-white/10 border border-white/10 rounded text-white/60 text-[10px] font-medium uppercase tracking-wide">
-                                    Required
-                                  </span>
+                          <div className="p-4">
+                            <div className="flex items-start justify-between mb-3">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <h4 className="text-white font-black text-xs uppercase tracking-[0.15em]" style={{ fontWeight: 900 }}>
+                                    {field.definition?.label || field.fieldId}
+                                  </h4>
+                                  {field.source === 'admin' && (
+                                    <span className="px-2 py-0.5 bg-white/5 border border-white/10 rounded text-white/40 text-[9px] font-black uppercase tracking-[0.15em]" style={{ fontWeight: 900 }}>
+                                      ADMIN · {field.definition?.fields?.length || 0} FIELDS
+                                    </span>
+                                  )}
+                                </div>
+                                {field.definition?.description && (
+                                  <p className="text-white/40 text-[10px] uppercase tracking-wider">{field.definition.description}</p>
                                 )}
                               </div>
-                              {field.definition?.description && (
-                                <p className="text-white/40 text-xs">{field.definition.description}</p>
+                              {field.source !== 'admin' && (
+                                <div className="flex gap-1.5">
+                                  <button
+                                    onClick={() => openFieldBuilder(field)}
+                                    className="p-2 hover:bg-white/10 rounded-lg transition-colors border border-white/10"
+                                    title="Edit field"
+                                  >
+                                    <Edit2 size={12} className="text-white/60" />
+                                  </button>
+                                  <button
+                                    onClick={() => handleDeleteField(field.fieldId)}
+                                    className="p-2 hover:bg-white/10 rounded-lg transition-colors border border-white/10"
+                                    title="Delete field"
+                                  >
+                                    <Trash2 size={12} className="text-white/60" />
+                                  </button>
+                                </div>
                               )}
                             </div>
-                            <div className="flex gap-2">
-                              <button
-                                onClick={() => openFieldBuilder(field)}
-                                className="p-2 hover:bg-white/10 rounded-lg transition-colors border border-white/10"
-                                title="Edit field"
-                              >
-                                <Edit2 size={14} className="text-white/60" />
-                              </button>
-                              <button
-                                onClick={() => handleDeleteField(field.fieldId)}
-                                className="p-2 hover:bg-white/10 rounded-lg transition-colors border border-white/10"
-                                title="Delete field"
-                              >
-                                <Trash2 size={14} className="text-white/60" />
-                              </button>
-                            </div>
+
+                            {/* Show individual fields for admin field groups */}
+                            {field.source === 'admin' && field.definition?.fields && field.definition.fields.length > 0 && (
+                              <div className="grid grid-cols-2 gap-2 pt-3 border-t border-white/5">
+                                {field.definition.fields.map((f: any, idx: number) => (
+                                  <div key={idx} className="bg-white/5 border border-white/5 rounded-lg p-2.5">
+                                    <div className="text-white/80 text-[10px] font-black uppercase tracking-[0.15em] mb-0.5" style={{ fontWeight: 900 }}>
+                                      {f.name || f.slug || 'Unnamed'}
+                                    </div>
+                                    <div className="text-white/40 text-[9px] uppercase tracking-wider">
+                                      {f.type}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
                           </div>
                         </div>
                       ))}
@@ -1635,34 +1699,33 @@ function CategoriesTab({
                 {/* Add New Field Button */}
                 <button
                   onClick={() => openFieldBuilder()}
-                  className="w-full px-6 py-4 bg-white/5 hover:bg-white/10 border-2 border-dashed border-white/20 hover:border-white/30 rounded-lg text-white/80 hover:text-white transition-all flex items-center justify-center gap-3 group"
+                  className="w-full px-4 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-white transition-all flex items-center justify-center gap-2"
                 >
-                  <div className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center">
-                    <Plus size={20} className="text-white/80" />
-                  </div>
-                  <div className="text-left">
-                    <div className="font-bold text-sm">ADD NEW FIELD</div>
-                    <div className="text-white/40 text-xs">Create a custom field for this category</div>
-                  </div>
+                  <Plus size={14} className="text-white/60" />
+                  <span className="text-[10px] font-black uppercase tracking-[0.15em]" style={{ fontWeight: 900 }}>
+                    Add Custom Field
+                  </span>
                 </button>
 
                 {categoryFields.length === 0 && (
-                  <div className="text-center py-8 mt-6 bg-white/[0.02] rounded-2xl border border-white/[0.05]">
-                    <Layers size={48} className="mx-auto mb-4 text-white/20" />
-                    <p className="text-white/60 mb-2">No fields configured yet</p>
-                    <p className="text-white/40 text-sm">
-                      Add custom fields like THC%, Strain Type, or any data specific to {fieldCategory.name} products
+                  <div className="text-center py-12 mt-6 bg-white/[0.02] rounded-xl border border-white/5">
+                    <Layers size={32} className="mx-auto mb-3 text-white/10" />
+                    <p className="text-white/40 text-[10px] uppercase tracking-wider mb-1">No fields configured yet</p>
+                    <p className="text-white/30 text-[9px] uppercase tracking-wider">
+                      Add custom fields for {fieldCategory.name} products
                     </p>
                   </div>
                 )}
               </>
             )}
+            </div>
 
             {/* Footer */}
-            <div className="flex gap-3 pt-6 mt-6 border-t border-white/10">
+            <div className="flex-shrink-0 px-6 py-4 border-t border-white/5 bg-black">
               <button
                 onClick={closeFieldModal}
-                className="flex-1 px-6 py-3 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-lg font-bold transition-colors"
+                className="w-full px-6 py-3 bg-white/10 hover:bg-white/20 border border-white/10 text-white rounded-xl font-black text-[10px] uppercase tracking-[0.15em] transition-colors"
+                style={{ fontWeight: 900 }}
               >
                 Done
               </button>
@@ -1674,17 +1737,17 @@ function CategoriesTab({
       {/* Field Builder Modal */}
       {showFieldBuilder && (
         <div className="fixed inset-0 bg-black/90 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
-          <div className="bg-[#0a0a0a] border border-white/20 rounded-2xl p-8 max-w-3xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-6">
+          <div className="bg-[#0a0a0a] border border-white/10 rounded-2xl p-8 max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-6 pb-6 border-b border-white/5">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-lg flex items-center justify-center bg-white/5 border border-white/10">
-                  <Layers size={24} className="text-white/60" />
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-white/5 border border-white/5">
+                  <Layers size={18} className="text-white/40" />
                 </div>
                 <div>
-                  <h2 className="text-white text-2xl font-bold">
+                  <h2 className="text-xs uppercase tracking-[0.15em] text-white font-black mb-1" style={{ fontWeight: 900 }}>
                     {editingField ? 'Edit Field' : 'Create New Field'}
                   </h2>
-                  <p className="text-white/50 text-sm mt-1">
+                  <p className="text-white/40 text-[10px] uppercase tracking-wider">
                     Configure custom field for {fieldCategory?.name}
                   </p>
                 </div>
@@ -1700,27 +1763,27 @@ function CategoriesTab({
             <div className="space-y-5">
               {/* Field Label */}
               <div>
-                <label className="block text-white/90 text-sm font-bold mb-2">
+                <label className="block text-white/40 text-[10px] uppercase tracking-wider mb-2">
                   Field Label *
                 </label>
                 <input
                   type="text"
                   value={fieldFormData.label}
                   onChange={(e) => setFieldFormData({ ...fieldFormData, label: e.target.value })}
-                  placeholder="e.g., THC Percentage, Strain Type"
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-white/30 focus:outline-none focus:border-white/30 transition-colors"
+                  placeholder="E.G., THC PERCENTAGE, STRAIN TYPE"
+                  className="w-full px-4 py-3 bg-black/20 border border-white/5 rounded-xl text-white placeholder-white/20 text-sm focus:outline-none focus:border-white/10 transition-colors"
                 />
               </div>
 
               {/* Field Type */}
               <div>
-                <label className="block text-white/90 text-sm font-bold mb-2">
+                <label className="block text-white/40 text-[10px] uppercase tracking-wider mb-2">
                   Field Type *
                 </label>
                 <select
                   value={fieldFormData.type}
                   onChange={(e) => setFieldFormData({ ...fieldFormData, type: e.target.value as any })}
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:border-white/30 transition-colors"
+                  className="w-full px-4 py-3 bg-black/20 border border-white/5 rounded-xl text-white text-sm focus:outline-none focus:border-white/10 transition-colors"
                 >
                   <option value="text">Text (Single Line)</option>
                   <option value="textarea">Text Area (Multi-line)</option>
@@ -1734,36 +1797,36 @@ function CategoriesTab({
               <div className="grid grid-cols-2 gap-4">
                 {/* Placeholder */}
                 <div>
-                  <label className="block text-white/90 text-sm font-bold mb-2">
+                  <label className="block text-white/40 text-[10px] uppercase tracking-wider mb-2">
                     Placeholder
                   </label>
                   <input
                     type="text"
                     value={fieldFormData.placeholder}
                     onChange={(e) => setFieldFormData({ ...fieldFormData, placeholder: e.target.value })}
-                    placeholder="e.g., Enter value..."
-                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-white/30 focus:outline-none focus:border-white/30 transition-colors"
+                    placeholder="ENTER VALUE..."
+                    className="w-full px-4 py-3 bg-black/20 border border-white/5 rounded-xl text-white placeholder-white/20 text-sm focus:outline-none focus:border-white/10 transition-colors"
                   />
                 </div>
 
                 {/* Default Value */}
                 <div>
-                  <label className="block text-white/90 text-sm font-bold mb-2">
+                  <label className="block text-white/40 text-[10px] uppercase tracking-wider mb-2">
                     Default Value
                   </label>
                   <input
                     type="text"
                     value={fieldFormData.defaultValue}
                     onChange={(e) => setFieldFormData({ ...fieldFormData, defaultValue: e.target.value })}
-                    placeholder="Optional"
-                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-white/30 focus:outline-none focus:border-white/30 transition-colors"
+                    placeholder="OPTIONAL"
+                    className="w-full px-4 py-3 bg-black/20 border border-white/5 rounded-xl text-white placeholder-white/20 text-sm focus:outline-none focus:border-white/10 transition-colors"
                   />
                 </div>
               </div>
 
               {/* Description */}
               <div>
-                <label className="block text-white/90 text-sm font-bold mb-2">
+                <label className="block text-white/40 text-[10px] uppercase tracking-wider mb-2">
                   Description
                 </label>
                 <textarea
@@ -1771,15 +1834,15 @@ function CategoriesTab({
                   onChange={(e) => setFieldFormData({ ...fieldFormData, description: e.target.value })}
                   placeholder="Help text that appears below the field..."
                   rows={2}
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-white/30 focus:outline-none focus:border-white/30 transition-colors resize-none"
+                  className="w-full px-4 py-3 bg-black/20 border border-white/5 rounded-xl text-white placeholder-white/20 text-sm focus:outline-none focus:border-white/10 transition-colors resize-none"
                 />
               </div>
 
               {/* Validation (for number fields) */}
               {fieldFormData.type === 'number' && (
-                <div className="grid grid-cols-2 gap-4 p-4 bg-white/5 border border-white/10 rounded-lg">
+                <div className="grid grid-cols-2 gap-4 p-4 bg-black/20 border border-white/5 rounded-xl">
                   <div>
-                    <label className="block text-white/90 text-sm font-bold mb-2">
+                    <label className="block text-white/40 text-[10px] uppercase tracking-wider mb-2">
                       Min Value
                     </label>
                     <input
@@ -1790,11 +1853,11 @@ function CategoriesTab({
                         validation: { ...fieldFormData.validation, min: e.target.value }
                       })}
                       placeholder="0"
-                      className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white placeholder-white/30 focus:outline-none focus:border-white/30 transition-colors"
+                      className="w-full px-4 py-2.5 bg-black/20 border border-white/5 rounded-xl text-white placeholder-white/20 text-sm focus:outline-none focus:border-white/10 transition-colors"
                     />
                   </div>
                   <div>
-                    <label className="block text-white/90 text-sm font-bold mb-2">
+                    <label className="block text-white/40 text-[10px] uppercase tracking-wider mb-2">
                       Max Value
                     </label>
                     <input
@@ -1805,7 +1868,7 @@ function CategoriesTab({
                         validation: { ...fieldFormData.validation, max: e.target.value }
                       })}
                       placeholder="100"
-                      className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white placeholder-white/30 focus:outline-none focus:border-white/30 transition-colors"
+                      className="w-full px-4 py-2.5 bg-black/20 border border-white/5 rounded-xl text-white placeholder-white/20 text-sm focus:outline-none focus:border-white/10 transition-colors"
                     />
                   </div>
                 </div>
@@ -1813,8 +1876,8 @@ function CategoriesTab({
 
               {/* Options (for select fields) */}
               {fieldFormData.type === 'select' && (
-                <div className="p-4 bg-white/5 border border-white/10 rounded-lg">
-                  <label className="block text-white/90 text-sm font-bold mb-2">
+                <div className="p-4 bg-black/20 border border-white/5 rounded-xl">
+                  <label className="block text-white/40 text-[10px] uppercase tracking-wider mb-2">
                     Dropdown Options
                   </label>
                   <textarea
@@ -1825,52 +1888,54 @@ function CategoriesTab({
                     })}
                     placeholder="Enter each option on a new line:&#10;Indica&#10;Sativa&#10;Hybrid"
                     rows={4}
-                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-white/30 focus:outline-none focus:border-white/30 transition-colors resize-none font-mono text-sm"
+                    className="w-full px-4 py-3 bg-black/20 border border-white/5 rounded-xl text-white placeholder-white/20 focus:outline-none focus:border-white/10 transition-colors resize-none font-mono text-sm"
                   />
-                  <p className="text-white/40 text-xs mt-2">
+                  <p className="text-white/30 text-[9px] uppercase tracking-wider mt-2">
                     {fieldFormData.options.length} option{fieldFormData.options.length !== 1 ? 's' : ''}
                   </p>
                 </div>
               )}
 
               {/* Required Toggle */}
-              <div className="flex items-center gap-3 p-4 bg-white/5 border border-white/10 rounded-lg">
+              <div className="flex items-center gap-3 p-4 bg-black/20 border border-white/5 rounded-xl">
                 <input
                   type="checkbox"
                   id="required-field"
                   checked={fieldFormData.required}
                   onChange={(e) => setFieldFormData({ ...fieldFormData, required: e.target.checked })}
-                  className="w-5 h-5 rounded border-2 border-white/20 bg-white/5 checked:bg-white/30 checked:border-white/30 focus:outline-none"
+                  className="w-5 h-5 rounded border-2 border-white/10 bg-black/20 checked:bg-white/20 checked:border-white/20 focus:outline-none"
                 />
                 <label htmlFor="required-field" className="flex-1 cursor-pointer">
-                  <div className="text-white font-bold text-sm">Required Field</div>
-                  <div className="text-white/40 text-xs">Users must fill this field when creating products</div>
+                  <div className="text-white text-xs uppercase tracking-tight font-black" style={{ fontWeight: 900 }}>Required Field</div>
+                  <div className="text-white/40 text-[10px] uppercase tracking-wider">Users must fill this field when creating products</div>
                 </label>
               </div>
             </div>
 
             {/* Actions */}
-            <div className="flex gap-3 pt-6 mt-6 border-t border-white/10">
+            <div className="flex gap-3 pt-6 mt-6 border-t border-white/5">
               <button
                 onClick={closeFieldBuilder}
                 disabled={savingField}
-                className="flex-1 px-6 py-3 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-lg font-bold transition-colors disabled:opacity-50"
+                className="flex-1 px-6 py-3 bg-black/20 hover:bg-white/5 border border-white/5 text-white rounded-xl text-[10px] uppercase tracking-[0.15em] font-black transition-colors disabled:opacity-30"
+                style={{ fontWeight: 900 }}
               >
                 Cancel
               </button>
               <button
                 onClick={handleSaveField}
                 disabled={savingField || !fieldFormData.label.trim()}
-                className="flex-1 px-6 py-3 bg-white/20 hover:bg-white/30 text-white rounded-lg font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 border border-white/20"
+                className="flex-1 px-6 py-3 bg-white/10 hover:bg-white/20 text-white rounded-xl text-[10px] uppercase tracking-[0.15em] font-black transition-all disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2 border border-white/20"
+                style={{ fontWeight: 900 }}
               >
                 {savingField ? (
                   <>
-                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                     Saving...
                   </>
                 ) : (
                   <>
-                    <Check size={16} />
+                    <Check size={12} />
                     {editingField ? 'Update Field' : 'Create Field'}
                   </>
                 )}
@@ -1904,88 +1969,351 @@ function PricingTab({
   categories,
   products
 }: PricingTabProps) {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedBlueprint, setSelectedBlueprint] = useState<PricingBlueprint | null>(null);
+
+  const openCreateModal = () => {
+    setSelectedBlueprint(null);
+    setIsModalOpen(true);
+  };
+
+  const openEditModal = (blueprint: PricingBlueprint) => {
+    setSelectedBlueprint(blueprint);
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setSelectedBlueprint(null);
+  };
+
+  const handleSave = () => {
+    loadPricingBlueprints();
+  };
+
+  const handleDelete = async (blueprint: PricingBlueprint) => {
+    const confirmed = await showConfirm({
+      title: 'Delete Pricing Rule',
+      message: `Are you sure you want to delete "${blueprint.name}"? This action cannot be undone.`,
+      confirmText: 'Delete',
+      cancelText: 'Cancel'
+    });
+
+    if (!confirmed) return;
+
+    try {
+      const response = await fetch(`/api/vendor/pricing-blueprints?id=${blueprint.id}`, {
+        method: 'DELETE',
+        headers: {
+          'x-vendor-id': vendorId
+        }
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        showNotification({
+          type: 'success',
+          title: 'Rule Deleted',
+          message: 'Pricing rule has been deleted successfully'
+        });
+        loadPricingBlueprints();
+      } else {
+        throw new Error(data.error || 'Failed to delete pricing rule');
+      }
+    } catch (error: any) {
+      showNotification({
+        type: 'error',
+        title: 'Delete Failed',
+        message: error.message || 'Failed to delete pricing rule'
+      });
+    }
+  };
+
   const customBlueprints = blueprints.filter(b => b.vendor_id === vendorId);
-  const globalBlueprints = blueprints.filter(b => !b.vendor_id);
+
+  // Context info for grouping
+  const contextInfo: Record<string, { label: string; description: string; order: number }> = {
+    retail: {
+      label: 'Retail',
+      description: 'Direct-to-consumer pricing',
+      order: 1
+    },
+    wholesale: {
+      label: 'Wholesale',
+      description: 'Bulk pricing for businesses',
+      order: 2
+    },
+    distributor: {
+      label: 'Distributor',
+      description: 'Large volume pricing',
+      order: 3
+    },
+    delivery: {
+      label: 'Delivery',
+      description: 'Delivery service pricing',
+      order: 4
+    }
+  };
+
+  const qualityTierInfo: Record<string, { label: string; order: number }> = {
+    exotic: { label: 'Exotic', order: 1 },
+    'top-shelf': { label: 'Top Shelf', order: 2 },
+    'mid-shelf': { label: 'Mid Shelf', order: 3 },
+    value: { label: 'Value', order: 4 }
+  };
+
+  const tierTypeInfo: Record<string, string> = {
+    weight: 'Weight',
+    quantity: 'Quantity',
+    percentage: 'Percentage',
+    flat: 'Flat',
+    custom: 'Custom'
+  };
+
+  // Create a category lookup map
+  const categoryMap = new Map(categories.map(c => [c.id, c.name]));
+
+  // Helper to extract quality tier from blueprint
+  const extractQualityTier = (blueprint: PricingBlueprint): string | null => {
+    // First check the quality_tier field
+    if (blueprint.quality_tier) return blueprint.quality_tier;
+
+    // Fallback to name parsing for legacy blueprints
+    const name = blueprint.name.toLowerCase();
+    if (name.includes('exotic')) return 'exotic';
+    if (name.includes('top shelf') || name.includes('top-shelf')) return 'top-shelf';
+    if (name.includes('mid shelf') || name.includes('mid-shelf')) return 'mid-shelf';
+    if (name.includes('value')) return 'value';
+    return null;
+  };
+
+  // Group blueprints by context, then by category
+  // A blueprint can appear under multiple categories if assigned to multiple
+  const groupedBlueprints = customBlueprints.reduce((acc, blueprint) => {
+    const context = blueprint.context || 'other';
+
+    if (!acc[context]) acc[context] = {};
+
+    // Check if blueprint has category assignments
+    if (blueprint.applicable_to_categories && blueprint.applicable_to_categories.length > 0) {
+      // Add to each assigned category
+      for (const categoryId of blueprint.applicable_to_categories) {
+        const categoryName = categoryMap.get(categoryId) || 'Unknown Category';
+        if (!acc[context][categoryName]) acc[context][categoryName] = [];
+        acc[context][categoryName].push(blueprint);
+      }
+    } else {
+      // No categories assigned - show under "All Categories"
+      const categoryName = 'All Categories';
+      if (!acc[context][categoryName]) acc[context][categoryName] = [];
+      acc[context][categoryName].push(blueprint);
+    }
+
+    return acc;
+  }, {} as Record<string, Record<string, PricingBlueprint[]>>);
+
+  // Sort blueprints within each category by quality tier
+  Object.keys(groupedBlueprints).forEach(context => {
+    Object.keys(groupedBlueprints[context]).forEach(category => {
+      groupedBlueprints[context][category].sort((a, b) => {
+        const tierA = extractQualityTier(a);
+        const tierB = extractQualityTier(b);
+        if (!tierA && !tierB) return 0;
+        if (!tierA) return 1;
+        if (!tierB) return -1;
+        const orderA = qualityTierInfo[tierA]?.order || 999;
+        const orderB = qualityTierInfo[tierB]?.order || 999;
+        return orderA - orderB;
+      });
+    });
+  });
 
   return (
     <div>
-      <div className="mb-6">
-        <p className="text-white/60 text-sm mb-4">
-          Create pricing structures (like 1g, 3.5g, 7g tiers) and apply them to products
+      <div className="mb-6 pb-4 border-b border-white/5">
+        <p className="text-white/40 text-[10px] mb-4 uppercase tracking-wider">
+          Create pricing structures and apply them to products
         </p>
-        <Link
-          href="/vendor/pricing-blueprints"
-          className="px-4 py-2 bg-white text-black rounded-xl text-sm font-bold hover:bg-white/90 inline-flex items-center gap-2"
+        <button
+          onClick={openCreateModal}
+          className="bg-white/10 text-white border border-white/20 rounded-xl px-3 py-2 text-[10px] uppercase tracking-[0.15em] hover:bg-white/20 hover:border-white/30 font-black transition-all inline-flex items-center gap-2"
+          style={{ fontWeight: 900 }}
         >
-          <Plus size={16} strokeWidth={2.5} />
-          Create Pricing Rule
-        </Link>
+          <Plus size={12} strokeWidth={2.5} />
+          Create Rule
+        </button>
       </div>
 
       {loading ? (
         <div className="text-center py-12">
-          <div className="text-white/60">Loading pricing rules...</div>
+          <div className="text-white/40 text-[10px] uppercase tracking-[0.15em]">Loading...</div>
+        </div>
+      ) : customBlueprints.length === 0 ? (
+        <div className="text-center py-20 bg-[#0a0a0a] border border-white/5 rounded-2xl">
+          <DollarSign size={32} className="mx-auto mb-4 text-white/10" strokeWidth={1.5} />
+          <div className="text-white/60 text-[10px] uppercase tracking-[0.15em] mb-2">No Rules</div>
+          <p className="text-white/40 text-[10px] mb-6">
+            Create pricing structures for your products
+          </p>
+          <button
+            onClick={openCreateModal}
+            className="bg-white/10 text-white border border-white/20 rounded-xl px-4 py-2 text-[10px] uppercase tracking-[0.15em] hover:bg-white/20 hover:border-white/30 font-black transition-all inline-flex items-center gap-2"
+            style={{ fontWeight: 900 }}
+          >
+            <Plus size={12} strokeWidth={2.5} />
+            Create First Rule
+          </button>
         </div>
       ) : (
-        <>
-          {/* Your Pricing Rules */}
-          {customBlueprints.length > 0 && (
-            <div className="mb-8">
-              <h3 className="text-white font-bold mb-4">Your Pricing Rules</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {customBlueprints.map((blueprint) => (
-                  <div
-                    key={blueprint.id}
-                    className="bg-white/5 border border-white/10 rounded-xl p-4"
-                  >
-                    <h4 className="text-white font-bold mb-2">{blueprint.name}</h4>
-                    <p className="text-white/60 text-sm mb-3">{blueprint.description}</p>
-                    <div className="flex gap-2">
-                      <Link
-                        href={`/vendor/pricing-blueprints`}
-                        className="px-3 py-1.5 bg-white/5 border border-white/10 rounded-lg text-white text-xs hover:bg-white/10"
-                      >
-                        Edit
-                      </Link>
-                      <button className="px-3 py-1.5 bg-blue-500/20 border border-blue-500/30 rounded-lg text-blue-400 text-xs hover:bg-blue-500/30">
-                        Apply to Products
-                      </button>
+        <div className="space-y-8">
+          {Object.entries(groupedBlueprints)
+            .sort(([a], [b]) => {
+              const infoA = contextInfo[a];
+              const infoB = contextInfo[b];
+              return (infoA?.order || 999) - (infoB?.order || 999);
+            })
+            .map(([context, categoryGroups]) => {
+              const info = contextInfo[context] || {
+                label: context,
+                description: 'Pricing rules',
+                order: 999
+              };
+
+              const totalRules = Object.values(categoryGroups).reduce((sum, rules) => sum + rules.length, 0);
+
+              return (
+                <div key={context}>
+                  {/* Context Header */}
+                  <div className="flex items-center justify-between mb-4 pb-3 border-b border-white/10">
+                    <div>
+                      <h3 className="text-xs uppercase tracking-[0.15em] text-white font-black" style={{ fontWeight: 900 }}>
+                        {info.label}
+                      </h3>
+                      <p className="text-white/40 text-[9px] mt-0.5 uppercase tracking-wider">
+                        {info.description}
+                      </p>
                     </div>
+                    <span className="text-white/40 text-[9px] uppercase tracking-[0.15em]">
+                      {totalRules} {totalRules === 1 ? 'rule' : 'rules'}
+                    </span>
                   </div>
-                ))}
-              </div>
-            </div>
-          )}
 
-          {/* Global Templates */}
-          {globalBlueprints.length > 0 && (
-            <div>
-              <h3 className="text-white font-bold mb-4">System Templates</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                {globalBlueprints.map((blueprint) => (
-                  <div
-                    key={blueprint.id}
-                    className="bg-white/5 border border-white/10 rounded-xl p-4 opacity-60"
-                  >
-                    <h4 className="text-white text-sm font-bold mb-1">{blueprint.name}</h4>
-                    <p className="text-white/40 text-xs">{blueprint.description}</p>
+                  {/* Categories */}
+                  <div className="space-y-6">
+                    {Object.entries(categoryGroups)
+                      .sort(([a], [b]) => a.localeCompare(b))
+                      .map(([category, categoryBlueprints]) => (
+                        <div key={category}>
+                          {/* Category Subheader */}
+                          <div className="flex items-center justify-between mb-3">
+                            <h4 className="text-[9px] uppercase tracking-[0.15em] text-white/60 font-black" style={{ fontWeight: 900 }}>
+                              {category}
+                            </h4>
+                            <span className="text-white/30 text-[8px] uppercase tracking-[0.15em]">
+                              {categoryBlueprints.length}
+                            </span>
+                          </div>
+
+                          {/* Blueprints Grid */}
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            {categoryBlueprints.map((blueprint) => {
+                              const tierType = tierTypeInfo[blueprint.tier_type] || blueprint.tier_type;
+                              const qualityTier = extractQualityTier(blueprint);
+                              const qualityInfo = qualityTier ? qualityTierInfo[qualityTier] : null;
+
+                              return (
+                                <div
+                                  key={blueprint.id}
+                                  className="bg-[#0a0a0a] border border-white/5 hover:border-white/10 rounded-2xl p-4 transition-all group"
+                                >
+                                  <div className="flex items-start justify-between mb-3">
+                                    <div className="flex-1">
+                                      <h5 className="text-white font-black text-xs uppercase tracking-tight" style={{ fontWeight: 900 }}>
+                                        {blueprint.name.replace(' (Custom)', '').replace(`${info.label} `, '').replace(`${category}`, '').replace(/^\s*-\s*/, '').trim() || category}
+                                      </h5>
+                                      {blueprint.description && (
+                                        <p className="text-white/40 text-[9px] mt-1 line-clamp-1">
+                                          {blueprint.description}
+                                        </p>
+                                      )}
+
+                                      {/* Badges */}
+                                      <div className="flex flex-wrap gap-1.5 mt-2">
+                                        {qualityInfo && (
+                                          <span className="px-2 py-0.5 bg-white/10 border border-white/20 rounded text-[8px] uppercase tracking-[0.15em] text-white/60 font-black" style={{ fontWeight: 900 }}>
+                                            {qualityInfo.label}
+                                          </span>
+                                        )}
+                                        <span className="px-2 py-0.5 bg-white/5 border border-white/10 rounded text-[8px] uppercase tracking-[0.15em] text-white/40 font-black" style={{ fontWeight: 900 }}>
+                                          {tierType}
+                                        </span>
+                                        <span className="px-2 py-0.5 bg-white/5 rounded text-[8px] text-white/40">
+                                          {blueprint.price_breaks.length} price break{blueprint.price_breaks.length !== 1 ? 's' : ''}
+                                        </span>
+                                        {(() => {
+                                          const hasExplicitPrices = blueprint.price_breaks.some((pb: any) => pb.price !== undefined && pb.price !== null);
+                                          return hasExplicitPrices ? (
+                                            <span className="px-2 py-0.5 bg-green-500/10 border border-green-500/20 rounded text-[8px] text-green-400">
+                                              Explicit Prices
+                                            </span>
+                                          ) : (
+                                            <span className="px-2 py-0.5 bg-blue-500/10 border border-blue-500/20 rounded text-[8px] text-blue-400">
+                                              Auto-Calculate
+                                            </span>
+                                          );
+                                        })()}
+                                        {blueprint.applicable_to_categories && blueprint.applicable_to_categories.length > 0 && (
+                                          <span className="px-2 py-0.5 bg-purple-500/10 border border-purple-500/20 rounded text-[8px] text-purple-400">
+                                            {blueprint.applicable_to_categories.length} {blueprint.applicable_to_categories.length === 1 ? 'category' : 'categories'}
+                                          </span>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  {/* Actions */}
+                                  <div className="flex gap-2 mt-3 pt-3 border-t border-white/5">
+                                    <button
+                                      onClick={() => openEditModal(blueprint)}
+                                      className="flex-1 bg-white/5 border border-white/10 rounded text-center px-3 py-1.5 text-[9px] text-white uppercase tracking-[0.15em] hover:bg-white/10 transition-colors font-black"
+                                      style={{ fontWeight: 900 }}
+                                    >
+                                      Edit
+                                    </button>
+                                    <button className="flex-1 bg-white/10 border border-white/20 rounded text-center px-3 py-1.5 text-[9px] text-white uppercase tracking-[0.15em] hover:bg-white/20 transition-colors font-black" style={{ fontWeight: 900 }}>
+                                      Apply
+                                    </button>
+                                    <button
+                                      onClick={() => handleDelete(blueprint)}
+                                      className="bg-white/5 border border-white/10 rounded px-2 py-1.5 text-[9px] text-white/60 hover:text-red-400 hover:border-red-400/20 hover:bg-red-500/10 transition-colors"
+                                      title="Delete"
+                                    >
+                                      <Trash2 size={12} strokeWidth={2} />
+                                    </button>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      ))}
                   </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {customBlueprints.length === 0 && globalBlueprints.length === 0 && (
-            <div className="text-center py-12 bg-white/5 border border-white/10 rounded-2xl">
-              <DollarSign size={48} className="mx-auto mb-4 text-white/20" />
-              <div className="text-white/60 mb-2">No pricing rules yet</div>
-              <p className="text-white/40 text-sm">
-                Create pricing structures to apply across your products
-              </p>
-            </div>
-          )}
-        </>
+                </div>
+              );
+            })}
+        </div>
       )}
+
+      {/* Pricing Blueprint Modal */}
+      <PricingBlueprintModal
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        onSave={handleSave}
+        vendorId={vendorId}
+        blueprint={selectedBlueprint || undefined}
+        categories={categories}
+      />
     </div>
   );
 }

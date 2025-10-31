@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
       .select('customer_id, loyalty_points, loyalty_tier, total_orders, total_spent, last_purchase_date')
       .eq('vendor_id', vendorId)
       .range(offset, offset + limit - 1)  // Apply pagination here
-      .order('created_at', { ascending: false });
+      .order('loyalty_points', { ascending: false }); // Show highest points first
 
     // Apply tier filter
     if (tier !== 'all') {
@@ -77,24 +77,37 @@ export async function GET(request: NextRequest) {
     const customerMap = new Map(customersData?.map(c => [c.id, c]) || []);
 
     // Combine data
+    let firstCustomerLogged = false;
     let customers = vendorCustomersData
       .map((vc: any) => {
         const customer = customerMap.get(vc.customer_id);
         if (!customer) return null;
 
-        return {
+        const mappedCustomer = {
           id: customer.id,
           email: customer.email,
           first_name: customer.first_name,
           last_name: customer.last_name,
           phone: customer.phone,
-          loyalty_points: vc.loyalty_points,
-          loyalty_tier: vc.loyalty_tier,
-          total_orders: vc.total_orders,
-          total_spent: vc.total_spent,
+          loyalty_points: vc.loyalty_points || 0,
+          loyalty_tier: vc.loyalty_tier || 'bronze',
+          total_orders: vc.total_orders || 0,
+          total_spent: vc.total_spent || 0,
           last_order_date: vc.last_purchase_date,
           created_at: customer.created_at,
         };
+
+        // Debug logging for first customer
+        if (!firstCustomerLogged) {
+          console.log('🔍 Sample customer data:', {
+            vc_loyalty_points: vc.loyalty_points,
+            mapped_loyalty_points: mappedCustomer.loyalty_points,
+            email: customer.email
+          });
+          firstCustomerLogged = true;
+        }
+
+        return mappedCustomer;
       })
       .filter(c => c !== null);
 
@@ -114,15 +127,28 @@ export async function GET(request: NextRequest) {
     const paginatedCustomers = customers;
 
     // Get stats for THIS vendor only
+    // Use count for total to avoid loading all records
+    const { count: totalCustomers } = await supabase
+      .from('vendor_customers')
+      .select('*', { count: 'exact', head: true })
+      .eq('vendor_id', vendorId);
+
+    const { count: withLoyaltyCount } = await supabase
+      .from('vendor_customers')
+      .select('*', { count: 'exact', head: true })
+      .eq('vendor_id', vendorId)
+      .gt('loyalty_points', 0);
+
+    // Get all records for calculations (bypass 1000 limit)
     const { data: statsData } = await supabase
       .from('vendor_customers')
       .select('loyalty_points, total_spent')
       .eq('vendor_id', vendorId)
-      .limit(10000); // Sample for stats
+      .limit(100000); // Set high limit to get all customers
 
     const stats = {
-      total: statsData?.length || 0,
-      withLoyalty: statsData?.filter(c => c.loyalty_points > 0).length || 0,
+      total: totalCustomers || 0,
+      withLoyalty: withLoyaltyCount || 0,
       avgPoints: statsData && statsData.length > 0
         ? Math.round(statsData.reduce((sum, c) => sum + (c.loyalty_points || 0), 0) / statsData.length)
         : 0,

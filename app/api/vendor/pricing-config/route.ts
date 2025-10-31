@@ -10,13 +10,33 @@ const supabase = createClient(
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const vendorId = searchParams.get('vendor_id');
+    const vendorId = request.headers.get('x-vendor-id') || searchParams.get('vendor_id');
+    const blueprintId = searchParams.get('blueprint_id');
 
     if (!vendorId) {
       return NextResponse.json(
         { success: false, error: 'vendor_id is required' },
         { status: 400 }
       );
+    }
+
+    // If blueprint_id is provided, get specific config
+    if (blueprintId) {
+      const { data: config, error: configError } = await supabase
+        .from('vendor_pricing_configs')
+        .select('*')
+        .eq('vendor_id', vendorId)
+        .eq('blueprint_id', blueprintId)
+        .single();
+
+      if (configError && configError.code !== 'PGRST116') { // PGRST116 = no rows
+        throw configError;
+      }
+
+      return NextResponse.json({
+        success: true,
+        config: config || null
+      });
     }
 
     // Get vendor's pricing configs with blueprint details
@@ -74,52 +94,82 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST - Create vendor pricing configuration
+// POST - Create or update vendor pricing configuration (upsert)
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { 
-      vendor_id, 
-      blueprint_id, 
+    const vendorId = request.headers.get('x-vendor-id') || body.vendor_id;
+    const {
+      blueprint_id,
       pricing_values,
       display_unit = 'gram',
       notes = null,
       is_active = true
     } = body;
 
-    if (!vendor_id || !blueprint_id) {
+    if (!vendorId || !blueprint_id) {
       return NextResponse.json(
         { success: false, error: 'vendor_id and blueprint_id are required' },
         { status: 400 }
       );
     }
 
-    console.log('💰 Creating pricing config:', {
-      vendor_id,
+    console.log('💰 Upserting pricing config:', {
+      vendor_id: vendorId,
       blueprint_id,
       display_unit,
       pricing_values
     });
 
-    const { data, error } = await supabase
+    // Check if config exists
+    const { data: existing } = await supabase
       .from('vendor_pricing_configs')
-      .insert({
-        vendor_id,
-        blueprint_id,
-        pricing_values: pricing_values || {},
-        display_unit,
-        notes,
-        is_active
-      })
-      .select()
+      .select('id')
+      .eq('vendor_id', vendorId)
+      .eq('blueprint_id', blueprint_id)
       .single();
 
-    if (error) {
-      console.error('❌ Error creating pricing config:', error);
-      throw error;
+    let data, error;
+
+    if (existing) {
+      // Update existing
+      const result = await supabase
+        .from('vendor_pricing_configs')
+        .update({
+          pricing_values: pricing_values || {},
+          display_unit,
+          notes,
+          is_active
+        })
+        .eq('id', existing.id)
+        .select()
+        .single();
+      data = result.data;
+      error = result.error;
+      console.log('✅ Pricing config updated:', existing.id);
+    } else {
+      // Create new
+      const result = await supabase
+        .from('vendor_pricing_configs')
+        .insert({
+          vendor_id: vendorId,
+          blueprint_id,
+          pricing_values: pricing_values || {},
+          display_unit,
+          notes,
+          is_active
+        })
+        .select()
+        .single();
+      data = result.data;
+      error = result.error;
+      console.log('✅ Pricing config created:', data?.id);
     }
 
-    console.log('✅ Pricing config created:', data.id);
+    if (error) {
+      console.error('❌ Error upserting pricing config:', error);
+      throw error;
+    }
 
     return NextResponse.json({
       success: true,

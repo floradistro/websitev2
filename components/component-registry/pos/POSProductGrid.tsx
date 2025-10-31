@@ -173,7 +173,14 @@ export function POSProductGrid({
         </div>
 
         {/* Loading Products Grid */}
-        <div className="flex-1 overflow-y-auto px-4 pb-4 pt-4">
+        <div
+          className="flex-1 overflow-y-auto px-4 pb-4 pt-4"
+          style={{
+            minHeight: 0,
+            WebkitOverflowScrolling: 'touch',
+            overscrollBehavior: 'contain'
+          }}
+        >
           <div className="grid grid-cols-3 gap-4">
             {[...Array(9)].map((_, i) => (
               <div
@@ -317,7 +324,14 @@ export function POSProductGrid({
       </div>
 
       {/* Products Grid - Scrollable */}
-      <div className="flex-1 overflow-y-auto overflow-x-hidden px-4 pb-4" style={{ minHeight: 0 }}>
+      <div
+        className="flex-1 overflow-y-auto overflow-x-hidden px-4 pb-4"
+        style={{
+          minHeight: 0,
+          WebkitOverflowScrolling: 'touch',
+          overscrollBehavior: 'contain'
+        }}
+      >
         {filteredProducts.length === 0 ? (
           <div className="bg-white/5 border border-white/10 rounded-2xl p-12 text-center">
             <div className="text-white/40">No products found</div>

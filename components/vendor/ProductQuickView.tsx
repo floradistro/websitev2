@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { X, Save, Trash2, ImageIcon, DollarSign, FileText, AlertCircle, Package } from 'lucide-react';
+import { X, Save, Trash2, ImageIcon, DollarSign, AlertCircle, Package, FileText } from 'lucide-react';
 import { showNotification, showConfirm } from '@/components/NotificationToast';
 import axios from 'axios';
 
@@ -19,10 +19,12 @@ export function ProductQuickView({ product, vendorId, isOpen, onClose, onSave, o
   const [editedProduct, setEditedProduct] = useState<any>({});
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<'basic' | 'pricing' | 'details'>('basic');
+  const [activeTab, setActiveTab] = useState<'basic' | 'pricing' | 'fields' | 'images' | 'coas'>('basic');
   const [availableBlueprints, setAvailableBlueprints] = useState<any[]>([]);
   const [selectedBlueprintIds, setSelectedBlueprintIds] = useState<string[]>([]);
   const [originalBlueprintIds, setOriginalBlueprintIds] = useState<string[]>([]);
+  const [categoryFields, setCategoryFields] = useState<any[]>([]);
+  const [editedBlueprintFields, setEditedBlueprintFields] = useState<Record<string, string>>({});
 
   // Load full product details when modal opens
   useEffect(() => {
@@ -39,6 +41,9 @@ export function ProductQuickView({ product, vendorId, isOpen, onClose, onSave, o
             console.log('Loaded product:', loadedProduct);
             console.log('Pricing tiers:', loadedProduct.pricing_tiers);
             console.log('Custom fields:', loadedProduct.custom_fields);
+            console.log('Images:', loadedProduct.images);
+            console.log('COAs:', loadedProduct.coas);
+            console.log('Blueprint fields:', loadedProduct.blueprint_fields);
             setFullProduct(loadedProduct);
             setEditedProduct({
               name: loadedProduct.name || '',
@@ -49,17 +54,49 @@ export function ProductQuickView({ product, vendorId, isOpen, onClose, onSave, o
               description: loadedProduct.description || ''
             });
 
-            // Load available pricing blueprints
+            // Load available pricing blueprints (filtered by category)
             try {
               const blueprintsRes = await axios.get(`/api/vendor/pricing-config?vendor_id=${vendorId}`);
               if (blueprintsRes.data.success) {
                 const allBlueprints = blueprintsRes.data.configs
                   .filter((config: any) => config.blueprint && config.is_active)
                   .map((config: any) => config.blueprint);
-                setAvailableBlueprints(allBlueprints);
+
+                // Filter blueprints by product category
+                const filteredBlueprints = allBlueprints.filter((bp: any) => {
+                  // If blueprint has no category restrictions, show it for all products
+                  if (!bp.applicable_to_categories || bp.applicable_to_categories.length === 0) {
+                    return true;
+                  }
+                  // Otherwise, only show if this product's category is in the list
+                  return bp.applicable_to_categories.includes(loadedProduct.category_id);
+                });
+
+                setAvailableBlueprints(filteredBlueprints);
               }
             } catch (err) {
               console.error('Failed to load blueprints:', err);
+            }
+
+            // Load category fields
+            try {
+              if (loadedProduct.category_id) {
+                const fieldsRes = await axios.get(`/api/vendor/product-fields?category_id=${loadedProduct.category_id}`, {
+                  headers: { 'x-vendor-id': vendorId }
+                });
+                if (fieldsRes.data.success) {
+                  setCategoryFields(fieldsRes.data.fields || []);
+
+                  // Initialize edited fields from product's blueprint_fields
+                  const initialFields: Record<string, string> = {};
+                  (loadedProduct.blueprint_fields || []).forEach((bf: any) => {
+                    initialFields[bf.field_name] = bf.field_value || '';
+                  });
+                  setEditedBlueprintFields(initialFields);
+                }
+              }
+            } catch (err) {
+              console.error('Failed to load category fields:', err);
             }
 
             // Load current pricing tier assignments
@@ -104,9 +141,20 @@ export function ProductQuickView({ product, vendorId, isOpen, onClose, onSave, o
   const handleSave = async () => {
     setSaving(true);
     try {
+      // Build blueprint_fields array from edited fields
+      const blueprintFields = Object.entries(editedBlueprintFields)
+        .filter(([_, value]) => value) // Only include fields with values
+        .map(([fieldName, fieldValue]) => ({
+          field_name: fieldName,
+          field_value: fieldValue
+        }));
+
       const response = await axios.patch('/api/vendor/products/update', {
         product_id: product.id,
-        updates: editedProduct
+        updates: {
+          ...editedProduct,
+          blueprint_fields: blueprintFields
+        }
       }, {
         headers: { 'x-vendor-id': vendorId }
       });
@@ -226,24 +274,24 @@ export function ProductQuickView({ product, vendorId, isOpen, onClose, onSave, o
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
-          <div className="border-b border-white/10 p-6 bg-white/[0.02]">
+          <div className="border-b border-white/5 p-6 bg-black">
             {loading ? (
               <div className="text-center py-8">
                 <div className="w-12 h-12 border-4 border-white/20 border-t-white rounded-full animate-spin mx-auto mb-4"></div>
-                <p className="text-white/60 text-sm">Loading product details...</p>
+                <p className="text-white/40 text-[10px] uppercase tracking-wider">Loading product details...</p>
               </div>
             ) : (
               <div className="flex items-start justify-between">
                 <div className="flex-1 min-w-0">
-                  <h2 className="text-2xl font-light text-white mb-2 tracking-tight">{displayProduct.name}</h2>
-                  <div className="flex items-center gap-3 text-sm text-white/60">
-                    <span className="px-2 py-1 text-[10px] uppercase tracking-wider border border-white/20 text-white/60 rounded-[8px]">
+                  <h2 className="text-xs uppercase tracking-[0.15em] text-white mb-2 font-black" style={{ fontWeight: 900 }}>{displayProduct.name}</h2>
+                  <div className="flex items-center gap-3 text-[9px] text-white/40 uppercase tracking-[0.15em]">
+                    <span className="px-2 py-0.5 bg-green-500/10 border border-green-500/20 text-green-400/80 rounded text-[8px]">
                       {displayProduct.status}
                     </span>
                     {displayProduct.sku && <span>SKU: {displayProduct.sku}</span>}
-                    <span>•</span>
+                    <span className="text-white/20">•</span>
                     <span className="flex items-center gap-1">
-                      <Package size={12} />
+                      <Package size={10} />
                       {displayProduct.total_stock?.toFixed(2) || displayProduct.stock_quantity?.toFixed(2) || '0.00'}g in stock
                     </span>
                   </div>
@@ -252,44 +300,69 @@ export function ProductQuickView({ product, vendorId, isOpen, onClose, onSave, o
                   onClick={onClose}
                   className="text-white/40 hover:text-white transition-colors p-2 ml-4"
                 >
-                  <X size={24} />
+                  <X size={20} />
                 </button>
               </div>
             )}
           </div>
 
           {/* Tabs */}
-          <div className="border-b border-white/10 bg-white/[0.01]">
-            <div className="flex items-center gap-1 px-6">
+          <div className="border-b border-white/5 bg-black">
+            <div className="flex items-center gap-1 px-6 overflow-x-auto">
               <button
                 onClick={() => setActiveTab('basic')}
-                className={`px-4 py-3 text-xs uppercase tracking-wider font-medium transition-all border-b-2 ${
+                className={`px-4 py-3 text-[10px] uppercase tracking-[0.15em] font-black transition-all border-b-2 whitespace-nowrap ${
                   activeTab === 'basic'
                     ? 'text-white border-white'
                     : 'text-white/40 border-transparent hover:text-white/70'
                 }`}
+                style={{ fontWeight: 900 }}
               >
                 Basic Info
               </button>
               <button
                 onClick={() => setActiveTab('pricing')}
-                className={`px-4 py-3 text-xs uppercase tracking-wider font-medium transition-all border-b-2 ${
+                className={`px-4 py-3 text-[10px] uppercase tracking-[0.15em] font-black transition-all border-b-2 whitespace-nowrap ${
                   activeTab === 'pricing'
                     ? 'text-white border-white'
                     : 'text-white/40 border-transparent hover:text-white/70'
                 }`}
+                style={{ fontWeight: 900 }}
               >
                 Pricing
               </button>
               <button
-                onClick={() => setActiveTab('details')}
-                className={`px-4 py-3 text-xs uppercase tracking-wider font-medium transition-all border-b-2 ${
-                  activeTab === 'details'
+                onClick={() => setActiveTab('fields')}
+                className={`px-4 py-3 text-[10px] uppercase tracking-[0.15em] font-black transition-all border-b-2 whitespace-nowrap ${
+                  activeTab === 'fields'
                     ? 'text-white border-white'
                     : 'text-white/40 border-transparent hover:text-white/70'
                 }`}
+                style={{ fontWeight: 900 }}
               >
-                Details
+                Fields
+              </button>
+              <button
+                onClick={() => setActiveTab('images')}
+                className={`px-4 py-3 text-[10px] uppercase tracking-[0.15em] font-black transition-all border-b-2 whitespace-nowrap ${
+                  activeTab === 'images'
+                    ? 'text-white border-white'
+                    : 'text-white/40 border-transparent hover:text-white/70'
+                }`}
+                style={{ fontWeight: 900 }}
+              >
+                Images
+              </button>
+              <button
+                onClick={() => setActiveTab('coas')}
+                className={`px-4 py-3 text-[10px] uppercase tracking-[0.15em] font-black transition-all border-b-2 whitespace-nowrap ${
+                  activeTab === 'coas'
+                    ? 'text-white border-white'
+                    : 'text-white/40 border-transparent hover:text-white/70'
+                }`}
+                style={{ fontWeight: 900 }}
+              >
+                Lab Results
               </button>
             </div>
           </div>
@@ -414,9 +487,9 @@ export function ProductQuickView({ product, vendorId, isOpen, onClose, onSave, o
                       });
 
                       const masterGroups = [
-                        { key: 'retail', label: 'Retail', icon: '🛍️' },
-                        { key: 'wholesale', label: 'Wholesale', icon: '📦' },
-                        { key: 'distributor', label: 'Distributor', icon: '🚚' }
+                        { key: 'retail', label: 'Retail' },
+                        { key: 'wholesale', label: 'Wholesale' },
+                        { key: 'distributor', label: 'Distributor' }
                       ];
 
                       return masterGroups.map(mg => {
@@ -425,9 +498,8 @@ export function ProductQuickView({ product, vendorId, isOpen, onClose, onSave, o
 
                         return (
                           <div key={mg.key} className="mb-4 last:mb-0">
-                            <div className="flex items-center gap-2 mb-2">
-                              <span className="text-sm">{mg.icon}</span>
-                              <h5 className="text-white/60 text-xs font-medium uppercase">{mg.label}</h5>
+                            <div className="mb-3">
+                              <h5 className="text-white/60 text-[10px] uppercase tracking-wider font-medium">{mg.label}</h5>
                             </div>
 
                             <div className="space-y-2 pl-4">
@@ -512,47 +584,245 @@ export function ProductQuickView({ product, vendorId, isOpen, onClose, onSave, o
               </div>
             )}
 
-            {activeTab === 'details' && (
+            {activeTab === 'fields' && (
               <div className="space-y-6">
                 {/* Custom Fields */}
-                {displayProduct.custom_fields && Object.keys(displayProduct.custom_fields).length > 0 ? (
+                {categoryFields.length > 0 ? (
                   <div>
-                    <div className="flex items-center gap-2 mb-4">
-                      <FileText size={16} className="text-white/60" />
-                      <h4 className="text-white/60 text-[10px] uppercase tracking-wider font-medium">Custom Fields</h4>
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-2">
+                        <FileText size={16} className="text-white/60" />
+                        <h4 className="text-white/60 text-[10px] uppercase tracking-wider font-medium">Custom Fields</h4>
+                      </div>
+                      <span className="text-white/30 text-[10px]">{categoryFields.length} fields • {displayProduct.category}</span>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
-                      {Object.entries(displayProduct.custom_fields).map(([key, value]: [string, any]) => (
-                        <div key={key} className="bg-white/5 border border-white/10 p-4 rounded-[12px]">
-                          <div className="text-white/40 text-[10px] uppercase tracking-wider mb-2">
-                            {key.replace(/_/g, ' ')}
+                      {categoryFields.map((field: any) => {
+                        const fieldLabel = field.label || field.fieldId;
+                        const fieldValue = editedBlueprintFields[fieldLabel] || '';
+                        const fieldDef = field.definition || field;
+                        const fieldType = fieldDef.type || 'text';
+
+                        return (
+                          <div key={field.fieldId} className="space-y-2">
+                            <label className="block text-white/40 text-[10px] uppercase tracking-wider">
+                              {fieldLabel}
+                              {fieldDef.required && <span className="text-red-400 ml-1">*</span>}
+                            </label>
+
+                            {fieldType === 'select' && fieldDef.options ? (
+                              <select
+                                value={fieldValue}
+                                onChange={(e) => setEditedBlueprintFields(prev => ({
+                                  ...prev,
+                                  [fieldLabel]: e.target.value
+                                }))}
+                                className="w-full bg-black/20 border border-white/10 text-white px-4 py-3 rounded-[14px] focus:outline-none focus:border-white/30 transition-all"
+                              >
+                                <option value="">Select...</option>
+                                {fieldDef.options.map((opt: string) => (
+                                  <option key={opt} value={opt}>{opt}</option>
+                                ))}
+                              </select>
+                            ) : fieldType === 'textarea' ? (
+                              <textarea
+                                value={fieldValue}
+                                onChange={(e) => setEditedBlueprintFields(prev => ({
+                                  ...prev,
+                                  [fieldLabel]: e.target.value
+                                }))}
+                                placeholder={fieldDef.placeholder || ''}
+                                rows={3}
+                                className="w-full bg-black/20 border border-white/10 text-white px-4 py-3 rounded-[14px] focus:outline-none focus:border-white/30 transition-all resize-none"
+                              />
+                            ) : fieldType === 'number' ? (
+                              <div className="relative">
+                                <input
+                                  type="number"
+                                  step="0.01"
+                                  value={fieldValue}
+                                  onChange={(e) => setEditedBlueprintFields(prev => ({
+                                    ...prev,
+                                    [fieldLabel]: e.target.value
+                                  }))}
+                                  placeholder={fieldDef.placeholder || ''}
+                                  className="w-full bg-black/20 border border-white/10 text-white px-4 py-3 rounded-[14px] focus:outline-none focus:border-white/30 transition-all"
+                                />
+                                {fieldDef.suffix && (
+                                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 text-sm">
+                                    {fieldDef.suffix}
+                                  </span>
+                                )}
+                              </div>
+                            ) : (
+                              <input
+                                type="text"
+                                value={fieldValue}
+                                onChange={(e) => setEditedBlueprintFields(prev => ({
+                                  ...prev,
+                                  [fieldLabel]: e.target.value
+                                }))}
+                                placeholder={fieldDef.placeholder || ''}
+                                className="w-full bg-black/20 border border-white/10 text-white px-4 py-3 rounded-[14px] focus:outline-none focus:border-white/30 transition-all"
+                              />
+                            )}
                           </div>
-                          <div className="text-white text-sm">{value || 'N/A'}</div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
                 ) : (
                   <div className="text-center py-12">
                     <FileText size={48} className="text-white/20 mx-auto mb-4" />
                     <p className="text-white/40 text-sm">No custom fields configured</p>
+                    <p className="text-white/30 text-xs mt-2">Go to Categories tab to add custom fields for {displayProduct.category}</p>
                   </div>
                 )}
 
-                {/* Images */}
-                {displayProduct.images && displayProduct.images.length > 0 && (
-                  <div>
-                    <div className="flex items-center gap-2 mb-4">
-                      <ImageIcon size={16} className="text-white/60" />
-                      <h4 className="text-white/60 text-[10px] uppercase tracking-wider font-medium">Product Images</h4>
-                    </div>
-                    <div className="grid grid-cols-4 gap-3">
-                      {displayProduct.images.map((img: string, idx: number) => (
-                        <div key={idx} className="aspect-square bg-white/5 border border-white/10 rounded-[12px] overflow-hidden">
-                          <img src={img} alt={`Product ${idx + 1}`} className="w-full h-full object-cover" />
+              </div>
+            )}
+
+            {activeTab === 'images' && (
+              <div className="space-y-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <ImageIcon size={16} className="text-white/60" />
+                    <h4 className="text-white/60 text-[10px] uppercase tracking-wider font-medium">Product Images</h4>
+                  </div>
+                  <a
+                    href="/vendor/media-library"
+                    target="_blank"
+                    className="px-3 py-2 bg-white/5 border border-white/5 text-white/60 hover:bg-white/10 hover:text-white transition-all rounded-xl text-[10px] uppercase tracking-[0.15em] font-black"
+                    style={{ fontWeight: 900 }}
+                  >
+                    Media Library
+                  </a>
+                </div>
+
+                {!displayProduct.images || displayProduct.images.length === 0 ? (
+                  <div className="text-center py-16 bg-[#0a0a0a] border border-white/5 rounded-2xl">
+                    <ImageIcon size={48} className="text-white/20 mx-auto mb-4" />
+                    <p className="text-white text-xs uppercase tracking-[0.15em] mb-2 font-black" style={{ fontWeight: 900 }}>No images uploaded</p>
+                    <p className="text-white/40 text-[10px] uppercase tracking-wider mb-6">Add product photos from your media library</p>
+                    <a
+                      href="/vendor/media-library"
+                      target="_blank"
+                      className="inline-flex items-center gap-2 px-6 py-3 bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded-xl text-[10px] uppercase tracking-[0.15em] font-black transition-all"
+                      style={{ fontWeight: 900 }}
+                    >
+                      Upload Images
+                    </a>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                    {displayProduct.images.map((img: string, idx: number) => (
+                      <div key={idx} className="aspect-square bg-white/5 border border-white/5 rounded-xl overflow-hidden relative group">
+                        <img src={img} alt={`Product ${idx + 1}`} className="w-full h-full object-cover" />
+                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <button className="p-2 bg-red-500/20 border border-red-500/20 rounded-lg text-red-400 hover:bg-red-500/30 hover:text-red-300 transition-all">
+                            <Trash2 size={16} />
+                          </button>
                         </div>
-                      ))}
-                    </div>
+                        {idx === 0 && (
+                          <div className="absolute top-2 left-2">
+                            <span className="px-2 py-0.5 bg-white/10 backdrop-blur-sm border border-white/20 rounded text-white text-[8px] uppercase tracking-wider font-black">Featured</span>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {activeTab === 'coas' && (
+              <div className="space-y-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <FileText size={16} className="text-white/60" />
+                    <h4 className="text-white/60 text-[10px] uppercase tracking-wider font-medium">Lab Results & COAs</h4>
+                  </div>
+                  <button
+                    className="px-3 py-2 bg-white/5 border border-white/5 text-white/60 hover:bg-white/10 hover:text-white transition-all rounded-xl text-[10px] uppercase tracking-[0.15em] font-black"
+                    style={{ fontWeight: 900 }}
+                  >
+                    Upload COA
+                  </button>
+                </div>
+
+                {!displayProduct.coas || displayProduct.coas.length === 0 ? (
+                  <div className="text-center py-16 bg-[#0a0a0a] border border-white/5 rounded-2xl">
+                    <FileText size={48} className="text-white/20 mx-auto mb-4" />
+                    <p className="text-white text-xs uppercase tracking-[0.15em] mb-2 font-black" style={{ fontWeight: 900 }}>No lab results uploaded</p>
+                    <p className="text-white/40 text-[10px] uppercase tracking-wider mb-6">Upload certificates of analysis for this product</p>
+                    <button className="inline-flex items-center gap-2 px-6 py-3 bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded-xl text-[10px] uppercase tracking-[0.15em] font-black transition-all"
+                      style={{ fontWeight: 900 }}
+                    >
+                      Upload COA
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {displayProduct.coas.map((coa: any) => (
+                      <div key={coa.id} className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-4 hover:border-white/10 transition-all">
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <h5 className="text-white text-xs uppercase tracking-tight font-black" style={{ fontWeight: 900 }}>
+                                {coa.file_name}
+                              </h5>
+                              {coa.is_verified && (
+                                <span className="px-2 py-0.5 bg-green-500/10 border border-green-500/20 text-green-400/80 rounded text-[8px] uppercase tracking-wider font-black">
+                                  Verified
+                                </span>
+                              )}
+                            </div>
+                            {coa.lab_name && (
+                              <p className="text-white/40 text-[10px] uppercase tracking-wider mb-1">
+                                Lab: {coa.lab_name}
+                              </p>
+                            )}
+                            {coa.test_date && (
+                              <p className="text-white/30 text-[9px] uppercase tracking-wider">
+                                Test Date: {new Date(coa.test_date).toLocaleDateString()}
+                              </p>
+                            )}
+                            {coa.batch_number && (
+                              <p className="text-white/30 text-[9px] uppercase tracking-wider">
+                                Batch: {coa.batch_number}
+                              </p>
+                            )}
+                            {coa.test_results && (
+                              <div className="mt-3 grid grid-cols-3 gap-3">
+                                {Object.entries(coa.test_results).map(([key, value]: [string, any]) => (
+                                  <div key={key}>
+                                    <div className="text-white/40 text-[8px] uppercase tracking-wider mb-0.5">
+                                      {key.replace(/_/g, ' ')}
+                                    </div>
+                                    <div className="text-white text-xs font-medium">{value}</div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {coa.file_url && (
+                              <a
+                                href={coa.file_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="p-2 bg-white/5 border border-white/5 text-white/60 hover:bg-white/10 hover:text-white transition-all rounded-lg"
+                              >
+                                <FileText size={16} />
+                              </a>
+                            )}
+                            <button className="p-2 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 hover:bg-red-500/20 hover:text-red-300 transition-all">
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>
@@ -562,27 +832,30 @@ export function ProductQuickView({ product, vendorId, isOpen, onClose, onSave, o
           </div>
 
           {/* Footer */}
-          <div className="border-t border-white/10 p-6 bg-white/[0.02] flex items-center justify-between">
+          <div className="border-t border-white/5 p-6 bg-black flex items-center justify-between">
             <button
               onClick={handleDelete}
-              className="px-4 py-3 bg-black/40 border border-white/10 text-white/50 hover:bg-white/5 hover:text-white/70 transition-all rounded-[14px] text-xs uppercase tracking-wider flex items-center gap-2"
+              className="px-4 py-3 bg-black/40 border border-white/5 text-white/40 hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/20 transition-all rounded-xl text-[10px] uppercase tracking-[0.15em] font-black flex items-center gap-2"
+              style={{ fontWeight: 900 }}
             >
-              <Trash2 size={14} />
+              <Trash2 size={12} />
               Delete Product
             </button>
             <div className="flex items-center gap-3">
               <button
                 onClick={onClose}
-                className="px-6 py-3 text-white/60 hover:text-white transition-colors text-sm uppercase tracking-wider"
+                className="px-6 py-3 bg-black/20 border border-white/5 text-white/60 hover:bg-white/5 hover:text-white transition-colors rounded-xl text-[10px] uppercase tracking-[0.15em] font-black"
+                style={{ fontWeight: 900 }}
               >
                 Cancel
               </button>
               <button
                 onClick={handleSave}
                 disabled={saving}
-                className="px-8 py-3 bg-white/10 text-white border border-white/20 hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all rounded-[14px] text-sm uppercase tracking-wider flex items-center gap-2 font-medium"
+                className="px-8 py-3 bg-white/10 text-white border border-white/20 hover:bg-white/20 disabled:opacity-30 disabled:cursor-not-allowed transition-all rounded-xl text-[10px] uppercase tracking-[0.15em] font-black flex items-center gap-2"
+                style={{ fontWeight: 900 }}
               >
-                <Save size={16} />
+                <Save size={12} />
                 {saving ? 'Saving...' : 'Save Changes'}
               </button>
             </div>

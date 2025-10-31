@@ -97,6 +97,8 @@ export default function NewProduct() {
   const [bulkImages, setBulkImages] = useState<Array<{file: File, url: string, matchedTo: string | null}>>([]);
   const [lastSelectedPricingMode, setLastSelectedPricingMode] = useState<'single' | 'tiered'>('single'); // Track last pricing mode selection
   const [explicitlySetPricingModes, setExplicitlySetPricingModes] = useState<Set<number>>(new Set()); // Track which products had pricing mode explicitly set
+  const [lastSelectedTierTemplate, setLastSelectedTierTemplate] = useState<any | null>(null); // Track last tier template selection
+  const [explicitlySetTierTemplates, setExplicitlySetTierTemplates] = useState<Set<number>>(new Set()); // Track which products had tier template explicitly set
 
   // AI Autofill state
   const [aiSuggestions, setAiSuggestions] = useState<any>(null);
@@ -475,7 +477,7 @@ export default function NewProduct() {
     }
   };
 
-  // Bulk AI enrichment
+  // Bulk AI enrichment - OPTIMIZED with batch processing
   const handleBulkAIEnrich = async () => {
     if (!bulkInput.trim()) {
       showNotification({
@@ -506,15 +508,15 @@ export default function NewProduct() {
       const lines = bulkInput.split('\n').filter(line => line.trim());
       setBulkAIProgress({ current: 0, total: lines.length });
 
-      for (let i = 0; i < lines.length; i++) {
-        const line = lines[i];
+      // Parse all products first
+      const productsToEnrich: Array<{name: string, price: string, cost: string}> = [];
+      for (const line of lines) {
         const parts = line.split(',').map(p => p.trim());
         if (parts.length < 1) continue;
 
-        // New format: Name, Price (optional), Cost (optional)
         const [name, price, cost] = parts;
+        productsToEnrich.push({ name, price: price || '', cost: cost || price || '' });
 
-        // Add to parsed products with default values (use last selected pricing mode)
         parsedProducts.push({
           name,
           price: price || '',
@@ -523,43 +525,137 @@ export default function NewProduct() {
           pricing_tiers: [],
           custom_fields: {}
         });
+      }
 
-        setBulkAIProgress({ current: i + 1, total: lines.length });
+      // Dispatch AI start event for monitor
+      window.dispatchEvent(new CustomEvent('ai-autofill-start'));
 
-        try {
-          // Get AI suggestions using bulkCategory
-          const response = await axios.post('/api/ai/quick-autofill', {
-            productName: name,
-            category: bulkCategory
-          }, {
-            signal: abortController.signal
-          });
+      // Show initial progress with time estimate
+      const estimatedSeconds = Math.ceil(productsToEnrich.length / 5) * 15; // ~15 sec per batch of 5
+      const estimatedMinutes = Math.ceil(estimatedSeconds / 60);
+      window.dispatchEvent(new CustomEvent('ai-autofill-progress', {
+        detail: {
+          message: `# Bulk AI Enrichment\n\n📦 Processing ${productsToEnrich.length} products...\n\n⏱️ Estimated time: ${estimatedMinutes} ${estimatedMinutes === 1 ? 'minute' : 'minutes'}\n\n`
+        }
+      }));
 
-          if (response.data.success && response.data.suggestions) {
-            const suggestions = response.data.suggestions;
+      // Call STREAMING API for real-time progress
+      const categoryName = categories.find(c => c.id === bulkCategory)?.name || '';
+      console.log('🚀 Starting bulk autofill stream:', {
+        productsCount: productsToEnrich.length,
+        category: categoryName
+      });
 
-            // Store enriched data by product name
-            enrichedData[name] = {
-              strain_type: suggestions.strain_type,
-              lineage: suggestions.lineage,
-              nose: suggestions.nose,
-              effects: suggestions.effects,
-              terpenes: suggestions.terpenes,
-              description: suggestions.description
-            };
+      const response = await fetch('/api/ai/bulk-autofill-stream', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          products: productsToEnrich,
+          category: categoryName
+        }),
+        signal: abortController.signal,
+      });
 
-            console.log(`✅ Enriched: ${name}`, enrichedData[name]);
+      if (!response.ok) {
+        throw new Error('Failed to start bulk enrichment');
+      }
+
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+
+      if (!reader) {
+        throw new Error('No response stream available');
+      }
+
+      let buffer = '';
+      let allResults: any[] = [];
+
+      while (true) {
+        const { done, value } = await reader.read();
+
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
+
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            const data = JSON.parse(line.slice(6));
+
+            console.log('📥 Stream event:', data.type, data);
+
+            switch (data.type) {
+              case 'start':
+                window.dispatchEvent(new CustomEvent('ai-autofill-progress', {
+                  detail: { message: `\n${data.message}\n` }
+                }));
+                break;
+
+              case 'batch_start':
+                window.dispatchEvent(new CustomEvent('ai-autofill-progress', {
+                  detail: { message: `\n${data.message}` }
+                }));
+                break;
+
+              case 'progress':
+                window.dispatchEvent(new CustomEvent('ai-autofill-progress', {
+                  detail: { message: `\n${data.message}` }
+                }));
+                break;
+
+              case 'batch_complete':
+                window.dispatchEvent(new CustomEvent('ai-autofill-progress', {
+                  detail: {
+                    message: `\n${data.message}\n**Progress: ${data.completed}/${data.total} products processed**\n`
+                  }
+                }));
+                break;
+
+              case 'batch_error':
+                window.dispatchEvent(new CustomEvent('ai-autofill-progress', {
+                  detail: { message: `\n⚠️ ${data.message}` }
+                }));
+                break;
+
+              case 'complete':
+                allResults = data.results || [];
+                window.dispatchEvent(new CustomEvent('ai-autofill-progress', {
+                  detail: {
+                    message: `\n\n## ${data.message}\n\n${data.failed > 0 ? `⚠️ ${data.failed} products failed (will use default values)\n` : '✨ All products enriched successfully!'}`
+                  }
+                }));
+                break;
+
+              case 'error':
+                throw new Error(data.message);
+            }
           }
-        } catch (err: any) {
-          if (axios.isCancel(err)) {
-            console.log('Bulk AI enrichment cancelled');
-            return;
-          }
-          console.error(`❌ Failed to enrich ${name}:`, err);
         }
       }
 
-      // Populate custom_fields from AI data
+      // Process final results
+      let successCount = 0;
+      for (const result of allResults) {
+        if (result.success && result.suggestions) {
+          const suggestions = result.suggestions;
+          enrichedData[result.product_name] = {
+            strain_type: suggestions.strain_type,
+            lineage: suggestions.lineage,
+            nose: suggestions.nose,
+            effects: suggestions.effects,
+            terpene_profile: suggestions.terpene_profile,
+            description: suggestions.description
+          };
+          successCount++;
+        }
+      }
+
+      console.log(`✅ Stream complete: ${successCount} products enriched`);
+
+      // Populate custom_fields from AI data (STRAIN DATA ONLY - no lab test percentages)
       for (const product of parsedProducts) {
         const aiData = enrichedData[product.name];
         if (aiData) {
@@ -568,7 +664,7 @@ export default function NewProduct() {
             lineage: aiData.lineage || '',
             nose: Array.isArray(aiData.nose) ? aiData.nose.join(', ') : '',
             effects: aiData.effects || [],
-            terpene_profile: aiData.terpenes || []
+            terpene_profile: aiData.terpene_profile || []
           };
         }
       }
@@ -581,6 +677,11 @@ export default function NewProduct() {
       setShowBulkReview(true);
       setCurrentReviewIndex(0);
       setExplicitlySetPricingModes(new Set()); // Reset for new batch
+      setExplicitlySetTierTemplates(new Set()); // Reset tier template tracking
+      setLastSelectedTierTemplate(null); // Reset last selected template
+
+      // Dispatch complete event
+      window.dispatchEvent(new CustomEvent('ai-autofill-complete'));
 
       showNotification({
         type: 'success',
@@ -588,15 +689,25 @@ export default function NewProduct() {
         message: `Enriched ${enrichedCount}/${lines.length} products - Review pricing`,
       });
     } catch (error: any) {
-      if (axios.isCancel(error)) {
+      if (error.name === 'AbortError') {
         console.log('Bulk AI enrichment cancelled');
+        window.dispatchEvent(new CustomEvent('ai-autofill-complete'));
         return;
       }
-      console.error('Bulk AI error:', error);
+      console.error('❌ Bulk AI error:', error);
+      console.error('❌ Error message:', error.message);
+
+      const errorMsg = error.message || 'Unknown error occurred';
+
+      window.dispatchEvent(new CustomEvent('ai-autofill-progress', {
+        detail: { message: `\n## ❌ Error\n\n${errorMsg}\n\nPlease try again or contact support if the issue persists.` }
+      }));
+      window.dispatchEvent(new CustomEvent('ai-autofill-complete'));
+
       showNotification({
         type: 'error',
         title: 'AI Processing Failed',
-        message: 'Could not process all products',
+        message: errorMsg,
       });
     } finally {
       setLoadingAI(false);
@@ -990,7 +1101,7 @@ export default function NewProduct() {
 
             const productData: any = {
               name,
-              category: bulkCategory,
+              category_id: bulkCategory, // Use category ID instead of name
               product_type: 'simple',
               product_visibility: 'internal', // TRUE MULTI-TENANT: Bulk uploads default to internal (auto-publish)
               pricing_mode,
@@ -1450,7 +1561,7 @@ export default function NewProduct() {
                 >
                   <option value="">Select category...</option>
                   {categories.map(cat => (
-                    <option key={cat.id} value={cat.name}>{cat.name}</option>
+                    <option key={cat.id} value={cat.id}>{cat.name}</option>
                   ))}
                 </select>
                 <p className="text-white/30 text-[9px] mt-1">All products in this batch will use this category</p>
@@ -1903,7 +2014,7 @@ export default function NewProduct() {
                                 <label className="block text-white/40 text-[9px] uppercase tracking-[0.15em] mb-2">Quick Apply Template</label>
                                 <div className="flex flex-wrap gap-2">
                                   {(() => {
-                                    const currentCategory = categories.find(c => c.slug === bulkCategory);
+                                    const currentCategory = categories.find(c => c.id === bulkCategory);
                                     console.log('🔍 Filtering pricing templates:', {
                                       bulkCategory,
                                       currentCategoryId: currentCategory?.id,
@@ -1964,6 +2075,12 @@ export default function NewProduct() {
 
                                         setBulkProducts(updated);
 
+                                        // Save this as the last selected template
+                                        setLastSelectedTierTemplate(config);
+                                        // Mark current product as explicitly set
+                                        setExplicitlySetTierTemplates(new Set(explicitlySetTierTemplates).add(currentReviewIndex));
+                                        console.log(`📊 Product ${currentReviewIndex} tier template set to: ${blueprint.name} (will auto-apply to future products)`);
+
                                         showNotification({
                                           type: 'success',
                                           title: 'Template Applied',
@@ -1981,6 +2098,13 @@ export default function NewProduct() {
 
                             {/* Tier Inputs */}
                             <div className="space-y-2">
+                            {bulkProducts[currentReviewIndex].pricing_tiers.length === 0 && (
+                              <div className="bg-white/5 border border-white/10 rounded-xl p-4 text-center">
+                                <p className="text-white/60 text-[10px]">
+                                  👆 Click a template above to apply pricing tiers
+                                </p>
+                              </div>
+                            )}
                             {bulkProducts[currentReviewIndex].pricing_tiers.map((tier, idx) => (
                               <div key={idx} className="flex items-center gap-2">
                                 <input
@@ -2045,15 +2169,43 @@ export default function NewProduct() {
                           type="button"
                           onClick={() => {
                             const nextIndex = Math.max(0, currentReviewIndex - 1);
+
+                            const updated = [...bulkProducts];
+                            let wasUpdated = false;
+
                             // Apply last selected pricing mode to next product ONLY if it hasn't been explicitly set by user
                             if (!explicitlySetPricingModes.has(nextIndex)) {
-                              const updated = bulkProducts.map((product, idx) => {
-                                if (idx === nextIndex) {
-                                  console.log(`📊 Auto-applying pricing mode "${lastSelectedPricingMode}" to product ${nextIndex}`);
-                                  return { ...product, pricing_mode: lastSelectedPricingMode };
-                                }
-                                return product;
-                              });
+                              console.log(`📊 Auto-applying pricing mode "${lastSelectedPricingMode}" to product ${nextIndex}`);
+                              updated[nextIndex] = { ...updated[nextIndex], pricing_mode: lastSelectedPricingMode };
+                              wasUpdated = true;
+                            }
+
+                            // Auto-apply last selected tier template if product is in tiered mode and hasn't had template explicitly set
+                            if (lastSelectedTierTemplate &&
+                                updated[nextIndex].pricing_mode === 'tiered' &&
+                                !explicitlySetTierTemplates.has(nextIndex)) {
+                              const blueprint = lastSelectedTierTemplate.blueprint;
+                              const pricingValues = lastSelectedTierTemplate.pricing_values || {};
+
+                              updated[nextIndex].pricing_tiers = (blueprint.price_breaks || [])
+                                .filter((pb: any) => {
+                                  const priceData = pricingValues[pb.break_id];
+                                  return priceData && priceData.enabled !== false;
+                                })
+                                .map((pb: any) => {
+                                  const priceData = pricingValues[pb.break_id] || {};
+                                  return {
+                                    weight: pb.label || `${pb.qty}${pb.unit}`,
+                                    qty: 1,
+                                    price: priceData.price || ''
+                                  };
+                                });
+
+                              console.log(`📊 Auto-applying tier template "${blueprint.name}" to product ${nextIndex}`);
+                              wasUpdated = true;
+                            }
+
+                            if (wasUpdated) {
                               setBulkProducts(updated);
                             }
                             setCurrentReviewIndex(nextIndex);
@@ -2068,15 +2220,43 @@ export default function NewProduct() {
                           type="button"
                           onClick={() => {
                             const nextIndex = Math.min(bulkProducts.length - 1, currentReviewIndex + 1);
+
+                            const updated = [...bulkProducts];
+                            let wasUpdated = false;
+
                             // Apply last selected pricing mode to next product ONLY if it hasn't been explicitly set by user
                             if (!explicitlySetPricingModes.has(nextIndex)) {
-                              const updated = bulkProducts.map((product, idx) => {
-                                if (idx === nextIndex) {
-                                  console.log(`📊 Auto-applying pricing mode "${lastSelectedPricingMode}" to product ${nextIndex}`);
-                                  return { ...product, pricing_mode: lastSelectedPricingMode };
-                                }
-                                return product;
-                              });
+                              console.log(`📊 Auto-applying pricing mode "${lastSelectedPricingMode}" to product ${nextIndex}`);
+                              updated[nextIndex] = { ...updated[nextIndex], pricing_mode: lastSelectedPricingMode };
+                              wasUpdated = true;
+                            }
+
+                            // Auto-apply last selected tier template if product is in tiered mode and hasn't had template explicitly set
+                            if (lastSelectedTierTemplate &&
+                                updated[nextIndex].pricing_mode === 'tiered' &&
+                                !explicitlySetTierTemplates.has(nextIndex)) {
+                              const blueprint = lastSelectedTierTemplate.blueprint;
+                              const pricingValues = lastSelectedTierTemplate.pricing_values || {};
+
+                              updated[nextIndex].pricing_tiers = (blueprint.price_breaks || [])
+                                .filter((pb: any) => {
+                                  const priceData = pricingValues[pb.break_id];
+                                  return priceData && priceData.enabled !== false;
+                                })
+                                .map((pb: any) => {
+                                  const priceData = pricingValues[pb.break_id] || {};
+                                  return {
+                                    weight: pb.label || `${pb.qty}${pb.unit}`,
+                                    qty: 1,
+                                    price: priceData.price || ''
+                                  };
+                                });
+
+                              console.log(`📊 Auto-applying tier template "${blueprint.name}" to product ${nextIndex}`);
+                              wasUpdated = true;
+                            }
+
+                            if (wasUpdated) {
                               setBulkProducts(updated);
                             }
                             setCurrentReviewIndex(nextIndex);

@@ -151,7 +151,9 @@ export default function GroupConfigWizard({ vendorId, existingGroup, onComplete,
       }
 
       // Load pricing tier blueprints (for filtering products by tier)
-      const blueprintsResponse = await fetch(`/api/vendor/pricing/blueprints?vendor_id=${vendorId}`);
+      const blueprintsResponse = await fetch(`/api/vendor/pricing-blueprints`, {
+        headers: { 'x-vendor-id': vendorId }
+      });
       const blueprintsData = await blueprintsResponse.json();
       if (blueprintsData.success) {
         setPricingTiers(blueprintsData.blueprints || []);

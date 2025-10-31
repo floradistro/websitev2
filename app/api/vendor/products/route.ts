@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
     const supabase = getServiceSupabase();
     const { data: products, error } = await supabase
       .from('products')
-      .select('*')
+      .select('*, categories:primary_category_id(id, name, slug)')
       .eq('vendor_id', vendorId)
       .order('created_at', { ascending: false });
 
@@ -129,14 +129,19 @@ export async function POST(request: NextRequest) {
       }
     };
 
-    // Get category ID if category name provided
-    if (productData.category) {
+    // Get category ID - accept either category_id (UUID) or category (name)
+    if (productData.category_id) {
+      // Direct category ID provided
+      newProduct.primary_category_id = productData.category_id;
+      console.log('✅ Category ID provided:', productData.category_id);
+    } else if (productData.category) {
+      // Category name provided - look up ID
       const { data: categories } = await supabase
         .from('categories')
         .select('id')
         .ilike('name', productData.category) // Case-insensitive match
         .limit(1);
-      
+
       if (categories && categories.length > 0) {
         newProduct.primary_category_id = categories[0].id;
         console.log('✅ Category matched:', productData.category, '→', categories[0].id);

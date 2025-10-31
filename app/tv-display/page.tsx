@@ -433,17 +433,8 @@ function TVDisplayContent() {
         let productWithPricing = {
           ...product,
           image_url: product.featured_image || product.image_url, // Map featured_image to image_url
-          metadata: product.blueprint_fields ? product.blueprint_fields.reduce((acc: any, field: any) => {
-            // Map blueprint_fields to metadata format
-            let key = field.label.toLowerCase().replace(/\s+/g, '_');
-
-            // Normalize specific fields for consistency
-            if (key === 'thc_content') key = 'thc_percentage';
-            if (key === 'cbd_content') key = 'cbd_percentage';
-
-            acc[key] = field.value;
-            return acc;
-          }, {}) : {}
+          // Keep blueprint_fields as is (NEW SYSTEM ONLY - no conversion to metadata)
+          blueprint_fields: product.blueprint_fields || []
         };
 
         if (product.pricing_assignments && product.pricing_assignments.length > 0) {

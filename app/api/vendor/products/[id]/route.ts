@@ -35,9 +35,9 @@ export async function GET(
         stock_quantity,
         blueprint_fields,
         featured_image_storage,
-        product_categories(
-          category:categories(name)
-        )
+        image_gallery_storage,
+        primary_category_id,
+        categories:primary_category_id(id, name)
       `)
       .eq('id', productId)
       .eq('vendor_id', vendorId)
@@ -126,8 +126,12 @@ export async function GET(
     // Get images
     const images: string[] = [];
     if (product.featured_image_storage) {
-      const publicUrl = `https://uaednwpxursknmwdeejn.supabase.co/storage/v1/object/public/vendor-product-images/${product.featured_image_storage}`;
-      images.push(publicUrl);
+      images.push(product.featured_image_storage);
+    }
+    // Add gallery images
+    if (product.image_gallery_storage && Array.isArray(product.image_gallery_storage)) {
+      const additionalImages = product.image_gallery_storage.filter((img: string) => img && img !== product.featured_image_storage);
+      images.push(...additionalImages);
     }
 
     return NextResponse.json({
@@ -136,13 +140,17 @@ export async function GET(
         id: product.id,
         name: product.name,
         sku: product.sku || '',
-        category: (product.product_categories?.[0]?.category as any)?.name || '',
+        category: product.categories?.name || '',
+        category_id: product.primary_category_id || '',
         price: parseFloat(product.price) || 0,
+        regular_price: parseFloat(product.price) || 0,
         cost_price: product.cost_price ? parseFloat(product.cost_price) : null,
         description: product.description || '',
         status: product.status || 'pending',
         stock_quantity: parseFloat(product.stock_quantity) || 0,
+        total_stock: parseFloat(product.stock_quantity) || 0,
         custom_fields,
+        blueprint_fields: product.blueprint_fields || [],
         coas: (coas || []).map(coa => ({
           id: coa.id,
           file_name: coa.file_name,

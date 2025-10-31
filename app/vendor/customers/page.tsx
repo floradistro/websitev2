@@ -80,6 +80,8 @@ export default function CustomersPage() {
       if (data.error) {
         console.error('Error:', data.error);
       } else {
+        console.log('🔍 First customer received:', data.customers?.[0]);
+        console.log('🔍 Stats received:', data.stats);
         setCustomers(data.customers || []);
         setStats(data.stats || stats);
         setPagination(data.pagination || pagination);
@@ -280,11 +282,11 @@ export default function CustomersPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex flex-col gap-2">
-                        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] uppercase tracking-[0.15em] font-black border ${tierColors[customer.loyalty_tier as keyof typeof tierColors]}`}>
-                          {customer.loyalty_tier}
+                        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] uppercase tracking-[0.15em] font-black border ${tierColors[customer.loyalty_tier as keyof typeof tierColors] || 'bg-gray-500/20 text-gray-300 border-gray-500/30'}`}>
+                          {customer.loyalty_tier || 'bronze'}
                         </span>
-                        <span className="text-[10px] text-white/40 uppercase tracking-[0.15em]">
-                          {customer.loyalty_points.toLocaleString()} pts
+                        <span className="text-[10px] text-white font-black uppercase tracking-[0.15em]" style={{ fontWeight: 900 }}>
+                          {(customer.loyalty_points || 0).toLocaleString()} PTS
                         </span>
                       </div>
                     </td>
