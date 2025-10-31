@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createClient as createServiceClient } from '@supabase/supabase-js'
+
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!
 
 // GET /api/vendor/apps/[appId]/files - Get all files for an app
 export async function GET(
@@ -8,7 +12,15 @@ export async function GET(
 ) {
   try {
     const { appId } = await params
-    const supabase = await createClient()
+
+    // Check if request has API key (for file-sync-daemon)
+    const authHeader = request.headers.get('authorization')
+    const apiKey = authHeader?.replace('Bearer ', '')
+
+    // Use service role client if API key provided (bypass RLS)
+    const supabase = apiKey === SERVICE_ROLE_KEY
+      ? createServiceClient(SUPABASE_URL, SERVICE_ROLE_KEY)
+      : await createClient()
 
     const { data: files, error } = await supabase
       .from('app_files')
