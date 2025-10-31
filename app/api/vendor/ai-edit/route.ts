@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createClient as createServiceClient } from '@supabase/supabase-js'
 import Anthropic from '@anthropic-ai/sdk'
 import Exa from 'exa-js'
 
@@ -8,6 +9,9 @@ const anthropic = new Anthropic({
 })
 
 const exa = new Exa(process.env.EXASEARCH_API_KEY || process.env.EXA_API_KEY!)
+
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!
 
 // POST /api/vendor/ai-edit - Simple, clean implementation
 export async function POST(request: NextRequest) {
@@ -223,7 +227,10 @@ export async function POST(request: NextRequest) {
     // STEP 1: Save to database FIRST (instant preview)
     if (codeBlocks.length > 0) {
       try {
-        const { error: dbError } = await supabase
+        // Use service role client to bypass RLS for file operations
+        const serviceClient = createServiceClient(SUPABASE_URL, SERVICE_ROLE_KEY)
+
+        const { error: dbError } = await serviceClient
           .from('app_files')
           .upsert(
             codeBlocks.map(block => ({
