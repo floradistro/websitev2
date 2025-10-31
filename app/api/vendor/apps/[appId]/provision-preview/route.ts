@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createClient as createServiceClient } from '@supabase/supabase-js'
 
 const FLY_API_TOKEN = process.env.FLY_API_TOKEN!
 const FLY_APP_NAME = process.env.FLY_APP_NAME || 'whaletools-preview-runtime'
 const API_URL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
 const API_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!
 
 /**
  * POST /api/vendor/apps/[appId]/provision-preview
@@ -17,7 +18,8 @@ export async function POST(
 ) {
   try {
     const { appId } = await params
-    const supabase = await createClient()
+    // Use service role client to bypass RLS
+    const supabase = createServiceClient(SUPABASE_URL, API_KEY)
 
     // Get app details
     const { data: app, error: appError } = await supabase
@@ -27,6 +29,7 @@ export async function POST(
       .single()
 
     if (appError || !app) {
+      console.error('Error fetching app:', appError)
       return NextResponse.json({ success: false, error: 'App not found' }, { status: 404 })
     }
 
