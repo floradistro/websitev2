@@ -7,6 +7,13 @@ import Link from 'next/link';
 import axios from 'axios';
 import { showNotification } from '@/components/NotificationToast';
 import { useAppAuth } from '@/context/AppAuthContext';
+import ProductFormHeader from './components/ProductFormHeader';
+import InputModeToggle from './components/InputModeToggle';
+import ProductBasicInfo from './components/ProductBasicInfo';
+import DynamicFieldsPanel from './components/DynamicFieldsPanel';
+import PricingPanel from './components/PricingPanel';
+import ImageUploadPanel from './components/ImageUploadPanel';
+import COAUploadPanel from './components/COAUploadPanel';
 
 interface Category {
   id: string;
@@ -1488,58 +1495,14 @@ export default function NewProduct() {
 
   return (
     <div className="min-h-screen bg-black">
-      {/* POS-Style Header */}
-      <div className="border-b border-white/5">
-        <div className="max-w-5xl mx-auto px-4 py-4">
-          <Link
-            href="/vendor/products"
-            className="inline-flex items-center gap-1.5 text-white/40 hover:text-white text-[9px] uppercase tracking-[0.15em] mb-3 transition-all font-black"
-            style={{ fontWeight: 900 }}
-          >
-            <ArrowLeft size={10} strokeWidth={3} />
-            Back
-          </Link>
-
-          <h1 className="text-xs uppercase tracking-[0.15em] text-white font-black mb-1" style={{ fontWeight: 900 }}>
-            Add New Product
-          </h1>
-          <p className="text-white/40 text-[10px] uppercase tracking-[0.15em]">
-            Submit for approval
-          </p>
-        </div>
-      </div>
+      <ProductFormHeader inputMode={inputMode} />
 
       {/* Form Container */}
       <div className="max-w-5xl mx-auto px-4 py-4">
-        {/* Input Mode Toggle */}
-        <div className="mb-4 flex items-center justify-between">
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={() => setInputMode('single')}
-              className={`px-3 py-2 rounded-xl border transition-all text-[10px] uppercase tracking-[0.15em] font-black ${
-                inputMode === 'single'
-                  ? 'bg-white/10 border-white/20 text-white'
-                  : 'bg-[#0a0a0a] border-white/10 text-white/60 hover:border-white/20'
-              }`}
-              style={{ fontWeight: 900 }}
-            >
-              Single
-            </button>
-            <button
-              type="button"
-              onClick={() => setInputMode('bulk')}
-              className={`px-3 py-2 rounded-xl border transition-all text-[10px] uppercase tracking-[0.15em] font-black ${
-                inputMode === 'bulk'
-                  ? 'bg-white/10 border-white/20 text-white'
-                  : 'bg-[#0a0a0a] border-white/10 text-white/60 hover:border-white/20'
-              }`}
-              style={{ fontWeight: 900 }}
-            >
-              Bulk
-            </button>
-          </div>
-        </div>
+        <InputModeToggle
+          inputMode={inputMode}
+          onModeChange={setInputMode}
+        />
 
         {/* Bulk Input Mode */}
         {inputMode === 'bulk' ? (
@@ -2320,550 +2283,50 @@ export default function NewProduct() {
           )}
 
           {/* Basic Information */}
-          <div className="bg-[#141414] border border-white/5 rounded-2xl p-4">
-            <h2 className="text-[10px] uppercase tracking-[0.15em] text-white/40 mb-4 font-black" style={{ fontWeight: 900 }}>
-              Basic Information
-            </h2>
-          
-          <div className="space-y-4">
-            {/* Product Name */}
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <label className="block text-white/40 text-[10px] uppercase tracking-[0.15em] font-black" style={{ fontWeight: 900 }}>
-                  Product Name <span className="text-red-400">*</span>
-                </label>
-                <div className="flex items-center gap-2">
-                  {loadingAI ? (
-                    <>
-                      <button
-                        type="button"
-                        disabled
-                        className="bg-white/10 text-white border border-white/20 rounded-xl px-2.5 py-1.5 text-[9px] uppercase tracking-[0.15em] font-black flex items-center gap-1.5 opacity-60"
-                        style={{ fontWeight: 900 }}
-                      >
-                        <Loader size={11} className="animate-spin" strokeWidth={2.5} />
-                        Loading...
-                      </button>
-                      <button
-                        type="button"
-                        onClick={cancelAIAutofill}
-                        className="bg-red-500/10 text-red-400 border border-red-500/20 rounded-xl px-2.5 py-1.5 text-[9px] uppercase tracking-[0.15em] hover:bg-red-500/20 hover:border-red-500/30 font-black transition-all flex items-center gap-1.5"
-                        style={{ fontWeight: 900 }}
-                      >
-                        <X size={11} strokeWidth={2.5} />
-                        Cancel
-                      </button>
-                    </>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={handleAIAutofill}
-                      disabled={!formData.name.trim() || !categoryId || dynamicFields.length === 0}
-                      title={!categoryId ? "Select a category first" : !formData.name.trim() ? "Enter product name" : dynamicFields.length === 0 ? "Loading fields..." : ""}
-                      className="bg-white/10 text-white border border-white/20 rounded-xl px-2.5 py-1.5 text-[9px] uppercase tracking-[0.15em] hover:bg-white/20 hover:border-white/30 font-black transition-all flex items-center gap-1.5 disabled:opacity-30 disabled:cursor-not-allowed"
-                      style={{ fontWeight: 900 }}
-                    >
-                      <Sparkles size={11} strokeWidth={2.5} />
-                      AI Autofill
-                    </button>
-                  )}
-                </div>
-              </div>
-              <input
-                type="text"
-                required
-                value={formData.name}
-                onChange={(e) => setFormData({...formData, name: e.target.value})}
-                placeholder="e.g., Blue Dream"
-                className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl text-white placeholder-white/20 px-3 py-2.5 focus:outline-none focus:border-white/20 transition-all text-xs"
-              />
+          <ProductBasicInfo
+            formData={formData}
+            categoryId={categoryId}
+            productType={productType}
+            categories={categories}
+            loadingFields={loadingFields}
+            dynamicFields={dynamicFields}
+            loadingAI={loadingAI}
+            aiSuggestions={aiSuggestions}
+            showSuggestions={showSuggestions}
+            onFormDataChange={setFormData}
+            onCategoryChange={(id) => {
+              const selectedCategory = categories.find(c => c.id === id);
+              setCategoryId(id);
+              setFormData({...formData, category: selectedCategory?.name || ''});
+            }}
+            onProductTypeChange={setProductType}
+            onAIAutofill={handleAIAutofill}
+            onCancelAI={cancelAIAutofill}
+            onApplySuggestions={applyAISuggestions}
+            onCloseSuggestions={() => setShowSuggestions(false)}
+          />
 
-              {/* AI Suggestions Panel - POS THEME */}
-              {showSuggestions && aiSuggestions && (
-                <div className="mt-3 bg-[#141414] border border-white/10 rounded-2xl p-3 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="text-white text-[9px] uppercase tracking-[0.15em] font-black flex items-center gap-1.5" style={{ fontWeight: 900 }}>
-                      <Sparkles size={10} strokeWidth={2.5} />
-                      AI Data
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setShowSuggestions(false)}
-                      className="text-white/40 hover:text-white transition-colors"
-                    >
-                      <X size={10} />
-                    </button>
-                  </div>
-
-                  {/* Show ALL data - POS THEME */}
-                  <div className="space-y-2.5">
-                    {aiSuggestions.strain_type && (
-                      <div className="flex items-center gap-2">
-                        <span className="text-white/40 text-[9px] uppercase tracking-[0.15em] w-16">Type</span>
-                        <span className="text-white text-[10px] font-black uppercase tracking-tight" style={{ fontWeight: 900 }}>{aiSuggestions.strain_type}</span>
-                      </div>
-                    )}
-                    {aiSuggestions.lineage && (
-                      <div className="flex items-center gap-2">
-                        <span className="text-white/40 text-[9px] uppercase tracking-[0.15em] w-16">Lineage</span>
-                        <span className="text-white text-[10px] font-black uppercase tracking-tight" style={{ fontWeight: 900 }}>{aiSuggestions.lineage}</span>
-                      </div>
-                    )}
-                    {aiSuggestions.nose && aiSuggestions.nose.length > 0 && (
-                      <div>
-                        <div className="text-white/40 text-[9px] uppercase tracking-[0.15em] mb-1">Nose</div>
-                        <div className="flex flex-wrap gap-1">
-                          {aiSuggestions.nose.map((aroma: string, idx: number) => (
-                            <span key={idx} className="bg-white/5 border border-white/10 rounded px-2 py-0.5 text-[9px] text-white uppercase tracking-wider font-black" style={{ fontWeight: 900 }}>
-                              {aroma}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                    {aiSuggestions.effects && aiSuggestions.effects.length > 0 && (
-                      <div>
-                        <div className="text-white/40 text-[9px] uppercase tracking-[0.15em] mb-1">Effects</div>
-                        <div className="flex flex-wrap gap-1">
-                          {aiSuggestions.effects.map((effect: string, idx: number) => (
-                            <span key={idx} className="bg-white/5 border border-white/10 rounded px-2 py-0.5 text-[9px] text-white/70 uppercase tracking-wider">
-                              {effect}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                    {aiSuggestions.terpenes && aiSuggestions.terpenes.length > 0 && (
-                      <div>
-                        <div className="text-white/40 text-[9px] uppercase tracking-[0.15em] mb-1">Terpenes</div>
-                        <div className="flex flex-wrap gap-1">
-                          {aiSuggestions.terpenes.map((terpene: string, idx: number) => (
-                            <span key={idx} className="bg-white/5 border border-white/10 rounded px-2 py-0.5 text-[9px] text-white/70 uppercase tracking-wider">
-                              {terpene}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                    {aiSuggestions.description && (
-                      <div>
-                        <div className="text-white/40 text-[9px] uppercase tracking-[0.15em] mb-1">Description</div>
-                        <p className="text-white/60 text-[10px] leading-relaxed">{aiSuggestions.description}</p>
-                      </div>
-                    )}
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={applyAISuggestions}
-                    className="w-full bg-white/10 border-2 border-white/20 text-white rounded-2xl px-3 py-3 text-[10px] uppercase tracking-[0.15em] hover:bg-white/20 hover:border-white/30 font-black transition-all flex items-center justify-center gap-1.5"
-                    style={{ fontWeight: 900 }}
-                  >
-                    <CheckCircle size={11} strokeWidth={2.5} />
-                    Fill All Fields
-                  </button>
-                </div>
-              )}
-            </div>
-
-            {/* Description */}
-            <div>
-              <label className="block text-white/40 text-[10px] uppercase tracking-[0.15em] mb-2 font-black" style={{ fontWeight: 900 }}>
-                Description <span className="text-red-400">*</span>
-              </label>
-              <textarea
-                required
-                rows={3}
-                value={formData.description}
-                onChange={(e) => setFormData({...formData, description: e.target.value})}
-                placeholder="Describe your product..."
-                className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl text-white placeholder-white/20 px-3 py-2.5 focus:outline-none focus:border-white/20 transition-all resize-none text-xs"
-              />
-            </div>
-
-            {/* Category */}
-            <div>
-              <label className="block text-white/40 text-[10px] uppercase tracking-[0.15em] mb-2 font-black" style={{ fontWeight: 900 }}>
-                Category <span className="text-red-400">*</span>
-              </label>
-              <select
-                required
-                value={categoryId}
-                onChange={(e) => {
-                  const selectedCategory = categories.find(c => c.id === e.target.value);
-                  setCategoryId(e.target.value);
-                  setFormData({...formData, category: selectedCategory?.name || ''});
-                }}
-                className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl text-white px-3 py-2.5 focus:outline-none focus:border-white/20 transition-all text-xs cursor-pointer"
-              >
-                <option value="">Select category</option>
-                {categories.map((cat) => (
-                  <option key={cat.id} value={cat.id}>
-                    {cat.name}
-                  </option>
-                ))}
-              </select>
-              {loadingFields && (
-                <p className="text-white/40 text-[10px] mt-2 flex items-center gap-1.5 uppercase tracking-[0.15em]">
-                  <Loader size={10} className="animate-spin" />
-                  Loading fields...
-                </p>
-              )}
-              {categoryId && dynamicFields.length > 0 && (
-                <p className="text-green-400/60 text-[9px] mt-2 flex items-center gap-1.5 uppercase tracking-[0.15em]">
-                  <Sparkles size={9} strokeWidth={2.5} />
-                  AI autofill ready
-                </p>
-              )}
-            </div>
-
-            {/* Product Type */}
-            <div>
-              <label className="block text-white/40 text-[10px] uppercase tracking-[0.15em] mb-2 font-black" style={{ fontWeight: 900 }}>
-                Product Type <span className="text-red-400">*</span>
-              </label>
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  onClick={() => setProductType('simple')}
-                  className={`px-3 py-2.5 rounded-xl border transition-all text-[10px] uppercase tracking-[0.15em] font-black ${
-                    productType === 'simple'
-                      ? 'bg-white/10 border-white/20 text-white'
-                      : 'bg-[#0a0a0a] border-white/10 text-white/60 hover:border-white/20'
-                  }`}
-                  style={{ fontWeight: 900 }}
-                >
-                  Simple
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setProductType('variable')}
-                  className={`px-3 py-2.5 rounded-xl border transition-all text-[10px] uppercase tracking-[0.15em] font-black ${
-                    productType === 'variable'
-                      ? 'bg-white/10 border-white/20 text-white'
-                      : 'bg-[#0a0a0a] border-white/10 text-white/60 hover:border-white/20'
-                  }`}
-                  style={{ fontWeight: 900 }}
-                >
-                  Variable
-                </button>
-              </div>
-            </div>
-
-            {/* Product Visibility - TRUE MULTI-TENANT */}
-            <div>
-              <label className="block text-white/40 text-[10px] uppercase tracking-[0.15em] mb-2 font-black" style={{ fontWeight: 900 }}>
-                Product Visibility <span className="text-red-400">*</span>
-              </label>
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  onClick={() => setFormData({...formData, product_visibility: 'internal'})}
-                  className={`px-3 py-2.5 rounded-xl border transition-all text-[10px] uppercase tracking-[0.15em] font-black ${
-                    formData.product_visibility === 'internal'
-                      ? 'bg-white/10 border-white/20 text-white'
-                      : 'bg-[#0a0a0a] border-white/10 text-white/60 hover:border-white/20'
-                  }`}
-                  style={{ fontWeight: 900 }}
-                >
-                  <div className="flex flex-col items-center gap-1">
-                    <span>🔒 Internal</span>
-                    <span className="text-[7px] text-white/40 font-normal">POS, Inventory, TV</span>
-                  </div>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setFormData({...formData, product_visibility: 'marketplace'})}
-                  className={`px-3 py-2.5 rounded-xl border transition-all text-[10px] uppercase tracking-[0.15em] font-black ${
-                    formData.product_visibility === 'marketplace'
-                      ? 'bg-white/10 border-white/20 text-white'
-                      : 'bg-[#0a0a0a] border-white/10 text-white/60 hover:border-white/20'
-                  }`}
-                  style={{ fontWeight: 900 }}
-                >
-                  <div className="flex flex-col items-center gap-1">
-                    <span>🌐 Marketplace</span>
-                    <span className="text-[7px] text-white/40 font-normal">Requires approval</span>
-                  </div>
-                </button>
-              </div>
-              {formData.product_visibility === 'internal' && (
-                <p className="text-green-400/60 text-[9px] mt-2 flex items-center gap-1.5 uppercase tracking-[0.15em]">
-                  <CheckCircle size={9} strokeWidth={2.5} />
-                  Will publish immediately
-                </p>
-              )}
-              {formData.product_visibility === 'marketplace' && (
-                <p className="text-orange-400/60 text-[9px] mt-2 flex items-center gap-1.5 uppercase tracking-[0.15em]">
-                  <AlertCircle size={9} strokeWidth={2.5} />
-                  Will require admin approval
-                </p>
-              )}
-            </div>
-
-            {/* Pricing Mode - Only for Simple Products */}
-            {productType === 'simple' && (
-              <div>
-                <label className="block text-white/40 text-[10px] uppercase tracking-[0.15em] mb-2 font-black" style={{ fontWeight: 900 }}>
-                  Pricing Mode <span className="text-red-400">*</span>
-                </label>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setPricingMode('single')}
-                    className={`px-3 py-2.5 rounded-xl border transition-all text-[10px] uppercase tracking-[0.15em] font-black ${
-                      pricingMode === 'single'
-                        ? 'bg-white/10 border-white/20 text-white'
-                        : 'bg-[#0a0a0a] border-white/10 text-white/60 hover:border-white/20'
-                    }`}
-                    style={{ fontWeight: 900 }}
-                  >
-                    Single
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setPricingMode('tiered')}
-                    className={`px-3 py-2.5 rounded-xl border transition-all text-[10px] uppercase tracking-[0.15em] font-black ${
-                      pricingMode === 'tiered'
-                        ? 'bg-white/10 border-white/20 text-white'
-                        : 'bg-[#0a0a0a] border-white/10 text-white/60 hover:border-white/20'
-                    }`}
-                    style={{ fontWeight: 900 }}
-                  >
-                    Tiered
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Single Price - Only for Simple Products with Single Pricing */}
-            {productType === 'simple' && pricingMode === 'single' && (
-              <>
-              {/* COST PRICE (Private - Vendor Only) */}
-              <div>
-                <label className="block text-white/40 text-[10px] uppercase tracking-[0.15em] mb-2 font-black" style={{ fontWeight: 900 }}>
-                  Cost Price
-                  <span className="ml-1.5 text-emerald-400 text-[9px]">🔒</span>
-                </label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40 text-[10px] font-black" style={{ fontWeight: 900 }}>$</span>
-                  <input
-                    type="number"
-                    step="0.01"
-                    value={formData.cost_price}
-                    onChange={(e) => setFormData({...formData, cost_price: e.target.value})}
-                    placeholder="10.00"
-                    className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl text-white placeholder-white/20 pl-7 pr-3 py-2.5 focus:outline-none focus:border-white/20 transition-all text-xs"
-                  />
-                </div>
-                <p className="text-white/40 text-[10px] mt-1.5">Private</p>
-              </div>
-
-              {/* SELLING PRICE */}
-              <div>
-                <label className="block text-white/40 text-[10px] uppercase tracking-[0.15em] mb-2 font-black" style={{ fontWeight: 900 }}>
-                  Selling Price <span className="text-red-400">*</span>
-                </label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40 text-[10px] font-black" style={{ fontWeight: 900 }}>$</span>
-                  <input
-                    type="number"
-                    step="0.01"
-                    required={productType === 'simple' && pricingMode === 'single'}
-                    value={formData.price}
-                    onChange={(e) => setFormData({...formData, price: e.target.value})}
-                    placeholder="14.99"
-                    className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl text-white placeholder-white/20 pl-7 pr-3 py-2.5 focus:outline-none focus:border-white/20 transition-all text-xs"
-                  />
-                </div>
-
-                {/* SHOW MARGIN CALCULATION */}
-                {formData.cost_price && formData.price && parseFloat(formData.cost_price) > 0 && parseFloat(formData.price) > 0 && (
-                  <div className="mt-2 flex items-center gap-2 bg-[#0a0a0a] border border-white/10 rounded-xl px-3 py-2">
-                    <div className={`font-black text-[10px] uppercase tracking-[0.15em] ${
-                      ((parseFloat(formData.price) - parseFloat(formData.cost_price)) / parseFloat(formData.price) * 100) >= 40
-                        ? 'text-green-400'
-                        : ((parseFloat(formData.price) - parseFloat(formData.cost_price)) / parseFloat(formData.price) * 100) >= 25
-                        ? 'text-yellow-400'
-                        : 'text-red-400'
-                    }`} style={{ fontWeight: 900 }}>
-                      {((parseFloat(formData.price) - parseFloat(formData.cost_price)) / parseFloat(formData.price) * 100).toFixed(1)}%
-                    </div>
-                    <div className="w-px h-3 bg-white/20" />
-                    <div className="text-emerald-400 font-black text-[10px] uppercase tracking-[0.15em]" style={{ fontWeight: 900 }}>
-                      ${(parseFloat(formData.price) - parseFloat(formData.cost_price)).toFixed(2)}
-                    </div>
-                  </div>
-                )}
-              </div>
-              </>
-            )}
-          </div>
-        </div>
-
-        {/* Pricing Tiers - Only for Simple Products with Tiered Pricing */}
-        {productType === 'simple' && pricingMode === 'tiered' && (
-          <div className="bg-[#141414] border border-white/5 rounded-2xl p-4">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-[10px] uppercase tracking-[0.15em] text-white/40 font-black" style={{ fontWeight: 900 }}>
-                Pricing Tiers
-              </h2>
-              <div className="flex items-center gap-1.5">
-                <Zap size={11} strokeWidth={2.5} className="text-yellow-400" />
-                <span className="text-yellow-400 text-[9px] uppercase tracking-[0.15em] font-black" style={{ fontWeight: 900 }}>
-                  Quick Pick
-                </span>
-              </div>
-            </div>
-
-            {/* Quick-Pick Pricing Templates */}
-            <div className="grid grid-cols-4 gap-2 mb-4">
-              <button
-                type="button"
-                onClick={() => applyPricingTemplate('budget')}
-                className="bg-[#0a0a0a] border border-white/10 rounded-xl px-2.5 py-2 text-[9px] uppercase tracking-[0.15em] text-white/60 hover:text-white hover:border-white/20 hover:bg-white/5 font-black transition-all"
-                style={{ fontWeight: 900 }}
-              >
-                Budget
-              </button>
-              <button
-                type="button"
-                onClick={() => applyPricingTemplate('mid')}
-                className="bg-[#0a0a0a] border border-white/10 rounded-xl px-2.5 py-2 text-[9px] uppercase tracking-[0.15em] text-white/60 hover:text-white hover:border-white/20 hover:bg-white/5 font-black transition-all"
-                style={{ fontWeight: 900 }}
-              >
-                Mid-Shelf
-              </button>
-              <button
-                type="button"
-                onClick={() => applyPricingTemplate('premium')}
-                className="bg-[#0a0a0a] border border-white/10 rounded-xl px-2.5 py-2 text-[9px] uppercase tracking-[0.15em] text-white/60 hover:text-white hover:border-white/20 hover:bg-white/5 font-black transition-all"
-                style={{ fontWeight: 900 }}
-              >
-                Premium
-              </button>
-              <button
-                type="button"
-                onClick={() => applyPricingTemplate('exotic')}
-                className="bg-[#0a0a0a] border border-white/10 rounded-xl px-2.5 py-2 text-[9px] uppercase tracking-[0.15em] text-white/60 hover:text-white hover:border-white/20 hover:bg-white/5 font-black transition-all"
-                style={{ fontWeight: 900 }}
-              >
-                Exotic
-              </button>
-            </div>
-
-            <p className="text-white/40 text-[10px] mb-4 uppercase tracking-[0.15em]">
-              Or add custom tiers below
-            </p>
-
-            {/* Add Pricing Tier */}
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-3 mb-4">
-              <div>
-                <label className="block text-white/40 text-[10px] uppercase tracking-[0.15em] mb-2 font-black" style={{ fontWeight: 900 }}>Weight</label>
-                <input
-                  type="text"
-                  value={newTierWeight}
-                  onChange={(e) => setNewTierWeight(e.target.value)}
-                  placeholder="1g"
-                  className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl text-white placeholder-white/20 px-3 py-2.5 text-xs focus:outline-none focus:border-white/20 transition-all"
-                />
-              </div>
-              <div>
-                <label className="block text-white/40 text-[10px] uppercase tracking-[0.15em] mb-2 font-black" style={{ fontWeight: 900 }}>Qty <span className="text-red-400">*</span></label>
-                <input
-                  type="number"
-                  value={newTierQty}
-                  onChange={(e) => setNewTierQty(e.target.value)}
-                  placeholder="1"
-                  className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl text-white placeholder-white/20 px-3 py-2.5 text-xs focus:outline-none focus:border-white/20 transition-all"
-                />
-              </div>
-              <div>
-                <label className="block text-white/40 text-[10px] uppercase tracking-[0.15em] mb-2 font-black" style={{ fontWeight: 900 }}>Price <span className="text-red-400">*</span></label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40 text-[10px] font-black" style={{ fontWeight: 900 }}>$</span>
-                  <input
-                    type="number"
-                    step="0.01"
-                    value={newTierPrice}
-                    onChange={(e) => setNewTierPrice(e.target.value)}
-                    placeholder="14.99"
-                    className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl text-white placeholder-white/20 pl-7 pr-3 py-2.5 text-xs focus:outline-none focus:border-white/20 transition-all"
-                  />
-                </div>
-              </div>
-              <div className="flex items-end">
-                <button
-                  type="button"
-                  onClick={addPricingTier}
-                  className="w-full px-3 py-2.5 bg-white/10 border border-white/20 rounded-xl text-white hover:bg-white/20 hover:border-white/30 font-black transition-all flex items-center justify-center gap-1.5 text-[10px] uppercase tracking-[0.15em]"
-                  style={{ fontWeight: 900 }}
-                >
-                  <Plus size={11} strokeWidth={2.5} />
-                  Add
-                </button>
-              </div>
-            </div>
-
-            {/* Pricing Tiers List */}
-            {pricingTiers.length > 0 && (
-              <div className="space-y-2">
-                <h3 className="text-white/40 text-[10px] uppercase tracking-[0.15em] font-black" style={{ fontWeight: 900 }}>Current ({pricingTiers.length})</h3>
-                <div className="space-y-2">
-                  {pricingTiers.map((tier, index) => (
-                    <div key={index} className="bg-[#0a0a0a] border border-white/10 rounded-xl p-3 flex items-center gap-3">
-                      <div className="flex-1 grid grid-cols-3 gap-2">
-                        <input
-                          type="text"
-                          value={tier.weight || ''}
-                          onChange={(e) => updatePricingTier(index, 'weight', e.target.value)}
-                          placeholder="Weight"
-                          className="w-full bg-black border border-white/10 rounded-xl text-white placeholder-white/20 px-2.5 py-2 text-xs focus:outline-none focus:border-white/20"
-                        />
-                        <input
-                          type="number"
-                          value={tier.qty}
-                          onChange={(e) => updatePricingTier(index, 'qty', e.target.value)}
-                          placeholder="Qty"
-                          className="w-full bg-black border border-white/10 rounded-xl text-white placeholder-white/20 px-2.5 py-2 text-xs focus:outline-none focus:border-white/20"
-                        />
-                        <div className="relative">
-                          <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-white/40 text-[10px] font-black" style={{ fontWeight: 900 }}>$</span>
-                          <input
-                            type="number"
-                            step="0.01"
-                            value={tier.price}
-                            onChange={(e) => updatePricingTier(index, 'price', e.target.value)}
-                            placeholder="Price"
-                            className="w-full bg-black border border-white/10 rounded-xl text-white placeholder-white/20 pl-6 pr-2.5 py-2 text-xs focus:outline-none focus:border-white/20"
-                          />
-                        </div>
-                      </div>
-                      <div className="text-white text-[10px] font-black uppercase tracking-[0.15em] min-w-[80px]" style={{ fontWeight: 900 }}>
-                        {tier.weight || `${tier.qty}x`} ${parseFloat(tier.price.toString()).toFixed(2)}
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => removePricingTier(index)}
-                        className="text-red-400 hover:text-red-300 p-1.5 rounded-xl hover:bg-red-500/10 transition-all"
-                      >
-                        <X size={14} />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {pricingTiers.length === 0 && (
-              <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-4 text-center">
-                <p className="text-blue-300 text-[10px] uppercase tracking-[0.15em]">
-                  No tiers added
-                </p>
-              </div>
-            )}
-          </div>
-        )}
+          {/* Pricing */}
+          <PricingPanel
+            productType={productType}
+            pricingMode={pricingMode}
+            formData={formData}
+            pricingTiers={pricingTiers}
+            newTierWeight={newTierWeight}
+            newTierQty={newTierQty}
+            newTierPrice={newTierPrice}
+            onPricingModeChange={setPricingMode}
+            onFormDataChange={setFormData}
+            onNewTierChange={(field, value) => {
+              if (field === 'weight') setNewTierWeight(value);
+              else if (field === 'qty') setNewTierQty(value);
+              else if (field === 'price') setNewTierPrice(value);
+            }}
+            onAddTier={addPricingTier}
+            onUpdateTier={updatePricingTier}
+            onRemoveTier={removePricingTier}
+            onApplyTemplate={applyPricingTemplate}
+          />
 
         {/* Attributes & Variants - Only for Variable Products */}
         {productType === 'variable' && (
@@ -3069,183 +2532,59 @@ export default function NewProduct() {
         )}
 
         {/* Product Images */}
-        <div className="bg-gradient-to-br from-white/[0.08] to-white/[0.02] backdrop-blur-xl border border-white/10 rounded-3xl p-6 lg:p-8">
-          <h2 className="text-xl font-black text-white mb-6 tracking-tight flex items-center gap-3" style={{ fontWeight: 900 }}>
-            <div className="w-8 h-8 bg-white/10 rounded-2xl flex items-center justify-center">
-              <Upload size={16} className="text-white/80" />
-            </div>
-            Product Images
-          </h2>
-          
-          <div className="space-y-4">
-            {/* Image Grid */}
-            {imagePreviews.length > 0 && (
-              <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-                {imagePreviews.map((preview, index) => (
-                  <div key={index} className="relative aspect-square bg-black/30 border border-white/10 rounded-3xl overflow-hidden group">
-                    <img src={preview} alt={`Product ${index + 1}`} className="w-full h-full object-cover" />
-                    {uploadedImageUrls[index] ? (
-                      <div className="absolute top-3 left-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white px-3 py-1.5 rounded-full text-xs font-medium flex items-center gap-1.5 shadow-lg">
-                        <CheckCircle size={14} />
-                        Uploaded
-                      </div>
-                    ) : uploadingImages ? (
-                      <div className="absolute top-3 left-3 bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-3 py-1.5 rounded-full text-xs font-medium flex items-center gap-1.5 shadow-lg">
-                        <Loader size={14} className="animate-spin" />
-                        Uploading...
-                      </div>
-                    ) : null}
-                    <button
-                      type="button"
-                      onClick={() => removeImage(index)}
-                      className="absolute top-3 right-3 bg-red-500 hover:bg-red-600 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-all shadow-lg"
-                    >
-                      <X size={16} />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Upload Button */}
-            <label className="block">
-              <div className="border-2 border-dashed border-white/20 rounded-3xl p-12 text-center hover:border-white/40 hover:bg-white/[0.02] transition-all cursor-pointer bg-black/30 group">
-                <div className="w-16 h-16 bg-gradient-to-br from-white/10 to-white/5 rounded-3xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-                  <Upload size={32} className="text-white/60 group-hover:text-white transition-colors" />
-                </div>
-                <div className="text-white/90 font-medium mb-2">Click to upload images</div>
-                <div className="text-white/40 text-sm">PNG, JPG up to 10MB (min 3 images recommended)</div>
-              </div>
-              <input
-                type="file"
-                accept="image/*"
-                multiple
-                onChange={handleImageUpload}
-                className="hidden"
-              />
-            </label>
-          </div>
-        </div>
+        <ImageUploadPanel
+          imagePreviews={imagePreviews}
+          uploadedImageUrls={uploadedImageUrls}
+          uploadingImages={uploadingImages}
+          onImageUpload={handleImageUpload}
+          onRemoveImage={removeImage}
+        />
 
         {/* Certificate of Analysis */}
-        <div className="bg-gradient-to-br from-white/[0.08] to-white/[0.02] backdrop-blur-xl border border-white/10 rounded-3xl p-6 lg:p-8">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-black text-white tracking-tight flex items-center gap-3" style={{ fontWeight: 900 }}>
-              <div className="w-8 h-8 bg-white/10 rounded-2xl flex items-center justify-center">
-                <FileText size={16} className="text-white/80" />
-              </div>
-              Certificate of Analysis (COA)
-            </h2>
-            <span className="text-red-400 text-xs uppercase tracking-wider font-bold bg-red-500/10 px-3 py-1 rounded-full">Required</span>
-          </div>
-
-          {coaFile ? (
-            <div className="bg-black/30 border border-white/10 rounded-2xl p-5 flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-white/10 to-white/5 rounded-2xl flex items-center justify-center">
-                  <FileText size={24} className="text-white/70" />
-                </div>
-                <div>
-                  <div className="text-white text-sm font-medium flex items-center gap-2 mb-1">
-                    {coaFile.name}
-                    {uploadedCoaUrl && (
-                      <span className="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1">
-                        <CheckCircle size={12} />
-                        Uploaded
-                      </span>
-                    )}
-                    {uploadingCOA && (
-                      <span className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1">
-                        <Loader size={12} className="animate-spin" />
-                        Uploading...
-                      </span>
-                    )}
-                  </div>
-                  <div className="text-white/50 text-xs">{(coaFile.size / 1024).toFixed(1)} KB</div>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => {
-                  setCoAFile(null);
-                  setUploadedCoaUrl(null);
-                }}
-                className="text-red-400 hover:text-red-300 p-2 rounded-xl hover:bg-red-500/10 transition-all"
-              >
-                <X size={20} />
-              </button>
-            </div>
-          ) : (
-            <label className="block">
-              <div className="border-2 border-dashed border-white/20 rounded-3xl p-12 text-center hover:border-white/40 hover:bg-white/[0.02] transition-all cursor-pointer bg-black/30 group">
-                <div className="w-16 h-16 bg-gradient-to-br from-white/10 to-white/5 rounded-3xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-                  <FileText size={32} className="text-white/60 group-hover:text-white transition-colors" />
-                </div>
-                <div className="text-white/90 font-medium mb-2">Upload Certificate of Analysis</div>
-                <div className="text-white/40 text-sm">PDF format, max 5MB - Required for approval</div>
-              </div>
-              <input
-                type="file"
-                accept=".pdf"
-                onChange={handleCOAUpload}
-                className="hidden"
-              />
-            </label>
-          )}
-
-          <div className="mt-6 bg-gradient-to-r from-blue-500/10 to-cyan-500/10 border border-blue-500/20 rounded-2xl p-4">
-            <div className="flex gap-3">
-              <FileText size={18} className="text-blue-400 flex-shrink-0 mt-0.5" />
-              <div className="text-blue-300/90 text-sm leading-relaxed">
-                All products must include a Certificate of Analysis from an accredited laboratory. COAs must be less than 90 days old.
-              </div>
-            </div>
-          </div>
-        </div>
+        <COAUploadPanel
+          coaFile={coaFile}
+          uploadedCoaUrl={uploadedCoaUrl}
+          uploadingCOA={uploadingCOA}
+          onCOAUpload={handleCOAUpload}
+          onRemoveCOA={() => {
+            setCoAFile(null);
+            setUploadedCoaUrl(null);
+          }}
+        />
 
         {/* Category-Specific Fields */}
-        {categoryId && (
+        {/* Dynamic Fields */}
+        {categoryId && dynamicFields.length > 0 && (
+          <DynamicFieldsPanel
+            dynamicFields={dynamicFields}
+            customFieldValues={customFieldValues}
+            onFieldChange={(fieldName, value) => {
+              setCustomFieldValues(prev => ({
+                ...prev,
+                [fieldName]: value
+              }));
+            }}
+          />
+        )}
+
+        {/* Initial Quantity - Always show for Simple Products */}
+        {categoryId && productType === 'simple' && (
           <div className="bg-[#141414] border border-white/5 rounded-2xl p-4">
             <h2 className="text-[10px] uppercase tracking-[0.15em] text-white/40 mb-4 font-black" style={{ fontWeight: 900 }}>
-              Product Details
+              Inventory
             </h2>
-
-            {dynamicFields.length === 0 && !loadingFields && (
-              <div className="text-center py-6">
-                <p className="text-white/40 text-[10px] uppercase tracking-[0.15em]">
-                  No fields configured
-                </p>
-              </div>
-            )}
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              {dynamicFields
-                .filter(field => {
-                  // More lenient filter - just need name and type
-                  const isValid = field && (field.name || field.slug) && field.type;
-                  if (!isValid) {
-                    console.warn('Filtered out invalid field:', field);
-                  }
-                  return isValid;
-                })
-                .map((field, index) => renderDynamicField(field, index))}
-
-              {/* Initial Quantity - Always show for Simple Products */}
-              {productType === 'simple' && (
-                <div>
-                  <label className="block text-white/40 text-[10px] uppercase tracking-[0.15em] mb-2 font-black" style={{ fontWeight: 900 }}>
-                    Initial Quantity (grams)
-                  </label>
-                  <input
-                    type="number"
-                    step="0.1"
-                    value={formData.initial_quantity}
-                    onChange={(e) => setFormData({...formData, initial_quantity: e.target.value})}
-                    placeholder="100"
-                    className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl text-white placeholder-white/20 px-3 py-2.5 focus:outline-none focus:border-white/20 transition-all text-xs"
-                  />
-                </div>
-              )}
+            <div>
+              <label className="block text-white/40 text-[10px] uppercase tracking-[0.15em] mb-2 font-black" style={{ fontWeight: 900 }}>
+                Initial Quantity (grams)
+              </label>
+              <input
+                type="number"
+                step="0.1"
+                value={formData.initial_quantity}
+                onChange={(e) => setFormData({...formData, initial_quantity: e.target.value})}
+                placeholder="100"
+                className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl text-white placeholder-white/20 px-3 py-2.5 focus:outline-none focus:border-white/20 transition-all text-xs"
+              />
             </div>
           </div>
         )}
