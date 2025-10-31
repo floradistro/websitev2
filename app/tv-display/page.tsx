@@ -269,18 +269,22 @@ function TVDisplayContent() {
    */
   const loadMenuAndProducts = useCallback(async () => {
     try {
-      // Load vendor info first
+      // Load vendor info first via API (bypasses RLS)
       if (vendorId && !vendor) {
         console.log('📦 Loading vendor info:', vendorId);
-        const { data: vendorData } = await supabase
-          .from('vendors')
-          .select('id, business_name, logo_url')
-          .eq('id', vendorId)
-          .single();
+        try {
+          const vendorResponse = await fetch(`/api/tv-display/vendor?vendor_id=${vendorId}`);
+          const vendorData = await vendorResponse.json();
 
-        if (vendorData) {
-          setVendor(vendorData);
-          console.log('✅ Vendor loaded:', vendorData.business_name);
+          if (vendorData.success && vendorData.vendor) {
+            setVendor(vendorData.vendor);
+            console.log('✅ Vendor loaded:', vendorData.vendor.business_name);
+          } else {
+            console.error('❌ Error loading vendor:', vendorData.error);
+          }
+        } catch (err) {
+          console.error('❌ Failed to fetch vendor:', err);
+          // Continue anyway - vendor info is not critical for display
         }
       }
 
@@ -357,38 +361,18 @@ function TVDisplayContent() {
       setPromotions(activePromotions);
       console.log('🎉 Loaded promotions:', activePromotions.length);
 
-      // Load products with pricing assignments and categories
+      // Load products via API (bypasses RLS)
       console.log('🔍 Fetching products for vendor:', vendorId);
-      const { data: productData, error } = await supabase
-        .from('products')
-        .select(`
-          *,
-          pricing_assignments:product_pricing_assignments(
-            blueprint_id,
-            price_overrides,
-            is_active,
-            blueprint:pricing_tier_blueprints(
-              id,
-              name,
-              slug,
-              price_breaks,
-              display_unit
-            )
-          ),
-          product_categories(
-            category:categories(name)
-          )
-        `)
-        .eq('vendor_id', vendorId)
-        .eq('status', 'published')
-        .order('name');
+      const productsResponse = await fetch(`/api/tv-display/products?vendor_id=${vendorId}`);
+      const productsData = await productsResponse.json();
 
-      if (error) {
-        console.error('❌ Error fetching products:', error);
-        throw error;
+      if (!productsData.success) {
+        console.error('❌ Error fetching products:', productsData.error);
+        throw new Error(productsData.error || 'Failed to fetch products');
       }
 
-      console.log(`✅ Fetched ${productData?.length || 0} published products from database`);
+      const productData = productsData.products || [];
+      console.log(`✅ Fetched ${productData.length} published products from API`);
 
       // Use memoized pricing config map
       console.log('💵 Using cached pricing configs:', configMap.size, 'entries');

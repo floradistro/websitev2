@@ -21,31 +21,7 @@ export async function POST(
     // Use service role client to bypass RLS
     const supabase = createServiceClient(SUPABASE_URL, API_KEY)
 
-    // Get app details
-    const { data: app, error: appError } = await supabase
-      .from('vendor_apps')
-      .select('*')
-      .eq('id', appId)
-      .single()
-
-    if (appError || !app) {
-      console.error('Error fetching app:', appError)
-      return NextResponse.json({ success: false, error: 'App not found' }, { status: 404 })
-    }
-
-    // Check if preview app already exists
-    if (app.preview_machine_id && app.preview_url) {
-      console.log(`✓ Preview app already exists: ${app.preview_machine_id}`)
-      return NextResponse.json({
-        success: true,
-        previewUrl: app.preview_url,
-        appName: app.preview_machine_id,
-        status: app.preview_status,
-        message: 'Preview app already provisioned'
-      })
-    }
-
-    console.log(`🚀 Provisioning preview environment for app: ${app.name}`)
+    console.log(`🚀 Provisioning preview environment for app: ${appId}`)
 
     // Create unique Fly.io App name
     const flyAppName = `preview-${appId.substring(0, 12).replace(/-/g, '')}`
