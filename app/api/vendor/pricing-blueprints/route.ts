@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
 
     const supabase = getServiceSupabase();
 
-    // TRUE MULTI-TENANT: Return global blueprints (vendor_id IS NULL) + vendor-specific blueprints
+    // Get all blueprints with hierarchy info
     const { data: blueprints, error } = await supabase
       .from('pricing_tier_blueprints')
       .select('*')
@@ -29,11 +29,38 @@ export async function GET(request: NextRequest) {
 
     if (error) throw error;
 
+    // Build hierarchy structure
+    const rootTemplates = (blueprints || []).filter(b => !b.vendor_id && !b.parent_template_id && b.is_template_root);
+    const systemVariations = (blueprints || []).filter(b => !b.vendor_id && b.parent_template_id);
+    const vendorBlueprints = (blueprints || []).filter(b => b.vendor_id === vendorId);
+
+    // Group system variations by parent
+    const variationsByParent = systemVariations.reduce((acc: any, variation) => {
+      const parentId = variation.parent_template_id;
+      if (!acc[parentId]) acc[parentId] = [];
+      acc[parentId].push(variation);
+      return acc;
+    }, {});
+
+    // Build structured response
+    const structuredTemplates = rootTemplates.map(root => ({
+      ...root,
+      variations: variationsByParent[root.id] || []
+    }));
+
     return NextResponse.json({
       success: true,
       blueprints: blueprints || [],
-      global_count: blueprints?.filter(b => !b.vendor_id).length || 0,
-      custom_count: blueprints?.filter(b => b.vendor_id === vendorId).length || 0
+      structured: {
+        rootTemplates: structuredTemplates,
+        vendorBlueprints: vendorBlueprints
+      },
+      counts: {
+        total: blueprints?.length || 0,
+        rootTemplates: rootTemplates.length,
+        systemVariations: systemVariations.length,
+        vendorCustom: vendorBlueprints.length
+      }
     });
   } catch (error: any) {
     console.error('Get pricing blueprints error:', error);

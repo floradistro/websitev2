@@ -8,10 +8,10 @@ import { getServiceSupabase } from '@/lib/supabase/client';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { templateId: string } }
+  { params }: { params: Promise<{ templateId: string }> }
 ) {
   try {
-    const templateId = params.templateId;
+    const { templateId } = await params;
     const supabase = getServiceSupabase();
 
     const { data: fieldGroups, error } = await supabase

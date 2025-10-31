@@ -50,6 +50,17 @@ export async function POST(request: NextRequest) {
     // Create slug from name
     const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-')
 
+    // Get vendor details for repo naming
+    const { data: vendor } = await supabase
+      .from('vendors')
+      .select('slug, store_name')
+      .eq('id', vendorId)
+      .single()
+
+    if (!vendor) {
+      return NextResponse.json({ success: false, error: 'Vendor not found' }, { status: 404 })
+    }
+
     // Create app record
     const { data: app, error } = await supabase
       .from('vendor_apps')
@@ -59,7 +70,7 @@ export async function POST(request: NextRequest) {
         slug,
         app_type,
         description: description || null,
-        status: 'draft'
+        status: 'building'
       })
       .select()
       .single()
@@ -69,11 +80,90 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: error.message }, { status: 500 })
     }
 
-    // TODO: Create GitHub repo for this app
-    // TODO: Initialize with template based on app_type
-    // For now, we'll just return the app record
+    // Create GitHub repo and deploy to Vercel
+    try {
+      const { createRepositoryFromTemplate } = await import('@/lib/deployment/github')
+      const { createVercelProject } = await import('@/lib/deployment/vercel')
 
-    return NextResponse.json({ success: true, app })
+      // Map app types to template repos
+      const templateMap: Record<string, string> = {
+        'storefront': 'template-storefront',
+        'admin-panel': 'template-admin-panel',
+        'customer-portal': 'template-customer-portal',
+        'mobile': 'template-mobile',
+        'dashboard': 'template-dashboard',
+        'custom': 'template-nextjs-app'
+      }
+
+      const templateRepo = templateMap[app_type] || 'template-nextjs-app'
+      const repoName = `${vendor.slug}-${slug}`
+
+      // Create GitHub repository
+      const repo = await createRepositoryFromTemplate({
+        name: repoName,
+        description: `${name} - ${app_type} for ${vendor.store_name}`,
+        templateRepo,
+        isPrivate: true
+      })
+
+      // Create Vercel project and deploy
+      const vercelProject = await createVercelProject({
+        name: repoName,
+        gitRepo: repo.full_name,
+        environmentVariables: {
+          'VENDOR_ID': vendorId,
+          'SUPABASE_URL': process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+          'SUPABASE_ANON_KEY': process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
+          'APP_TYPE': app_type
+        }
+      })
+
+      // Update app with deployment info
+      const { data: updatedApp } = await supabase
+        .from('vendor_apps')
+        .update({
+          github_repo: repo.full_name,
+          deployment_url: vercelProject.deploymentUrl,
+          status: 'deployed'
+        })
+        .eq('id', app.id)
+        .select()
+        .single()
+
+      console.log(`App ${name} deployed to ${vercelProject.deploymentUrl}`)
+
+      return NextResponse.json({
+        success: true,
+        app: updatedApp || app,
+        deploymentUrl: vercelProject.deploymentUrl
+      })
+    } catch (deployError: any) {
+      console.error('Deployment error:', deployError)
+
+      // If deployment fails, still return app but with error message
+      // Check if it's a missing token issue
+      if (deployError.message?.includes('TOKEN') || deployError.message?.includes('not set')) {
+        return NextResponse.json({
+          success: true,
+          app,
+          warning: 'App created but deployment requires GitHub and Vercel tokens to be configured.',
+          deploymentError: deployError.message
+        })
+      }
+
+      // Update status to draft if deployment failed
+      await supabase
+        .from('vendor_apps')
+        .update({ status: 'draft' })
+        .eq('id', app.id)
+
+      return NextResponse.json({
+        success: true,
+        app,
+        warning: 'App created but deployment failed. You can still edit the app.',
+        deploymentError: deployError.message
+      })
+    }
   } catch (error: any) {
     console.error('Error in POST /api/vendor/apps:', error)
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })

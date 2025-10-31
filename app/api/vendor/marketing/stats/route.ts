@@ -108,9 +108,9 @@ async function getBuiltInStats(vendorId: string): Promise<any> {
     .eq('vendor_id', vendorId)
     .in('status', ['scheduled', 'sending']);
 
-  // Get customer count
+  // Get customer count for THIS vendor only
   const { count: customerCount } = await supabase
-    .from('customers')
+    .from('vendor_customers')
     .select('*', { count: 'exact', head: true })
     .eq('vendor_id', vendorId);
 

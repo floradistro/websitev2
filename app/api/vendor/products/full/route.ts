@@ -22,11 +22,11 @@ export async function GET(request: NextRequest) {
     
     console.log(`[Products API] Fetching for vendor: ${vendorId}`);
     
-    // Fetch products - essential fields only
+    // Fetch products - essential fields including images
     const productsStart = Date.now();
     const { data: products, error: productsError } = await supabase
       .from('products')
-      .select('id, name, sku, price, cost_price, description, status')
+      .select('id, name, sku, price, cost_price, description, status, featured_image, image_gallery')
       .eq('vendor_id', vendorId)
       .order('name');
 
@@ -86,20 +86,37 @@ export async function GET(request: NextRequest) {
     });
 
     // Format products (no custom fields for speed - catalog doesn't need them in list view)
-    const formattedProducts = (products || []).map(product => ({
-      id: product.id,
-      name: product.name,
-      sku: product.sku || '',
-      category: categoryMap.get(product.id) || 'Uncategorized',
-      price: parseFloat(product.price) || 0,
-      cost_price: product.cost_price ? parseFloat(product.cost_price) : undefined,
-      description: product.description || '',
-      status: product.status || 'pending',
-      total_stock: inventoryMap.get(product.id) || 0, // LIVE inventory from all locations
-      custom_fields: [], // Don't load in list view - load in editor
-      pricing_tiers: [], // Don't load in list view - load in full editor
-      images: []
-    }));
+    const formattedProducts = (products || []).map((product: any) => {
+      // Build images array: featured image first, then gallery images
+      const images: string[] = [];
+
+      // Add featured image
+      if (product.featured_image) {
+        images.push(product.featured_image);
+      }
+
+      // Add gallery images if they exist
+      if (product.image_gallery && Array.isArray(product.image_gallery)) {
+        // Filter out featured image to avoid duplicates
+        const additionalImages = product.image_gallery.filter((img: string) => img && img !== product.featured_image);
+        images.push(...additionalImages);
+      }
+
+      return {
+        id: product.id,
+        name: product.name,
+        sku: product.sku || '',
+        category: categoryMap.get(product.id) || 'Uncategorized',
+        price: parseFloat(product.price) || 0,
+        cost_price: product.cost_price ? parseFloat(product.cost_price) : undefined,
+        description: product.description || '',
+        status: product.status || 'pending',
+        total_stock: inventoryMap.get(product.id) || 0, // LIVE inventory from all locations
+        custom_fields: [], // Don't load in list view - load in editor
+        pricing_tiers: [], // Don't load in list view - load in full editor
+        images: images
+      };
+    });
 
     const elapsed = Date.now() - startTime;
     console.log(`✅ Products full API loaded in ${elapsed}ms - ${formattedProducts.length} products, ${inventoryRecords.length} inventory records`);

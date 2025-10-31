@@ -4,15 +4,16 @@ import { createClient } from '@/lib/supabase/server'
 // GET /api/vendor/apps/[appId]
 export async function GET(
   request: NextRequest,
-  { params }: { params: { appId: string } }
+  { params }: { params: Promise<{ appId: string }> }
 ) {
   try {
+    const { appId } = await params
     const supabase = await createClient()
 
     const { data: app, error } = await supabase
       .from('vendor_apps')
       .select('*')
-      .eq('id', params.appId)
+      .eq('id', appId)
       .single()
 
     if (error) {
@@ -30,16 +31,17 @@ export async function GET(
 // DELETE /api/vendor/apps/[appId]
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { appId: string } }
+  { params }: { params: Promise<{ appId: string }> }
 ) {
   try {
+    const { appId } = await params
     const supabase = await createClient()
 
     // Soft delete - just mark as inactive
     const { error } = await supabase
       .from('vendor_apps')
       .update({ is_active: false })
-      .eq('id', params.appId)
+      .eq('id', appId)
 
     if (error) {
       console.error('Error deleting app:', error)

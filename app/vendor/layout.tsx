@@ -184,12 +184,12 @@ function VendorLayoutContent({
         }}
       />
 
-      {/* Mobile Top Bar */}
-      <nav 
-        className={`lg:hidden sticky z-[110] border-b border-white/5 transition-all duration-500 bg-black/95 backdrop-blur-xl ${
+      {/* Mobile/Tablet Top Bar - Shows below xl breakpoint (< 1280px) */}
+      <nav
+        className={`xl:hidden sticky z-[110] border-b border-white/5 transition-all duration-500 bg-black/95 backdrop-blur-xl ${
           isVisible ? 'translate-y-0' : '-translate-y-full'
         }`}
-        style={{ 
+        style={{
           top: 'env(safe-area-inset-top, 0px)'
         }}
       >
@@ -211,9 +211,9 @@ function VendorLayoutContent({
         </div>
       </nav>
 
-      {/* Mobile Menu Overlay */}
+      {/* Mobile/Tablet Menu Overlay - Shows below xl breakpoint */}
       {mobileMenuOpen && (
-        <div className="lg:hidden fixed inset-0 z-[150] bg-black/80 backdrop-blur-md" onClick={() => setMobileMenuOpen(false)}>
+        <div className="xl:hidden fixed inset-0 z-[150] bg-black/80 backdrop-blur-md" onClick={() => setMobileMenuOpen(false)}>
           <div 
             className="absolute left-0 top-0 bottom-0 w-[280px] border-r border-white/5 flex flex-col shadow-2xl bg-black/98 backdrop-blur-xl"
             onClick={(e) => e.stopPropagation()}
@@ -302,10 +302,10 @@ function VendorLayoutContent({
         </div>
       )}
 
-      {/* Desktop Header - Fixed */}
-      <nav 
-        className="hidden lg:block border-b border-white/5 fixed top-0 left-0 right-0 z-[110] luxury-glow bg-black/95 backdrop-blur-xl"
-        style={{ 
+      {/* Desktop Header - DESKTOP ONLY (xl breakpoint = 1280px+) */}
+      <nav
+        className="hidden xl:block border-b border-white/5 fixed top-0 left-0 right-0 z-[110] luxury-glow bg-black/95 backdrop-blur-xl"
+        style={{
           paddingTop: 'env(safe-area-inset-top, 0px)'
         }}
       >
@@ -346,14 +346,14 @@ function VendorLayoutContent({
         </div>
       </nav>
 
-      <div className="fixed inset-0 bg-black" style={{ 
-        top: 'calc(80px + env(safe-area-inset-top, 0px))',
+      <div className="fixed inset-0 bg-black xl:top-20" style={{
+        top: 'calc(56px + env(safe-area-inset-top, 0px))',
         paddingBottom: 'env(safe-area-inset-bottom)'
       }}>
-        {/* Desktop Sidebar - Fixed */}
-        <aside 
-          className="hidden lg:block w-72 border-r border-white/5 fixed left-0 bottom-0 overflow-y-auto bg-black/98 backdrop-blur-xl"
-          style={{ 
+        {/* Desktop Sidebar - DESKTOP ONLY (hidden on mobile/tablet) */}
+        <aside
+          className="hidden xl:block w-72 border-r border-white/5 fixed left-0 bottom-0 overflow-y-auto bg-black/98 backdrop-blur-xl"
+          style={{
             top: 'calc(80px + env(safe-area-inset-top, 0px))',
             bottom: 'env(safe-area-inset-bottom)'
           }}
@@ -382,9 +382,9 @@ function VendorLayoutContent({
           </nav>
         </aside>
 
-        {/* Main Content - Scrollable area only */}
-        <main className="absolute inset-0 lg:left-72 overflow-y-auto overflow-x-hidden">
-          <div className="lg:py-10 lg:px-10 xl:px-16 px-0 pt-16 lg:pt-10 pb-10">
+        {/* Main Content - FULL WIDTH on mobile/tablet, with sidebar on desktop */}
+        <main className="absolute inset-0 xl:left-72 overflow-y-auto overflow-x-hidden">
+          <div className="px-4 md:px-6 lg:px-8 xl:py-10 xl:px-10 2xl:px-16 pt-4 md:pt-6 pb-10">
             {children}
           </div>
         </main>

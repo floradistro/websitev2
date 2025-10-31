@@ -72,22 +72,45 @@ type ViewMode = 'grid' | 'list';
 type AIOperation = 'remove-bg' | 'enhance' | 'upscale' | 'reimagine' | null;
 type MediaCategory = 'product_photos' | 'marketing' | 'menus' | 'brand' | null;
 
-// Helper function to generate optimized Supabase image URLs
+// Supabase image transformation helper - uses render API for proper thumbnails
 const getOptimizedImageUrl = (url: string, width?: number, height?: number) => {
   if (!url) return url;
 
-  // Only optimize Supabase storage URLs
-  if (!url.includes('supabase.co/storage')) {
+  // If it's already a full URL, check if it's from Supabase
+  if (url.startsWith('http')) {
+    // Check if it's a Supabase storage URL
+    if (url.includes('supabase.co/storage/v1/object/public/')) {
+      // Extract the bucket and path from the URL
+      const match = url.match(/\/storage\/v1\/object\/public\/([^\/]+)\/(.+?)(\?|$)/);
+      if (match) {
+        const bucket = match[1];
+        const path = match[2];
+        const supabaseUrl = url.split('/storage/v1/object')[0];
+        // Use the render endpoint with transformation
+        const w = width || 400;
+        const h = height || 400;
+        return `${supabaseUrl}/storage/v1/render/image/public/${bucket}/${path}?width=${w}&height=${h}&resize=cover&quality=80`;
+      }
+    }
     return url;
   }
 
-  const separator = url.includes('?') ? '&' : '?';
-  const params = new URLSearchParams();
+  // If it's a relative path like "vendor-product-images/abc123.jpg"
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+  if (!supabaseUrl) return url;
 
-  if (width) params.append('width', width.toString());
-  if (height) params.append('height', height.toString());
+  // Parse bucket and path
+  const parts = url.split('/');
+  if (parts.length >= 2) {
+    const bucket = parts[0];
+    const path = parts.slice(1).join('/');
+    const w = width || 400;
+    const h = height || 400;
+    return `${supabaseUrl}/storage/v1/render/image/public/${bucket}/${path}?width=${w}&height=${h}&resize=cover&quality=80`;
+  }
 
-  return `${url}${separator}${params.toString()}`;
+  // Fallback to object URL
+  return `${supabaseUrl}/storage/v1/object/public/${url}`;
 };
 
 export default function VendorMediaLibrary() {
@@ -111,6 +134,7 @@ export default function VendorMediaLibrary() {
   const [selectedCategory, setSelectedCategory] = useState<MediaCategory>(null);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [smartCollections, setSmartCollections] = useState<SmartCollections | null>(null);
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
 
   // Load media files
   useEffect(() => {
@@ -436,225 +460,39 @@ export default function VendorMediaLibrary() {
   return (
     <>
       <div
-        className="min-h-screen bg-black p-4 lg:p-8"
+        className="min-h-screen bg-black -mx-4 md:-mx-6 lg:-mx-8 xl:-mx-10 2xl:-mx-16 -mt-4 md:-mt-6"
         onDragEnter={handleDragEnter}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
       >
-        <div className="max-w-[1800px] mx-auto">
-          {/* Header */}
-          <div className="mb-8 pb-6 border-b border-white/5">
+        <div className="max-w-[1920px] mx-auto">
+          {/* Header - Responsive padding */}
+          <div className="px-4 pt-4 pb-3 md:px-6 md:pt-6 md:pb-4 lg:px-8 lg:pt-8 lg:pb-6 xl:px-10 xl:pt-10 xl:pb-8 2xl:px-16 border-b border-white/5">
             <div className="flex items-center justify-between mb-1">
-              <h1 className="text-xs uppercase tracking-[0.15em] text-white font-black" style={{ fontWeight: 900 }}>
+              <h1 className="text-xs md:text-sm uppercase tracking-[0.15em] text-white font-black" style={{ fontWeight: 900 }}>
                 Media Library
               </h1>
               <div className="flex items-center gap-2 text-white/40 text-[10px] uppercase tracking-[0.15em]">
-                <ImagePlus className="w-3 h-3" />
-                {files.length} Files
+                <ImagePlus className="w-3 h-3 md:w-4 md:h-4" />
+                <span className="hidden sm:inline">{files.length} Files</span>
+                <span className="sm:hidden">{files.length}</span>
               </div>
             </div>
-            <p className="text-[10px] uppercase tracking-[0.15em] text-white/40">
+            <p className="text-[10px] uppercase tracking-[0.15em] text-white/40 hidden sm:block">
               Manage Images · AI-Powered Editing
             </p>
           </div>
 
-          {/* Main Layout with Sidebar */}
-          <div className="flex gap-6">
-            {/* Smart Filters Sidebar */}
-            <aside className="w-64 flex-shrink-0 space-y-6">
-              {/* Categories */}
-              <div className="bg-[#0a0a0a] border border-white/10 rounded-2xl p-4">
-                <div className="flex items-center gap-2 mb-4">
-                  <Filter className="w-4 h-4 text-white/60" />
-                  <h2 className="text-xs uppercase tracking-[0.15em] text-white/80 font-bold">
-                    Categories
-                  </h2>
-                </div>
-                <div className="space-y-1">
-                  <button
-                    onClick={() => setSelectedCategory(null)}
-                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-left transition-all ${
-                      selectedCategory === null
-                        ? 'bg-white/10 text-white border border-white/20'
-                        : 'text-white/60 hover:text-white hover:bg-white/5'
-                    }`}
-                  >
-                    <Layers className="w-4 h-4 flex-shrink-0" />
-                    <span className="text-xs font-medium">All Media</span>
-                    <span className="ml-auto text-[10px] text-white/40">{files.length}</span>
-                  </button>
-                  <button
-                    onClick={() => setSelectedCategory('product_photos')}
-                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-left transition-all ${
-                      selectedCategory === 'product_photos'
-                        ? 'bg-white/10 text-white border border-white/20'
-                        : 'text-white/60 hover:text-white hover:bg-white/5'
-                    }`}
-                  >
-                    <Package className="w-4 h-4 flex-shrink-0" />
-                    <span className="text-xs font-medium">Products</span>
-                    <span className="ml-auto text-[10px] text-white/40">
-                      {files.filter(f => f.category === 'product_photos').length}
-                    </span>
-                  </button>
-                  <button
-                    onClick={() => setSelectedCategory('marketing')}
-                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-left transition-all ${
-                      selectedCategory === 'marketing'
-                        ? 'bg-white/10 text-white border border-white/20'
-                        : 'text-white/60 hover:text-white hover:bg-white/5'
-                    }`}
-                  >
-                    <Megaphone className="w-4 h-4 flex-shrink-0" />
-                    <span className="text-xs font-medium">Marketing</span>
-                    <span className="ml-auto text-[10px] text-white/40">
-                      {files.filter(f => f.category === 'marketing').length}
-                    </span>
-                  </button>
-                  <button
-                    onClick={() => setSelectedCategory('menus')}
-                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-left transition-all ${
-                      selectedCategory === 'menus'
-                        ? 'bg-white/10 text-white border border-white/20'
-                        : 'text-white/60 hover:text-white hover:bg-white/5'
-                    }`}
-                  >
-                    <MenuIcon className="w-4 h-4 flex-shrink-0" />
-                    <span className="text-xs font-medium">Menus</span>
-                    <span className="ml-auto text-[10px] text-white/40">
-                      {files.filter(f => f.category === 'menus').length}
-                    </span>
-                  </button>
-                  <button
-                    onClick={() => setSelectedCategory('brand')}
-                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-left transition-all ${
-                      selectedCategory === 'brand'
-                        ? 'bg-white/10 text-white border border-white/20'
-                        : 'text-white/60 hover:text-white hover:bg-white/5'
-                    }`}
-                  >
-                    <Layers className="w-4 h-4 flex-shrink-0" />
-                    <span className="text-xs font-medium">Brand</span>
-                    <span className="ml-auto text-[10px] text-white/40">
-                      {files.filter(f => f.category === 'brand').length}
-                    </span>
-                  </button>
-                </div>
-              </div>
-
-              {/* Smart Collections */}
-              {smartCollections && (
-                <div className="bg-[#0a0a0a] border border-white/10 rounded-2xl p-4">
-                  <div className="flex items-center gap-2 mb-4">
-                    <Sparkles className="w-4 h-4 text-white/60" />
-                    <h2 className="text-xs uppercase tracking-[0.15em] text-white/80 font-bold">
-                      Smart Collections
-                    </h2>
-                  </div>
-                  <div className="space-y-2">
-                    {smartCollections.recent_count > 0 && (
-                      <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-white/5 border border-white/10">
-                        <div className="flex items-center gap-2">
-                          <Clock className="w-3 h-3 text-blue-400" />
-                          <span className="text-xs text-white/80">Recently Added</span>
-                        </div>
-                        <span className="text-[10px] text-white/40">{smartCollections.recent_count}</span>
-                      </div>
-                    )}
-                    {smartCollections.ai_generated_count > 0 && (
-                      <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-white/5 border border-white/10">
-                        <div className="flex items-center gap-2">
-                          <Sparkles className="w-3 h-3 text-purple-400" />
-                          <span className="text-xs text-white/80">AI Generated</span>
-                        </div>
-                        <span className="text-[10px] text-white/40">{smartCollections.ai_generated_count}</span>
-                      </div>
-                    )}
-                    {smartCollections.needs_editing_count > 0 && (
-                      <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-white/5 border border-white/10">
-                        <div className="flex items-center gap-2">
-                          <AlertTriangle className="w-3 h-3 text-yellow-400" />
-                          <span className="text-xs text-white/80">Needs Editing</span>
-                        </div>
-                        <span className="text-[10px] text-white/40">{smartCollections.needs_editing_count}</span>
-                      </div>
-                    )}
-                    {smartCollections.unused_count > 0 && (
-                      <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-white/5 border border-white/10">
-                        <div className="flex items-center gap-2">
-                          <Archive className="w-3 h-3 text-gray-400" />
-                          <span className="text-xs text-white/80">Unused</span>
-                        </div>
-                        <span className="text-[10px] text-white/40">{smartCollections.unused_count}</span>
-                      </div>
-                    )}
-                    {smartCollections.high_performing_count > 0 && (
-                      <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-white/5 border border-white/10">
-                        <div className="flex items-center gap-2">
-                          <TrendingUp className="w-3 h-3 text-green-400" />
-                          <span className="text-xs text-white/80">High Performing</span>
-                        </div>
-                        <span className="text-[10px] text-white/40">{smartCollections.high_performing_count}</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Available Tags */}
-              {availableTags.length > 0 && (
-                <div className="bg-[#0a0a0a] border border-white/10 rounded-2xl p-4">
-                  <div className="flex items-center gap-2 mb-4">
-                    <Tag className="w-4 h-4 text-white/60" />
-                    <h2 className="text-xs uppercase tracking-[0.15em] text-white/80 font-bold">
-                      Tags
-                    </h2>
-                  </div>
-                  <div className="flex flex-wrap gap-2 max-h-60 overflow-y-auto">
-                    {availableTags.slice(0, 20).map(tag => {
-                      const isSelected = selectedTags.includes(tag);
-                      return (
-                        <button
-                          key={tag}
-                          onClick={() => {
-                            if (isSelected) {
-                              setSelectedTags(selectedTags.filter(t => t !== tag));
-                            } else {
-                              setSelectedTags([...selectedTags, tag]);
-                            }
-                          }}
-                          className={`px-2 py-1 rounded-lg text-[10px] transition-all ${
-                            isSelected
-                              ? 'bg-white/20 text-white border border-white/30'
-                              : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white border border-white/10'
-                          }`}
-                        >
-                          {tag}
-                        </button>
-                      );
-                    })}
-                  </div>
-                  {selectedTags.length > 0 && (
-                    <button
-                      onClick={() => setSelectedTags([])}
-                      className="mt-3 w-full text-xs text-white/40 hover:text-white transition-colors"
-                    >
-                      Clear Tags
-                    </button>
-                  )}
-                </div>
-              )}
-            </aside>
-
-            {/* Main Content */}
-            <div className="flex-1 min-w-0">
+          {/* Main Content - FULL WIDTH, no sidebar */}
+          <div className="w-full">
+            <div className="px-4 md:px-6 lg:px-8 xl:px-10 2xl:px-16">
 
           {/* Error Display */}
           {error && (
-            <div className="mb-6 bg-red-500/10 border border-red-500/20 rounded-2xl p-4 flex items-center gap-3">
-              <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
-              <p className="text-red-500 text-sm">{error}</p>
+            <div className="mb-4 md:mb-6 bg-red-500/10 border border-red-500/20 rounded-2xl p-3 md:p-4 flex items-center gap-3">
+              <AlertCircle className="w-4 h-4 md:w-5 md:h-5 text-red-500 flex-shrink-0" />
+              <p className="text-red-500 text-xs md:text-sm">{error}</p>
               <button
                 onClick={() => setError(null)}
                 className="ml-auto text-red-500 hover:text-red-400"
@@ -664,99 +502,190 @@ export default function VendorMediaLibrary() {
             </div>
           )}
 
-          {/* Toolbar */}
-          <div className="mb-6 flex flex-col lg:flex-row gap-4">
-            {/* Search */}
-            <div className="flex-1 relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
+          {/* Toolbar - Mobile optimized */}
+          <div className="mb-4 md:mb-6 space-y-3 md:space-y-4">
+            {/* Top Row: Search + Filter/View Toggle */}
+            <div className="flex gap-2">
+              {/* Filter Button - Shows category selector (all screen sizes) */}
+              <button
+                onClick={() => setShowMobileFilters(!showMobileFilters)}
+                className={`flex-shrink-0 p-2.5 rounded-2xl border-2 transition-all touch-manipulation ${
+                  selectedCategory !== null || showMobileFilters
+                    ? 'bg-white/10 border-white/20 text-white'
+                    : 'bg-white/5 border-white/10 text-white/60 active:bg-white/10 active:border-white/20 md:hover:bg-white/10 md:hover:border-white/20'
+                }`}
+              >
+                <Filter className="w-4 h-4" />
+              </button>
+
+              {/* Search */}
+              <div className="flex-1 relative">
+                <Search className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 md:w-4 md:h-4 text-white/40" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search..."
+                  className="w-full bg-white/5 border border-white/10 text-white pl-9 md:pl-12 pr-3 md:pr-4 py-2.5 md:py-3 rounded-2xl text-xs md:text-sm focus:outline-none focus:border-white/20 placeholder-white/40 hover:bg-white/10 transition-all"
+                />
+              </div>
+
+              {/* View Mode Toggle - Tablet+ only */}
+              <div className="hidden md:flex gap-2">
+                <button
+                  onClick={() => setViewMode('grid')}
+                  className={`p-2.5 md:p-3 rounded-2xl border-2 transition-all ${
+                    viewMode === 'grid'
+                      ? 'bg-white/10 border-white/20 text-white'
+                      : 'bg-white/5 border-white/10 text-white/40 hover:bg-white/10 hover:border-white/20'
+                  }`}
+                >
+                  <Grid3x3 className="w-4 h-4 md:w-5 md:h-5" />
+                </button>
+                <button
+                  onClick={() => setViewMode('list')}
+                  className={`p-2.5 md:p-3 rounded-2xl border-2 transition-all ${
+                    viewMode === 'list'
+                      ? 'bg-white/10 border-white/20 text-white'
+                      : 'bg-white/5 border-white/10 text-white/40 hover:bg-white/10 hover:border-white/20'
+                  }`}
+                >
+                  <List className="w-4 h-4 md:w-5 md:h-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Category Filter - Collapsible horizontal scroll (all screen sizes) */}
+            {showMobileFilters && (
+              <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
+                <button
+                  onClick={() => {
+                    setSelectedCategory(null);
+                    setShowMobileFilters(false);
+                  }}
+                  className={`flex-shrink-0 px-3 py-2 rounded-xl text-[10px] uppercase tracking-[0.15em] transition-all border ${
+                    selectedCategory === null
+                      ? 'bg-white/10 text-white border-white/20'
+                      : 'bg-white/5 text-white/60 border-white/10 active:bg-white/10'
+                  }`}
+                >
+                  All
+                </button>
+                <button
+                  onClick={() => {
+                    setSelectedCategory('product_photos');
+                    setShowMobileFilters(false);
+                  }}
+                  className={`flex-shrink-0 px-3 py-2 rounded-xl text-[10px] uppercase tracking-[0.15em] transition-all border ${
+                    selectedCategory === 'product_photos'
+                      ? 'bg-white/10 text-white border-white/20'
+                      : 'bg-white/5 text-white/60 border-white/10 active:bg-white/10'
+                  }`}
+                >
+                  Products
+                </button>
+                <button
+                  onClick={() => {
+                    setSelectedCategory('marketing');
+                    setShowMobileFilters(false);
+                  }}
+                  className={`flex-shrink-0 px-3 py-2 rounded-xl text-[10px] uppercase tracking-[0.15em] transition-all border ${
+                    selectedCategory === 'marketing'
+                      ? 'bg-white/10 text-white border-white/20'
+                      : 'bg-white/5 text-white/60 border-white/10 active:bg-white/10'
+                  }`}
+                >
+                  Marketing
+                </button>
+                <button
+                  onClick={() => {
+                    setSelectedCategory('menus');
+                    setShowMobileFilters(false);
+                  }}
+                  className={`flex-shrink-0 px-3 py-2 rounded-xl text-[10px] uppercase tracking-[0.15em] transition-all border ${
+                    selectedCategory === 'menus'
+                      ? 'bg-white/10 text-white border-white/20'
+                      : 'bg-white/5 text-white/60 border-white/10 active:bg-white/10'
+                  }`}
+                >
+                  Menus
+                </button>
+                <button
+                  onClick={() => {
+                    setSelectedCategory('brand');
+                    setShowMobileFilters(false);
+                  }}
+                  className={`flex-shrink-0 px-3 py-2 rounded-xl text-[10px] uppercase tracking-[0.15em] transition-all border ${
+                    selectedCategory === 'brand'
+                      ? 'bg-white/10 text-white border-white/20'
+                      : 'bg-white/5 text-white/60 border-white/10 active:bg-white/10'
+                  }`}
+                >
+                  Brand
+                </button>
+              </div>
+            )}
+
+            {/* Bottom Row: Action Buttons */}
+            <div className="flex gap-2">
+              {/* Generate with AI Button */}
+              <button
+                onClick={() => setShowAIGenerator(true)}
+                className="flex-1 md:flex-initial bg-white text-black border-2 border-white rounded-2xl px-4 md:px-6 py-2.5 md:py-3 text-[10px] md:text-xs uppercase tracking-[0.15em] hover:bg-white/90 font-black transition-all flex items-center justify-center gap-2"
+                style={{ fontWeight: 900 }}
+              >
+                <Sparkles className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                <span className="hidden sm:inline">Generate with AI</span>
+                <span className="sm:hidden">AI Generate</span>
+              </button>
+
+              {/* Upload Button */}
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+                className="flex-1 md:flex-initial bg-white/10 text-white border-2 border-white/20 rounded-2xl px-4 md:px-6 py-2.5 md:py-3 text-[10px] md:text-xs uppercase tracking-[0.15em] hover:bg-white/20 hover:border-white/30 font-black transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                style={{ fontWeight: 900 }}
+              >
+                {uploading ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 md:w-4 md:h-4 animate-spin" />
+                    <span className="hidden sm:inline">Uploading...</span>
+                  </>
+                ) : (
+                  <>
+                    <Upload className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                    <span className="hidden sm:inline">Upload</span>
+                    <span className="sm:hidden">Upload</span>
+                  </>
+                )}
+              </button>
               <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search files..."
-                className="w-full bg-white/5 border border-white/10 text-white pl-12 pr-4 py-3 rounded-2xl text-sm focus:outline-none focus:border-white/20 placeholder-white/40 hover:bg-white/10 transition-all"
+                ref={fileInputRef}
+                type="file"
+                multiple
+                accept="image/*"
+                onChange={(e) => handleFileUpload(e.target.files)}
+                className="hidden"
               />
             </div>
-
-            {/* View Mode Toggle */}
-            <div className="flex gap-2">
-              <button
-                onClick={() => setViewMode('grid')}
-                className={`p-3 rounded-2xl border-2 transition-all ${
-                  viewMode === 'grid'
-                    ? 'bg-white/10 border-white/20 text-white'
-                    : 'bg-white/5 border-white/10 text-white/40 hover:bg-white/10 hover:border-white/20'
-                }`}
-              >
-                <Grid3x3 className="w-5 h-5" />
-              </button>
-              <button
-                onClick={() => setViewMode('list')}
-                className={`p-3 rounded-2xl border-2 transition-all ${
-                  viewMode === 'list'
-                    ? 'bg-white/10 border-white/20 text-white'
-                    : 'bg-white/5 border-white/10 text-white/40 hover:bg-white/10 hover:border-white/20'
-                }`}
-              >
-                <List className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Generate with AI Button */}
-            <button
-              onClick={() => setShowAIGenerator(true)}
-              className="bg-white text-black border-2 border-white rounded-2xl px-6 py-3 text-xs uppercase tracking-[0.15em] hover:bg-white/90 font-black transition-all flex items-center gap-2"
-              style={{ fontWeight: 900 }}
-            >
-              <Sparkles className="w-4 h-4" />
-              Generate with AI
-            </button>
-
-            {/* Upload Button */}
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              disabled={uploading}
-              className="bg-white/10 text-white border-2 border-white/20 rounded-2xl px-6 py-3 text-xs uppercase tracking-[0.15em] hover:bg-white/20 hover:border-white/30 font-black transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-              style={{ fontWeight: 900 }}
-            >
-              {uploading ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Uploading...
-                </>
-              ) : (
-                <>
-                  <Upload className="w-4 h-4" />
-                  Upload
-                </>
-              )}
-            </button>
-            <input
-              ref={fileInputRef}
-              type="file"
-              multiple
-              accept="image/*"
-              onChange={(e) => handleFileUpload(e.target.files)}
-              className="hidden"
-            />
           </div>
 
-          {/* Selection & AI Toolbar */}
+          {/* Selection & AI Toolbar - Mobile optimized */}
           {files.length > 0 && (
-            <div className="mb-6 bg-[#0a0a0a] border border-white/10 rounded-2xl p-4">
-              <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
+            <div className="mb-4 md:mb-6 bg-[#0a0a0a] border border-white/10 rounded-2xl p-3 md:p-4">
+              <div className="flex flex-col gap-3 md:gap-4">
                 {/* Selection Controls */}
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3 md:gap-4 justify-between">
                   <button
                     onClick={toggleSelectAll}
                     className="flex items-center gap-2 text-white/60 hover:text-white transition-colors"
                   >
                     {selectedFiles.size === filteredFiles.length ? (
-                      <CheckSquare className="w-5 h-5" />
+                      <CheckSquare className="w-4 h-4 md:w-5 md:h-5" />
                     ) : (
-                      <Square className="w-5 h-5" />
+                      <Square className="w-4 h-4 md:w-5 md:h-5" />
                     )}
-                    <span className="text-xs uppercase tracking-[0.15em]">
+                    <span className="text-[10px] md:text-xs uppercase tracking-[0.15em]">
                       {selectedFiles.size === 0
                         ? 'Select All'
                         : `${selectedFiles.size} Selected`}
@@ -768,32 +697,33 @@ export default function VendorMediaLibrary() {
                       onClick={handleDelete}
                       className="flex items-center gap-2 text-red-500 hover:text-red-400 transition-colors"
                     >
-                      <Trash2 className="w-4 h-4" />
-                      <span className="text-xs uppercase tracking-[0.15em]">Delete</span>
+                      <Trash2 className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                      <span className="text-[10px] md:text-xs uppercase tracking-[0.15em]">Delete</span>
                     </button>
                   )}
                 </div>
 
-                {/* AI Operations */}
+                {/* AI Operations - Horizontal scroll on mobile */}
                 {selectedFiles.size > 0 && (
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
                     <button
                       onClick={() => handleAIOperation('remove-bg')}
                       disabled={aiOperation !== null}
-                      className="bg-white/5 text-white border border-white/10 rounded-2xl px-4 py-2 text-xs uppercase tracking-[0.15em] hover:bg-white/10 hover:border-white/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 font-bold"
+                      className="bg-white/5 text-white border border-white/10 rounded-2xl px-3 md:px-4 py-2 text-[10px] md:text-xs uppercase tracking-[0.15em] hover:bg-white/10 hover:border-white/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 font-bold whitespace-nowrap flex-shrink-0"
                     >
                       {aiOperation === 'remove-bg' ? (
                         <Loader2 className="w-3 h-3 animate-spin" />
                       ) : (
                         <Sparkles className="w-3 h-3" />
                       )}
-                      Remove BG
+                      <span className="hidden sm:inline">Remove BG</span>
+                      <span className="sm:hidden">BG</span>
                     </button>
 
                     <button
                       onClick={() => handleAIOperation('enhance')}
                       disabled={aiOperation !== null}
-                      className="bg-white/5 text-white border border-white/10 rounded-2xl px-4 py-2 text-xs uppercase tracking-[0.15em] hover:bg-white/10 hover:border-white/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 font-bold"
+                      className="bg-white/5 text-white border border-white/10 rounded-2xl px-3 md:px-4 py-2 text-[10px] md:text-xs uppercase tracking-[0.15em] hover:bg-white/10 hover:border-white/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 font-bold whitespace-nowrap flex-shrink-0"
                     >
                       {aiOperation === 'enhance' ? (
                         <Loader2 className="w-3 h-3 animate-spin" />
@@ -806,20 +736,21 @@ export default function VendorMediaLibrary() {
                     <button
                       onClick={() => handleAIOperation('upscale')}
                       disabled={aiOperation !== null}
-                      className="bg-white/5 text-white border border-white/10 rounded-2xl px-4 py-2 text-xs uppercase tracking-[0.15em] hover:bg-white/10 hover:border-white/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 font-bold"
+                      className="bg-white/5 text-white border border-white/10 rounded-2xl px-3 md:px-4 py-2 text-[10px] md:text-xs uppercase tracking-[0.15em] hover:bg-white/10 hover:border-white/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 font-bold whitespace-nowrap flex-shrink-0"
                     >
                       {aiOperation === 'upscale' ? (
                         <Loader2 className="w-3 h-3 animate-spin" />
                       ) : (
                         <ZoomIn className="w-3 h-3" />
                       )}
-                      Upscale 4x
+                      <span className="hidden sm:inline">Upscale 4x</span>
+                      <span className="sm:hidden">Upscale</span>
                     </button>
 
                     <button
                       onClick={() => handleAIOperation('reimagine')}
                       disabled={aiOperation !== null}
-                      className="bg-white/5 text-white border border-white/10 rounded-2xl px-4 py-2 text-xs uppercase tracking-[0.15em] hover:bg-white/10 hover:border-white/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 font-bold"
+                      className="bg-white/5 text-white border border-white/10 rounded-2xl px-3 md:px-4 py-2 text-[10px] md:text-xs uppercase tracking-[0.15em] hover:bg-white/10 hover:border-white/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 font-bold whitespace-nowrap flex-shrink-0"
                     >
                       {aiOperation === 'reimagine' ? (
                         <Loader2 className="w-3 h-3 animate-spin" />
@@ -834,35 +765,35 @@ export default function VendorMediaLibrary() {
             </div>
           )}
 
-          {/* Files Display */}
+          {/* Files Display - Responsive grid */}
           {filteredFiles.length === 0 ? (
-            <div className="bg-white/5 border-2 border-dashed border-white/20 rounded-2xl p-12 text-center">
+            <div className="bg-white/5 border-2 border-dashed border-white/20 rounded-2xl p-8 md:p-12 text-center">
               <div className="max-w-md mx-auto">
                 {files.length === 0 ? (
                   <>
-                    <FolderOpen className="w-16 h-16 text-white/20 mx-auto mb-4" />
-                    <h2 className="text-xl text-white/60 mb-2 font-bold uppercase tracking-tight">
+                    <FolderOpen className="w-12 h-12 md:w-16 md:h-16 text-white/20 mx-auto mb-3 md:mb-4" />
+                    <h2 className="text-base md:text-xl text-white/60 mb-2 font-bold uppercase tracking-tight">
                       No Media Yet
                     </h2>
-                    <p className="text-white/40 mb-6 text-sm">
+                    <p className="text-white/40 mb-4 md:mb-6 text-xs md:text-sm">
                       Upload your first product images to get started with AI-powered editing
                     </p>
                     <button
                       onClick={() => fileInputRef.current?.click()}
-                      className="bg-white/10 text-white border-2 border-white/20 rounded-2xl px-6 py-3 text-xs uppercase tracking-[0.15em] hover:bg-white/20 hover:border-white/30 font-black transition-all inline-flex items-center gap-2"
+                      className="bg-white/10 text-white border-2 border-white/20 rounded-2xl px-4 md:px-6 py-2.5 md:py-3 text-[10px] md:text-xs uppercase tracking-[0.15em] hover:bg-white/20 hover:border-white/30 font-black transition-all inline-flex items-center gap-2"
                       style={{ fontWeight: 900 }}
                     >
-                      <Upload className="w-4 h-4" />
+                      <Upload className="w-3.5 h-3.5 md:w-4 md:h-4" />
                       Upload Images
                     </button>
                   </>
                 ) : (
                   <>
-                    <Search className="w-16 h-16 text-white/20 mx-auto mb-4" />
-                    <h2 className="text-xl text-white/60 mb-2 font-bold uppercase tracking-tight">
+                    <Search className="w-12 h-12 md:w-16 md:h-16 text-white/20 mx-auto mb-3 md:mb-4" />
+                    <h2 className="text-base md:text-xl text-white/60 mb-2 font-bold uppercase tracking-tight">
                       No Results
                     </h2>
-                    <p className="text-white/40 text-sm">
+                    <p className="text-white/40 text-xs md:text-sm">
                       No files match &quot;{searchQuery}&quot;
                     </p>
                   </>
@@ -870,7 +801,7 @@ export default function VendorMediaLibrary() {
               </div>
             </div>
           ) : viewMode === 'grid' ? (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 md:gap-4 pb-6">
               {filteredFiles.map((file) => (
                 <MediaCard
                   key={file.id}
@@ -883,7 +814,7 @@ export default function VendorMediaLibrary() {
               ))}
             </div>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-2 pb-6">
               {filteredFiles.map((file) => (
                 <MediaListItem
                   key={file.id}
@@ -986,59 +917,59 @@ function MediaCard({ file, selected, onToggleSelect, onDownload, onQuickView }: 
 
   return (
     <div
-      className={`group relative bg-[#0a0a0a] hover:bg-[#141414] border rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1 ${
-        selected ? 'border-white/30 ring-2 ring-white/20' : 'border-white/5 hover:border-white/10'
+      className={`group relative bg-[#0a0a0a] active:bg-[#141414] md:hover:bg-[#141414] border rounded-xl md:rounded-2xl overflow-hidden transition-all duration-200 md:duration-300 active:scale-[0.98] md:hover:-translate-y-1 md:active:scale-100 ${
+        selected ? 'border-white/30 ring-1 md:ring-2 ring-white/20' : 'border-white/5 md:hover:border-white/10'
       }`}
     >
-      {/* Selection Checkbox */}
+      {/* Selection Checkbox - Larger touch target on mobile */}
       <button
         onClick={(e) => {
           e.stopPropagation();
           onToggleSelect();
         }}
-        className="absolute top-3 left-3 z-10 w-6 h-6 rounded-lg bg-black/60 backdrop-blur-sm border border-white/20 flex items-center justify-center hover:bg-black/80 transition-all"
+        className="absolute top-2 left-2 md:top-3 md:left-3 z-10 w-7 h-7 md:w-6 md:h-6 rounded-lg bg-black/70 backdrop-blur-sm border border-white/20 flex items-center justify-center active:bg-black/90 md:hover:bg-black/80 transition-all touch-manipulation"
       >
         {selected ? (
-          <CheckSquare className="w-4 h-4 text-white" />
+          <CheckSquare className="w-4 h-4 md:w-4 md:h-4 text-white" />
         ) : (
-          <Square className="w-4 h-4 text-white/60" />
+          <Square className="w-4 h-4 md:w-4 md:h-4 text-white/60" />
         )}
       </button>
 
-      {/* Download Button */}
+      {/* Download Button - Always visible on touch devices */}
       <button
         onClick={(e) => {
           e.stopPropagation();
           onDownload();
         }}
-        className="absolute top-3 right-3 z-10 w-6 h-6 rounded-lg bg-black/60 backdrop-blur-sm border border-white/20 flex items-center justify-center hover:bg-black/80 transition-all opacity-0 group-hover:opacity-100"
+        className="absolute top-2 right-2 md:top-3 md:right-3 z-10 w-7 h-7 md:w-6 md:h-6 rounded-lg bg-black/70 backdrop-blur-sm border border-white/20 flex items-center justify-center active:bg-black/90 md:hover:bg-black/80 transition-all md:opacity-0 md:group-hover:opacity-100 touch-manipulation"
       >
-        <Download className="w-3 h-3 text-white" />
+        <Download className="w-3.5 h-3.5 md:w-3 md:h-3 text-white" />
       </button>
 
       {/* Image - Click to Quick View */}
       <div
         onClick={handleQuickView}
-        className="aspect-square bg-black relative cursor-pointer"
+        className="aspect-square bg-black relative cursor-pointer touch-manipulation"
       >
         {!imageError ? (
           <Image
             src={thumbnailUrl}
             alt={file.file_name}
             fill
-            sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 20vw"
-            className="object-contain p-4"
+            sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
+            className="object-contain p-3 md:p-4"
             onError={() => setImageError(true)}
             unoptimized
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
-            <ImagePlus className="w-12 h-12 text-white/20" />
+            <ImagePlus className="w-10 h-10 md:w-12 md:h-12 text-white/20" />
           </div>
         )}
 
-        {/* Quick View Hint */}
-        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center">
+        {/* Quick View Hint - Desktop only */}
+        <div className="hidden md:flex absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-all items-center justify-center">
           <div className="text-white text-xs uppercase tracking-[0.15em] flex items-center gap-2">
             <Eye className="w-4 h-4" />
             Quick View
@@ -1047,9 +978,9 @@ function MediaCard({ file, selected, onToggleSelect, onDownload, onQuickView }: 
       </div>
 
       {/* File Info */}
-      <div className="p-3 border-t border-white/5">
-        <p className="text-white text-xs font-medium truncate mb-1">{file.file_name}</p>
-        <p className="text-white/40 text-[10px] uppercase tracking-wider">
+      <div className="p-2.5 md:p-3 border-t border-white/5">
+        <p className="text-white text-[10px] md:text-xs font-medium truncate mb-0.5 md:mb-1">{file.file_name}</p>
+        <p className="text-white/40 text-[9px] md:text-[10px] uppercase tracking-wider">
           {(file.file_size / 1024).toFixed(0)} KB
         </p>
       </div>
@@ -1077,17 +1008,17 @@ function MediaListItem({ file, selected, onToggleSelect, onDownload, onQuickView
 
   return (
     <div
-      className={`flex items-center gap-4 bg-[#0a0a0a] hover:bg-[#141414] border rounded-2xl p-4 transition-all ${
-        selected ? 'border-white/30 ring-2 ring-white/20' : 'border-white/5 hover:border-white/10'
+      className={`flex items-center gap-3 md:gap-4 bg-[#0a0a0a] active:bg-[#141414] md:hover:bg-[#141414] border rounded-xl md:rounded-2xl p-3 md:p-4 transition-all touch-manipulation ${
+        selected ? 'border-white/30 ring-1 md:ring-2 ring-white/20' : 'border-white/5 md:hover:border-white/10'
       }`}
     >
-      {/* Checkbox */}
+      {/* Checkbox - Larger on mobile */}
       <button
         onClick={(e) => {
           e.stopPropagation();
           onToggleSelect();
         }}
-        className="flex-shrink-0 w-6 h-6 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-all"
+        className="flex-shrink-0 w-7 h-7 md:w-6 md:h-6 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center active:bg-white/10 md:hover:bg-white/10 transition-all touch-manipulation"
       >
         {selected ? (
           <CheckSquare className="w-4 h-4 text-white" />
@@ -1099,7 +1030,7 @@ function MediaListItem({ file, selected, onToggleSelect, onDownload, onQuickView
       {/* Thumbnail - Click to Quick View */}
       <div
         onClick={handleQuickView}
-        className="flex-shrink-0 w-16 h-16 bg-black rounded-xl overflow-hidden relative cursor-pointer hover:ring-2 hover:ring-white/20 transition-all group"
+        className="flex-shrink-0 w-14 h-14 md:w-16 md:h-16 bg-black rounded-lg md:rounded-xl overflow-hidden relative cursor-pointer active:ring-2 md:hover:ring-2 ring-white/20 transition-all group touch-manipulation"
       >
         {!imageError ? (
           <Image
@@ -1107,29 +1038,29 @@ function MediaListItem({ file, selected, onToggleSelect, onDownload, onQuickView
             alt={file.file_name}
             fill
             sizes="64px"
-            className="object-contain p-2"
+            className="object-contain p-1.5 md:p-2"
             onError={() => setImageError(true)}
             unoptimized
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
-            <ImagePlus className="w-6 h-6 text-white/20" />
+            <ImagePlus className="w-5 h-5 md:w-6 md:h-6 text-white/20" />
           </div>
         )}
-        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center">
+        <div className="hidden md:flex absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-all items-center justify-center">
           <Eye className="w-4 h-4 text-white" />
         </div>
       </div>
 
       {/* File Info */}
       <div className="flex-1 min-w-0">
-        <p className="text-white text-sm font-medium truncate">{file.file_name}</p>
-        <div className="flex items-center gap-3 mt-1">
-          <span className="text-white/40 text-xs uppercase tracking-wider">
+        <p className="text-white text-xs md:text-sm font-medium truncate">{file.file_name}</p>
+        <div className="flex items-center gap-2 md:gap-3 mt-0.5 md:mt-1">
+          <span className="text-white/40 text-[10px] md:text-xs uppercase tracking-wider">
             {(file.file_size / 1024).toFixed(0)} KB
           </span>
-          <span className="text-white/20">•</span>
-          <span className="text-white/40 text-xs">
+          <span className="text-white/20 hidden sm:inline">•</span>
+          <span className="text-white/40 text-[10px] md:text-xs hidden sm:inline">
             {new Date(file.created_at).toLocaleDateString()}
           </span>
         </div>
@@ -1141,9 +1072,9 @@ function MediaListItem({ file, selected, onToggleSelect, onDownload, onQuickView
           e.stopPropagation();
           onDownload();
         }}
-        className="flex-shrink-0 w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 hover:border-white/20 transition-all"
+        className="flex-shrink-0 w-9 h-9 md:w-10 md:h-10 rounded-lg md:rounded-xl bg-white/5 border border-white/10 flex items-center justify-center active:bg-white/10 md:hover:bg-white/10 md:hover:border-white/20 transition-all touch-manipulation"
       >
-        <Download className="w-4 h-4 text-white" />
+        <Download className="w-3.5 h-3.5 md:w-4 md:h-4 text-white" />
       </button>
     </div>
   );
@@ -1290,21 +1221,21 @@ function QuickViewModal({ file, onClose, onDownload, onDelete, vendorId, onUpdat
   return (
     <div
       onClick={handleBackdropClick}
-      className="fixed inset-0 bg-black/90 backdrop-blur-md z-[250] flex items-center justify-center p-4"
+      className="fixed inset-0 bg-black/95 md:bg-black/90 md:backdrop-blur-md z-[250] flex items-center justify-center p-0 md:p-4"
     >
-      <div className="bg-[#0a0a0a] border border-white/10 rounded-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col">
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-white/10">
+      <div className="bg-black md:bg-[#0a0a0a] md:border md:border-white/10 md:rounded-2xl w-full h-full md:max-w-6xl md:w-full md:max-h-[90vh] overflow-hidden flex flex-col">
+        {/* Header - Responsive */}
+        <div className="flex items-center justify-between p-3 md:p-4 border-b border-white/10 bg-black/50 md:bg-transparent backdrop-blur-sm md:backdrop-blur-none">
           <div className="flex-1 min-w-0">
-            <h2 className="text-white font-black uppercase tracking-tight text-lg truncate" style={{ fontWeight: 900 }}>
+            <h2 className="text-white font-black uppercase tracking-tight text-sm md:text-lg truncate" style={{ fontWeight: 900 }}>
               {file.file_name}
             </h2>
-            <div className="flex items-center gap-3 mt-1">
-              <span className="text-white/40 text-xs uppercase tracking-wider">
+            <div className="flex items-center gap-2 md:gap-3 mt-0.5 md:mt-1">
+              <span className="text-white/40 text-[10px] md:text-xs uppercase tracking-wider">
                 {(file.file_size / 1024).toFixed(0)} KB
               </span>
-              <span className="text-white/20">•</span>
-              <span className="text-white/40 text-xs">
+              <span className="text-white/20 hidden sm:inline">•</span>
+              <span className="text-white/40 text-[10px] md:text-xs hidden sm:inline">
                 {new Date(file.created_at).toLocaleDateString('en-US', {
                   year: 'numeric',
                   month: 'long',
@@ -1315,50 +1246,51 @@ function QuickViewModal({ file, onClose, onDownload, onDelete, vendorId, onUpdat
           </div>
           <button
             onClick={onClose}
-            className="flex-shrink-0 w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 hover:border-white/20 transition-all ml-4"
+            className="flex-shrink-0 w-9 h-9 md:w-10 md:h-10 rounded-xl bg-white/10 md:bg-white/5 border border-white/20 md:border-white/10 flex items-center justify-center active:bg-white/20 md:hover:bg-white/10 md:hover:border-white/20 transition-all ml-3 md:ml-4 touch-manipulation"
           >
-            <X className="w-5 h-5 text-white" />
+            <X className="w-4 h-4 md:w-5 md:h-5 text-white" />
           </button>
         </div>
 
-        {/* Image */}
-        <div className="flex-1 overflow-auto p-8 bg-black flex items-center justify-center min-h-[500px]">
+        {/* Image - Full screen on mobile */}
+        <div className="flex-1 overflow-auto p-4 md:p-8 bg-black flex items-center justify-center min-h-0">
           {!imageError ? (
-            <div className="relative w-full h-[600px] max-w-4xl">
+            <div className="relative w-full h-full md:h-[600px] md:max-w-4xl">
               <Image
                 src={fullSizeUrl}
                 alt={file.file_name}
                 fill
-                sizes="(max-width: 1200px) 100vw, 1200px"
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 100vw, 1200px"
                 className="object-contain"
                 onError={() => setImageError(true)}
                 unoptimized
                 quality={100}
+                priority
               />
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center text-white/40 min-h-[500px]">
-              <ImagePlus className="w-20 h-20 mb-4" />
-              <p className="text-sm">Failed to load image</p>
+            <div className="flex flex-col items-center justify-center text-white/40">
+              <ImagePlus className="w-16 h-16 md:w-20 md:h-20 mb-3 md:mb-4" />
+              <p className="text-xs md:text-sm">Failed to load image</p>
             </div>
           )}
         </div>
 
-        {/* Product Links Section */}
-        <div className="border-t border-white/10 p-4 bg-black/40">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <Package className="w-4 h-4 text-white/60" />
-              <h3 className="text-xs uppercase tracking-[0.15em] text-white/80 font-bold">
+        {/* Product Links Section - Responsive */}
+        <div className="border-t border-white/10 p-3 md:p-4 bg-black/40">
+          <div className="flex items-center justify-between mb-2 md:mb-3">
+            <div className="flex items-center gap-1.5 md:gap-2">
+              <Package className="w-3.5 h-3.5 md:w-4 md:h-4 text-white/60" />
+              <h3 className="text-[10px] md:text-xs uppercase tracking-[0.15em] text-white/80 font-bold">
                 Linked Products
               </h3>
               {linkedProducts.length > 0 && (
-                <span className="text-[10px] text-white/40">({linkedProducts.length})</span>
+                <span className="text-[9px] md:text-[10px] text-white/40">({linkedProducts.length})</span>
               )}
             </div>
             <button
               onClick={() => setShowLinkProducts(!showLinkProducts)}
-              className="text-xs text-white/60 hover:text-white transition-colors uppercase tracking-wider"
+              className="text-[10px] md:text-xs text-white/60 active:text-white md:hover:text-white transition-colors uppercase tracking-wider touch-manipulation px-2 py-1 -mr-2"
             >
               {showLinkProducts ? 'Done' : 'Link Product'}
             </button>
@@ -1409,23 +1341,23 @@ function QuickViewModal({ file, onClose, onDownload, onDelete, vendorId, onUpdat
           )}
         </div>
 
-        {/* Footer Actions */}
-        <div className="flex items-center justify-between p-4 border-t border-white/10 bg-black/40">
+        {/* Footer Actions - Responsive */}
+        <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 md:gap-0 p-3 md:p-4 border-t border-white/10 bg-black/40">
           <div className="flex items-center gap-2">
             <button
               onClick={onDownload}
-              className="bg-white/10 text-white border-2 border-white/20 rounded-2xl px-4 py-2 text-xs uppercase tracking-[0.15em] hover:bg-white/20 hover:border-white/30 font-black transition-all flex items-center gap-2"
+              className="flex-1 md:flex-initial bg-white/10 text-white border-2 border-white/20 rounded-xl md:rounded-2xl px-3 md:px-4 py-2.5 md:py-2 text-[10px] md:text-xs uppercase tracking-[0.15em] active:bg-white/20 md:hover:bg-white/20 md:hover:border-white/30 font-black transition-all flex items-center justify-center gap-2 touch-manipulation"
               style={{ fontWeight: 900 }}
             >
-              <Download className="w-4 h-4" />
+              <Download className="w-3.5 h-3.5 md:w-4 md:h-4" />
               Download
             </button>
             <button
               onClick={handleDelete}
-              className="bg-red-500/10 text-red-500 border-2 border-red-500/20 rounded-2xl px-4 py-2 text-xs uppercase tracking-[0.15em] hover:bg-red-500/20 hover:border-red-500/30 font-black transition-all flex items-center gap-2"
+              className="flex-1 md:flex-initial bg-red-500/10 text-red-500 border-2 border-red-500/20 rounded-xl md:rounded-2xl px-3 md:px-4 py-2.5 md:py-2 text-[10px] md:text-xs uppercase tracking-[0.15em] active:bg-red-500/20 md:hover:bg-red-500/20 md:hover:border-red-500/30 font-black transition-all flex items-center justify-center gap-2 touch-manipulation"
               style={{ fontWeight: 900 }}
             >
-              <Trash2 className="w-4 h-4" />
+              <Trash2 className="w-3.5 h-3.5 md:w-4 md:h-4" />
               Delete
             </button>
           </div>
@@ -1433,7 +1365,7 @@ function QuickViewModal({ file, onClose, onDownload, onDelete, vendorId, onUpdat
             href={file.file_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-white/40 hover:text-white text-xs uppercase tracking-[0.15em] transition-colors flex items-center gap-2"
+            className="text-white/40 active:text-white md:hover:text-white text-[10px] md:text-xs uppercase tracking-[0.15em] transition-colors flex items-center justify-center md:justify-start gap-2 touch-manipulation py-2 md:py-0"
           >
             <Edit3 className="w-3 h-3" />
             Open Original

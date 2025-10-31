@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Search, Users, Award, TrendingUp, DollarSign, Mail, Phone, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useAppAuth } from '@/context/AppAuthContext';
 
 interface Customer {
   id: string;
@@ -18,6 +19,7 @@ interface Customer {
 }
 
 export default function CustomersPage() {
+  const { vendor } = useAppAuth();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -37,8 +39,10 @@ export default function CustomersPage() {
   });
 
   useEffect(() => {
-    loadCustomers();
-  }, [page, tierFilter]);
+    if (vendor) {
+      loadCustomers();
+    }
+  }, [page, tierFilter, vendor]);
 
   // Debounced search
   useEffect(() => {
@@ -54,6 +58,8 @@ export default function CustomersPage() {
   }, [searchQuery]);
 
   async function loadCustomers() {
+    if (!vendor) return; // Wait for vendor to load
+
     setLoading(true);
 
     const params = new URLSearchParams({
@@ -64,7 +70,11 @@ export default function CustomersPage() {
     });
 
     try {
-      const response = await fetch(`/api/vendor/customers?${params}`);
+      const response = await fetch(`/api/vendor/customers?${params}`, {
+        headers: {
+          'x-vendor-id': vendor.id,
+        },
+      });
       const data = await response.json();
 
       if (data.error) {

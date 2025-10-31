@@ -29,6 +29,9 @@ interface VendorApp {
   app_type: string
   description: string
   deployment_url: string | null
+  preview_url: string | null
+  preview_machine_id: string | null
+  preview_status: string
   status: string
 }
 
@@ -56,6 +59,8 @@ Just tell me what you want in plain English, and I'll write the code for you.`
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [publishing, setPublishing] = useState(false)
+  const [lastFileUpdate, setLastFileUpdate] = useState<number>(0)
+  const [deploymentStatus, setDeploymentStatus] = useState<'idle' | 'deploying' | 'ready'>('idle')
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const previewRef = useRef<HTMLIFrameElement>(null)
@@ -64,6 +69,53 @@ Just tell me what you want in plain English, and I'll write the code for you.`
     if (!vendor?.id || !params.appId) return
     loadApp()
   }, [vendor?.id, params.appId])
+
+  // Ensure preview machine is provisioned and running
+  useEffect(() => {
+    if (!app) return
+
+    async function ensurePreview() {
+      if (!app) return // Type guard for nested function
+      try {
+        // If no preview machine exists, provision one
+        if (!app.preview_url) {
+          console.log('📦 Provisioning preview machine...')
+          const response = await fetch(`/api/vendor/apps/${params.appId}/provision-preview`, {
+            method: 'POST'
+          })
+
+          const data = await response.json()
+          if (data.success) {
+            console.log('✅ Preview provisioned:', data.previewUrl)
+            await loadApp() // Reload to get preview URL
+          } else {
+            console.error('❌ Failed to provision preview:', data.error)
+          }
+        }
+        // If preview exists but is sleeping, wake it up
+        else if (app.preview_status === 'sleeping' || app.preview_status === 'stopped') {
+          console.log('⏰ Waking preview machine...')
+          await fetch(`/api/vendor/apps/${params.appId}/wake-preview`, { method: 'POST' })
+          await loadApp()
+        }
+      } catch (error) {
+        console.error('Error ensuring preview:', error)
+      }
+    }
+
+    ensurePreview()
+  }, [app?.id])
+
+  // Poll for deployment status when building
+  useEffect(() => {
+    if (!app || app.status !== 'building') return
+
+    const interval = setInterval(() => {
+      loadApp() // Reload to check if deployment is ready
+    }, 5000) // Check every 5 seconds
+
+    return () => clearInterval(interval)
+  }, [app?.status])
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -86,9 +138,16 @@ Just tell me what you want in plain English, and I'll write the code for you.`
     if (!input.trim() || loading || !app) return
 
     const userMessage: Message = { role: 'user', content: input }
+    const userInstruction = input
     setMessages(prev => [...prev, userMessage])
     setInput('')
     setLoading(true)
+
+    // Add placeholder for assistant response
+    setMessages(prev => [...prev, {
+      role: 'assistant',
+      content: '💭 Thinking...'
+    }])
 
     try {
       const response = await fetch('/api/vendor/ai-edit', {
@@ -97,7 +156,7 @@ Just tell me what you want in plain English, and I'll write the code for you.`
         body: JSON.stringify({
           appId: app.id,
           vendorId: vendor?.id,
-          instruction: input,
+          instruction: userInstruction,
           conversationHistory: messages
         })
       })
@@ -105,31 +164,47 @@ Just tell me what you want in plain English, and I'll write the code for you.`
       const data = await response.json()
 
       if (data.success) {
-        const assistantMessage: Message = {
-          role: 'assistant',
-          content: data.message,
-          filesChanged: data.filesChanged
-        }
-        setMessages(prev => [...prev, assistantMessage])
+        // Update with the actual response
+        setMessages(prev => {
+          const newMessages = [...prev]
+          newMessages[newMessages.length - 1] = {
+            role: 'assistant',
+            content: data.message,
+            filesChanged: data.filesChanged
+          }
+          return newMessages
+        })
 
-        // Refresh preview
-        if (previewRef.current) {
-          previewRef.current.src = previewRef.current.src
+        // Refresh preview if files changed - instant updates!
+        if (data.filesChanged?.length > 0 && app.preview_url) {
+          // Update activity to keep machine alive
+          fetch(`/api/vendor/apps/${app.id}/activity`, { method: 'POST' })
+
+          // No need to manually refresh!
+          // The file-sync-daemon detects changes and Next.js HMR updates automatically
+          console.log('✅ Files updated, preview will refresh automatically via HMR')
         }
       } else {
-        const errorMessage: Message = {
-          role: 'assistant',
-          content: `Sorry, I encountered an error: ${data.error || 'Unknown error'}`
-        }
-        setMessages(prev => [...prev, errorMessage])
+        // Show error message
+        setMessages(prev => {
+          const newMessages = [...prev]
+          newMessages[newMessages.length - 1] = {
+            role: 'assistant',
+            content: `❌ Error: ${data.error || 'Failed to process request'}`
+          }
+          return newMessages
+        })
       }
     } catch (error) {
       console.error('Error sending message:', error)
-      const errorMessage: Message = {
-        role: 'assistant',
-        content: 'Sorry, I encountered an error processing your request.'
-      }
-      setMessages(prev => [...prev, errorMessage])
+      setMessages(prev => {
+        const newMessages = [...prev]
+        newMessages[newMessages.length - 1] = {
+          role: 'assistant',
+          content: 'Sorry, I encountered an error processing your request.'
+        }
+        return newMessages
+      })
     } finally {
       setLoading(false)
     }
@@ -193,15 +268,15 @@ Just tell me what you want in plain English, and I'll write the code for you.`
           </div>
 
           <div className="flex items-center gap-3">
-            {app.deployment_url && (
+            {app.preview_url && (
               <a
-                href={app.deployment_url}
+                href={app.preview_url}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-sm text-white/80 transition-all"
               >
                 <Globe size={16} />
-                <span>View Live</span>
+                <span>View Preview</span>
                 <ExternalLink size={14} className="text-white/40" />
               </a>
             )}
@@ -244,25 +319,63 @@ Just tell me what you want in plain English, and I'll write the code for you.`
           </div>
 
           <div className="flex-1 bg-white/[0.02] relative">
-            {app.deployment_url ? (
+            {app.preview_url ? (
               <iframe
+                key={app.preview_url} // Force reload when URL changes
                 ref={previewRef}
-                src={app.deployment_url}
+                src={app.preview_url}
                 className="w-full h-full border-0"
-                sandbox="allow-scripts allow-same-origin allow-forms"
+                sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+                onLoad={() => {
+                  // Track activity when preview loads
+                  fetch(`/api/vendor/apps/${app.id}/activity`, { method: 'POST' })
+                }}
               />
+            ) : app.preview_status === 'provisioning' ? (
+              <div className="flex items-center justify-center h-full">
+                <div className="text-center">
+                  <Loader2 size={48} className="text-emerald-400 mx-auto mb-4 animate-spin" />
+                  <p className="text-white font-bold text-lg mb-2">
+                    Provisioning preview environment...
+                  </p>
+                  <p className="text-white/60 text-sm">
+                    Creating Fly.io machine for instant preview
+                  </p>
+                  <p className="text-white/40 text-xs mt-4">
+                    This usually takes 20-30 seconds (first time only)
+                  </p>
+                </div>
+              </div>
+            ) : app.status === 'building' ? (
+              <div className="flex items-center justify-center h-full">
+                <div className="text-center">
+                  <Loader2 size={48} className="text-emerald-400 mx-auto mb-4 animate-spin" />
+                  <p className="text-white font-bold text-lg mb-2">
+                    Building your app...
+                  </p>
+                  <p className="text-white/60 text-sm">
+                    Creating GitHub repo and deploying to Vercel
+                  </p>
+                  <p className="text-white/40 text-xs mt-4">
+                    This usually takes 30-60 seconds
+                  </p>
+                </div>
+              </div>
             ) : (
               <div className="flex items-center justify-center h-full">
                 <div className="text-center">
                   <Globe size={48} className="text-white/20 mx-auto mb-4" />
-                  <p className="text-white/60 text-sm">
-                    Preview will appear here once deployed
+                  <p className="text-white/60 text-sm mb-4">
+                    {app.status === 'draft'
+                      ? 'App needs to be deployed'
+                      : 'Preview will appear here once deployed'}
                   </p>
                   <button
                     onClick={publishApp}
-                    className="mt-4 px-4 py-2 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg text-sm text-white transition-all"
+                    disabled={publishing}
+                    className="px-4 py-2 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg text-sm text-white transition-all disabled:opacity-50"
                   >
-                    Deploy Now
+                    {publishing ? 'Deploying...' : 'Deploy Now'}
                   </button>
                 </div>
               </div>

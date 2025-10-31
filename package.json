@@ -22,11 +22,12 @@
     "nightly": "npm run cleanup && npm run db:optimize && npm run analyze"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.67.0",
+    "@anthropic-ai/sdk": "^0.67.1",
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
     "@monaco-editor/react": "^4.7.0",
+    "@octokit/rest": "^22.0.0",
     "@scandit/web-datacapture-barcode": "^7.6.3",
     "@scandit/web-datacapture-core": "^7.6.3",
     "@scandit/web-datacapture-id": "^7.6.3",

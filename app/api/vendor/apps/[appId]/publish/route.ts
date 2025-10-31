@@ -4,16 +4,17 @@ import { createClient } from '@/lib/supabase/server'
 // POST /api/vendor/apps/[appId]/publish
 export async function POST(
   request: NextRequest,
-  { params }: { params: { appId: string } }
+  { params }: { params: Promise<{ appId: string }> }
 ) {
   try {
+    const { appId } = await params
     const supabase = await createClient()
 
     // Get app details
     const { data: app, error: appError } = await supabase
       .from('vendor_apps')
       .select('*')
-      .eq('id', params.appId)
+      .eq('id', appId)
       .single()
 
     if (appError || !app) {
@@ -34,7 +35,7 @@ export async function POST(
         status: 'deployed',
         updated_at: new Date().toISOString()
       })
-      .eq('id', params.appId)
+      .eq('id', appId)
 
     if (updateError) {
       console.error('Error publishing app:', updateError)

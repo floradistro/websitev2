@@ -545,7 +545,7 @@ function TVDisplayContent() {
     } catch (err: any) {
       console.error('❌ Failed to load products:', err);
     }
-  }, [deviceId, menuIdParam, groupMember, configMap, displayGroup]);
+  };
 
   useEffect(() => {
     loadMenuAndProducts();

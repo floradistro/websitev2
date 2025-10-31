@@ -19,7 +19,6 @@ import {
   Tv,
   Megaphone,
   Users,
-  FolderTree,
   Sparkles
 } from 'lucide-react';
 
@@ -32,9 +31,9 @@ export interface NavItem {
   group?: 'core' | 'sales' | 'content' | 'settings';
 }
 
-// Consolidated navigation - 10 core items
+// Consolidated navigation - 13 core items
 export const vendorNavItems: NavItem[] = [
-  // Core Operations (4)
+  // Core Operations (3)
   {
     href: '/vendor/apps',
     icon: Home,
@@ -49,14 +48,6 @@ export const vendorNavItems: NavItem[] = [
     label: 'Products',
     description: 'Catalog & inventory',
     isCore: true,
-    group: 'core'
-  },
-  {
-    href: '/vendor/categories',
-    icon: FolderTree,
-    label: 'Categories',
-    description: 'Organize products',
-    isCore: false,
     group: 'core'
   },
   {
@@ -100,44 +91,12 @@ export const vendorNavItems: NavItem[] = [
     group: 'sales'
   },
 
-  // Inventory & Pricing (2)
-  { 
-    href: '/vendor/inventory', 
-    icon: BarChart3, 
+  // Inventory (1)
+  {
+    href: '/vendor/inventory',
+    icon: BarChart3,
     label: 'Inventory',
     description: 'Stock management',
-    isCore: false,
-    group: 'core'
-  },
-  {
-    href: '/vendor/pricing',
-    icon: DollarSign,
-    label: 'Pricing',
-    description: 'Price management',
-    isCore: false,
-    group: 'core'
-  },
-  {
-    href: '/vendor/pricing-blueprints',
-    icon: Sparkles,
-    label: 'Pricing Templates',
-    description: 'Custom pricing structures',
-    isCore: false,
-    group: 'core'
-  },
-  {
-    href: '/vendor/product-fields',
-    icon: Layers,
-    label: 'Fields',
-    description: 'Custom product fields',
-    isCore: false,
-    group: 'core'
-  },
-  {
-    href: '/vendor/templates',
-    icon: Sparkles,
-    label: 'Template Library',
-    description: 'Pre-configured business templates',
     isCore: false,
     group: 'core'
   },
@@ -200,7 +159,7 @@ export const secondaryFeatures = [
   { href: '/vendor/wholesale-customers', parent: '/vendor/inventory', label: 'Wholesale Customers' },
   { href: '/vendor/reviews', parent: '/vendor/products', label: 'Reviews' },
   { href: '/vendor/component-editor', parent: '/vendor/branding', label: 'Visual Editor' },
-  { href: '/vendor/cost-plus-pricing', parent: '/vendor/pricing', label: 'Cost+ Pricing' },
+  { href: '/vendor/pricing-blueprints', parent: '/vendor/products', label: 'Advanced Pricing' },
 ];
 
 // Mobile bottom navigation (4 core items)
