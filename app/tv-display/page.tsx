@@ -278,7 +278,7 @@ function TVDisplayContent() {
 
           if (vendorData.success && vendorData.vendor) {
             setVendor(vendorData.vendor);
-            console.log('✅ Vendor loaded:', vendorData.vendor.business_name);
+            console.log('✅ Vendor loaded:', vendorData.vendor.store_name);
           } else {
             console.error('❌ Error loading vendor:', vendorData.error);
           }
@@ -769,7 +769,7 @@ function TVDisplayContent() {
             <div className="mb-8">
               <img
                 src={vendor.logo_url}
-                alt={vendor.business_name}
+                alt={vendor.store_name}
                 className="mx-auto max-w-md max-h-64 object-contain"
                 style={{
                   filter: 'drop-shadow(0 0 40px rgba(255, 255, 255, 0.1))'
@@ -779,7 +779,7 @@ function TVDisplayContent() {
           ) : (
             <div className="text-6xl mb-4">📺</div>
           )}
-          <h1 className="text-3xl font-bold mb-2">{vendor?.business_name || 'Display Ready'}</h1>
+          <h1 className="text-3xl font-bold mb-2">{vendor?.store_name || 'Display Ready'}</h1>
           <p className="text-xl text-white/60">No menu assigned</p>
           <p className="text-sm text-white/40 mt-2">Please assign a menu from the dashboard</p>
           {deviceId && (

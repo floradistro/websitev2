@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
 
     const { data: vendor, error } = await supabase
       .from('vendors')
-      .select('id, business_name, logo_url')
+      .select('id, store_name, logo_url')
       .eq('id', vendorId)
       .single();
 
