@@ -292,7 +292,8 @@ Just tell me what you want in plain English, and I'll write the code for you.`
                 ref={previewRef}
                 src={previewUrl}
                 className="w-full h-full border-0"
-                sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+                sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-clipboard-write allow-clipboard-read"
+                allow="clipboard-write; clipboard-read"
                 onLoad={() => {
                   // Track activity when preview loads
                   fetch(`/api/vendor/apps/${app.id}/activity`, { method: 'POST' })
