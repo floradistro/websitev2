@@ -11,6 +11,7 @@ import { supabase } from '@/lib/supabase/client';
 import { motion } from 'framer-motion';
 import { getTheme } from '@/lib/themes';
 import { calculatePrice, calculateTierPrices, type Promotion } from '@/lib/pricing';
+import { MinimalProductCard } from '@/components/tv-display/MinimalProductCard';
 
 interface TVDisplayContentProps {}
 
@@ -890,29 +891,22 @@ function TVDisplayContent() {
               gridTemplateRows: `repeat(${gridRows}, minmax(0, 1fr))`
             };
 
-            // Card padding based on mode
-            const cardPadding = isDense ? 'p-4' : 'p-8';
-
             return (
               <>
                 <div className={`${gridClasses} flex-1 content-start`} style={gridStyle}>
                   {productsToShow.map((product: any, index: number) => (
-                <motion.div
-                  key={product.id}
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: index * 0.05 }}
-                  className={`rounded-2xl ${cardPadding} flex flex-col justify-between transition-transform hover:scale-[1.02] relative`}
-                  style={{
-                    background: theme.styles.productCard.background,
-                    borderColor: theme.styles.productCard.borderColor,
-                    borderWidth: theme.styles.productCard.borderWidth,
-                    boxShadow: theme.styles.productCard.shadow,
-                    backdropFilter: theme.styles.productCard.backdropBlur ? `blur(${theme.styles.productCard.backdropBlur})` : undefined
-                  }}
-                >
-                  {/* Sale Badge */}
-                  {product.promotion_data && product.promotion_data.badgeText && (
+                    <MinimalProductCard
+                      key={product.id}
+                      product={product}
+                      theme={theme}
+                      index={index}
+                    />
+                  ))}
+                </div>
+
+                {/* Carousel Page Indicators */}
+                {isCarousel && (() => {
+                  const productsPerPage = gridColumns * gridRows;
                     <motion.div
                       initial={{ opacity: 0, scale: 0.8 }}
                       animate={{ opacity: 1, scale: 1 }}
