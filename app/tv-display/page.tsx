@@ -413,6 +413,7 @@ function TVDisplayContent() {
       console.log('💵 Using cached pricing configs:', configMap.size, 'entries');
 
       // Enrich products with actual prices and promotions
+      let isFirstProduct = true;
       const enrichedProducts = (productData || []).map((product: any) => {
         // Map database fields to expected fields
         let productWithPricing = {
@@ -458,7 +459,7 @@ function TVDisplayContent() {
             const finalPrices = { ...vendorPrices, ...productOverrides };
 
             // Debug first product's pricing
-            if (productWithPricing.name === enrichedProducts[0]?.name) {
+            if (isFirstProduct) {
               console.log('💰 First product pricing:', {
                 product: productWithPricing.name,
                 blueprint_id: assignment.blueprint_id,
@@ -468,6 +469,7 @@ function TVDisplayContent() {
                 product_overrides: productOverrides,
                 final_prices: finalPrices
               });
+              isFirstProduct = false;
             }
 
             productWithPricing = {
