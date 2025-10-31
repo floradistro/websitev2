@@ -143,15 +143,21 @@ export async function PUT(request: NextRequest) {
     const vendorId = request.headers.get('x-vendor-id');
 
     if (!vendorId) {
+      console.error('❌ PUT /api/vendor/pricing-blueprints - No vendor ID in headers');
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
     const body = await request.json();
+    console.log('📥 PUT /api/vendor/pricing-blueprints - Request body:', JSON.stringify(body, null, 2));
+
     const { id, name, description, tier_type, quality_tier, price_breaks, applicable_to_categories } = body;
 
     if (!id) {
+      console.error('❌ PUT /api/vendor/pricing-blueprints - No blueprint ID provided');
       return NextResponse.json({ error: 'Blueprint ID is required' }, { status: 400 });
     }
+
+    console.log('🔍 PUT /api/vendor/pricing-blueprints - Updating blueprint:', { id, vendorId, name });
 
     const supabase = getServiceSupabase();
 
@@ -162,9 +168,13 @@ export async function PUT(request: NextRequest) {
       .eq('id', id)
       .single();
 
-    if (fetchError) throw fetchError;
+    if (fetchError) {
+      console.error('❌ Error fetching existing blueprint:', fetchError);
+      throw fetchError;
+    }
 
     if (existing.vendor_id !== vendorId) {
+      console.error('❌ Unauthorized: vendor', vendorId, 'trying to edit blueprint owned by', existing.vendor_id);
       return NextResponse.json(
         { error: 'Not authorized to edit this pricing blueprint' },
         { status: 403 }
@@ -179,6 +189,8 @@ export async function PUT(request: NextRequest) {
     if (price_breaks) updateData.price_breaks = price_breaks;
     if (applicable_to_categories !== undefined) updateData.applicable_to_categories = applicable_to_categories;
 
+    console.log('📝 Update data:', JSON.stringify(updateData, null, 2));
+
     const { data: blueprint, error } = await supabase
       .from('pricing_tier_blueprints')
       .update(updateData)
@@ -186,7 +198,12 @@ export async function PUT(request: NextRequest) {
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error('❌ Supabase update error:', error);
+      throw error;
+    }
+
+    console.log('✅ Blueprint updated successfully:', blueprint.id);
 
     return NextResponse.json({
       success: true,
@@ -194,7 +211,14 @@ export async function PUT(request: NextRequest) {
       message: 'Pricing blueprint updated successfully'
     });
   } catch (error: any) {
-    console.error('Update pricing blueprint error:', error);
+    console.error('❌ PUT /api/vendor/pricing-blueprints - Error:', error);
+    console.error('Error details:', {
+      message: error.message,
+      code: error.code,
+      details: error.details,
+      hint: error.hint,
+      stack: error.stack
+    });
     return NextResponse.json(
       { error: error.message || 'Failed to update pricing blueprint' },
       { status: 500 }

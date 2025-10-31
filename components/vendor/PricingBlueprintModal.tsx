@@ -38,7 +38,7 @@ export function PricingBlueprintModal({
     description: '',
     context: 'retail' as 'retail' | 'wholesale' | 'distributor' | 'delivery',
     tier_type: 'weight' as 'weight' | 'quantity' | 'percentage' | 'flat' | 'custom',
-    quality_tier: '' as '' | 'exotic' | 'top-shelf' | 'mid-shelf' | 'value',
+    quality_tier: '' as '' | 'exotic' | 'top-shelf' | 'mid-shelf' | 'value', // Empty string will be converted to null before saving
     applicable_to_categories: [] as string[]
   });
 
@@ -158,24 +158,34 @@ export function PricingBlueprintModal({
       return;
     }
 
-    console.log('💾 Saving pricing blueprint...', { isEditMode, vendorId, blueprint, formData });
+    const blueprintData = {
+      id: blueprint?.id,
+      ...formData,
+      // Convert empty string to null for quality_tier (database constraint requires null, not '')
+      quality_tier: formData.quality_tier || null,
+      price_breaks: priceBreaks.map((pb: any) => ({
+        break_id: pb.break_id,
+        label: pb.label,
+        qty: pb.qty,
+        unit: pb.unit,
+        sort_order: pb.sort_order
+      }))
+    };
+
+    console.log('💾 Saving pricing blueprint...', {
+      isEditMode,
+      vendorId,
+      blueprintId: blueprint?.id,
+      formData,
+      priceBreaks,
+      blueprintData
+    });
 
     setSaving(true);
     try {
       if (isEditMode) {
         // Update existing blueprint structure
-        const response = await axios.put('/api/vendor/pricing-blueprints', {
-          id: blueprint.id,
-          ...formData,
-          price_breaks: priceBreaks.map((pb: any) => ({
-            break_id: pb.break_id,
-            label: pb.label,
-            qty: pb.qty,
-            unit: pb.unit,
-            sort_order: pb.sort_order
-            // Don't include price here - it goes to vendor_pricing_configs
-          }))
-        }, {
+        const response = await axios.put('/api/vendor/pricing-blueprints', blueprintData, {
           headers: { 'x-vendor-id': vendorId }
         });
 
@@ -211,8 +221,10 @@ export function PricingBlueprintModal({
         }
       } else {
         // Create new blueprint
-        const response = await axios.post('/api/vendor/pricing-blueprints', {
+        const createData = {
           ...formData,
+          // Convert empty string to null for quality_tier (database constraint requires null, not '')
+          quality_tier: formData.quality_tier || null,
           price_breaks: priceBreaks.map((pb: any) => ({
             break_id: pb.break_id,
             label: pb.label,
@@ -221,7 +233,9 @@ export function PricingBlueprintModal({
             sort_order: pb.sort_order
             // Don't include price here - it goes to vendor_pricing_configs
           }))
-        }, {
+        };
+
+        const response = await axios.post('/api/vendor/pricing-blueprints', createData, {
           headers: { 'x-vendor-id': vendorId }
         });
 
