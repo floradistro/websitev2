@@ -140,8 +140,13 @@ export default function GroupConfigWizard({ vendorId, existingGroup, onComplete,
       // Load available categories
       const categoriesResponse = await fetch(`/api/vendor/products/categories?vendor_id=${vendorId}`);
       const categoriesData = await categoriesResponse.json();
+      console.log('📂 Categories API response:', categoriesData);
       if (categoriesData.success) {
-        setAvailableCategories(categoriesData.categories);
+        console.log('✅ Loaded categories:', categoriesData.categories);
+        setAvailableCategories(categoriesData.categories || []);
+      } else {
+        console.error('❌ Failed to load categories:', categoriesData.error);
+        setAvailableCategories([]);
       }
 
       // Load available pricing tier blueprints
@@ -767,48 +772,80 @@ export default function GroupConfigWizard({ vendorId, existingGroup, onComplete,
                 exit={{ opacity: 0, x: -20 }}
                 className="space-y-6"
               >
-                <div className="text-sm text-white/60 mb-4">
-                  Assign specific categories to each display. Leave empty to show all categories.
+                <div className="p-4 bg-purple-500/10 border border-purple-500/20 rounded-lg mb-4">
+                  <h3 className="text-white font-semibold mb-2">Category Assignment</h3>
+                  <p className="text-sm text-white/60">
+                    Assign specific product categories to each display. Each display will only show products from its assigned categories.
+                  </p>
+                  <p className="text-xs text-white/40 mt-2">
+                    💡 Tip: Leave empty to show all categories on that display
+                  </p>
                 </div>
 
-                {selectedDevices.map((deviceId, index) => {
-                  const device = availableDevices.find((d) => d.id === deviceId);
-                  if (!device) return null;
+                {availableCategories.length === 0 ? (
+                  <div className="p-6 bg-yellow-500/10 border border-yellow-500/20 rounded-lg text-center">
+                    <p className="text-yellow-200 mb-2">No categories found</p>
+                    <p className="text-sm text-white/60">
+                      Add product categories in your Products page first, then they'll appear here.
+                    </p>
+                  </div>
+                ) : (
+                  selectedDevices.map((deviceId, index) => {
+                    const device = availableDevices.find((d) => d.id === deviceId);
+                    if (!device) return null;
 
-                  return (
-                    <div key={deviceId} className="p-4 bg-white/5 border border-white/10 rounded-lg">
-                      <div className="flex items-center gap-2 mb-3">
-                        <Monitor className="w-5 h-5 text-white/60" />
-                        <span className="font-medium text-white">{device.device_name}</span>
-                        <span className="text-xs text-white/40">
-                          Position {index + 1} of {selectedDevices.length}
-                        </span>
+                    const selectedCount = (deviceCategories[deviceId] || []).length;
+
+                    return (
+                      <div key={deviceId} className="p-5 bg-white/5 border border-white/10 rounded-xl hover:border-white/20 transition-all">
+                        <div className="flex items-center justify-between mb-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center">
+                              <Monitor className="w-5 h-5 text-purple-400" />
+                            </div>
+                            <div>
+                              <div className="font-medium text-white">{device.device_name}</div>
+                              <div className="text-xs text-white/40">
+                                Display {index + 1} of {selectedDevices.length}
+                              </div>
+                            </div>
+                          </div>
+                          <div className="text-sm">
+                            {selectedCount > 0 ? (
+                              <span className="px-3 py-1 bg-purple-500/20 text-purple-300 rounded-full">
+                                {selectedCount} {selectedCount === 1 ? 'category' : 'categories'}
+                              </span>
+                            ) : (
+                              <span className="px-3 py-1 bg-white/10 text-white/40 rounded-full">
+                                All categories
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="flex flex-wrap gap-2">
+                          {availableCategories.map((category) => {
+                            const isSelected = (deviceCategories[deviceId] || []).includes(category);
+                            return (
+                              <button
+                                key={category}
+                                onClick={() => handleCategoryToggle(deviceId, category)}
+                                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                                  isSelected
+                                    ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg shadow-purple-500/20'
+                                    : 'bg-white/10 text-white/60 hover:bg-white/20 hover:text-white'
+                                }`}
+                              >
+                                {isSelected && <Check className="w-3 h-3 inline mr-1" />}
+                                {category}
+                              </button>
+                            );
+                          })}
+                        </div>
                       </div>
-
-                      <div className="flex flex-wrap gap-2">
-                        {availableCategories.map((category) => (
-                          <button
-                            key={category}
-                            onClick={() => handleCategoryToggle(deviceId, category)}
-                            className={`px-3 py-1.5 rounded-lg text-sm transition-all ${
-                              (deviceCategories[deviceId] || []).includes(category)
-                                ? 'bg-purple-500 text-white'
-                                : 'bg-white/10 text-white/60 hover:bg-white/20'
-                            }`}
-                          >
-                            {category}
-                          </button>
-                        ))}
-                      </div>
-
-                      {(!deviceCategories[deviceId] || deviceCategories[deviceId].length === 0) && (
-                        <p className="text-xs text-white/40 mt-2">
-                          No categories selected - will show all categories
-                        </p>
-                      )}
-                    </div>
-                  );
-                })}
+                    );
+                  })
+                )}
 
                 <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
                   <div className="text-sm text-white/80">
