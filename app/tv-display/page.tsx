@@ -41,6 +41,7 @@ function TVDisplayContent() {
   const [displayGroup, setDisplayGroup] = useState<any>(null);
   const [groupMember, setGroupMember] = useState<any>(null);
   const [vendorConfigs, setVendorConfigs] = useState<any[]>([]);
+  const [isPortrait, setIsPortrait] = useState(false);
 
   /**
    * Memoized pricing config map for better performance
@@ -52,6 +53,29 @@ function TVDisplayContent() {
     console.log('🗺️ Created pricing config map with', map.size, 'entries');
     return map;
   }, [vendorConfigs]);
+
+  /**
+   * Orientation Detection
+   */
+  useEffect(() => {
+    const checkOrientation = () => {
+      const portrait = window.innerHeight > window.innerWidth;
+      setIsPortrait(portrait);
+      console.log(`📱 Orientation: ${portrait ? 'Portrait' : 'Landscape'} (${window.innerWidth}x${window.innerHeight})`);
+    };
+
+    // Check on mount
+    checkOrientation();
+
+    // Listen for resize/orientation changes
+    window.addEventListener('resize', checkOrientation);
+    window.addEventListener('orientationchange', checkOrientation);
+
+    return () => {
+      window.removeEventListener('resize', checkOrientation);
+      window.removeEventListener('orientationchange', checkOrientation);
+    };
+  }, []);
 
   /**
    * Device Registration
@@ -864,12 +888,30 @@ function TVDisplayContent() {
           {products.length > 0 ? (() => {
             // Use display group settings if available, otherwise fall back to menu settings
             const displayMode = displayGroup?.shared_display_mode || activeMenu.display_mode || 'dense';
-            const gridColumns = displayGroup?.shared_grid_columns || 4;
-            const gridRows = displayGroup?.shared_grid_rows || 3;
+
+            // Auto-adjust grid based on orientation
+            let gridColumns, gridRows;
+            if (isPortrait) {
+              // Portrait: fewer columns, more rows (e.g. 3x5 = 15 products)
+              gridColumns = displayGroup?.shared_grid_columns ? Math.max(2, Math.floor(displayGroup.shared_grid_columns * 0.75)) : 3;
+              gridRows = displayGroup?.shared_grid_rows ? Math.ceil(displayGroup.shared_grid_rows * 1.5) : 5;
+            } else {
+              // Landscape: normal grid (e.g. 4x3 = 12 products)
+              gridColumns = displayGroup?.shared_grid_columns || 4;
+              gridRows = displayGroup?.shared_grid_rows || 3;
+            }
+
             const isCarousel = displayMode === 'carousel';
             const isDense = displayMode === 'dense';
 
-            console.log('📐 Grid settings:', { displayMode, gridColumns, gridRows, source: displayGroup ? 'group' : 'menu' });
+            console.log('📐 Grid settings:', {
+              orientation: isPortrait ? 'portrait' : 'landscape',
+              displayMode,
+              gridColumns,
+              gridRows,
+              total: gridColumns * gridRows,
+              source: displayGroup ? 'group' : 'menu'
+            });
 
             // Calculate products to show
             let productsToShow;

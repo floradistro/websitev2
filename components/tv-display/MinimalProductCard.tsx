@@ -17,6 +17,18 @@ export function MinimalProductCard({ product, theme, index }: MinimalProductCard
   const blueprint = product.pricing_blueprint;
   const priceBreaks = blueprint?.price_breaks || [];
 
+  // Debug logging for first product
+  if (index === 0) {
+    console.log('🔍 Product pricing debug:', {
+      name: product.name,
+      has_pricing_tiers: !!product.pricing_tiers,
+      pricing_tiers: product.pricing_tiers,
+      has_blueprint: !!product.pricing_blueprint,
+      blueprint: product.pricing_blueprint,
+      price_breaks: priceBreaks
+    });
+  }
+
   // Get all available prices
   const availablePrices = priceBreaks
     .filter((pb: any) => pricing_tiers[pb.break_id]?.price)
