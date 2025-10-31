@@ -358,6 +358,7 @@ function TVDisplayContent() {
       console.log('🎉 Loaded promotions:', activePromotions.length);
 
       // Load products with pricing assignments and categories
+      console.log('🔍 Fetching products for vendor:', vendorId);
       const { data: productData, error } = await supabase
         .from('products')
         .select(`
@@ -382,7 +383,12 @@ function TVDisplayContent() {
         .eq('status', 'published')
         .order('name');
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Error fetching products:', error);
+        throw error;
+      }
+
+      console.log(`✅ Fetched ${productData?.length || 0} published products from database`);
 
       // Use memoized pricing config map
       console.log('💵 Using cached pricing configs:', configMap.size, 'entries');
@@ -465,19 +471,46 @@ function TVDisplayContent() {
       let selectedCategories = groupMember?.assigned_categories;
       let filterSource = 'group';
 
+      console.log('🎯 Category filtering logic:');
+      console.log('   - Display group member:', groupMember ? groupMember.id : 'none');
+      console.log('   - Group member categories:', groupMember?.assigned_categories);
+      console.log('   - Menu config categories:', menu?.config_data?.categories);
+
       // Priority 2: Fall back to menu categories if not in a group
       if (!selectedCategories || selectedCategories.length === 0) {
         selectedCategories = menu?.config_data?.categories;
         filterSource = 'menu';
+        console.log('   - Using MENU categories:', selectedCategories);
+      } else {
+        console.log('   - Using GROUP categories:', selectedCategories);
       }
 
       if (selectedCategories && selectedCategories.length > 0) {
+        console.log(`🔍 Filtering ${enrichedProducts.length} products by ${filterSource} categories:`, selectedCategories);
+
+        // Debug: show what categories each product has
+        if (enrichedProducts.length > 0) {
+          console.log('📦 Sample product categories:');
+          enrichedProducts.slice(0, 5).forEach((p: any) => {
+            const productCategories = p.product_categories?.map((pc: any) => pc.category?.name).filter(Boolean) || [];
+            console.log(`   - "${p.name}": [${productCategories.join(', ') || 'NO CATEGORIES'}]`);
+          });
+        }
+
         filteredProducts = enrichedProducts.filter((p: any) => {
           // Check if product has any of the selected categories
           const productCategories = p.product_categories?.map((pc: any) => pc.category?.name).filter(Boolean) || [];
-          return productCategories.some((cat: string) => selectedCategories.includes(cat));
+          const matches = productCategories.some((cat: string) => selectedCategories.includes(cat));
+
+          if (!matches && productCategories.length > 0) {
+            console.log(`   ⚠️ Product "${p.name}" filtered out - has [${productCategories.join(', ')}], need one of [${selectedCategories.join(', ')}]`);
+          }
+
+          return matches;
         });
         console.log(`🎯 Filtered to ${filteredProducts.length} products from ${enrichedProducts.length} (${filterSource} categories: ${selectedCategories.join(', ')})`);
+      } else {
+        console.log('📋 No category filter - showing all products');
       }
 
       // Log display group's pricing tier (if configured) but DON'T filter products
