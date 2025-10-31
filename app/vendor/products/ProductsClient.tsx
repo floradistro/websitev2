@@ -617,11 +617,14 @@ export default function ProductsClient() {
       )}
 
       {/* Quick View Modal */}
-      {quickViewProduct && (
+      {quickViewProduct && vendor?.id && (
         <ProductQuickView
           product={quickViewProduct}
+          vendorId={vendor.id}
+          isOpen={true}
           onClose={() => setQuickViewProduct(null)}
-          onUpdate={loadProducts}
+          onSave={loadProducts}
+          onDelete={loadProducts}
         />
       )}
     </div>

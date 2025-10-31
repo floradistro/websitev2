@@ -16,6 +16,7 @@ interface Category {
 
 interface DynamicField {
   name: string;
+  slug?: string;
   type: string;
   label: string;
   placeholder?: string;
@@ -691,7 +692,6 @@ export default function NewProduct() {
     console.log('📦 AI Suggestions:', aiSuggestions);
     console.log('📋 Available Fields:', dynamicFields.map(f => ({
       name: f.name,
-      slug: f.slug,
       label: f.label,
       type: f.type
     })));
