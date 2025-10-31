@@ -15,26 +15,23 @@ export async function GET(request: NextRequest) {
 
     const supabase = getServiceSupabase();
 
-    // Fetch all published products with their categories via relation
-    const { data: products, error } = await supabase
+    console.log('📂 Fetching categories for vendor:', vendorId);
+
+    // Method 1: Fetch categories used by vendor's products (any status)
+    const { data: products, error: productsError } = await supabase
       .from('products')
       .select(`
         product_categories(
           category:categories(name)
         )
       `)
-      .eq('vendor_id', vendorId)
-      .eq('status', 'published');
+      .eq('vendor_id', vendorId);
 
-    if (error) {
-      console.error('Error fetching products for categories:', error);
-      return NextResponse.json(
-        { success: false, error: error.message },
-        { status: 500 }
-      );
+    if (productsError) {
+      console.error('❌ Error fetching products for categories:', productsError);
     }
 
-    // Extract unique categories from the nested structure
+    // Extract unique categories from products
     const categorySet = new Set<string>();
     products?.forEach((product: any) => {
       product.product_categories?.forEach((pc: any) => {
@@ -44,14 +41,38 @@ export async function GET(request: NextRequest) {
       });
     });
 
+    console.log('✅ Found categories from products:', [...categorySet]);
+
+    // Method 2: Also fetch ALL active global categories as a fallback
+    const { data: allCategories, error: categoriesError } = await supabase
+      .from('categories')
+      .select('name')
+      .eq('is_active', true)
+      .order('name');
+
+    if (categoriesError) {
+      console.error('❌ Error fetching all categories:', categoriesError);
+    } else {
+      console.log('📋 All available categories:', allCategories?.map(c => c.name));
+
+      // Add all global categories to the set (so vendors can see all available categories)
+      allCategories?.forEach((cat: any) => {
+        if (cat.name) {
+          categorySet.add(cat.name);
+        }
+      });
+    }
+
     const categories = [...categorySet].sort();
+
+    console.log('✅ Returning categories:', categories);
 
     return NextResponse.json({
       success: true,
       categories
     });
   } catch (error: any) {
-    console.error('Error in categories API:', error);
+    console.error('❌ Error in categories API:', error);
     return NextResponse.json(
       { success: false, error: error.message },
       { status: 500 }
