@@ -290,6 +290,16 @@ function TVDisplayContent() {
   }, [vendorId]);
 
   /**
+   * Reload products when vendor pricing configs are loaded
+   */
+  useEffect(() => {
+    if (vendorConfigs.length > 0 && activeMenu) {
+      console.log('🔄 Vendor pricing configs loaded, reloading products with pricing...');
+      loadProducts(activeMenu);
+    }
+  }, [vendorConfigs, activeMenu]);
+
+  /**
    * Load Menu & Products
    */
   const loadMenuAndProducts = useCallback(async () => {
@@ -409,8 +419,12 @@ function TVDisplayContent() {
         });
       }
 
-      // Use memoized pricing config map
-      console.log('💵 Using cached pricing configs:', configMap.size, 'entries');
+      // Check if pricing configs are loaded yet
+      console.log('💵 Pricing config map size:', configMap.size, 'entries');
+      if (configMap.size === 0) {
+        console.log('⚠️  WARNING: No vendor pricing configs loaded yet! Products will show "No pricing".');
+        console.log('   This usually means vendorConfigs is still loading or empty.');
+      }
 
       // Enrich products with actual prices and promotions
       let isFirstProduct = true;
@@ -915,16 +929,16 @@ function TVDisplayContent() {
             // Use display group settings if available, otherwise fall back to menu settings
             const displayMode = displayGroup?.shared_display_mode || activeMenu.display_mode || 'dense';
 
-            // Auto-adjust grid based on orientation
+            // Auto-adjust grid based on orientation - DENSE for TV menus
             let gridColumns, gridRows;
             if (isPortrait) {
-              // Portrait: fewer columns, more rows (e.g. 3x5 = 15 products)
-              gridColumns = displayGroup?.shared_grid_columns ? Math.max(2, Math.floor(displayGroup.shared_grid_columns * 0.75)) : 3;
-              gridRows = displayGroup?.shared_grid_rows ? Math.ceil(displayGroup.shared_grid_rows * 1.5) : 5;
+              // Portrait: 5 columns x 10 rows = 50 products
+              gridColumns = displayGroup?.shared_grid_columns ? Math.max(4, Math.floor(displayGroup.shared_grid_columns * 0.75)) : 5;
+              gridRows = displayGroup?.shared_grid_rows ? Math.ceil(displayGroup.shared_grid_rows * 1.5) : 10;
             } else {
-              // Landscape: normal grid (e.g. 4x3 = 12 products)
-              gridColumns = displayGroup?.shared_grid_columns || 4;
-              gridRows = displayGroup?.shared_grid_rows || 3;
+              // Landscape: 8 columns x 6 rows = 48 products
+              gridColumns = displayGroup?.shared_grid_columns || 8;
+              gridRows = displayGroup?.shared_grid_rows || 6;
             }
 
             const isCarousel = displayMode === 'carousel';
@@ -959,6 +973,18 @@ function TVDisplayContent() {
               gridTemplateRows: `repeat(${gridRows}, minmax(0, 1fr))`
             };
 
+            // Get visible price breaks from display group or menu config
+            // Default to empty array - user MUST configure which tiers to show
+            let visiblePriceBreaks = displayGroup?.visible_price_breaks || activeMenu?.config_data?.visible_price_breaks || [];
+
+            // TEMPORARY: For testing, use 1g and 3.5g if not configured
+            // TODO: Remove this once UI for configuring visible_price_breaks is built
+            if (visiblePriceBreaks.length === 0) {
+              visiblePriceBreaks = ['1g', '3_5g'];
+              console.log('⚠️  No visible_price_breaks configured - using temporary defaults:', visiblePriceBreaks);
+              console.log('   Configure visible_price_breaks in display group or menu settings');
+            }
+
             return (
               <>
                 <div className={`${gridClasses} flex-1 content-start`} style={gridStyle}>
@@ -968,6 +994,7 @@ function TVDisplayContent() {
                       product={product}
                       theme={theme}
                       index={index}
+                      visiblePriceBreaks={visiblePriceBreaks}
                     />
                   ))}
                 </div>

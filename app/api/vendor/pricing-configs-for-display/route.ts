@@ -21,6 +21,8 @@ export async function GET(request: NextRequest) {
 
     const supabase = getServiceSupabase();
 
+    console.log('💵 Fetching pricing configs for vendor:', vendorId);
+
     const { data: configs, error } = await supabase
       .from('vendor_pricing_configs')
       .select('blueprint_id, pricing_values')
@@ -28,11 +30,16 @@ export async function GET(request: NextRequest) {
       .eq('is_active', true);
 
     if (error) {
-      console.error('Error fetching pricing configs:', error);
+      console.error('❌ Error fetching pricing configs:', error);
       return NextResponse.json(
         { success: false, error: error.message },
         { status: 500 }
       );
+    }
+
+    console.log(`✅ Found ${configs?.length || 0} pricing configs for vendor ${vendorId}`);
+    if (configs && configs.length > 0) {
+      console.log('   Blueprint IDs:', configs.map(c => c.blueprint_id).join(', '));
     }
 
     return NextResponse.json({

@@ -10,9 +10,10 @@ interface MinimalProductCardProps {
   product: any;
   theme: any;
   index: number;
+  visiblePriceBreaks?: string[]; // e.g. ['1g', '3_5g'] - which tiers to show
 }
 
-export function MinimalProductCard({ product, theme, index }: MinimalProductCardProps) {
+export function MinimalProductCard({ product, theme, index, visiblePriceBreaks }: MinimalProductCardProps) {
   const pricing_tiers = product.pricing_tiers || {};
   const blueprint = product.pricing_blueprint;
   const priceBreaks = blueprint?.price_breaks || [];
@@ -25,25 +26,38 @@ export function MinimalProductCard({ product, theme, index }: MinimalProductCard
       pricing_tiers: product.pricing_tiers,
       has_blueprint: !!product.pricing_blueprint,
       blueprint: product.pricing_blueprint,
-      price_breaks: priceBreaks
+      price_breaks: priceBreaks,
+      visible_price_breaks: visiblePriceBreaks
     });
   }
 
-  // Get all available prices
-  const availablePrices = priceBreaks
-    .filter((pb: any) => pricing_tiers[pb.break_id]?.price)
-    .map((pb: any) => ({
-      label: pb.display || pb.break_id,
-      price: parseFloat(pricing_tiers[pb.break_id].price),
-      id: pb.break_id
-    }));
+  // Filter by visible price breaks if configured
+  // If visiblePriceBreaks is not set or empty, show NO pricing (user must configure)
+  const availablePrices = !visiblePriceBreaks || visiblePriceBreaks.length === 0
+    ? [] // Show nothing by default
+    : priceBreaks
+        .filter((pb: any) => {
+          // Must have a price AND be in the visible list
+          return pricing_tiers[pb.break_id]?.price && visiblePriceBreaks.includes(pb.break_id);
+        })
+        .map((pb: any) => ({
+          label: pb.display || pb.break_id,
+          price: parseFloat(pricing_tiers[pb.break_id].price),
+          id: pb.break_id
+        }))
+        // Sort by the order specified in visiblePriceBreaks
+        .sort((a: any, b: any) => {
+          const indexA = visiblePriceBreaks.indexOf(a.id);
+          const indexB = visiblePriceBreaks.indexOf(b.id);
+          return indexA - indexB;
+        });
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10 }}
+      initial={{ opacity: 0, y: 5 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3, delay: index * 0.02 }}
-      className="p-4 flex flex-col justify-between h-full"
+      transition={{ duration: 0.2, delay: index * 0.01 }}
+      className="p-1.5 flex flex-col h-full"
       style={{
         background: theme.styles.productCard.background,
         borderColor: theme.styles.productCard.borderColor,
@@ -51,84 +65,81 @@ export function MinimalProductCard({ product, theme, index }: MinimalProductCard
         backdropFilter: theme.styles.productCard.backdropBlur ? `blur(${theme.styles.productCard.backdropBlur})` : undefined
       }}
     >
-      {/* Top Section: Name + Strain */}
-      <div>
-        {/* Product Name */}
-        <h3
-          className="font-light uppercase tracking-[0.12em] leading-tight mb-2"
-          style={{
-            color: theme.styles.productName.color,
-            fontSize: '0.8rem',
-            opacity: 0.95
-          }}
-        >
-          {product.name}
-        </h3>
+      {/* Product Name - Super Compact */}
+      <h3
+        className="font-medium uppercase tracking-wide leading-tight mb-0.5 line-clamp-2"
+        style={{
+          color: theme.styles.productName.color,
+          fontSize: '0.625rem', // 10px
+          opacity: 0.95
+        }}
+      >
+        {product.name}
+      </h3>
 
-        {/* Strain Type + THC - Inline, minimal */}
-        <div className="flex items-center gap-2 mb-3">
-          {product.metadata?.strain_type && (
-            <span
-              className="text-[9px] font-medium uppercase px-1.5 py-0.5"
-              style={{
-                color: theme.styles.productDescription.color,
-                opacity: 0.6,
-                letterSpacing: '0.05em'
-              }}
-            >
-              {product.metadata.strain_type}
-            </span>
-          )}
-          {product.metadata?.thc_percentage && (
-            <span
-              className="text-[9px] font-medium"
-              style={{
-                color: theme.styles.price.color,
-                opacity: 0.7
-              }}
-            >
-              {product.metadata.thc_percentage}% THC
-            </span>
-          )}
-        </div>
+      {/* Strain + THC - One Line */}
+      <div className="flex items-center gap-1.5 mb-1">
+        {product.metadata?.strain_type && (
+          <span
+            className="text-[7px] font-medium uppercase"
+            style={{
+              color: theme.styles.productDescription.color,
+              opacity: 0.5,
+              letterSpacing: '0.03em'
+            }}
+          >
+            {product.metadata.strain_type.slice(0, 3)}
+          </span>
+        )}
+        {product.metadata?.thc_percentage && (
+          <span
+            className="text-[7px] font-semibold"
+            style={{
+              color: theme.styles.price.color,
+              opacity: 0.8
+            }}
+          >
+            {product.metadata.thc_percentage}%
+          </span>
+        )}
       </div>
 
-      {/* Bottom Section: Pricing - Compact Grid */}
+      {/* Pricing - Ultra Compact (show max 2 tiers) */}
       <div className="mt-auto">
         {availablePrices.length > 0 ? (
-          <div className="grid grid-cols-2 gap-1.5">
-            {availablePrices.map((item: any) => (
+          <div className="grid grid-cols-2 gap-0.5">
+            {availablePrices.slice(0, 2).map((item: any) => (
               <div
                 key={item.id}
-                className="text-center py-1.5 px-2"
+                className="text-center py-0.5 px-1"
                 style={{
-                  background: `${theme.styles.price.color}10`,
+                  background: `${theme.styles.price.color}08`,
                   borderWidth: '1px',
-                  borderColor: `${theme.styles.price.color}30`
+                  borderColor: `${theme.styles.price.color}20`
                 }}
               >
                 <div
-                  className="text-[8px] uppercase font-medium mb-0.5"
+                  className="text-[6px] uppercase font-medium"
                   style={{
                     color: theme.styles.productDescription.color,
-                    opacity: 0.5,
-                    letterSpacing: '0.05em'
+                    opacity: 0.4,
+                    letterSpacing: '0.02em'
                   }}
                 >
                   {item.label}
                 </div>
                 <div
-                  className="text-sm font-medium"
+                  className="text-[10px] font-semibold"
                   style={{ color: theme.styles.price.color }}
                 >
-                  ${item.price.toFixed(2)}
+                  ${item.price.toFixed(0)}
                 </div>
               </div>
             ))}
           </div>
         ) : (
           <div
-            className="text-[10px] text-center py-2"
+            className="text-[7px] text-center py-1"
             style={{ color: theme.styles.productDescription.color, opacity: 0.3 }}
           >
             No pricing
