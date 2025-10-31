@@ -56,13 +56,13 @@ export async function PATCH(request: NextRequest) {
     if (updates.cost_price !== undefined) updateData.cost_price = updates.cost_price;
     if (updates.description !== undefined) updateData.description = updates.description;
 
-    // Handle blueprint_fields directly (NEW SYSTEM)
+    // Handle blueprint_fields directly (NEW SYSTEM - object format)
     if (updates.blueprint_fields !== undefined) {
       updateData.blueprint_fields = updates.blueprint_fields;
     }
-
     // Handle custom fields (LEGACY - for backwards compatibility)
-    if (updates.custom_fields) {
+    // Only use custom_fields if blueprint_fields was not provided
+    else if (updates.custom_fields) {
       const fieldsArray = Object.entries(updates.custom_fields).map(([field_name, field_value]) => {
         // Convert field_name to proper label format (e.g., thc_percentage → THC Content)
         const labelMap: any = {

@@ -154,13 +154,13 @@ export function ProductQuickView({ product, vendorId, isOpen, onClose, onSave, o
   const handleSave = async () => {
     setSaving(true);
     try {
-      // Build blueprint_fields array from edited fields
-      const blueprintFields = Object.entries(editedBlueprintFields)
-        .filter(([_, value]) => value) // Only include fields with values
-        .map(([fieldName, fieldValue]) => ({
-          field_name: fieldName,
-          field_value: fieldValue
-        }));
+      // Build blueprint_fields object from edited fields (keep as object format)
+      const blueprintFields: Record<string, string> = {};
+      Object.entries(editedBlueprintFields).forEach(([fieldId, value]) => {
+        if (value) { // Only include fields with values
+          blueprintFields[fieldId] = value;
+        }
+      });
 
       const response = await axios.patch('/api/vendor/products/update', {
         product_id: product.id,
@@ -611,13 +611,14 @@ export function ProductQuickView({ product, vendorId, isOpen, onClose, onSave, o
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       {categoryFields.map((field: any) => {
-                        const fieldLabel = field.label || field.fieldId;
-                        const fieldValue = editedBlueprintFields[fieldLabel] || '';
+                        const fieldId = field.fieldId || field.field_id;
+                        const fieldLabel = field.label || fieldId;
+                        const fieldValue = editedBlueprintFields[fieldId] || '';
                         const fieldDef = field.definition || field;
                         const fieldType = fieldDef.type || 'text';
 
                         return (
-                          <div key={field.fieldId} className="space-y-2">
+                          <div key={fieldId} className="space-y-2">
                             <label className="block text-white/40 text-[10px] uppercase tracking-wider">
                               {fieldLabel}
                               {fieldDef.required && <span className="text-red-400 ml-1">*</span>}
@@ -628,7 +629,7 @@ export function ProductQuickView({ product, vendorId, isOpen, onClose, onSave, o
                                 value={fieldValue}
                                 onChange={(e) => setEditedBlueprintFields(prev => ({
                                   ...prev,
-                                  [fieldLabel]: e.target.value
+                                  [fieldId]: e.target.value
                                 }))}
                                 className="w-full bg-black/20 border border-white/10 text-white px-4 py-3 rounded-[14px] focus:outline-none focus:border-white/30 transition-all"
                               >
@@ -642,7 +643,7 @@ export function ProductQuickView({ product, vendorId, isOpen, onClose, onSave, o
                                 value={fieldValue}
                                 onChange={(e) => setEditedBlueprintFields(prev => ({
                                   ...prev,
-                                  [fieldLabel]: e.target.value
+                                  [fieldId]: e.target.value
                                 }))}
                                 placeholder={fieldDef.placeholder || ''}
                                 rows={3}
@@ -656,7 +657,7 @@ export function ProductQuickView({ product, vendorId, isOpen, onClose, onSave, o
                                   value={fieldValue}
                                   onChange={(e) => setEditedBlueprintFields(prev => ({
                                     ...prev,
-                                    [fieldLabel]: e.target.value
+                                    [fieldId]: e.target.value
                                   }))}
                                   placeholder={fieldDef.placeholder || ''}
                                   className="w-full bg-black/20 border border-white/10 text-white px-4 py-3 rounded-[14px] focus:outline-none focus:border-white/30 transition-all"
@@ -673,7 +674,7 @@ export function ProductQuickView({ product, vendorId, isOpen, onClose, onSave, o
                                 value={fieldValue}
                                 onChange={(e) => setEditedBlueprintFields(prev => ({
                                   ...prev,
-                                  [fieldLabel]: e.target.value
+                                  [fieldId]: e.target.value
                                 }))}
                                 placeholder={fieldDef.placeholder || ''}
                                 className="w-full bg-black/20 border border-white/10 text-white px-4 py-3 rounded-[14px] focus:outline-none focus:border-white/30 transition-all"
