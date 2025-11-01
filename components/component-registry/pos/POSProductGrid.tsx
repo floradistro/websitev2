@@ -99,10 +99,6 @@ export function POSProductGrid({
       }
 
       const { products: inventoryProducts } = await response.json();
-      console.log('📦 Loaded products:', inventoryProducts?.length || 0);
-      console.log('🔍 First product:', inventoryProducts?.[0]);
-      console.log('💰 First product pricing tiers:', inventoryProducts?.[0]?.pricing_tiers);
-      console.log('📁 First product category:', inventoryProducts?.[0]?.category);
       setProducts(inventoryProducts || []);
       setError(null);
     } catch (err: any) {
@@ -116,9 +112,7 @@ export function POSProductGrid({
   // Get unique categories
   const categories = useMemo(() => {
     const cats = new Set(products.map(p => p.category).filter(Boolean));
-    const categoryArray = ['all', ...Array.from(cats)];
-    console.log('📁 Categories extracted:', categoryArray);
-    return categoryArray;
+    return ['all', ...Array.from(cats)];
   }, [products]);
 
   // Filter products
@@ -440,15 +434,6 @@ function ProductCard({ product, onAddToCart, onProductClick, onQuickView, showIn
   const [showAddButton, setShowAddButton] = useState(false);
 
   const tiers = product.pricing_tiers || [];
-
-  // Debug first card render
-  if (product.id && tiers.length === 0) {
-    console.log(`⚠️ Product "${product.name}" has no pricing tiers:`, {
-      product_id: product.id,
-      pricing_tiers: product.pricing_tiers,
-      vendor: product.vendor
-    });
-  }
 
   const handleTierSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
     e.stopPropagation();

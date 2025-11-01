@@ -135,20 +135,6 @@ export async function GET(request: NextRequest) {
           const productOverrides = activeAssignment.price_overrides || {};
           const vendorPricing = vendorPricingMap.get(inv.products.vendor_id);
 
-          // Debug logging for first product
-          if (inv.products.id === inventoryResult.data[0]?.products?.id) {
-            console.log('🔍 DEBUG First Product Pricing:', {
-              product_name: inv.products.name,
-              vendor_id: inv.products.vendor_id,
-              blueprint_name: blueprint.name,
-              price_breaks_count: priceBreaks.length,
-              price_breaks: priceBreaks,
-              product_overrides: productOverrides,
-              vendor_pricing: vendorPricing,
-              has_vendor_pricing_map: vendorPricingMap.has(inv.products.vendor_id)
-            });
-          }
-
           priceBreaks.forEach((priceBreak: any) => {
             const breakId = priceBreak.break_id;
             // Product overrides take priority, then vendor pricing
@@ -164,14 +150,6 @@ export async function GET(request: NextRequest) {
                 unit: priceBreak.unit || '',
                 price: parseFloat(price),
                 sort_order: priceBreak.sort_order || 0,
-              });
-            } else {
-              // Log missing prices
-              console.log(`⚠️ No price for ${inv.products.name} - ${priceBreak.label}:`, {
-                breakId,
-                productPrice,
-                vendorPrice,
-                has_vendor_pricing: !!vendorPricing
               });
             }
           });
