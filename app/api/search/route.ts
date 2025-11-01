@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
     const searchTerm = `%${query.toLowerCase()}%`;
 
     // Search products (only if vendorId provided)
-    let products = [];
+    let products: any[] = [];
     if (vendorId) {
       const { data } = await supabase
         .from('products')
@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Search orders (only if vendorId provided)
-    let orders = [];
+    let orders: any[] = [];
     if (vendorId) {
       const { data } = await supabase
         .from('orders')
@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Search customers (only if vendorId provided)
-    let customers = [];
+    let customers: any[] = [];
     if (vendorId) {
       const { data } = await supabase
         .from('customers')
