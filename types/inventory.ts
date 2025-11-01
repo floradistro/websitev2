@@ -27,6 +27,7 @@ export interface Product {
   description: string | null;
   custom_fields: CustomField[] | null;
   product_categories?: ProductCategoryRelation[];
+  primary_category?: ProductCategory | null;
 }
 
 export interface Location {
