@@ -28,12 +28,10 @@ export default function GroupConfigWizard({ vendorId, existingGroup, onComplete,
   const [availablePricingTiers, setAvailablePricingTiers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Form state - LAYOUT ONLY (theme, pricing, display settings moved to main menu editor)
+  // Form state - ONLY device grouping (all config moved to main menu editor)
   const [groupName, setGroupName] = useState('');
   const [groupDescription, setGroupDescription] = useState('');
   const [selectedDevices, setSelectedDevices] = useState<string[]>([]);
-  const [gridColumns, setGridColumns] = useState(6);
-  const [gridRows, setGridRows] = useState(5);
   const [deviceCategories, setDeviceCategories] = useState<{ [deviceId: string]: string[] }>({});
 
   useEffect(() => {
@@ -45,8 +43,6 @@ export default function GroupConfigWizard({ vendorId, existingGroup, onComplete,
     if (existingGroup) {
       setGroupName(existingGroup.name || '');
       setGroupDescription(existingGroup.description || '');
-      setGridColumns(existingGroup.shared_grid_columns || 6);
-      setGridRows(existingGroup.shared_grid_rows || 5);
 
       // Set selected devices and categories
       if (existingGroup.members) {
@@ -115,16 +111,13 @@ export default function GroupConfigWizard({ vendorId, existingGroup, onComplete,
     onComplete({
       name: groupName,
       description: groupDescription,
-      gridColumns,
-      gridRows,
       devices,
     });
   };
 
   const canProceed = () => {
     if (step === 1) return groupName.trim() && selectedDevices.length >= 2;
-    if (step === 2) return true; // Layout step - grid values always valid
-    return false;
+    return false; // Only 2 steps now
   };
 
   if (loading) {
@@ -154,7 +147,7 @@ export default function GroupConfigWizard({ vendorId, existingGroup, onComplete,
           <div>
             <h2 className="text-2xl font-bold text-white">Create Display Group</h2>
             <p className="text-white/60 text-sm mt-1">
-              Step {step} of 3: {step === 1 ? 'Select Displays' : step === 2 ? 'Grid Layout (Rows/Columns)' : 'Assign Categories Per Display'}
+              Step {step} of 2: {step === 1 ? 'Select Displays & Name' : 'Assign Categories Per Display'}
             </p>
           </div>
           <button
@@ -169,8 +162,8 @@ export default function GroupConfigWizard({ vendorId, existingGroup, onComplete,
         <div className="h-1 bg-white/10">
           <motion.div
             className="h-full bg-gradient-to-r from-purple-500 to-pink-500"
-            initial={{ width: '33%' }}
-            animate={{ width: `${(step / 3) * 100}%` }}
+            initial={{ width: '50%' }}
+            animate={{ width: `${(step / 2) * 100}%` }}
             transition={{ duration: 0.3 }}
           />
         </div>
@@ -265,7 +258,7 @@ export default function GroupConfigWizard({ vendorId, existingGroup, onComplete,
               </motion.div>
             )}
 
-            {/* Step 2: Grid Layout Only */}
+            {/* Step 2: Assign Categories */}
             {step === 2 && (
               <motion.div
                 key="step2"
@@ -274,91 +267,15 @@ export default function GroupConfigWizard({ vendorId, existingGroup, onComplete,
                 exit={{ opacity: 0, x: -20 }}
                 className="space-y-6"
               >
-                <div className="p-5 bg-gradient-to-r from-purple-500/10 to-blue-500/10 border border-purple-500/20 rounded-xl">
+                <div className="p-5 bg-gradient-to-r from-purple-500/10 to-blue-500/10 border border-purple-500/20 rounded-xl mb-4">
                   <h3 className="text-white font-semibold mb-2 flex items-center gap-2">
                     <Grid3x3 className="w-5 h-5 text-purple-400" />
-                    Grid Layout Configuration
+                    Category Assignment Per Display
                   </h3>
                   <p className="text-sm text-white/70">
-                    Set the grid size for all displays in this group. All theme, pricing, and display settings are configured in the main "Displays & Menus" tab.
+                    Assign specific product categories to each display. All grid, theme, pricing, and display settings are configured in the main "Displays & Menus" editor.
                   </p>
-                </div>
-
-                <div className="grid grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm font-medium text-white mb-2">
-                      Grid Columns
-                    </label>
-                    <input
-                      type="number"
-                      min="3"
-                      max="12"
-                      value={gridColumns || 6}
-                      onChange={(e) => setGridColumns(parseInt(e.target.value) || 6)}
-                      className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500 text-lg font-semibold"
-                    />
-                    <p className="text-xs text-white/40 mt-1">3-12 columns</p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-white mb-2">
-                      Grid Rows
-                    </label>
-                    <input
-                      type="number"
-                      min="3"
-                      max="10"
-                      value={gridRows || 5}
-                      onChange={(e) => setGridRows(parseInt(e.target.value) || 5)}
-                      className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500 text-lg font-semibold"
-                    />
-                    <p className="text-xs text-white/40 mt-1">3-10 rows</p>
-                  </div>
-                </div>
-
-                <div className="p-6 bg-purple-500/10 border border-purple-500/20 rounded-xl">
-                  <div className="flex items-start gap-3">
-                    <Grid3x3 className="w-6 h-6 text-purple-400 mt-0.5" />
-                    <div className="text-sm text-white/80">
-                      <div className="font-semibold text-lg mb-2">Layout Preview</div>
-                      <div className="text-white/90 mb-1">
-                        Each display will show {gridColumns} × {gridRows} = <span className="font-bold text-purple-300">{gridColumns * gridRows} products</span> per page
-                      </div>
-                      <div className="text-white/60 mt-2">
-                        Total across {selectedDevices.length} displays: <span className="font-bold text-purple-300">{gridColumns * gridRows * selectedDevices.length} products</span> visible at once
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
-                  <div className="text-sm text-white/80">
-                    <div className="font-medium mb-1 flex items-center gap-2">
-                      <Settings className="w-4 h-4 text-blue-400" />
-                      Configure Theme & Display Settings
-                    </div>
-                    <div className="text-white/60">
-                      Theme, pricing display, product info, and all other visual settings are configured in the main "Displays & Menus" editor. Display groups only control the grid layout.
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            )}
-
-            {/* Step 3: Assign Categories */}
-            {step === 3 && (
-              <motion.div
-                key="step3"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                className="space-y-6"
-              >
-                <div className="p-4 bg-purple-500/10 border border-purple-500/20 rounded-lg mb-4">
-                  <h3 className="text-white font-semibold mb-2">Category Assignment</h3>
-                  <p className="text-sm text-white/60">
-                    Assign specific product categories to each display. Each display will only show products from its assigned categories.
-                  </p>
-                  <p className="text-xs text-white/40 mt-2">
+                  <p className="text-xs text-white/50 mt-2">
                     💡 Tip: Leave empty to show all categories on that display
                   </p>
                 </div>
@@ -453,7 +370,7 @@ export default function GroupConfigWizard({ vendorId, existingGroup, onComplete,
           </button>
 
           <div className="flex items-center gap-2">
-            {step < 3 ? (
+            {step < 2 ? (
               <button
                 onClick={() => setStep(step + 1)}
                 disabled={!canProceed()}

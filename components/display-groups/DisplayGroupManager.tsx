@@ -244,11 +244,7 @@ export default function DisplayGroupManager({ vendorId }: DisplayGroupManagerPro
               <div className="flex items-center gap-4 mb-4 text-sm text-white/60">
                 <div className="flex items-center gap-1">
                   <Monitor className="w-4 h-4" />
-                  <span>{group.members.length} displays</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <Grid3x3 className="w-4 h-4" />
-                  <span>{group.shared_grid_columns}×{group.shared_grid_rows} grid layout</span>
+                  <span>{group.members.length} displays grouped</span>
                 </div>
               </div>
 

@@ -65,8 +65,8 @@ export async function GET(request: NextRequest) {
 
 /**
  * POST /api/display-groups
- * Create a new display group - LAYOUT ONLY (grid columns/rows + category assignment)
- * All theme, pricing, and display settings are configured in main menu editor
+ * Create a new display group - GROUPING ONLY (which displays belong together)
+ * All config (grid, theme, pricing, display settings) is in main menu editor per category
  */
 export async function POST(request: NextRequest) {
   try {
@@ -76,8 +76,6 @@ export async function POST(request: NextRequest) {
       locationId,
       name,
       description,
-      gridColumns,
-      gridRows,
       devices, // Array of { deviceId, position, categories }
     } = body;
 
@@ -90,8 +88,8 @@ export async function POST(request: NextRequest) {
 
     const supabase = getServiceSupabase();
 
-    // Create group - ONLY layout configuration (grid columns/rows)
-    // Theme/pricing/display settings moved to main menu editor
+    // Create group - ONLY grouping (which displays belong together)
+    // All visual config moved to main menu editor
     const { data: group, error: groupError } = await supabase
       .from('tv_display_groups')
       .insert({
@@ -99,9 +97,7 @@ export async function POST(request: NextRequest) {
         location_id: locationId,
         name,
         description,
-        shared_grid_columns: gridColumns || 6,
-        shared_grid_rows: gridRows || 5,
-        // Removed: theme, display_mode, pricing, displayConfig - these are in menu settings now
+        // Removed ALL config: grid, theme, display_mode, pricing, displayConfig
       })
       .select()
       .single();

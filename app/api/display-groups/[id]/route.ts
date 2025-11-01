@@ -40,8 +40,8 @@ export async function DELETE(
 
 /**
  * PUT /api/display-groups/[id]
- * Update a display group - LAYOUT ONLY (grid columns/rows + category assignment)
- * All theme, pricing, and display settings are configured in main menu editor
+ * Update a display group - GROUPING ONLY (name, description, category assignment)
+ * All config (grid, theme, pricing, display settings) is in main menu editor per category
  */
 export async function PUT(
   request: NextRequest,
@@ -53,21 +53,17 @@ export async function PUT(
     const {
       name,
       description,
-      gridColumns,
-      gridRows,
       devices, // Array of { deviceId, position, categories }
     } = body;
 
     const supabase = getServiceSupabase();
 
-    // Update group - ONLY layout configuration
+    // Update group - ONLY grouping configuration
     const updateData: any = {
       name,
       description,
-      shared_grid_columns: gridColumns,
-      shared_grid_rows: gridRows,
       updated_at: new Date().toISOString(),
-      // Removed: theme, display_mode, typography, spacing, pricing, displayConfig
+      // Removed ALL config: grid, theme, display_mode, typography, spacing, pricing, displayConfig
     };
 
     const { data: group, error: groupError } = await supabase
