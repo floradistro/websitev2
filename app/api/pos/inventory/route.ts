@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
                 name
               )
             ),
-            pricing_assignments!product_id(
+            product_pricing_assignments!product_id(
               blueprint_id,
               is_active,
               price_overrides,
@@ -122,8 +122,8 @@ export async function GET(request: NextRequest) {
     const products = (inventoryResult.data || [])
       .filter((inv: any) => inv.products) // Filter out null products
       .map((inv: any) => {
-        // Get pricing tiers from product's pricing_assignments
-        const pricingAssignments = inv.products.pricing_assignments || [];
+        // Get pricing tiers from product's product_pricing_assignments
+        const pricingAssignments = inv.products.product_pricing_assignments || [];
         const pricingTiers: any[] = [];
 
         // Use the first active pricing assignment
