@@ -398,9 +398,9 @@ function TVDisplayContent() {
       setPromotions(activePromotions);
       console.log('🎉 Loaded promotions:', activePromotions.length);
 
-      // Load products via API (bypasses RLS)
-      console.log('🔍 Fetching products for vendor:', vendorId);
-      const productsResponse = await fetch(`/api/tv-display/products?vendor_id=${vendorId}`);
+      // Load products via API (bypasses RLS) - filtered by location inventory
+      console.log('🔍 Fetching products for vendor:', vendorId, 'location:', locationId);
+      const productsResponse = await fetch(`/api/tv-display/products?vendor_id=${vendorId}&location_id=${locationId}`);
       const productsData = await productsResponse.json();
 
       if (!productsData.success) {
