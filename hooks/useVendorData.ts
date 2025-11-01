@@ -47,7 +47,7 @@ export function useVendorData<T>(
     const vendorId = vendor?.id;
 
     if (!vendorId || !isAuthenticated) {
-      console.error('No vendor ID found or not authenticated');
+      // Normal during initial load - skip silently
       setLoading(false);
       return;
     }
