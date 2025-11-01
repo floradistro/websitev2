@@ -113,6 +113,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Broadcast session update to all connected devices
+    const channel = supabase.channel(`pos-sessions-${locationId}`);
+    await channel.send({
+      type: 'broadcast',
+      event: 'session-update',
+      payload: { sessionId: session.id, registerId, action: 'opened' },
+    });
+
     return NextResponse.json({
       success: true,
       session,

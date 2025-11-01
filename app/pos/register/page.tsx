@@ -45,18 +45,16 @@ export default function POSRegisterPage() {
     loadPromotions();
   }, []);
 
-  // Subscribe to promotions changes with unique channel per instance
+  // Subscribe to broadcast channel for promotion updates (more reliable)
   useEffect(() => {
-    const channelId = `pos_promotions_${Math.random().toString(36).substring(7)}`;
     const channel = supabase
-      .channel(channelId)
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'promotions',
-        filter: `vendor_id=eq.${FLORA_DISTRO_VENDOR_ID}`,
-      }, (payload) => {
-        console.log('🎉 Promotion changed, reloading:', payload.eventType);
+      .channel(`pos-promotions-${FLORA_DISTRO_VENDOR_ID}`, {
+        config: {
+          broadcast: { self: true },
+        },
+      })
+      .on('broadcast', { event: 'promotion-update' }, (payload) => {
+        console.log('🎉 Promotion update broadcast received:', payload);
         loadPromotions();
         // Recalculate cart with new promotions
         recalculateCart();
@@ -66,7 +64,7 @@ export default function POSRegisterPage() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [cart]);
+  }, [recalculateCart]);
 
   const loadActiveSession = async () => {
     try {
