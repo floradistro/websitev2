@@ -37,9 +37,20 @@ export async function GET(request: NextRequest) {
             description,
             short_description,
             custom_fields,
+            primary_category:categories!primary_category_id(id, name),
             product_categories (
               categories (
                 name
+              )
+            ),
+            pricing_assignments(
+              blueprint_id,
+              is_active,
+              price_overrides,
+              blueprint:pricing_tier_blueprints(
+                id,
+                name,
+                price_breaks
               )
             ),
             vendors (
@@ -111,14 +122,52 @@ export async function GET(request: NextRequest) {
     const products = (inventoryResult.data || [])
       .filter((inv: any) => inv.products) // Filter out null products
       .map((inv: any) => {
-        // Get pricing tiers for this product's vendor
-        const pricingTiers = vendorPricingMap.get(inv.products.vendor_id) || [];
+        // Get pricing tiers from product's pricing_assignments
+        const pricingAssignments = inv.products.pricing_assignments || [];
+        const pricingTiers: any[] = [];
 
-        // Get category from product_categories
-        const productCategories = inv.products.product_categories || [];
-        const category = productCategories.length > 0 && productCategories[0].categories
-          ? productCategories[0].categories.name
-          : null;
+        // Use the first active pricing assignment
+        const activeAssignment = pricingAssignments.find((a: any) => a.is_active) || pricingAssignments[0];
+
+        if (activeAssignment && activeAssignment.blueprint) {
+          const blueprint = activeAssignment.blueprint;
+          const priceBreaks = blueprint.price_breaks || [];
+          const productOverrides = activeAssignment.price_overrides || {};
+          const vendorPrices = vendorPricingMap.get(inv.products.vendor_id) || [];
+
+          priceBreaks.forEach((priceBreak: any) => {
+            const breakId = priceBreak.break_id;
+            // Product overrides take priority, then vendor pricing
+            const productPrice = productOverrides[breakId]?.price;
+            const vendorTier = vendorPrices.find((t: any) => t.break_id === breakId);
+            const price = productPrice || vendorTier?.price;
+
+            if (price) {
+              pricingTiers.push({
+                break_id: breakId,
+                label: priceBreak.label || `${priceBreak.qty}${priceBreak.unit || ''}`,
+                qty: priceBreak.qty || 1,
+                unit: priceBreak.unit || '',
+                price: parseFloat(price),
+                sort_order: priceBreak.sort_order || 0,
+              });
+            }
+          });
+
+          // Sort by sort_order
+          pricingTiers.sort((a, b) => a.sort_order - b.sort_order);
+        }
+
+        // Get category - try primary_category first, then fall back to product_categories
+        let category = null;
+        if (inv.products.primary_category) {
+          category = inv.products.primary_category.name;
+        } else {
+          const productCategories = inv.products.product_categories || [];
+          if (productCategories.length > 0 && productCategories[0].categories) {
+            category = productCategories[0].categories.name;
+          }
+        }
 
         // Get product fields from custom_fields JSONB
         const blueprintFields = inv.products.custom_fields || [];
