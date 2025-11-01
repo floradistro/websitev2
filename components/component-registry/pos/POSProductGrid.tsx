@@ -92,13 +92,17 @@ export function POSProductGrid({
   const loadInventory = async () => {
     try {
       const response = await fetch(`/api/pos/inventory?locationId=${locationId}`);
-      
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to load inventory');
       }
 
       const { products: inventoryProducts } = await response.json();
+      console.log('📦 Loaded products:', inventoryProducts?.length || 0);
+      console.log('🔍 First product:', inventoryProducts?.[0]);
+      console.log('💰 First product pricing tiers:', inventoryProducts?.[0]?.pricing_tiers);
+      console.log('📁 First product category:', inventoryProducts?.[0]?.category);
       setProducts(inventoryProducts || []);
       setError(null);
     } catch (err: any) {
@@ -112,7 +116,9 @@ export function POSProductGrid({
   // Get unique categories
   const categories = useMemo(() => {
     const cats = new Set(products.map(p => p.category).filter(Boolean));
-    return ['all', ...Array.from(cats)];
+    const categoryArray = ['all', ...Array.from(cats)];
+    console.log('📁 Categories extracted:', categoryArray);
+    return categoryArray;
   }, [products]);
 
   // Filter products
@@ -432,8 +438,17 @@ interface ProductCardProps {
 function ProductCard({ product, onAddToCart, onProductClick, onQuickView, showInventory, vendorLogo }: ProductCardProps) {
   const [selectedTierIndex, setSelectedTierIndex] = useState<number | null>(null);
   const [showAddButton, setShowAddButton] = useState(false);
-  
+
   const tiers = product.pricing_tiers || [];
+
+  // Debug first card render
+  if (product.id && tiers.length === 0) {
+    console.log(`⚠️ Product "${product.name}" has no pricing tiers:`, {
+      product_id: product.id,
+      pricing_tiers: product.pricing_tiers,
+      vendor: product.vendor
+    });
+  }
 
   const handleTierSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
     e.stopPropagation();
