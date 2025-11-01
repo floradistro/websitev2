@@ -306,9 +306,16 @@ export function POSProductGrid({
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
               className="bg-white/5 border border-white/10 text-white px-3 py-2.5 rounded-2xl text-[10px] uppercase tracking-[0.15em] focus:outline-none focus:border-white/20 hover:bg-white/10 transition-all min-w-[140px] cursor-pointer appearance-none pr-8"
+              style={{
+                colorScheme: 'dark'
+              }}
             >
               {categories.map((cat) => (
-                <option key={cat} value={cat || 'all'} className="bg-black text-white">
+                <option
+                  key={cat}
+                  value={cat || 'all'}
+                  style={{ backgroundColor: '#000', color: '#fff' }}
+                >
                   {cat === 'all' ? 'All Categories' : cat}
                 </option>
               ))}
@@ -466,17 +473,6 @@ function ProductCard({ product, onAddToCart, onProductClick, onQuickView, showIn
     }
   };
 
-  // Get price display - SIMPLIFIED
-  const getPriceDisplay = () => {
-    if (tiers.length > 0) {
-      const prices = tiers.map((t: any) => t.price || (product.price * t.qty));
-      const minPrice = Math.min(...prices);
-      const maxPrice = Math.max(...prices);
-      return minPrice === maxPrice ? `$${minPrice.toFixed(0)}` : `$${minPrice.toFixed(0)} - $${maxPrice.toFixed(0)}`;
-    }
-    return `$${product.price.toFixed(0)}`;
-  };
-
   return (
     <div className="group flex flex-col bg-[#0a0a0a] hover:bg-[#141414] border border-white/5 hover:border-white/10 rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1">
       {/* Product Image - Clickable (single click navigates, double-click opens quick view) */}
@@ -534,19 +530,14 @@ function ProductCard({ product, onAddToCart, onProductClick, onQuickView, showIn
       {/* Product Info */}
       <div className="flex flex-col flex-1 p-4">
         {/* Product Name - Clickable */}
-        <h3 
-          className="text-white font-black uppercase text-xs tracking-tight leading-tight line-clamp-2 mb-3 cursor-pointer hover:text-white/80 transition-colors" 
+        <h3
+          className="text-white font-black uppercase text-xs tracking-tight leading-tight line-clamp-2 mb-3 cursor-pointer hover:text-white/80 transition-colors"
           style={{ fontWeight: 900 }}
           onClick={handleProductClick}
         >
           {product.name}
         </h3>
-        
-        {/* Price */}
-        <div className="text-white font-black text-sm mb-3 tracking-tight" style={{ fontWeight: 900 }}>
-          {getPriceDisplay()}
-        </div>
-        
+
         {/* Stock Status */}
         {showInventory && (
           <div className="flex items-center gap-1.5 mb-3">
@@ -568,12 +559,15 @@ function ProductCard({ product, onAddToCart, onProductClick, onQuickView, showIn
                 onChange={handleTierSelect}
                 onClick={(e) => e.stopPropagation()}
                 className="w-full appearance-none bg-white/5 border border-white/10 rounded-2xl px-3 py-3 pr-8 text-[10px] uppercase tracking-[0.15em] text-white hover:border-white/20 focus:border-white/20 focus:outline-none transition-all"
+                style={{
+                  colorScheme: 'dark'
+                }}
               >
-                <option value="" className="bg-black">Select Quantity</option>
+                <option value="" style={{ backgroundColor: '#000', color: '#fff' }}>Select Quantity</option>
                 {tiers.map((tier, index) => {
                   const price = tier.price || (product.price * tier.qty);
                   return (
-                    <option key={index} value={index} className="bg-black">
+                    <option key={index} value={index} style={{ backgroundColor: '#000', color: '#fff' }}>
                       {tier.label} - ${price.toFixed(0)}
                     </option>
                   );
