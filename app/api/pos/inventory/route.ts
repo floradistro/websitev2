@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
                 name
               )
             ),
-            pricing_assignments(
+            pricing_assignments!product_id(
               blueprint_id,
               is_active,
               price_overrides,
