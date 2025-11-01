@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Upload, Loader, ChevronLeft, ChevronRight, X, Sparkles, CheckCircle } from 'lucide-react';
 import SectionHeader from '@/components/ui/SectionHeader';
+import { POSInput, POSLabel, POSSelect, POSTextarea } from '@/components/ui';
 
 interface Category {
   id: string;
@@ -130,37 +131,32 @@ export default function BulkImportPanel({
         <SectionHeader>Bulk Product Import</SectionHeader>
 
         {/* Category Selector */}
-        <div className="mb-4">
-          <label className="block text-white/40 text-[10px] uppercase tracking-[0.15em] mb-2 font-black" style={{ fontWeight: 900 }}>
-            Category for All Products <span className="text-red-400">*</span>
-          </label>
-          <select
-            value={bulkCategory}
-            onChange={(e) => onBulkCategoryChange(e.target.value)}
-            className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl text-white px-3 py-2.5 focus:outline-none focus:border-white/20 transition-all text-xs"
-          >
-            <option value="">Select category...</option>
-            {categories.map(cat => (
-              <option key={cat.id} value={cat.id}>{cat.name}</option>
-            ))}
-          </select>
-          <p className="text-white/30 text-[9px] mt-1">All products in this batch will use this category</p>
-        </div>
+        <POSSelect
+          label="Category for All Products"
+          required
+          value={bulkCategory}
+          onChange={(e) => onBulkCategoryChange(e.target.value)}
+          containerClassName="mb-4"
+        >
+          <option value="">Select category...</option>
+          {categories.map(cat => (
+            <option key={cat.id} value={cat.id}>{cat.name}</option>
+          ))}
+        </POSSelect>
+        <p className="text-white/30 text-[9px] mt-1 -mt-3">All products in this batch will use this category</p>
 
         {/* Product List Input */}
-        <p className="text-white/40 text-[10px] mb-2 font-black" style={{ fontWeight: 900 }}>
-          Product List
-        </p>
+        <POSLabel>Product List</POSLabel>
         <p className="text-white/40 text-[9px] mb-3">
           Format: Name, Price (optional), Cost (optional) - One per line
         </p>
-        <textarea
+        <POSTextarea
           value={bulkInput}
           onChange={(e) => onBulkInputChange(e.target.value)}
           placeholder="Blue Dream, 45&#10;OG Kush, 50, 35&#10;Wedding Cake, 55, 40&#10;White Widow&#10;Gelato, 60"
           rows={10}
           disabled={!bulkCategory}
-          className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl text-white placeholder-white/20 px-3 py-2.5 focus:outline-none focus:border-white/20 transition-all resize-none text-xs font-mono disabled:opacity-30"
+          className="font-mono disabled:opacity-30"
         />
 
         {/* Image Upload Zone */}
@@ -354,17 +350,13 @@ export default function BulkImportPanel({
             {bulkProducts[currentReviewIndex] && (
               <div className="space-y-3">
                 {/* Product Name */}
-                <div>
-                  <label className="block text-white/40 text-[9px] uppercase tracking-[0.15em] mb-1.5 font-black" style={{ fontWeight: 900 }}>
-                    Product Name
-                  </label>
-                  <input
-                    type="text"
-                    value={bulkProducts[currentReviewIndex].name}
-                    onChange={(e) => handleProductFieldChange(currentReviewIndex, 'name', e.target.value)}
-                    className="w-full bg-[#141414] border border-white/10 rounded-xl text-white px-3 py-2 text-[10px]"
-                  />
-                </div>
+                <POSInput
+                  label="Product Name"
+                  type="text"
+                  value={bulkProducts[currentReviewIndex].name}
+                  onChange={(e) => handleProductFieldChange(currentReviewIndex, 'name', e.target.value)}
+                  className="bg-[#141414]"
+                />
 
                 {/* Matched Image */}
                 {bulkProducts[currentReviewIndex].matched_image_url && (
