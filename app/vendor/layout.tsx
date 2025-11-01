@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { LogOut, Menu, X } from 'lucide-react';
+import { LogOut, Menu, X, RefreshCw } from 'lucide-react';
 import VendorSupportChat from '@/components/VendorSupportChat';
 import AIActivityMonitor from '@/components/AIActivityMonitor';
 import { useAppAuth, AppAuthProvider } from '@/context/AppAuthContext';
@@ -87,6 +87,11 @@ function VendorLayoutContent({
       },
     });
   }
+
+  const handleRefresh = () => {
+    router.refresh();
+    window.location.reload();
+  };
 
     return (
     <>
@@ -195,9 +200,19 @@ function VendorLayoutContent({
             <UniversalSearch />
           </div>
 
-          <Link href="/vendor/apps" className="w-8 h-8 bg-white/5 rounded-lg flex items-center justify-center overflow-hidden border border-white/10 transition-all duration-200 hover:border-white/20 flex-shrink-0">
-            <img src={vendorLogo} alt={vendorName} className="w-full h-full object-contain p-1" />
-          </Link>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleRefresh}
+              className="p-1.5 text-white/40 hover:text-white/70 transition-all duration-200 hover:bg-white/5 rounded-lg flex-shrink-0"
+              title="Refresh"
+            >
+              <RefreshCw size={16} strokeWidth={1.5} />
+            </button>
+
+            <Link href="/vendor/apps" className="w-8 h-8 bg-white/5 rounded-lg flex items-center justify-center overflow-hidden border border-white/10 transition-all duration-200 hover:border-white/20 flex-shrink-0">
+              <img src={vendorLogo} alt={vendorName} className="w-full h-full object-contain p-1" />
+            </Link>
+          </div>
         </div>
       </nav>
 
@@ -309,6 +324,13 @@ function VendorLayoutContent({
 
             <div className="flex items-center gap-4">
               <UniversalSearch />
+              <button
+                onClick={handleRefresh}
+                className="text-white/40 hover:text-white/70 transition-all duration-200 p-1.5 hover:bg-white/5 rounded-lg"
+                title="Refresh"
+              >
+                <RefreshCw size={14} strokeWidth={1.5} />
+              </button>
               <Link
                 href="/vendor/apps"
                 className="text-white/60 hover:text-white text-[10px] uppercase tracking-[0.15em] transition-all duration-200"
