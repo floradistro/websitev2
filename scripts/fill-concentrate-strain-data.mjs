@@ -131,7 +131,7 @@ async function fillStrainData() {
   // Get all concentrate products
   const { data: products, error } = await supabase
     .from('products')
-    .select('id, name, blueprint_fields')
+    .select('id, name, custom_fields')
     .eq('vendor_id', FLORA_DISTRO_VENDOR_ID)
     .eq('primary_category_id', 'e9b86776-f9f4-4f42-a7cc-873d34671d0a')
     .order('name');
@@ -157,9 +157,9 @@ async function fillStrainData() {
       continue;
     }
 
-    // Merge existing blueprint_fields with new strain data
+    // Merge existing custom_fields with new strain data
     const updatedFields = {
-      ...(product.blueprint_fields || {}),
+      ...(product.custom_fields || {}),
       genetics: strainData.genetics,
       nose: strainData.nose,
       strain_type: strainData.strain_type,
@@ -176,7 +176,7 @@ async function fillStrainData() {
     const { error: updateError } = await supabase
       .from('products')
       .update({
-        blueprint_fields: updatedFields
+        custom_fields: updatedFields
       })
       .eq('id', product.id);
 

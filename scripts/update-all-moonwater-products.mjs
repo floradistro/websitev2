@@ -206,18 +206,33 @@ function matchProduct(product, catalogData) {
   let productDosage = productMetaData.dosage || '';
   let productLine = productMetaData.line || '';
 
-  // Also check slug for dosage hints
-  if (!productDosage) {
-    if (productSlug.includes('60mg') || productSlug.includes('riptide')) {
+  // Check category, slug, or name for dosage/line hints
+  if (!productDosage || !productLine) {
+    // Check category first (most reliable)
+    if (productCategory.includes('riptide') || productCategory.includes('60mg')) {
+      productDosage = '60mg';
+      productLine = 'Riptide';
+    } else if (productCategory.includes('darkside') || productCategory.includes('30mg')) {
+      productDosage = '30mg';
+      productLine = 'Darkside';
+    } else if (productCategory.includes('golden') || productCategory.includes('10mg')) {
+      productDosage = '10mg';
+      productLine = 'Golden Hour';
+    } else if (productCategory.includes('day drinker') || productCategory.includes('5mg')) {
+      productDosage = '5mg';
+      productLine = 'Day Drinker';
+    }
+    // Check slug as fallback
+    else if (productSlug.includes('60mg') || productSlug.includes('riptide')) {
       productDosage = '60mg';
       productLine = 'Riptide';
     } else if (productSlug.includes('30mg') || productSlug.includes('darkside')) {
       productDosage = '30mg';
       productLine = 'Darkside';
-    } else if (productSlug.includes('10mg') || productSlug.includes('golden') || productCategory.includes('golden')) {
+    } else if (productSlug.includes('10mg') || productSlug.includes('golden')) {
       productDosage = '10mg';
       productLine = 'Golden Hour';
-    } else if (productSlug.includes('5mg') || productSlug.includes('day-drinker') || productCategory.includes('day drinker')) {
+    } else if (productSlug.includes('5mg') || productSlug.includes('day-drinker')) {
       productDosage = '5mg';
       productLine = 'Day Drinker';
     }
@@ -296,7 +311,7 @@ async function updateAllMoonwaterProducts() {
       }
 
       // Build update payload
-      // IMPORTANT: API expects "custom_fields" which it stores as "blueprint_fields"
+      // Use custom_fields - vendors have full autonomy over custom fields
       const updatePayload = {
         description: productData.description,
         custom_fields: {

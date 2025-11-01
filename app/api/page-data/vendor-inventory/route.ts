@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
           stock_quantity,
           featured_image_storage,
           description,
-          blueprint_fields,
+          custom_fields,
           product_categories(
             category:categories(id, name)
           )
@@ -87,8 +87,8 @@ export async function GET(request: NextRequest) {
       
       // Extract Flora fields
       const floraFields: any = {};
-      if (p.blueprint_fields && Array.isArray(p.blueprint_fields)) {
-        p.blueprint_fields.forEach((field: any) => {
+      if (p.custom_fields && Array.isArray(p.custom_fields)) {
+        p.custom_fields.forEach((field: any) => {
           if (field && field.field_name && field.field_value) {
             floraFields[field.field_name] = field.field_value;
           }

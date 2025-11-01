@@ -114,7 +114,7 @@ async function fillVapeData() {
   // Get all vape products
   const { data: products, error } = await supabase
     .from('products')
-    .select('id, name, blueprint_fields')
+    .select('id, name, custom_fields')
     .eq('vendor_id', FLORA_DISTRO_VENDOR_ID)
     .eq('primary_category_id', VAPE_CATEGORY_ID)
     .order('name');
@@ -140,9 +140,9 @@ async function fillVapeData() {
       continue;
     }
 
-    // Merge existing blueprint_fields with new strain data
-    const currentFields = typeof product.blueprint_fields === 'object' && !Array.isArray(product.blueprint_fields)
-      ? product.blueprint_fields
+    // Merge existing custom_fields with new strain data
+    const currentFields = typeof product.custom_fields === 'object' && !Array.isArray(product.custom_fields)
+      ? product.custom_fields
       : {};
 
     const updatedFields = {
@@ -167,7 +167,7 @@ async function fillVapeData() {
     const { error: updateError } = await supabase
       .from('products')
       .update({
-        blueprint_fields: updatedFields
+        custom_fields: updatedFields
       })
       .eq('id', product.id);
 

@@ -154,8 +154,8 @@ export async function GET(request: NextRequest) {
         sum + parseFloat(inv.quantity || 0), 0
       );
       
-      // Extract pricing tiers from blueprint_fields (ensure it's an array)
-      const blueprintFieldsArray = Array.isArray(p.blueprint_fields) ? p.blueprint_fields : [];
+      // Extract pricing tiers from custom_fields (ensure it's an array)
+      const blueprintFieldsArray = Array.isArray(p.custom_fields) ? p.custom_fields : [];
       const pricingTiers = blueprintFieldsArray.find((f: any) => 
         f.key === '_product_price_tiers'
       )?.value || [];
@@ -175,7 +175,7 @@ export async function GET(request: NextRequest) {
         vendor_id: p.vendor_id,
         primary_category_id: p.primary_category_id,
         categories: categories,
-        blueprint_fields: blueprintFieldsArray,
+        custom_fields: blueprintFieldsArray,
         meta_data: p.meta_data || {},
         pricing_tiers: pricingTiers
       };

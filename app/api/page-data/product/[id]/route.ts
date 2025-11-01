@@ -94,7 +94,7 @@ export async function GET(
     
     // Extract blueprint fields (handle both array and object)
     const fields: { [key: string]: any } = {};
-    const blueprintFields = p.blueprint_fields || {};
+    const blueprintFields = p.custom_fields || {};
     
     // Label to field_id mapping
     const labelToFieldId: { [key: string]: string } = {

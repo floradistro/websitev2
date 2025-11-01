@@ -398,7 +398,7 @@ export async function POST(request: NextRequest) {
             regular_price: 35.00, // Default pricing
             manage_stock: true,
             stock_status: 'instock',
-            blueprint_fields: {
+            custom_fields: {
               strain_type: strainInfo.type,
               effects: strainInfo.effects,
               flavors: strainInfo.flavors,

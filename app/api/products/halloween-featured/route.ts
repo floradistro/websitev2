@@ -16,7 +16,7 @@ export async function GET() {
     // Query real products from Flora Distro
     const { data: products, error } = await supabase
       .from('products')
-      .select('id, name, price, featured_image, blueprint_fields, slug')
+      .select('id, name, price, featured_image, custom_fields, slug')
       .eq('vendor_id', 'cd2e1122-d511-4edb-be5d-98ef274b4baf')
       .eq('status', 'published')
       .eq('featured', true)
@@ -29,7 +29,7 @@ export async function GET() {
 
     // Transform to Halloween homepage format
     const halloweenProducts = products.map(product => {
-      const fields = product.blueprint_fields || {};
+      const fields = product.custom_fields || {};
       
       return {
         id: product.id,

@@ -168,7 +168,7 @@ async function main() {
     const { error } = await supabase
       .from('products')
       .update({
-        blueprint_fields: blueprintFields,
+        custom_fields: blueprintFields,
         meta_data: {
           ...product.meta_data,
           strain_info: strainInfo

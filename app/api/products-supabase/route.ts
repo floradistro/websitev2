@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
       images: p.featured_image ? [{ src: p.featured_image }] : [],
       categories: p.product_categories?.map((pc: any) => pc.category) || [],
       meta_data: p.meta_data || {},
-      blueprint_fields: p.blueprint_fields || [],
+      custom_fields: p.custom_fields || [],
       stock_status: p.stock_status || 'in_stock',
       total_stock: p.stock_quantity || 0,
       inventory: [],

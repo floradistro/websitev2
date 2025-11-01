@@ -56,12 +56,12 @@ export async function PATCH(request: NextRequest) {
     if (updates.cost_price !== undefined) updateData.cost_price = updates.cost_price;
     if (updates.description !== undefined) updateData.description = updates.description;
 
-    // Handle blueprint_fields directly (NEW SYSTEM - object format)
-    if (updates.blueprint_fields !== undefined) {
-      updateData.blueprint_fields = updates.blueprint_fields;
+    // Handle custom_fields directly (NEW SYSTEM - object format)
+    if (updates.custom_fields !== undefined) {
+      updateData.custom_fields = updates.custom_fields;
     }
     // Handle custom fields (LEGACY - for backwards compatibility)
-    // Only use custom_fields if blueprint_fields was not provided
+    // Only use custom_fields if custom_fields was not provided
     else if (updates.custom_fields) {
       const fieldsArray = Object.entries(updates.custom_fields).map(([field_name, field_value]) => {
         // Convert field_name to proper label format (e.g., thc_percentage → THC Content)
@@ -83,7 +83,7 @@ export async function PATCH(request: NextRequest) {
         };
       }).filter(f => f.value); // Only include non-empty values
 
-      updateData.blueprint_fields = fieldsArray;
+      updateData.custom_fields = fieldsArray;
     }
     
     console.log('Updating product with data:', updateData);

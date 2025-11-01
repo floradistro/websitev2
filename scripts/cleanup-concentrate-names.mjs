@@ -51,7 +51,7 @@ async function cleanupConcentrates() {
   // Get all concentrate products
   const { data: products, error } = await supabase
     .from('products')
-    .select('id, name, sku, blueprint_fields, primary_category_id')
+    .select('id, name, sku, custom_fields, primary_category_id')
     .eq('vendor_id', FLORA_DISTRO_VENDOR_ID)
     .eq('primary_category_id', categories.id)
     .order('name');
@@ -89,8 +89,8 @@ async function cleanupConcentrates() {
 
     const standardConsistency = CONSISTENCY_MAP[consistency];
 
-    // Prepare updated blueprint_fields
-    const currentFields = product.blueprint_fields || {};
+    // Prepare updated custom_fields
+    const currentFields = product.custom_fields || {};
     const updatedFields = {
       ...currentFields,
       consistency: standardConsistency
@@ -105,7 +105,7 @@ async function cleanupConcentrates() {
       .from('products')
       .update({
         name: strainName,
-        blueprint_fields: updatedFields
+        custom_fields: updatedFields
       })
       .eq('id', product.id);
 

@@ -433,8 +433,8 @@ function TVDisplayContent() {
         let productWithPricing = {
           ...product,
           image_url: product.featured_image || product.image_url, // Map featured_image to image_url
-          // Keep blueprint_fields as is (NEW SYSTEM ONLY - no conversion to metadata)
-          blueprint_fields: product.blueprint_fields || []
+          // Keep custom_fields as is (NEW SYSTEM ONLY - no conversion to metadata)
+          custom_fields: product.custom_fields || []
         };
 
         if (product.pricing_assignments && product.pricing_assignments.length > 0) {

@@ -43,7 +43,7 @@ export function ProductQuickView({ product, vendorId, isOpen, onClose, onSave, o
             console.log('Custom fields:', loadedProduct.custom_fields);
             console.log('Images:', loadedProduct.images);
             console.log('COAs:', loadedProduct.coas);
-            console.log('Blueprint fields:', loadedProduct.blueprint_fields);
+            console.log('Blueprint fields:', loadedProduct.custom_fields);
             setFullProduct(loadedProduct);
             setEditedProduct({
               name: loadedProduct.name || '',
@@ -87,10 +87,10 @@ export function ProductQuickView({ product, vendorId, isOpen, onClose, onSave, o
                 if (fieldsRes.data.success) {
                   setCategoryFields(fieldsRes.data.fields || []);
 
-                  // Initialize edited fields from product's blueprint_fields
-                  // blueprint_fields is stored as an object: { field_name: value }
+                  // Initialize edited fields from product's custom_fields
+                  // custom_fields is stored as an object: { field_name: value }
                   const initialFields: Record<string, string> = {};
-                  const blueprintFieldsData = loadedProduct.blueprint_fields || {};
+                  const blueprintFieldsData = loadedProduct.custom_fields || {};
 
                   // Handle both object format (new) and array format (legacy)
                   if (Array.isArray(blueprintFieldsData)) {
@@ -154,7 +154,7 @@ export function ProductQuickView({ product, vendorId, isOpen, onClose, onSave, o
   const handleSave = async () => {
     setSaving(true);
     try {
-      // Build blueprint_fields object from edited fields (keep as object format)
+      // Build custom_fields object from edited fields (keep as object format)
       const blueprintFields: Record<string, string> = {};
       Object.entries(editedBlueprintFields).forEach(([fieldId, value]) => {
         if (value) { // Only include fields with values
@@ -166,7 +166,7 @@ export function ProductQuickView({ product, vendorId, isOpen, onClose, onSave, o
         product_id: product.id,
         updates: {
           ...editedProduct,
-          blueprint_fields: blueprintFields
+          custom_fields: blueprintFields
         }
       }, {
         headers: { 'x-vendor-id': vendorId }

@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
             vendor_id,
             description,
             short_description,
-            blueprint_fields,
+            custom_fields,
             product_categories (
               categories (
                 name
@@ -120,8 +120,8 @@ export async function GET(request: NextRequest) {
           ? productCategories[0].categories.name
           : null;
 
-        // Get product fields from blueprint_fields JSONB
-        const blueprintFields = inv.products.blueprint_fields || [];
+        // Get product fields from custom_fields JSONB
+        const blueprintFields = inv.products.custom_fields || [];
         const productFields = Array.isArray(blueprintFields) ? blueprintFields : [];
 
         // Get vendor info

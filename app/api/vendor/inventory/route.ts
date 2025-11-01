@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
         sku,
         price,
         cost_price,
-        blueprint_fields,
+        custom_fields,
         product_categories(
           category:categories(name)
         )
@@ -78,8 +78,8 @@ export async function GET(request: NextRequest) {
       return productInventory.map(inv => {
         // Extract flora fields
         const floraFields: any = {};
-        if (product.blueprint_fields && Array.isArray(product.blueprint_fields)) {
-          product.blueprint_fields.forEach((field: any) => {
+        if (product.custom_fields && Array.isArray(product.custom_fields)) {
+          product.custom_fields.forEach((field: any) => {
             if (field && field.field_name && field.field_value) {
               floraFields[field.field_name] = field.field_value;
             }

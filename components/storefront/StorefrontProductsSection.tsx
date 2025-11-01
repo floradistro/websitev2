@@ -33,7 +33,7 @@ export function StorefrontProductsSection({ products }: StorefrontProductsSectio
     images: p.images && p.images.length > 0 ? [{ src: p.images[0], id: 0, name: p.name }] : [],
     categories: [{ name: p.category || 'Product' }],
     meta_data: {},
-    blueprint_fields: [],
+    custom_fields: [],
     stock_status: 'in_stock',
     stock_quantity: 100,
     total_stock: 100,

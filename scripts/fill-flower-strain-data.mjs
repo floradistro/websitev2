@@ -330,7 +330,7 @@ async function fillFlowerStrainData() {
   // Get all flower products
   const { data: products, error } = await supabase
     .from('products')
-    .select('id, name, blueprint_fields')
+    .select('id, name, custom_fields')
     .eq('vendor_id', FLORA_DISTRO_VENDOR_ID)
     .eq('primary_category_id', FLOWER_CATEGORY_ID)
     .order('name');
@@ -356,8 +356,8 @@ async function fillFlowerStrainData() {
       continue;
     }
 
-    // Merge existing blueprint_fields with new strain data
-    const existingFields = product.blueprint_fields || {};
+    // Merge existing custom_fields with new strain data
+    const existingFields = product.custom_fields || {};
     const updatedFields = {
       ...existingFields,
       genetics: strainData.genetics,
@@ -376,7 +376,7 @@ async function fillFlowerStrainData() {
     const { error: updateError } = await supabase
       .from('products')
       .update({
-        blueprint_fields: updatedFields
+        custom_fields: updatedFields
       })
       .eq('id', product.id);
 

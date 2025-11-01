@@ -103,7 +103,7 @@ export async function POST(request: NextRequest) {
       product_visibility: productVisibility,
       vendor_id: vendorId,
       regular_price: productData.price ? parseFloat(productData.price) : null,
-      cost_price: productData.cost_price ? parseFloat(productData.cost_price) : null,  // ← ADD COST TRACKING
+      cost_price: productData.cost_price ? parseFloat(productData.cost_price) : null,
       sku: productData.sku || `YC-${Date.now()}`,
       // Stock management follows enterprise patterns
       manage_stock: shouldManageStock,
@@ -113,9 +113,10 @@ export async function POST(request: NextRequest) {
       low_stock_amount: productData.low_stock_amount || 10,
       featured_image_storage: productData.image_urls?.[0] || null,
       image_gallery_storage: productData.image_urls || [],
+      custom_fields: productData.custom_fields || {}, // Vendors have full autonomy over custom fields
       attributes: {},
       meta_data: {
-        // Cannabis info
+        // Cannabis info (DEPRECATED - migrate to custom_fields)
         thc_percentage: productData.thc_percentage || '',
         cbd_percentage: productData.cbd_percentage || '',
         strain_type: productData.strain_type || '',

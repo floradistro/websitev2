@@ -179,7 +179,7 @@ async function updateMoonwaterProducts() {
       // Build update payload
       const updatePayload = {
         description: productData.description,
-        blueprint_fields: {
+        custom_fields: {
           dosage: productData.dosage,
           flavor: productData.flavor,
           line: productData.line,

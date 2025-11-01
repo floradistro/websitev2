@@ -33,7 +33,7 @@ export async function GET(
         description,
         status,
         stock_quantity,
-        blueprint_fields,
+        custom_fields,
         featured_image_storage,
         image_gallery_storage,
         primary_category_id,
@@ -107,32 +107,6 @@ export async function GET(
 
     console.log(`[Product API] Extracted pricing tiers:`, pricing);
 
-    // Extract custom fields - handle both array and object formats
-    const custom_fields: any = {};
-    if (product.blueprint_fields) {
-      if (Array.isArray(product.blueprint_fields)) {
-        // Legacy array format: [{ field_name: 'x', field_value: 'y' }]
-        product.blueprint_fields.forEach((field: any) => {
-          if (field) {
-            // Handle both field_name/field_value and label/value formats
-            const name = field.field_name || field.label || '';
-            const value = field.field_value || field.value || '';
-
-            if (name && value) {
-              custom_fields[name.toLowerCase().replace(/\s+/g, '_')] = value;
-            }
-          }
-        });
-      } else if (typeof product.blueprint_fields === 'object') {
-        // New object format: { field_name: value }
-        Object.entries(product.blueprint_fields).forEach(([key, value]) => {
-          if (key && value) {
-            custom_fields[key.toLowerCase().replace(/\s+/g, '_')] = value;
-          }
-        });
-      }
-    }
-
     // Get images
     const images: string[] = [];
     if (product.featured_image_storage) {
@@ -159,8 +133,7 @@ export async function GET(
         status: product.status || 'pending',
         stock_quantity: parseFloat(product.stock_quantity) || 0,
         total_stock: parseFloat(product.stock_quantity) || 0,
-        custom_fields,
-        blueprint_fields: product.blueprint_fields || {},
+        custom_fields: product.custom_fields || {}, // Vendors have full autonomy over custom fields
         coas: (coas || []).map(coa => ({
           id: coa.id,
           file_name: coa.file_name,
@@ -229,16 +202,16 @@ export async function PUT(
     const updateData: any = {
       updated_at: new Date().toISOString()
     };
-    
+
     if (body.name) updateData.name = body.name;
     if (body.sku !== undefined) updateData.sku = body.sku;
     if (body.description !== undefined) updateData.description = body.description;
     if (body.price !== undefined) updateData.price = body.price;
     if (body.cost_price !== undefined) updateData.cost_price = body.cost_price;
 
-    // Update custom fields - store as object format { field_name: value }
+    // Update custom_fields - vendors have full autonomy over custom fields
     if (body.custom_fields) {
-      updateData.blueprint_fields = body.custom_fields;
+      updateData.custom_fields = body.custom_fields;
     }
 
     // Update product

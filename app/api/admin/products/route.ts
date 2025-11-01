@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
       .from('products')
       .select(`
         *,
-        blueprint_fields,
+        custom_fields,
         vendor:vendors(
           id,
           store_name,
@@ -154,8 +154,8 @@ export async function GET(request: NextRequest) {
 
       // Process blueprint fields into a clean object
       const custom_fields: any = {};
-      if (product.blueprint_fields && Array.isArray(product.blueprint_fields)) {
-        product.blueprint_fields.forEach((field: any) => {
+      if (product.custom_fields && Array.isArray(product.custom_fields)) {
+        product.custom_fields.forEach((field: any) => {
           if (field) {
             const name = field.field_name || field.label || '';
             const value = field.field_value || field.value || '';

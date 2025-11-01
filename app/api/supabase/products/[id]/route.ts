@@ -136,7 +136,7 @@ export async function PUT(
     if (body.featured_image !== undefined) updates.featured_image = body.featured_image;
     if (body.image_gallery !== undefined) updates.image_gallery = body.image_gallery;
     if (body.attributes !== undefined) updates.attributes = body.attributes;
-    if (body.blueprint_fields !== undefined) updates.blueprint_fields = body.blueprint_fields;
+    if (body.custom_fields !== undefined) updates.custom_fields = body.custom_fields;
     if (body.manage_stock !== undefined) updates.manage_stock = body.manage_stock;
     if (body.stock_quantity !== undefined) updates.stock_quantity = parseFloat(body.stock_quantity);
     if (body.stock_status !== undefined) updates.stock_status = body.stock_status;

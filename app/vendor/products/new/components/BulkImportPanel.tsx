@@ -12,8 +12,10 @@ interface Category {
 
 interface BulkProduct {
   name: string;
-  price: number;
-  cost_price?: number;
+  price: string;
+  cost_price: string;
+  pricing_mode: 'single' | 'tiered';
+  pricing_tiers: Array<{weight: string, qty: number, price: string}>;
   custom_fields: Record<string, any>;
   matched_image_url?: string | null;
 }
@@ -49,8 +51,9 @@ interface BulkImportPanelProps {
   onBulkImageUpload: (files: FileList | File[]) => void;
   uploadingImages: boolean;
 
-  // Tier templates
-  onApplyTierTemplate: (tier: 'budget' | 'mid' | 'premium' | 'exotic') => void;
+  // Pricing templates
+  pricingConfigs: any[];
+  onApplyPricingTemplate: (config: any) => void;
 
   // Submission
   bulkProcessing: boolean;
@@ -73,7 +76,8 @@ export default function BulkImportPanel({
   bulkImages,
   onBulkImageUpload,
   uploadingImages,
-  onApplyTierTemplate,
+  pricingConfigs,
+  onApplyPricingTemplate,
   bulkProcessing,
   onBulkSubmit,
   onCancel
@@ -112,8 +116,8 @@ export default function BulkImportPanel({
   const handleProductFieldChange = (index: number, field: string, value: any) => {
     const updated = [...bulkProducts];
     if (field.startsWith('custom_fields.')) {
-      const customField = field.replace('custom_fields.', '');
-      updated[index].custom_fields[customField] = value;
+      const blueprintField = field.replace('custom_fields.', '');
+      updated[index].custom_fields[blueprintField] = value;
     } else {
       (updated[index] as any)[field] = value;
     }
@@ -386,7 +390,7 @@ export default function BulkImportPanel({
                         type="number"
                         step="0.01"
                         value={bulkProducts[currentReviewIndex].price}
-                        onChange={(e) => handleProductFieldChange(currentReviewIndex, 'price', parseFloat(e.target.value) || 0)}
+                        onChange={(e) => handleProductFieldChange(currentReviewIndex, 'price', e.target.value)}
                         className="w-full bg-[#141414] border border-white/10 rounded-xl text-white pl-6 pr-3 py-2 text-[10px]"
                       />
                     </div>
@@ -399,14 +403,14 @@ export default function BulkImportPanel({
                         type="number"
                         step="0.01"
                         value={bulkProducts[currentReviewIndex].cost_price || ''}
-                        onChange={(e) => handleProductFieldChange(currentReviewIndex, 'cost_price', parseFloat(e.target.value) || 0)}
+                        onChange={(e) => handleProductFieldChange(currentReviewIndex, 'cost_price', e.target.value)}
                         className="w-full bg-[#141414] border border-white/10 rounded-xl text-white pl-6 pr-3 py-2 text-[10px]"
                       />
                     </div>
                   </div>
                 </div>
 
-                {/* Custom Fields */}
+                {/* Blueprint Fields */}
                 <div className="grid grid-cols-2 gap-3">
                   {Object.keys(bulkProducts[currentReviewIndex].custom_fields || {}).map((fieldKey) => (
                     <div key={fieldKey}>
@@ -425,18 +429,44 @@ export default function BulkImportPanel({
               </div>
             )}
 
-            {/* Tier Templates */}
-            <div className="mt-4 pt-4 border-t border-white/5">
-              <div className="text-white/40 text-[9px] uppercase tracking-[0.15em] mb-2 font-black" style={{ fontWeight: 900 }}>
-                Apply Pricing Tier to All
+            {/* Pricing Templates */}
+            {pricingConfigs.length > 0 && (
+              <div className="mt-4 pt-4 border-t border-white/5">
+                <div className="text-white/40 text-[9px] uppercase tracking-[0.15em] mb-2 font-black" style={{ fontWeight: 900 }}>
+                  Quick Apply Template
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {(() => {
+                    const currentCategory = categories.find(c => c.id === bulkCategory);
+
+                    return pricingConfigs.filter((config: any) => {
+                      const blueprint = config.blueprint;
+                      if (!blueprint) return false;
+
+                      const applicableCategories = blueprint.applicable_to_categories || [];
+
+                      // Show if no category restrictions
+                      if (applicableCategories.length === 0) return true;
+
+                      // Show if no category selected yet
+                      if (!currentCategory) return true;
+
+                      // Check if current category is in applicable list
+                      return applicableCategories.includes(currentCategory.id);
+                    });
+                  })().map((config: any) => (
+                    <button
+                      key={config.id}
+                      type="button"
+                      onClick={() => onApplyPricingTemplate(config)}
+                      className="px-3 py-1.5 bg-white/5 border border-white/10 text-white rounded-xl text-[9px] uppercase tracking-[0.15em] hover:bg-white/10 hover:border-white/20 transition-all"
+                    >
+                      {config.blueprint.name}
+                    </button>
+                  ))}
+                </div>
               </div>
-              <div className="grid grid-cols-4 gap-2">
-                <button type="button" onClick={() => onApplyTierTemplate('budget')} className="px-2 py-1.5 bg-[#141414] border border-white/10 rounded-lg text-white/60 hover:text-white hover:border-white/20 text-[9px] uppercase tracking-[0.15em] font-black" style={{ fontWeight: 900 }}>Budget</button>
-                <button type="button" onClick={() => onApplyTierTemplate('mid')} className="px-2 py-1.5 bg-[#141414] border border-white/10 rounded-lg text-white/60 hover:text-white hover:border-white/20 text-[9px] uppercase tracking-[0.15em] font-black" style={{ fontWeight: 900 }}>Mid-Shelf</button>
-                <button type="button" onClick={() => onApplyTierTemplate('premium')} className="px-2 py-1.5 bg-[#141414] border border-white/10 rounded-lg text-white/60 hover:text-white hover:border-white/20 text-[9px] uppercase tracking-[0.15em] font-black" style={{ fontWeight: 900 }}>Premium</button>
-                <button type="button" onClick={() => onApplyTierTemplate('exotic')} className="px-2 py-1.5 bg-[#141414] border border-white/10 rounded-xl text-white/60 hover:text-white hover:border-white/20 text-[9px] uppercase tracking-[0.15em] font-black" style={{ fontWeight: 900 }}>Exotic</button>
-              </div>
-            </div>
+            )}
 
             {/* Submit Buttons */}
             <div className="mt-4 flex items-center gap-2">

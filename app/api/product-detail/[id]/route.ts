@@ -62,7 +62,7 @@ export async function GET(
       inventory: inventoryData.inventory || [],
       locations: locationsData.locations || [],
       pricingTiers: product.meta_data?._product_price_tiers || [],
-      fields: product.blueprint_fields || []
+      fields: product.custom_fields || []
     };
     
     return NextResponse.json(response);

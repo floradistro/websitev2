@@ -97,7 +97,7 @@ export default function NewProduct() {
     cost_price: string,
     pricing_mode: 'single' | 'tiered',
     pricing_tiers: Array<{weight: string, qty: number, price: string}>,
-    custom_fields: Record<string, any> // ONLY source of truth for product fields
+    custom_fields: Record<string, any>
   }>>([]);
   const [showBulkReview, setShowBulkReview] = useState(false);
   const [currentReviewIndex, setCurrentReviewIndex] = useState(0);
@@ -541,7 +541,7 @@ export default function NewProduct() {
           cost_price: cost || price || '',
           pricing_mode: lastSelectedPricingMode,
           pricing_tiers: [],
-          custom_fields: {} // ONLY source of truth for product fields
+          custom_fields: {}
         });
       }
 
@@ -1160,7 +1160,7 @@ export default function NewProduct() {
               product_visibility: 'internal', // TRUE MULTI-TENANT: Bulk uploads default to internal (auto-publish)
               pricing_mode,
               image_urls: imageUrls,
-              custom_fields, // ONLY source of truth for product fields
+              custom_fields,
               description
             };
 
@@ -1252,7 +1252,7 @@ export default function NewProduct() {
         image_urls: uploadedImageUrls,
         coa_url: uploadedCoaUrl,
         product_type: productType,
-        // Add dynamic blueprint fields - ONLY source of truth for product fields
+        // Add dynamic blueprint fields
         custom_fields: customFieldValues
       };
 
@@ -1359,27 +1359,761 @@ export default function NewProduct() {
 
         {/* Bulk Input Mode */}
         {inputMode === 'bulk' ? (
-          <BulkImportPanel
-            bulkCategory={bulkCategory}
-            onBulkCategoryChange={setBulkCategory}
-            categories={categories}
-            bulkInput={bulkInput}
-            onBulkInputChange={setBulkInput}
-            onBulkAIEnrich={handleBulkAIEnrich}
-            bulkAIProgress={bulkAIProgress}
-            bulkProducts={bulkProducts}
-            onBulkProductsChange={setBulkProducts}
-            currentReviewIndex={currentReviewIndex}
-            onCurrentReviewIndexChange={setCurrentReviewIndex}
-            bulkImages={bulkImages}
-            onBulkImageUpload={handleBulkImageUpload}
-            uploadingImages={uploadingImages}
-            pricingConfigs={pricingConfigs}
-            onApplyPricingTemplate={handleApplyPricingTemplate}
-            bulkProcessing={bulkProcessing}
-            onBulkSubmit={handleBulkSubmit}
-            onCancel={() => setInputMode('single')}
-          />
+          <div className="space-y-4">
+            <div className="bg-[#141414] border border-white/5 rounded-2xl p-4">
+              <h2 className="text-[10px] uppercase tracking-[0.15em] text-white/40 mb-4 font-black" style={{ fontWeight: 900 }}>
+                Bulk Product Import
+              </h2>
+
+              {/* Category Selector for entire batch */}
+              <div className="mb-4">
+                <label className="block text-white/40 text-[10px] uppercase tracking-[0.15em] mb-2 font-black" style={{ fontWeight: 900 }}>
+                  Category for All Products <span className="text-red-400">*</span>
+                </label>
+                <select
+                  value={bulkCategory}
+                  onChange={(e) => setBulkCategory(e.target.value)}
+                  className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl text-white px-3 py-2.5 focus:outline-none focus:border-white/20 transition-all text-xs"
+                >
+                  <option value="">Select category...</option>
+                  {categories.map(cat => (
+                    <option key={cat.id} value={cat.id}>{cat.name}</option>
+                  ))}
+                </select>
+                <p className="text-white/30 text-[9px] mt-1">All products in this batch will use this category</p>
+              </div>
+
+              <p className="text-white/40 text-[10px] mb-2 font-black" style={{ fontWeight: 900 }}>
+                Product List
+              </p>
+              <p className="text-white/40 text-[9px] mb-3">
+                Format: Name, Price (optional), Cost (optional) - One per line
+              </p>
+              <textarea
+                value={bulkInput}
+                onChange={(e) => setBulkInput(e.target.value)}
+                placeholder="Blue Dream, 45&#10;OG Kush, 50, 35&#10;Wedding Cake, 55, 40&#10;White Widow&#10;Gelato, 60"
+                rows={10}
+                disabled={!bulkCategory}
+                className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl text-white placeholder-white/20 px-3 py-2.5 focus:outline-none focus:border-white/20 transition-all resize-none text-xs font-mono disabled:opacity-30"
+              />
+
+              {/* Image Upload Zone */}
+              <div className="mt-4">
+                <label className="block text-white/40 text-[10px] mb-2 font-black uppercase tracking-[0.15em]" style={{ fontWeight: 900 }}>
+                  Product Images (Optional)
+                </label>
+                <div
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    e.currentTarget.classList.add('border-white/30', 'bg-white/5');
+                  }}
+                  onDragLeave={(e) => {
+                    e.currentTarget.classList.remove('border-white/30', 'bg-white/5');
+                  }}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    e.currentTarget.classList.remove('border-white/30', 'bg-white/5');
+                    if (e.dataTransfer.files.length > 0) {
+                      handleBulkImageUpload(e.dataTransfer.files);
+                    }
+                  }}
+                  className="border-2 border-dashed border-white/10 rounded-xl p-6 text-center transition-all"
+                >
+                  <input
+                    type="file"
+                    id="bulk-image-upload"
+                    multiple
+                    accept="image/*"
+                    onChange={(e) => {
+                      if (e.target.files && e.target.files.length > 0) {
+                        handleBulkImageUpload(e.target.files);
+                      }
+                    }}
+                    className="hidden"
+                  />
+                  <label
+                    htmlFor="bulk-image-upload"
+                    className="cursor-pointer"
+                  >
+                    {uploadingImages ? (
+                      <div className="text-white/60 text-[10px]">
+                        <Loader size={16} className="animate-spin mx-auto mb-2" />
+                        Uploading...
+                      </div>
+                    ) : (
+                      <>
+                        <div className="text-white/40 text-[10px] uppercase tracking-[0.15em] mb-2">
+                          Drag & drop images or click to browse
+                        </div>
+                        <div className="text-white/30 text-[9px]">
+                          Images auto-match to products by filename
+                        </div>
+                      </>
+                    )}
+                  </label>
+                </div>
+
+                {/* Uploaded Images Preview */}
+                {bulkImages.length > 0 && (
+                  <div className="mt-3 bg-[#0a0a0a] border border-white/5 rounded-xl p-3">
+                    <div className="text-white/40 text-[9px] uppercase tracking-[0.15em] mb-2 font-black" style={{ fontWeight: 900 }}>
+                      Uploaded Images ({bulkImages.length})
+                    </div>
+                    <div className="grid grid-cols-4 gap-2">
+                      {bulkImages.map((img, idx) => (
+                        <div key={idx} className="relative group">
+                          <img
+                            src={img.url}
+                            alt={img.file.name}
+                            className="w-full h-20 object-cover rounded-xl border border-white/10"
+                          />
+                          <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl flex flex-col items-center justify-center p-1">
+                            <div className="text-white text-[8px] text-center truncate w-full px-1">
+                              {img.file.name}
+                            </div>
+                            {img.matchedTo && (
+                              <div className="text-green-400 text-[8px] font-black mt-1">
+                                → {img.matchedTo}
+                              </div>
+                            )}
+                            {!img.matchedTo && (
+                              <div className="text-white/40 text-[8px] mt-1">
+                                No match
+                              </div>
+                            )}
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              URL.revokeObjectURL(img.url);
+                              setBulkImages(bulkImages.filter((_, i) => i !== idx));
+                            }}
+                            className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-[10px] opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="mt-3 flex gap-2">
+                <button
+                  type="button"
+                  onClick={handleBulkSubmit}
+                  disabled={bulkProcessing || loadingAI}
+                  className="flex-1 px-4 py-2.5 bg-white/10 text-white border border-white/20 rounded-xl hover:bg-white/20 hover:border-white/30 font-black transition-all text-[10px] uppercase tracking-[0.15em] disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{ fontWeight: 900 }}
+                >
+                  {bulkProcessing ? (
+                    <span className="flex items-center justify-center gap-1.5">
+                      <Loader size={10} className="animate-spin" strokeWidth={3} />
+                      Processing...
+                    </span>
+                  ) : (
+                    'Import Products'
+                  )}
+                </button>
+                {loadingAI ? (
+                  <>
+                    <button
+                      type="button"
+                      disabled
+                      className="px-4 py-2.5 bg-white/10 text-white border border-white/20 rounded-xl font-black text-[10px] uppercase tracking-[0.15em] flex items-center gap-1.5 opacity-60"
+                      style={{ fontWeight: 900 }}
+                    >
+                      <Loader size={10} className="animate-spin" strokeWidth={3} />
+                      {bulkAIProgress.total > 0 ? `${bulkAIProgress.current}/${bulkAIProgress.total}` : 'AI...'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={cancelAIAutofill}
+                      className="px-4 py-2.5 bg-red-500/10 text-red-400 border border-red-500/20 rounded-xl hover:bg-red-500/20 hover:border-red-500/30 font-black transition-all text-[10px] uppercase tracking-[0.15em] flex items-center gap-1.5"
+                      style={{ fontWeight: 900 }}
+                    >
+                      <X size={10} strokeWidth={3} />
+                      Cancel
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => handleBulkAIEnrich(
+                      ['description', 'strain_type', 'lineage', 'nose', 'effects', 'terpene_profile'],
+                      ''
+                    )}
+                    disabled={bulkProcessing}
+                    className="px-4 py-2.5 bg-white/10 text-white border border-white/20 rounded-xl hover:bg-white/20 hover:border-white/30 font-black transition-all text-[10px] uppercase tracking-[0.15em] disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-1.5"
+                    style={{ fontWeight: 900 }}
+                  >
+                    <Sparkles size={10} strokeWidth={3} />
+                    {Object.keys(bulkEnrichedData).length > 0 ? `AI Enriched (${Object.keys(bulkEnrichedData).length})` : 'AI Enrich'}
+                  </button>
+                )}
+              </div>
+
+              {/* AI Enrichment Status */}
+              {Object.keys(bulkEnrichedData).length > 0 && (
+                <div className="mt-3 bg-[#141414] border border-white/10 rounded-2xl p-3">
+                  <div className="text-white/40 text-[9px] uppercase tracking-[0.15em] mb-2 font-black" style={{ fontWeight: 900 }}>
+                    AI Enriched Products ({Object.keys(bulkEnrichedData).length})
+                  </div>
+                  <div className="space-y-1">
+                    {Object.entries(bulkEnrichedData).slice(0, 5).map(([name, data]: [string, any]) => (
+                      <div key={name} className="flex items-center gap-2 text-[10px]">
+                        <CheckCircle size={10} className="text-green-400" strokeWidth={2.5} />
+                        <span className="text-white font-black uppercase tracking-tight" style={{ fontWeight: 900 }}>{name}</span>
+                        <span className="text-white/40">-</span>
+                        <span className="text-white/60 text-[9px]">
+                          {[
+                            data.strain_type,
+                            data.lineage && 'lineage',
+                            data.nose?.length && `${data.nose.length} aromas`,
+                            data.effects?.length && `${data.effects.length} effects`,
+                            data.terpenes?.length && `${data.terpenes.length} terpenes`
+                          ].filter(Boolean).join(' • ')}
+                        </span>
+                      </div>
+                    ))}
+                    {Object.keys(bulkEnrichedData).length > 5 && (
+                      <div className="text-white/40 text-[9px] mt-1">
+                        +{Object.keys(bulkEnrichedData).length - 5} more...
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Bulk Review Interface - Flip through products */}
+              {showBulkReview && bulkProducts.length > 0 && (
+                <div className="mt-4 bg-[#141414] border border-white/10 rounded-2xl p-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-white text-[10px] uppercase tracking-[0.15em] font-black" style={{ fontWeight: 900 }}>
+                      Review & Price Products
+                    </h3>
+                    <div className="text-white/40 text-[9px] uppercase tracking-[0.15em]">
+                      {currentReviewIndex + 1} / {bulkProducts.length}
+                    </div>
+                  </div>
+
+                  {/* Current Product Card */}
+                  {bulkProducts[currentReviewIndex] && (
+                    <div className="space-y-4">
+                      {/* Product Name */}
+                      <div className="text-white text-sm font-black uppercase tracking-tight mb-4" style={{ fontWeight: 900 }}>
+                        {bulkProducts[currentReviewIndex].name}
+                      </div>
+
+                      {/* Matched Images */}
+                      {bulkImages.filter(img => img.matchedTo === bulkProducts[currentReviewIndex].name).length > 0 && (
+                        <div className="bg-[#0a0a0a] border border-white/5 rounded-xl p-3">
+                          <div className="text-white/40 text-[9px] uppercase tracking-[0.15em] mb-2 font-black" style={{ fontWeight: 900 }}>
+                            Product Images ({bulkImages.filter(img => img.matchedTo === bulkProducts[currentReviewIndex].name).length})
+                          </div>
+                          <div className="grid grid-cols-4 gap-2">
+                            {bulkImages
+                              .filter(img => img.matchedTo === bulkProducts[currentReviewIndex].name)
+                              .map((img, idx) => (
+                                <div key={idx} className="relative group">
+                                  <img
+                                    src={img.url}
+                                    alt={img.file.name}
+                                    className="w-full h-20 object-cover rounded-xl border border-white/10"
+                                  />
+                                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl flex items-center justify-center">
+                                    <div className="text-white text-[8px] text-center px-1">
+                                      {img.file.name}
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Editable Custom Fields */}
+                      <div className="bg-[#0a0a0a] border border-white/5 rounded-xl p-3 space-y-3">
+                        <div className="text-white/40 text-[9px] uppercase tracking-[0.15em] mb-2 font-black" style={{ fontWeight: 900 }}>
+                          Product Fields
+                        </div>
+
+                        {/* Strain Type */}
+                        <div>
+                          <label className="block text-white/40 text-[9px] uppercase tracking-[0.15em] mb-1.5">Strain Type</label>
+                          <select
+                            value={bulkProducts[currentReviewIndex].custom_fields.strain_type || ''}
+                            onChange={(e) => {
+                              const updated = [...bulkProducts];
+                              updated[currentReviewIndex].custom_fields.strain_type = e.target.value;
+                              setBulkProducts(updated);
+                            }}
+                            className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl text-white px-3 py-2 text-[10px]"
+                          >
+                            <option value="">Select...</option>
+                            <option value="Sativa">Sativa</option>
+                            <option value="Indica">Indica</option>
+                            <option value="Hybrid">Hybrid</option>
+                          </select>
+                        </div>
+
+                        {/* Lineage */}
+                        <div>
+                          <label className="block text-white/40 text-[9px] uppercase tracking-[0.15em] mb-1.5">Lineage</label>
+                          <input
+                            type="text"
+                            value={bulkProducts[currentReviewIndex].custom_fields.lineage || ''}
+                            onChange={(e) => {
+                              const updated = [...bulkProducts];
+                              updated[currentReviewIndex].custom_fields.lineage = e.target.value;
+                              setBulkProducts(updated);
+                            }}
+                            placeholder="Parent1 x Parent2"
+                            className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl text-white px-3 py-2 text-[10px]"
+                          />
+                        </div>
+
+                        {/* Nose */}
+                        <div>
+                          <label className="block text-white/40 text-[9px] uppercase tracking-[0.15em] mb-1.5">Nose</label>
+                          <input
+                            type="text"
+                            value={bulkProducts[currentReviewIndex].custom_fields.nose || ''}
+                            onChange={(e) => {
+                              const updated = [...bulkProducts];
+                              updated[currentReviewIndex].custom_fields.nose = e.target.value;
+                              setBulkProducts(updated);
+                            }}
+                            placeholder="Candy, Cake, Glue"
+                            className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl text-white px-3 py-2 text-[10px]"
+                          />
+                        </div>
+
+                        {/* Effects */}
+                        <div>
+                          <label className="block text-white/40 text-[9px] uppercase tracking-[0.15em] mb-1.5">Effects</label>
+                          <input
+                            type="text"
+                            value={Array.isArray(bulkProducts[currentReviewIndex].custom_fields.effects)
+                              ? bulkProducts[currentReviewIndex].custom_fields.effects.join(', ')
+                              : bulkProducts[currentReviewIndex].custom_fields.effects || ''}
+                            onChange={(e) => {
+                              const updated = [...bulkProducts];
+                              // Store as array
+                              updated[currentReviewIndex].custom_fields.effects = e.target.value.split(',').map(s => s.trim()).filter(Boolean);
+                              setBulkProducts(updated);
+                            }}
+                            placeholder="Relaxing, Euphoric, Creative"
+                            className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl text-white px-3 py-2 text-[10px]"
+                          />
+                          <p className="text-white/30 text-[8px] mt-1">Separate with commas</p>
+                        </div>
+
+                        {/* Terpenes */}
+                        <div>
+                          <label className="block text-white/40 text-[9px] uppercase tracking-[0.15em] mb-1.5">Terpenes</label>
+                          <input
+                            type="text"
+                            value={Array.isArray(bulkProducts[currentReviewIndex].custom_fields.terpene_profile)
+                              ? bulkProducts[currentReviewIndex].custom_fields.terpene_profile.join(', ')
+                              : bulkProducts[currentReviewIndex].custom_fields.terpene_profile || ''}
+                            onChange={(e) => {
+                              const updated = [...bulkProducts];
+                              // Store as array
+                              updated[currentReviewIndex].custom_fields.terpene_profile = e.target.value.split(',').map(s => s.trim()).filter(Boolean);
+                              setBulkProducts(updated);
+                            }}
+                            placeholder="Myrcene, Limonene, Caryophyllene"
+                            className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl text-white px-3 py-2 text-[10px]"
+                          />
+                          <p className="text-white/30 text-[8px] mt-1">Separate with commas</p>
+                        </div>
+                      </div>
+
+                      {/* Pricing Mode */}
+                      <div className="bg-[#0a0a0a] border border-white/5 rounded-xl p-3 space-y-3">
+                        <div className="text-white/40 text-[9px] uppercase tracking-[0.15em] mb-2 font-black" style={{ fontWeight: 900 }}>
+                          Pricing
+                        </div>
+
+                        {/* Pricing Mode Selector */}
+                        <div className="flex gap-2">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              // Proper immutable update
+                              const updated = bulkProducts.map((product, idx) =>
+                                idx === currentReviewIndex
+                                  ? { ...product, pricing_mode: 'single' as 'single' | 'tiered' }
+                                  : product
+                              );
+                              setBulkProducts(updated);
+                              setLastSelectedPricingMode('single'); // Remember this choice
+                              setExplicitlySetPricingModes(new Set(explicitlySetPricingModes).add(currentReviewIndex)); // Mark as explicitly set
+                              console.log(`📊 Product ${currentReviewIndex} pricing mode set to: single (explicit)`);
+                            }}
+                            className={`flex-1 px-3 py-2 rounded-xl text-[9px] uppercase tracking-[0.15em] font-black transition-all ${
+                              bulkProducts[currentReviewIndex].pricing_mode === 'single'
+                                ? 'bg-white/10 border-2 border-white/20 text-white'
+                                : 'bg-white/5 border border-white/10 text-white/60'
+                            }`}
+                            style={{ fontWeight: 900 }}
+                          >
+                            Single
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              // Proper immutable update
+                              const updated = bulkProducts.map((product, idx) =>
+                                idx === currentReviewIndex
+                                  ? { ...product, pricing_mode: 'tiered' as 'single' | 'tiered' }
+                                  : product
+                              );
+                              setBulkProducts(updated);
+                              setLastSelectedPricingMode('tiered'); // Remember this choice
+                              setExplicitlySetPricingModes(new Set(explicitlySetPricingModes).add(currentReviewIndex)); // Mark as explicitly set
+                              console.log(`📊 Product ${currentReviewIndex} pricing mode set to: tiered (explicit)`);
+                            }}
+                            className={`flex-1 px-3 py-2 rounded-xl text-[9px] uppercase tracking-[0.15em] font-black transition-all ${
+                              bulkProducts[currentReviewIndex].pricing_mode === 'tiered'
+                                ? 'bg-white/10 border-2 border-white/20 text-white'
+                                : 'bg-white/5 border border-white/10 text-white/60'
+                            }`}
+                            style={{ fontWeight: 900 }}
+                          >
+                            Tiered
+                          </button>
+                        </div>
+
+                        {/* Single Pricing */}
+                        {bulkProducts[currentReviewIndex].pricing_mode === 'single' && (
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <label className="block text-white/40 text-[9px] uppercase tracking-[0.15em] mb-1.5">Selling Price</label>
+                              <input
+                                type="number"
+                                step="0.01"
+                                value={bulkProducts[currentReviewIndex].price}
+                                onChange={(e) => {
+                                  const updated = [...bulkProducts];
+                                  updated[currentReviewIndex].price = e.target.value;
+                                  setBulkProducts(updated);
+                                }}
+                                placeholder="45.00"
+                                className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl text-white px-3 py-2 text-[10px]"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-white/40 text-[9px] uppercase tracking-[0.15em] mb-1.5">Cost Price</label>
+                              <input
+                                type="number"
+                                step="0.01"
+                                value={bulkProducts[currentReviewIndex].cost_price}
+                                onChange={(e) => {
+                                  const updated = [...bulkProducts];
+                                  updated[currentReviewIndex].cost_price = e.target.value;
+                                  setBulkProducts(updated);
+                                }}
+                                placeholder="30.00"
+                                className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl text-white px-3 py-2 text-[10px]"
+                              />
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Tiered Pricing */}
+                        {bulkProducts[currentReviewIndex].pricing_mode === 'tiered' && (
+                          <div className="space-y-3">
+                            {/* Pricing Templates */}
+                            {pricingConfigs.length > 0 && (
+                              <div>
+                                <label className="block text-white/40 text-[9px] uppercase tracking-[0.15em] mb-2">Quick Apply Template</label>
+                                <div className="flex flex-wrap gap-2">
+                                  {(() => {
+                                    const currentCategory = categories.find(c => c.id === bulkCategory);
+                                    console.log('🔍 Filtering pricing templates:', {
+                                      bulkCategory,
+                                      currentCategoryId: currentCategory?.id,
+                                      currentCategoryName: currentCategory?.name,
+                                      totalConfigs: pricingConfigs.length
+                                    });
+
+                                    const filtered = pricingConfigs.filter((config: any) => {
+                                      const blueprint = config.blueprint;
+                                      if (!blueprint) {
+                                        console.log('❌ Config missing blueprint:', config.id);
+                                        return false;
+                                      }
+
+                                      const applicableCategories = blueprint.applicable_to_categories || [];
+                                      console.log(`  ${blueprint.name}:`, {
+                                        applicableCategories,
+                                        isEmpty: applicableCategories.length === 0,
+                                        includes: currentCategory ? applicableCategories.includes(currentCategory.id) : 'no category'
+                                      });
+
+                                      // Show if no category restrictions
+                                      if (applicableCategories.length === 0) return true;
+
+                                      // Show if no category selected yet
+                                      if (!currentCategory) return true;
+
+                                      // Check if current category is in applicable list
+                                      return applicableCategories.includes(currentCategory.id);
+                                    });
+
+                                    console.log(`✅ Filtered to ${filtered.length} templates`);
+                                    return filtered;
+                                  })().map((config: any) => (
+                                    <button
+                                      key={config.id}
+                                      type="button"
+                                      onClick={() => {
+                                        const updated = [...bulkProducts];
+                                        const blueprint = config.blueprint;
+                                        const pricingValues = config.pricing_values || {};
+
+                                        // Merge price_breaks structure with pricing_values prices
+                                        updated[currentReviewIndex].pricing_tiers = (blueprint.price_breaks || [])
+                                          .filter((pb: any) => {
+                                            // Only include enabled tiers
+                                            const priceData = pricingValues[pb.break_id];
+                                            return priceData && priceData.enabled !== false;
+                                          })
+                                          .map((pb: any) => {
+                                            const priceData = pricingValues[pb.break_id] || {};
+                                            return {
+                                              weight: pb.label || `${pb.qty}${pb.unit}`,
+                                              qty: 1,
+                                              price: priceData.price || ''
+                                            };
+                                          });
+
+                                        setBulkProducts(updated);
+
+                                        // Save this as the last selected template
+                                        setLastSelectedTierTemplate(config);
+                                        // Mark current product as explicitly set
+                                        setExplicitlySetTierTemplates(new Set(explicitlySetTierTemplates).add(currentReviewIndex));
+                                        console.log(`📊 Product ${currentReviewIndex} tier template set to: ${blueprint.name} (will auto-apply to future products)`);
+
+                                        showNotification({
+                                          type: 'success',
+                                          title: 'Template Applied',
+                                          message: `Applied ${blueprint.name} pricing`,
+                                        });
+                                      }}
+                                      className="px-3 py-1.5 bg-white/5 border border-white/10 text-white rounded-xl text-[9px] uppercase tracking-[0.15em] hover:bg-white/10 hover:border-white/20 transition-all"
+                                    >
+                                      {config.blueprint.name}
+                                    </button>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Tier Inputs */}
+                            <div className="space-y-2">
+                            {bulkProducts[currentReviewIndex].pricing_tiers.length === 0 && (
+                              <div className="bg-white/5 border border-white/10 rounded-xl p-4 text-center">
+                                <p className="text-white/60 text-[10px]">
+                                  👆 Click a template above to apply pricing tiers
+                                </p>
+                              </div>
+                            )}
+                            {bulkProducts[currentReviewIndex].pricing_tiers.map((tier, idx) => (
+                              <div key={idx} className="flex items-center gap-2">
+                                <input
+                                  type="text"
+                                  value={tier.weight}
+                                  onChange={(e) => {
+                                    const updated = [...bulkProducts];
+                                    updated[currentReviewIndex].pricing_tiers[idx].weight = e.target.value;
+                                    setBulkProducts(updated);
+                                  }}
+                                  placeholder="1g"
+                                  className="w-20 bg-[#0a0a0a] border border-white/10 rounded-xl text-white px-2 py-1.5 text-[10px]"
+                                />
+                                <input
+                                  type="number"
+                                  step="0.01"
+                                  value={tier.price}
+                                  onChange={(e) => {
+                                    const updated = [...bulkProducts];
+                                    updated[currentReviewIndex].pricing_tiers[idx].price = e.target.value;
+                                    setBulkProducts(updated);
+                                  }}
+                                  placeholder="Price"
+                                  className="flex-1 bg-[#0a0a0a] border border-white/10 rounded-xl text-white px-3 py-1.5 text-[10px]"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const updated = [...bulkProducts];
+                                    updated[currentReviewIndex].pricing_tiers.splice(idx, 1);
+                                    setBulkProducts(updated);
+                                  }}
+                                  className="text-white/40 hover:text-red-400 text-xs"
+                                >
+                                  ✕
+                                </button>
+                              </div>
+                            ))}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const updated = [...bulkProducts];
+                                updated[currentReviewIndex].pricing_tiers.push({
+                                  weight: '',
+                                  qty: 1,
+                                  price: ''
+                                });
+                                setBulkProducts(updated);
+                              }}
+                              className="w-full px-3 py-2 bg-white/5 border border-white/10 text-white rounded-xl text-[9px] uppercase tracking-[0.15em] hover:bg-white/10 hover:border-white/20 transition-all"
+                            >
+                              + Add Tier
+                            </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Navigation & Actions */}
+                      <div className="flex items-center gap-2 pt-3 border-t border-white/5">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const nextIndex = Math.max(0, currentReviewIndex - 1);
+
+                            const updated = [...bulkProducts];
+                            let wasUpdated = false;
+
+                            // Apply last selected pricing mode to next product ONLY if it hasn't been explicitly set by user
+                            if (!explicitlySetPricingModes.has(nextIndex)) {
+                              console.log(`📊 Auto-applying pricing mode "${lastSelectedPricingMode}" to product ${nextIndex}`);
+                              updated[nextIndex] = { ...updated[nextIndex], pricing_mode: lastSelectedPricingMode };
+                              wasUpdated = true;
+                            }
+
+                            // Auto-apply last selected tier template if product is in tiered mode and hasn't had template explicitly set
+                            if (lastSelectedTierTemplate &&
+                                updated[nextIndex].pricing_mode === 'tiered' &&
+                                !explicitlySetTierTemplates.has(nextIndex)) {
+                              const blueprint = lastSelectedTierTemplate.blueprint;
+                              const pricingValues = lastSelectedTierTemplate.pricing_values || {};
+
+                              updated[nextIndex].pricing_tiers = (blueprint.price_breaks || [])
+                                .filter((pb: any) => {
+                                  const priceData = pricingValues[pb.break_id];
+                                  return priceData && priceData.enabled !== false;
+                                })
+                                .map((pb: any) => {
+                                  const priceData = pricingValues[pb.break_id] || {};
+                                  return {
+                                    weight: pb.label || `${pb.qty}${pb.unit}`,
+                                    qty: 1,
+                                    price: priceData.price || ''
+                                  };
+                                });
+
+                              console.log(`📊 Auto-applying tier template "${blueprint.name}" to product ${nextIndex}`);
+                              wasUpdated = true;
+                            }
+
+                            if (wasUpdated) {
+                              setBulkProducts(updated);
+                            }
+                            setCurrentReviewIndex(nextIndex);
+                          }}
+                          disabled={currentReviewIndex === 0}
+                          className="px-3 py-2 bg-white/5 border border-white/10 text-white rounded-xl text-[9px] uppercase tracking-[0.15em] font-black hover:bg-white/10 hover:border-white/20 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                          style={{ fontWeight: 900 }}
+                        >
+                          ← Prev
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const nextIndex = Math.min(bulkProducts.length - 1, currentReviewIndex + 1);
+
+                            const updated = [...bulkProducts];
+                            let wasUpdated = false;
+
+                            // Apply last selected pricing mode to next product ONLY if it hasn't been explicitly set by user
+                            if (!explicitlySetPricingModes.has(nextIndex)) {
+                              console.log(`📊 Auto-applying pricing mode "${lastSelectedPricingMode}" to product ${nextIndex}`);
+                              updated[nextIndex] = { ...updated[nextIndex], pricing_mode: lastSelectedPricingMode };
+                              wasUpdated = true;
+                            }
+
+                            // Auto-apply last selected tier template if product is in tiered mode and hasn't had template explicitly set
+                            if (lastSelectedTierTemplate &&
+                                updated[nextIndex].pricing_mode === 'tiered' &&
+                                !explicitlySetTierTemplates.has(nextIndex)) {
+                              const blueprint = lastSelectedTierTemplate.blueprint;
+                              const pricingValues = lastSelectedTierTemplate.pricing_values || {};
+
+                              updated[nextIndex].pricing_tiers = (blueprint.price_breaks || [])
+                                .filter((pb: any) => {
+                                  const priceData = pricingValues[pb.break_id];
+                                  return priceData && priceData.enabled !== false;
+                                })
+                                .map((pb: any) => {
+                                  const priceData = pricingValues[pb.break_id] || {};
+                                  return {
+                                    weight: pb.label || `${pb.qty}${pb.unit}`,
+                                    qty: 1,
+                                    price: priceData.price || ''
+                                  };
+                                });
+
+                              console.log(`📊 Auto-applying tier template "${blueprint.name}" to product ${nextIndex}`);
+                              wasUpdated = true;
+                            }
+
+                            if (wasUpdated) {
+                              setBulkProducts(updated);
+                            }
+                            setCurrentReviewIndex(nextIndex);
+                          }}
+                          disabled={currentReviewIndex === bulkProducts.length - 1}
+                          className="px-3 py-2 bg-white/5 border border-white/10 text-white rounded-xl text-[9px] uppercase tracking-[0.15em] font-black hover:bg-white/10 hover:border-white/20 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                          style={{ fontWeight: 900 }}
+                        >
+                          Next →
+                        </button>
+                        <div className="flex-1"></div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setShowBulkReview(false);
+                            setCurrentReviewIndex(0);
+                          }}
+                          className="px-3 py-2 border border-white/10 text-white rounded-xl text-[9px] uppercase tracking-[0.15em] font-black hover:bg-white/5 hover:border-white/20 transition-all"
+                          style={{ fontWeight: 900 }}
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleBulkSubmit}
+                          disabled={bulkProcessing}
+                          className="px-4 py-2 bg-white/10 border-2 border-white/20 text-white rounded-xl text-[9px] uppercase tracking-[0.15em] font-black hover:bg-white/20 hover:border-white/30 transition-all disabled:opacity-30"
+                          style={{ fontWeight: 900 }}
+                        >
+                          {bulkProcessing ? 'Submitting...' : `Submit All (${bulkProducts.length})`}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
           {/* Success Message */}

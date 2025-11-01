@@ -11,9 +11,9 @@ export function hideDescription(code: string): string {
 
 export function showBlueprintFields(code: string): string {
   const blueprintCode = `
-            {p.blueprint_fields && (
+            {p.custom_fields && (
               <div className="space-y-2 border-t border-white/5 pt-4 mt-4">
-                {p.blueprint_fields.map(field => (
+                {p.custom_fields.map(field => (
                   <div key={field.label} className="flex gap-3">
                     <span className="text-white/40 text-xs uppercase min-w-[100px]">{field.label}</span>
                     <span className="text-white text-sm">{field.value}</span>

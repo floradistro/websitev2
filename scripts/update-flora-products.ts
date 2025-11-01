@@ -57,7 +57,7 @@ async function updateFloraProducts() {
         continue;
       }
 
-      // Build blueprint_fields JSON
+      // Build custom_fields JSON
       const blueprintFields = [
         { type: 'text', label: 'Strain Type', value: strain.strain_type },
         { type: 'text', label: 'Genetics', value: strain.genetics },
@@ -74,7 +74,7 @@ async function updateFloraProducts() {
         SET 
           short_description = $1,
           description = $2,
-          blueprint_fields = $3::jsonb,
+          custom_fields = $3::jsonb,
           updated_at = NOW()
         WHERE id = $4
       `, [

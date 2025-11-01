@@ -19,13 +19,13 @@ export function MinimalProductCard({ product, theme, index, visiblePriceBreaks, 
   const blueprint = product.pricing_blueprint;
   const priceBreaks = blueprint?.price_breaks || [];
 
-  // Helper to get field value from blueprint_fields array (NEW SYSTEM ONLY)
+  // Helper to get field value from custom_fields array (NEW SYSTEM ONLY)
   const getFieldValue = (fieldName: string): string | null => {
-    if (!product.blueprint_fields || !Array.isArray(product.blueprint_fields)) {
+    if (!product.custom_fields || !Array.isArray(product.custom_fields)) {
       return null;
     }
 
-    const field = product.blueprint_fields.find((f: any) =>
+    const field = product.custom_fields.find((f: any) =>
       f.field_name?.toLowerCase() === fieldName.toLowerCase() ||
       f.field_name?.toLowerCase().replace(/[^a-z0-9]/g, '_') === fieldName.toLowerCase()
     );
@@ -42,7 +42,7 @@ export function MinimalProductCard({ product, theme, index, visiblePriceBreaks, 
   if (index === 0) {
     console.log('🔍 Product card debug:', {
       name: product.name,
-      blueprint_fields: product.blueprint_fields,
+      custom_fields: product.custom_fields,
       extracted_strain_type: strain_type,
       extracted_thc: thc_percentage,
       displayConfig: displayConfig,

@@ -182,7 +182,7 @@ export async function getVendorProducts(vendorId: string, limit?: number) {
         stock_status,
         featured_image_storage,
         image_gallery_storage,
-        blueprint_fields,
+        custom_fields,
         meta_data,
         vendor_id,
         created_at,
@@ -270,7 +270,7 @@ export async function getVendorProducts(vendorId: string, limit?: number) {
     const products = (productsResult.data || []).map((p: any, index: number) => {
       // Extract blueprint fields (handle both array and object)
       const fields: { [key: string]: any } = {};
-      const blueprintFields = p.blueprint_fields || {};
+      const blueprintFields = p.custom_fields || {};
       
       // Label to field_id mapping
       const labelToFieldId: { [key: string]: string } = {

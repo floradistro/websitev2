@@ -22,11 +22,11 @@ export async function GET(request: NextRequest) {
     
     console.log(`[Products API] Fetching for vendor: ${vendorId}`);
     
-    // Fetch products - essential fields including images and category
+    // Fetch products - essential fields including images, category, and custom_fields
     const productsStart = Date.now();
     const { data: products, error: productsError } = await supabase
       .from('products')
-      .select('id, name, sku, price, cost_price, description, status, featured_image_storage, image_gallery_storage, primary_category_id, categories:primary_category_id(name)')
+      .select('id, name, sku, price, cost_price, description, status, featured_image_storage, image_gallery_storage, primary_category_id, custom_fields, categories:primary_category_id(name)')
       .eq('vendor_id', vendorId)
       .order('name');
 
@@ -62,7 +62,7 @@ export async function GET(request: NextRequest) {
       inventoryMap.set(inv.product_id, currentQty + parseFloat(inv.quantity || '0'));
     });
 
-    // Format products (no custom fields for speed - catalog doesn't need them in list view)
+    // Format products with custom_fields processing
     const formattedProducts = (products || []).map((product: any) => {
       // Build images array: featured image first, then gallery images
       const images: string[] = [];
@@ -89,7 +89,7 @@ export async function GET(request: NextRequest) {
         description: product.description || '',
         status: product.status || 'pending',
         total_stock: inventoryMap.get(product.id) || 0, // LIVE inventory from all locations
-        custom_fields: [], // Don't load in list view - load in editor
+        custom_fields: product.custom_fields || {}, // Vendors have full autonomy over custom fields
         pricing_tiers: [], // Don't load in list view - load in full editor
         images: images
       };
