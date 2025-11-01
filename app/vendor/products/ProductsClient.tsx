@@ -1896,8 +1896,8 @@ function CategoriesTab({
                         <p className="text-white/40 text-[10px] uppercase tracking-wider mb-3">No subcategories yet</p>
                         <button
                           onClick={() => openCreateModal(category.id)}
-                          className="text-white/60 hover:text-white text-[10px] uppercase tracking-[0.15em] font-black"
-                                                  >
+                          className="text-white/60 hover:text-white text-[10px] uppercase tracking-[0.15em] font-light"
+                        >
                           Create first subcategory →
                         </button>
                       </div>
@@ -1987,7 +1987,7 @@ function CategoriesTab({
                         <p className="text-white/40 text-[10px] uppercase tracking-wider mb-3">No custom fields configured</p>
                         <button
                           onClick={() => openFieldModal(category)}
-                          className="text-white/60 hover:text-white text-[10px] uppercase tracking-[0.15em] font-black"
+                          className="text-white/60 hover:text-white text-[10px] uppercase tracking-[0.15em] font-light"
                                                   >
                           Set up custom fields →
                         </button>
@@ -2010,8 +2010,8 @@ function CategoriesTab({
                               </div>
                               <button
                                 onClick={() => openFieldModal(category)}
-                                className="text-white/60 hover:text-white text-[9px] uppercase tracking-[0.15em] font-black"
-                                                              >
+                                className="text-white/60 hover:text-white text-[9px] uppercase tracking-[0.15em] font-light"
+                              >
                                 Edit →
                               </button>
                             </div>
@@ -2852,8 +2852,8 @@ function PricingTab({
                                   <div className="flex gap-2 mt-3 pt-3 border-t border-white/5">
                                     <button
                                       onClick={() => openEditModal(blueprint)}
-                                      className="flex-1 bg-white/5 border border-white/10 rounded text-center px-3 py-1.5 text-[9px] text-white uppercase tracking-[0.15em] hover:bg-white/10 transition-colors font-black"
-                                                                          >
+                                      className="flex-1 bg-white/5 border border-white/10 rounded text-center px-3 py-1.5 text-[9px] text-white uppercase tracking-[0.15em] hover:bg-white/10 transition-colors font-light"
+                                    >
                                       Edit
                                     </button>
                                     <button className="flex-1 bg-white/10 border border-white/20 rounded text-center px-3 py-1.5 text-[9px] text-white uppercase tracking-[0.15em] hover:bg-white/20 transition-colors font-light">
