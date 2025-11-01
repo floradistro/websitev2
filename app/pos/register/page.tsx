@@ -111,9 +111,8 @@ export default function POSRegisterPage() {
       }
     };
 
-    // Check session every 30 seconds
+    // Check session every 30 seconds (don't check immediately to avoid race condition)
     const interval = setInterval(verifySession, 30000);
-    verifySession(); // Check immediately
 
     return () => {
       supabase.removeChannel(channel);
