@@ -86,6 +86,19 @@ export function POSIDScanner({
         throw new Error('Default camera not available');
       }
 
+      // Configure camera settings for better barcode scanning
+      const cameraSettings = SDCCore.Camera.defaultSettings;
+      if (cameraSettings) {
+        // Set preferred resolution for better barcode detection
+        cameraSettings.preferredResolution = SDCCore.VideoResolution.FullHD;
+        // Enable auto-focus for better barcode locking
+        cameraSettings.focusMode = SDCCore.FocusMode.Continuous;
+        // Set focus range to far for ID scanning
+        cameraSettings.focusRange = SDCCore.FocusRange.Far;
+        await camera.applySettings(cameraSettings);
+        console.log('✅ Camera settings applied for barcode scanning');
+      }
+
       await context.setFrameSource(camera);
       cameraRef.current = camera;
       console.log('✅ Camera set as frame source');
@@ -102,14 +115,18 @@ export function POSIDScanner({
         new SDCId.IdCard(SDCId.Region.Any)
       ];
 
-      // Use SingleSideScanner with all capabilities enabled
+      // Use SingleSideScanner with barcode prioritized for faster, more reliable scanning
       settings.scannerType = new SDCId.SingleSideScanner(
-        true,  // barcode
+        true,  // barcode (prioritize this for US IDs)
         true,  // machineReadableZone
         true   // visualInspectionZone
       );
 
-      console.log('✅ ID capture settings configured');
+      // Improve barcode scanning performance
+      // Focus on barcode scanning since US IDs have PDF417 barcodes
+      settings.supportedSides = SDCId.SupportedSides.BackOnly; // US ID barcodes are on the back
+
+      console.log('✅ ID capture settings configured for barcode scanning');
 
       // Create ID capture mode
       console.log('🔧 Creating ID capture mode...');
@@ -148,12 +165,16 @@ export function POSIDScanner({
         console.log('✅ View connected to DOM element');
 
         const overlay = await SDCId.IdCaptureOverlay.withIdCapture(idCapture);
+
+        // Configure overlay for better visual feedback
+        overlay.idLayoutStyle = SDCId.IdLayoutStyle.Rounded;
+
         await view.addOverlay(overlay);
         console.log('✅ ID capture overlay added to view');
       }
 
       setStatus('scanning');
-      setMessage('Point camera at the barcode on the back of the ID');
+      setMessage('Point camera at the barcode on the back of the ID (works in any orientation)');
 
       // Enable ID capture mode and start scanning
       await idCapture.setEnabled(true);
@@ -448,8 +469,8 @@ export function POSIDScanner({
   }
 
   return (
-    <div className="fixed inset-0 bg-black/95 backdrop-blur-xl z-[60] flex items-center justify-center p-4">
-      <div className="bg-[#0a0a0a] border border-white/10 rounded-2xl max-w-2xl w-full overflow-hidden">
+    <div className="fixed inset-0 bg-black/95 backdrop-blur-xl z-[60] flex items-center justify-center p-2 md:p-4">
+      <div className="bg-[#0a0a0a] border border-white/10 rounded-2xl max-w-2xl w-full overflow-hidden scanner-modal">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-white/10">
           <div className="flex items-center gap-3">
@@ -467,9 +488,9 @@ export function POSIDScanner({
         </div>
 
         {/* Camera View */}
-        <div className="relative bg-black">
+        <div className="relative bg-black scanner-view-container">
           {cameraError ? (
-            <div className="aspect-video flex items-center justify-center p-8">
+            <div className="scanner-view flex items-center justify-center p-8">
               <div className="text-center">
                 <AlertCircle size={48} className="text-red-400 mx-auto mb-4" />
                 <div className="text-white/80 text-sm mb-2">Camera Access Required</div>
@@ -484,8 +505,7 @@ export function POSIDScanner({
           ) : (
             <div
               ref={viewRef}
-              className="aspect-video"
-              style={{ minHeight: '400px' }}
+              className="scanner-view"
             />
           )}
 
@@ -527,7 +547,8 @@ export function POSIDScanner({
             <div className="text-xs text-white/60 space-y-1">
               <div>• Hold the ID steady in front of the camera</div>
               <div>• Scan the <strong>barcode on the back</strong> of the license</div>
-              <div>• Keep the barcode within the blue frame</div>
+              <div>• Works in <strong>portrait or landscape</strong> orientation</div>
+              <div>• Keep the barcode centered and in focus</div>
               <div>• Ensure good lighting for best results</div>
             </div>
           </div>
@@ -541,6 +562,67 @@ export function POSIDScanner({
         }
         .animate-scan {
           animation: scan 2s ease-in-out infinite;
+        }
+
+        /* Scanner view container - responsive to orientation */
+        .scanner-view-container {
+          width: 100%;
+          position: relative;
+        }
+
+        /* Scanner view - adapts to portrait and landscape */
+        .scanner-view {
+          width: 100%;
+          min-height: 400px;
+          height: 60vh;
+          max-height: 600px;
+          position: relative;
+        }
+
+        /* Portrait orientation (mobile) */
+        @media (orientation: portrait) and (max-width: 768px) {
+          .scanner-view {
+            min-height: 500px;
+            height: 70vh;
+            max-height: none;
+          }
+        }
+
+        /* Landscape orientation (tablet landscape) */
+        @media (orientation: landscape) and (max-height: 768px) {
+          .scanner-view {
+            min-height: 300px;
+            height: 50vh;
+            max-height: 500px;
+          }
+        }
+
+        /* Ensure Scandit's video element fills the container */
+        .scanner-view :global(video) {
+          width: 100% !important;
+          height: 100% !important;
+          object-fit: cover !important;
+        }
+
+        /* Ensure Scandit's canvas overlays match */
+        .scanner-view :global(canvas) {
+          width: 100% !important;
+          height: 100% !important;
+        }
+
+        /* Modal container adjustments for different orientations */
+        .scanner-modal {
+          max-height: 95vh;
+          display: flex;
+          flex-direction: column;
+        }
+
+        /* In portrait mode on mobile, maximize vertical space */
+        @media (orientation: portrait) and (max-width: 768px) {
+          .scanner-modal {
+            max-width: 95vw;
+            max-height: 98vh;
+          }
         }
       `}</style>
     </div>
