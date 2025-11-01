@@ -17,13 +17,14 @@ function POSLayoutInner({
     setMounted(true);
   }, []);
 
-  // Check vendor authentication
-  useEffect(() => {
-    if (mounted && !isLoading && !isAuthenticated) {
-      console.log('⚠️ Not authenticated, redirecting to vendor login');
-      router.push('/vendor/login?redirect=/pos');
-    }
-  }, [mounted, isLoading, isAuthenticated, router]);
+  // Check vendor authentication - DISABLED for POS
+  // POS works without vendor login (uses register assignment instead)
+  // useEffect(() => {
+  //   if (mounted && !isLoading && !isAuthenticated) {
+  //     console.log('⚠️ Not authenticated, redirecting to vendor login');
+  //     router.push('/vendor/login?redirect=/pos');
+  //   }
+  // }, [mounted, isLoading, isAuthenticated, router]);
 
   // Debug logging
   useEffect(() => {
@@ -36,7 +37,7 @@ function POSLayoutInner({
   }, [mounted, isLoading, isAuthenticated, vendor]);
 
   // Show loading while checking auth
-  if (!mounted || isLoading) {
+  if (!mounted) {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
         <div className="text-white/60 text-xs uppercase tracking-[0.15em]">Loading POS...</div>
@@ -44,14 +45,8 @@ function POSLayoutInner({
     );
   }
 
-  // If not authenticated, show loading while redirecting
-  if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-black text-white flex items-center justify-center">
-        <div className="text-white/60 text-xs uppercase tracking-[0.15em]">Redirecting...</div>
-      </div>
-    );
-  }
+  // POS doesn't require authentication - allow access for register selection
+  // Authentication is handled per-register via device assignment
 
   return (
     <>
