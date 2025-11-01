@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Sparkles, Check, X, Loader2 } from 'lucide-react';
 
-export default function Generating() {
+function GeneratingContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const vendorId = searchParams.get('vendor_id');
@@ -171,6 +171,18 @@ export default function Generating() {
         <p className="text-xs text-white/30 mt-8">This usually takes 30-90 seconds</p>
       </div>
     </div>
+  );
+}
+
+export default function Generating() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-white"></div>
+      </div>
+    }>
+      <GeneratingContent />
+    </Suspense>
   );
 }
 
