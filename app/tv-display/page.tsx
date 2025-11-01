@@ -1095,6 +1095,23 @@ function TVDisplayContent() {
               const splitRightCategory = activeMenu?.config_data?.splitRightCategory;
               const splitRightTitle = activeMenu?.config_data?.splitRightTitle;
 
+              // Get per-side configurations
+              const splitLeftCustomFields = activeMenu?.config_data?.splitLeftCustomFields || activeMenu?.config_data?.customFields || [];
+              const splitLeftPriceBreaks = activeMenu?.config_data?.splitLeftPriceBreaks || visiblePriceBreaks;
+              const splitRightCustomFields = activeMenu?.config_data?.splitRightCustomFields || activeMenu?.config_data?.customFields || [];
+              const splitRightPriceBreaks = activeMenu?.config_data?.splitRightPriceBreaks || visiblePriceBreaks;
+
+              console.log('📱 Split view per-side config:', {
+                left: {
+                  customFields: splitLeftCustomFields,
+                  priceBreaks: splitLeftPriceBreaks
+                },
+                right: {
+                  customFields: splitRightCustomFields,
+                  priceBreaks: splitRightPriceBreaks
+                }
+              });
+
               console.log('📱 Split view config:', {
                 left: { category: splitLeftCategory, title: splitLeftTitle },
                 right: { category: splitRightCategory, title: splitRightTitle }
@@ -1169,9 +1186,9 @@ function TVDisplayContent() {
                             product={product}
                             theme={theme}
                             index={index}
-                            visiblePriceBreaks={visiblePriceBreaks}
+                            visiblePriceBreaks={splitLeftPriceBreaks}
                             displayConfig={displayGroup?.display_config}
-                            customFieldsToShow={activeMenu?.config_data?.customFields || []}
+                            customFieldsToShow={splitLeftCustomFields}
                             customFieldsConfig={activeMenu?.config_data?.customFieldsConfig || {}}
                             hideAllFieldLabels={activeMenu?.config_data?.hideAllFieldLabels || false}
                             splitSide="left"
@@ -1222,9 +1239,9 @@ function TVDisplayContent() {
                             product={product}
                             theme={theme}
                             index={index}
-                            visiblePriceBreaks={visiblePriceBreaks}
+                            visiblePriceBreaks={splitRightPriceBreaks}
                             displayConfig={displayGroup?.display_config}
-                            customFieldsToShow={activeMenu?.config_data?.customFields || []}
+                            customFieldsToShow={splitRightCustomFields}
                             customFieldsConfig={activeMenu?.config_data?.customFieldsConfig || {}}
                             hideAllFieldLabels={activeMenu?.config_data?.hideAllFieldLabels || false}
                             splitSide="right"
