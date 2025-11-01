@@ -531,12 +531,21 @@ function ProductCard({ product, onAddToCart, onProductClick, onQuickView, showIn
       <div className="flex flex-col flex-1 p-4">
         {/* Product Name - Clickable */}
         <h3
-          className="text-white font-black uppercase text-xs tracking-tight leading-tight line-clamp-2 mb-3 cursor-pointer hover:text-white/80 transition-colors"
+          className="text-white font-black uppercase text-xs tracking-tight leading-tight line-clamp-2 mb-2 cursor-pointer hover:text-white/80 transition-colors"
           style={{ fontWeight: 900 }}
           onClick={handleProductClick}
         >
           {product.name}
         </h3>
+
+        {/* Category Badge */}
+        {product.category && (
+          <div className="mb-3">
+            <span className="inline-block px-2 py-0.5 bg-white/5 border border-white/10 rounded-lg text-[9px] uppercase tracking-[0.15em] text-white/70 font-bold">
+              {product.category}
+            </span>
+          </div>
+        )}
 
         {/* Stock Status */}
         {showInventory && (
