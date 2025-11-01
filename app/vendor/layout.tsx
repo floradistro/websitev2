@@ -12,6 +12,7 @@ import { dashboardKeyframes } from '@/lib/dashboard-theme';
 import { vendorNavItems, mobileNavItems } from '@/lib/vendor-navigation';
 import { prefetchVendorData } from '@/hooks/useVendorData';
 import { useAutoHideHeader } from '@/hooks/useAutoHideHeader';
+import { UniversalSearch } from '@/components/UniversalSearch';
 import '../globals-dashboard.css';
 
 function VendorLayoutContent({
@@ -193,19 +194,19 @@ function VendorLayoutContent({
           top: 'env(safe-area-inset-top, 0px)'
         }}
       >
-        <div className="flex items-center justify-between h-12 px-4">
+        <div className="flex items-center justify-between h-12 px-4 gap-3">
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-1.5 -ml-1.5 text-white/60 hover:text-white transition-all duration-200 hover:bg-white/5 rounded-lg"
+            className="p-1.5 -ml-1.5 text-white/60 hover:text-white transition-all duration-200 hover:bg-white/5 rounded-lg flex-shrink-0"
           >
             <Menu size={18} strokeWidth={2} />
           </button>
 
-          <div className="absolute left-1/2 -translate-x-1/2">
-            <h1 className="text-[10px] text-white tracking-[0.15em] uppercase">{currentPage}</h1>
+          <div className="flex-1 flex justify-center">
+            <UniversalSearch />
           </div>
 
-          <Link href="/vendor/apps" className="w-8 h-8 bg-white/5 rounded-lg flex items-center justify-center overflow-hidden border border-white/10 transition-all duration-200 hover:border-white/20">
+          <Link href="/vendor/apps" className="w-8 h-8 bg-white/5 rounded-lg flex items-center justify-center overflow-hidden border border-white/10 transition-all duration-200 hover:border-white/20 flex-shrink-0">
             <img src={vendorLogo} alt={vendorName} className="w-full h-full object-contain p-1" />
           </Link>
         </div>
@@ -316,6 +317,7 @@ function VendorLayoutContent({
             </Link>
 
             <div className="flex items-center gap-4">
+              <UniversalSearch />
               <Link
                 href="/vendor/apps"
                 className="text-white/60 hover:text-white text-[10px] uppercase tracking-[0.15em] transition-all duration-200"

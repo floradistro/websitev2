@@ -27,9 +27,7 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
         price,
         cost_price,
         custom_fields,
-        product_categories(
-          category:categories(name)
-        )
+        primary_category:categories!primary_category_id(name)
       `)
       .eq('vendor_id', vendorId)
       .order('name');
@@ -98,7 +96,7 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
           product_name: product.name,
           sku: product.sku || '',
           quantity: parseFloat(inv.quantity) || 0,
-          category_name: (product.product_categories?.[0]?.category as any)?.name || 'Uncategorized',
+          category_name: (product.primary_category as any)?.name || 'Uncategorized',
           price: parseFloat(product.price) || 0,
           cost_price: product.cost_price ? parseFloat(product.cost_price) : undefined,
           stock_status,

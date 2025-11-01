@@ -1,68 +1,104 @@
-import { NextRequest, NextResponse } from "next/server";
-
-// Get base URL for internal API calls
-const getBaseUrl = () => {
-  if (process.env.NEXT_PUBLIC_SITE_URL) {
-    return process.env.NEXT_PUBLIC_SITE_URL;
-  }
-  if (process.env.VERCEL_URL) {
-    return `https://${process.env.VERCEL_URL}`;
-  }
-  return 'http://localhost:3000';
-};
+import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@/lib/supabase/server';
 
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
-    const query = searchParams.get("q");
+    const query = searchParams.get('q');
+    const vendorId = searchParams.get('vendorId');
 
     if (!query || query.trim().length < 2) {
-      return NextResponse.json({ products: [] });
+      return NextResponse.json({ success: true, results: [] });
     }
 
-    // Search using Supabase full-text search
-    const searchResponse = await fetch(
-      `${getBaseUrl()}/api/supabase/products?search=${encodeURIComponent(query)}&per_page=15&status=published`
-    );
-    
-    const data = await searchResponse.json();
-    const products = data.products || [];
+    const supabase = await createClient();
+    const searchTerm = `%${query.toLowerCase()}%`;
 
-    // Map to search result format
-    const results = products.map((product: any) => {
-      // Get pricing from tiers if available
-      let priceDisplay = product.price || "0";
-      
-      if (product.meta_data?._product_price_tiers && Array.isArray(product.meta_data._product_price_tiers)) {
-        const tiers = product.meta_data._product_price_tiers;
-        if (tiers.length > 0) {
-          const prices = tiers.map((t: any) => 
-            typeof t.price === "string" ? parseFloat(t.price) : t.price
-          );
-          const minPrice = Math.min(...prices);
-          const maxPrice = Math.max(...prices);
-          
-          if (minPrice === maxPrice) {
-            priceDisplay = `${minPrice}`;
-          } else {
-            priceDisplay = `${minPrice}-${maxPrice}`;
-          }
-        }
-      }
+    // Search products (only if vendorId provided)
+    let products = [];
+    if (vendorId) {
+      const { data } = await supabase
+        .from('products')
+        .select('id, name, category:categories(name)')
+        .eq('vendor_id', vendorId)
+        .or(`name.ilike.${searchTerm},description.ilike.${searchTerm}`)
+        .limit(5);
+      products = data || [];
+    }
 
-      return {
+    // Search orders (only if vendorId provided)
+    let orders = [];
+    if (vendorId) {
+      const { data } = await supabase
+        .from('orders')
+        .select('id, order_number, customer_name, status')
+        .eq('vendor_id', vendorId)
+        .or(`order_number.ilike.${searchTerm},customer_name.ilike.${searchTerm}`)
+        .limit(5);
+      orders = data || [];
+    }
+
+    // Search customers (only if vendorId provided)
+    let customers = [];
+    if (vendorId) {
+      const { data } = await supabase
+        .from('customers')
+        .select('id, name, email, phone')
+        .eq('vendor_id', vendorId)
+        .or(`name.ilike.${searchTerm},email.ilike.${searchTerm},phone.ilike.${searchTerm}`)
+        .limit(5);
+      customers = data || [];
+    }
+
+    // App shortcuts
+    const apps = [
+      { key: 'pos', name: 'Point of Sale', route: '/pos/register' },
+      { key: 'orders', name: 'Order Queue', route: '/pos/orders' },
+      { key: 'products', name: 'Products', route: '/vendor/products' },
+      { key: 'inventory', name: 'Inventory', route: '/vendor/inventory' },
+      { key: 'customers', name: 'Customers', route: '/vendor/customers' },
+      { key: 'analytics', name: 'Analytics', route: '/vendor/dashboard' },
+      { key: 'marketing', name: 'Marketing', route: '/vendor/marketing' },
+      { key: 'tv_menus', name: 'Digital Menus', route: '/vendor/tv-menus' },
+      { key: 'code', name: 'Code', route: '/vendor/code' },
+    ].filter(app => app.name.toLowerCase().includes(query.toLowerCase()));
+
+    // Build results array
+    const results = [
+      ...(apps || []).map(app => ({
+        id: app.key,
+        type: 'app' as const,
+        title: app.name,
+        subtitle: 'Application',
+        route: app.route,
+      })),
+      ...(products || []).map((product: any) => ({
         id: product.id,
-        name: product.name,
-        price: priceDisplay,
-        images: product.featured_image ? [{ src: product.featured_image }] : [],
-        categories: product.categories || [],
-      };
-    });
+        type: 'product' as const,
+        title: product.name,
+        subtitle: product.category?.name || 'Product',
+        route: `/vendor/products?id=${product.id}`,
+      })),
+      ...(orders || []).map((order: any) => ({
+        id: order.id,
+        type: 'order' as const,
+        title: `Order #${order.order_number}`,
+        subtitle: `${order.customer_name || 'Guest'} • ${order.status}`,
+        route: `/pos/orders?id=${order.id}`,
+      })),
+      ...(customers || []).map((customer: any) => ({
+        id: customer.id,
+        type: 'customer' as const,
+        title: customer.name,
+        subtitle: customer.email || customer.phone || 'Customer',
+        route: `/vendor/customers?id=${customer.id}`,
+      })),
+    ];
 
-    return NextResponse.json({ products: results });
+    return NextResponse.json({ success: true, results });
   } catch (error) {
-    console.error("Search API error:", error);
-    return NextResponse.json({ products: [] }, { status: 500 });
+    console.error('Search error:', error);
+    return NextResponse.json({ success: false, error: 'Search failed' }, { status: 500 });
   }
 }
 

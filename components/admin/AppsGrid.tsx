@@ -28,6 +28,10 @@ interface App {
   glowColor: string;
 }
 
+interface BadgeCounts {
+  [key: string]: number;
+}
+
 const APPS: App[] = [
   {
     key: 'pos',
@@ -121,7 +125,7 @@ const APPS: App[] = [
   },
 ];
 
-export function AppsGrid() {
+export function AppsGrid({ badgeCounts = {} }: { badgeCounts?: BadgeCounts }) {
   const { user, hasAppAccess } = useAppAuth();
   const router = useRouter();
 
@@ -147,19 +151,19 @@ export function AppsGrid() {
     );
   }
 
-  // Color mapping for icons
+  // Color mapping for icons - Muted, refined palette
   const iconColors: Record<string, string> = {
-    blue: 'text-blue-400',
-    purple: 'text-purple-400',
-    green: 'text-green-400',
-    orange: 'text-orange-400',
-    red: 'text-red-400',
-    indigo: 'text-indigo-400',
-    teal: 'text-teal-400',
-    fuchsia: 'text-fuchsia-400',
-    emerald: 'text-emerald-400',
-    cyan: 'text-cyan-400',
-    pink: 'text-pink-400'
+    blue: 'text-blue-400/70',
+    purple: 'text-purple-400/70',
+    green: 'text-green-400/70',
+    orange: 'text-orange-400/70',
+    red: 'text-red-400/70',
+    indigo: 'text-indigo-400/70',
+    teal: 'text-teal-400/70',
+    fuchsia: 'text-fuchsia-400/70',
+    emerald: 'text-emerald-400/70',
+    cyan: 'text-cyan-400/70',
+    pink: 'text-pink-400/70'
   };
 
   return (
@@ -179,21 +183,30 @@ export function AppsGrid() {
             {/* Premium Icon Container */}
             <div className="relative w-20 h-20">
               {/* Subtle shadow layer */}
-              <div className="absolute inset-0 bg-gradient-to-b from-white/[0.02] to-transparent rounded-3xl" />
+              <div className="absolute inset-0 bg-gradient-to-b from-white/[0.015] to-transparent rounded-3xl" />
 
               {/* Dark container with premium hover */}
-              <div className="relative w-full h-full bg-[#0a0a0a] group-hover:bg-white/[0.08] rounded-3xl flex items-center justify-center border border-white/[0.06] group-hover:border-white/[0.12] transition-all duration-300 ease-out shadow-lg shadow-black/20">
-                {/* Colored icon with subtle glow on hover */}
+              <div className="relative w-full h-full bg-[#0a0a0a] group-hover:bg-white/[0.06] rounded-3xl flex items-center justify-center border border-white/[0.04] group-hover:border-white/[0.08] transition-all duration-400 ease-out shadow-lg shadow-black/30">
+                {/* Colored icon with subtle refinement */}
                 <Icon
-                  size={52}
-                  className={`${iconColor} transition-all duration-300 ease-out group-hover:scale-105`}
-                  strokeWidth={1.8}
+                  size={60}
+                  className={`${iconColor} transition-all duration-400 ease-out group-hover:scale-[1.03] group-hover:opacity-90`}
+                  strokeWidth={1.5}
                 />
               </div>
+
+              {/* Notification Badge */}
+              {badgeCounts[app.key] > 0 && (
+                <div className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-red-500 rounded-full flex items-center justify-center border-2 border-black">
+                  <span className="text-white text-[9px] font-semibold">
+                    {badgeCounts[app.key] > 99 ? '99+' : badgeCounts[app.key]}
+                  </span>
+                </div>
+              )}
             </div>
 
             {/* App Name - Premium Typography */}
-            <div className="text-white/70 group-hover:text-white/90 text-[10px] text-center uppercase tracking-[0.2em] leading-tight transition-colors duration-300 ease-out font-light">
+            <div className="text-white/60 group-hover:text-white/80 text-[10px] text-center uppercase tracking-[0.2em] leading-tight transition-colors duration-400 ease-out font-light">
               {app.name}
             </div>
           </Link>

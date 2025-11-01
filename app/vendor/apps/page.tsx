@@ -22,6 +22,7 @@ export default function MegaDashboard() {
 
   const [showKPICreator, setShowKPICreator] = useState(false);
   const [kpiWidgets, setKpiWidgets] = useState<any[]>([]);
+  const [badgeCounts, setBadgeCounts] = useState<{ [key: string]: number }>({});
 
   useEffect(() => {
     if (!dashboardData) return;
@@ -47,6 +48,27 @@ export default function MegaDashboard() {
       }
     };
     loadKPIWidgets();
+  }, [vendor?.id]);
+
+  // Fetch badge counts
+  useEffect(() => {
+    const fetchBadgeCounts = async () => {
+      if (!vendor?.id) return;
+      try {
+        const response = await fetch(`/api/vendor/badge-counts?vendorId=${vendor.id}`);
+        const data = await response.json();
+        if (data.success) {
+          setBadgeCounts(data.badgeCounts);
+        }
+      } catch (error) {
+        console.error('Error fetching badge counts:', error);
+      }
+    };
+    fetchBadgeCounts();
+
+    // Refresh every 30 seconds
+    const interval = setInterval(fetchBadgeCounts, 30000);
+    return () => clearInterval(interval);
   }, [vendor?.id]);
 
   const handleSaveKPI = async (kpi: any) => {
@@ -101,26 +123,37 @@ export default function MegaDashboard() {
   };
 
   return (
-    <div className="h-full bg-black overflow-hidden flex flex-col relative">
+    <div className="absolute inset-0 bg-[#0a0a0a] overflow-hidden flex flex-col">
       {/* Subtle ambient glow */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-white/[0.01] rounded-full blur-3xl" />
       </div>
 
-      <div className="flex-1 flex flex-col items-center justify-center max-w-6xl mx-auto w-full px-6 relative z-10">
+      <div className="flex-1 flex flex-col items-center justify-center w-full relative z-10 px-6">
+        {/* Vendor Logo */}
+        <div className="mb-8">
+          <div className="w-20 h-20 rounded-3xl bg-white/[0.04] border border-white/[0.06] flex items-center justify-center overflow-hidden shadow-lg shadow-black/30 transition-all duration-400">
+            <img
+              src={vendor?.logo_url || '/yacht-club-logo.png'}
+              alt={vendor?.store_name || 'Logo'}
+              className="w-full h-full object-contain p-3"
+            />
+          </div>
+        </div>
+
         {/* Greeting Header */}
         <div className="mb-12 text-center">
-          <h1 className="text-white/90 text-2xl tracking-tight mb-1 font-light">
+          <h1 className="text-white/70 text-2xl tracking-tight mb-1 font-light">
             {getGreeting()}
           </h1>
-          <p className="text-white/30 text-[11px] uppercase tracking-[0.2em] font-light">
+          <p className="text-white/25 text-[11px] uppercase tracking-[0.2em] font-light">
             Select an app to continue
           </p>
         </div>
 
-        {/* App Grid - Centered */}
-        <div className="w-full max-w-4xl">
-          <AppsGrid />
+        {/* App Grid - Full Width */}
+        <div className="w-full max-w-7xl">
+          <AppsGrid badgeCounts={badgeCounts} />
         </div>
       </div>
 

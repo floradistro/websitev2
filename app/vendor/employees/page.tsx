@@ -1,11 +1,9 @@
-"use client";
+'use client';
 
 import { useState, useEffect } from 'react';
-import { Users, Plus, Edit2, Trash2, CheckCircle, XCircle, Shield, MapPin } from 'lucide-react';
+import { Users, Plus, Mail, Phone, Shield, MapPin, Trash2, CheckCircle, XCircle } from 'lucide-react';
 import { useAppAuth } from '@/context/AppAuthContext';
 import axios from 'axios';
-import { showNotification, showConfirm } from '@/components/NotificationToast';
-import AdminModal from '@/components/AdminModal';
 
 interface Employee {
   id: string;
@@ -16,10 +14,7 @@ interface Employee {
   status: string;
   employee_id: string | null;
   phone: string | null;
-  hire_date: string | null;
-  last_login: string | null;
   created_at: string;
-  assigned_locations?: Location[];
 }
 
 interface Location {
@@ -28,664 +23,350 @@ interface Location {
   type: string;
 }
 
-const VENDOR_ROLES = [
-  { value: 'vendor_manager', label: 'Manager', description: 'Manage locations & staff' },
-  { value: 'location_manager', label: 'Location Manager', description: 'Single location management' },
-  { value: 'pos_staff', label: 'POS Staff', description: 'Process sales only' },
-  { value: 'inventory_staff', label: 'Inventory Staff', description: 'Manage inventory' },
+const ROLES = [
+  { value: 'vendor_manager', label: 'Manager', color: 'cyan' },
+  { value: 'location_manager', label: 'Location Manager', color: 'green' },
+  { value: 'pos_staff', label: 'POS Staff', color: 'blue' },
+  { value: 'inventory_staff', label: 'Inventory', color: 'orange' },
 ];
 
-export default function VendorEmployees() {
-  const { vendor, isAuthenticated, isLoading: authLoading } = useAppAuth();
+export default function EmployeesPage() {
+  const { vendor, isLoading: authLoading } = useAppAuth();
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [locations, setLocations] = useState<Location[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [showAssignModal, setShowAssignModal] = useState(false);
-  const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
-  const [assigningEmployee, setAssigningEmployee] = useState<Employee | null>(null);
-  const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
   const [newEmployee, setNewEmployee] = useState({
     email: '',
     first_name: '',
     last_name: '',
     role: 'pos_staff',
     phone: '',
-    employee_id: '',
   });
 
   useEffect(() => {
-    if (!authLoading && isAuthenticated) {
-      loadEmployees();
-      loadLocations();
+    if (vendor?.id) {
+      loadData();
+    } else if (!authLoading) {
+      setLoading(false);
     }
-  }, [authLoading, isAuthenticated]);
+  }, [vendor?.id, authLoading]);
 
-  async function loadEmployees() {
+  async function loadData() {
+    if (!vendor?.id) {
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
-      const vendorId = vendor?.id;
-      if (!vendorId) return;
+      setError(null);
+      const [empRes, locRes] = await Promise.all([
+        axios.get('/api/vendor/employees', { headers: { 'x-vendor-id': vendor.id } }),
+        axios.get('/api/vendor/locations', { headers: { 'x-vendor-id': vendor.id } })
+      ]);
 
-      const response = await axios.get('/api/vendor/employees', {
-        headers: { 'x-vendor-id': vendorId }
-      });
-
-      if (response.data.success) {
-        setEmployees(response.data.employees || []);
-      }
-    } catch (error) {
-      console.error('Error loading employees:', error);
+      if (empRes.data.success) setEmployees(empRes.data.employees || []);
+      if (locRes.data.success) setLocations(locRes.data.locations || []);
+    } catch (err: any) {
+      console.error('Error loading data:', err);
+      setError(err.message || 'Failed to load data');
     } finally {
       setLoading(false);
     }
   }
 
-  async function loadLocations() {
-    try {
-      const vendorId = vendor?.id;
-      if (!vendorId) return;
-
-      const response = await axios.get('/api/vendor/locations', {
-        headers: { 'x-vendor-id': vendorId }
-      });
-
-      if (response.data.success) {
-        setLocations(response.data.locations || []);
-      }
-    } catch (error) {
-      console.error('Error loading locations:', error);
-    }
-  }
-
-  async function createEmployee() {
-    if (!newEmployee.email || !newEmployee.first_name || !newEmployee.last_name) {
-      showNotification({
-        type: 'error',
-        title: 'Missing Fields',
-        message: 'Email, first name, and last name are required'
-      });
-      return;
-    }
+  async function handleAddEmployee(e: React.FormEvent) {
+    e.preventDefault();
+    if (!vendor?.id || !newEmployee.email || !newEmployee.first_name || !newEmployee.last_name) return;
 
     try {
-      const vendorId = vendor?.id;
-      const response = await axios.post('/api/vendor/employees', {
+      const res = await axios.post('/api/vendor/employees', {
         action: 'create',
         ...newEmployee
       }, {
-        headers: { 'x-vendor-id': vendorId }
+        headers: { 'x-vendor-id': vendor.id }
       });
 
-      if (response.data.success) {
-        showNotification({
-          type: 'success',
-          title: 'Employee Added',
-          message: `${newEmployee.first_name} ${newEmployee.last_name} has been added`
-        });
+      if (res.data.success) {
         setShowAddModal(false);
-        setNewEmployee({
-          email: '',
-          first_name: '',
-          last_name: '',
-          role: 'pos_staff',
-          phone: '',
-          employee_id: '',
-        });
-        loadEmployees();
+        setNewEmployee({ email: '', first_name: '', last_name: '', role: 'pos_staff', phone: '' });
+        loadData();
       }
     } catch (error: any) {
-      showNotification({
-        type: 'error',
-        title: 'Error',
-        message: error.response?.data?.error || 'Failed to add employee'
-      });
-    }
-  }
-
-  async function updateEmployee() {
-    if (!editingEmployee) return;
-
-    try {
-      const vendorId = vendor?.id;
-      const response = await axios.post('/api/vendor/employees', {
-        action: 'update',
-        employee_id: editingEmployee.id,
-        first_name: editingEmployee.first_name,
-        last_name: editingEmployee.last_name,
-        phone: editingEmployee.phone,
-        role: editingEmployee.role,
-        emp_id: editingEmployee.employee_id,
-      }, {
-        headers: { 'x-vendor-id': vendorId }
-      });
-
-      if (response.data.success) {
-        showNotification({
-          type: 'success',
-          title: 'Employee Updated',
-          message: 'Employee information updated successfully'
-        });
-        setShowEditModal(false);
-        setEditingEmployee(null);
-        loadEmployees();
-      }
-    } catch (error: any) {
-      showNotification({
-        type: 'error',
-        title: 'Error',
-        message: error.response?.data?.error || 'Failed to update employee'
-      });
-    }
-  }
-
-  async function assignLocations() {
-    if (!assigningEmployee || selectedLocations.length === 0) {
-      showNotification({
-        type: 'error',
-        title: 'No Locations Selected',
-        message: 'Please select at least one location'
-      });
-      return;
-    }
-
-    try {
-      const vendorId = vendor?.id;
-      const response = await axios.post('/api/vendor/employees', {
-        action: 'assign_locations',
-        employee_id: assigningEmployee.id,
-        location_ids: selectedLocations
-      }, {
-        headers: { 'x-vendor-id': vendorId }
-      });
-
-      if (response.data.success) {
-        showNotification({
-          type: 'success',
-          title: 'Locations Assigned',
-          message: 'Employee assigned to selected locations'
-        });
-        setShowAssignModal(false);
-        setAssigningEmployee(null);
-        setSelectedLocations([]);
-        loadEmployees();
-      }
-    } catch (error: any) {
-      showNotification({
-        type: 'error',
-        title: 'Error',
-        message: error.response?.data?.error || 'Failed to assign locations'
-      });
+      console.error('Error adding employee:', error);
+      alert(error.response?.data?.error || 'Failed to add employee');
     }
   }
 
   async function toggleStatus(employeeId: string, currentStatus: string) {
-    const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
+    if (!vendor?.id) return;
 
     try {
-      const vendorId = vendor?.id;
-      const response = await axios.post('/api/vendor/employees', {
+      await axios.post('/api/vendor/employees', {
         action: 'toggle_status',
         employee_id: employeeId,
-        status: newStatus
+        status: currentStatus === 'active' ? 'inactive' : 'active'
       }, {
-        headers: { 'x-vendor-id': vendorId }
+        headers: { 'x-vendor-id': vendor.id }
       });
-
-      if (response.data.success) {
-        showNotification({
-          type: 'success',
-          title: 'Status Updated',
-          message: `Employee ${newStatus === 'active' ? 'activated' : 'deactivated'}`
-        });
-        loadEmployees();
-      }
-    } catch (error: any) {
-      showNotification({
-        type: 'error',
-        title: 'Error',
-        message: error.response?.data?.error || 'Failed to update status'
-      });
+      loadData();
+    } catch (error) {
+      console.error('Error toggling status:', error);
     }
   }
 
-  async function deleteEmployee(employeeId: string, employeeName: string) {
-    const confirmed = await showConfirm({
-      title: 'Remove Employee',
-      message: `Are you sure you want to remove ${employeeName}? This action cannot be undone.`,
-      confirmText: 'Remove',
-      cancelText: 'Cancel',
-      type: 'danger',
-      onConfirm: () => {},
-    });
-
-    if (!confirmed) return;
-
-    try {
-      const vendorId = vendor?.id;
-      const response = await axios.post('/api/vendor/employees', {
-        action: 'delete',
-        employee_id: employeeId
-      }, {
-        headers: { 'x-vendor-id': vendorId }
-      });
-
-      if (response.data.success) {
-        showNotification({
-          type: 'success',
-          title: 'Employee Removed',
-          message: 'Employee removed successfully'
-        });
-        loadEmployees();
-      }
-    } catch (error: any) {
-      showNotification({
-        type: 'error',
-        title: 'Error',
-        message: error.response?.data?.error || 'Failed to remove employee'
-      });
-    }
-  }
-
-  const getRoleBadgeColor = (role: string) => {
-    switch (role) {
-      case 'vendor_manager': return 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30';
-      case 'location_manager': return 'bg-green-500/20 text-green-400 border-green-500/30';
-      case 'pos_staff': return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
-      case 'inventory_staff': return 'bg-orange-500/20 text-orange-400 border-orange-500/30';
-      default: return 'bg-white/10 text-white/60 border-white/20';
+  const getRoleColorClass = (role: string) => {
+    const r = ROLES.find(r => r.value === role);
+    switch (r?.color) {
+      case 'cyan': return 'text-cyan-400/60';
+      case 'green': return 'text-green-400/60';
+      case 'blue': return 'text-blue-400/60';
+      case 'orange': return 'text-orange-400/60';
+      default: return 'text-white/60';
     }
   };
 
-  // Don't block the entire page on auth loading
-  // The useEffect will handle loading employees once auth completes
+  const getRoleLabel = (role: string) => {
+    return ROLES.find(r => r.value === role)?.label || role;
+  };
+
+  // Show error state if something broke
+  if (error) {
+    return (
+      <div className="w-full animate-fadeIn">
+        <div className="flex flex-col items-center justify-center py-32">
+          <div className="text-red-400/60 text-sm mb-2 tracking-tight">Error</div>
+          <p className="text-white/40 text-[11px] text-center max-w-md font-light tracking-wide">
+            {error}
+          </p>
+          <button
+            onClick={() => {
+              setError(null);
+              loadData();
+            }}
+            className="mt-6 px-6 py-3 bg-white/[0.06] hover:bg-white/[0.08] border border-white/[0.08] rounded-xl text-white/60 text-[10px] uppercase tracking-[0.2em] font-light transition-all duration-400"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="w-full animate-fadeIn px-4 lg:px-0">
-      {/* Header */}
-      <div className="flex justify-between items-start gap-4 mb-8 pb-6 border-b border-white/5">
-        <div className="min-w-0">
-          <h1 className="text-xs uppercase tracking-[0.15em] text-white font-black mb-1" style={{ fontWeight: 900 }}>
-            Employees
-          </h1>
-          <p className="text-[10px] uppercase tracking-[0.15em] text-white/40">
-            {employees.length} {employees.length !== 1 ? 'Employees' : 'Employee'} · Team Management
-          </p>
-        </div>
-        <button
-          onClick={() => setShowAddModal(true)}
-          className="flex items-center gap-2 bg-white text-black px-4 py-2.5 lg:px-5 lg:py-3 text-xs font-medium uppercase tracking-wider hover:bg-white/90 transition-all whitespace-nowrap flex-shrink-0"
-        >
-          <Plus size={16} />
-          <span className="hidden sm:inline">Add Employee</span>
-          <span className="sm:inline">Add</span>
-        </button>
+    <div className="w-full animate-fadeIn">
+      {/* Ambient glow */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-white/[0.01] rounded-full blur-3xl" />
       </div>
 
-      {/* Employees List */}
-      {loading ? (
-        <div className="bg-black border border-white/10 p-12 text-center">
-          <div className="text-white/40 text-sm">Loading...</div>
-        </div>
-      ) : employees.length === 0 ? (
-        <div className="bg-black border border-white/10 p-12 text-center">
-          <Users size={32} className="text-white/20 mx-auto mb-3" />
-          <div className="text-white/60 text-sm mb-2">No employees found</div>
-          <div className="text-white/40 text-xs">Add your first employee to get started</div>
-        </div>
-      ) : (
-        <div className="bg-black border border-white/10">
-          {employees.map((employee, index) => (
-            <div
-              key={employee.id}
-              className={`px-4 py-4 hover:bg-white/5 transition-colors ${
-                index !== employees.length - 1 ? 'border-b border-white/5' : ''
-              }`}
-            >
-              {/* Mobile Layout */}
-              <div className="lg:hidden space-y-3">
-                <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 bg-white/5 flex items-center justify-center flex-shrink-0 rounded-2xl">
-                    <Users size={18} className="text-white/40" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-white text-sm font-medium mb-1">
-                      {employee.first_name} {employee.last_name}
-                    </div>
-                    <div className="text-white/40 text-xs mb-2">{employee.email}</div>
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className={`text-xs px-2 py-0.5 border ${getRoleBadgeColor(employee.role)}`}>
-                        <Shield size={10} className="inline mr-1" />
-                        {VENDOR_ROLES.find(r => r.value === employee.role)?.label}
-                      </span>
-                      {employee.status === 'active' ? (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs text-white/60 border border-white/10">
-                          <CheckCircle size={10} />
-                          Active
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs text-white/40 border border-white/10">
-                          <XCircle size={10} />
-                          Inactive
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex gap-2 pl-13">
-                  <button
-                    onClick={() => {
-                      setEditingEmployee(employee);
-                      setShowEditModal(true);
-                    }}
-                    className="flex-1 p-2.5 text-white/60 hover:text-white hover:bg-white/10 transition-all border border-white/10 text-xs"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => {
-                      setAssigningEmployee(employee);
-                      setShowAssignModal(true);
-                    }}
-                    className="flex-1 p-2.5 text-white/60 hover:text-white hover:bg-white/10 transition-all border border-white/10 text-xs"
-                  >
-                    <MapPin size={12} className="inline mr-1" />
-                    Assign
-                  </button>
-                  <button
-                    onClick={() => toggleStatus(employee.id, employee.status)}
-                    className="flex-1 p-2.5 text-white/60 hover:text-white hover:bg-white/10 transition-all border border-white/10 text-xs"
-                  >
-                    {employee.status === 'active' ? 'Deactivate' : 'Activate'}
-                  </button>
-                </div>
-              </div>
-
-              {/* Desktop Layout */}
-              <div className="hidden lg:flex items-center gap-4">
-                <div className="w-8 h-8 bg-white/5 flex items-center justify-center flex-shrink-0">
-                  <Users size={16} className="text-white/40" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="text-white text-sm font-medium">
-                    {employee.first_name} {employee.last_name}
-                  </div>
-                  <div className="text-white/40 text-xs">{employee.email}</div>
-                </div>
-                <div className="w-40">
-                  <span className={`text-xs px-2 py-1 border ${getRoleBadgeColor(employee.role)}`}>
-                    {VENDOR_ROLES.find(r => r.value === employee.role)?.label}
-                  </span>
-                </div>
-                <div className="flex-shrink-0">
-                  {employee.status === 'active' ? (
-                    <span className="inline-flex items-center gap-1 px-2 py-1 text-xs text-white/60 border border-white/10">
-                      <CheckCircle size={10} />
-                      Active
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center gap-1 px-2 py-1 text-xs text-white/40 border border-white/10">
-                      <XCircle size={10} />
-                      Inactive
-                    </span>
-                  )}
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => {
-                      setEditingEmployee(employee);
-                      setShowEditModal(true);
-                    }}
-                    className="p-1.5 text-white/40 hover:text-white hover:bg-white/10 transition-all"
-                    title="Edit"
-                  >
-                    <Edit2 size={14} />
-                  </button>
-                  <button
-                    onClick={() => {
-                      setAssigningEmployee(employee);
-                      setShowAssignModal(true);
-                    }}
-                    className="p-1.5 text-white/40 hover:text-white hover:bg-white/10 transition-all"
-                    title="Assign Locations"
-                  >
-                    <MapPin size={14} />
-                  </button>
-                  <button
-                    onClick={() => toggleStatus(employee.id, employee.status)}
-                    className="p-1.5 text-white/40 hover:text-white hover:bg-white/10 transition-all"
-                  >
-                    {employee.status === 'active' ? <XCircle size={14} /> : <CheckCircle size={14} />}
-                  </button>
-                  <button
-                    onClick={() => deleteEmployee(employee.id, `${employee.first_name} ${employee.last_name}`)}
-                    className="p-1.5 text-white/40 hover:text-red-500 hover:bg-red-500/10 transition-all"
-                  >
-                    <Trash2 size={14} />
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Add Employee Modal */}
-      <AdminModal
-        isOpen={showAddModal}
-        onClose={() => setShowAddModal(false)}
-        title="Add New Employee"
-        description="Create a new employee account"
-        onSubmit={createEmployee}
-        submitText="Add Employee"
-        maxWidth="2xl"
-      >
-        <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-white/60 text-xs uppercase tracking-wider mb-2">First Name *</label>
-              <input
-                type="text"
-                value={newEmployee.first_name}
-                onChange={(e) => setNewEmployee({ ...newEmployee, first_name: e.target.value })}
-                className="w-full bg-black border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
-              />
-            </div>
-            <div>
-              <label className="block text-white/60 text-xs uppercase tracking-wider mb-2">Last Name *</label>
-              <input
-                type="text"
-                value={newEmployee.last_name}
-                onChange={(e) => setNewEmployee({ ...newEmployee, last_name: e.target.value })}
-                className="w-full bg-black border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
-              />
-            </div>
-          </div>
-
+      <div className="relative z-10">
+        {/* Header */}
+        <div className="mb-12 flex items-center justify-between">
           <div>
-            <label className="block text-white/60 text-xs uppercase tracking-wider mb-2">Email *</label>
-            <input
-              type="email"
-              value={newEmployee.email}
-              onChange={(e) => setNewEmployee({ ...newEmployee, email: e.target.value })}
-              className="w-full bg-black border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-white/60 text-xs uppercase tracking-wider mb-2">Phone</label>
-              <input
-                type="tel"
-                value={newEmployee.phone}
-                onChange={(e) => setNewEmployee({ ...newEmployee, phone: e.target.value })}
-                className="w-full bg-black border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
-              />
-            </div>
-            <div>
-              <label className="block text-white/60 text-xs uppercase tracking-wider mb-2">Employee ID</label>
-              <input
-                type="text"
-                value={newEmployee.employee_id}
-                onChange={(e) => setNewEmployee({ ...newEmployee, employee_id: e.target.value })}
-                className="w-full bg-black border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-white/60 text-xs uppercase tracking-wider mb-2">Role *</label>
-            <select
-              value={newEmployee.role}
-              onChange={(e) => setNewEmployee({ ...newEmployee, role: e.target.value })}
-              className="w-full bg-black border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
-            >
-              {VENDOR_ROLES.map(role => (
-                <option key={role.value} value={role.value}>
-                  {role.label} - {role.description}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="bg-white/5 border border-white/10 p-4">
-            <p className="text-white/60 text-xs">
-              A temporary password will be sent to the employee's email. They must change it on first login. After creating the employee, assign them to specific locations.
+            <h1 className="text-white/70 text-2xl tracking-tight mb-1 font-light">
+              Team
+            </h1>
+            <p className="text-white/25 text-[11px] uppercase tracking-[0.2em] font-light">
+              {employees.length} {employees.length === 1 ? 'Employee' : 'Employees'}
             </p>
           </div>
+
+          <button
+            onClick={() => setShowAddModal(true)}
+            className="group flex items-center gap-2 bg-white/[0.06] hover:bg-white/[0.08] border border-white/[0.08] hover:border-white/[0.12] px-6 py-3 rounded-2xl transition-all duration-400 active:scale-[0.96]"
+          >
+            <Plus size={16} className="text-white/60 group-hover:text-white/80 transition-colors duration-400" strokeWidth={1.5} />
+            <span className="text-white/60 group-hover:text-white/80 text-[10px] uppercase tracking-[0.2em] font-light transition-colors duration-400">
+              Add Employee
+            </span>
+          </button>
         </div>
-      </AdminModal>
 
-      {/* Edit Employee Modal */}
-      {editingEmployee && (
-        <AdminModal
-          isOpen={showEditModal}
-          onClose={() => {
-            setShowEditModal(false);
-            setEditingEmployee(null);
-          }}
-          title="Edit Employee"
-          description={`Update ${editingEmployee.first_name} ${editingEmployee.last_name}`}
-          onSubmit={updateEmployee}
-          submitText="Update"
-          maxWidth="2xl"
-        >
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+        {/* Employees Grid */}
+        {loading ? (
+          <div className="flex items-center justify-center py-32">
+            <div className="text-white/40 text-sm tracking-tight">Loading...</div>
+          </div>
+        ) : employees.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-32">
+            <div className="w-20 h-20 rounded-3xl bg-white/[0.02] border border-white/[0.06] flex items-center justify-center mb-6 shadow-lg shadow-black/20">
+              <Users size={32} className="text-white/20" strokeWidth={1.5} />
+            </div>
+            <div className="text-white/40 text-sm mb-2 tracking-tight">
+              No employees yet
+            </div>
+            <p className="text-white/20 text-[11px] text-center max-w-md font-light tracking-wide">
+              Add your first employee to get started
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {employees.map((emp) => (
+              <div
+                key={emp.id}
+                className="group bg-[#0a0a0a] border border-white/[0.04] hover:border-white/[0.08] rounded-3xl p-6 transition-all duration-400 shadow-lg shadow-black/30"
+              >
+                {/* Header */}
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-2xl bg-white/[0.04] border border-white/[0.06] flex items-center justify-center">
+                      <Users size={20} className="text-white/40" strokeWidth={1.5} />
+                    </div>
+                    <div>
+                      <div className="text-white/80 text-sm font-light tracking-tight mb-0.5">
+                        {emp.first_name} {emp.last_name}
+                      </div>
+                      <div className={`${getRoleColorClass(emp.role)} text-[10px] uppercase tracking-[0.15em] font-light`}>
+                        {getRoleLabel(emp.role)}
+                      </div>
+                    </div>
+                  </div>
+
+                  {emp.status === 'active' ? (
+                    <CheckCircle size={16} className="text-green-400/60" strokeWidth={1.5} />
+                  ) : (
+                    <XCircle size={16} className="text-white/20" strokeWidth={1.5} />
+                  )}
+                </div>
+
+                {/* Contact Info */}
+                <div className="space-y-2 mb-4 pb-4 border-b border-white/[0.04]">
+                  <div className="flex items-center gap-2">
+                    <Mail size={12} className="text-white/30" strokeWidth={1.5} />
+                    <span className="text-white/40 text-[11px] font-light tracking-tight truncate">
+                      {emp.email}
+                    </span>
+                  </div>
+                  {emp.phone && (
+                    <div className="flex items-center gap-2">
+                      <Phone size={12} className="text-white/30" strokeWidth={1.5} />
+                      <span className="text-white/40 text-[11px] font-light tracking-tight">
+                        {emp.phone}
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Actions */}
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => toggleStatus(emp.id, emp.status)}
+                    className="flex-1 px-3 py-2 bg-white/[0.04] hover:bg-white/[0.06] border border-white/[0.06] hover:border-white/[0.08] rounded-xl text-white/50 hover:text-white/70 text-[9px] uppercase tracking-[0.15em] font-light transition-all duration-400"
+                  >
+                    {emp.status === 'active' ? 'Deactivate' : 'Activate'}
+                  </button>
+                  <button
+                    className="px-3 py-2 bg-white/[0.04] hover:bg-red-500/10 border border-white/[0.06] hover:border-red-500/30 rounded-xl transition-all duration-400"
+                  >
+                    <Trash2 size={12} className="text-white/30 hover:text-red-400/60 transition-colors duration-400" strokeWidth={1.5} />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Add Employee Modal */}
+      {showAddModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+          <div className="bg-[#0a0a0a] border border-white/[0.08] rounded-3xl p-8 w-full max-w-md shadow-2xl shadow-black/50">
+            <h2 className="text-white/70 text-xl tracking-tight mb-6 font-light">
+              Add New Employee
+            </h2>
+
+            <form onSubmit={handleAddEmployee} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-white/40 text-[10px] uppercase tracking-[0.15em] mb-2 font-light">
+                    First Name
+                  </label>
+                  <input
+                    type="text"
+                    value={newEmployee.first_name}
+                    onChange={(e) => setNewEmployee({ ...newEmployee, first_name: e.target.value })}
+                    className="w-full bg-white/[0.04] border border-white/[0.06] focus:border-white/[0.12] rounded-xl px-4 py-3 text-white/80 text-sm font-light transition-all duration-400 focus:outline-none"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-white/40 text-[10px] uppercase tracking-[0.15em] mb-2 font-light">
+                    Last Name
+                  </label>
+                  <input
+                    type="text"
+                    value={newEmployee.last_name}
+                    onChange={(e) => setNewEmployee({ ...newEmployee, last_name: e.target.value })}
+                    className="w-full bg-white/[0.04] border border-white/[0.06] focus:border-white/[0.12] rounded-xl px-4 py-3 text-white/80 text-sm font-light transition-all duration-400 focus:outline-none"
+                    required
+                  />
+                </div>
+              </div>
+
               <div>
-                <label className="block text-white/60 text-xs uppercase tracking-wider mb-2">First Name *</label>
+                <label className="block text-white/40 text-[10px] uppercase tracking-[0.15em] mb-2 font-light">
+                  Email
+                </label>
                 <input
-                  type="text"
-                  value={editingEmployee.first_name || ''}
-                  onChange={(e) => setEditingEmployee({ ...editingEmployee, first_name: e.target.value })}
-                  className="w-full bg-black border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
+                  type="email"
+                  value={newEmployee.email}
+                  onChange={(e) => setNewEmployee({ ...newEmployee, email: e.target.value })}
+                  className="w-full bg-white/[0.04] border border-white/[0.06] focus:border-white/[0.12] rounded-xl px-4 py-3 text-white/80 text-sm font-light transition-all duration-400 focus:outline-none"
+                  required
                 />
               </div>
+
               <div>
-                <label className="block text-white/60 text-xs uppercase tracking-wider mb-2">Last Name *</label>
+                <label className="block text-white/40 text-[10px] uppercase tracking-[0.15em] mb-2 font-light">
+                  Phone
+                </label>
                 <input
-                  type="text"
-                  value={editingEmployee.last_name || ''}
-                  onChange={(e) => setEditingEmployee({ ...editingEmployee, last_name: e.target.value })}
-                  className="w-full bg-black border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
+                  type="tel"
+                  value={newEmployee.phone}
+                  onChange={(e) => setNewEmployee({ ...newEmployee, phone: e.target.value })}
+                  className="w-full bg-white/[0.04] border border-white/[0.06] focus:border-white/[0.12] rounded-xl px-4 py-3 text-white/80 text-sm font-light transition-all duration-400 focus:outline-none"
                 />
               </div>
-            </div>
 
-            <div>
-              <label className="block text-white/60 text-xs uppercase tracking-wider mb-2">Phone</label>
-              <input
-                type="tel"
-                value={editingEmployee.phone || ''}
-                onChange={(e) => setEditingEmployee({ ...editingEmployee, phone: e.target.value })}
-                className="w-full bg-black border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-white/60 text-xs uppercase tracking-wider mb-2">Role *</label>
+                <label className="block text-white/40 text-[10px] uppercase tracking-[0.15em] mb-2 font-light">
+                  Role
+                </label>
                 <select
-                  value={editingEmployee.role}
-                  onChange={(e) => setEditingEmployee({ ...editingEmployee, role: e.target.value })}
-                  className="w-full bg-black border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
+                  value={newEmployee.role}
+                  onChange={(e) => setNewEmployee({ ...newEmployee, role: e.target.value })}
+                  className="w-full bg-white/[0.04] border border-white/[0.06] focus:border-white/[0.12] rounded-xl px-4 py-3 text-white/80 text-sm font-light transition-all duration-400 focus:outline-none"
                 >
-                  {VENDOR_ROLES.map(role => (
-                    <option key={role.value} value={role.value}>
+                  {ROLES.map(role => (
+                    <option key={role.value} value={role.value} className="bg-[#0a0a0a]">
                       {role.label}
                     </option>
                   ))}
                 </select>
               </div>
-              <div>
-                <label className="block text-white/60 text-xs uppercase tracking-wider mb-2">Employee ID</label>
-                <input
-                  type="text"
-                  value={editingEmployee.employee_id || ''}
-                  onChange={(e) => setEditingEmployee({ ...editingEmployee, employee_id: e.target.value })}
-                  className="w-full bg-black border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
-                />
-              </div>
-            </div>
-          </div>
-        </AdminModal>
-      )}
 
-      {/* Assign Locations Modal */}
-      {assigningEmployee && (
-        <AdminModal
-          isOpen={showAssignModal}
-          onClose={() => {
-            setShowAssignModal(false);
-            setAssigningEmployee(null);
-            setSelectedLocations([]);
-          }}
-          title="Assign Locations"
-          description={`Assign ${assigningEmployee.first_name} ${assigningEmployee.last_name} to locations`}
-          onSubmit={assignLocations}
-          submitText="Assign Locations"
-          maxWidth="xl"
-        >
-          <div className="space-y-3">
-            <p className="text-white/60 text-sm mb-4">
-              Select which locations this employee can access:
-            </p>
-            
-            {locations.map(location => (
-              <label
-                key={location.id}
-                className="flex items-center gap-3 p-3 bg-white/5 border border-white/10 hover:bg-white/10 cursor-pointer transition-colors"
-              >
-                <input
-                  type="checkbox"
-                  checked={selectedLocations.includes(location.id)}
-                  onChange={(e) => {
-                    if (e.target.checked) {
-                      setSelectedLocations([...selectedLocations, location.id]);
-                    } else {
-                      setSelectedLocations(selectedLocations.filter(id => id !== location.id));
-                    }
-                  }}
-                  className="w-4 h-4"
-                />
-                <div className="flex-1">
-                  <div className="text-white text-sm">{location.name}</div>
-                  <div className="text-white/40 text-xs capitalize">{location.type}</div>
-                </div>
-              </label>
-            ))}
-
-            {locations.length === 0 && (
-              <div className="bg-white/5 border border-white/10 p-6 text-center">
-                <div className="text-white/40 text-sm">No locations available</div>
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setShowAddModal(false)}
+                  className="flex-1 px-6 py-3 bg-white/[0.04] hover:bg-white/[0.06] border border-white/[0.06] hover:border-white/[0.08] rounded-xl text-white/50 hover:text-white/70 text-[10px] uppercase tracking-[0.2em] font-light transition-all duration-400"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 px-6 py-3 bg-white/[0.06] hover:bg-white/[0.08] border border-white/[0.08] hover:border-white/[0.12] rounded-xl text-white/60 hover:text-white/80 text-[10px] uppercase tracking-[0.2em] font-light transition-all duration-400"
+                >
+                  Add Employee
+                </button>
               </div>
-            )}
+            </form>
           </div>
-        </AdminModal>
+        </div>
       )}
     </div>
   );
 }
-

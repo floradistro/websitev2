@@ -1,17 +1,16 @@
-"use client";
+'use client';
 
 import { useState, useEffect } from 'react';
-import { Save, CheckCircle, AlertCircle, Loader, MapPin, Users, ChevronRight } from 'lucide-react';
-import { supabase } from '@/lib/supabase/client';
+import { Save, Building2, Mail, Phone, MapPin, Users, Map, Eye, EyeOff } from 'lucide-react';
 import { useAppAuth } from '@/context/AppAuthContext';
+import { supabase } from '@/lib/supabase/client';
 import Link from 'next/link';
 
-export default function VendorSettings() {
-  const { vendor } = useAppAuth();
+export default function SettingsPage() {
+  const { vendor, isLoading: authLoading } = useAppAuth();
   const [loading, setLoading] = useState(false);
-  const [fetching, setFetching] = useState(true);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState(false);
+  const [dataLoading, setDataLoading] = useState(true);
+  const [saved, setSaved] = useState(false);
   const [settings, setSettings] = useState({
     companyName: '',
     contactName: '',
@@ -25,69 +24,59 @@ export default function VendorSettings() {
     siteHidden: false,
   });
 
-  // Fetch real vendor settings from database
-  const fetchSettings = async () => {
+  // Don't block the entire page on auth loading - same fix as employees/locations pages
+  // The useEffect will handle loading settings once auth completes
+  useEffect(() => {
+    if (vendor?.id) {
+      loadSettings();
+    } else if (!authLoading) {
+      setDataLoading(false);
+    }
+  }, [vendor?.id, authLoading]);
+
+  async function loadSettings() {
+    if (!vendor?.id) {
+      setDataLoading(false);
+      return;
+    }
+
     try {
-      setFetching(true);
-
-      const vendorId: string | undefined = vendor?.id;
-      if (!vendorId) {
-        setError('Not authenticated');
-        setFetching(false);
-        return;
-      }
-
-      // Get vendor data from Supabase
-      const { data: vendorData, error } = await supabase
+      setDataLoading(true);
+      const { data, error } = await supabase
         .from('vendors')
         .select('*')
-        .eq('id', vendorId)
+        .eq('id', vendor.id)
         .single();
 
-      if (error) {
-        console.error('Failed to fetch vendor:', error);
-        setError('Failed to load settings. Please refresh the page.');
-      } else if (vendorData) {
+      if (error) throw error;
+
+      if (data) {
         setSettings({
-          companyName: vendorData.store_name || '',
-          contactName: vendorData.contact_name || '',
-          email: vendorData.email || '',
-          phone: vendorData.phone || '',
-          address: vendorData.address || '',
-          city: vendorData.city || '',
-          state: vendorData.state || '',
-          zip: vendorData.zip || '',
-          taxId: vendorData.tax_id || '',
-          siteHidden: vendorData.site_hidden || false,
+          companyName: data.store_name || '',
+          contactName: data.contact_name || '',
+          email: data.email || '',
+          phone: data.phone || '',
+          address: data.address || '',
+          city: data.city || '',
+          state: data.state || '',
+          zip: data.zip || '',
+          taxId: data.tax_id || '',
+          siteHidden: data.site_hidden || false,
         });
       }
     } catch (err) {
-      console.error('Failed to fetch vendor settings:', err);
-      setError('Failed to load settings. Please refresh the page.');
+      console.error('Error loading settings:', err);
     } finally {
-      setFetching(false);
+      setDataLoading(false);
     }
-  };
+  }
 
-  useEffect(() => {
-    fetchSettings();
-  }, []);
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  async function handleSave(e: React.FormEvent) {
     e.preventDefault();
-    setLoading(true);
-    setError('');
-    setSuccess(false);
+    if (!vendor?.id) return;
 
     try {
-      const vendorId = vendor?.id;
-      if (!vendorId) {
-        setError('Not authenticated');
-        setLoading(false);
-        return;
-      }
-
-      // Update vendor in Supabase
+      setLoading(true);
       const { error } = await supabase
         .from('vendors')
         .update({
@@ -102,284 +91,280 @@ export default function VendorSettings() {
           tax_id: settings.taxId,
           site_hidden: settings.siteHidden,
         })
-        .eq('id', vendorId);
+        .eq('id', vendor.id);
 
-      if (error) {
-        console.error('Failed to update vendor:', error);
-        setError('Failed to save settings. Please try again.');
-      } else {
-        setSuccess(true);
-        setTimeout(() => setSuccess(false), 3000);
-      }
+      if (error) throw error;
+
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
     } catch (err: any) {
-      setError(err.message || 'Failed to save settings. Please try again.');
+      console.error('Error saving settings:', err);
+      alert(err.message || 'Failed to save settings');
     } finally {
       setLoading(false);
     }
-  };
-
-  if (fetching) {
-    return (
-      <div className="w-full max-w-5xl xl:max-w-6xl mx-auto animate-fadeIn flex items-center justify-center py-20">
-        <div className="flex items-center gap-3 text-white/60">
-          <Loader size={20} className="animate-spin" />
-          Loading settings...
-        </div>
-      </div>
-    );
   }
 
   return (
-    <div className="w-full px-4 lg:px-0">
-
-
-      {/* Header */}
-      <div className="mb-8 pb-6 border-b border-white/5">
-        <h1 className="text-xs uppercase tracking-[0.15em] text-white font-black mb-1" style={{ fontWeight: 900 }}>
-          Vendor Settings
-        </h1>
-        <p className="text-[10px] uppercase tracking-[0.15em] text-white/40">
-          Profile & Contact Information
-        </p>
+    <div className="w-full animate-fadeIn">
+      {/* Ambient glow */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-white/[0.01] rounded-full blur-3xl" />
       </div>
 
-      {/* Management Links */}
-      <div className="bg-black border border-white/5 mb-8">
-        <div className="px-4 lg:px-6 py-4 border-b border-white/5">
-          <h2 className="text-white font-medium text-sm lg:text-base uppercase lg:normal-case tracking-wider lg:tracking-normal">
-            Management
-          </h2>
+      <div className="relative z-10">
+        {/* Header */}
+        <div className="mb-12">
+          <h1 className="text-white/70 text-2xl tracking-tight mb-1 font-light">
+            Settings
+          </h1>
+          <p className="text-white/25 text-[11px] uppercase tracking-[0.2em] font-light">
+            Business Configuration
+          </p>
         </div>
-        <div className="divide-y divide-white/5">
+
+        {/* Quick Links */}
+        <div className="grid grid-cols-2 gap-4 mb-12">
           <Link
             href="/vendor/locations"
-            className="flex items-center justify-between px-4 lg:px-6 py-4 text-white/80 hover:text-white hover:bg-white/5 transition-colors group"
+            className="group bg-[#0a0a0a] border border-white/[0.04] hover:border-white/[0.08] rounded-3xl p-6 transition-all duration-400 shadow-lg shadow-black/30"
           >
-            <div className="flex items-center gap-3">
-              <MapPin size={18} className="text-white/40 group-hover:text-white/60 transition-colors" />
-              <div>
-                <div className="font-medium text-sm">Locations</div>
-                <div className="text-xs text-white/40">Manage store locations & addresses</div>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 rounded-2xl bg-white/[0.04] border border-white/[0.06] flex items-center justify-center">
+                <Map size={18} className="text-white/40" strokeWidth={1.5} />
+              </div>
+              <div className="text-white/80 text-sm font-light tracking-tight">
+                Locations
               </div>
             </div>
-            <ChevronRight size={16} className="text-white/40 group-hover:text-white/60 transition-colors" />
+            <p className="text-white/40 text-[11px] font-light tracking-tight">
+              Manage store locations & addresses
+            </p>
           </Link>
 
           <Link
             href="/vendor/employees"
-            className="flex items-center justify-between px-4 lg:px-6 py-4 text-white/80 hover:text-white hover:bg-white/5 transition-colors group"
+            className="group bg-[#0a0a0a] border border-white/[0.04] hover:border-white/[0.08] rounded-3xl p-6 transition-all duration-400 shadow-lg shadow-black/30"
           >
-            <div className="flex items-center gap-3">
-              <Users size={18} className="text-white/40 group-hover:text-white/60 transition-colors" />
-              <div>
-                <div className="font-medium text-sm">Team & Staff</div>
-                <div className="text-xs text-white/40">Employee management & permissions</div>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 rounded-2xl bg-white/[0.04] border border-white/[0.06] flex items-center justify-center">
+                <Users size={18} className="text-white/40" strokeWidth={1.5} />
+              </div>
+              <div className="text-white/80 text-sm font-light tracking-tight">
+                Team
               </div>
             </div>
-            <ChevronRight size={16} className="text-white/40 group-hover:text-white/60 transition-colors" />
+            <p className="text-white/40 text-[11px] font-light tracking-tight">
+              Employee management & permissions
+            </p>
           </Link>
         </div>
-      </div>
 
-      {/* Success Message */}
-      {success && (
-        <div className="bg-green-500/10 border border-green-500/20 p-4 flex items-start gap-3 mx-4 lg:mx-0 mb-6">
-          <CheckCircle size={20} className="text-green-500 flex-shrink-0 mt-0.5" />
-          <div>
-            <p className="text-green-500 font-medium mb-1">Settings Saved Successfully!</p>
-            <p className="text-green-500/80 text-sm">Your changes have been saved to the database.</p>
-          </div>
-        </div>
-      )}
-
-      {/* Error Message */}
-      {error && (
-        <div className="bg-red-500/10 border border-red-500/20 p-4 flex items-start gap-3 mx-4 lg:mx-0 mb-6">
-          <AlertCircle size={20} className="text-red-500 flex-shrink-0 mt-0.5" />
-          <div>
-            <p className="text-red-500 font-medium mb-1">Failed to Save</p>
-            <p className="text-red-500/80 text-sm">{error}</p>
-          </div>
-        </div>
-      )}
-
-      <form onSubmit={handleSubmit} className="space-y-0 lg:space-y-6">
-        {/* Company Information */}
-        <div className="bg-black lg:border border-t border-white/5 lg:p-6">
-          <h2 className="text-white font-medium px-4 lg:px-0 py-4 lg:py-0 lg:mb-6 text-sm lg:text-base uppercase lg:normal-case tracking-wider lg:tracking-normal opacity-60 lg:opacity-100">Company Information</h2>
-          
-          {/* iOS-style list on mobile, form on desktop */}
-          <div className="lg:grid lg:grid-cols-2 lg:gap-4 divide-y lg:divide-y-0 divide-white/5 border-t lg:border-t-0 border-white/5">
-            <div className="lg:col-span-2 px-4 lg:px-0 py-3 lg:py-0 lg:mb-4">
-              <label className="block text-white/60 lg:text-white/80 text-xs lg:text-sm mb-2 lg:mb-2">
-                Company Name
-              </label>
-              <input
-                type="text"
-                value={settings.companyName}
-                onChange={(e) => setSettings({...settings, companyName: e.target.value})}
-                placeholder="Your Company LLC"
-                className="w-full bg-transparent lg:bg-black border-0 lg:border border-white/5 text-white placeholder-white/40 px-0 lg:px-4 py-0 lg:py-3 focus:outline-none focus:border-white/10 transition-colors text-base lg:text-sm"
-              />
+        {/* Settings Form */}
+        <form onSubmit={handleSave} className="space-y-8">
+          {/* Company Information */}
+          <div className="bg-[#0a0a0a] border border-white/[0.04] rounded-3xl p-8 shadow-lg shadow-black/30">
+            <div className="flex items-center gap-3 mb-6">
+              <Building2 size={18} className="text-white/40" strokeWidth={1.5} />
+              <h2 className="text-white/70 text-sm tracking-tight font-light uppercase tracking-[0.15em]">
+                Company Information
+              </h2>
             </div>
 
-            <div className="px-4 lg:px-0 py-3 lg:py-0 lg:mb-4">
-              <label className="block text-white/60 lg:text-white/80 text-xs lg:text-sm mb-2 lg:mb-2">
-                Contact Name
-              </label>
-              <input
-                type="text"
-                value={settings.contactName}
-                onChange={(e) => setSettings({...settings, contactName: e.target.value})}
-                placeholder="John Doe"
-                className="w-full bg-transparent lg:bg-black border-0 lg:border border-white/5 text-white placeholder-white/40 px-0 lg:px-4 py-0 lg:py-3 focus:outline-none focus:border-white/10 transition-colors text-base lg:text-sm"
-              />
-            </div>
-
-            <div className="px-4 lg:px-0 py-3 lg:py-0 lg:mb-4">
-              <label className="block text-white/60 lg:text-white/80 text-xs lg:text-sm mb-2 lg:mb-2">
-                Email
-              </label>
-              <input
-                type="email"
-                value={settings.email}
-                onChange={(e) => setSettings({...settings, email: e.target.value})}
-                placeholder="contact@company.com"
-                className="w-full bg-transparent lg:bg-black border-0 lg:border border-white/5 text-white placeholder-white/40 px-0 lg:px-4 py-0 lg:py-3 focus:outline-none focus:border-white/10 transition-colors text-base lg:text-sm"
-              />
-            </div>
-
-            <div className="lg:col-span-2 px-4 lg:px-0 py-3 lg:py-0 lg:mb-4">
-              <label className="block text-white/60 lg:text-white/80 text-xs lg:text-sm mb-2 lg:mb-2">
-                Phone
-              </label>
-              <input
-                type="tel"
-                value={settings.phone}
-                onChange={(e) => setSettings({...settings, phone: e.target.value})}
-                placeholder="(555) 123-4567"
-                className="w-full bg-transparent lg:bg-black border-0 lg:border border-white/5 text-white placeholder-white/40 px-0 lg:px-4 py-0 lg:py-3 focus:outline-none focus:border-white/10 transition-colors text-base lg:text-sm"
-              />
-            </div>
-
-            <div className="lg:col-span-2 px-4 lg:px-0 py-3 lg:py-0 lg:mb-0">
-              <label className="block text-white/60 lg:text-white/80 text-xs lg:text-sm mb-2 lg:mb-2">
-                Tax ID / EIN
-              </label>
-              <input
-                type="text"
-                value={settings.taxId}
-                onChange={(e) => setSettings({...settings, taxId: e.target.value})}
-                placeholder="XX-XXXXXXX"
-                className="w-full bg-transparent lg:bg-black border-0 lg:border border-white/5 text-white placeholder-white/40 px-0 lg:px-4 py-0 lg:py-3 focus:outline-none focus:border-white/10 transition-colors text-base lg:text-sm"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Address */}
-        <div className="bg-black lg:border border-t border-white/5 lg:p-6 mt-0 lg:mt-6">
-          <h2 className="text-white font-medium px-4 lg:px-0 py-4 lg:py-0 lg:mb-6 text-sm lg:text-base uppercase lg:normal-case tracking-wider lg:tracking-normal opacity-60 lg:opacity-100">Business Address</h2>
-          
-          <div className="lg:space-y-4 divide-y lg:divide-y-0 divide-white/5 border-t lg:border-t-0 border-white/5">
-            <div className="px-4 lg:px-0 py-3 lg:py-0 lg:mb-4">
-              <label className="block text-white/60 lg:text-white/80 text-xs lg:text-sm mb-2 lg:mb-2">
-                Street Address
-              </label>
-              <input
-                type="text"
-                value={settings.address}
-                onChange={(e) => setSettings({...settings, address: e.target.value})}
-                placeholder="123 Main St"
-                className="w-full bg-transparent lg:bg-black border-0 lg:border border-white/5 text-white placeholder-white/40 px-0 lg:px-4 py-0 lg:py-3 focus:outline-none focus:border-white/10 transition-colors text-base lg:text-sm"
-              />
-            </div>
-
-            <div className="lg:grid lg:grid-cols-3 lg:gap-4 divide-y lg:divide-y-0 divide-white/5">
-              <div className="px-4 lg:px-0 py-3 lg:py-0 lg:mb-0">
-                <label className="block text-white/60 lg:text-white/80 text-xs lg:text-sm mb-2 lg:mb-2">
-                  City
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-white/40 text-[10px] uppercase tracking-[0.15em] mb-2 font-light">
+                  Company Name
                 </label>
                 <input
                   type="text"
-                  value={settings.city}
-                  onChange={(e) => setSettings({...settings, city: e.target.value})}
-                  placeholder="Charlotte"
-                  className="w-full bg-transparent lg:bg-black border-0 lg:border border-white/5 text-white placeholder-white/40 px-0 lg:px-4 py-0 lg:py-3 focus:outline-none focus:border-white/10 transition-colors text-base lg:text-sm"
+                  value={settings.companyName}
+                  onChange={(e) => setSettings({ ...settings, companyName: e.target.value })}
+                  className="w-full bg-white/[0.04] border border-white/[0.06] focus:border-white/[0.12] rounded-xl px-4 py-3 text-white/80 text-sm font-light transition-all duration-400 focus:outline-none"
+                  placeholder="Your Company LLC"
                 />
               </div>
 
-              <div className="px-4 lg:px-0 py-3 lg:py-0 lg:mb-0">
-                <label className="block text-white/60 lg:text-white/80 text-xs lg:text-sm mb-2 lg:mb-2">
-                  State
+              <div>
+                <label className="block text-white/40 text-[10px] uppercase tracking-[0.15em] mb-2 font-light">
+                  Contact Name
                 </label>
                 <input
                   type="text"
-                  value={settings.state}
-                  onChange={(e) => setSettings({...settings, state: e.target.value})}
-                  placeholder="NC"
-                  className="w-full bg-transparent lg:bg-black border-0 lg:border border-white/5 text-white placeholder-white/40 px-0 lg:px-4 py-0 lg:py-3 focus:outline-none focus:border-white/10 transition-colors text-base lg:text-sm"
+                  value={settings.contactName}
+                  onChange={(e) => setSettings({ ...settings, contactName: e.target.value })}
+                  className="w-full bg-white/[0.04] border border-white/[0.06] focus:border-white/[0.12] rounded-xl px-4 py-3 text-white/80 text-sm font-light transition-all duration-400 focus:outline-none"
+                  placeholder="John Doe"
                 />
               </div>
 
-              <div className="px-4 lg:px-0 py-3 lg:py-0 lg:mb-0">
-                <label className="block text-white/60 lg:text-white/80 text-xs lg:text-sm mb-2 lg:mb-2">
-                  ZIP Code
+              <div>
+                <label className="block text-white/40 text-[10px] uppercase tracking-[0.15em] mb-2 font-light">
+                  Email
+                </label>
+                <input
+                  type="email"
+                  value={settings.email}
+                  onChange={(e) => setSettings({ ...settings, email: e.target.value })}
+                  className="w-full bg-white/[0.04] border border-white/[0.06] focus:border-white/[0.12] rounded-xl px-4 py-3 text-white/80 text-sm font-light transition-all duration-400 focus:outline-none"
+                  placeholder="contact@company.com"
+                />
+              </div>
+
+              <div>
+                <label className="block text-white/40 text-[10px] uppercase tracking-[0.15em] mb-2 font-light">
+                  Phone
+                </label>
+                <input
+                  type="tel"
+                  value={settings.phone}
+                  onChange={(e) => setSettings({ ...settings, phone: e.target.value })}
+                  className="w-full bg-white/[0.04] border border-white/[0.06] focus:border-white/[0.12] rounded-xl px-4 py-3 text-white/80 text-sm font-light transition-all duration-400 focus:outline-none"
+                  placeholder="(555) 123-4567"
+                />
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="block text-white/40 text-[10px] uppercase tracking-[0.15em] mb-2 font-light">
+                  Tax ID / EIN
                 </label>
                 <input
                   type="text"
-                  value={settings.zip}
-                  onChange={(e) => setSettings({...settings, zip: e.target.value})}
-                  placeholder="28202"
-                  className="w-full bg-transparent lg:bg-black border-0 lg:border border-white/5 text-white placeholder-white/40 px-0 lg:px-4 py-0 lg:py-3 focus:outline-none focus:border-white/10 transition-colors text-base lg:text-sm"
+                  value={settings.taxId}
+                  onChange={(e) => setSettings({ ...settings, taxId: e.target.value })}
+                  className="w-full bg-white/[0.04] border border-white/[0.06] focus:border-white/[0.12] rounded-xl px-4 py-3 text-white/80 text-sm font-light transition-all duration-400 focus:outline-none"
+                  placeholder="XX-XXXXXXX"
                 />
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Storefront Visibility */}
-        <div className="bg-black lg:border border-t border-white/5 lg:p-6 mt-0 lg:mt-6">
-          <h2 className="text-white font-medium px-4 lg:px-0 py-4 lg:py-0 lg:mb-6 text-sm lg:text-base uppercase lg:normal-case tracking-wider lg:tracking-normal opacity-60 lg:opacity-100">Storefront Visibility</h2>
-          
-          <div className="px-4 lg:px-0 py-4 lg:py-0">
+          {/* Business Address */}
+          <div className="bg-[#0a0a0a] border border-white/[0.04] rounded-3xl p-8 shadow-lg shadow-black/30">
+            <div className="flex items-center gap-3 mb-6">
+              <MapPin size={18} className="text-white/40" strokeWidth={1.5} />
+              <h2 className="text-white/70 text-sm tracking-tight font-light uppercase tracking-[0.15em]">
+                Business Address
+              </h2>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-white/40 text-[10px] uppercase tracking-[0.15em] mb-2 font-light">
+                  Street Address
+                </label>
+                <input
+                  type="text"
+                  value={settings.address}
+                  onChange={(e) => setSettings({ ...settings, address: e.target.value })}
+                  className="w-full bg-white/[0.04] border border-white/[0.06] focus:border-white/[0.12] rounded-xl px-4 py-3 text-white/80 text-sm font-light transition-all duration-400 focus:outline-none"
+                  placeholder="123 Main St"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-white/40 text-[10px] uppercase tracking-[0.15em] mb-2 font-light">
+                    City
+                  </label>
+                  <input
+                    type="text"
+                    value={settings.city}
+                    onChange={(e) => setSettings({ ...settings, city: e.target.value })}
+                    className="w-full bg-white/[0.04] border border-white/[0.06] focus:border-white/[0.12] rounded-xl px-4 py-3 text-white/80 text-sm font-light transition-all duration-400 focus:outline-none"
+                    placeholder="Charlotte"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-white/40 text-[10px] uppercase tracking-[0.15em] mb-2 font-light">
+                    State
+                  </label>
+                  <input
+                    type="text"
+                    value={settings.state}
+                    onChange={(e) => setSettings({ ...settings, state: e.target.value })}
+                    className="w-full bg-white/[0.04] border border-white/[0.06] focus:border-white/[0.12] rounded-xl px-4 py-3 text-white/80 text-sm font-light transition-all duration-400 focus:outline-none"
+                    placeholder="NC"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-white/40 text-[10px] uppercase tracking-[0.15em] mb-2 font-light">
+                    ZIP Code
+                  </label>
+                  <input
+                    type="text"
+                    value={settings.zip}
+                    onChange={(e) => setSettings({ ...settings, zip: e.target.value })}
+                    className="w-full bg-white/[0.04] border border-white/[0.06] focus:border-white/[0.12] rounded-xl px-4 py-3 text-white/80 text-sm font-light transition-all duration-400 focus:outline-none"
+                    placeholder="28202"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Storefront Visibility */}
+          <div className="bg-[#0a0a0a] border border-white/[0.04] rounded-3xl p-8 shadow-lg shadow-black/30">
+            <div className="flex items-center gap-3 mb-6">
+              {settings.siteHidden ? (
+                <EyeOff size={18} className="text-white/40" strokeWidth={1.5} />
+              ) : (
+                <Eye size={18} className="text-white/40" strokeWidth={1.5} />
+              )}
+              <h2 className="text-white/70 text-sm tracking-tight font-light uppercase tracking-[0.15em]">
+                Storefront Visibility
+              </h2>
+            </div>
+
             <div className="flex items-center justify-between">
-              <div className="flex-1">
-                <label className="block text-white font-medium mb-1">Hide Storefront</label>
-                <p className="text-white/60 text-xs lg:text-sm">
-                  When enabled, your storefront will show a coming soon page instead of products
+              <div>
+                <div className="text-white/70 text-sm font-light tracking-tight mb-1">
+                  Hide Storefront
+                </div>
+                <p className="text-white/40 text-[11px] font-light tracking-tight">
+                  Show a coming soon page instead of your products
                 </p>
               </div>
+
               <button
                 type="button"
-                onClick={() => setSettings({...settings, siteHidden: !settings.siteHidden})}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                  settings.siteHidden ? 'bg-white' : 'bg-white/20'
+                onClick={() => setSettings({ ...settings, siteHidden: !settings.siteHidden })}
+                className={`relative w-14 h-8 rounded-full transition-all duration-400 ${
+                  settings.siteHidden ? 'bg-white/[0.12]' : 'bg-white/[0.06]'
                 }`}
               >
-                <span
-                  className={`inline-block h-4 w-4 transform rounded-full bg-black transition-transform ${
-                    settings.siteHidden ? 'translate-x-6' : 'translate-x-1'
+                <div
+                  className={`absolute top-1 left-1 w-6 h-6 rounded-full bg-white/60 transition-all duration-400 ${
+                    settings.siteHidden ? 'translate-x-6' : 'translate-x-0'
                   }`}
                 />
               </button>
             </div>
           </div>
-        </div>
 
-        {/* Save Button */}
-        <div className="flex justify-end px-4 lg:px-0 py-6 lg:py-0 border-t lg:border-t-0 border-white/5 mt-6">
-          <button
-            type="submit"
-            disabled={loading}
-            className="group flex items-center justify-center gap-2 w-full lg:w-auto px-6 py-3 bg-black text-white border border-white/20 active:bg-white active:text-black lg:hover:bg-white lg:hover:text-black lg:hover:border-white text-xs font-medium uppercase tracking-[0.2em] transition-all duration-300 disabled:opacity-50"
-          >
-            <Save size={18} className="group-hover:scale-110 transition-transform duration-300" />
-            {loading ? 'Saving...' : 'Save Changes'}
-          </button>
-        </div>
-      </form>
+          {/* Save Button */}
+          <div className="flex items-center gap-4">
+            <button
+              type="submit"
+              disabled={loading}
+              className="group flex items-center gap-2 bg-white/[0.06] hover:bg-white/[0.08] border border-white/[0.08] hover:border-white/[0.12] px-8 py-4 rounded-2xl transition-all duration-400 active:scale-[0.96] disabled:opacity-50"
+            >
+              <Save size={16} className="text-white/60 group-hover:text-white/80 transition-colors duration-400" strokeWidth={1.5} />
+              <span className="text-white/60 group-hover:text-white/80 text-[10px] uppercase tracking-[0.2em] font-light transition-colors duration-400">
+                {loading ? 'Saving...' : 'Save Changes'}
+              </span>
+            </button>
+
+            {saved && (
+              <div className="text-green-400/60 text-[11px] tracking-tight font-light">
+                Settings saved successfully
+              </div>
+            )}
+          </div>
+        </form>
+      </div>
     </div>
   );
 }
-

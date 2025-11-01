@@ -11,6 +11,7 @@ import { useAppAuth } from '@/context/AppAuthContext';
 import { showNotification, showConfirm } from '@/components/NotificationToast';
 import { ProductQuickView } from '@/components/vendor/ProductQuickView';
 import { PricingBlueprintModal } from '@/components/vendor/PricingBlueprintModal';
+import { Button, Input, Card, Container, ds, cn } from '@/components/ds';
 import axios from 'axios';
 
 // Supabase image transformation helper - uses render API for proper thumbnails
@@ -612,7 +613,7 @@ export default function ProductsClient() {
           <div className="bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] border border-white/20 rounded-3xl p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
             <div className="text-center mb-8">
               <Sparkles size={48} className="mx-auto mb-4 text-blue-400" />
-              <h2 className="text-white text-2xl font-black mb-2" style={{ fontWeight: 900 }}>
+              <h2 className="text-white text-2xl font-lightmb-2" style={{ fontWeight: 900 }}>
                 Welcome! What do you sell?
               </h2>
               <p className="text-white/60 text-sm">
@@ -635,7 +636,7 @@ export default function ProductsClient() {
                     <div className="flex items-center gap-3 mb-3">
                       <span className="text-3xl">{template.icon || '📦'}</span>
                       <div>
-                        <h3 className="text-white font-black text-base" style={{ fontWeight: 900 }}>
+                        <h3 className="text-white font-lighttext-base" style={{ fontWeight: 900 }}>
                           {template.name}
                         </h3>
                         <p className="text-white/40 text-[10px] uppercase tracking-wider">
@@ -657,7 +658,7 @@ export default function ProductsClient() {
                   <div className="flex items-center gap-3 mb-3">
                     <span className="text-3xl">✨</span>
                     <div>
-                      <h3 className="text-white font-black text-base" style={{ fontWeight: 900 }}>
+                      <h3 className="text-white font-lighttext-base" style={{ fontWeight: 900 }}>
                         Start from Scratch
                       </h3>
                       <p className="text-white/40 text-[10px] uppercase tracking-wider">
@@ -685,7 +686,7 @@ export default function ProductsClient() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6 pb-4 border-b border-white/5">
         <div>
-          <h1 className="text-xs uppercase tracking-[0.15em] text-white font-black mb-1" style={{ fontWeight: 900 }}>
+          <h1 className="text-xs uppercase tracking-[0.15em] text-white font-lightmb-1" style={{ fontWeight: 900 }}>
             Products
           </h1>
           <p className="text-white/40 text-[10px] uppercase tracking-wider">
@@ -696,9 +697,8 @@ export default function ProductsClient() {
         {activeTab === 'catalog' && (
           <Link
             href="/vendor/products/new"
-            className="bg-white/10 text-white border border-white/20 rounded-xl px-3 py-2 text-[10px] uppercase tracking-[0.15em] hover:bg-white/20 hover:border-white/30 font-black transition-all inline-flex items-center gap-2"
-            style={{ fontWeight: 900 }}
-          >
+            className="bg-white/10 text-white border border-white/20 rounded-xl px-3 py-2 text-[10px] uppercase tracking-[0.15em] hover:bg-white/20 hover:border-white/30 font-lighttransition-all inline-flex items-center gap-2"
+                      >
             <Plus size={12} strokeWidth={2.5} />
             Add Product
           </Link>
@@ -706,20 +706,24 @@ export default function ProductsClient() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-2 mb-6 border-b border-white/5">
+      <div className={cn("flex gap-2 mb-6 border-b", ds.colors.border.default)}>
         <button
           onClick={() => setActiveTab('catalog')}
-          className={`px-4 py-3 text-[10px] uppercase tracking-[0.15em] font-black transition-all ${
+          className={cn(
+            "px-4 py-3 transition-all",
+            ds.typography.size.xs,
+            ds.typography.transform.uppercase,
+            ds.typography.tracking.wide,
+            ds.typography.weight.light,
             activeTab === 'catalog'
-              ? 'text-white border-b-2 border-white'
-              : 'text-white/40 hover:text-white/60'
-          }`}
-          style={{ fontWeight: 900 }}
+              ? cn('text-white border-b-2 border-white')
+              : cn(ds.colors.text.quaternary, 'hover:text-white/60')
+          )}
         >
           <div className="flex items-center gap-2">
             <Package size={14} />
             Catalog
-            <span className="px-2 py-0.5 bg-white/10 rounded text-[8px]">
+            <span className={cn("px-2 py-0.5 rounded text-[8px]", ds.colors.bg.hover)}>
               {stats.total}
             </span>
           </div>
@@ -727,17 +731,21 @@ export default function ProductsClient() {
 
         <button
           onClick={() => setActiveTab('categories')}
-          className={`px-4 py-3 text-[10px] uppercase tracking-[0.15em] font-black transition-all ${
+          className={cn(
+            "px-4 py-3 transition-all",
+            ds.typography.size.xs,
+            ds.typography.transform.uppercase,
+            ds.typography.tracking.wide,
+            ds.typography.weight.light,
             activeTab === 'categories'
-              ? 'text-white border-b-2 border-white'
-              : 'text-white/40 hover:text-white/60'
-          }`}
-          style={{ fontWeight: 900 }}
+              ? cn('text-white border-b-2 border-white')
+              : cn(ds.colors.text.quaternary, 'hover:text-white/60')
+          )}
         >
           <div className="flex items-center gap-2">
             <FolderTree size={14} />
             Categories
-            <span className="px-2 py-0.5 bg-white/10 rounded text-[8px]">
+            <span className={cn("px-2 py-0.5 rounded text-[8px]", ds.colors.bg.hover)}>
               {categories.length}
             </span>
           </div>
@@ -745,17 +753,21 @@ export default function ProductsClient() {
 
         <button
           onClick={() => setActiveTab('pricing')}
-          className={`px-4 py-3 text-[10px] uppercase tracking-[0.15em] font-black transition-all ${
+          className={cn(
+            "px-4 py-3 transition-all",
+            ds.typography.size.xs,
+            ds.typography.transform.uppercase,
+            ds.typography.tracking.wide,
+            ds.typography.weight.light,
             activeTab === 'pricing'
-              ? 'text-white border-b-2 border-white'
-              : 'text-white/40 hover:text-white/60'
-          }`}
-          style={{ fontWeight: 900 }}
+              ? cn('text-white border-b-2 border-white')
+              : cn(ds.colors.text.quaternary, 'hover:text-white/60')
+          )}
         >
           <div className="flex items-center gap-2">
             <DollarSign size={14} />
             Pricing Rules
-            <span className="px-2 py-0.5 bg-white/10 rounded text-[8px]">
+            <span className={cn("px-2 py-0.5 rounded text-[8px]", ds.colors.bg.hover)}>
               {pricingBlueprints.filter(b => b.vendor_id === vendor?.id).length}
             </span>
           </div>
@@ -902,41 +914,68 @@ function CatalogTab({
     <div>
       {/* Stats */}
       <div className="grid grid-cols-4 gap-3 mb-6">
-        <div className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-4">
-          <div className="text-white/40 text-[9px] uppercase tracking-[0.15em] mb-2">Total</div>
-          <div className="text-white text-2xl font-black" style={{ fontWeight: 900 }}>{stats.total}</div>
-        </div>
-        <div className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-4">
-          <div className="text-white/40 text-[9px] uppercase tracking-[0.15em] mb-2">Active</div>
-          <div className="text-white text-2xl font-black" style={{ fontWeight: 900 }}>{stats.approved}</div>
-        </div>
-        <div className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-4">
-          <div className="text-white/40 text-[9px] uppercase tracking-[0.15em] mb-2">Pending</div>
-          <div className="text-white text-2xl font-black" style={{ fontWeight: 900 }}>{stats.pending}</div>
-        </div>
-        <div className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-4">
-          <div className="text-white/40 text-[9px] uppercase tracking-[0.15em] mb-2">Rejected</div>
-          <div className="text-white text-2xl font-black" style={{ fontWeight: 900 }}>{stats.rejected}</div>
-        </div>
+        <Container padding="normal" className={ds.effects.radius['2xl']}>
+          <div className={cn(ds.typography.size.micro, ds.typography.weight.light, ds.colors.text.quaternary, ds.typography.transform.uppercase, ds.typography.tracking.wide, "mb-2")}>Total</div>
+          <div className={cn("text-white", ds.typography.size['2xl'], ds.typography.weight.light)}>{stats.total}</div>
+        </Container>
+        <Container padding="normal" className={ds.effects.radius['2xl']}>
+          <div className={cn(ds.typography.size.micro, ds.typography.weight.light, ds.colors.text.quaternary, ds.typography.transform.uppercase, ds.typography.tracking.wide, "mb-2")}>Active</div>
+          <div className={cn("text-white", ds.typography.size['2xl'], ds.typography.weight.light)}>{stats.approved}</div>
+        </Container>
+        <Container padding="normal" className={ds.effects.radius['2xl']}>
+          <div className={cn(ds.typography.size.micro, ds.typography.weight.light, ds.colors.text.quaternary, ds.typography.transform.uppercase, ds.typography.tracking.wide, "mb-2")}>Pending</div>
+          <div className={cn("text-white", ds.typography.size['2xl'], ds.typography.weight.light)}>{stats.pending}</div>
+        </Container>
+        <Container padding="normal" className={ds.effects.radius['2xl']}>
+          <div className={cn(ds.typography.size.micro, ds.typography.weight.light, ds.colors.text.quaternary, ds.typography.transform.uppercase, ds.typography.tracking.wide, "mb-2")}>Rejected</div>
+          <div className={cn("text-white", ds.typography.size['2xl'], ds.typography.weight.light)}>{stats.rejected}</div>
+        </Container>
       </div>
 
       {/* Filters */}
       <div className="flex gap-3 mb-6">
         <div className="flex-1 relative">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" />
+          <Search size={14} className={cn("absolute left-3 top-1/2 -translate-y-1/2", ds.colors.text.quaternary)} />
           <input
             type="text"
             placeholder="SEARCH PRODUCTS..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-[#0a0a0a] border border-white/5 rounded-xl text-white placeholder:text-white/30 text-[10px] uppercase tracking-[0.15em] focus:outline-none focus:border-white/10"
+            className={cn(
+              "w-full pl-10 pr-4 py-2",
+              ds.colors.bg.primary,
+              ds.colors.border.default,
+              "border",
+              ds.effects.radius.lg,
+              "text-white",
+              "placeholder:text-white/30",
+              ds.typography.size.xs,
+              ds.typography.transform.uppercase,
+              ds.typography.tracking.wide,
+              ds.typography.weight.light,
+              "focus:outline-none",
+              `focus:${ds.colors.border.emphasis}`
+            )}
           />
         </div>
 
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="px-4 py-2 bg-[#0a0a0a] border border-white/5 rounded-xl text-white text-[10px] uppercase tracking-[0.15em] focus:outline-none focus:border-white/10"
+          className={cn(
+            "px-4 py-2",
+            ds.colors.bg.primary,
+            ds.colors.border.default,
+            "border",
+            ds.effects.radius.lg,
+            "text-white",
+            ds.typography.size.xs,
+            ds.typography.transform.uppercase,
+            ds.typography.tracking.wide,
+            ds.typography.weight.light,
+            "focus:outline-none",
+            `focus:${ds.colors.border.emphasis}`
+          )}
         >
           <option value="all">All Status</option>
           <option value="approved">Active</option>
@@ -950,7 +989,20 @@ function CatalogTab({
             setCategoryFilter(e.target.value);
             setSubcategoryFilter('all'); // Reset subcategory when parent changes
           }}
-          className="px-4 py-2 bg-[#0a0a0a] border border-white/5 rounded-xl text-white text-[10px] uppercase tracking-[0.15em] focus:outline-none focus:border-white/10"
+          className={cn(
+            "px-4 py-2",
+            ds.colors.bg.primary,
+            ds.colors.border.default,
+            "border",
+            ds.effects.radius.lg,
+            "text-white",
+            ds.typography.size.xs,
+            ds.typography.transform.uppercase,
+            ds.typography.tracking.wide,
+            ds.typography.weight.light,
+            "focus:outline-none",
+            `focus:${ds.colors.border.emphasis}`
+          )}
         >
           <option value="all">All Categories</option>
           {parentCategories.map(cat => (
@@ -964,20 +1016,22 @@ function CatalogTab({
       {/* Subcategory Pills - Steve Jobs Style (Beverages) */}
       {subcategories.length > 0 && (
         <div className="mb-6">
-          <div className="text-white/40 text-[9px] uppercase tracking-[0.15em] mb-2 font-black" style={{ fontWeight: 900 }}>
+          <div className={cn(ds.typography.size.micro, ds.typography.weight.light, ds.colors.text.quaternary, ds.typography.transform.uppercase, ds.typography.tracking.wide, "mb-2")}>
             Dosage
           </div>
           <div className="flex items-center gap-2 overflow-x-auto pb-1">
             <button
               onClick={() => setSubcategoryFilter('all')}
-              className={`
-                px-4 py-2 rounded-full text-[10px] uppercase tracking-[0.15em] font-black whitespace-nowrap transition-all
-                ${subcategoryFilter === 'all'
+              className={cn(
+                "px-4 py-2 rounded-full whitespace-nowrap transition-all",
+                ds.typography.size.xs,
+                ds.typography.transform.uppercase,
+                ds.typography.tracking.wide,
+                ds.typography.weight.light,
+                subcategoryFilter === 'all'
                   ? 'bg-white text-black'
-                  : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white/80'
-                }
-              `}
-              style={{ fontWeight: 900 }}
+                  : cn(ds.colors.bg.elevated, ds.colors.text.tertiary, `hover:${ds.colors.bg.hover}`, 'hover:text-white/80')
+              )}
             >
               All
             </button>
@@ -985,14 +1039,16 @@ function CatalogTab({
               <button
                 key={subcat.id}
                 onClick={() => setSubcategoryFilter(subcat.id)}
-                className={`
-                  px-4 py-2 rounded-full text-[10px] uppercase tracking-[0.15em] font-black whitespace-nowrap transition-all
-                  ${subcategoryFilter === subcat.id
+                className={cn(
+                  "px-4 py-2 rounded-full whitespace-nowrap transition-all",
+                  ds.typography.size.xs,
+                  ds.typography.transform.uppercase,
+                  ds.typography.tracking.wide,
+                  ds.typography.weight.light,
+                  subcategoryFilter === subcat.id
                     ? 'bg-white text-black'
-                    : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white/80'
-                  }
-                `}
-                style={{ fontWeight: 900 }}
+                    : cn(ds.colors.bg.elevated, ds.colors.text.tertiary, `hover:${ds.colors.bg.hover}`, 'hover:text-white/80')
+                )}
               >
                 {subcat.name}
               </button>
@@ -1004,20 +1060,22 @@ function CatalogTab({
       {/* Consistency Pills - Steve Jobs Style (Concentrates) */}
       {consistencies.length > 0 && (
         <div className="mb-6">
-          <div className="text-white/40 text-[9px] uppercase tracking-[0.15em] mb-2 font-black" style={{ fontWeight: 900 }}>
+          <div className={cn(ds.typography.size.micro, ds.typography.weight.light, ds.colors.text.quaternary, ds.typography.transform.uppercase, ds.typography.tracking.wide, "mb-2")}>
             Consistency
           </div>
           <div className="flex items-center gap-2 overflow-x-auto pb-1">
             <button
               onClick={() => setConsistencyFilter('all')}
-              className={`
-                px-4 py-2 rounded-full text-[10px] uppercase tracking-[0.15em] font-black whitespace-nowrap transition-all
-                ${consistencyFilter === 'all'
+              className={cn(
+                "px-4 py-2 rounded-full whitespace-nowrap transition-all",
+                ds.typography.size.xs,
+                ds.typography.transform.uppercase,
+                ds.typography.tracking.wide,
+                ds.typography.weight.light,
+                consistencyFilter === 'all'
                   ? 'bg-white text-black'
-                  : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white/80'
-                }
-              `}
-              style={{ fontWeight: 900 }}
+                  : cn(ds.colors.bg.elevated, ds.colors.text.tertiary, `hover:${ds.colors.bg.hover}`, 'hover:text-white/80')
+              )}
             >
               All
             </button>
@@ -1025,14 +1083,16 @@ function CatalogTab({
               <button
                 key={consistency}
                 onClick={() => setConsistencyFilter(consistency)}
-                className={`
-                  px-4 py-2 rounded-full text-[10px] uppercase tracking-[0.15em] font-black whitespace-nowrap transition-all
-                  ${consistencyFilter === consistency
+                className={cn(
+                  "px-4 py-2 rounded-full whitespace-nowrap transition-all",
+                  ds.typography.size.xs,
+                  ds.typography.transform.uppercase,
+                  ds.typography.tracking.wide,
+                  ds.typography.weight.light,
+                  consistencyFilter === consistency
                     ? 'bg-white text-black'
-                    : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white/80'
-                  }
-                `}
-                style={{ fontWeight: 900 }}
+                    : cn(ds.colors.bg.elevated, ds.colors.text.tertiary, `hover:${ds.colors.bg.hover}`, 'hover:text-white/80')
+                )}
               >
                 {consistency}
               </button>
@@ -1044,20 +1104,22 @@ function CatalogTab({
       {/* Strain Type Pills - Steve Jobs Style (Flower & Concentrates) */}
       {strainTypes.length > 0 && (
         <div className="mb-6">
-          <div className="text-white/40 text-[9px] uppercase tracking-[0.15em] mb-2 font-black" style={{ fontWeight: 900 }}>
+          <div className={cn(ds.typography.size.micro, ds.typography.weight.light, ds.colors.text.quaternary, ds.typography.transform.uppercase, ds.typography.tracking.wide, "mb-2")}>
             Strain Type
           </div>
           <div className="flex items-center gap-2 overflow-x-auto pb-1">
             <button
               onClick={() => setStrainTypeFilter('all')}
-              className={`
-                px-4 py-2 rounded-full text-[10px] uppercase tracking-[0.15em] font-black whitespace-nowrap transition-all
-                ${strainTypeFilter === 'all'
+              className={cn(
+                "px-4 py-2 rounded-full whitespace-nowrap transition-all",
+                ds.typography.size.xs,
+                ds.typography.transform.uppercase,
+                ds.typography.tracking.wide,
+                ds.typography.weight.light,
+                strainTypeFilter === 'all'
                   ? 'bg-white text-black'
-                  : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white/80'
-                }
-              `}
-              style={{ fontWeight: 900 }}
+                  : cn(ds.colors.bg.elevated, ds.colors.text.tertiary, `hover:${ds.colors.bg.hover}`, 'hover:text-white/80')
+              )}
             >
               All
             </button>
@@ -1065,14 +1127,16 @@ function CatalogTab({
               <button
                 key={type}
                 onClick={() => setStrainTypeFilter(type)}
-                className={`
-                  px-4 py-2 rounded-full text-[10px] uppercase tracking-[0.15em] font-black whitespace-nowrap transition-all
-                  ${strainTypeFilter === type
+                className={cn(
+                  "px-4 py-2 rounded-full whitespace-nowrap transition-all",
+                  ds.typography.size.xs,
+                  ds.typography.transform.uppercase,
+                  ds.typography.tracking.wide,
+                  ds.typography.weight.light,
+                  strainTypeFilter === type
                     ? 'bg-white text-black'
-                    : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white/80'
-                  }
-                `}
-                style={{ fontWeight: 900 }}
+                    : cn(ds.colors.bg.elevated, ds.colors.text.tertiary, `hover:${ds.colors.bg.hover}`, 'hover:text-white/80')
+                )}
               >
                 {type}
               </button>
@@ -1084,20 +1148,22 @@ function CatalogTab({
       {/* Pricing Tier Pills - Steve Jobs Style (Flower) */}
       {pricingTiers.length > 0 && (
         <div className="mb-6">
-          <div className="text-white/40 text-[9px] uppercase tracking-[0.15em] mb-2 font-black" style={{ fontWeight: 900 }}>
+          <div className={cn(ds.typography.size.micro, ds.typography.weight.light, ds.colors.text.quaternary, ds.typography.transform.uppercase, ds.typography.tracking.wide, "mb-2")}>
             Quality Tier
           </div>
           <div className="flex items-center gap-2 overflow-x-auto pb-1">
             <button
               onClick={() => setTierFilter('all')}
-              className={`
-                px-4 py-2 rounded-full text-[10px] uppercase tracking-[0.15em] font-black whitespace-nowrap transition-all
-                ${tierFilter === 'all'
+              className={cn(
+                "px-4 py-2 rounded-full whitespace-nowrap transition-all",
+                ds.typography.size.xs,
+                ds.typography.transform.uppercase,
+                ds.typography.tracking.wide,
+                ds.typography.weight.light,
+                tierFilter === 'all'
                   ? 'bg-white text-black'
-                  : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white/80'
-                }
-              `}
-              style={{ fontWeight: 900 }}
+                  : cn(ds.colors.bg.elevated, ds.colors.text.tertiary, `hover:${ds.colors.bg.hover}`, 'hover:text-white/80')
+              )}
             >
               All
             </button>
@@ -1105,14 +1171,16 @@ function CatalogTab({
               <button
                 key={tier.id}
                 onClick={() => setTierFilter(tier.id)}
-                className={`
-                  px-4 py-2 rounded-full text-[10px] uppercase tracking-[0.15em] font-black whitespace-nowrap transition-all
-                  ${tierFilter === tier.id
+                className={cn(
+                  "px-4 py-2 rounded-full whitespace-nowrap transition-all",
+                  ds.typography.size.xs,
+                  ds.typography.transform.uppercase,
+                  ds.typography.tracking.wide,
+                  ds.typography.weight.light,
+                  tierFilter === tier.id
                     ? 'bg-white text-black'
-                    : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white/80'
-                  }
-                `}
-                style={{ fontWeight: 900 }}
+                    : cn(ds.colors.bg.elevated, ds.colors.text.tertiary, `hover:${ds.colors.bg.hover}`, 'hover:text-white/80')
+                )}
               >
                 {tier.name}
               </button>
@@ -1124,33 +1192,36 @@ function CatalogTab({
       {/* Products List */}
       {loading ? (
         <div className="text-center py-12">
-          <div className="text-white/40 text-[10px] uppercase tracking-wider">Loading products...</div>
+          <div className={cn(ds.colors.text.quaternary, ds.typography.size.xs, ds.typography.transform.uppercase, ds.typography.tracking.wider, ds.typography.weight.light)}>Loading products...</div>
         </div>
       ) : products.length === 0 ? (
-        <div className="text-center py-16 bg-[#0a0a0a] border border-white/5 rounded-2xl">
+        <Container padding="normal" className={cn("text-center py-16", ds.effects.radius['2xl'])}>
           <Package size={48} className="mx-auto mb-4 text-white/20" />
-          <div className="text-white text-xs uppercase tracking-[0.15em] mb-2 font-black" style={{ fontWeight: 900 }}>No products found</div>
-          <div className="text-white/40 text-[10px] uppercase tracking-wider mb-6">Start adding products to your catalog</div>
-          <Link
-            href="/vendor/products/new"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded-xl text-[10px] uppercase tracking-[0.15em] font-black transition-all"
-            style={{ fontWeight: 900 }}
-          >
-            <Plus size={12} />
-            Add Your First Product
+          <div className={cn("text-white mb-2", ds.typography.size.sm, ds.typography.transform.uppercase, ds.typography.tracking.wide, ds.typography.weight.light)}>No products found</div>
+          <div className={cn(ds.colors.text.quaternary, ds.typography.size.xs, ds.typography.transform.uppercase, ds.typography.tracking.wider, ds.typography.weight.light, "mb-6")}>Start adding products to your catalog</div>
+          <Link href="/vendor/products/new">
+            <Button icon={Plus} iconPosition="left">
+              Add Your First Product
+            </Button>
           </Link>
-        </div>
+        </Container>
       ) : (
         <>
           <div className="space-y-3">
             {products.map((product) => (
-              <div
+              <Container
                 key={product.id}
-                className="bg-[#0a0a0a] border border-white/5 hover:border-white/10 rounded-2xl p-4 transition-all group"
+                padding="normal"
+                className={cn(
+                  ds.effects.radius['2xl'],
+                  ds.effects.transition.normal,
+                  "group",
+                  `hover:${ds.colors.border.emphasis}`
+                )}
               >
                 <div className="flex items-center gap-4">
                   {product.images && product.images.length > 0 && product.images[0] ? (
-                    <div className="w-14 h-14 relative rounded-xl overflow-hidden bg-white/5 flex-shrink-0 border border-white/5">
+                    <div className={cn("w-14 h-14 relative overflow-hidden flex-shrink-0 border", ds.colors.bg.elevated, ds.colors.border.default, ds.effects.radius.lg)}>
                       <Image
                         src={getSupabaseImageUrl(product.images[0], 112, 112)}
                         alt={product.name}
@@ -1160,31 +1231,31 @@ function CatalogTab({
                       />
                     </div>
                   ) : (
-                    <div className="w-14 h-14 bg-white/5 rounded-xl flex items-center justify-center flex-shrink-0 border border-white/5">
+                    <div className={cn("w-14 h-14 flex items-center justify-center flex-shrink-0 border", ds.colors.bg.elevated, ds.colors.border.default, ds.effects.radius.lg)}>
                       <Package size={20} className="text-white/20" />
                     </div>
                   )}
 
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-white text-xs uppercase tracking-tight truncate font-black" style={{ fontWeight: 900 }}>
+                    <h3 className={cn("text-white truncate", ds.typography.size.sm, ds.typography.transform.uppercase, ds.typography.tracking.tight, ds.typography.weight.light)}>
                       {product.name}
                     </h3>
                     <div className="flex items-center gap-3 mt-1.5">
-                      <span className="text-white/40 text-[9px] uppercase tracking-[0.15em]">{product.sku}</span>
-                      <span className="text-white/20 text-[9px]">•</span>
-                      <span className="text-white/40 text-[9px] uppercase tracking-[0.15em]">{product.category}</span>
+                      <span className={cn(ds.colors.text.quaternary, ds.typography.size.micro, ds.typography.transform.uppercase, ds.typography.tracking.wide, ds.typography.weight.light)}>{product.sku}</span>
+                      <span className={cn("text-white/20", ds.typography.size.micro)}>•</span>
+                      <span className={cn(ds.colors.text.quaternary, ds.typography.size.micro, ds.typography.transform.uppercase, ds.typography.tracking.wide, ds.typography.weight.light)}>{product.category}</span>
                       {product.status === 'approved' && (
                         <>
-                          <span className="text-white/20 text-[9px]">•</span>
-                          <span className="text-green-400/80 text-[8px] uppercase tracking-wider px-2 py-0.5 bg-green-500/10 rounded">Active</span>
+                          <span className={cn("text-white/20", ds.typography.size.micro)}>•</span>
+                          <span className={cn(ds.colors.status.success, "text-[8px] uppercase tracking-wider px-2 py-0.5 bg-green-500/10 rounded", ds.typography.weight.light)}>Active</span>
                         </>
                       )}
                     </div>
                   </div>
 
                   <div className="text-right">
-                    <div className="text-white text-lg font-black" style={{ fontWeight: 900 }}>${product.price.toFixed(2)}</div>
-                    <div className="text-white/30 text-[9px] uppercase tracking-wider mt-0.5">
+                    <div className={cn("text-white", ds.typography.size.lg, ds.typography.weight.light)}>${product.price.toFixed(2)}</div>
+                    <div className={cn(ds.colors.text.ghost, ds.typography.size.micro, ds.typography.transform.uppercase, ds.typography.tracking.wider, ds.typography.weight.light, "mt-0.5")}>
                       Stock: {product.total_stock}
                     </div>
                   </div>
@@ -1192,10 +1263,10 @@ function CatalogTab({
                   <div className="flex gap-2">
                     <button
                       onClick={() => setQuickViewProduct(product)}
-                      className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                      className={cn("p-2 rounded-lg transition-colors", `hover:${ds.colors.bg.hover}`)}
                       title="Quick View"
                     >
-                      <Eye size={14} className="text-white/60" />
+                      <Eye size={14} className={ds.colors.text.tertiary} />
                     </button>
                     <button
                       onClick={() => handleDeleteProduct(product.id, product.name)}
@@ -1206,7 +1277,7 @@ function CatalogTab({
                     </button>
                   </div>
                 </div>
-              </div>
+              </Container>
             ))}
           </div>
 
@@ -1216,19 +1287,41 @@ function CatalogTab({
               <button
                 onClick={() => setPage(page - 1)}
                 disabled={page === 1}
-                className="px-4 py-2 bg-[#0a0a0a] border border-white/5 rounded-xl text-white text-[10px] uppercase tracking-[0.15em] font-black disabled:opacity-30 disabled:cursor-not-allowed hover:bg-white/5 hover:border-white/10 transition-all"
-                style={{ fontWeight: 900 }}
+                className={cn(
+                  "px-4 py-2 border text-white transition-all",
+                  ds.colors.bg.primary,
+                  ds.colors.border.default,
+                  ds.effects.radius.lg,
+                  ds.typography.size.xs,
+                  ds.typography.transform.uppercase,
+                  ds.typography.tracking.wide,
+                  ds.typography.weight.light,
+                  "disabled:opacity-30 disabled:cursor-not-allowed",
+                  `hover:${ds.colors.bg.elevated}`,
+                  `hover:${ds.colors.border.emphasis}`
+                )}
               >
                 Previous
               </button>
-              <div className="px-4 py-2 text-white/40 text-[10px] uppercase tracking-wider">
+              <div className={cn("px-4 py-2", ds.colors.text.quaternary, ds.typography.size.xs, ds.typography.transform.uppercase, ds.typography.tracking.wider, ds.typography.weight.light)}>
                 Page {page} of {totalPages}
               </div>
               <button
                 onClick={() => setPage(page + 1)}
                 disabled={page === totalPages}
-                className="px-4 py-2 bg-[#0a0a0a] border border-white/5 rounded-xl text-white text-[10px] uppercase tracking-[0.15em] font-black disabled:opacity-30 disabled:cursor-not-allowed hover:bg-white/5 hover:border-white/10 transition-all"
-                style={{ fontWeight: 900 }}
+                className={cn(
+                  "px-4 py-2 border text-white transition-all",
+                  ds.colors.bg.primary,
+                  ds.colors.border.default,
+                  ds.effects.radius.lg,
+                  ds.typography.size.xs,
+                  ds.typography.transform.uppercase,
+                  ds.typography.tracking.wide,
+                  ds.typography.weight.light,
+                  "disabled:opacity-30 disabled:cursor-not-allowed",
+                  `hover:${ds.colors.bg.elevated}`,
+                  `hover:${ds.colors.border.emphasis}`
+                )}
               >
                 Next
               </button>
@@ -1635,22 +1728,17 @@ function CategoriesTab({
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h3 className="text-xs uppercase tracking-[0.15em] text-white mb-1 font-black" style={{ fontWeight: 900 }}>
+          <h3 className={cn(ds.typography.size.xs, ds.typography.transform.uppercase, ds.typography.tracking.wide, "text-white mb-1", ds.typography.weight.light)}>
             Your Categories
           </h3>
-          <p className="text-white/40 text-[10px] uppercase tracking-wider">
+          <p className={cn(ds.colors.text.quaternary, ds.typography.size.xs, ds.typography.transform.uppercase, ds.typography.tracking.wide)}>
             Organize products with categories, subcategories, and custom fields
           </p>
         </div>
         <div className="flex gap-2">
-          <button
-            onClick={() => openCreateModal()}
-            className="px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white rounded-xl text-[10px] uppercase tracking-[0.15em] font-black transition-all flex items-center gap-2 border border-white/20"
-            style={{ fontWeight: 900 }}
-          >
-            <Plus size={12} />
+          <Button icon={Plus} onClick={() => openCreateModal()}>
             NEW CATEGORY
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -1659,25 +1747,20 @@ function CategoriesTab({
           <div className="text-white/40 text-[10px] uppercase tracking-wider">Loading categories...</div>
         </div>
       ) : parentCategories.length === 0 ? (
-        <div className="text-center py-16 bg-[#0a0a0a] border border-white/5 rounded-2xl">
-          <div className="w-20 h-20 rounded-2xl bg-white/5 flex items-center justify-center mx-auto mb-6">
-            <FolderTree size={40} className="text-white/40" />
+        <Container className="text-center py-16">
+          <div className={cn("w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6", ds.colors.bg.elevated)}>
+            <FolderTree size={40} className={ds.colors.text.quaternary} />
           </div>
-          <h4 className="text-white text-xs uppercase tracking-[0.15em] mb-2 font-black" style={{ fontWeight: 900 }}>
+          <h4 className={cn("text-white mb-2", ds.typography.size.xs, ds.typography.transform.uppercase, ds.typography.tracking.wide, ds.typography.weight.light)}>
             No Categories Yet
           </h4>
-          <p className="text-white/40 text-[10px] uppercase tracking-wider mb-6 max-w-md mx-auto">
+          <p className={cn(ds.colors.text.quaternary, ds.typography.size.xs, ds.typography.transform.uppercase, ds.typography.tracking.wide, "mb-6 max-w-md mx-auto")}>
             Create categories to organize your products and add custom fields like THC%, strain type, etc.
           </p>
-          <button
-            onClick={() => openCreateModal()}
-            className="px-6 py-3 bg-white/10 hover:bg-white/20 text-white rounded-xl text-[10px] uppercase tracking-[0.15em] font-black transition-all inline-flex items-center gap-2 border border-white/20"
-            style={{ fontWeight: 900 }}
-          >
-            <Plus size={12} />
+          <Button icon={Plus} onClick={() => openCreateModal()}>
             Create Your First Category
-          </button>
-        </div>
+          </Button>
+        </Container>
       ) : (
         <div className="space-y-4">
           {parentCategories.map((category) => {
@@ -1711,23 +1794,23 @@ function CategoriesTab({
                       )}
 
                       <div className="flex-1 min-w-0">
-                        <h3 className="text-white text-sm uppercase tracking-tight font-black mb-0.5" style={{ fontWeight: 900 }}>
+                        <h3 className={cn("text-white mb-0.5", ds.typography.size.sm, ds.typography.transform.uppercase, ds.typography.tracking.tight, ds.typography.weight.light)}>
                           {category.name}
                         </h3>
                         {category.description && (
-                          <p className="text-white/40 text-[10px] uppercase tracking-wider line-clamp-1">
+                          <p className={cn(ds.colors.text.quaternary, ds.typography.size.xs, ds.typography.transform.uppercase, ds.typography.tracking.wide, "line-clamp-1")}>
                             {category.description}
                           </p>
                         )}
                       </div>
 
-                      <div className="flex items-center gap-6 text-white/40 text-[9px] uppercase tracking-[0.15em] font-black" style={{ fontWeight: 900 }}>
+                      <div className={cn("flex items-center gap-6", ds.colors.text.quaternary, ds.typography.size.micro, ds.typography.transform.uppercase, ds.typography.tracking.wide, ds.typography.weight.light)}>
                         <div className="text-center">
-                          <div className="text-white text-base mb-0.5">{subcategories.length}</div>
+                          <div className={cn("text-white mb-0.5", ds.typography.size.base)}>{subcategories.length}</div>
                           <div>Subcategories</div>
                         </div>
                         <div className="text-center">
-                          <div className="text-white text-base mb-0.5">{categoryFields.length}</div>
+                          <div className={cn("text-white mb-0.5", ds.typography.size.base)}>{categoryFields.length}</div>
                           <div>Fields</div>
                         </div>
                       </div>
@@ -1758,28 +1841,32 @@ function CategoriesTab({
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => toggleSection(category.id, 'subcategories')}
-                      className={`
-                        px-4 py-2 rounded-full text-[10px] uppercase tracking-[0.15em] font-black whitespace-nowrap transition-all flex items-center gap-1.5
-                        ${expandedSection === 'subcategories'
+                      className={cn(
+                        "px-4 py-2 rounded-full whitespace-nowrap transition-all flex items-center gap-1.5",
+                        ds.typography.size.xs,
+                        ds.typography.transform.uppercase,
+                        ds.typography.tracking.wide,
+                        ds.typography.weight.light,
+                        expandedSection === 'subcategories'
                           ? 'bg-white text-black'
                           : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white/80'
-                        }
-                      `}
-                      style={{ fontWeight: 900 }}
+                      )}
                     >
                       <FolderTree size={12} />
                       Subcategories ({subcategories.length})
                     </button>
                     <button
                       onClick={() => toggleSection(category.id, 'fields')}
-                      className={`
-                        px-4 py-2 rounded-full text-[10px] uppercase tracking-[0.15em] font-black whitespace-nowrap transition-all flex items-center gap-1.5
-                        ${expandedSection === 'fields'
+                      className={cn(
+                        "px-4 py-2 rounded-full whitespace-nowrap transition-all flex items-center gap-1.5",
+                        ds.typography.size.xs,
+                        ds.typography.transform.uppercase,
+                        ds.typography.tracking.wide,
+                        ds.typography.weight.light,
+                        expandedSection === 'fields'
                           ? 'bg-white text-black'
                           : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white/80'
-                        }
-                      `}
-                      style={{ fontWeight: 900 }}
+                      )}
                     >
                       <Layers size={12} />
                       Fields ({categoryFields.length})
@@ -1791,14 +1878,13 @@ function CategoriesTab({
                 {expandedSection === 'subcategories' && (
                   <div className="px-6 py-4 bg-black/20">
                     <div className="flex items-center justify-between mb-4">
-                      <h4 className="text-white/60 text-[10px] uppercase tracking-[0.15em] font-black" style={{ fontWeight: 900 }}>
+                      <h4 className="text-white/60 text-[10px] uppercase tracking-[0.15em] font-light">
                         Subcategories for {category.name}
                       </h4>
                       <button
                         onClick={() => openCreateModal(category.id)}
-                        className="px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-white text-[10px] uppercase tracking-[0.15em] font-black transition-all flex items-center gap-1.5"
-                        style={{ fontWeight: 900 }}
-                      >
+                        className="px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-white text-[10px] uppercase tracking-[0.15em] font-lighttransition-all flex items-center gap-1.5"
+                                              >
                         <Plus size={12} />
                         Add Subcategory
                       </button>
@@ -1811,8 +1897,7 @@ function CategoriesTab({
                         <button
                           onClick={() => openCreateModal(category.id)}
                           className="text-white/60 hover:text-white text-[10px] uppercase tracking-[0.15em] font-black"
-                          style={{ fontWeight: 900 }}
-                        >
+                                                  >
                           Create first subcategory →
                         </button>
                       </div>
@@ -1831,7 +1916,7 @@ function CategoriesTab({
                             >
                               <div className="flex items-start justify-between mb-2">
                                 <div className="flex-1">
-                                  <h5 className="text-white text-[11px] uppercase tracking-tight font-black mb-1" style={{ fontWeight: 900 }}>
+                                  <h5 className="text-white text-[11px] uppercase tracking-tight font-lightmb-1" style={{ fontWeight: 900 }}>
                                     {subcat.name}
                                   </h5>
                                   {subcat.description && (
@@ -1864,7 +1949,7 @@ function CategoriesTab({
                                   </button>
                                 </div>
                               </div>
-                              <div className="text-white/40 text-[9px] uppercase tracking-[0.15em] font-black" style={{ fontWeight: 900 }}>
+                              <div className="text-white/40 text-[9px] uppercase tracking-[0.15em] font-light">
                                 {totalFieldCount} field{totalFieldCount !== 1 ? 's' : ''}
                                 {parentFields.length > 0 && (
                                   <span className="text-white/30 ml-1">
@@ -1884,14 +1969,13 @@ function CategoriesTab({
                 {expandedSection === 'fields' && (
                   <div className="px-6 py-4 bg-black/20">
                     <div className="flex items-center justify-between mb-4">
-                      <h4 className="text-white/60 text-[10px] uppercase tracking-[0.15em] font-black" style={{ fontWeight: 900 }}>
+                      <h4 className="text-white/60 text-[10px] uppercase tracking-[0.15em] font-light">
                         Custom Fields for {category.name}
                       </h4>
                       <button
                         onClick={() => openFieldModal(category)}
-                        className="px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-white text-[10px] uppercase tracking-[0.15em] font-black transition-all flex items-center gap-1.5"
-                        style={{ fontWeight: 900 }}
-                      >
+                        className="px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-white text-[10px] uppercase tracking-[0.15em] font-lighttransition-all flex items-center gap-1.5"
+                                              >
                         <Plus size={12} />
                         Configure Fields
                       </button>
@@ -1904,8 +1988,7 @@ function CategoriesTab({
                         <button
                           onClick={() => openFieldModal(category)}
                           className="text-white/60 hover:text-white text-[10px] uppercase tracking-[0.15em] font-black"
-                          style={{ fontWeight: 900 }}
-                        >
+                                                  >
                           Set up custom fields →
                         </button>
                       </div>
@@ -1918,7 +2001,7 @@ function CategoriesTab({
                           >
                             <div className="flex items-center justify-between">
                               <div>
-                                <div className="text-white text-[11px] uppercase tracking-tight font-black mb-0.5" style={{ fontWeight: 900 }}>
+                                <div className="text-white text-[11px] uppercase tracking-tight font-lightmb-0.5" style={{ fontWeight: 900 }}>
                                   {field.name}
                                 </div>
                                 <div className="text-white/40 text-[9px] uppercase tracking-wider">
@@ -1928,8 +2011,7 @@ function CategoriesTab({
                               <button
                                 onClick={() => openFieldModal(category)}
                                 className="text-white/60 hover:text-white text-[9px] uppercase tracking-[0.15em] font-black"
-                                style={{ fontWeight: 900 }}
-                              >
+                                                              >
                                 Edit →
                               </button>
                             </div>
@@ -1952,7 +2034,7 @@ function CategoriesTab({
             <div className="flex items-center gap-3 mb-6 pb-6 border-b border-white/5">
               <FolderTree size={20} className="text-white/40" />
               <div>
-                <h2 className="text-xs uppercase tracking-[0.15em] text-white font-black mb-1" style={{ fontWeight: 900 }}>
+                <h2 className="text-xs uppercase tracking-[0.15em] text-white font-lightmb-1" style={{ fontWeight: 900 }}>
                   {editingCategory
                     ? 'Edit Category'
                     : parentForSubcategory
@@ -2072,17 +2154,15 @@ function CategoriesTab({
               <button
                 onClick={closeModal}
                 disabled={saving || uploading}
-                className="flex-1 px-6 py-3 bg-black/20 hover:bg-white/5 border border-white/5 text-white rounded-xl text-[10px] uppercase tracking-[0.15em] font-black transition-colors disabled:opacity-30"
-                style={{ fontWeight: 900 }}
-              >
+                className="flex-1 px-6 py-3 bg-black/20 hover:bg-white/5 border border-white/5 text-white rounded-xl text-[10px] uppercase tracking-[0.15em] font-lighttransition-colors disabled:opacity-30"
+                              >
                 Cancel
               </button>
               <button
                 onClick={handleSaveCategory}
                 disabled={saving || uploading || !formData.name.trim()}
-                className="flex-1 px-6 py-3 bg-white/10 hover:bg-white/20 text-white rounded-xl text-[10px] uppercase tracking-[0.15em] font-black transition-colors disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2 border border-white/20"
-                style={{ fontWeight: 900 }}
-              >
+                className="flex-1 px-6 py-3 bg-white/10 hover:bg-white/20 text-white rounded-xl text-[10px] uppercase tracking-[0.15em] font-lighttransition-colors disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2 border border-white/20"
+                              >
                 {saving || uploading ? (
                   <>
                     <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -2108,7 +2188,7 @@ function CategoriesTab({
             <div className="flex-shrink-0 px-6 py-4 border-b border-white/5 bg-black">
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-xs uppercase tracking-[0.15em] text-white font-black mb-1" style={{ fontWeight: 900 }}>
+                  <h2 className="text-xs uppercase tracking-[0.15em] text-white font-lightmb-1" style={{ fontWeight: 900 }}>
                     Configure Fields
                   </h2>
                   <div className="text-white/40 text-[10px] uppercase tracking-wider">
@@ -2137,7 +2217,7 @@ function CategoriesTab({
                 {/* Existing Fields */}
                 {categoryFields.length > 0 && (
                   <div className="mb-6">
-                    <h3 className="text-white font-black text-[10px] uppercase tracking-[0.15em] mb-4" style={{ fontWeight: 900 }}>
+                    <h3 className="text-white font-lighttext-[10px] uppercase tracking-[0.15em] mb-4" style={{ fontWeight: 900 }}>
                       Configured Fields ({categoryFields.length})
                     </h3>
                     <div className="space-y-3">
@@ -2150,11 +2230,11 @@ function CategoriesTab({
                             <div className="flex items-start justify-between mb-3">
                               <div className="flex-1">
                                 <div className="flex items-center gap-2 mb-1">
-                                  <h4 className="text-white font-black text-xs uppercase tracking-[0.15em]" style={{ fontWeight: 900 }}>
+                                  <h4 className="text-white font-lighttext-xs uppercase tracking-[0.15em]" style={{ fontWeight: 900 }}>
                                     {field.definition?.label || field.fieldId}
                                   </h4>
                                   {field.source === 'admin' && (
-                                    <span className="px-2 py-0.5 bg-white/5 border border-white/10 rounded text-white/40 text-[9px] font-black uppercase tracking-[0.15em]" style={{ fontWeight: 900 }}>
+                                    <span className="px-2 py-0.5 bg-white/5 border border-white/10 rounded text-white/40 text-[9px] font-lightuppercase tracking-[0.15em]" style={{ fontWeight: 900 }}>
                                       ADMIN · {field.definition?.fields?.length || 0} FIELDS
                                     </span>
                                   )}
@@ -2188,7 +2268,7 @@ function CategoriesTab({
                               <div className="grid grid-cols-2 gap-2 pt-3 border-t border-white/5">
                                 {field.definition.fields.map((f: any, idx: number) => (
                                   <div key={idx} className="bg-white/5 border border-white/5 rounded-lg p-2.5">
-                                    <div className="text-white/80 text-[10px] font-black uppercase tracking-[0.15em] mb-0.5" style={{ fontWeight: 900 }}>
+                                    <div className="text-white/80 text-[10px] font-lightuppercase tracking-[0.15em] mb-0.5" style={{ fontWeight: 900 }}>
                                       {f.name || f.slug || 'Unnamed'}
                                     </div>
                                     <div className="text-white/40 text-[9px] uppercase tracking-wider">
@@ -2211,7 +2291,7 @@ function CategoriesTab({
                   className="w-full px-4 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-white transition-all flex items-center justify-center gap-2"
                 >
                   <Plus size={14} className="text-white/60" />
-                  <span className="text-[10px] font-black uppercase tracking-[0.15em]" style={{ fontWeight: 900 }}>
+                  <span className="text-[10px] font-lightuppercase tracking-[0.15em]" style={{ fontWeight: 900 }}>
                     Add Custom Field
                   </span>
                 </button>
@@ -2233,9 +2313,8 @@ function CategoriesTab({
             <div className="flex-shrink-0 px-6 py-4 border-t border-white/5 bg-black">
               <button
                 onClick={closeFieldModal}
-                className="w-full px-6 py-3 bg-white/10 hover:bg-white/20 border border-white/10 text-white rounded-xl font-black text-[10px] uppercase tracking-[0.15em] transition-colors"
-                style={{ fontWeight: 900 }}
-              >
+                className="w-full px-6 py-3 bg-white/10 hover:bg-white/20 border border-white/10 text-white rounded-xl font-lighttext-[10px] uppercase tracking-[0.15em] transition-colors"
+                              >
                 Done
               </button>
             </div>
@@ -2253,7 +2332,7 @@ function CategoriesTab({
                   <Layers size={18} className="text-white/40" />
                 </div>
                 <div>
-                  <h2 className="text-xs uppercase tracking-[0.15em] text-white font-black mb-1" style={{ fontWeight: 900 }}>
+                  <h2 className="text-xs uppercase tracking-[0.15em] text-white font-lightmb-1" style={{ fontWeight: 900 }}>
                     {editingField ? 'Edit Field' : 'Create New Field'}
                   </h2>
                   <p className="text-white/40 text-[10px] uppercase tracking-wider">
@@ -2415,7 +2494,7 @@ function CategoriesTab({
                   className="w-5 h-5 rounded border-2 border-white/10 bg-black/20 checked:bg-white/20 checked:border-white/20 focus:outline-none"
                 />
                 <label htmlFor="required-field" className="flex-1 cursor-pointer">
-                  <div className="text-white text-xs uppercase tracking-tight font-black" style={{ fontWeight: 900 }}>Required Field</div>
+                  <div className="text-white text-xs uppercase tracking-tight font-light">Required Field</div>
                   <div className="text-white/40 text-[10px] uppercase tracking-wider">Users must fill this field when creating products</div>
                 </label>
               </div>
@@ -2426,17 +2505,15 @@ function CategoriesTab({
               <button
                 onClick={closeFieldBuilder}
                 disabled={savingField}
-                className="flex-1 px-6 py-3 bg-black/20 hover:bg-white/5 border border-white/5 text-white rounded-xl text-[10px] uppercase tracking-[0.15em] font-black transition-colors disabled:opacity-30"
-                style={{ fontWeight: 900 }}
-              >
+                className="flex-1 px-6 py-3 bg-black/20 hover:bg-white/5 border border-white/5 text-white rounded-xl text-[10px] uppercase tracking-[0.15em] font-lighttransition-colors disabled:opacity-30"
+                              >
                 Cancel
               </button>
               <button
                 onClick={handleSaveField}
                 disabled={savingField || !fieldFormData.label.trim()}
-                className="flex-1 px-6 py-3 bg-white/10 hover:bg-white/20 text-white rounded-xl text-[10px] uppercase tracking-[0.15em] font-black transition-all disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2 border border-white/20"
-                style={{ fontWeight: 900 }}
-              >
+                className="flex-1 px-6 py-3 bg-white/10 hover:bg-white/20 text-white rounded-xl text-[10px] uppercase tracking-[0.15em] font-lighttransition-all disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2 border border-white/20"
+                              >
                 {savingField ? (
                   <>
                     <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -2640,40 +2717,30 @@ function PricingTab({
 
   return (
     <div>
-      <div className="mb-6 pb-4 border-b border-white/5">
-        <p className="text-white/40 text-[10px] mb-4 uppercase tracking-wider">
+      <div className={cn("mb-6 pb-4 border-b", ds.colors.border.default)}>
+        <p className={cn(ds.colors.text.quaternary, ds.typography.size.xs, "mb-4", ds.typography.transform.uppercase, ds.typography.tracking.wide)}>
           Create pricing structures and apply them to products
         </p>
-        <button
-          onClick={openCreateModal}
-          className="bg-white/10 text-white border border-white/20 rounded-xl px-3 py-2 text-[10px] uppercase tracking-[0.15em] hover:bg-white/20 hover:border-white/30 font-black transition-all inline-flex items-center gap-2"
-          style={{ fontWeight: 900 }}
-        >
-          <Plus size={12} strokeWidth={2.5} />
+        <Button icon={Plus} onClick={openCreateModal}>
           Create Rule
-        </button>
+        </Button>
       </div>
 
       {loading ? (
         <div className="text-center py-12">
-          <div className="text-white/40 text-[10px] uppercase tracking-[0.15em]">Loading...</div>
+          <div className={cn(ds.colors.text.quaternary, ds.typography.size.xs, ds.typography.transform.uppercase, ds.typography.tracking.wide)}>Loading...</div>
         </div>
       ) : customBlueprints.length === 0 ? (
-        <div className="text-center py-20 bg-[#0a0a0a] border border-white/5 rounded-2xl">
-          <DollarSign size={32} className="mx-auto mb-4 text-white/10" strokeWidth={1.5} />
-          <div className="text-white/60 text-[10px] uppercase tracking-[0.15em] mb-2">No Rules</div>
-          <p className="text-white/40 text-[10px] mb-6">
+        <Container className="text-center py-20">
+          <DollarSign size={32} className={cn("mx-auto mb-4", ds.colors.text.whisper)} strokeWidth={1.5} />
+          <div className={cn(ds.colors.text.tertiary, ds.typography.size.xs, ds.typography.transform.uppercase, ds.typography.tracking.wide, "mb-2")}>No Rules</div>
+          <p className={cn(ds.colors.text.quaternary, ds.typography.size.xs, "mb-6")}>
             Create pricing structures for your products
           </p>
-          <button
-            onClick={openCreateModal}
-            className="bg-white/10 text-white border border-white/20 rounded-xl px-4 py-2 text-[10px] uppercase tracking-[0.15em] hover:bg-white/20 hover:border-white/30 font-black transition-all inline-flex items-center gap-2"
-            style={{ fontWeight: 900 }}
-          >
-            <Plus size={12} strokeWidth={2.5} />
+          <Button icon={Plus} onClick={openCreateModal}>
             Create First Rule
-          </button>
-        </div>
+          </Button>
+        </Container>
       ) : (
         <div className="space-y-8">
           {Object.entries(groupedBlueprints)
@@ -2696,7 +2763,7 @@ function PricingTab({
                   {/* Context Header */}
                   <div className="flex items-center justify-between mb-4 pb-3 border-b border-white/10">
                     <div>
-                      <h3 className="text-xs uppercase tracking-[0.15em] text-white font-black" style={{ fontWeight: 900 }}>
+                      <h3 className="text-xs uppercase tracking-[0.15em] text-white font-light">
                         {info.label}
                       </h3>
                       <p className="text-white/40 text-[9px] mt-0.5 uppercase tracking-wider">
@@ -2716,7 +2783,7 @@ function PricingTab({
                         <div key={category}>
                           {/* Category Subheader */}
                           <div className="flex items-center justify-between mb-3">
-                            <h4 className="text-[9px] uppercase tracking-[0.15em] text-white/60 font-black" style={{ fontWeight: 900 }}>
+                            <h4 className="text-[9px] uppercase tracking-[0.15em] text-white/60 font-light">
                               {category}
                             </h4>
                             <span className="text-white/30 text-[8px] uppercase tracking-[0.15em]">
@@ -2738,7 +2805,7 @@ function PricingTab({
                                 >
                                   <div className="flex items-start justify-between mb-3">
                                     <div className="flex-1">
-                                      <h5 className="text-white font-black text-xs uppercase tracking-tight" style={{ fontWeight: 900 }}>
+                                      <h5 className="text-white font-lighttext-xs uppercase tracking-tight" style={{ fontWeight: 900 }}>
                                         {blueprint.name.replace(' (Custom)', '').replace(`${info.label} `, '').replace(`${category}`, '').replace(/^\s*-\s*/, '').trim() || category}
                                       </h5>
                                       {blueprint.description && (
@@ -2750,11 +2817,11 @@ function PricingTab({
                                       {/* Badges */}
                                       <div className="flex flex-wrap gap-1.5 mt-2">
                                         {qualityInfo && (
-                                          <span className="px-2 py-0.5 bg-white/10 border border-white/20 rounded text-[8px] uppercase tracking-[0.15em] text-white/60 font-black" style={{ fontWeight: 900 }}>
+                                          <span className="px-2 py-0.5 bg-white/10 border border-white/20 rounded text-[8px] uppercase tracking-[0.15em] text-white/60 font-light">
                                             {qualityInfo.label}
                                           </span>
                                         )}
-                                        <span className="px-2 py-0.5 bg-white/5 border border-white/10 rounded text-[8px] uppercase tracking-[0.15em] text-white/40 font-black" style={{ fontWeight: 900 }}>
+                                        <span className="px-2 py-0.5 bg-white/5 border border-white/10 rounded text-[8px] uppercase tracking-[0.15em] text-white/40 font-light">
                                           {tierType}
                                         </span>
                                         <span className="px-2 py-0.5 bg-white/5 rounded text-[8px] text-white/40">
@@ -2786,11 +2853,10 @@ function PricingTab({
                                     <button
                                       onClick={() => openEditModal(blueprint)}
                                       className="flex-1 bg-white/5 border border-white/10 rounded text-center px-3 py-1.5 text-[9px] text-white uppercase tracking-[0.15em] hover:bg-white/10 transition-colors font-black"
-                                      style={{ fontWeight: 900 }}
-                                    >
+                                                                          >
                                       Edit
                                     </button>
-                                    <button className="flex-1 bg-white/10 border border-white/20 rounded text-center px-3 py-1.5 text-[9px] text-white uppercase tracking-[0.15em] hover:bg-white/20 transition-colors font-black" style={{ fontWeight: 900 }}>
+                                    <button className="flex-1 bg-white/10 border border-white/20 rounded text-center px-3 py-1.5 text-[9px] text-white uppercase tracking-[0.15em] hover:bg-white/20 transition-colors font-light">
                                       Apply
                                     </button>
                                     <button

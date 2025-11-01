@@ -1,11 +1,9 @@
-"use client";
+'use client';
 
 import { useState, useEffect } from 'react';
-import { MapPin, Plus, Edit2, Star, CheckCircle, XCircle, Phone, Mail } from 'lucide-react';
+import { MapPin, Phone, Mail, Star, CheckCircle, XCircle, Edit2 } from 'lucide-react';
 import { useAppAuth } from '@/context/AppAuthContext';
 import axios from 'axios';
-import { showNotification } from '@/components/NotificationToast';
-import AdminModal from '@/components/AdminModal';
 
 interface Location {
   id: string;
@@ -22,262 +20,244 @@ interface Location {
   is_primary: boolean;
   is_active: boolean;
   pos_enabled: boolean;
-  accepts_online_orders: boolean;
-  accepts_transfers: boolean;
-  monthly_fee: number;
-  billing_status: string;
-  created_at: string;
 }
 
-export default function VendorLocations() {
-  const { vendor, isAuthenticated, isLoading: authLoading } = useAppAuth();
+export default function LocationsPage() {
+  const { vendor } = useAppAuth();
   const [locations, setLocations] = useState<Location[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showEditModal, setShowEditModal] = useState(false);
   const [editingLocation, setEditingLocation] = useState<Location | null>(null);
 
   useEffect(() => {
-    if (!authLoading && isAuthenticated) {
+    if (vendor?.id) {
       loadLocations();
     }
-  }, [authLoading, isAuthenticated]);
+  }, [vendor?.id]);
 
   async function loadLocations() {
+    if (!vendor?.id) return;
+
     try {
       setLoading(true);
-      const vendorId = vendor?.id;
-      if (!vendorId) return;
-
-      const response = await axios.get('/api/vendor/locations', {
-        headers: { 'x-vendor-id': vendorId }
+      const res = await axios.get('/api/vendor/locations', {
+        headers: { 'x-vendor-id': vendor.id }
       });
 
-      if (response.data.success) {
-        setLocations(response.data.locations || []);
+      if (res.data.success) {
+        setLocations(res.data.locations || []);
       }
     } catch (error) {
       console.error('Error loading locations:', error);
-      showNotification({
-        type: 'error',
-        title: 'Error',
-        message: 'Failed to load locations'
-      });
     } finally {
       setLoading(false);
     }
   }
 
-  function openEditModal(location: Location) {
-    setEditingLocation(location);
-    setShowEditModal(true);
-  }
-
-  async function updateLocation() {
-    if (!editingLocation) return;
+  async function handleUpdateLocation(e: React.FormEvent) {
+    e.preventDefault();
+    if (!vendor?.id || !editingLocation) return;
 
     try {
-      const vendorId = vendor?.id;
-      const response = await axios.post('/api/vendor/locations', {
+      const res = await axios.post('/api/vendor/locations', {
         action: 'update',
         location_id: editingLocation.id,
         phone: editingLocation.phone,
         email: editingLocation.email,
       }, {
-        headers: { 'x-vendor-id': vendorId }
+        headers: { 'x-vendor-id': vendor.id }
       });
 
-      if (response.data.success) {
-        showNotification({
-          type: 'success',
-          title: 'Location Updated',
-          message: 'Contact information updated successfully'
-        });
-        setShowEditModal(false);
+      if (res.data.success) {
         setEditingLocation(null);
         loadLocations();
       }
     } catch (error: any) {
-      showNotification({
-        type: 'error',
-        title: 'Error',
-        message: error.response?.data?.error || 'Failed to update location'
-      });
+      console.error('Error updating location:', error);
+      alert(error.response?.data?.error || 'Failed to update location');
     }
   }
 
-  // Don't block the entire page on auth loading
-  // The useEffect will handle loading locations once auth completes
+  const getTypeColorClass = (type: string) => {
+    switch (type) {
+      case 'retail': return 'text-blue-400/60';
+      case 'warehouse': return 'text-orange-400/60';
+      case 'distribution': return 'text-purple-400/60';
+      default: return 'text-cyan-400/60';
+    }
+  };
 
   return (
-    <div className="w-full px-4 lg:px-0">
-      {/* Header */}
-      <div className="mb-8 pb-6 border-b border-white/5">
-        <h1 className="text-xs uppercase tracking-[0.15em] text-white font-black mb-1" style={{ fontWeight: 900 }}>Locations</h1>
-        <p className="text-[10px] uppercase tracking-[0.15em] text-white/40">{locations.length} {locations.length === 1 ? 'Location' : 'Locations'} · Multi-Site Management</p>
+    <div className="w-full animate-fadeIn">
+      {/* Ambient glow */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-white/[0.01] rounded-full blur-3xl" />
       </div>
 
-      {/* Locations Grid */}
-      {loading ? (
-        <div className="bg-black border border-white/10 p-12 text-center">
-          <div className="text-white/40 text-sm">Loading locations...</div>
+      <div className="relative z-10">
+        {/* Header */}
+        <div className="mb-12">
+          <h1 className="text-white/70 text-2xl tracking-tight mb-1 font-light">
+            Locations
+          </h1>
+          <p className="text-white/25 text-[11px] uppercase tracking-[0.2em] font-light">
+            {locations.length} {locations.length === 1 ? 'Location' : 'Locations'}
+          </p>
         </div>
-      ) : locations.length === 0 ? (
-        <div className="bg-black border border-white/10 p-12 text-center">
-          <MapPin size={32} className="text-white/20 mx-auto mb-3" />
-          <div className="text-white/60 text-sm mb-2">No locations found</div>
-          <div className="text-white/40 text-xs">Contact your administrator to add locations</div>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {locations.map((location) => (
-            <div
-              key={location.id}
-              className="bg-black border border-white/10 hover:border-white/20 transition-all"
-            >
-              {/* Location Card */}
-              <div className="p-6">
+
+        {/* Locations Grid */}
+        {loading ? (
+          <div className="flex items-center justify-center py-32">
+            <div className="text-white/40 text-sm tracking-tight">Loading...</div>
+          </div>
+        ) : locations.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-32">
+            <div className="w-20 h-20 rounded-3xl bg-white/[0.02] border border-white/[0.06] flex items-center justify-center mb-6 shadow-lg shadow-black/20">
+              <MapPin size={32} className="text-white/20" strokeWidth={1.5} />
+            </div>
+            <div className="text-white/40 text-sm mb-2 tracking-tight">
+              No locations found
+            </div>
+            <p className="text-white/20 text-[11px] text-center max-w-md font-light tracking-wide">
+              Contact your administrator to add locations
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {locations.map((loc) => (
+              <div
+                key={loc.id}
+                className="group bg-[#0a0a0a] border border-white/[0.04] hover:border-white/[0.08] rounded-3xl p-6 transition-all duration-400 shadow-lg shadow-black/30"
+              >
                 {/* Header */}
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-white/5 flex items-center justify-center">
-                      <MapPin size={20} className="text-white/40" />
+                    <div className="w-12 h-12 rounded-2xl bg-white/[0.04] border border-white/[0.06] flex items-center justify-center">
+                      <MapPin size={20} className="text-white/40" strokeWidth={1.5} />
                     </div>
                     <div>
                       <div className="flex items-center gap-2 mb-1">
-                        <h3 className="text-white font-medium">{location.name}</h3>
-                        {location.is_primary && (
-                          <Star size={14} className="text-yellow-500 fill-yellow-500" />
+                        <div className="text-white/80 text-sm font-light tracking-tight">
+                          {loc.name}
+                        </div>
+                        {loc.is_primary && (
+                          <Star size={12} className="text-yellow-400/60 fill-yellow-400/60" strokeWidth={1.5} />
                         )}
                       </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs text-white/60 capitalize px-2 py-0.5 bg-white/5">
-                          {location.type}
-                        </span>
-                        {location.is_active ? (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs text-white/60 border border-white/10">
-                            <CheckCircle size={10} />
-                            Active
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs text-white/40 border border-white/10">
-                            <XCircle size={10} />
-                            Inactive
-                          </span>
-                        )}
+                      <div className={`${getTypeColorClass(loc.type)} text-[10px] uppercase tracking-[0.15em] font-light`}>
+                        {loc.type}
                       </div>
                     </div>
                   </div>
+
+                  {loc.is_active ? (
+                    <CheckCircle size={16} className="text-green-400/60" strokeWidth={1.5} />
+                  ) : (
+                    <XCircle size={16} className="text-white/20" strokeWidth={1.5} />
+                  )}
                 </div>
 
                 {/* Address */}
-                <div className="space-y-2 mb-4 pb-4 border-b border-white/5">
-                  <div className="text-white/60 text-sm">
-                    {location.address_line1 || 'Address not set'}
+                <div className="space-y-1 mb-4 pb-4 border-b border-white/[0.04]">
+                  <div className="text-white/50 text-[11px] font-light tracking-tight">
+                    {loc.address_line1 || 'Address not set'}
                   </div>
-                  {location.address_line2 && (
-                    <div className="text-white/60 text-sm">{location.address_line2}</div>
-                  )}
-                  <div className="text-white/60 text-sm">
-                    {location.city && location.state
-                      ? `${location.city}, ${location.state} ${location.zip || ''}`
-                      : 'City not set'}
-                  </div>
-                </div>
-
-                {/* Contact */}
-                <div className="space-y-3 mb-4 pb-4 border-b border-white/5">
-                  <div className="flex items-center gap-2">
-                    <Phone size={14} className="text-white/40" />
-                    <span className="text-white/60 text-sm">{location.phone || 'No phone'}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Mail size={14} className="text-white/40" />
-                    <span className="text-white/60 text-sm">{location.email || 'No email'}</span>
-                  </div>
-                </div>
-
-                {/* Features */}
-                <div className="grid grid-cols-2 gap-3 mb-4">
-                  <div className="bg-white/5 p-3 border border-white/5">
-                    <div className="text-white/40 text-xs mb-1">POS Enabled</div>
-                    <div className="text-white text-sm">{location.pos_enabled ? 'Yes' : 'No'}</div>
-                  </div>
-                  <div className="bg-white/5 p-3 border border-white/5">
-                    <div className="text-white/40 text-xs mb-1">Online Orders</div>
-                    <div className="text-white text-sm">{location.accepts_online_orders ? 'Yes' : 'No'}</div>
-                  </div>
-                  <div className="bg-white/5 p-3 border border-white/5">
-                    <div className="text-white/40 text-xs mb-1">Transfers</div>
-                    <div className="text-white text-sm">{location.accepts_transfers ? 'Yes' : 'No'}</div>
-                  </div>
-                  <div className="bg-white/5 p-3 border border-white/5">
-                    <div className="text-white/40 text-xs mb-1">Monthly Fee</div>
-                    <div className="text-white text-sm">
-                      {location.is_primary ? 'FREE' : `$${location.monthly_fee}/mo`}
+                  {loc.address_line2 && (
+                    <div className="text-white/50 text-[11px] font-light tracking-tight">
+                      {loc.address_line2}
                     </div>
+                  )}
+                  {loc.city && loc.state && (
+                    <div className="text-white/50 text-[11px] font-light tracking-tight">
+                      {loc.city}, {loc.state} {loc.zip || ''}
+                    </div>
+                  )}
+                </div>
+
+                {/* Contact Info */}
+                <div className="space-y-2 mb-4">
+                  <div className="flex items-center gap-2">
+                    <Phone size={12} className="text-white/30" strokeWidth={1.5} />
+                    <span className="text-white/40 text-[11px] font-light tracking-tight">
+                      {loc.phone || 'No phone'}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Mail size={12} className="text-white/30" strokeWidth={1.5} />
+                    <span className="text-white/40 text-[11px] font-light tracking-tight truncate">
+                      {loc.email || 'No email'}
+                    </span>
                   </div>
                 </div>
 
-                {/* Actions */}
+                {/* Edit Button */}
                 <button
-                  onClick={() => openEditModal(location)}
-                  className="w-full flex items-center justify-center gap-2 bg-white text-black px-4 py-3 text-xs font-medium uppercase tracking-wider hover:bg-white/90 transition-all"
+                  onClick={() => setEditingLocation(loc)}
+                  className="w-full px-4 py-2 bg-white/[0.04] hover:bg-white/[0.06] border border-white/[0.06] hover:border-white/[0.08] rounded-xl text-white/50 hover:text-white/70 text-[9px] uppercase tracking-[0.15em] font-light transition-all duration-400 flex items-center justify-center gap-2"
                 >
-                  <Edit2 size={14} />
-                  Update Contact Info
+                  <Edit2 size={10} strokeWidth={1.5} />
+                  Edit Contact Info
                 </button>
               </div>
-            </div>
-          ))}
-        </div>
-      )}
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* Edit Location Modal */}
       {editingLocation && (
-        <AdminModal
-          isOpen={showEditModal}
-          onClose={() => {
-            setShowEditModal(false);
-            setEditingLocation(null);
-          }}
-          title="Update Contact Information"
-          description={`Update contact details for ${editingLocation.name}`}
-          onSubmit={updateLocation}
-          submitText="Update"
-          maxWidth="xl"
-        >
-          <div className="space-y-4">
-            <div>
-              <label className="block text-white/60 text-xs uppercase tracking-wider mb-2">Phone Number</label>
-              <input
-                type="tel"
-                value={editingLocation.phone || ''}
-                onChange={(e) => setEditingLocation({ ...editingLocation, phone: e.target.value })}
-                className="w-full bg-black border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
-                placeholder="(555) 123-4567"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-white/60 text-xs uppercase tracking-wider mb-2">Email Address</label>
-              <input
-                type="email"
-                value={editingLocation.email || ''}
-                onChange={(e) => setEditingLocation({ ...editingLocation, email: e.target.value })}
-                className="w-full bg-black border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-white/20 transition-colors"
-                placeholder="location@example.com"
-              />
-            </div>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+          <div className="bg-[#0a0a0a] border border-white/[0.08] rounded-3xl p-8 w-full max-w-md shadow-2xl shadow-black/50">
+            <h2 className="text-white/70 text-xl tracking-tight mb-2 font-light">
+              Edit Location
+            </h2>
+            <p className="text-white/40 text-[11px] tracking-tight mb-6 font-light">
+              {editingLocation.name}
+            </p>
 
-            <div className="bg-white/5 border border-white/10 p-4 mt-4">
-              <p className="text-white/60 text-xs">
-                Note: Location address and other settings can only be changed by an administrator. Contact support if you need to update these details.
-              </p>
-            </div>
+            <form onSubmit={handleUpdateLocation} className="space-y-4">
+              <div>
+                <label className="block text-white/40 text-[10px] uppercase tracking-[0.15em] mb-2 font-light">
+                  Phone
+                </label>
+                <input
+                  type="tel"
+                  value={editingLocation.phone || ''}
+                  onChange={(e) => setEditingLocation({ ...editingLocation, phone: e.target.value })}
+                  className="w-full bg-white/[0.04] border border-white/[0.06] focus:border-white/[0.12] rounded-xl px-4 py-3 text-white/80 text-sm font-light transition-all duration-400 focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-white/40 text-[10px] uppercase tracking-[0.15em] mb-2 font-light">
+                  Email
+                </label>
+                <input
+                  type="email"
+                  value={editingLocation.email || ''}
+                  onChange={(e) => setEditingLocation({ ...editingLocation, email: e.target.value })}
+                  className="w-full bg-white/[0.04] border border-white/[0.06] focus:border-white/[0.12] rounded-xl px-4 py-3 text-white/80 text-sm font-light transition-all duration-400 focus:outline-none"
+                />
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setEditingLocation(null)}
+                  className="flex-1 px-6 py-3 bg-white/[0.04] hover:bg-white/[0.06] border border-white/[0.06] hover:border-white/[0.08] rounded-xl text-white/50 hover:text-white/70 text-[10px] uppercase tracking-[0.2em] font-light transition-all duration-400"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 px-6 py-3 bg-white/[0.06] hover:bg-white/[0.08] border border-white/[0.08] hover:border-white/[0.12] rounded-xl text-white/60 hover:text-white/80 text-[10px] uppercase tracking-[0.2em] font-light transition-all duration-400"
+                >
+                  Save Changes
+                </button>
+              </div>
+            </form>
           </div>
-        </AdminModal>
+        </div>
       )}
     </div>
   );
 }
-
