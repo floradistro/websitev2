@@ -1,6 +1,7 @@
 "use client";
 
 import { CheckCircle, AlertCircle, Loader } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import AIAutofillPanel from './AIAutofillPanel';
 import SectionHeader from '@/components/ui/SectionHeader';
 
@@ -8,6 +9,7 @@ interface Category {
   id: string;
   name: string;
   slug: string;
+  parent_id?: string | null;
 }
 
 interface ProductBasicInfoProps {
@@ -50,6 +52,58 @@ export default function ProductBasicInfo({
   onApplySuggestions,
   onCloseSuggestions
 }: ProductBasicInfoProps) {
+  const [subcategories, setSubcategories] = useState<Category[]>([]);
+  const [selectedParent, setSelectedParent] = useState<string>('');
+  const [loadingSubcategories, setLoadingSubcategories] = useState(false);
+
+  // Load subcategories when a parent category is selected
+  useEffect(() => {
+    if (selectedParent) {
+      loadSubcategories(selectedParent);
+    } else {
+      setSubcategories([]);
+    }
+  }, [selectedParent]);
+
+  // Auto-select parent category if it has no subcategories
+  useEffect(() => {
+    if (selectedParent && !loadingSubcategories && subcategories.length === 0) {
+      onCategoryChange(selectedParent);
+    }
+  }, [selectedParent, loadingSubcategories, subcategories]);
+
+  const loadSubcategories = async (parentId: string) => {
+    try {
+      setLoadingSubcategories(true);
+      const response = await fetch(`/api/supabase/categories?parent=${parentId}&active=true`);
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          setSubcategories(data.categories || []);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading subcategories:', error);
+    } finally {
+      setLoadingSubcategories(false);
+    }
+  };
+
+  const handleParentChange = (parentId: string) => {
+    setSelectedParent(parentId);
+    // Reset subcategory selection when parent changes
+    if (parentId) {
+      // Don't auto-select parent, wait for subcategory selection
+      onCategoryChange('');
+    } else {
+      onCategoryChange('');
+    }
+  };
+
+  const handleSubcategoryChange = (subcategoryId: string) => {
+    onCategoryChange(subcategoryId);
+  };
+
   return (
     <div className="bg-[#141414] border border-white/5 rounded-2xl p-4">
       <SectionHeader>Basic Information</SectionHeader>
@@ -98,24 +152,58 @@ export default function ProductBasicInfo({
           />
         </div>
 
-        {/* Category */}
+        {/* Category - Two-tier selection */}
         <div>
           <label className="block text-white/40 text-[10px] uppercase tracking-[0.15em] mb-2 font-black" style={{ fontWeight: 900 }}>
             Category <span className="text-red-400">*</span>
           </label>
+
+          {/* Parent Category Selection */}
           <select
             required
-            value={categoryId}
-            onChange={(e) => onCategoryChange(e.target.value)}
+            value={selectedParent}
+            onChange={(e) => handleParentChange(e.target.value)}
             className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl text-white px-3 py-2.5 focus:outline-none focus:border-white/20 transition-all text-xs cursor-pointer"
           >
-            <option value="">Select category</option>
+            <option value="">Select category...</option>
             {categories.map((cat) => (
               <option key={cat.id} value={cat.id}>
                 {cat.name}
               </option>
             ))}
           </select>
+
+          {/* Subcategory Selection (shown when parent has subcategories) */}
+          {selectedParent && (
+            <div className="mt-2">
+              {loadingSubcategories ? (
+                <p className="text-white/40 text-[10px] flex items-center gap-1.5 uppercase tracking-[0.15em]">
+                  <Loader size={10} className="animate-spin" />
+                  Loading options...
+                </p>
+              ) : subcategories.length > 0 ? (
+                <>
+                  <label className="block text-white/60 text-[9px] uppercase tracking-[0.15em] mb-1.5 font-black" style={{ fontWeight: 900 }}>
+                    Select specific option <span className="text-red-400">*</span>
+                  </label>
+                  <select
+                    required
+                    value={categoryId}
+                    onChange={(e) => handleSubcategoryChange(e.target.value)}
+                    className="w-full bg-[#0a0a0a] border border-purple-500/20 rounded-xl text-white px-3 py-2.5 focus:outline-none focus:border-purple-500/40 transition-all text-xs cursor-pointer"
+                  >
+                    <option value="">Choose one...</option>
+                    {subcategories.map((subcat) => (
+                      <option key={subcat.id} value={subcat.id}>
+                        {subcat.name}
+                      </option>
+                    ))}
+                  </select>
+                </>
+              ) : null}
+            </div>
+          )}
+
           {loadingFields && (
             <p className="text-white/40 text-[10px] mt-2 flex items-center gap-1.5 uppercase tracking-[0.15em]">
               <Loader size={10} className="animate-spin" />

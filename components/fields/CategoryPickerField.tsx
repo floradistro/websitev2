@@ -35,23 +35,24 @@ export function CategoryPickerField({
   async function loadCategories() {
     try {
       setLoading(true);
-      const response = await fetch('/api/supabase/categories');
-      
+      // Only load parent categories (no subcategories in main dropdown)
+      const response = await fetch('/api/supabase/categories?parent=null&active=true');
+
       if (!response.ok) {
         console.error('Failed to fetch categories:', response.status);
         setLoading(false);
         return;
       }
-      
+
       const contentType = response.headers.get('content-type');
       if (!contentType || !contentType.includes('application/json')) {
         console.error('Categories API returned non-JSON response');
         setLoading(false);
         return;
       }
-      
+
       const data = await response.json();
-      
+
       if (data.success || Array.isArray(data)) {
         setCategories(data.categories || data);
       }

@@ -3,49 +3,169 @@ import { getServiceSupabase } from '@/lib/supabase/client';
 
 /**
  * GET /api/vendor/product-fields
- * Get all product fields for vendor (admin required + vendor custom)
+ * Get all product fields for vendor with inheritance support
+ *
+ * Steve Jobs Style: Subcategories inherit parent fields automatically
+ * - Fields "just work" without the user thinking about hierarchy
+ * - Subcategory-specific fields come first, then inherited parent fields
+ * - Inherited fields are marked so UI can show subtle indicator
  */
 export async function GET(request: NextRequest) {
   try {
     const vendorId = request.headers.get('x-vendor-id');
     const { searchParams } = new URL(request.url);
     const categoryId = searchParams.get('category_id');
-    
+
     if (!vendorId) {
       return NextResponse.json({ error: 'Vendor ID required' }, { status: 401 });
     }
 
     const supabase = getServiceSupabase();
 
-    // Get vendor's custom product fields
-    let vendorFieldsQuery = supabase
+    // NO CATEGORY ID PROVIDED - Return all vendor fields for categories list view
+    if (!categoryId) {
+      const { data: allFields, error } = await supabase
+        .from('vendor_product_fields')
+        .select('*')
+        .eq('vendor_id', vendorId)
+        .eq('is_active', true)
+        .order('sort_order', { ascending: true });
+
+      if (error) throw error;
+
+      const fields = (allFields || []).map(field => ({
+        id: field.id,
+        fieldId: field.field_id,
+        definition: field.field_definition,
+        categoryId: field.category_id,
+        sortOrder: field.sort_order,
+        inherited: false,
+        source: field.category_id ? 'category' : 'global',
+        ...field.field_definition
+      }));
+
+      return NextResponse.json({
+        success: true,
+        fields
+      });
+    }
+
+    // CATEGORY ID PROVIDED - Return fields with inheritance
+    // Check if it's a subcategory
+    let parentCategoryId: string | null = null;
+    const { data: category } = await supabase
+      .from('categories')
+      .select('parent_id')
+      .eq('id', categoryId)
+      .single();
+
+    parentCategoryId = category?.parent_id || null;
+
+    // Get subcategory-specific fields
+    const subcategoryFields: any[] = [];
+    const { data: subcatData, error: subcatError } = await supabase
       .from('vendor_product_fields')
       .select('*')
       .eq('vendor_id', vendorId)
+      .eq('category_id', categoryId)
       .eq('is_active', true)
       .order('sort_order', { ascending: true });
 
-    if (categoryId) {
-      vendorFieldsQuery = vendorFieldsQuery.or(`category_id.eq.${categoryId},category_id.is.null`);
+    if (!subcatError && subcatData) {
+      subcategoryFields.push(...subcatData);
     }
 
-    const { data: vendorFields, error: vendorError } = await vendorFieldsQuery;
-    
-    if (vendorError) throw vendorError;
+    // Get parent category fields (if this is a subcategory)
+    const parentFields: any[] = [];
+    if (parentCategoryId) {
+      const { data, error } = await supabase
+        .from('vendor_product_fields')
+        .select('*')
+        .eq('vendor_id', vendorId)
+        .eq('category_id', parentCategoryId)
+        .eq('is_active', true)
+        .order('sort_order', { ascending: true });
 
-    // Format response - ONLY vendor fields
-    const fields = (vendorFields || []).map(field => ({
-      id: field.id,
-      fieldId: field.field_id,
-      definition: field.field_definition,
-      categoryId: field.category_id,
-      sortOrder: field.sort_order,
-      ...field.field_definition // Spread definition fields at top level
-    }));
+      if (!error && data) {
+        parentFields.push(...data);
+      }
+    }
+
+    // Get category-agnostic fields (no category_id)
+    const globalFields: any[] = [];
+    const { data: globalData, error: globalError } = await supabase
+      .from('vendor_product_fields')
+      .select('*')
+      .eq('vendor_id', vendorId)
+      .is('category_id', null)
+      .eq('is_active', true)
+      .order('sort_order', { ascending: true });
+
+    if (!globalError && globalData) {
+      globalFields.push(...globalData);
+    }
+
+    // Merge fields: subcategory-specific > parent inherited > global
+    // Remove duplicates (subcategory fields override parent fields with same field_id)
+    const fieldMap = new Map();
+
+    // Add parent fields first (lowest priority)
+    parentFields.forEach(field => {
+      fieldMap.set(field.field_id, {
+        id: field.id,
+        fieldId: field.field_id,
+        definition: field.field_definition,
+        categoryId: field.category_id,
+        sortOrder: field.sort_order,
+        inherited: true, // Mark as inherited from parent
+        source: 'parent',
+        ...field.field_definition
+      });
+    });
+
+    // Add global fields (mid priority)
+    globalFields.forEach(field => {
+      if (!fieldMap.has(field.field_id)) {
+        fieldMap.set(field.field_id, {
+          id: field.id,
+          fieldId: field.field_id,
+          definition: field.field_definition,
+          categoryId: field.category_id,
+          sortOrder: field.sort_order,
+          inherited: false,
+          source: 'global',
+          ...field.field_definition
+        });
+      }
+    });
+
+    // Add subcategory-specific fields last (highest priority - can override)
+    subcategoryFields.forEach(field => {
+      fieldMap.set(field.field_id, {
+        id: field.id,
+        fieldId: field.field_id,
+        definition: field.field_definition,
+        categoryId: field.category_id,
+        sortOrder: field.sort_order,
+        inherited: false,
+        source: 'category',
+        ...field.field_definition
+      });
+    });
+
+    const fields = Array.from(fieldMap.values());
 
     return NextResponse.json({
       success: true,
-      fields
+      fields,
+      _debug: {
+        categoryId,
+        parentCategoryId,
+        subcategoryFieldsCount: subcategoryFields.length,
+        parentFieldsCount: parentFields.length,
+        globalFieldsCount: globalFields.length,
+        totalMerged: fields.length
+      }
     });
   } catch (error: any) {
     console.error('Error fetching product fields:', error);

@@ -128,6 +128,10 @@ export default function ProductsClient() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'approved' | 'pending' | 'rejected'>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
+  const [subcategoryFilter, setSubcategoryFilter] = useState<string>('all');
+  const [consistencyFilter, setConsistencyFilter] = useState<string>('all'); // For concentrates
+  const [tierFilter, setTierFilter] = useState<string>('all'); // For flower pricing tiers
+  const [strainTypeFilter, setStrainTypeFilter] = useState<string>('all'); // Indica/Sativa/Hybrid
   const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
   const [page, setPage] = useState(1);
   const ITEMS_PER_PAGE = 20;
@@ -219,7 +223,7 @@ export default function ProductsClient() {
       if (response.data.success) {
         const prods = response.data.products || [];
         console.log('📦 Loaded products:', prods.length);
-        console.log('🏷️ Sample categories:', prods.slice(0, 5).map(p => ({ name: p.name, category: p.category })));
+        console.log('🏷️ Sample categories:', prods.slice(0, 5).map((p: any) => ({ name: p.name, category: p.category })));
         setProducts(prods);
       }
     } catch (error: any) {
@@ -321,21 +325,63 @@ export default function ProductsClient() {
       items = items.filter(p => p.status === statusFilter);
     }
 
+    // Filter by category (parent or subcategory)
     if (categoryFilter !== 'all') {
-      console.log('🔍 Filtering by category:', categoryFilter);
-      console.log('📦 Sample product categories:', items.slice(0, 3).map(p => ({ name: p.name, category: p.category })));
-      items = items.filter(p => {
-        const matches = p.category === categoryFilter;
-        if (!matches && items.length < 20) {
-          console.log(`❌ Product "${p.name}" category "${p.category}" doesn't match filter "${categoryFilter}"`);
+      if (subcategoryFilter !== 'all') {
+        // Specific subcategory selected - filter by subcategory name
+        const subcat = categories.find(c => c.id === subcategoryFilter);
+        if (subcat) {
+          items = items.filter(p => p.category === subcat.name);
         }
-        return matches;
+      } else {
+        // Parent category selected - show all products in that parent and its subcategories
+        const parent = categories.find(c => c.id === categoryFilter);
+        const subcats = categories.filter(c => c.parent_id === categoryFilter);
+        const categoryNames = [parent?.name, ...subcats.map(s => s.name)].filter(Boolean);
+        items = items.filter(p => categoryNames.includes(p.category));
+      }
+    }
+
+    // Filter by consistency (concentrates only)
+    if (consistencyFilter !== 'all') {
+      items = items.filter(p => {
+        if (!p.custom_fields) return false;
+        if (Array.isArray(p.custom_fields)) {
+          const field = p.custom_fields.find((f: any) =>
+            f.field_name === 'consistency' || f.label === 'Consistency'
+          );
+          return (field?.field_value || field?.value) === consistencyFilter;
+        } else if (typeof p.custom_fields === 'object' && p.custom_fields !== null) {
+          return (p.custom_fields as any).consistency === consistencyFilter;
+        }
+        return false;
       });
-      console.log('✅ Filtered to', items.length, 'products');
+    }
+
+    // Filter by strain type (Indica/Sativa/Hybrid)
+    if (strainTypeFilter !== 'all') {
+      items = items.filter(p => {
+        if (!p.custom_fields) return false;
+        if (Array.isArray(p.custom_fields)) {
+          const field = p.custom_fields.find((f: any) =>
+            f.field_name === 'strain_type' || f.label === 'Strain Type'
+          );
+          return (field?.field_value || field?.value) === strainTypeFilter;
+        } else if (typeof p.custom_fields === 'object' && p.custom_fields !== null) {
+          return (p.custom_fields as any).strain_type === strainTypeFilter;
+        }
+        return false;
+      });
+    }
+
+    // Filter by pricing tier (flower only) - TODO: implement when product has tier assignment
+    if (tierFilter !== 'all') {
+      // For now, skip - would need product_pricing_assignments table lookup
+      // items = items.filter(p => p.pricing_tier_id === tierFilter);
     }
 
     return items;
-  }, [products, search, statusFilter, categoryFilter]);
+  }, [products, search, statusFilter, categoryFilter, subcategoryFilter, categories, consistencyFilter, strainTypeFilter, tierFilter]);
 
   // Paginated products
   const paginatedProducts = useMemo(() => {
@@ -346,13 +392,133 @@ export default function ProductsClient() {
 
   const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
 
-  // Get unique categories from products
-  const productCategories = useMemo(() => {
-    const cats = new Set(products.map(p => p.category));
-    const result = ['all', ...Array.from(cats)];
-    console.log('🏷️ Available categories:', result);
-    return result;
-  }, [products]);
+  // Get parent categories only (Steve Jobs style - clean dropdown)
+  const parentCategories = useMemo(() => {
+    return categories.filter(c => !c.parent_id);
+  }, [categories]);
+
+  // Get subcategories for selected parent
+  const subcategories = useMemo(() => {
+    if (categoryFilter === 'all' || !categoryFilter) return [];
+    return categories.filter(c => c.parent_id === categoryFilter);
+  }, [categories, categoryFilter]);
+
+  // Get unique consistencies for concentrates (from product custom_fields)
+  // Steve Jobs Style: Subcategories inherit parent's filter attributes
+  const consistencies = useMemo(() => {
+    const concentratesCategory = categories.find(c => c.slug === 'concentrates' && !c.parent_id);
+    if (!concentratesCategory) return [];
+
+    // Check if current filter is concentrates parent OR a concentrates subcategory
+    const selectedCategory = categories.find(c => c.id === categoryFilter);
+    const isConcentratesOrChild = categoryFilter === concentratesCategory.id ||
+      selectedCategory?.parent_id === concentratesCategory.id;
+
+    if (!isConcentratesOrChild) return [];
+
+    const consistencySet = new Set<string>();
+    products.forEach(p => {
+      if (p.category === 'Concentrates' && p.custom_fields) {
+        // Check both array and object formats
+        if (Array.isArray(p.custom_fields)) {
+          const consistencyField = p.custom_fields.find((f: any) =>
+            f.field_name === 'consistency' || f.label === 'Consistency'
+          );
+          if (consistencyField?.field_value || consistencyField?.value) {
+            consistencySet.add(consistencyField.field_value || consistencyField.value);
+          }
+        } else if (typeof p.custom_fields === 'object' && p.custom_fields !== null) {
+          const fields = p.custom_fields as any;
+          if (fields.consistency) {
+            consistencySet.add(fields.consistency);
+          }
+        }
+      }
+    });
+    return Array.from(consistencySet).sort();
+  }, [products, categories, categoryFilter]);
+
+  // Get unique pricing tiers for flower
+  // Steve Jobs Style: Subcategories inherit parent's pricing tiers
+  const pricingTiers = useMemo(() => {
+    const flowerCategory = categories.find(c => c.slug === 'flower' && !c.parent_id);
+    if (!flowerCategory) return [];
+
+    // Check if current filter is flower parent OR a flower subcategory
+    const selectedCategory = categories.find(c => c.id === categoryFilter);
+    const isFlowerOrChild = categoryFilter === flowerCategory.id ||
+      selectedCategory?.parent_id === flowerCategory.id;
+
+    if (!isFlowerOrChild) return [];
+
+    // Get pricing tier blueprints for the PARENT category (inheritance!)
+    // Even if a flower subcategory is selected, we use the parent's tiers
+    const effectiveCategoryId = selectedCategory?.parent_id || categoryFilter;
+
+    return pricingBlueprints
+      .filter(pb => {
+        if (!pb.is_active || pb.context !== 'product') return false;
+
+        // Check if this tier applies to the parent category
+        if (!pb.applicable_to_categories || pb.applicable_to_categories.length === 0) return true;
+        return pb.applicable_to_categories.includes(effectiveCategoryId);
+      })
+      .map(pb => ({
+        id: pb.id,
+        name: pb.name,
+        tier_type: pb.tier_type
+      }));
+  }, [categories, categoryFilter, pricingBlueprints]);
+
+  // Get unique strain types (Indica/Sativa/Hybrid) for current category
+  // Steve Jobs Style: Subcategories inherit parent's filter attributes
+  const strainTypes = useMemo(() => {
+    const flowerCategory = categories.find(c => c.slug === 'flower' && !c.parent_id);
+    const concentratesCategory = categories.find(c => c.slug === 'concentrates' && !c.parent_id);
+
+    if (!flowerCategory || !concentratesCategory) return [];
+
+    // Check if current filter is flower/concentrates parent OR their subcategories
+    const selectedCategory = categories.find(c => c.id === categoryFilter);
+    const isFlowerOrChild = categoryFilter === flowerCategory.id ||
+      selectedCategory?.parent_id === flowerCategory.id;
+    const isConcentratesOrChild = categoryFilter === concentratesCategory.id ||
+      selectedCategory?.parent_id === concentratesCategory.id;
+
+    if (!isFlowerOrChild && !isConcentratesOrChild) return [];
+
+    const strainTypeSet = new Set<string>();
+    products.forEach(p => {
+      if ((p.category === 'Flower' || p.category === 'Concentrates') && p.custom_fields) {
+        // Check both array and object formats
+        if (Array.isArray(p.custom_fields)) {
+          const strainTypeField = p.custom_fields.find((f: any) =>
+            f.field_name === 'strain_type' || f.label === 'Strain Type'
+          );
+          if (strainTypeField?.field_value || strainTypeField?.value) {
+            strainTypeSet.add(strainTypeField.field_value || strainTypeField.value);
+          }
+        } else if (typeof p.custom_fields === 'object' && p.custom_fields !== null) {
+          const fields = p.custom_fields as any;
+          if (fields.strain_type) {
+            strainTypeSet.add(fields.strain_type);
+          }
+        }
+      }
+    });
+
+    // Sort in standard order: Indica, Sativa, Hybrid
+    const types = Array.from(strainTypeSet);
+    const order = ['Indica', 'Sativa', 'Hybrid'];
+    return types.sort((a, b) => {
+      const indexA = order.indexOf(a);
+      const indexB = order.indexOf(b);
+      if (indexA === -1 && indexB === -1) return a.localeCompare(b);
+      if (indexA === -1) return 1;
+      if (indexB === -1) return -1;
+      return indexA - indexB;
+    });
+  }, [products, categories, categoryFilter]);
 
   // Stats
   const stats = useMemo(() => {
@@ -608,7 +774,19 @@ export default function ProductsClient() {
           setStatusFilter={setStatusFilter}
           categoryFilter={categoryFilter}
           setCategoryFilter={setCategoryFilter}
-          productCategories={productCategories}
+          parentCategories={parentCategories}
+          subcategories={subcategories}
+          subcategoryFilter={subcategoryFilter}
+          setSubcategoryFilter={setSubcategoryFilter}
+          consistencies={consistencies}
+          consistencyFilter={consistencyFilter}
+          setConsistencyFilter={setConsistencyFilter}
+          strainTypes={strainTypes}
+          strainTypeFilter={strainTypeFilter}
+          setStrainTypeFilter={setStrainTypeFilter}
+          pricingTiers={pricingTiers}
+          tierFilter={tierFilter}
+          setTierFilter={setTierFilter}
           page={page}
           setPage={setPage}
           totalPages={totalPages}
@@ -671,7 +849,19 @@ interface CatalogTabProps {
   setStatusFilter: (f: any) => void;
   categoryFilter: string;
   setCategoryFilter: (f: string) => void;
-  productCategories: string[];
+  parentCategories: Category[];
+  subcategories: Category[];
+  subcategoryFilter: string;
+  setSubcategoryFilter: (f: string) => void;
+  consistencies: string[];
+  consistencyFilter: string;
+  setConsistencyFilter: (f: string) => void;
+  strainTypes: string[];
+  strainTypeFilter: string;
+  setStrainTypeFilter: (f: string) => void;
+  pricingTiers: any[];
+  tierFilter: string;
+  setTierFilter: (f: string) => void;
   page: number;
   setPage: (p: number) => void;
   totalPages: number;
@@ -689,7 +879,19 @@ function CatalogTab({
   setStatusFilter,
   categoryFilter,
   setCategoryFilter,
-  productCategories,
+  parentCategories,
+  subcategories,
+  subcategoryFilter,
+  setSubcategoryFilter,
+  consistencies,
+  consistencyFilter,
+  setConsistencyFilter,
+  strainTypes,
+  strainTypeFilter,
+  setStrainTypeFilter,
+  pricingTiers,
+  tierFilter,
+  setTierFilter,
   page,
   setPage,
   totalPages,
@@ -744,16 +946,180 @@ function CatalogTab({
 
         <select
           value={categoryFilter}
-          onChange={(e) => setCategoryFilter(e.target.value)}
+          onChange={(e) => {
+            setCategoryFilter(e.target.value);
+            setSubcategoryFilter('all'); // Reset subcategory when parent changes
+          }}
           className="px-4 py-2 bg-[#0a0a0a] border border-white/5 rounded-xl text-white text-[10px] uppercase tracking-[0.15em] focus:outline-none focus:border-white/10"
         >
-          {productCategories.map(cat => (
-            <option key={cat} value={cat}>
-              {cat === 'all' ? 'All Categories' : cat}
+          <option value="all">All Categories</option>
+          {parentCategories.map(cat => (
+            <option key={cat.id} value={cat.id}>
+              {cat.name}
             </option>
           ))}
         </select>
       </div>
+
+      {/* Subcategory Pills - Steve Jobs Style (Beverages) */}
+      {subcategories.length > 0 && (
+        <div className="mb-6">
+          <div className="text-white/40 text-[9px] uppercase tracking-[0.15em] mb-2 font-black" style={{ fontWeight: 900 }}>
+            Dosage
+          </div>
+          <div className="flex items-center gap-2 overflow-x-auto pb-1">
+            <button
+              onClick={() => setSubcategoryFilter('all')}
+              className={`
+                px-4 py-2 rounded-full text-[10px] uppercase tracking-[0.15em] font-black whitespace-nowrap transition-all
+                ${subcategoryFilter === 'all'
+                  ? 'bg-white text-black'
+                  : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white/80'
+                }
+              `}
+              style={{ fontWeight: 900 }}
+            >
+              All
+            </button>
+            {subcategories.map((subcat) => (
+              <button
+                key={subcat.id}
+                onClick={() => setSubcategoryFilter(subcat.id)}
+                className={`
+                  px-4 py-2 rounded-full text-[10px] uppercase tracking-[0.15em] font-black whitespace-nowrap transition-all
+                  ${subcategoryFilter === subcat.id
+                    ? 'bg-white text-black'
+                    : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white/80'
+                  }
+                `}
+                style={{ fontWeight: 900 }}
+              >
+                {subcat.name}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Consistency Pills - Steve Jobs Style (Concentrates) */}
+      {consistencies.length > 0 && (
+        <div className="mb-6">
+          <div className="text-white/40 text-[9px] uppercase tracking-[0.15em] mb-2 font-black" style={{ fontWeight: 900 }}>
+            Consistency
+          </div>
+          <div className="flex items-center gap-2 overflow-x-auto pb-1">
+            <button
+              onClick={() => setConsistencyFilter('all')}
+              className={`
+                px-4 py-2 rounded-full text-[10px] uppercase tracking-[0.15em] font-black whitespace-nowrap transition-all
+                ${consistencyFilter === 'all'
+                  ? 'bg-white text-black'
+                  : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white/80'
+                }
+              `}
+              style={{ fontWeight: 900 }}
+            >
+              All
+            </button>
+            {consistencies.map((consistency) => (
+              <button
+                key={consistency}
+                onClick={() => setConsistencyFilter(consistency)}
+                className={`
+                  px-4 py-2 rounded-full text-[10px] uppercase tracking-[0.15em] font-black whitespace-nowrap transition-all
+                  ${consistencyFilter === consistency
+                    ? 'bg-white text-black'
+                    : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white/80'
+                  }
+                `}
+                style={{ fontWeight: 900 }}
+              >
+                {consistency}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Strain Type Pills - Steve Jobs Style (Flower & Concentrates) */}
+      {strainTypes.length > 0 && (
+        <div className="mb-6">
+          <div className="text-white/40 text-[9px] uppercase tracking-[0.15em] mb-2 font-black" style={{ fontWeight: 900 }}>
+            Strain Type
+          </div>
+          <div className="flex items-center gap-2 overflow-x-auto pb-1">
+            <button
+              onClick={() => setStrainTypeFilter('all')}
+              className={`
+                px-4 py-2 rounded-full text-[10px] uppercase tracking-[0.15em] font-black whitespace-nowrap transition-all
+                ${strainTypeFilter === 'all'
+                  ? 'bg-white text-black'
+                  : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white/80'
+                }
+              `}
+              style={{ fontWeight: 900 }}
+            >
+              All
+            </button>
+            {strainTypes.map((type) => (
+              <button
+                key={type}
+                onClick={() => setStrainTypeFilter(type)}
+                className={`
+                  px-4 py-2 rounded-full text-[10px] uppercase tracking-[0.15em] font-black whitespace-nowrap transition-all
+                  ${strainTypeFilter === type
+                    ? 'bg-white text-black'
+                    : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white/80'
+                  }
+                `}
+                style={{ fontWeight: 900 }}
+              >
+                {type}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Pricing Tier Pills - Steve Jobs Style (Flower) */}
+      {pricingTiers.length > 0 && (
+        <div className="mb-6">
+          <div className="text-white/40 text-[9px] uppercase tracking-[0.15em] mb-2 font-black" style={{ fontWeight: 900 }}>
+            Quality Tier
+          </div>
+          <div className="flex items-center gap-2 overflow-x-auto pb-1">
+            <button
+              onClick={() => setTierFilter('all')}
+              className={`
+                px-4 py-2 rounded-full text-[10px] uppercase tracking-[0.15em] font-black whitespace-nowrap transition-all
+                ${tierFilter === 'all'
+                  ? 'bg-white text-black'
+                  : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white/80'
+                }
+              `}
+              style={{ fontWeight: 900 }}
+            >
+              All
+            </button>
+            {pricingTiers.map((tier) => (
+              <button
+                key={tier.id}
+                onClick={() => setTierFilter(tier.id)}
+                className={`
+                  px-4 py-2 rounded-full text-[10px] uppercase tracking-[0.15em] font-black whitespace-nowrap transition-all
+                  ${tierFilter === tier.id
+                    ? 'bg-white text-black'
+                    : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white/80'
+                  }
+                `}
+                style={{ fontWeight: 900 }}
+              >
+                {tier.name}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Products List */}
       {loading ? (
@@ -903,6 +1269,7 @@ function CategoriesTab({
 }: CategoriesTabProps) {
   const [showModal, setShowModal] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  const [parentForSubcategory, setParentForSubcategory] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     icon: '📦',
@@ -938,14 +1305,19 @@ function CategoriesTab({
   });
   const [savingField, setSavingField] = useState(false);
 
-  const openCreateModal = () => {
+  // Expanded sections for each category (fields, subcategories, pricing)
+  const [expandedSections, setExpandedSections] = useState<{ [categoryId: string]: 'fields' | 'subcategories' | null }>({});
+
+  const openCreateModal = (parentId?: string) => {
     setEditingCategory(null);
+    setParentForSubcategory(parentId || null);
     setFormData({ name: '', icon: '', description: '', imageFile: null });
     setShowModal(true);
   };
 
   const openEditModal = (category: Category) => {
     setEditingCategory(category);
+    setParentForSubcategory(null);
     setFormData({
       name: category.name,
       icon: category.icon || '',
@@ -958,7 +1330,15 @@ function CategoriesTab({
   const closeModal = () => {
     setShowModal(false);
     setEditingCategory(null);
+    setParentForSubcategory(null);
     setFormData({ name: '', icon: '', description: '', imageFile: null });
+  };
+
+  const toggleSection = (categoryId: string, section: 'fields' | 'subcategories') => {
+    setExpandedSections(prev => ({
+      ...prev,
+      [categoryId]: prev[categoryId] === section ? null : section
+    }));
   };
 
   const openFieldModal = async (category: Category) => {
@@ -1202,7 +1582,8 @@ function CategoriesTab({
         slug: formData.name.toLowerCase().replace(/\s+/g, '-'),
         icon: formData.icon,
         description: formData.description || null,
-        image_url: imageUrl
+        image_url: imageUrl,
+        parent_id: parentForSubcategory || null
       };
 
       if (editingCategory) {
@@ -1227,8 +1608,8 @@ function CategoriesTab({
         if (response.data.success) {
           showNotification({
             type: 'success',
-            title: 'Created',
-            message: 'Category created successfully'
+            title: parentForSubcategory ? 'Subcategory Created' : 'Category Created',
+            message: `${parentForSubcategory ? 'Subcategory' : 'Category'} created successfully`
           });
           closeModal();
           loadCategories();
@@ -1245,8 +1626,10 @@ function CategoriesTab({
     }
   };
 
-  // Only show vendor-owned categories (no global categories exist anymore)
+  // Separate parent categories from subcategories
   const vendorCategories = categories.filter(c => c.vendor_id === vendorId);
+  const parentCategories = vendorCategories.filter(c => !c.parent_id);
+  const getSubcategories = (parentId: string) => vendorCategories.filter(c => c.parent_id === parentId);
 
   return (
     <div>
@@ -1256,12 +1639,12 @@ function CategoriesTab({
             Your Categories
           </h3>
           <p className="text-white/40 text-[10px] uppercase tracking-wider">
-            Organize your products and configure custom fields
+            Organize products with categories, subcategories, and custom fields
           </p>
         </div>
         <div className="flex gap-2">
           <button
-            onClick={openCreateModal}
+            onClick={() => openCreateModal()}
             className="px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white rounded-xl text-[10px] uppercase tracking-[0.15em] font-black transition-all flex items-center gap-2 border border-white/20"
             style={{ fontWeight: 900 }}
           >
@@ -1275,7 +1658,7 @@ function CategoriesTab({
         <div className="text-center py-12">
           <div className="text-white/40 text-[10px] uppercase tracking-wider">Loading categories...</div>
         </div>
-      ) : vendorCategories.length === 0 ? (
+      ) : parentCategories.length === 0 ? (
         <div className="text-center py-16 bg-[#0a0a0a] border border-white/5 rounded-2xl">
           <div className="w-20 h-20 rounded-2xl bg-white/5 flex items-center justify-center mx-auto mb-6">
             <FolderTree size={40} className="text-white/40" />
@@ -1287,7 +1670,7 @@ function CategoriesTab({
             Create categories to organize your products and add custom fields like THC%, strain type, etc.
           </p>
           <button
-            onClick={openCreateModal}
+            onClick={() => openCreateModal()}
             className="px-6 py-3 bg-white/10 hover:bg-white/20 text-white rounded-xl text-[10px] uppercase tracking-[0.15em] font-black transition-all inline-flex items-center gap-2 border border-white/20"
             style={{ fontWeight: 900 }}
           >
@@ -1296,78 +1679,73 @@ function CategoriesTab({
           </button>
         </div>
       ) : (
-        <div className="space-y-3">
-          {vendorCategories.map((category) => {
-            const isExpanded = expandedCategory === category.id;
+        <div className="space-y-4">
+          {parentCategories.map((category) => {
+            const subcategories = getSubcategories(category.id);
             const categoryFields = fieldGroups.filter(fg => fg.category_id === category.id);
+            const expandedSection = expandedSections[category.id];
 
             return (
               <div
                 key={category.id}
-                className="bg-white/[0.02] border border-white/10 rounded-xl hover:border-white/20 transition-all"
+                className="bg-[#0a0a0a] border border-white/10 rounded-2xl overflow-hidden"
               >
-                <div className="px-6 py-4">
+                {/* Parent Category Header */}
+                <div className="px-6 py-4 border-b border-white/5">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4 flex-1">
                       {category.image_url ? (
-                        <div className="w-10 h-10 relative rounded-lg overflow-hidden border border-white/10 flex-shrink-0">
+                        <div className="w-12 h-12 relative rounded-xl overflow-hidden border border-white/10 flex-shrink-0">
                           <Image
                             src={getSupabaseImageUrl(category.image_url, 80, 80)}
                             alt={category.name}
                             fill
-                            sizes="40px"
+                            sizes="48px"
                             className="object-cover"
                           />
                         </div>
                       ) : (
-                        <div className="w-10 h-10 rounded-lg border border-white/10 flex-shrink-0 bg-white/5 flex items-center justify-center">
-                          <Package size={20} className="text-white/40" />
+                        <div className="w-12 h-12 rounded-xl border border-white/10 flex-shrink-0 bg-white/5 flex items-center justify-center">
+                          <Package size={24} className="text-white/40" />
                         </div>
                       )}
 
                       <div className="flex-1 min-w-0">
-                        <h3 className="text-white text-xs uppercase tracking-tight font-black" style={{ fontWeight: 900 }}>
+                        <h3 className="text-white text-sm uppercase tracking-tight font-black mb-0.5" style={{ fontWeight: 900 }}>
                           {category.name}
                         </h3>
                         {category.description && (
-                          <p className="text-white/40 text-[10px] uppercase tracking-wider mt-0.5 line-clamp-1">
+                          <p className="text-white/40 text-[10px] uppercase tracking-wider line-clamp-1">
                             {category.description}
                           </p>
                         )}
                       </div>
 
-                      <div className="flex items-center gap-4 text-white/40 text-[9px] uppercase tracking-[0.15em]">
-                        <span>{categoryFields.length} field{categoryFields.length !== 1 ? 's' : ''}</span>
+                      <div className="flex items-center gap-6 text-white/40 text-[9px] uppercase tracking-[0.15em] font-black" style={{ fontWeight: 900 }}>
+                        <div className="text-center">
+                          <div className="text-white text-base mb-0.5">{subcategories.length}</div>
+                          <div>Subcategories</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-white text-base mb-0.5">{categoryFields.length}</div>
+                          <div>Fields</div>
+                        </div>
                       </div>
                     </div>
 
                     {/* Action buttons */}
-                    <div className="flex items-center gap-2 ml-4">
+                    <div className="flex items-center gap-2 ml-6">
                       <button
                         onClick={() => openEditModal(category)}
                         className="p-2 hover:bg-white/10 rounded-lg transition-colors"
-                        title="Edit"
+                        title="Edit Category"
                       >
                         <Edit2 size={14} className="text-white/60" />
                       </button>
                       <button
-                        onClick={() => openFieldModal(category)}
-                        className="p-2 hover:bg-white/10 rounded-lg transition-colors"
-                        title="Configure Fields"
-                      >
-                        <Layers size={14} className="text-white/60" />
-                      </button>
-                      <button
-                        onClick={() => setExpandedCategory(isExpanded ? null : category.id)}
-                        className="p-2 hover:bg-white/10 rounded-lg transition-colors"
-                        title={isExpanded ? 'Collapse' : 'Expand'}
-                      >
-                        {isExpanded ? <ChevronDown size={14} className="text-white/60" /> : <ChevronRight size={14} className="text-white/60" />}
-                      </button>
-                      <button
                         onClick={() => handleDeleteCategory(category.id, category.name)}
                         className="p-2 hover:bg-red-500/20 rounded-lg transition-colors"
-                        title="Delete"
+                        title="Delete Category"
                       >
                         <Trash2 size={14} className="text-red-400" />
                       </button>
@@ -1375,69 +1753,190 @@ function CategoriesTab({
                   </div>
                 </div>
 
-                {/* Expanded Field Groups Section */}
-                {isExpanded && (
-                  <div className="border-t border-white/[0.08] bg-black/40 backdrop-blur-sm">
-                    <div className="p-6">
-                      <div className="flex items-center justify-between mb-4">
-                        <h4 className="text-white/80 text-sm font-bold tracking-wide flex items-center gap-2">
-                          <Layers size={14} className="text-white/60" />
-                          CUSTOM FIELDS
-                        </h4>
+                {/* Quick Actions Pills */}
+                <div className="px-6 py-3 bg-black/40 border-b border-white/5">
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => toggleSection(category.id, 'subcategories')}
+                      className={`
+                        px-4 py-2 rounded-full text-[10px] uppercase tracking-[0.15em] font-black whitespace-nowrap transition-all flex items-center gap-1.5
+                        ${expandedSection === 'subcategories'
+                          ? 'bg-white text-black'
+                          : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white/80'
+                        }
+                      `}
+                      style={{ fontWeight: 900 }}
+                    >
+                      <FolderTree size={12} />
+                      Subcategories ({subcategories.length})
+                    </button>
+                    <button
+                      onClick={() => toggleSection(category.id, 'fields')}
+                      className={`
+                        px-4 py-2 rounded-full text-[10px] uppercase tracking-[0.15em] font-black whitespace-nowrap transition-all flex items-center gap-1.5
+                        ${expandedSection === 'fields'
+                          ? 'bg-white text-black'
+                          : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white/80'
+                        }
+                      `}
+                      style={{ fontWeight: 900 }}
+                    >
+                      <Layers size={12} />
+                      Fields ({categoryFields.length})
+                    </button>
+                  </div>
+                </div>
+
+                {/* Subcategories Section */}
+                {expandedSection === 'subcategories' && (
+                  <div className="px-6 py-4 bg-black/20">
+                    <div className="flex items-center justify-between mb-4">
+                      <h4 className="text-white/60 text-[10px] uppercase tracking-[0.15em] font-black" style={{ fontWeight: 900 }}>
+                        Subcategories for {category.name}
+                      </h4>
+                      <button
+                        onClick={() => openCreateModal(category.id)}
+                        className="px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-white text-[10px] uppercase tracking-[0.15em] font-black transition-all flex items-center gap-1.5"
+                        style={{ fontWeight: 900 }}
+                      >
+                        <Plus size={12} />
+                        Add Subcategory
+                      </button>
+                    </div>
+
+                    {subcategories.length === 0 ? (
+                      <div className="text-center py-8 bg-white/[0.02] rounded-xl border border-white/5">
+                        <FolderTree size={28} className="mx-auto mb-2 text-white/20" />
+                        <p className="text-white/40 text-[10px] uppercase tracking-wider mb-3">No subcategories yet</p>
                         <button
-                          onClick={() => openFieldModal(category)}
-                          className="px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-white text-xs font-medium transition-all flex items-center gap-1.5"
+                          onClick={() => openCreateModal(category.id)}
+                          className="text-white/60 hover:text-white text-[10px] uppercase tracking-[0.15em] font-black"
+                          style={{ fontWeight: 900 }}
                         >
-                          <Plus size={12} />
-                          Configure
+                          Create first subcategory →
                         </button>
                       </div>
+                    ) : (
+                      <div className="grid grid-cols-2 gap-3">
+                        {subcategories.map((subcat) => {
+                          // Steve Jobs: Show total field count (own + inherited from parent)
+                          const subcatOwnFields = fieldGroups.filter(fg => fg.category_id === subcat.id);
+                          const parentFields = fieldGroups.filter(fg => fg.category_id === category.id);
+                          const totalFieldCount = subcatOwnFields.length + parentFields.length;
 
-                      {(() => {
-                        // Filter field groups for this specific category
-                        const categoryFieldGroups = fieldGroups.filter(fg =>
-                          fg.category_id === category.id ||
-                          (!fg.category_id && fg.vendor_id === vendorId) // Include vendor custom fields with no category
-                        );
-
-                        return categoryFieldGroups.length === 0 ? (
-                          <div className="text-center py-8 bg-white/[0.02] rounded-lg border border-white/[0.05]">
-                            <Layers size={32} className="mx-auto mb-3 text-white/20" />
-                            <p className="text-white/40 text-sm mb-2">No custom fields configured</p>
-                            <button
-                              onClick={() => openFieldModal(category)}
-                              className="text-white/60 hover:text-white text-xs font-medium"
+                          return (
+                            <div
+                              key={subcat.id}
+                              className="bg-white/[0.03] border border-white/10 rounded-xl p-4 hover:border-white/20 transition-all"
                             >
-                              Set up custom fields →
-                            </button>
-                          </div>
-                        ) : (
-                          <div className="space-y-2">
-                            {categoryFieldGroups.map((fg) => (
-                              <div
-                                key={fg.id}
-                                className="bg-white/[0.03] border border-white/[0.08] rounded-lg p-4 hover:border-white/20 transition-all"
-                              >
-                                <div className="flex items-center justify-between">
-                                  <div>
-                                    <div className="text-white font-medium text-sm mb-1">{fg.name}</div>
-                                    <div className="text-white/40 text-xs">
-                                      {fg.fields.length} {fg.fields.length === 1 ? 'field' : 'fields'}
-                                    </div>
-                                  </div>
+                              <div className="flex items-start justify-between mb-2">
+                                <div className="flex-1">
+                                  <h5 className="text-white text-[11px] uppercase tracking-tight font-black mb-1" style={{ fontWeight: 900 }}>
+                                    {subcat.name}
+                                  </h5>
+                                  {subcat.description && (
+                                    <p className="text-white/40 text-[9px] uppercase tracking-wider line-clamp-1">
+                                      {subcat.description}
+                                    </p>
+                                  )}
+                                </div>
+                                <div className="flex gap-1">
                                   <button
-                                    onClick={() => openFieldModal(category)}
-                                    className="text-white/60 hover:text-white text-xs font-medium"
+                                    onClick={() => openEditModal(subcat)}
+                                    className="p-1.5 hover:bg-white/10 rounded-lg transition-colors"
+                                    title="Edit"
                                   >
-                                    View →
+                                    <Edit2 size={12} className="text-white/60" />
+                                  </button>
+                                  <button
+                                    onClick={() => openFieldModal(subcat)}
+                                    className="p-1.5 hover:bg-white/10 rounded-lg transition-colors"
+                                    title="Fields"
+                                  >
+                                    <Layers size={12} className="text-white/60" />
+                                  </button>
+                                  <button
+                                    onClick={() => handleDeleteCategory(subcat.id, subcat.name)}
+                                    className="p-1.5 hover:bg-red-500/20 rounded-lg transition-colors"
+                                    title="Delete"
+                                  >
+                                    <Trash2 size={12} className="text-red-400" />
                                   </button>
                                 </div>
                               </div>
-                            ))}
-                          </div>
-                        );
-                      })()}
+                              <div className="text-white/40 text-[9px] uppercase tracking-[0.15em] font-black" style={{ fontWeight: 900 }}>
+                                {totalFieldCount} field{totalFieldCount !== 1 ? 's' : ''}
+                                {parentFields.length > 0 && (
+                                  <span className="text-white/30 ml-1">
+                                    ({subcatOwnFields.length} + {parentFields.length} inherited)
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Fields Section */}
+                {expandedSection === 'fields' && (
+                  <div className="px-6 py-4 bg-black/20">
+                    <div className="flex items-center justify-between mb-4">
+                      <h4 className="text-white/60 text-[10px] uppercase tracking-[0.15em] font-black" style={{ fontWeight: 900 }}>
+                        Custom Fields for {category.name}
+                      </h4>
+                      <button
+                        onClick={() => openFieldModal(category)}
+                        className="px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-white text-[10px] uppercase tracking-[0.15em] font-black transition-all flex items-center gap-1.5"
+                        style={{ fontWeight: 900 }}
+                      >
+                        <Plus size={12} />
+                        Configure Fields
+                      </button>
                     </div>
+
+                    {categoryFields.length === 0 ? (
+                      <div className="text-center py-8 bg-white/[0.02] rounded-xl border border-white/5">
+                        <Layers size={28} className="mx-auto mb-2 text-white/20" />
+                        <p className="text-white/40 text-[10px] uppercase tracking-wider mb-3">No custom fields configured</p>
+                        <button
+                          onClick={() => openFieldModal(category)}
+                          className="text-white/60 hover:text-white text-[10px] uppercase tracking-[0.15em] font-black"
+                          style={{ fontWeight: 900 }}
+                        >
+                          Set up custom fields →
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        {categoryFields.map((field) => (
+                          <div
+                            key={field.id}
+                            className="bg-white/[0.03] border border-white/10 rounded-xl p-3 hover:border-white/20 transition-all"
+                          >
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <div className="text-white text-[11px] uppercase tracking-tight font-black mb-0.5" style={{ fontWeight: 900 }}>
+                                  {field.name}
+                                </div>
+                                <div className="text-white/40 text-[9px] uppercase tracking-wider">
+                                  {field.fields?.length || 0} field{field.fields?.length !== 1 ? 's' : ''}
+                                </div>
+                              </div>
+                              <button
+                                onClick={() => openFieldModal(category)}
+                                className="text-white/60 hover:text-white text-[9px] uppercase tracking-[0.15em] font-black"
+                                style={{ fontWeight: 900 }}
+                              >
+                                Edit →
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -1454,10 +1953,20 @@ function CategoriesTab({
               <FolderTree size={20} className="text-white/40" />
               <div>
                 <h2 className="text-xs uppercase tracking-[0.15em] text-white font-black mb-1" style={{ fontWeight: 900 }}>
-                  {editingCategory ? 'Edit Category' : 'Create Category'}
+                  {editingCategory
+                    ? 'Edit Category'
+                    : parentForSubcategory
+                      ? 'Create Subcategory'
+                      : 'Create Category'
+                  }
                 </h2>
                 <p className="text-white/40 text-[10px] uppercase tracking-wider">
-                  {editingCategory ? 'Update category details' : 'Add a new product category'}
+                  {editingCategory
+                    ? 'Update category details'
+                    : parentForSubcategory
+                      ? `Add subcategory to ${categories.find(c => c.id === parentForSubcategory)?.name || 'category'}`
+                      : 'Add a new parent category'
+                  }
                 </p>
               </div>
             </div>

@@ -19,6 +19,7 @@ interface DynamicField {
   groupName?: string;
   isRequired?: boolean;
   readonly?: boolean;
+  inherited?: boolean; // Steve Jobs style: Mark inherited fields from parent
 }
 
 interface DynamicFieldsPanelProps {
@@ -40,23 +41,45 @@ export default function DynamicFieldsPanel({
   const inputClasses = "w-full bg-[#0a0a0a] border border-white/10 rounded-xl text-white placeholder-white/20 px-3 py-2.5 focus:outline-none focus:border-white/20 transition-all text-xs";
   const descClasses = "text-white/40 text-[10px] mt-1.5";
 
+  // Steve Jobs style: Subtle indicator for inherited fields
+  const renderLabel = (field: DynamicField, isRequired: boolean) => {
+    const displayLabel = field.label || field.name || 'Field';
+
+    return (
+      <label className={labelClasses} style={{ fontWeight: 900 }}>
+        <span className="flex items-center gap-2">
+          <span>
+            {displayLabel} {isRequired && <span className="text-red-400">*</span>}
+          </span>
+          {field.inherited && (
+            <span
+              className="px-1.5 py-0.5 bg-white/5 border border-white/10 rounded text-[8px] text-white/40 font-black uppercase tracking-[0.15em]"
+              style={{ fontWeight: 900 }}
+              title="Inherited from parent category"
+            >
+              Inherited
+            </span>
+          )}
+        </span>
+      </label>
+    );
+  };
+
   const renderField = (field: DynamicField, index: number) => {
     const fieldValue = customFieldValues[field.name] || '';
     const handleChange = (value: any) => {
       onFieldChange(field.name, value);
     };
 
+    const isRequired = !!(field.required || field.isRequired);
     const displayLabel = field.label || field.name || 'Field';
-    const isRequired = field.required || field.isRequired;
 
     switch (field.type) {
       case 'text':
       case 'url':
         return (
           <div key={index}>
-            <label className={labelClasses} style={{ fontWeight: 900 }}>
-              {displayLabel} {isRequired && <span className="text-red-400">*</span>}
-            </label>
+            {renderLabel(field, isRequired)}
             <input
               type={field.type}
               required={isRequired}
@@ -72,9 +95,7 @@ export default function DynamicFieldsPanel({
       case 'textarea':
         return (
           <div key={index} className="lg:col-span-2">
-            <label className={labelClasses} style={{ fontWeight: 900 }}>
-              {displayLabel} {isRequired && <span className="text-red-400">*</span>}
-            </label>
+            {renderLabel(field, isRequired)}
             <textarea
               required={isRequired}
               value={fieldValue}
@@ -90,9 +111,7 @@ export default function DynamicFieldsPanel({
       case 'number':
         return (
           <div key={index}>
-            <label className={labelClasses} style={{ fontWeight: 900 }}>
-              {displayLabel} {isRequired && <span className="text-red-400">*</span>}
-            </label>
+            {renderLabel(field, isRequired)}
             <div className="relative">
               <input
                 type="number"
@@ -118,9 +137,7 @@ export default function DynamicFieldsPanel({
       case 'select':
         return (
           <div key={index}>
-            <label className={labelClasses} style={{ fontWeight: 900 }}>
-              {displayLabel} {isRequired && <span className="text-red-400">*</span>}
-            </label>
+            {renderLabel(field, isRequired)}
             <select
               required={isRequired}
               value={fieldValue}
@@ -141,9 +158,7 @@ export default function DynamicFieldsPanel({
       case 'multiselect':
         return (
           <div key={index}>
-            <label className={labelClasses} style={{ fontWeight: 900 }}>
-              {displayLabel} {isRequired && <span className="text-red-400">*</span>}
-            </label>
+            {renderLabel(field, isRequired)}
             <div className="space-y-2">
               {/* Selected items */}
               {fieldValue && Array.isArray(fieldValue) && fieldValue.length > 0 && (

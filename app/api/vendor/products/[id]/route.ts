@@ -150,7 +150,7 @@ export async function GET(
         id: product.id,
         name: product.name,
         sku: product.sku || '',
-        category: product.categories?.name || '',
+        category: (product.categories as any)?.name || '',
         category_id: product.primary_category_id || '',
         price: parseFloat(product.price) || 0,
         regular_price: parseFloat(product.price) || 0,

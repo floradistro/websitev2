@@ -128,7 +128,8 @@ export default function NewProduct() {
   useEffect(() => {
     const loadCategories = async () => {
       try {
-        const response = await axios.get('/api/supabase/categories');
+        // Only load parent categories for dropdown (keeps it clean)
+        const response = await axios.get('/api/supabase/categories?parent=null&active=true');
         if (response.data.success) {
           setCategories(response.data.categories || []);
         }
@@ -1510,7 +1511,10 @@ export default function NewProduct() {
                 ) : (
                   <button
                     type="button"
-                    onClick={handleBulkAIEnrich}
+                    onClick={() => handleBulkAIEnrich(
+                      ['description', 'strain_type', 'lineage', 'nose', 'effects', 'terpene_profile'],
+                      ''
+                    )}
                     disabled={bulkProcessing}
                     className="px-4 py-2.5 bg-white/10 text-white border border-white/20 rounded-xl hover:bg-white/20 hover:border-white/30 font-black transition-all text-[10px] uppercase tracking-[0.15em] disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-1.5"
                     style={{ fontWeight: 900 }}

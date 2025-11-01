@@ -57,7 +57,7 @@ export async function GET(request: NextRequest) {
 
     // Build inventory map - sum quantities across all locations per product
     const inventoryMap = new Map<string, number>();
-    inventoryRecords.forEach((inv: any) => {
+    (inventoryRecords || []).forEach((inv: any) => {
       const currentQty = inventoryMap.get(inv.product_id) || 0;
       inventoryMap.set(inv.product_id, currentQty + parseFloat(inv.quantity || '0'));
     });
@@ -96,7 +96,7 @@ export async function GET(request: NextRequest) {
     });
 
     const elapsed = Date.now() - startTime;
-    console.log(`✅ Products full API loaded in ${elapsed}ms - ${formattedProducts.length} products, ${inventoryRecords.length} inventory records`);
+    console.log(`✅ Products full API loaded in ${elapsed}ms - ${formattedProducts.length} products, ${inventoryRecords?.length || 0} inventory records`);
 
     return NextResponse.json({
       success: true,

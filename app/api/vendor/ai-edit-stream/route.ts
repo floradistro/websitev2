@@ -364,6 +364,9 @@ export async function POST(request: NextRequest) {
                 if (toolUse.name === 'apply_edit') {
                   const { filepath, old_code, new_code } = toolUse.input as { filepath: string; old_code: string; new_code: string }
 
+                  // Create service client for database access
+                  const serviceClient = createServiceClient(SUPABASE_URL, SERVICE_ROLE_KEY)
+
                   // Read current file
                   const { data: currentFile } = await serviceClient
                     .from('app_files')
