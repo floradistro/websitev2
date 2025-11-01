@@ -90,12 +90,8 @@ export function POSIDScanner({
       const cameraSettings = new SDCCore.CameraSettings();
       // Set preferred resolution for better barcode detection
       cameraSettings.preferredResolution = SDCCore.VideoResolution.FullHD;
-      // Enable auto-focus for better barcode locking
-      cameraSettings.focusMode = SDCCore.FocusMode.Continuous;
-      // Set focus range to far for ID scanning
-      cameraSettings.focusRange = SDCCore.FocusRange.Far;
       await camera.applySettings(cameraSettings);
-      console.log('✅ Camera settings applied for barcode scanning');
+      console.log('✅ Camera settings applied: FullHD resolution for better barcode detection');
 
       await context.setFrameSource(camera);
       cameraRef.current = camera;
@@ -119,10 +115,6 @@ export function POSIDScanner({
         true,  // machineReadableZone
         true   // visualInspectionZone
       );
-
-      // Improve barcode scanning performance
-      // Focus on barcode scanning since US IDs have PDF417 barcodes
-      settings.supportedSides = SDCId.SupportedSides.BackOnly; // US ID barcodes are on the back
 
       console.log('✅ ID capture settings configured for barcode scanning');
 
