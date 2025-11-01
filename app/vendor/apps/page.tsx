@@ -93,11 +93,33 @@ export default function MegaDashboard() {
   const currentTime = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
   const currentDate = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
 
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Good Morning';
+    if (hour < 18) return 'Good Afternoon';
+    return 'Good Evening';
+  };
+
   return (
-    <div className="h-full bg-black overflow-hidden flex flex-col">
-      <div className="flex-1 flex flex-col max-w-7xl mx-auto w-full px-4 py-4">
-        {/* App Grid - Takes remaining space */}
-        <div className="flex-1 overflow-hidden">
+    <div className="h-full bg-black overflow-hidden flex flex-col relative">
+      {/* Subtle ambient glow */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-white/[0.01] rounded-full blur-3xl" />
+      </div>
+
+      <div className="flex-1 flex flex-col items-center justify-center max-w-6xl mx-auto w-full px-6 relative z-10">
+        {/* Greeting Header */}
+        <div className="mb-12 text-center">
+          <h1 className="text-white/90 text-2xl tracking-tight mb-1 font-light">
+            {getGreeting()}
+          </h1>
+          <p className="text-white/30 text-[11px] uppercase tracking-[0.2em] font-light">
+            Select an app to continue
+          </p>
+        </div>
+
+        {/* App Grid - Centered */}
+        <div className="w-full max-w-4xl">
           <AppsGrid />
         </div>
       </div>

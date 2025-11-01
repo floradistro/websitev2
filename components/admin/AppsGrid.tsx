@@ -134,13 +134,13 @@ export function AppsGrid() {
   if (accessibleApps.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-32 px-4">
-        <div className="w-20 h-20 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mb-6">
-          <Package size={32} className="text-white/20" />
+        <div className="w-20 h-20 rounded-3xl bg-white/[0.02] border border-white/[0.06] flex items-center justify-center mb-6 shadow-lg shadow-black/20">
+          <Package size={32} className="text-white/20" strokeWidth={1.5} />
         </div>
-        <div className="text-white/30 text-sm font-medium mb-2">
+        <div className="text-white/40 text-sm mb-2 tracking-tight">
           No apps available
         </div>
-        <p className="text-white/20 text-xs text-center max-w-md font-light">
+        <p className="text-white/20 text-[11px] text-center max-w-md font-light tracking-wide">
           Contact your administrator to request access
         </p>
       </div>
@@ -163,7 +163,7 @@ export function AppsGrid() {
   };
 
   return (
-    <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-x-5 gap-y-6">
+    <div className="grid grid-cols-3 md:grid-cols-4 gap-x-8 gap-y-10">
       {accessibleApps.map((app) => {
         const Icon = app.icon;
         const iconColor = iconColors[app.glowColor] || 'text-white';
@@ -174,19 +174,26 @@ export function AppsGrid() {
             href={app.route}
             prefetch={true}
             onMouseEnter={() => handleMouseEnter(app.route)}
-            className="group flex flex-col items-center gap-2 active:opacity-60 active:scale-95 transition-all duration-150"
+            className="group flex flex-col items-center gap-3 active:scale-[0.92] transition-transform duration-200 ease-out"
           >
-            {/* Dark Icon Container - POS Style */}
+            {/* Premium Icon Container */}
             <div className="relative w-20 h-20">
-              {/* Dark container */}
-              <div className="relative w-full h-full bg-[#0a0a0a] hover:bg-white/10 rounded-3xl flex items-center justify-center border border-white/5 transition-colors duration-200">
-                {/* Colored icon */}
-                <Icon size={52} className={iconColor} strokeWidth={2} />
+              {/* Subtle shadow layer */}
+              <div className="absolute inset-0 bg-gradient-to-b from-white/[0.02] to-transparent rounded-3xl" />
+
+              {/* Dark container with premium hover */}
+              <div className="relative w-full h-full bg-[#0a0a0a] group-hover:bg-white/[0.08] rounded-3xl flex items-center justify-center border border-white/[0.06] group-hover:border-white/[0.12] transition-all duration-300 ease-out shadow-lg shadow-black/20">
+                {/* Colored icon with subtle glow on hover */}
+                <Icon
+                  size={52}
+                  className={`${iconColor} transition-all duration-300 ease-out group-hover:scale-105`}
+                  strokeWidth={1.8}
+                />
               </div>
             </div>
 
-            {/* App Name - POS Typography */}
-            <div className="text-white text-[10px] text-center uppercase tracking-[0.15em] leading-tight">
+            {/* App Name - Premium Typography */}
+            <div className="text-white/70 group-hover:text-white/90 text-[10px] text-center uppercase tracking-[0.2em] leading-tight transition-colors duration-300 ease-out font-light">
               {app.name}
             </div>
           </Link>

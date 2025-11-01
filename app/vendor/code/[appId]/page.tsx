@@ -162,7 +162,14 @@ What would you like to work on?`
       const data = await response.json()
 
       if (data.success && data.files) {
-        setAppFiles(data.files)
+        // Convert array to Sandpack format: { "path": "content" }
+        const filesObject: Record<string, string> = {}
+        data.files.forEach((file: any) => {
+          if (file.path && file.content) {
+            filesObject[file.path] = file.content
+          }
+        })
+        setAppFiles(filesObject)
       }
     } catch (error) {
       console.error('Error loading files:', error)
@@ -337,7 +344,7 @@ What would you like to work on?`
   }
 
   return (
-    <div className="h-screen bg-black flex flex-col overflow-hidden">
+    <div className="fixed inset-0 bg-black flex flex-col overflow-hidden">
       {/* Header - Edge to Edge */}
       <div className="flex-none border-b border-white/5 bg-[#0a0a0a]">
         <div className="px-4 py-3 flex items-center justify-between">

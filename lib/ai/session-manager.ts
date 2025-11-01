@@ -58,36 +58,41 @@ export interface SessionState {
   }
 }
 
-// Initialize Redis client
+// Initialize Redis client (optional)
 let redis: Redis | null = null
+let useRedis = false
 
-function getRedis(): Redis {
-  if (!redis) {
-    const url = process.env.UPSTASH_REDIS_REST_URL
-    const token = process.env.UPSTASH_REDIS_REST_TOKEN
+function initRedis(): void {
+  const url = process.env.UPSTASH_REDIS_REST_URL
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN
 
-    if (!url || !token) {
-      throw new Error('Redis credentials not configured. Set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN')
-    }
-
-    redis = new Redis({
-      url,
-      token,
-    })
+  if (url && token) {
+    redis = new Redis({ url, token })
+    useRedis = true
+  } else {
+    console.warn('⚠️  Redis not configured - using in-memory session storage')
+    useRedis = false
   }
-
-  return redis
 }
+
+// In-memory fallback storage
+const inMemorySessions = new Map<string, SessionState>()
 
 /**
  * Session Manager Class
+ * Uses Redis when available, falls back to in-memory storage
  */
 export class SessionManager {
-  private redis: Redis
+  private redis: Redis | null
   private ttl: number // Session TTL in seconds (default 24 hours)
+  private useRedis: boolean
 
   constructor(ttl: number = 86400) {
-    this.redis = getRedis()
+    if (redis === null && useRedis === false && typeof process !== 'undefined') {
+      initRedis()
+    }
+    this.redis = redis
+    this.useRedis = useRedis
     this.ttl = ttl
   }
 
@@ -113,11 +118,15 @@ export class SessionManager {
       metadata: {}
     }
 
-    await this.redis.setex(
-      this.getKey(sessionId),
-      this.ttl,
-      JSON.stringify(session)
-    )
+    if (this.useRedis && this.redis) {
+      await this.redis.setex(
+        this.getKey(sessionId),
+        this.ttl,
+        JSON.stringify(session)
+      )
+    } else {
+      inMemorySessions.set(this.getKey(sessionId), session)
+    }
 
     return session
   }
@@ -126,17 +135,21 @@ export class SessionManager {
    * Get session by ID
    */
   async getSession(sessionId: string): Promise<SessionState | null> {
-    const data = await this.redis.get<string>(this.getKey(sessionId))
+    if (this.useRedis && this.redis) {
+      const data = await this.redis.get<string>(this.getKey(sessionId))
 
-    if (!data) {
-      return null
-    }
+      if (!data) {
+        return null
+      }
 
-    try {
-      return typeof data === 'string' ? JSON.parse(data) : data as SessionState
-    } catch (error) {
-      console.error('Failed to parse session data:', error)
-      return null
+      try {
+        return typeof data === 'string' ? JSON.parse(data) : data as SessionState
+      } catch (error) {
+        console.error('Failed to parse session data:', error)
+        return null
+      }
+    } else {
+      return inMemorySessions.get(this.getKey(sessionId)) || null
     }
   }
 
@@ -146,11 +159,15 @@ export class SessionManager {
   async updateSession(session: SessionState): Promise<void> {
     session.lastActivityAt = Date.now()
 
-    await this.redis.setex(
-      this.getKey(session.sessionId),
-      this.ttl,
-      JSON.stringify(session)
-    )
+    if (this.useRedis && this.redis) {
+      await this.redis.setex(
+        this.getKey(session.sessionId),
+        this.ttl,
+        JSON.stringify(session)
+      )
+    } else {
+      inMemorySessions.set(this.getKey(session.sessionId), session)
+    }
   }
 
   /**
@@ -324,35 +341,48 @@ export class SessionManager {
    * Delete session
    */
   async deleteSession(sessionId: string): Promise<void> {
-    await this.redis.del(this.getKey(sessionId))
+    if (this.useRedis && this.redis) {
+      await this.redis.del(this.getKey(sessionId))
+    } else {
+      inMemorySessions.delete(this.getKey(sessionId))
+    }
   }
 
   /**
    * Get all sessions for a vendor (for admin/debugging)
    */
   async getVendorSessions(vendorId: string): Promise<SessionState[]> {
-    // This requires scanning keys - use sparingly in production
-    const pattern = `ai-session:*`
-    const keys = await this.redis.keys(pattern)
-
-    if (!keys || keys.length === 0) {
-      return []
-    }
-
     const sessions: SessionState[] = []
 
-    for (const key of keys) {
-      const data = await this.redis.get<string>(key)
+    if (this.useRedis && this.redis) {
+      // This requires scanning keys - use sparingly in production
+      const pattern = `ai-session:*`
+      const keys = await this.redis.keys(pattern)
 
-      if (data) {
-        try {
-          const session = typeof data === 'string' ? JSON.parse(data) : data as SessionState
+      if (!keys || keys.length === 0) {
+        return []
+      }
 
-          if (session.vendorId === vendorId) {
-            sessions.push(session)
+      for (const key of keys) {
+        const data = await this.redis.get<string>(key)
+
+        if (data) {
+          try {
+            const session = typeof data === 'string' ? JSON.parse(data) : data as SessionState
+
+            if (session.vendorId === vendorId) {
+              sessions.push(session)
+            }
+          } catch (error) {
+            console.error(`Failed to parse session for key ${key}:`, error)
           }
-        } catch (error) {
-          console.error(`Failed to parse session for key ${key}:`, error)
+        }
+      }
+    } else {
+      // In-memory mode - scan all sessions
+      for (const session of inMemorySessions.values()) {
+        if (session.vendorId === vendorId) {
+          sessions.push(session)
         }
       }
     }
@@ -377,30 +407,40 @@ export class SessionManager {
    * Clear old sessions (cleanup job)
    */
   async cleanupExpiredSessions(): Promise<number> {
-    const pattern = `ai-session:*`
-    const keys = await this.redis.keys(pattern)
-
-    if (!keys || keys.length === 0) {
-      return 0
-    }
-
     let deletedCount = 0
     const cutoffTime = Date.now() - (this.ttl * 1000)
 
-    for (const key of keys) {
-      const data = await this.redis.get<string>(key)
+    if (this.useRedis && this.redis) {
+      const pattern = `ai-session:*`
+      const keys = await this.redis.keys(pattern)
 
-      if (data) {
-        try {
-          const session = typeof data === 'string' ? JSON.parse(data) : data as SessionState
+      if (!keys || keys.length === 0) {
+        return 0
+      }
 
-          if (session.lastActivityAt < cutoffTime) {
+      for (const key of keys) {
+        const data = await this.redis.get<string>(key)
+
+        if (data) {
+          try {
+            const session = typeof data === 'string' ? JSON.parse(data) : data as SessionState
+
+            if (session.lastActivityAt < cutoffTime) {
+              await this.redis.del(key)
+              deletedCount++
+            }
+          } catch (error) {
+            // Delete corrupted sessions
             await this.redis.del(key)
             deletedCount++
           }
-        } catch (error) {
-          // Delete corrupted sessions
-          await this.redis.del(key)
+        }
+      }
+    } else {
+      // In-memory mode - delete expired sessions
+      for (const [key, session] of inMemorySessions.entries()) {
+        if (session.lastActivityAt < cutoffTime) {
+          inMemorySessions.delete(key)
           deletedCount++
         }
       }
