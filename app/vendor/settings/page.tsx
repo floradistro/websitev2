@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { Save, CheckCircle, AlertCircle, Loader } from 'lucide-react';
+import { Save, CheckCircle, AlertCircle, Loader, MapPin, Users, ChevronRight } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
 import { useAppAuth } from '@/context/AppAuthContext';
+import Link from 'next/link';
 
 export default function VendorSettings() {
   const { vendor } = useAppAuth();
@@ -130,7 +131,7 @@ export default function VendorSettings() {
 
   return (
     <div className="w-full px-4 lg:px-0">
-      
+
 
       {/* Header */}
       <div className="mb-8 pb-6 border-b border-white/5">
@@ -140,6 +141,44 @@ export default function VendorSettings() {
         <p className="text-[10px] uppercase tracking-[0.15em] text-white/40">
           Profile & Contact Information
         </p>
+      </div>
+
+      {/* Management Links */}
+      <div className="bg-black border border-white/5 mb-8">
+        <div className="px-4 lg:px-6 py-4 border-b border-white/5">
+          <h2 className="text-white font-medium text-sm lg:text-base uppercase lg:normal-case tracking-wider lg:tracking-normal">
+            Management
+          </h2>
+        </div>
+        <div className="divide-y divide-white/5">
+          <Link
+            href="/vendor/locations"
+            className="flex items-center justify-between px-4 lg:px-6 py-4 text-white/80 hover:text-white hover:bg-white/5 transition-colors group"
+          >
+            <div className="flex items-center gap-3">
+              <MapPin size={18} className="text-white/40 group-hover:text-white/60 transition-colors" />
+              <div>
+                <div className="font-medium text-sm">Locations</div>
+                <div className="text-xs text-white/40">Manage store locations & addresses</div>
+              </div>
+            </div>
+            <ChevronRight size={16} className="text-white/40 group-hover:text-white/60 transition-colors" />
+          </Link>
+
+          <Link
+            href="/vendor/employees"
+            className="flex items-center justify-between px-4 lg:px-6 py-4 text-white/80 hover:text-white hover:bg-white/5 transition-colors group"
+          >
+            <div className="flex items-center gap-3">
+              <Users size={18} className="text-white/40 group-hover:text-white/60 transition-colors" />
+              <div>
+                <div className="font-medium text-sm">Team & Staff</div>
+                <div className="text-xs text-white/40">Employee management & permissions</div>
+              </div>
+            </div>
+            <ChevronRight size={16} className="text-white/40 group-hover:text-white/60 transition-colors" />
+          </Link>
+        </div>
       </div>
 
       {/* Success Message */}
