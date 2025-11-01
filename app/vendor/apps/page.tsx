@@ -96,31 +96,6 @@ export default function MegaDashboard() {
   return (
     <div className="h-full bg-black overflow-hidden flex flex-col">
       <div className="flex-1 flex flex-col max-w-7xl mx-auto w-full px-4 py-4">
-        {/* Stats Widgets - POS Style */}
-        <div className="grid grid-cols-2 gap-3 mb-4 flex-shrink-0">
-          {/* Products Widget */}
-          <div className="bg-[#0a0a0a] rounded-xl px-3 py-2 border border-white/5">
-            <div className="flex items-center justify-between mb-1">
-              <div className="text-white/40 text-[10px] uppercase tracking-[0.15em]">
-                Products
-              </div>
-              <Package size={12} className="text-cyan-400" strokeWidth={2} />
-            </div>
-            <div className="text-white text-2xl font-semibold tracking-tight">{stats.approved}</div>
-          </div>
-
-          {/* Revenue Widget */}
-          <div className="bg-[#0a0a0a] rounded-xl px-3 py-2 border border-white/5">
-            <div className="flex items-center justify-between mb-1">
-              <div className="text-white/40 text-[10px] uppercase tracking-[0.15em]">
-                Revenue
-              </div>
-              <TrendingUp size={12} className="text-green-400" strokeWidth={2} />
-            </div>
-            <div className="text-white text-2xl font-semibold tracking-tight">${(stats.totalSales30d / 1000).toFixed(1)}k</div>
-          </div>
-        </div>
-
         {/* App Grid - Takes remaining space */}
         <div className="flex-1 overflow-hidden">
           <AppsGrid />

@@ -15,7 +15,7 @@ export const ThemeColorsSchema = z.object({
 export const TypographySchema = z.object({
   headingFont: z.string(),
   bodyFont: z.string(),
-  sizes: z.record(z.string()),
+  sizes: z.record(z.string(), z.string()),
 });
 
 export const ThemeSchema = z.object({

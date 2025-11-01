@@ -179,9 +179,9 @@ export function AppsGrid() {
             {/* Dark Icon Container - POS Style */}
             <div className="relative w-20 h-20">
               {/* Dark container */}
-              <div className="relative w-full h-full bg-[#0a0a0a] hover:bg-white/10 rounded-xl flex items-center justify-center border border-white/5 transition-colors duration-200">
+              <div className="relative w-full h-full bg-[#0a0a0a] hover:bg-white/10 rounded-3xl flex items-center justify-center border border-white/5 transition-colors duration-200">
                 {/* Colored icon */}
-                <Icon size={40} className={iconColor} strokeWidth={2} />
+                <Icon size={52} className={iconColor} strokeWidth={2} />
               </div>
             </div>
 
