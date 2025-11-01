@@ -298,13 +298,8 @@ export default function VendorEmployees() {
     }
   };
 
-  if (authLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-white/40">Loading...</div>
-      </div>
-    );
-  }
+  // Don't block the entire page on auth loading
+  // The useEffect will handle loading employees once auth completes
 
   return (
     <div className="w-full animate-fadeIn px-4 lg:px-0">

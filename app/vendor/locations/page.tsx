@@ -105,13 +105,8 @@ export default function VendorLocations() {
     }
   }
 
-  if (authLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-white/40">Loading...</div>
-      </div>
-    );
-  }
+  // Don't block the entire page on auth loading
+  // The useEffect will handle loading locations once auth completes
 
   return (
     <div className="w-full px-4 lg:px-0">
