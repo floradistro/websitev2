@@ -13,7 +13,7 @@ export async function GET(
     // Get app files
     const { data: files, error } = await supabase
       .from('app_files')
-      .select('filepath, content')
+      .select('path, content')
       .eq('app_id', appId)
 
     if (error || !files) {
@@ -21,8 +21,8 @@ export async function GET(
     }
 
     // Find the main page
-    const mainPage = files.find(f => f.filepath === 'app/page.tsx')
-    const layout = files.find(f => f.filepath === 'app/layout.tsx')
+    const mainPage = files.find(f => f.path === 'app/page.tsx')
+    const layout = files.find(f => f.path === 'app/layout.tsx')
 
     if (!mainPage) {
       return new NextResponse('No page.tsx found', { status: 404 })

@@ -47,9 +47,9 @@ const nextConfig: NextConfig = {
   
   // Production optimizations
   productionBrowserSourceMaps: false,
-  
-  // Enable React strict mode (temporarily disabled for debugging)
-  reactStrictMode: false,
+
+  // Enable React strict mode for better error detection
+  reactStrictMode: true,
   
   // Optimize chunks
   experimental: {

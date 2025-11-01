@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServiceSupabase } from '@/lib/supabase/client';
+import { LoginSchema, validateData } from '@/lib/validation/schemas';
+import { createAuthCookie } from '@/lib/auth/middleware';
 
 /**
  * Unified login endpoint for vendor admins and employees
@@ -8,14 +10,17 @@ import { getServiceSupabase } from '@/lib/supabase/client';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { email, password } = body;
 
-    if (!email || !password) {
+    // Validate input
+    const validation = validateData(LoginSchema, body);
+    if (!validation.success) {
       return NextResponse.json(
-        { success: false, error: 'Email and password required' },
+        { success: false, error: validation.error },
         { status: 400 }
       );
     }
+
+    const { email, password } = validation.data;
 
     const supabase = getServiceSupabase();
 
@@ -175,8 +180,8 @@ export async function POST(request: NextRequest) {
         })) || [];
       }
 
-      // Log activity
-      await supabase.rpc('log_user_activity', {
+      // Log activity (fire-and-forget, silent fail if RPC doesn't exist)
+      supabase.rpc('log_user_activity', {
         p_user_id: user.id,
         p_activity_type: 'login',
         p_metadata: {
@@ -185,9 +190,8 @@ export async function POST(request: NextRequest) {
         }
       });
 
-      console.log(`✅ User login successful: ${user.name} (${user.role})`);
-
-      return NextResponse.json({
+      // Create response with HTTP-only cookie (secure)
+      const response = NextResponse.json({
         success: true,
         user: {
           id: user.id,
@@ -207,9 +211,15 @@ export async function POST(request: NextRequest) {
           } : null
         },
         apps: accessibleApps,
-        locations: locations,
-        session: authData.session.access_token
+        locations: locations
+        // NOTE: Session token no longer in JSON - now in HTTP-only cookie
       });
+
+      // Set HTTP-only cookie with auth token
+      const cookie = createAuthCookie(authData.session.access_token);
+      response.cookies.set(cookie.name, cookie.value, cookie.options);
+
+      return response;
     }
 
     // No user record found - check if vendor and create vendor_admin user
@@ -253,8 +263,8 @@ export async function POST(request: NextRequest) {
         is_primary: false
       })) || [];
 
-      // Log activity
-      await supabase.rpc('log_user_activity', {
+      // Log activity (fire-and-forget, silent fail if RPC doesn't exist)
+      supabase.rpc('log_user_activity', {
         p_user_id: newUser.id,
         p_activity_type: 'login',
         p_metadata: {
@@ -264,9 +274,8 @@ export async function POST(request: NextRequest) {
         }
       });
 
-      console.log(`✅ Vendor admin created and logged in: ${vendor.store_name}`);
-
-      return NextResponse.json({
+      // Create response with HTTP-only cookie (secure)
+      const response = NextResponse.json({
         success: true,
         user: {
           id: newUser.id,
@@ -285,9 +294,15 @@ export async function POST(request: NextRequest) {
           }
         },
         apps: [], // Vendor admins have access to all apps
-        locations: locations,
-        session: authData.session.access_token
+        locations: locations
+        // NOTE: Session token no longer in JSON - now in HTTP-only cookie
       });
+
+      // Set HTTP-only cookie with auth token
+      const cookie = createAuthCookie(authData.session.access_token);
+      response.cookies.set(cookie.name, cookie.value, cookie.options);
+
+      return response;
     }
 
     // No vendor or user found

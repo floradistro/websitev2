@@ -2,8 +2,12 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 // Use Supabase connection pooler for better scalability
 // Pooler endpoint: Add .pooler suffix to project host for transaction mode
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://uaednwpxursknmwdeejn.supabase.co';
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVhZWRud3B4dXJza25td2RlZWpuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA5OTcyMzMsImV4cCI6MjA3NjU3MzIzM30.N8jPwlyCBB5KJB5I-XaK6m-mq88rSR445AWFJJmwRCg';
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error('Missing required Supabase environment variables: NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY must be set');
+}
 
 // Optimized client configuration with connection pooling and performance tuning
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
@@ -50,13 +54,17 @@ export function getServiceSupabase() {
     return serviceSupabaseInstance;
   }
 
-  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVhZWRud3B4dXJza25td2RlZWpuIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MDk5NzIzMywiZXhwIjoyMDc2NTczMjMzfQ.l0NvBbS2JQWPObtWeVD2M2LD866A2tgLmModARYNnbI';
-  
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!supabaseServiceKey) {
+    throw new Error('SUPABASE_SERVICE_ROLE_KEY environment variable is required for service role access');
+  }
+
   // Use pooler URL for service role (better for high-concurrency serverless)
   // NOTE: In production, use environment variable for pooler URL
-  const poolerUrl = process.env.SUPABASE_POOLER_URL || supabaseUrl;
-  
-  serviceSupabaseInstance = createClient(poolerUrl, supabaseServiceKey, {
+  const poolerUrl = process.env.SUPABASE_POOLER_URL || supabaseUrl || '';
+
+  serviceSupabaseInstance = createClient(poolerUrl!, supabaseServiceKey!, {
     auth: {
       autoRefreshToken: false,
       persistSession: false

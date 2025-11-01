@@ -186,26 +186,26 @@ function VendorLayoutContent({
 
       {/* Mobile/Tablet Top Bar - Shows below xl breakpoint (< 1280px) */}
       <nav
-        className={`xl:hidden sticky z-[110] border-b border-white/5 transition-all duration-500 bg-black/95 backdrop-blur-xl ${
+        className={`xl:hidden sticky z-[110] border-b border-white/5 transition-all duration-300 bg-[#0a0a0a] ${
           isVisible ? 'translate-y-0' : '-translate-y-full'
         }`}
         style={{
           top: 'env(safe-area-inset-top, 0px)'
         }}
       >
-        <div className="flex items-center justify-between h-14 px-4">
-          <button 
+        <div className="flex items-center justify-between h-12 px-4">
+          <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-2 -ml-2 text-white/70 hover:text-white transition-all duration-300 hover:bg-white/5 rounded-2xl"
+            className="p-1.5 -ml-1.5 text-white/60 hover:text-white transition-all duration-200 hover:bg-white/5 rounded-lg"
           >
-            <Menu size={20} strokeWidth={1.5} />
+            <Menu size={18} strokeWidth={2} />
           </button>
 
           <div className="absolute left-1/2 -translate-x-1/2">
-            <h1 className="text-sm font-light text-white tracking-[0.2em] uppercase">{currentPage}</h1>
+            <h1 className="text-[10px] text-white tracking-[0.15em] uppercase">{currentPage}</h1>
           </div>
 
-          <Link href="/vendor/apps" className="w-9 h-9 bg-gradient-to-br from-white/8 to-white/3 rounded-[12px] flex items-center justify-center overflow-hidden border border-white/5 transition-all duration-300 hover:border-white/20 luxury-glow">
+          <Link href="/vendor/apps" className="w-8 h-8 bg-white/5 rounded-lg flex items-center justify-center overflow-hidden border border-white/10 transition-all duration-200 hover:border-white/20">
             <img src={vendorLogo} alt={vendorName} className="w-full h-full object-contain p-1" />
           </Link>
         </div>
@@ -213,41 +213,41 @@ function VendorLayoutContent({
 
       {/* Mobile/Tablet Menu Overlay - Shows below xl breakpoint */}
       {mobileMenuOpen && (
-        <div className="xl:hidden fixed inset-0 z-[150] bg-black/80 backdrop-blur-md" onClick={() => setMobileMenuOpen(false)}>
-          <div 
-            className="absolute left-0 top-0 bottom-0 w-[280px] border-r border-white/5 flex flex-col shadow-2xl bg-black/98 backdrop-blur-xl"
+        <div className="xl:hidden fixed inset-0 z-[150] bg-black/90 backdrop-blur-lg" onClick={() => setMobileMenuOpen(false)}>
+          <div
+            className="absolute left-0 top-0 bottom-0 w-[280px] border-r border-white/5 flex flex-col shadow-2xl bg-[#0a0a0a]"
             onClick={(e) => e.stopPropagation()}
-            style={{ 
+            style={{
               paddingTop: 'env(safe-area-inset-top, 0px)'
             }}
           >
-            <div 
+            <div
               className="absolute top-0 left-0 right-0 pointer-events-none bg-black"
-              style={{ 
-                height: 'env(safe-area-inset-top, 0px)', 
+              style={{
+                height: 'env(safe-area-inset-top, 0px)',
                 marginTop: 'calc(-1 * env(safe-area-inset-top, 0px))'
               }}
             />
-            
-            <div className="flex items-center justify-between p-5 border-b border-white/5 relative z-10">
+
+            <div className="flex items-center justify-between px-4 py-4 border-b border-white/5 relative z-10">
               <Link href="/vendor/apps" className="flex items-center gap-3 group" onClick={() => setMobileMenuOpen(false)}>
-                <div className="w-11 h-11 bg-gradient-to-br from-white/10 to-white/5 rounded-2xl flex items-center justify-center overflow-hidden border border-white/10 transition-all duration-300 group-hover:border-white/20 luxury-glow">
+                <div className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center overflow-hidden border border-white/10 transition-all duration-300 group-hover:border-white/20">
                   <img src={vendorLogo} alt={vendorName} className="w-full h-full object-contain p-1" />
                 </div>
                 <div>
-                  <div className="text-white text-sm font-light tracking-wider">{vendorName}</div>
-                  <div className="text-white/40 text-[10px] tracking-[0.15em] uppercase">Vendor Portal</div>
+                  <div className="text-white text-xs tracking-wide">{vendorName}</div>
+                  <div className="text-white/30 text-[9px] tracking-[0.15em] uppercase">Portal</div>
                 </div>
               </Link>
-              <button 
+              <button
                 onClick={() => setMobileMenuOpen(false)}
-                className="p-2 text-white/50 hover:text-white transition-all duration-300 hover:bg-white/5 rounded-2xl"
+                className="p-1.5 text-white/40 hover:text-white transition-all duration-200 hover:bg-white/5 rounded-lg"
               >
-                <X size={18} strokeWidth={1.5} />
+                <X size={16} strokeWidth={1.5} />
               </button>
             </div>
 
-            <nav className="flex-1 overflow-y-auto p-3 relative z-10">
+            <nav className="flex-1 overflow-y-auto px-3 py-3 relative z-10">
               {vendorNavItems.map((item) => {
                 const Icon = item.icon;
                 const active = isActive(item.href);
@@ -257,44 +257,38 @@ function VendorLayoutContent({
                     href={item.href}
                     onClick={() => setMobileMenuOpen(false)}
                     onMouseEnter={() => handleNavHover(item.href)}
-                    className={`flex items-center justify-between px-4 py-3 mb-1 rounded-2xl transition-all duration-300 border ${
-                      active 
-                        ? 'bg-gradient-to-r from-white/10 to-white/5 text-white border-white/20 shadow-lg' 
-                        : 'text-white/50 hover:text-white/80 border-transparent hover:bg-white/5 hover:border-white/10'
+                    className={`flex items-center justify-between px-3 py-2.5 mb-1 rounded-xl transition-all duration-200 border ${
+                      active
+                        ? 'bg-white/10 text-white border-white/20'
+                        : 'text-white/40 hover:text-white/70 border-transparent hover:bg-white/5'
                     }`}
                   >
-                    <div className="flex items-center gap-3">
-                      <Icon size={18} strokeWidth={active ? 2 : 1.5} />
-                      <span className="text-xs uppercase tracking-wider font-light">{item.label}</span>
+                    <div className="flex items-center gap-2.5">
+                      <Icon size={16} strokeWidth={active ? 2 : 1.5} />
+                      <span className="text-[10px] uppercase tracking-[0.15em]">{item.label}</span>
                     </div>
-                    {active && <div className="w-1 h-1 rounded-full bg-white shadow-[0_0_8px_rgba(255,255,255,0.5)]" />}
+                    {active && <div className="w-1 h-1 rounded-full bg-white" />}
                   </Link>
                 );
               })}
             </nav>
 
-            <div className="p-4 border-t border-white/5 relative z-10" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 1rem)' }}>
+            <div className="px-3 py-3 border-t border-white/5 relative z-10 space-y-2" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 1rem)' }}>
               <Link
                 href="/vendor/apps"
                 onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center justify-center gap-2 w-full px-4 py-3 text-white/60 text-xs uppercase tracking-wider border border-white/20 rounded-2xl transition-all duration-300 hover:bg-white/10 hover:border-white/30 hover:text-white mb-2"
+                className="flex items-center justify-center gap-2 w-full px-3 py-2.5 text-white/60 text-[10px] uppercase tracking-[0.15em] border border-white/20 rounded-xl transition-all duration-200 hover:bg-white/10 hover:border-white/30 hover:text-white"
               >
-                View All Apps
-              </Link>
-              <Link
-                href="/"
-                className="flex items-center justify-center gap-2 w-full px-4 py-3 text-white/50 text-xs uppercase tracking-wider border border-white/10 rounded-2xl transition-all duration-300 hover:bg-white/5 hover:border-white/20 hover:text-white/70 mb-2"
-              >
-                Back to Store
+                All Apps
               </Link>
               <button
                 onClick={() => {
                   setMobileMenuOpen(false);
                   handleLogout();
                 }}
-                className="w-full px-4 py-3 bg-gradient-to-r from-white/10 to-white/5 text-white/70 text-xs uppercase tracking-wider border border-white/10 rounded-2xl transition-all duration-300 hover:border-white/20 hover:text-white flex items-center justify-center gap-2"
+                className="w-full px-3 py-2.5 bg-white/5 text-white/50 text-[10px] uppercase tracking-[0.15em] border border-white/10 rounded-xl transition-all duration-200 hover:bg-white/10 hover:border-white/20 hover:text-white/70 flex items-center justify-center gap-2"
               >
-                <LogOut size={14} strokeWidth={1.5} />
+                <LogOut size={12} strokeWidth={2} />
                 Sign Out
               </button>
             </div>
@@ -304,41 +298,35 @@ function VendorLayoutContent({
 
       {/* Desktop Header - DESKTOP ONLY (xl breakpoint = 1280px+) */}
       <nav
-        className="hidden xl:block border-b border-white/5 fixed top-0 left-0 right-0 z-[110] luxury-glow bg-black/95 backdrop-blur-xl"
+        className="hidden xl:block border-b border-white/5 fixed top-0 left-0 right-0 z-[110] bg-[#0a0a0a]"
         style={{
           paddingTop: 'env(safe-area-inset-top, 0px)'
         }}
       >
-        <div className="w-full px-6 xl:px-8">
-          <div className="flex justify-between items-center h-20">
-            <Link href="/vendor/apps" className="flex items-center gap-4 group">
-              <div className="w-12 h-12 bg-gradient-to-br from-white/10 to-white/5 rounded-[16px] flex items-center justify-center overflow-hidden border border-white/10 transition-all duration-300 group-hover:border-white/30 group-hover:shadow-[0_0_20px_rgba(255,255,255,0.1)]">
-                <img src={vendorLogo} alt={vendorName} className="w-full h-full object-contain p-1.5" />
+        <div className="w-full px-6">
+          <div className="flex justify-between items-center h-16">
+            <Link href="/vendor/apps" className="flex items-center gap-3 group">
+              <div className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center overflow-hidden border border-white/10 transition-all duration-200 group-hover:border-white/20">
+                <img src={vendorLogo} alt={vendorName} className="w-full h-full object-contain p-1" />
               </div>
               <div>
-                <div className="text-white text-lg font-light tracking-[0.15em]">{vendorName}</div>
-                <div className="text-white/30 text-[10px] tracking-[0.2em] uppercase">Vendor Portal</div>
+                <div className="text-white text-xs tracking-wide">{vendorName}</div>
+                <div className="text-white/30 text-[9px] tracking-[0.15em] uppercase">Portal</div>
               </div>
             </Link>
 
-            <div className="flex items-center gap-6">
+            <div className="flex items-center gap-4">
               <Link
                 href="/vendor/apps"
-                className="text-white/60 hover:text-white text-xs uppercase tracking-[0.15em] transition-all duration-300 font-light"
+                className="text-white/60 hover:text-white text-[10px] uppercase tracking-[0.15em] transition-all duration-200"
               >
                 Apps
               </Link>
-              <Link
-                href="/"
-                className="text-white/40 hover:text-white/70 text-xs uppercase tracking-[0.15em] transition-all duration-300 font-light"
-              >
-                Store
-              </Link>
               <button
                 onClick={handleLogout}
-                className="group text-white/40 hover:text-white/70 text-xs uppercase tracking-[0.15em] transition-all duration-300 flex items-center gap-2 font-light"
+                className="group text-white/40 hover:text-white/70 text-[10px] uppercase tracking-[0.15em] transition-all duration-200 flex items-center gap-1.5"
               >
-                <LogOut size={14} strokeWidth={1.5} className="group-hover:-translate-x-0.5 transition-transform duration-300" />
+                <LogOut size={12} strokeWidth={2} />
                 Sign Out
               </button>
             </div>
@@ -346,19 +334,19 @@ function VendorLayoutContent({
         </div>
       </nav>
 
-      <div className="fixed inset-0 bg-black xl:top-20" style={{
-        top: 'calc(56px + env(safe-area-inset-top, 0px))',
+      <div className="fixed inset-0 bg-black xl:top-16" style={{
+        top: 'calc(48px + env(safe-area-inset-top, 0px))',
         paddingBottom: 'env(safe-area-inset-bottom)'
       }}>
         {/* Desktop Sidebar - DESKTOP ONLY (hidden on mobile/tablet) */}
         <aside
-          className="hidden xl:block w-72 border-r border-white/5 fixed left-0 bottom-0 overflow-y-auto bg-black/98 backdrop-blur-xl"
+          className="hidden xl:block w-64 border-r border-white/5 fixed left-0 bottom-0 overflow-y-auto bg-[#0a0a0a]"
           style={{
-            top: 'calc(80px + env(safe-area-inset-top, 0px))',
+            top: 'calc(64px + env(safe-area-inset-top, 0px))',
             bottom: 'env(safe-area-inset-bottom)'
           }}
         >
-          <nav className="p-4 space-y-1 pb-8">
+          <nav className="px-3 py-4 space-y-1 pb-8">
             {vendorNavItems.map((item) => {
               const Icon = item.icon;
               const active = isActive(item.href);
@@ -367,15 +355,17 @@ function VendorLayoutContent({
                   key={item.href}
                   href={item.href}
                   onMouseEnter={() => handleNavHover(item.href)}
-                  className={`group flex items-center gap-3 px-5 py-3 transition-all duration-300 border rounded-2xl ${
+                  className={`group flex items-center justify-between px-3 py-2.5 transition-all duration-200 border rounded-xl ${
                     active
-                      ? 'text-white bg-gradient-to-r from-white/10 to-white/5 border-white/20 shadow-lg'
-                      : 'text-white/40 hover:text-white/70 hover:bg-white/5 border-transparent hover:border-white/10'
+                      ? 'text-white bg-white/10 border-white/20'
+                      : 'text-white/40 hover:text-white/70 hover:bg-white/5 border-transparent'
                   }`}
                 >
-                  <Icon size={16} strokeWidth={active ? 2 : 1.5} className="transition-all duration-300 group-hover:scale-110" />
-                  <span className="text-[11px] uppercase tracking-[0.15em] font-light">{item.label}</span>
-                  {active && <div className="ml-auto w-1 h-1 rounded-full bg-white shadow-[0_0_8px_rgba(255,255,255,0.6)]" />}
+                  <div className="flex items-center gap-2.5">
+                    <Icon size={16} strokeWidth={active ? 2 : 1.5} />
+                    <span className="text-[10px] uppercase tracking-[0.15em]">{item.label}</span>
+                  </div>
+                  {active && <div className="w-1 h-1 rounded-full bg-white" />}
                 </Link>
               );
             })}
@@ -383,7 +373,7 @@ function VendorLayoutContent({
         </aside>
 
         {/* Main Content - FULL WIDTH on mobile/tablet, with sidebar on desktop */}
-        <main className="absolute inset-0 xl:left-72 overflow-y-auto overflow-x-hidden">
+        <main className="absolute inset-0 xl:left-64 overflow-y-auto overflow-x-hidden">
           <div className="px-4 md:px-6 lg:px-8 xl:py-10 xl:px-10 2xl:px-16 pt-4 md:pt-6 pb-10">
             {children}
           </div>

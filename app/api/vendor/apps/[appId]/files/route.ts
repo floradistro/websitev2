@@ -26,7 +26,7 @@ export async function GET(
       .from('app_files')
       .select('*')
       .eq('app_id', appId)
-      .order('filepath')
+      .order('path')
 
     if (error) {
       console.error('Error fetching files:', error)
@@ -55,7 +55,7 @@ export async function PUT(
   try {
     const { appId } = await params
     const body = await request.json()
-    const { files } = body as { files: Array<{ filepath: string; content: string }> }
+    const { files } = body as { files: Array<{ path: string; content: string }> }
 
     if (!files || !Array.isArray(files)) {
       return NextResponse.json(
@@ -80,15 +80,15 @@ export async function PUT(
     // Upsert files
     const fileRecords = files.map(file => ({
       app_id: appId,
-      filepath: file.filepath,
+      path: file.path,
       content: file.content,
-      file_type: file.filepath?.split('.').pop() || 'unknown'
+      type: file.path?.split('.').pop() || 'text'
     }))
 
     const { error: upsertError } = await supabase
       .from('app_files')
       .upsert(fileRecords, {
-        onConflict: 'app_id,filepath'
+        onConflict: 'app_id,path'
       })
 
     if (upsertError) {

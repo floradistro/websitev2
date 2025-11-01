@@ -9,10 +9,10 @@ import {
   Loader2,
   Check,
   FileCode,
-  Globe,
   Sparkles,
-  ExternalLink,
-  Save
+  Code2,
+  Eye,
+  Zap
 } from 'lucide-react'
 import Link from 'next/link'
 import ReactMarkdown from 'react-markdown'
@@ -65,6 +65,7 @@ What would you like to work on?`
   const [lastFileUpdate, setLastFileUpdate] = useState<number>(0)
   const [deploymentStatus, setDeploymentStatus] = useState<'idle' | 'deploying' | 'ready'>('idle')
   const [previewLoading, setPreviewLoading] = useState(false)
+  const [viewMode, setViewMode] = useState<'code' | 'preview'>('preview')
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const reloadTimeoutRef = useRef<NodeJS.Timeout | null>(null)
@@ -98,30 +99,33 @@ What would you like to work on?`
         if (data.success && data.lastModified) {
           const timestamp = new Date(data.lastModified).getTime()
 
-          // If files changed, debounce reload to prevent flicker
           if (lastFileUpdate > 0 && timestamp > lastFileUpdate) {
-            console.log('🔄 Files changed, scheduling smooth reload...')
+            // Start loading transition
+            setPreviewLoading(true)
 
-            // Clear any pending reload
+            // Clear existing reload timeout
             if (reloadTimeoutRef.current) {
               clearTimeout(reloadTimeoutRef.current)
             }
 
-            // Debounce to prevent rapid reloads (wait 300ms for more changes)
+            // Set new reload timeout with smooth transition
             reloadTimeoutRef.current = setTimeout(() => {
-              setPreviewLoading(true)
+              setLastFileUpdate(timestamp)
               loadFiles()
-              // Remove loading state after iframe has time to load
-              setTimeout(() => setPreviewLoading(false), 800)
-            }, 300)
-          }
 
-          setLastFileUpdate(timestamp)
+              // End loading after iframe loads
+              setTimeout(() => {
+                setPreviewLoading(false)
+              }, 800)
+            }, 1000) // Wait 1 second before reloading
+          } else if (lastFileUpdate === 0) {
+            setLastFileUpdate(timestamp)
+          }
         }
       } catch (error) {
-        console.error('Error polling for file changes:', error)
+        console.error('Error checking file timestamp:', error)
       }
-    }, 1000) // Poll every second
+    }, 2000) // Check every 2 seconds
 
     return () => {
       clearInterval(pollInterval)
@@ -149,21 +153,16 @@ What would you like to work on?`
   }
 
   async function loadFiles() {
-    if (!params.appId) return
+    if (!app?.id) return
 
     setFilesLoading(true)
+
     try {
-      const response = await fetch(`/api/vendor/apps/${params.appId}/files`)
+      const response = await fetch(`/api/vendor/apps/${app.id}/files`)
       const data = await response.json()
 
       if (data.success && data.files) {
-        // Convert array of files to Sandpack format: { filepath: content }
-        const filesObject: Record<string, string> = {}
-        data.files.forEach((file: any) => {
-          filesObject[file.filepath] = file.content
-        })
-        setAppFiles(filesObject)
-        console.log('📁 Loaded', data.files.length, 'files')
+        setAppFiles(data.files)
       }
     } catch (error) {
       console.error('Error loading files:', error)
@@ -175,103 +174,106 @@ What would you like to work on?`
   async function sendMessage() {
     if (!input.trim() || loading || !app) return
 
-    const userMessage: Message = { role: 'user', content: input }
-    const userInstruction = input
-    setMessages(prev => [...prev, userMessage])
+    const userMessage = input.trim()
     setInput('')
     setLoading(true)
 
-    // Add placeholder for streaming assistant response
-    setMessages(prev => [...prev, {
-      role: 'assistant',
-      content: '',
-      streaming: true
-    }])
+    // Add user message
+    setMessages(prev => [...prev, { role: 'user', content: userMessage }])
+
+    // Add placeholder assistant message
+    setMessages(prev => [
+      ...prev,
+      { role: 'assistant', content: '', streaming: true }
+    ])
 
     try {
-      const response = await fetch('/api/vendor/ai-edit-stream', {
+      const response = await fetch('/api/vendor/ai-chat-v2', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'x-vendor-id': vendor?.id || ''
+        },
+        credentials: 'include',
         body: JSON.stringify({
-          appId: app.id,
-          vendorId: vendor?.id,
-          instruction: userInstruction,
-          conversationHistory: messages
+          message: userMessage,
+          appId: app.id
         })
       })
 
-      if (!response.ok || !response.body) {
-        throw new Error('Failed to start stream')
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`)
       }
 
-      const reader = response.body.getReader()
+      const reader = response.body?.getReader()
+      if (!reader) throw new Error('No response body')
+
       const decoder = new TextDecoder()
-      let accumulatedText = ''
-      let filesChanged: string[] = []
+      let buffer = ''
+      const filesChanged: string[] = []
 
       while (true) {
         const { done, value } = await reader.read()
         if (done) break
 
-        const chunk = decoder.decode(value, { stream: true })
-        const lines = chunk.split('\n')
+        buffer += decoder.decode(value, { stream: true })
+        const lines = buffer.split('\n\n')
+        buffer = lines.pop() || ''
 
         for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            const data = line.slice(6)
+          if (!line.trim() || !line.startsWith('data: ')) continue
 
-            if (data === '[DONE]') {
-              // Mark streaming as complete
+          const data = line.slice(6)
+
+          try {
+            const parsed = JSON.parse(data)
+
+            if (parsed.type === 'text_delta') {
+              // V2: Stream text
+              setMessages(prev => {
+                const newMessages = [...prev]
+                newMessages[newMessages.length - 1].content += parsed.data.text
+                return newMessages
+              })
+            } else if (parsed.type === 'tool_use_progress') {
+              // V2: Tool execution update
+              const { toolId, status, data: toolData } = parsed.data
+
+              setMessages(prev => {
+                const newMessages = [...prev]
+                const lastMsg = newMessages[newMessages.length - 1]
+
+                // Add tool status to message
+                if (status === 'executing') {
+                  if (!lastMsg.content.includes('*Executing:')) {
+                    lastMsg.content += `\n\n*Executing: ${toolData?.toolName || 'tool'}...*`
+                  }
+                } else if (status === 'completed' && toolData?.filePath) {
+                  filesChanged.push(toolData.filePath)
+                }
+
+                return newMessages
+              })
+            } else if (parsed.type === 'message_complete') {
+              // V2: Stream complete
               setMessages(prev => {
                 const newMessages = [...prev]
                 newMessages[newMessages.length - 1] = {
-                  role: 'assistant',
-                  content: accumulatedText,
+                  ...newMessages[newMessages.length - 1],
                   filesChanged: filesChanged.length > 0 ? filesChanged : undefined,
                   streaming: false
                 }
                 return newMessages
               })
               break
+            } else if (parsed.type === 'error') {
+              // V2: Error occurred
+              throw new Error(parsed.data.message || 'An error occurred')
             }
-
-            try {
-              const parsed = JSON.parse(data)
-
-              if (parsed.type === 'text') {
-                accumulatedText += parsed.content
-                // Update the streaming message
-                setMessages(prev => {
-                  const newMessages = [...prev]
-                  newMessages[newMessages.length - 1] = {
-                    role: 'assistant',
-                    content: accumulatedText,
-                    streaming: true
-                  }
-                  return newMessages
-                })
-              } else if (parsed.type === 'status') {
-                // Show status as subtle inline text (don't accumulate, just show temporarily)
-                setMessages(prev => {
-                  const newMessages = [...prev]
-                  newMessages[newMessages.length - 1] = {
-                    role: 'assistant',
-                    content: accumulatedText + `\n\n*${parsed.content}*`,
-                    streaming: true
-                  }
-                  return newMessages
-                })
-                // Status doesn't accumulate - it's ephemeral
-              } else if (parsed.type === 'files') {
-                filesChanged = parsed.files
-              } else if (parsed.type === 'error') {
-                throw new Error(parsed.error)
-              }
-            } catch (e) {
-              // Ignore parsing errors for partial chunks
-              if (data.includes('Error:')) {
-                throw new Error(data)
-              }
+          } catch (e: any) {
+            // Ignore JSON parsing errors for incomplete chunks
+            if (e.message && !e.message.includes('JSON')) {
+              throw e
             }
           }
         }
@@ -328,7 +330,7 @@ What would you like to work on?`
 
   if (!app) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
+      <div className="h-screen bg-black flex items-center justify-center">
         <Loader2 size={32} className="text-white/60 animate-spin" />
       </div>
     )
@@ -336,127 +338,163 @@ What would you like to work on?`
 
   return (
     <div className="h-screen bg-black flex flex-col overflow-hidden">
-      {/* Header */}
-      <div className="flex-none border-b border-white/5 bg-white/[0.02]">
-        <div className="px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
+      {/* Header - Edge to Edge */}
+      <div className="flex-none border-b border-white/5 bg-[#0a0a0a]">
+        <div className="px-4 py-3 flex items-center justify-between">
+          {/* Left */}
+          <div className="flex items-center gap-3">
             <Link
               href="/vendor/code"
-              className="text-white/60 hover:text-white transition-colors"
+              className="flex items-center justify-center w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 transition-colors"
             >
-              <ArrowLeft size={20} />
+              <ArrowLeft size={16} className="text-white/60" />
             </Link>
 
             <div>
-              <h1 className="text-lg font-black text-white tracking-tight" style={{ fontWeight: 900 }}>
+              <h1 className="text-white text-sm font-black tracking-tight" style={{ fontWeight: 900 }}>
                 {app.name}
               </h1>
-              <p className="text-xs text-white/40 uppercase tracking-wider">
+              <p className="text-white/40 text-[9px] uppercase tracking-[0.15em]">
                 {app.app_type.replace('-', ' ')}
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          {/* Right */}
+          <div className="flex items-center gap-2">
+            {/* Live Badge */}
+            <div className="px-2 py-1 bg-white/5 rounded-lg flex items-center gap-1.5">
+              <div className="w-1 h-1 rounded-full bg-green-400" />
+              <span className="text-[9px] uppercase tracking-[0.15em] font-black text-white/60" style={{ fontWeight: 900 }}>
+                Live
+              </span>
+            </div>
+
+            {/* Publish */}
             <button
               onClick={publishApp}
               disabled={publishing}
-              className="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 disabled:from-white/10 disabled:to-white/10 disabled:cursor-not-allowed rounded-xl text-sm font-bold text-white transition-all shadow-lg shadow-emerald-500/20"
+              className="px-3 py-1.5 bg-white hover:bg-white/90 disabled:bg-white/20 disabled:cursor-not-allowed rounded-lg transition-colors"
             >
-              {publishing ? (
-                <>
-                  <Loader2 size={16} className="animate-spin" />
-                  Publishing...
-                </>
-              ) : (
-                <>
-                  <Save size={16} />
-                  Publish to Production
-                </>
-              )}
+              <span className="text-[9px] uppercase tracking-[0.15em] font-black text-black" style={{ fontWeight: 900 }}>
+                {publishing ? 'Publishing...' : 'Publish'}
+              </span>
             </button>
           </div>
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* Preview Pane */}
-        <div className="flex-1 border-r border-white/5 flex flex-col">
-          <div className="flex-none px-4 py-3 border-b border-white/5 bg-white/[0.02]">
+      {/* Main - Edge to Edge, Fixed Height */}
+      <div className="flex-1 flex overflow-hidden min-h-0">
+        {/* Preview/Code Section */}
+        <div className="flex-1 flex flex-col border-r border-white/5 min-w-0 overflow-hidden">
+          {/* Toolbar */}
+          <div className="flex-none px-4 py-2 border-b border-white/5 bg-[#0a0a0a] flex items-center justify-between">
+            {/* Toggle */}
             <div className="flex items-center gap-2">
-              <Globe size={16} className="text-white/40" />
-              <span className="text-sm font-medium text-white/60">Live Preview</span>
-              <div className="ml-auto px-2 py-1 bg-green-500/20 border border-green-500/30 rounded-lg">
-                <span className="text-[10px] uppercase tracking-wider font-bold text-green-400">
-                  Auto-refresh
+              <button
+                onClick={() => setViewMode('preview')}
+                className={`px-3 py-1.5 rounded-full text-[10px] uppercase tracking-[0.15em] font-black transition-all ${
+                  viewMode === 'preview'
+                    ? 'bg-white text-black'
+                    : 'bg-white/5 text-white/60 hover:bg-white/10'
+                }`}
+                style={{ fontWeight: 900 }}
+              >
+                Preview
+              </button>
+              <button
+                onClick={() => setViewMode('code')}
+                className={`px-3 py-1.5 rounded-full text-[10px] uppercase tracking-[0.15em] font-black transition-all ${
+                  viewMode === 'code'
+                    ? 'bg-white text-black'
+                    : 'bg-white/5 text-white/60 hover:bg-white/10'
+                }`}
+                style={{ fontWeight: 900 }}
+              >
+                Code
+              </button>
+            </div>
+
+            {/* Auto-refresh */}
+            {viewMode === 'preview' && (
+              <div className="flex items-center gap-1.5 px-2 py-1 bg-white/5 rounded-lg">
+                <div className="w-1 h-1 rounded-full bg-green-400 animate-pulse" />
+                <span className="text-[9px] uppercase tracking-[0.15em] font-black text-white/40" style={{ fontWeight: 900 }}>
+                  Auto-Refresh
                 </span>
               </div>
-            </div>
+            )}
           </div>
 
-          <div className="flex-1 bg-white/[0.02] relative overflow-hidden">
+          {/* Content - Only this scrolls */}
+          <div className="flex-1 bg-black relative overflow-hidden min-h-0">
             {filesLoading ? (
               <div className="flex items-center justify-center h-full">
                 <div className="text-center">
-                  <Loader2 size={48} className="text-emerald-400 mx-auto mb-4 animate-spin" />
-                  <p className="text-white font-bold text-lg mb-2">
-                    Loading app files...
+                  <Loader2 size={32} className="text-white/60 mx-auto mb-3 animate-spin" />
+                  <p className="text-white/40 text-[10px] uppercase tracking-[0.15em]">
+                    Loading...
                   </p>
                 </div>
               </div>
             ) : Object.keys(appFiles).length > 0 ? (
-              <div className="h-full w-full flex">
-                {/* Code Editor */}
-                <div className="flex-1 h-full">
-                  <SandpackProvider
-                    template="static"
-                    theme="dark"
-                    files={appFiles}
-                    options={{
-                      autorun: false,
-                    }}
-                  >
-                    <SandpackCodeEditor
-                      showTabs
-                      showLineNumbers
-                      showInlineErrors
-                      style={{ height: '100%' }}
-                    />
-                  </SandpackProvider>
-                </div>
+              <div className="h-full w-full">
+                {/* Code */}
+                {viewMode === 'code' && (
+                  <div className="h-full w-full">
+                    <SandpackProvider
+                      template="static"
+                      theme="dark"
+                      files={appFiles}
+                      options={{
+                        autorun: false,
+                      }}
+                    >
+                      <SandpackCodeEditor
+                        showTabs
+                        showLineNumbers
+                        showInlineErrors
+                        style={{ height: '100%' }}
+                      />
+                    </SandpackProvider>
+                  </div>
+                )}
 
-                {/* Live Preview */}
-                <div className="flex-1 h-full bg-white border-l border-white/10 relative">
-                  {/* Loading overlay with smooth fade */}
-                  {previewLoading && (
-                    <div className="absolute inset-0 bg-black/20 backdrop-blur-sm z-10 flex items-center justify-center transition-opacity duration-300">
-                      <div className="bg-black/80 px-6 py-3 rounded-lg border border-emerald-500/30 flex items-center gap-3">
-                        <Loader2 size={20} className="text-emerald-400 animate-spin" />
-                        <span className="text-white/90 text-sm font-medium">Updating preview...</span>
+                {/* Preview */}
+                {viewMode === 'preview' && (
+                  <div className="h-full w-full bg-white relative">
+                    {previewLoading && (
+                      <div className="absolute inset-0 bg-black/20 z-10 flex items-center justify-center">
+                        <div className="bg-black/90 px-4 py-2 rounded-lg border border-white/10 flex items-center gap-2">
+                          <Loader2 size={16} className="text-white/60 animate-spin" />
+                          <span className="text-white/60 text-[10px] uppercase tracking-[0.15em]">Refreshing...</span>
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )}
 
-                  <iframe
-                    key={`preview-${lastFileUpdate}`}
-                    src={`/api/vendor/apps/${app.id}/preview`}
-                    className={`w-full h-full border-0 transition-opacity duration-500 ${
-                      previewLoading ? 'opacity-50' : 'opacity-100'
-                    }`}
-                    sandbox="allow-scripts allow-same-origin"
-                  />
-                </div>
+                    <iframe
+                      key={`preview-${lastFileUpdate}`}
+                      src={`/api/vendor/apps/${app.id}/preview`}
+                      className={`w-full h-full border-0 transition-opacity ${
+                        previewLoading ? 'opacity-50' : 'opacity-100'
+                      }`}
+                      sandbox="allow-scripts allow-same-origin"
+                    />
+                  </div>
+                )}
               </div>
             ) : (
               <div className="flex items-center justify-center h-full">
                 <div className="text-center">
-                  <FileCode size={48} className="text-white/20 mx-auto mb-4" />
-                  <p className="text-white/60 text-sm mb-4">
-                    No files found for this app
+                  <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-center mx-auto mb-3">
+                    <FileCode size={32} className="text-white/20" />
+                  </div>
+                  <p className="text-white/60 text-[10px] uppercase tracking-[0.15em] mb-1">
+                    No Files
                   </p>
-                  <p className="text-white/40 text-xs">
-                    Start by asking the AI to create your first component
+                  <p className="text-white/40 text-[9px] uppercase tracking-[0.15em]">
+                    Ask AI to create
                   </p>
                 </div>
               </div>
@@ -464,42 +502,47 @@ What would you like to work on?`
           </div>
         </div>
 
-        {/* AI Chat Pane - Cursor AI Style */}
-        <div className="w-[500px] flex flex-col bg-zinc-950">
+        {/* AI Chat Section - Edge to Edge */}
+        <div className="w-[420px] flex flex-col bg-[#0a0a0a] border-l border-white/5">
           {/* Header */}
           <div className="flex-none px-4 py-3 border-b border-white/5">
             <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-md bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center">
+              <div className="w-7 h-7 rounded-lg bg-white/10 flex items-center justify-center">
                 <Sparkles size={14} className="text-white" />
               </div>
-              <h2 className="text-sm font-medium text-white/90">
-                AI Assistant
-              </h2>
+              <div>
+                <h2 className="text-white text-[10px] uppercase tracking-[0.15em] font-black" style={{ fontWeight: 900 }}>
+                  AI Assistant
+                </h2>
+                <p className="text-white/40 text-[8px] uppercase tracking-[0.15em]">
+                  Claude Sonnet
+                </p>
+              </div>
             </div>
           </div>
 
-          {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-3">
+          {/* Messages - Only this scrolls */}
+          <div className="flex-1 overflow-y-auto px-3 py-3 space-y-2 min-h-0">
             {messages.map((message, idx) => (
               <div
                 key={idx}
-                className={`group ${
-                  message.role === 'user' ? 'flex justify-end' : 'flex justify-start'
+                className={`flex ${
+                  message.role === 'user' ? 'justify-end' : 'justify-start'
                 }`}
               >
                 <div
-                  className={`max-w-[90%] rounded-lg px-3.5 py-2.5 ${
+                  className={`max-w-[85%] rounded-xl px-3 py-2 ${
                     message.role === 'user'
-                      ? 'bg-emerald-500/10 border border-emerald-500/20 text-white'
-                      : 'bg-zinc-900/50 border border-white/5 text-white/95'
+                      ? 'bg-white/10 border border-white/10'
+                      : 'bg-white/5 border border-white/5'
                   } ${message.streaming ? 'animate-pulse' : ''}`}
                 >
                   {message.role === 'user' ? (
-                    <p className="text-sm leading-relaxed whitespace-pre-wrap">
+                    <p className="text-[11px] leading-relaxed text-white/90 whitespace-pre-wrap">
                       {message.content}
                     </p>
                   ) : (
-                    <div className="text-sm leading-relaxed prose prose-invert max-w-none prose-pre:p-0 prose-pre:bg-transparent prose-pre:m-0">
+                    <div className="text-[11px] leading-relaxed prose prose-invert max-w-none prose-pre:p-0 prose-pre:bg-transparent prose-pre:m-0">
                       <ReactMarkdown
                         remarkPlugins={[remarkGfm]}
                         components={{
@@ -510,19 +553,19 @@ What would you like to work on?`
 
                             if (inline) {
                               return (
-                                <code className="px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-300 font-mono text-xs border border-emerald-500/20" {...props}>
+                                <code className="px-1.5 py-0.5 rounded bg-white/10 text-white/90 font-mono text-[10px]" {...props}>
                                   {children}
                                 </code>
                               )
                             }
 
                             return (
-                              <div className="my-3 rounded-md overflow-hidden border border-white/10 bg-zinc-900 group/code">
-                                <div className="flex items-center justify-between px-3 py-2 bg-zinc-800/50 border-b border-white/5">
-                                  <span className="text-xs text-white/40 font-mono">{language}</span>
+                              <div className="my-2 rounded-lg overflow-hidden border border-white/10 bg-black/50">
+                                <div className="flex items-center justify-between px-3 py-1.5 bg-white/5 border-b border-white/5">
+                                  <span className="text-[8px] text-white/40 uppercase tracking-[0.15em] font-black" style={{ fontWeight: 900 }}>{language}</span>
                                   <button
                                     onClick={() => navigator.clipboard.writeText(codeString)}
-                                    className="text-xs text-white/40 hover:text-white/80 transition-colors opacity-0 group-hover/code:opacity-100"
+                                    className="text-[8px] text-white/40 hover:text-white/80 uppercase tracking-[0.15em]"
                                   >
                                     Copy
                                   </button>
@@ -533,8 +576,8 @@ What would you like to work on?`
                                   PreTag="div"
                                   customStyle={{
                                     margin: 0,
-                                    padding: '12px 16px',
-                                    fontSize: '13px',
+                                    padding: '12px',
+                                    fontSize: '10px',
                                     background: 'transparent',
                                     lineHeight: '1.5'
                                   }}
@@ -550,14 +593,14 @@ What would you like to work on?`
                               </div>
                             )
                           },
-                          p: ({ children }) => <p className="mb-2.5 text-white/90 leading-[1.6] last:mb-0">{children}</p>,
-                          ul: ({ children }) => <ul className="list-disc list-inside mb-2.5 space-y-1 text-white/85 pl-1">{children}</ul>,
-                          ol: ({ children }) => <ol className="list-decimal list-inside mb-2.5 space-y-1 text-white/85 pl-1">{children}</ol>,
-                          li: ({ children }) => <li className="leading-[1.6]">{children}</li>,
-                          strong: ({ children }) => <strong className="font-semibold text-white">{children}</strong>,
-                          em: ({ children }) => <em className="italic text-white/90">{children}</em>,
+                          p: ({ children }) => <p className="mb-2 text-white/80 leading-relaxed last:mb-0">{children}</p>,
+                          ul: ({ children }) => <ul className="list-disc list-inside mb-2 space-y-1 text-white/70 pl-1">{children}</ul>,
+                          ol: ({ children }) => <ol className="list-decimal list-inside mb-2 space-y-1 text-white/70 pl-1">{children}</ol>,
+                          li: ({ children }) => <li className="leading-relaxed">{children}</li>,
+                          strong: ({ children }) => <strong className="font-black text-white" style={{ fontWeight: 900 }}>{children}</strong>,
+                          em: ({ children }) => <em className="italic text-white/80">{children}</em>,
                           a: ({ href, children }) => (
-                            <a href={href} target="_blank" rel="noopener noreferrer" className="text-emerald-400 hover:text-emerald-300 underline underline-offset-2 transition-colors">
+                            <a href={href} target="_blank" rel="noopener noreferrer" className="text-white underline">
                               {children}
                             </a>
                           ),
@@ -569,13 +612,13 @@ What would you like to work on?`
                   )}
 
                   {message.filesChanged && message.filesChanged.length > 0 && (
-                    <div className="mt-3 pt-2 border-t border-white/5 space-y-1">
-                      <p className="text-xs text-white/50 mb-1.5">
-                        Files updated
+                    <div className="mt-2 pt-2 border-t border-white/5 space-y-1">
+                      <p className="text-[8px] text-white/40 uppercase tracking-[0.15em] mb-1.5 font-black" style={{ fontWeight: 900 }}>
+                        Files Updated
                       </p>
                       {message.filesChanged.map((file, i) => (
-                        <div key={i} className="flex items-center gap-1.5 text-xs">
-                          <Check size={12} className="text-emerald-400 flex-shrink-0" />
+                        <div key={i} className="flex items-center gap-1.5 text-[9px] bg-white/5 rounded px-2 py-1">
+                          <Check size={10} className="text-green-400 flex-shrink-0" />
                           <span className="font-mono text-white/70">{file}</span>
                         </div>
                       ))}
@@ -589,7 +632,7 @@ What would you like to work on?`
           </div>
 
           {/* Input */}
-          <div className="flex-none p-3 border-t border-white/5 bg-zinc-950">
+          <div className="flex-none p-3 border-t border-white/5">
             <div className="relative">
               <textarea
                 value={input}
@@ -600,11 +643,11 @@ What would you like to work on?`
                     sendMessage()
                   }
                 }}
-                placeholder="Ask me to build something..."
+                placeholder="ASK ME TO BUILD..."
                 rows={1}
                 disabled={loading}
-                className="w-full px-4 py-2.5 pr-12 bg-zinc-900/50 border border-white/10 rounded-lg text-sm text-white placeholder:text-white/40 focus:outline-none focus:border-emerald-500/50 focus:bg-zinc-900 transition-all resize-none disabled:opacity-50"
-                style={{ minHeight: '40px', maxHeight: '120px' }}
+                className="w-full px-3 py-2 pr-11 bg-white/5 border border-white/10 hover:border-white/20 focus:border-white/30 rounded-lg text-[11px] text-white placeholder:text-white/30 placeholder:uppercase placeholder:tracking-[0.15em] focus:outline-none transition-colors resize-none disabled:opacity-50"
+                style={{ minHeight: '36px', maxHeight: '100px' }}
                 onInput={(e) => {
                   const target = e.target as HTMLTextAreaElement
                   target.style.height = 'auto'
@@ -615,18 +658,18 @@ What would you like to work on?`
               <button
                 onClick={sendMessage}
                 disabled={!input.trim() || loading}
-                className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-emerald-500 hover:bg-emerald-600 disabled:bg-white/10 disabled:cursor-not-allowed rounded-md transition-all"
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-white hover:bg-white/90 disabled:bg-white/20 disabled:cursor-not-allowed rounded transition-colors"
               >
                 {loading ? (
-                  <Loader2 size={16} className="text-white animate-spin" />
+                  <Loader2 size={14} className="text-black animate-spin" />
                 ) : (
-                  <Send size={16} className="text-white" />
+                  <Send size={14} className="text-black" />
                 )}
               </button>
             </div>
 
-            <p className="text-[10px] text-white/30 mt-1.5 text-center">
-              ⏎ to send • ⇧⏎ for new line
+            <p className="text-[8px] text-white/20 text-center mt-1.5 uppercase tracking-[0.15em]">
+              ⏎ Send • ⇧⏎ New Line
             </p>
           </div>
         </div>

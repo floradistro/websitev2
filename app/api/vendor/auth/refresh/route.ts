@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServiceSupabase } from '@/lib/supabase/client';
+import { withErrorHandler } from '@/lib/api-handler';
 
 /**
  * Refresh vendor data from database (for updating logo, POS status, etc without re-login)
  */
-export async function POST(request: NextRequest) {
+export const POST = withErrorHandler(async (request: NextRequest) => {
   try {
     const body = await request.json();
     const { vendorId } = body;
@@ -53,7 +54,7 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});
 
 
 

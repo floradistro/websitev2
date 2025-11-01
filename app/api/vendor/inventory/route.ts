@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServiceSupabase } from '@/lib/supabase/client';
+import { withErrorHandler } from '@/lib/api-handler';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET(request: NextRequest) {
+export const GET = withErrorHandler(async (request: NextRequest) => {
   try {
     const vendorId = request.headers.get('x-vendor-id');
     
@@ -121,4 +122,4 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});

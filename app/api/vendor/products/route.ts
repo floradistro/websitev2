@@ -2,14 +2,17 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServiceSupabase } from '@/lib/supabase/client';
 import { productCache, vendorCache, inventoryCache } from '@/lib/cache-manager';
 import { jobQueue } from '@/lib/job-queue';
+import { requireVendor } from '@/lib/auth/middleware';
+import { withErrorHandler } from '@/lib/api-handler';
 
-export async function GET(request: NextRequest) {
+export const GET = withErrorHandler(async (request: NextRequest) => {
   try {
-    const vendorId = request.headers.get('x-vendor-id');
-    
-    if (!vendorId) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+    // SECURITY FIX: Use authenticated session instead of spoofable headers
+    const authResult = await requireVendor(request);
+    if (authResult instanceof NextResponse) {
+      return authResult; // Return auth error
     }
+    const { vendorId } = authResult;
 
     const supabase = getServiceSupabase();
     const { data: products, error } = await supabase
@@ -35,21 +38,19 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});
 
-export async function POST(request: NextRequest) {
+export const POST = withErrorHandler(async (request: NextRequest) => {
   try {
-    const vendorId = request.headers.get('x-vendor-id');
-    
-    console.log('🔵 Vendor product submission - Vendor ID:', vendorId);
-    
-    if (!vendorId) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+    // SECURITY FIX: Use authenticated session instead of spoofable headers
+    const authResult = await requireVendor(request);
+    if (authResult instanceof NextResponse) {
+      return authResult; // Return auth error
     }
+    const { vendorId } = authResult;
 
     const productData = await request.json();
-    console.log('🔵 Product data received:', JSON.stringify(productData, null, 2));
-    
+
     if (!productData.name) {
       return NextResponse.json({ error: 'Product name is required' }, { status: 400 });
     }
@@ -134,7 +135,6 @@ export async function POST(request: NextRequest) {
     if (productData.category_id) {
       // Direct category ID provided
       newProduct.primary_category_id = productData.category_id;
-      console.log('✅ Category ID provided:', productData.category_id);
     } else if (productData.category) {
       // Category name provided - look up ID
       const { data: categories } = await supabase
@@ -145,13 +145,10 @@ export async function POST(request: NextRequest) {
 
       if (categories && categories.length > 0) {
         newProduct.primary_category_id = categories[0].id;
-        console.log('✅ Category matched:', productData.category, '→', categories[0].id);
       } else {
         console.warn('⚠️ Category not found:', productData.category);
       }
     }
-
-    console.log('🔵 Inserting product:', JSON.stringify(newProduct, null, 2));
 
     // Insert product into Supabase
     const { data: product, error: productError } = await supabase
@@ -162,14 +159,11 @@ export async function POST(request: NextRequest) {
     
     if (productError) {
       console.error('❌ Error creating product:', productError);
-      console.error('❌ Product data that failed:', JSON.stringify(newProduct, null, 2));
       return NextResponse.json(
         { error: productError.message || 'Failed to create product', details: productError },
         { status: 500 }
       );
     }
-
-    console.log('✅ Product created successfully:', product.id);
 
     // Create inventory record if initial quantity provided (enterprise pattern)
     if (shouldManageStock && stockQty > 0) {
@@ -206,8 +200,6 @@ export async function POST(request: NextRequest) {
           console.warn('⚠️ Could not create inventory record:', inventoryError);
           // Don't fail the product creation, just log the warning
         } else {
-          console.log('✅ Inventory record created at', primaryLocation.name);
-          
           // Create stock movement audit trail (compliance requirement)
           await supabase
             .from('stock_movements')
@@ -244,13 +236,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Invalidate relevant caches after product creation
-    console.log('🧹 Invalidating caches after product creation');
     productCache.invalidatePattern('products:.*');
     vendorCache.invalidatePattern(`vendor-.*:.*vendorId:${vendorId}.*`);
     inventoryCache.invalidatePattern('.*');
-    
+
     // Queue background jobs (non-blocking)
-    console.log('📋 Queueing background jobs...');
     
     // Queue email notification to admin
     await jobQueue.enqueue(
@@ -283,9 +273,7 @@ export async function POST(request: NextRequest) {
         { priority: 3 }
       );
     }
-    
-    console.log('✅ Background jobs queued');
-    
+
     return NextResponse.json({
       success: true,
       product,
@@ -294,15 +282,14 @@ export async function POST(request: NextRequest) {
 
   } catch (error: any) {
     console.error('❌ Create product error:', error);
-    console.error('❌ Error stack:', error.stack);
     return NextResponse.json(
       { error: error.message || 'Failed to create product', details: error.toString() },
       { status: 500 }
     );
   }
-}
+});
 
-export async function DELETE(request: NextRequest) {
+export const DELETE = withErrorHandler(async (request: NextRequest) => {
   try {
     const vendorId = request.headers.get('x-vendor-id');
     
@@ -352,8 +339,6 @@ export async function DELETE(request: NextRequest) {
       }
     }
 
-    console.log('🗑️ Deleting product:', product.name, 'ID:', productId);
-
     // Delete the product (this will cascade to related records based on DB constraints)
     const { error: deleteError } = await supabase
       .from('products')
@@ -364,8 +349,6 @@ export async function DELETE(request: NextRequest) {
       console.error('❌ Error deleting product:', deleteError);
       return NextResponse.json({ error: deleteError.message }, { status: 500 });
     }
-
-    console.log('✅ Product deleted successfully');
 
     return NextResponse.json({
       success: true,
@@ -379,4 +362,4 @@ export async function DELETE(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});

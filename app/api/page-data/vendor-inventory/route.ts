@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServiceSupabase } from '@/lib/supabase/client';
+import type { Product, InventoryRecord, Location, CustomField, InventoryItem } from '@/types/inventory';
 
 export const dynamic = 'force-dynamic';
 
@@ -61,14 +62,14 @@ export async function GET(request: NextRequest) {
         .order('is_primary', { ascending: false })
     ]);
     
-    // Extract data
-    const products = productsResult.status === 'fulfilled' ? productsResult.value.data || [] : [];
-    const inventoryData = inventoryResult.status === 'fulfilled' ? inventoryResult.value.data || [] : [];
-    const locations = locationsResult.status === 'fulfilled' ? locationsResult.value.data || [] : [];
-    
+    // Extract data (using unknown intermediate to handle Supabase response shape)
+    const products = (productsResult.status === 'fulfilled' ? productsResult.value.data || [] : []) as unknown as Product[];
+    const inventoryData = (inventoryResult.status === 'fulfilled' ? inventoryResult.value.data || [] : []) as unknown as InventoryRecord[];
+    const locations = (locationsResult.status === 'fulfilled' ? locationsResult.value.data || [] : []) as unknown as Location[];
+
     // Group inventory by product
-    const inventoryByProduct: any = {};
-    inventoryData.forEach((inv: any) => {
+    const inventoryByProduct: Record<string, InventoryRecord[]> = {};
+    inventoryData.forEach((inv) => {
       if (!inventoryByProduct[inv.product_id]) {
         inventoryByProduct[inv.product_id] = [];
       }
@@ -76,19 +77,19 @@ export async function GET(request: NextRequest) {
     });
     
     // Map to inventory items format
-    const inventory = products.map((p: any) => {
+    const inventory: InventoryItem[] = products.map((p) => {
       const productInventory = inventoryByProduct[p.id] || [];
-      const totalQuantity = productInventory.reduce((sum: number, inv: any) => sum + (inv.quantity || 0), 0);
-      
+      const totalQuantity = productInventory.reduce((sum, inv) => sum + (inv.quantity || 0), 0);
+
       // Determine stock status
       let stock_status: 'in_stock' | 'low_stock' | 'out_of_stock' = 'out_of_stock';
       if (totalQuantity > 10) stock_status = 'in_stock';
       else if (totalQuantity > 0) stock_status = 'low_stock';
-      
+
       // Extract Flora fields
-      const floraFields: any = {};
+      const floraFields: Record<string, string | number | boolean> = {};
       if (p.custom_fields && Array.isArray(p.custom_fields)) {
-        p.custom_fields.forEach((field: any) => {
+        p.custom_fields.forEach((field) => {
           if (field && field.field_name && field.field_value) {
             floraFields[field.field_name] = field.field_value;
           }
@@ -104,15 +105,15 @@ export async function GET(request: NextRequest) {
         quantity: totalQuantity,
         category_name: p.product_categories?.[0]?.category?.name || 'Product',
         image: p.featured_image_storage,
-        price: parseFloat(p.price || 0),
-        cost_price: p.cost_price ? parseFloat(p.cost_price) : undefined,
+        price: parseFloat(String(p.price || 0)),
+        cost_price: p.cost_price ? parseFloat(String(p.cost_price)) : undefined,
         description: p.description,
         stock_status,
         stock_status_label: stock_status === 'in_stock' ? 'In Stock' : stock_status === 'low_stock' ? 'Low Stock' : 'Out of Stock',
         location_name: productInventory[0]?.location?.name || 'No Location',
-        location_id: productInventory[0]?.location_id,
+        location_id: productInventory[0]?.location_id || null,
         locations_with_stock: productInventory.length,
-        inventory_locations: productInventory.map((inv: any) => ({
+        inventory_locations: productInventory.map((inv) => ({
           location_id: inv.location_id,
           location_name: inv.location?.name || 'Unknown',
           quantity: inv.quantity,
@@ -144,13 +145,13 @@ export async function GET(request: NextRequest) {
         'X-Response-Time': `${responseTime}ms`,
       }
     });
-    
-  } catch (error: any) {
-    console.error('❌ Error in /api/page-data/vendor-inventory:', error);
+
+  } catch (error) {
+    console.error('❌ Error in /api/page-data/vendor-inventory:', error instanceof Error ? error.message : 'Unknown error');
     return NextResponse.json(
-      { 
-        success: false, 
-        error: error.message || 'Failed to fetch vendor inventory'
+      {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to fetch vendor inventory'
       },
       { status: 500 }
     );

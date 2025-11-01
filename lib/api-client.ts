@@ -17,6 +17,7 @@ async function fetcher(url: string, options?: RequestInit) {
     const response = await fetch(url, {
       ...options,
       signal: controller.signal,
+      credentials: 'include', // SECURITY FIX: Include HTTP-only cookies
       headers: {
         'Content-Type': 'application/json',
         ...options?.headers,

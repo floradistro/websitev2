@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServiceSupabase } from '@/lib/supabase/client';
+import { withErrorHandler } from '@/lib/api-handler';
 
-export async function GET(request: NextRequest) {
+export const GET = withErrorHandler(async (request: NextRequest) => {
   try {
     const searchParams = request.nextUrl.searchParams;
     const page = parseInt(searchParams.get('page') || '1');
@@ -77,13 +78,12 @@ export async function GET(request: NextRequest) {
     const customerMap = new Map(customersData?.map(c => [c.id, c]) || []);
 
     // Combine data
-    let firstCustomerLogged = false;
     let customers = vendorCustomersData
       .map((vc: any) => {
         const customer = customerMap.get(vc.customer_id);
         if (!customer) return null;
 
-        const mappedCustomer = {
+        return {
           id: customer.id,
           email: customer.email,
           first_name: customer.first_name,
@@ -96,18 +96,6 @@ export async function GET(request: NextRequest) {
           last_order_date: vc.last_purchase_date,
           created_at: customer.created_at,
         };
-
-        // Debug logging for first customer
-        if (!firstCustomerLogged) {
-          console.log('🔍 Sample customer data:', {
-            vc_loyalty_points: vc.loyalty_points,
-            mapped_loyalty_points: mappedCustomer.loyalty_points,
-            email: customer.email
-          });
-          firstCustomerLogged = true;
-        }
-
-        return mappedCustomer;
       })
       .filter(c => c !== null);
 
@@ -172,4 +160,4 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});

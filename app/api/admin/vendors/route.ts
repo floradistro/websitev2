@@ -1,8 +1,15 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getServiceSupabase } from '@/lib/supabase/client';
+import { requireAdmin } from '@/lib/auth/middleware';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    // SECURITY FIX: Require admin authentication
+    const authResult = await requireAdmin(request);
+    if (authResult instanceof NextResponse) {
+      return authResult; // Return auth error
+    }
+
     const supabase = getServiceSupabase();
 
     const { data, error } = await supabase

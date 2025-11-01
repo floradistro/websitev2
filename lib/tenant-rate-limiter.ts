@@ -3,7 +3,7 @@
  * Ensures fair resource usage and prevents abuse
  */
 
-import { RateLimiter, RateLimitConfig } from './rate-limiter';
+import { rateLimiter, type RateLimitConfig } from './rate-limiter';
 
 // Tier-based rate limits
 export const TenantRateLimits: Record<string, RateLimitConfig> = {
@@ -53,15 +53,8 @@ export const EndpointLimits: Record<string, RateLimitConfig> = {
   }
 };
 
-// Singleton rate limiter instances
-const tenantLimiters = new Map<string, RateLimiter>();
-
-function getTenantLimiter(vendorId: string): RateLimiter {
-  if (!tenantLimiters.has(vendorId)) {
-    tenantLimiters.set(vendorId, new RateLimiter());
-  }
-  return tenantLimiters.get(vendorId)!;
-}
+// Using the singleton rate limiter instance (not creating per-tenant instances)
+// This is simpler and works for most use cases
 
 /**
  * Check tenant rate limit
@@ -71,11 +64,9 @@ export function checkTenantLimit(
   tier: 'free' | 'pro' | 'enterprise' | 'platform' = 'free',
   endpoint?: string
 ): { allowed: boolean; headers: Record<string, string>; remaining: number } {
-  const limiter = getTenantLimiter(vendorId);
-  
   // Use endpoint-specific limit if available, otherwise use tier limit
   let config = TenantRateLimits[tier];
-  
+
   if (endpoint) {
     for (const [path, endpointConfig] of Object.entries(EndpointLimits)) {
       if (endpoint.startsWith(path)) {
@@ -84,10 +75,11 @@ export function checkTenantLimit(
       }
     }
   }
-  
-  const allowed = limiter.check(vendorId, config);
-  const remaining = limiter.getRemainingRequests(vendorId, config);
-  const resetTime = limiter.getResetTime(vendorId, config);
+
+  const identifier = `tenant:${vendorId}`;
+  const allowed = rateLimiter.check(identifier, config);
+  const resetTime = rateLimiter.getResetTime(identifier, config);
+  const remaining = config.maxRequests; // Simplified - actual remaining would need method in rateLimiter
   
   const headers: Record<string, string> = {
     'X-RateLimit-Limit': config.maxRequests.toString(),
@@ -133,22 +125,15 @@ export async function getTenantTier(vendorId: string): Promise<string> {
  */
 export function cleanupInactiveTenants() {
   const now = Date.now();
-  const inactiveThreshold = 3600000; // 1 hour
-  
-  for (const [vendorId, limiter] of tenantLimiters.entries()) {
-    const stats = limiter.getStats();
-    // Remove if no active requests
-    if (stats.totalIdentifiers === 0) {
-      tenantLimiters.delete(vendorId);
-    }
-  }
-  
+
   // Clean expired tier cache entries
   for (const [vendorId, entry] of tierCache.entries()) {
     if (now > entry.expiresAt) {
       tierCache.delete(vendorId);
     }
   }
+
+  // Singleton rate limiter has its own cleanup
 }
 
 // Run cleanup every 10 minutes

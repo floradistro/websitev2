@@ -120,11 +120,13 @@ export function AppAuthProvider({ children }: { children: React.ReactNode }) {
 
   async function login(email: string, password: string): Promise<boolean> {
     try {
+      // SECURITY FIX: Session token now stored in HTTP-only cookie (XSS protection)
       // Try new unified app login endpoint first
       let response = await fetch('/api/auth/app-login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
+        body: JSON.stringify({ email, password }),
+        credentials: 'include' // Include cookies in request
       });
 
       let data = await response.json();
@@ -135,7 +137,8 @@ export function AppAuthProvider({ children }: { children: React.ReactNode }) {
         response = await fetch('/api/vendor/auth/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password })
+          body: JSON.stringify({ email, password }),
+          credentials: 'include' // Include cookies in request
         });
 
         data = await response.json();
@@ -161,16 +164,15 @@ export function AppAuthProvider({ children }: { children: React.ReactNode }) {
         setAccessibleApps([]); // Vendor admins have access to all
         setLocations([]);
 
-        // Save to localStorage
+        // Save to localStorage (but NOT session token - it's in HTTP-only cookie)
         localStorage.setItem('app_user', JSON.stringify(legacyUser));
         localStorage.setItem('app_accessible_apps', JSON.stringify([]));
         localStorage.setItem('app_locations', JSON.stringify([]));
         // Also set legacy keys for backwards compatibility
         localStorage.setItem('vendor_id', data.vendor.id);
         localStorage.setItem('vendor_email', data.vendor.email);
-        if (data.session) {
-          localStorage.setItem('supabase_session', data.session);
-        }
+        // Clean up old session storage
+        localStorage.removeItem('supabase_session');
 
         console.log('✅ Legacy login successful:', legacyUser.name);
         return true;
@@ -204,7 +206,7 @@ export function AppAuthProvider({ children }: { children: React.ReactNode }) {
       const userLocations = data.locations || [];
       setLocations(userLocations);
 
-      // Save to localStorage
+      // Save to localStorage (but NOT session token - it's in HTTP-only cookie)
       localStorage.setItem('app_user', JSON.stringify(userData));
       localStorage.setItem('app_accessible_apps', JSON.stringify(apps));
       localStorage.setItem('app_locations', JSON.stringify(userLocations));
@@ -213,9 +215,8 @@ export function AppAuthProvider({ children }: { children: React.ReactNode }) {
       if (data.user.vendor) {
         localStorage.setItem('vendor_email', data.user.vendor.email || userData.email);
       }
-      if (data.session) {
-        localStorage.setItem('supabase_session', data.session);
-      }
+      // Clean up old session storage
+      localStorage.removeItem('supabase_session');
 
       console.log('✅ Login successful:', userData.name, `(${userData.role})`);
       return true;
@@ -227,24 +228,34 @@ export function AppAuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   async function logout() {
-    // Clear all storage
-    localStorage.removeItem('supabase_session');
-    localStorage.removeItem('app_user');
-    localStorage.removeItem('app_accessible_apps');
-    localStorage.removeItem('app_locations');
-    // Also clear old vendor auth data for backwards compatibility
-    localStorage.removeItem('vendor_id');
-    localStorage.removeItem('vendor_email');
-    localStorage.removeItem('vendor_slug');
-    localStorage.removeItem('vendor_user');
+    try {
+      // Call logout API to clear HTTP-only cookie
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        credentials: 'include'
+      }).catch(() => {
+        // Ignore errors - logout locally anyway
+      });
+    } finally {
+      // Clear all storage
+      localStorage.removeItem('supabase_session');
+      localStorage.removeItem('app_user');
+      localStorage.removeItem('app_accessible_apps');
+      localStorage.removeItem('app_locations');
+      // Also clear old vendor auth data for backwards compatibility
+      localStorage.removeItem('vendor_id');
+      localStorage.removeItem('vendor_email');
+      localStorage.removeItem('vendor_slug');
+      localStorage.removeItem('vendor_user');
 
-    setUser(null);
-    setVendor(null);
-    setIsAuthenticated(false);
-    setAccessibleApps([]);
-    setLocations([]);
+      setUser(null);
+      setVendor(null);
+      setIsAuthenticated(false);
+      setAccessibleApps([]);
+      setLocations([]);
 
-    console.log('✅ User logged out');
+      console.log('✅ User logged out');
+    }
   }
 
   async function refreshUserData() {
@@ -252,12 +263,14 @@ export function AppAuthProvider({ children }: { children: React.ReactNode }) {
 
     try {
       // Re-fetch user data to get latest permissions
+      // Session token is automatically sent via HTTP-only cookie
       const response = await fetch('/api/auth/app-login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include', // Include cookies
         body: JSON.stringify({
-          email: user.email,
-          refreshToken: localStorage.getItem('supabase_session')
+          email: user.email
+          // No need to send refreshToken - it's in HTTP-only cookie
         })
       });
 

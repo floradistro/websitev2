@@ -1,11 +1,33 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServiceSupabase } from '@/lib/supabase/client';
+import { rateLimiter, RateLimitConfigs, getIdentifier } from '@/lib/rate-limiter';
 
 /**
  * Customer registration endpoint
  */
 export async function POST(request: NextRequest) {
   try {
+    // SECURITY: Apply rate limiting to prevent spam registrations
+    const identifier = getIdentifier(request);
+    const allowed = rateLimiter.check(identifier, RateLimitConfigs.auth);
+
+    if (!allowed) {
+      const resetTime = rateLimiter.getResetTime(identifier, RateLimitConfigs.auth);
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Too many registration attempts. Please try again later.',
+          retryAfter: resetTime
+        },
+        {
+          status: 429,
+          headers: {
+            'Retry-After': resetTime.toString()
+          }
+        }
+      );
+    }
+
     const body = await request.json();
     const { email, password, firstName, lastName } = body;
     

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { getServiceSupabase } from '@/lib/supabase/client';
 
 export async function middleware(request: NextRequest) {
   const hostname = request.headers.get('host') || '';
@@ -73,13 +73,8 @@ export async function middleware(request: NextRequest) {
   }
 
   // Check if this is a custom vendor domain
-  console.log('[Middleware] Checking domain:', { hostname, domain, isYachtClubDomain });
-  
   try {
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    );
+    const supabase = getServiceSupabase();
 
     // Look up vendor by custom domain
     const { data: domainRecord, error: domainError } = await supabase
@@ -90,7 +85,6 @@ export async function middleware(request: NextRequest) {
       .eq('is_active', true)
       .single();
     
-    console.log('[Middleware] Domain lookup result:', { domainRecord, domainError: domainError?.message });
 
     if (domainRecord && !domainError) {
       // Get vendor to check if coming soon mode is active
@@ -100,16 +94,11 @@ export async function middleware(request: NextRequest) {
         .eq('id', domainRecord.vendor_id)
         .single();
       
-      console.log('[Middleware] Custom domain vendor:', {
-        vendorId: domainRecord.vendor_id,
-        comingSoon: vendor?.coming_soon,
-      });
         
       // Check if coming soon mode is active - rewrite to storefront to show coming soon page
       if (vendor?.coming_soon) {
         // Allow preview mode to bypass
         const isPreview = request.nextUrl.searchParams.get('preview') === 'true';
-        console.log('[Middleware] Coming soon mode active, preview:', isPreview);
         if (!isPreview) {
           // Rewrite to /storefront so the coming soon page is rendered
           const url = request.nextUrl.clone();
@@ -124,7 +113,6 @@ export async function middleware(request: NextRequest) {
           response.headers.set('X-Frame-Options', 'SAMEORIGIN');
           response.headers.set('X-Content-Type-Options', 'nosniff');
           response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
-          console.log('[Middleware] Rewriting to storefront with coming soon header');
           return response;
         }
       }
@@ -147,8 +135,6 @@ export async function middleware(request: NextRequest) {
       
       return response;
     }
-    
-    console.log('[Middleware] No custom domain found for:', domain);
 
     // Check if this is a subdomain storefront (vendor-slug.yachtclub.com)
     const subdomain = domain.split('.')[0];
@@ -161,20 +147,13 @@ export async function middleware(request: NextRequest) {
         .single();
 
       if (vendor && !vendorError) {
-        console.log('[Middleware] Subdomain vendor:', {
-          subdomain,
-          vendorId: vendor.id,
-          comingSoon: vendor.coming_soon,
-        });
         // Check if coming soon mode is active - block entire site
         if (vendor.coming_soon) {
           const isPreview = request.nextUrl.searchParams.get('preview') === 'true';
-          console.log('[Middleware] Coming soon mode active, preview:', isPreview);
           if (!isPreview) {
             const response = NextResponse.next();
             response.headers.set('x-vendor-id', vendor.id);
             response.headers.set('x-coming-soon', 'true');
-            console.log('[Middleware] Setting x-coming-soon header for subdomain');
             return response;
           }
         }
@@ -207,13 +186,10 @@ export async function middleware(request: NextRequest) {
   // VENDOR PARAM: Check for ?vendor param on /storefront (fallback for testing/preview)
   if (pathname.startsWith('/storefront')) {
     const vendorSlug = request.nextUrl.searchParams.get('vendor');
-    
+
     if (vendorSlug) {
       try {
-        const supabase = createClient(
-          process.env.NEXT_PUBLIC_SUPABASE_URL!,
-          process.env.SUPABASE_SERVICE_ROLE_KEY!
-        );
+        const supabase = getServiceSupabase();
         
         const { data: vendor } = await supabase
           .from('vendors')
@@ -223,20 +199,13 @@ export async function middleware(request: NextRequest) {
           .single();
           
         if (vendor) {
-          console.log('[Middleware] Vendor param:', {
-            vendorSlug,
-            vendorId: vendor.id,
-            comingSoon: vendor.coming_soon,
-          });
           // Check if coming soon mode is active - block entire site
           if (vendor.coming_soon) {
             const isPreview = request.nextUrl.searchParams.get('preview') === 'true';
-            console.log('[Middleware] Coming soon mode active, preview:', isPreview);
             if (!isPreview) {
               const response = NextResponse.next();
               response.headers.set('x-vendor-id', vendor.id);
               response.headers.set('x-coming-soon', 'true');
-              console.log('[Middleware] Setting x-coming-soon header for vendor param');
               return response;
             }
           }

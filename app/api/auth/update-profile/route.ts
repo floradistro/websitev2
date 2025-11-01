@@ -1,25 +1,47 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServiceSupabase } from '@/lib/supabase/client';
+import { rateLimiter, RateLimitConfigs, getIdentifier } from '@/lib/rate-limiter';
 
 /**
  * Update customer profile
  */
 export async function PUT(request: NextRequest) {
   try {
+    // SECURITY: Apply rate limiting to prevent spam updates
+    const identifier = getIdentifier(request);
+    const allowed = rateLimiter.check(identifier, RateLimitConfigs.api);
+
+    if (!allowed) {
+      const resetTime = rateLimiter.getResetTime(identifier, RateLimitConfigs.api);
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Too many update requests. Please try again later.',
+          retryAfter: resetTime
+        },
+        {
+          status: 429,
+          headers: {
+            'Retry-After': resetTime.toString()
+          }
+        }
+      );
+    }
+
     const body = await request.json();
     const { userId, ...updateData } = body;
-    
+
     if (!userId) {
       return NextResponse.json(
         { success: false, error: 'User ID required' },
         { status: 400 }
       );
     }
-    
+
     const supabase = getServiceSupabase();
-    
-    // Build update object
-    const updates: any = {};
+
+    // Build update object with proper typing
+    const updates: Record<string, string | object | null> = {};
     if (updateData.firstName) updates.first_name = updateData.firstName;
     if (updateData.lastName) updates.last_name = updateData.lastName;
     if (updateData.phone) updates.phone = updateData.phone;

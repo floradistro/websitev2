@@ -27,8 +27,8 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://uaednwpxursknmwdeejn.supabase.co";
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVhZWRud3B4dXJza25td2RlZWpuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA5OTcyMzMsImV4cCI6MjA3NjU3MzIzM30.Dj0FtFqxF-FXHJrD_gNkKg5KQRPyMc-f6vO18CPhVVE";
+// Configure axios to include credentials (cookies) with all requests
+axios.defaults.withCredentials = true;
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -60,7 +60,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = useCallback(async (email: string, password: string) => {
     try {
-      // Call our login API endpoint which validates credentials
+      // SECURITY FIX: Session token now stored in HTTP-only cookie (XSS protection)
+      // No longer storing session in localStorage
       const response = await axios.post('/api/auth/login', {
         email,
         password
@@ -69,11 +70,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (response.data.success && response.data.user) {
         console.log('✅ Setting user in context:', response.data.user);
         setUser(response.data.user);
-        // Explicitly save to localStorage immediately
+        // Save user data to localStorage (but NOT the session token)
         localStorage.setItem("flora-user", JSON.stringify(response.data.user));
-        if (response.data.session) {
-          localStorage.setItem("supabase-session", response.data.session);
-        }
+        // Clean up old session storage if it exists
+        localStorage.removeItem("supabase-session");
       } else {
         throw new Error(response.data.error || "Invalid email or password");
       }
@@ -104,9 +104,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const logout = useCallback(() => {
-    setUser(null);
-    localStorage.removeItem("flora-user");
+  const logout = useCallback(async () => {
+    try {
+      // Call logout API to clear HTTP-only cookie
+      await axios.post('/api/auth/logout').catch(() => {
+        // Ignore errors - logout locally anyway
+      });
+    } finally {
+      // Always clear local state
+      setUser(null);
+      localStorage.removeItem("flora-user");
+      localStorage.removeItem("supabase-session"); // Clean up legacy
+    }
   }, []);
 
   const updateUser = useCallback(async (userData: Partial<User>) => {

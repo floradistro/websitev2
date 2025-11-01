@@ -1,0 +1,28 @@
+{
+  "extends": [
+    "next/core-web-vitals",
+    "next/typescript"
+  ],
+  "rules": {
+    // Disable console in production code (allow warn and error for debugging)
+    "no-console": ["warn", {
+      "allow": ["warn", "error"]
+    }],
+
+    // TypeScript specific rules
+    "@typescript-eslint/no-explicit-any": "warn",
+    "@typescript-eslint/no-unused-vars": ["warn", {
+      "argsIgnorePattern": "^_",
+      "varsIgnorePattern": "^_"
+    }],
+
+    // React hooks
+    "react-hooks/rules-of-hooks": "error",
+    "react-hooks/exhaustive-deps": "warn",
+
+    // General code quality
+    "no-debugger": "error",
+    "prefer-const": "warn",
+    "no-var": "error"
+  }
+}

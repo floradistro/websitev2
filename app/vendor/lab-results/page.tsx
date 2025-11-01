@@ -298,13 +298,13 @@ export default function VendorLabResults() {
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
       >
-        {/* Header */}
+        {/* Page Header */}
         <div className="px-4 pt-4 pb-3 border-b border-white/5">
-          <div className="flex items-center justify-between mb-1">
-            <h1 className="text-[10px] uppercase tracking-[0.15em] text-white font-black" style={{ fontWeight: 900 }}>
+          <div className="flex items-center justify-between gap-4">
+            <h1 className="text-[10px] uppercase tracking-[0.15em] text-white font-black flex-1" style={{ fontWeight: 900 }}>
               Lab Results & COAs
             </h1>
-            <div className="flex items-center gap-1 md:gap-2 text-white/40 text-[10px] uppercase tracking-[0.15em]">
+            <div className="flex items-center gap-1 md:gap-2 text-white/40 text-[10px] uppercase tracking-[0.15em] flex-shrink-0">
               <FileText className="w-3 h-3" />
               <span>{coas.length}</span>
             </div>
@@ -348,9 +348,9 @@ export default function VendorLabResults() {
           )}
 
           {/* Toolbar - Single Row */}
-          <div className="mb-4">
+          <div className="mb-4 mt-6">
             <div className="flex gap-2">
-              {/* Left: Upload + Select */}
+              {/* Left: Upload */}
               <button
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploading}
@@ -360,12 +360,12 @@ export default function VendorLabResults() {
                 {uploading ? (
                   <>
                     <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    <span className="hidden md:inline">Uploading...</span>
+                    <span className="hidden sm:inline">Uploading...</span>
                   </>
                 ) : (
                   <>
                     <Upload className="w-3.5 h-3.5" />
-                    <span className="hidden md:inline">Upload COA</span>
+                    <span className="hidden sm:inline">Upload COA</span>
                   </>
                 )}
               </button>
@@ -378,20 +378,22 @@ export default function VendorLabResults() {
                 className="hidden"
               />
 
-              <button
-                onClick={toggleSelectAll}
-                disabled={coas.length === 0}
-                className="flex-shrink-0 flex items-center gap-2 px-3 py-2.5 bg-white/5 border border-white/10 rounded-2xl text-white/60 hover:bg-white/10 hover:border-white/20 hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed"
-              >
-                {selectedCOAs.size === filteredCOAs.length && filteredCOAs.length > 0 ? (
-                  <CheckSquare className="w-3.5 h-3.5" />
-                ) : (
-                  <Square className="w-3.5 h-3.5" />
-                )}
-                <span className="text-[10px] uppercase tracking-[0.15em] hidden md:inline">
-                  {selectedCOAs.size === 0 ? 'Select' : selectedCOAs.size}
-                </span>
-              </button>
+              {/* Select All - Only show when there are COAs */}
+              {coas.length > 0 && (
+                <button
+                  onClick={toggleSelectAll}
+                  className="flex-shrink-0 flex items-center gap-2 px-3 py-2.5 bg-white/5 border border-white/10 rounded-2xl text-white/60 hover:bg-white/10 hover:border-white/20 hover:text-white transition-all"
+                >
+                  {selectedCOAs.size === filteredCOAs.length && filteredCOAs.length > 0 ? (
+                    <CheckSquare className="w-3.5 h-3.5" />
+                  ) : (
+                    <Square className="w-3.5 h-3.5" />
+                  )}
+                  <span className="text-[10px] uppercase tracking-[0.15em]">
+                    {selectedCOAs.size === 0 ? 'Select All' : `${selectedCOAs.size} Selected`}
+                  </span>
+                </button>
+              )}
 
               {/* Center: Search */}
               <div className="flex-1 relative">
@@ -602,7 +604,7 @@ interface COACardProps {
 function COACard({ coa, selected, onToggleSelect, onDownload, onQuickView }: COACardProps) {
   return (
     <div
-      className={`group flex flex-col bg-[#0a0a0a] hover:bg-[#141414] border rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1 ${
+      className={`group relative flex flex-col bg-[#0a0a0a] hover:bg-[#141414] border rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1 ${
         selected ? 'border-white/20' : 'border-white/5 hover:border-white/10'
       }`}
     >

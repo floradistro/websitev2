@@ -7,8 +7,24 @@
 DROP INDEX IF EXISTS idx_products_blueprint_fields_gin;
 CREATE INDEX IF NOT EXISTS idx_products_custom_fields_gin ON products USING gin(custom_fields);
 
--- Step 2: Update the validation function to use custom_fields
-CREATE OR REPLACE FUNCTION validate_product_fields(
+-- Step 2: Drop ALL versions of the validate_product_fields function
+DO $$
+DECLARE
+  r RECORD;
+BEGIN
+  -- Find and drop all functions named validate_product_fields
+  FOR r IN
+    SELECT oid::regprocedure AS func
+    FROM pg_proc
+    WHERE proname = 'validate_product_fields'
+  LOOP
+    EXECUTE 'DROP FUNCTION IF EXISTS ' || r.func || ' CASCADE';
+    RAISE NOTICE 'Dropped function: %', r.func;
+  END LOOP;
+END $$;
+
+-- Step 3: Create new function with custom_fields parameter
+CREATE FUNCTION validate_product_fields(
   p_category_id UUID,
   p_custom_fields JSONB
 )
@@ -63,11 +79,12 @@ $$;
 
 COMMENT ON FUNCTION validate_product_fields IS 'Validates that all required custom_fields for a category are present';
 
--- Step 3: Verify the changes
+-- Step 4: Verify the changes
 DO $$
 DECLARE
   v_index_exists BOOLEAN;
   v_function_exists BOOLEAN;
+  v_old_index_exists BOOLEAN;
 BEGIN
   -- Check if new index exists
   SELECT EXISTS (
@@ -75,15 +92,34 @@ BEGIN
     WHERE indexname = 'idx_products_custom_fields_gin'
   ) INTO v_index_exists;
 
+  -- Check if old index is gone
+  SELECT EXISTS (
+    SELECT 1 FROM pg_indexes
+    WHERE indexname = 'idx_products_blueprint_fields_gin'
+  ) INTO v_old_index_exists;
+
   -- Check if function exists
   SELECT EXISTS (
     SELECT 1 FROM pg_proc
     WHERE proname = 'validate_product_fields'
   ) INTO v_function_exists;
 
-  IF v_index_exists AND v_function_exists THEN
+  IF v_index_exists AND NOT v_old_index_exists AND v_function_exists THEN
     RAISE NOTICE '✅ All database objects updated to use custom_fields';
+    RAISE NOTICE '✅ Old index dropped: idx_products_blueprint_fields_gin';
+    RAISE NOTICE '✅ New index created: idx_products_custom_fields_gin';
+    RAISE NOTICE '✅ Function updated: validate_product_fields(UUID, JSONB)';
+    RAISE NOTICE '🎉 Migration complete - blueprint_fields is DEAD!';
   ELSE
     RAISE WARNING '⚠️  Some database objects may not have been updated correctly';
+    IF NOT v_index_exists THEN
+      RAISE WARNING '⚠️  New index was not created';
+    END IF;
+    IF v_old_index_exists THEN
+      RAISE WARNING '⚠️  Old index still exists';
+    END IF;
+    IF NOT v_function_exists THEN
+      RAISE WARNING '⚠️  Function was not created';
+    END IF;
   END IF;
 END $$;

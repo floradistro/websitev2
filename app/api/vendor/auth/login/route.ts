@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServiceSupabase } from '@/lib/supabase/client';
+import { withErrorHandler } from '@/lib/api-handler';
 
 /**
  * Vendor login endpoint - Simplified version
  * Just checks if vendor exists by email
  */
-export async function POST(request: NextRequest) {
+export const POST = withErrorHandler(async (request: NextRequest) => {
   try {
     const body = await request.json();
     const { email, password } = body;
@@ -27,8 +28,6 @@ export async function POST(request: NextRequest) {
     
     // If Supabase auth fails, just check if vendor exists (fallback for existing vendors)
     if (authError) {
-      console.log('Supabase auth failed, checking vendor directly:', email);
-      
       // Check if vendor exists in database
       const { data: vendor, error: vendorError } = await supabase
         .from('vendors')
@@ -45,8 +44,6 @@ export async function POST(request: NextRequest) {
       }
       
       // Vendor exists, allow login (temporary until all vendors have Supabase auth)
-      console.log('✅ Vendor found (no auth account):', vendor.store_name);
-      
       return NextResponse.json({
         success: true,
         vendor: {
@@ -76,9 +73,7 @@ export async function POST(request: NextRequest) {
         { status: 404 }
       );
     }
-    
-    console.log('✅ Vendor login successful (with auth):', vendor.store_name);
-    
+
     return NextResponse.json({
       success: true,
       vendor: {
@@ -101,5 +96,5 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});
 

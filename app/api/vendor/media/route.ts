@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServiceSupabase } from '@/lib/supabase/client';
+import { withErrorHandler } from '@/lib/api-handler';
 import OpenAI from 'openai';
 
 // Lazy-load OpenAI client to avoid build-time errors
@@ -16,8 +17,6 @@ function getOpenAI() {
 // Helper: AI auto-tag image with GPT-4 Vision
 async function analyzeImageWithAI(imageUrl: string) {
   try {
-    console.log('🔍 Analyzing image with GPT-4 Vision...');
-
     const response = await getOpenAI().chat.completions.create({
       model: 'gpt-4o',
       messages: [
@@ -72,7 +71,6 @@ Respond with ONLY the JSON, no other text.`
     if (!jsonMatch) return null;
 
     const analysis = JSON.parse(jsonMatch[0]);
-    console.log('✅ AI Analysis complete:', analysis);
 
     return analysis;
   } catch (error: any) {
@@ -82,7 +80,7 @@ Respond with ONLY the JSON, no other text.`
 }
 
 // GET - List all vendor images with metadata
-export async function GET(request: NextRequest) {
+export const GET = withErrorHandler(async (request: NextRequest) => {
   try {
     const vendorId = request.headers.get('x-vendor-id');
 
@@ -147,10 +145,10 @@ export async function GET(request: NextRequest) {
     console.error('Error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
-}
+});
 
 // POST - Upload new image with AI auto-tagging
-export async function POST(request: NextRequest) {
+export const POST = withErrorHandler(async (request: NextRequest) => {
   try {
     const vendorId = request.headers.get('x-vendor-id');
 
@@ -288,10 +286,10 @@ export async function POST(request: NextRequest) {
     console.error('Error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
-}
+});
 
 // PATCH - Update media metadata
-export async function PATCH(request: NextRequest) {
+export const PATCH = withErrorHandler(async (request: NextRequest) => {
   try {
     const vendorId = request.headers.get('x-vendor-id');
 
@@ -338,10 +336,10 @@ export async function PATCH(request: NextRequest) {
     console.error('Error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
-}
+});
 
 // DELETE - Delete image
-export async function DELETE(request: NextRequest) {
+export const DELETE = withErrorHandler(async (request: NextRequest) => {
   try {
     const vendorId = request.headers.get('x-vendor-id');
 
@@ -406,4 +404,4 @@ export async function DELETE(request: NextRequest) {
     console.error('Error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
-}
+});
