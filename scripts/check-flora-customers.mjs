@@ -1,91 +1,70 @@
 #!/usr/bin/env node
 
+import { config } from 'dotenv';
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = 'https://uaednwpxursknmwdeejn.supabase.co';
-const supabaseServiceKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVhZWRud3B4dXJza25td2RlZWpuIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MDk5NzIzMywiZXhwIjoyMDc2NTczMjMzfQ.l0NvBbS2JQWPObtWeVD2M2LD866A2tgLmModARYNnbI';
+config({ path: '.env.local' });
 
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-async function checkFloraCustomers() {
+const FLORA_DISTRO_VENDOR_ID = 'cd2e1122-d511-4edb-be5d-98ef274b4baf';
+
+async function main() {
   console.log('🔍 Checking Flora Distro customers...\n');
 
-  const vendorId = 'cd2e1122-d511-4edb-be5d-98ef274b4baf';
+  // Get all vendor_customers for Flora Distro
+  const { data, error } = await supabase
+    .from('vendor_customers')
+    .select(`
+      id,
+      vendor_customer_number,
+      loyalty_points,
+      loyalty_tier,
+      total_orders,
+      total_spent,
+      last_purchase_date,
+      created_at,
+      customers (
+        id,
+        first_name,
+        last_name,
+        email,
+        phone
+      )
+    `)
+    .eq('vendor_id', FLORA_DISTRO_VENDOR_ID);
 
-  // Count Flora Distro customers
-  const { count: totalCount, error: totalError } = await supabase
-    .from('customers')
-    .select('*', { count: 'exact', head: true })
-    .eq('vendor_id', vendorId);
-
-  if (totalError) {
-    console.log(`❌ Error: ${totalError.message}`);
-    console.log('   Code:', totalError.code);
-    console.log('   Details:', totalError.details);
-    console.log('   Hint:', totalError.hint);
+  if (error) {
+    console.error('❌ Error:', error);
     return;
   }
 
-  console.log(`📊 Flora Distro customers: ${totalCount}`);
+  console.log(`📊 Total vendor_customers records: ${data.length}`);
+  console.log(`📊 Records with customer data: ${data.filter(vc => vc.customers).length}`);
+  console.log(`📊 Records with NULL customer: ${data.filter(vc => !vc.customers).length}\n`);
 
-  // Count with email
-  const { count: emailCount } = await supabase
-    .from('customers')
-    .select('*', { count: 'exact', head: true })
-    .eq('vendor_id', vendorId)
-    .not('email', 'is', null);
+  // Show first 10 customers
+  console.log('👥 First 10 customers:\n');
+  data.slice(0, 10).forEach((vc, i) => {
+    if (vc.customers) {
+      console.log(`${i + 1}. ${vc.customers.first_name} ${vc.customers.last_name}`);
+      console.log(`   Email: ${vc.customers.email}`);
+      console.log(`   Phone: ${vc.customers.phone || 'N/A'}`);
+      console.log(`   Points: ${vc.loyalty_points || 0} | Tier: ${vc.loyalty_tier || 'bronze'}`);
+      console.log(`   Orders: ${vc.total_orders || 0} | Spent: $${vc.total_spent || 0}`);
+      console.log('');
+    } else {
+      console.log(`${i + 1}. ⚠️  NULL customer (orphaned record)`);
+      console.log(`   Vendor Customer ID: ${vc.id}`);
+      console.log('');
+    }
+  });
 
-  console.log(`📧 With email: ${emailCount}`);
-
-  // Count with phone
-  const { count: phoneCount } = await supabase
-    .from('customers')
-    .select('*', { count: 'exact', head: true })
-    .eq('vendor_id', vendorId)
-    .not('phone', 'is', null);
-
-  console.log(`📱 With phone: ${phoneCount}`);
-
-  // Get sample
-  const { data: samples, error: sampleError } = await supabase
-    .from('customers')
-    .select('id, email, phone, first_name, last_name')
-    .eq('vendor_id', vendorId)
-    .not('email', 'is', null)
-    .limit(5);
-
-  if (sampleError) {
-    console.log(`\n❌ Error getting samples: ${sampleError.message}`);
-    return;
-  }
-
-  if (samples && samples.length > 0) {
-    console.log('\n📋 Sample customers with email:');
-    samples.forEach((c, i) => {
-      console.log(`   ${i + 1}. ${c.email}`);
-      console.log(`      Name: ${c.first_name || ''} ${c.last_name || ''}`);
-      console.log(`      Phone: ${c.phone || 'N/A'}`);
-    });
-  } else {
-    console.log('\n⚠️  No Flora Distro customers with email addresses');
-  }
-
-  // Check all customers without vendor filter
-  console.log('\n📊 All customers breakdown by vendor:');
-  const { data: allCustomers } = await supabase
-    .from('customers')
-    .select('vendor_id');
-
-  if (allCustomers) {
-    const vendorCounts = {};
-    allCustomers.forEach(c => {
-      vendorCounts[c.vendor_id] = (vendorCounts[c.vendor_id] || 0) + 1;
-    });
-
-    Object.entries(vendorCounts).forEach(([vid, count]) => {
-      console.log(`   ${vid}: ${count} customers`);
-    });
-  }
+  // Check for any with null last_purchase_date
+  const noLastPurchase = data.filter(vc => !vc.last_purchase_date);
+  console.log(`\n📊 Customers with no last_purchase_date: ${noLastPurchase.length}`);
 }
 
-checkFloraCustomers().catch(console.error);
+main().catch(console.error);

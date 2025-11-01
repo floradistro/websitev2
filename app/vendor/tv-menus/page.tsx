@@ -82,6 +82,10 @@ export default function SimpleTVMenusPage() {
   const [splitRightCustomFields, setSplitRightCustomFields] = useState<string[]>([]);
   const [splitRightPriceBreaks, setSplitRightPriceBreaks] = useState<string[]>([]);
 
+  // Carousel / Auto-slide configuration
+  const [enableCarousel, setEnableCarousel] = useState(true); // Enable auto-carousel when products exceed grid
+  const [carouselInterval, setCarouselInterval] = useState(5); // Seconds between slides
+
   const [deletingMenu, setDeletingMenu] = useState<TVMenu | null>(null);
   const [deletingDevice, setDeletingDevice] = useState<TVDevice | null>(null);
   const [updating, setUpdating] = useState(false);
@@ -366,6 +370,10 @@ export default function SimpleTVMenusPage() {
     setSplitRightCustomFields(menu.config_data?.splitRightCustomFields || []);
     setSplitRightPriceBreaks(menu.config_data?.splitRightPriceBreaks || []);
 
+    // Load carousel configuration
+    setEnableCarousel(menu.config_data?.enableCarousel !== false); // Default true
+    setCarouselInterval(menu.config_data?.carouselInterval || 5); // Default 5 seconds
+
     setError(null);
 
     // Fetch available categories and custom fields from API
@@ -457,7 +465,9 @@ export default function SimpleTVMenusPage() {
           splitRightCategory: splitRightCategory,
           splitRightTitle: splitRightTitle,
           splitRightCustomFields: splitRightCustomFields,
-          splitRightPriceBreaks: splitRightPriceBreaks
+          splitRightPriceBreaks: splitRightPriceBreaks,
+          enableCarousel: enableCarousel,
+          carouselInterval: carouselInterval
         })
       });
 

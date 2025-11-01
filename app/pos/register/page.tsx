@@ -40,14 +40,8 @@ export default function POSRegisterPage() {
     }
   };
 
-  // Check for active session on load
+  // Load initial data
   useEffect(() => {
-    // Check if register is assigned
-    const savedRegisterId = localStorage.getItem('pos_register_id');
-    if (savedRegisterId) {
-      setRegisterId(savedRegisterId);
-    }
-    loadActiveSession();
     loadPromotions();
   }, []);
 
@@ -363,9 +357,11 @@ export default function POSRegisterPage() {
       <POSRegisterSelector
         locationId={CHARLOTTE_CENTRAL_ID}
         locationName="Charlotte Central"
-        onRegisterSelected={(id) => {
+        onRegisterSelected={(id, sessionId) => {
           setRegisterId(id);
-          loadActiveSession();
+          if (sessionId) {
+            setSessionId(sessionId);
+          }
         }}
       />
     );

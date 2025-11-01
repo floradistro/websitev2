@@ -33,8 +33,46 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    console.log('✅ Fetched registers for location:', locationId, 'Count:', registers?.length);
-    return NextResponse.json({ registers: registers || [] });
+    // Fetch active sessions for these registers
+    const registerIds = registers.map(r => r.id);
+    const { data: sessions } = await supabase
+      .from('pos_sessions')
+      .select(`
+        id,
+        register_id,
+        session_number,
+        total_sales,
+        opened_at,
+        user_id,
+        users(first_name, last_name)
+      `)
+      .in('register_id', registerIds)
+      .eq('status', 'open');
+
+    // Map sessions to registers
+    const sessionsMap = new Map();
+    (sessions || []).forEach(session => {
+      sessionsMap.set(session.register_id, session);
+    });
+
+    // Format the response to include session data properly
+    const formattedRegisters = registers.map(reg => {
+      const session = sessionsMap.get(reg.id);
+
+      return {
+        ...reg,
+        current_session: session ? {
+          id: session.id,
+          session_number: session.session_number,
+          total_sales: session.total_sales || 0,
+          started_at: session.opened_at,
+          user_name: session.users ? `${session.users.first_name} ${session.users.last_name}` : undefined,
+        } : undefined,
+      };
+    });
+
+    console.log('✅ Fetched registers for location:', locationId, 'Count:', formattedRegisters?.length);
+    return NextResponse.json({ registers: formattedRegisters });
   } catch (error: any) {
     console.error('Error in GET /api/pos/registers:', error);
     return NextResponse.json(

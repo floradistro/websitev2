@@ -7,7 +7,7 @@ export async function POST(request: NextRequest) {
       menuId, name, description, theme, display_mode, gridColumns, gridRows, categories, customFields, customFieldsConfig,
       visible_price_breaks, hideAllFieldLabels, layoutStyle, splitLeftCategory, splitLeftTitle,
       splitLeftCustomFields, splitLeftPriceBreaks, splitRightCategory, splitRightTitle,
-      splitRightCustomFields, splitRightPriceBreaks
+      splitRightCustomFields, splitRightPriceBreaks, enableCarousel, carouselInterval
     } = await request.json();
 
     if (!menuId) {
