@@ -4,9 +4,10 @@ import { getServiceSupabase } from '@/lib/supabase/client';
 export async function POST(request: NextRequest) {
   try {
     const {
-      menuId, name, description, theme, display_mode, categories, customFields, customFieldsConfig,
+      menuId, name, description, theme, display_mode, gridColumns, gridRows, categories, customFields, customFieldsConfig,
       visible_price_breaks, hideAllFieldLabels, layoutStyle, splitLeftCategory, splitLeftTitle,
-      splitRightCategory, splitRightTitle
+      splitLeftCustomFields, splitLeftPriceBreaks, splitRightCategory, splitRightTitle,
+      splitRightCustomFields, splitRightPriceBreaks
     } = await request.json();
 
     if (!menuId) {
@@ -20,6 +21,12 @@ export async function POST(request: NextRequest) {
 
     // Build config_data with all menu configuration
     const config_data: any = {};
+    if (gridColumns !== undefined) {
+      config_data.gridColumns = gridColumns;
+    }
+    if (gridRows !== undefined) {
+      config_data.gridRows = gridRows;
+    }
     if (categories !== undefined) {
       config_data.categories = categories;
     }
@@ -44,11 +51,23 @@ export async function POST(request: NextRequest) {
     if (splitLeftTitle !== undefined) {
       config_data.splitLeftTitle = splitLeftTitle;
     }
+    if (splitLeftCustomFields !== undefined) {
+      config_data.splitLeftCustomFields = splitLeftCustomFields;
+    }
+    if (splitLeftPriceBreaks !== undefined) {
+      config_data.splitLeftPriceBreaks = splitLeftPriceBreaks;
+    }
     if (splitRightCategory !== undefined) {
       config_data.splitRightCategory = splitRightCategory;
     }
     if (splitRightTitle !== undefined) {
       config_data.splitRightTitle = splitRightTitle;
+    }
+    if (splitRightCustomFields !== undefined) {
+      config_data.splitRightCustomFields = splitRightCustomFields;
+    }
+    if (splitRightPriceBreaks !== undefined) {
+      config_data.splitRightPriceBreaks = splitRightPriceBreaks;
     }
 
     const { data, error } = await supabase

@@ -1463,6 +1463,69 @@ export default function SimpleTVMenusPage() {
                             className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white text-sm placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-white/20"
                           />
                         </div>
+
+                        {/* Custom Fields for Left Side */}
+                        <div>
+                          <label className="text-xs text-white/60 block mb-2">Product Info</label>
+                          <div className="flex flex-wrap gap-1">
+                            {availableCustomFields.map((field) => {
+                              const isSelected = splitLeftCustomFields.includes(field);
+                              const displayName = field.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                              return (
+                                <button
+                                  key={field}
+                                  type="button"
+                                  onClick={() => {
+                                    if (isSelected) {
+                                      setSplitLeftCustomFields(splitLeftCustomFields.filter(f => f !== field));
+                                    } else {
+                                      setSplitLeftCustomFields([...splitLeftCustomFields, field]);
+                                    }
+                                  }}
+                                  className={`
+                                    px-2 py-1 rounded text-xs font-medium transition-all
+                                    ${isSelected ? 'bg-purple-500 text-white' : 'bg-white/10 text-white/60 hover:bg-white/20'}
+                                  `}
+                                >
+                                  {displayName}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+
+                        {/* Price Breaks for Left Side */}
+                        <div>
+                          <label className="text-xs text-white/60 block mb-2">Pricing</label>
+                          <div className="flex flex-wrap gap-1">
+                            {availablePriceBreaks.map((breakId) => {
+                              const isSelected = splitLeftPriceBreaks.includes(breakId);
+                              const labels: { [key: string]: string } = {
+                                '1g': '1g', '3_5g': '3.5g', '7g': '7g', '14g': '14g', '28g': '28g'
+                              };
+                              const displayName = labels[breakId] || breakId;
+                              return (
+                                <button
+                                  key={breakId}
+                                  type="button"
+                                  onClick={() => {
+                                    if (isSelected) {
+                                      setSplitLeftPriceBreaks(splitLeftPriceBreaks.filter(b => b !== breakId));
+                                    } else {
+                                      setSplitLeftPriceBreaks([...splitLeftPriceBreaks, breakId]);
+                                    }
+                                  }}
+                                  className={`
+                                    px-2 py-1 rounded text-xs font-medium transition-all
+                                    ${isSelected ? 'bg-green-500 text-white' : 'bg-white/10 text-white/60 hover:bg-white/20'}
+                                  `}
+                                >
+                                  {displayName}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
                       </div>
 
                       {/* Right Side */}
@@ -1490,6 +1553,69 @@ export default function SimpleTVMenusPage() {
                             placeholder="e.g., Edibles"
                             className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white text-sm placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-white/20"
                           />
+                        </div>
+
+                        {/* Custom Fields for Right Side */}
+                        <div>
+                          <label className="text-xs text-white/60 block mb-2">Product Info</label>
+                          <div className="flex flex-wrap gap-1">
+                            {availableCustomFields.map((field) => {
+                              const isSelected = splitRightCustomFields.includes(field);
+                              const displayName = field.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                              return (
+                                <button
+                                  key={field}
+                                  type="button"
+                                  onClick={() => {
+                                    if (isSelected) {
+                                      setSplitRightCustomFields(splitRightCustomFields.filter(f => f !== field));
+                                    } else {
+                                      setSplitRightCustomFields([...splitRightCustomFields, field]);
+                                    }
+                                  }}
+                                  className={`
+                                    px-2 py-1 rounded text-xs font-medium transition-all
+                                    ${isSelected ? 'bg-purple-500 text-white' : 'bg-white/10 text-white/60 hover:bg-white/20'}
+                                  `}
+                                >
+                                  {displayName}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+
+                        {/* Price Breaks for Right Side */}
+                        <div>
+                          <label className="text-xs text-white/60 block mb-2">Pricing</label>
+                          <div className="flex flex-wrap gap-1">
+                            {availablePriceBreaks.map((breakId) => {
+                              const isSelected = splitRightPriceBreaks.includes(breakId);
+                              const labels: { [key: string]: string } = {
+                                '1g': '1g', '3_5g': '3.5g', '7g': '7g', '14g': '14g', '28g': '28g'
+                              };
+                              const displayName = labels[breakId] || breakId;
+                              return (
+                                <button
+                                  key={breakId}
+                                  type="button"
+                                  onClick={() => {
+                                    if (isSelected) {
+                                      setSplitRightPriceBreaks(splitRightPriceBreaks.filter(b => b !== breakId));
+                                    } else {
+                                      setSplitRightPriceBreaks([...splitRightPriceBreaks, breakId]);
+                                    }
+                                  }}
+                                  className={`
+                                    px-2 py-1 rounded text-xs font-medium transition-all
+                                    ${isSelected ? 'bg-green-500 text-white' : 'bg-white/10 text-white/60 hover:bg-white/20'}
+                                  `}
+                                >
+                                  {displayName}
+                                </button>
+                              );
+                            })}
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -1565,6 +1691,56 @@ export default function SimpleTVMenusPage() {
                         </div>
                       )}
                     </motion.button>
+                  </div>
+                </div>
+
+                {/* Grid Configuration */}
+                <div className="p-5 bg-gradient-to-r from-purple-500/10 to-blue-500/10 border border-purple-500/20 rounded-xl">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Grid3x3 className="w-5 h-5 text-purple-400" />
+                    <label className="text-white font-semibold">
+                      Grid Layout
+                    </label>
+                  </div>
+                  <p className="text-sm text-white/60 mb-4">
+                    Control how many products show per page on your displays
+                  </p>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-white/60 text-xs font-medium mb-2">
+                        Columns (Width)
+                      </label>
+                      <input
+                        type="number"
+                        min="3"
+                        max="12"
+                        value={gridColumns}
+                        onChange={(e) => setGridColumns(parseInt(e.target.value) || 6)}
+                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white text-center text-xl font-bold focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      />
+                      <p className="text-xs text-white/40 mt-1 text-center">3-12</p>
+                    </div>
+                    <div>
+                      <label className="block text-white/60 text-xs font-medium mb-2">
+                        Rows (Height)
+                      </label>
+                      <input
+                        type="number"
+                        min="3"
+                        max="10"
+                        value={gridRows}
+                        onChange={(e) => setGridRows(parseInt(e.target.value) || 5)}
+                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white text-center text-xl font-bold focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      />
+                      <p className="text-xs text-white/40 mt-1 text-center">3-10</p>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 p-3 bg-purple-500/20 border border-purple-500/30 rounded-lg">
+                    <div className="text-sm text-white/90">
+                      <span className="font-bold text-purple-300">{gridColumns} × {gridRows} = {gridColumns * gridRows} products</span> per page
+                    </div>
                   </div>
                 </div>
 
