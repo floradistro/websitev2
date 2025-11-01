@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Monitor, Check, Users, DollarSign, Clock, X } from 'lucide-react';
+import { supabase } from '@/lib/supabase/client';
 
 interface Register {
   id: string;
@@ -36,6 +37,30 @@ export function POSRegisterSelector({
 
   useEffect(() => {
     loadRegisters();
+
+    // Subscribe to real-time session changes
+    const channel = supabase
+      .channel('pos_sessions_changes')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'pos_sessions',
+      }, (payload) => {
+        console.log('🔄 Session changed:', payload.eventType, payload);
+        // Reload registers to get updated session info
+        loadRegisters();
+      })
+      .subscribe();
+
+    // Also poll every 2 seconds as fallback for instant updates
+    const pollInterval = setInterval(() => {
+      loadRegisters();
+    }, 2000);
+
+    return () => {
+      supabase.removeChannel(channel);
+      clearInterval(pollInterval);
+    };
   }, [locationId]);
 
   const loadRegisters = async () => {
@@ -123,8 +148,14 @@ export function POSRegisterSelector({
         throw new Error('Failed to end session');
       }
 
-      // Start new session
+      // Close modal and reload registers
       setShowSessionModal(false);
+      setSelectedRegisterWithSession(null);
+
+      // Force reload registers to show updated state
+      await loadRegisters();
+
+      // Start new session
       await startNewSession(selectedRegisterWithSession.id);
     } catch (error) {
       console.error('Error ending session:', error);

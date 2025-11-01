@@ -16,19 +16,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if there's already an open session
-    const { data: existing } = await supabase
-      .from('pos_sessions')
-      .select('id, session_number')
-      .eq('location_id', locationId)
-      .eq('status', 'open')
-      .maybeSingle();
+    // Check if there's already an open session for THIS REGISTER (not location-wide)
+    if (registerId) {
+      const { data: existing } = await supabase
+        .from('pos_sessions')
+        .select('id, session_number')
+        .eq('register_id', registerId)
+        .eq('status', 'open')
+        .maybeSingle();
 
-    if (existing) {
-      return NextResponse.json(
-        { error: 'Session already open', session: existing },
-        { status: 409 }
-      );
+      if (existing) {
+        return NextResponse.json(
+          { error: 'Session already open for this register', session: existing },
+          { status: 409 }
+        );
+      }
     }
 
     // Get location details
