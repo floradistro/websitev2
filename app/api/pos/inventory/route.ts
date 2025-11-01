@@ -86,19 +86,19 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Build pricing map by vendor_id
+    // Build pricing map by vendor_id + blueprint_id
     const vendorPricingMap = new Map();
-    
+
     (vendorPricingResult.data || []).forEach((config: any) => {
-      if (!config.blueprint?.price_breaks) return;
-      
+      if (!config.blueprint?.price_breaks || !config.vendor_id) return;
+
       const pricingValues = config.pricing_values || {};
       const tiers: any[] = [];
-      
+
       config.blueprint.price_breaks.forEach((priceBreak: any) => {
         const breakId = priceBreak.break_id;
         const vendorPrice = pricingValues[breakId];
-        
+
         // Only add if tier is ENABLED and has a price
         if (vendorPrice && vendorPrice.enabled !== false && vendorPrice.price) {
           tiers.push({
@@ -111,11 +111,13 @@ export async function GET(request: NextRequest) {
           });
         }
       });
-      
+
       // Sort by sort_order
       tiers.sort((a, b) => a.sort_order - b.sort_order);
-      
-      vendorPricingMap.set(config.vendor_id, tiers);
+
+      // Use composite key: vendor_id + blueprint_id
+      const key = `${config.vendor_id}::${config.blueprint.id}`;
+      vendorPricingMap.set(key, tiers);
     });
 
     // Transform data
@@ -133,7 +135,9 @@ export async function GET(request: NextRequest) {
           const blueprint = activeAssignment.blueprint;
           const priceBreaks = blueprint.price_breaks || [];
           const productOverrides = activeAssignment.price_overrides || {};
-          const vendorPricing = vendorPricingMap.get(inv.products.vendor_id);
+          // Use composite key to get vendor pricing for this specific blueprint
+          const vendorPricingKey = `${inv.products.vendor_id}::${blueprint.id}`;
+          const vendorPricing = vendorPricingMap.get(vendorPricingKey);
 
           priceBreaks.forEach((priceBreak: any) => {
             const breakId = priceBreak.break_id;
