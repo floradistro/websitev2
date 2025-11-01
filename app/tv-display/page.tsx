@@ -732,10 +732,20 @@ function TVDisplayContent() {
   }, [displayGroup?.id, activeMenu]);
 
   /**
-   * AUTO CAROUSEL: Rotates pages every 5 seconds when products exceed grid capacity
+   * AUTO CAROUSEL: Rotates pages based on menu configuration
    */
   useEffect(() => {
     if (products.length === 0 || !displayGroup) {
+      return;
+    }
+
+    // Get carousel configuration from menu
+    const enableCarousel = activeMenu?.config_data?.enableCarousel !== false; // Default true for backward compatibility
+    const carouselInterval = (activeMenu?.config_data?.carouselInterval || 5) * 1000; // Convert seconds to milliseconds, default 5s
+
+    // If carousel is disabled, don't set up any intervals
+    if (!enableCarousel) {
+      console.log('🎠 Carousel DISABLED by menu configuration');
       return;
     }
 
@@ -773,14 +783,14 @@ function TVDisplayContent() {
       // Setup independent carousel for left side
       let leftInterval: NodeJS.Timeout | null = null;
       if (leftPages > 1) {
-        console.log(`🎠 LEFT side needs carousel: ${leftPages} pages`);
+        console.log(`🎠 LEFT side needs carousel: ${leftPages} pages (${carouselInterval}ms interval)`);
         leftInterval = setInterval(() => {
           setCarouselPageLeft((prev) => {
             const next = (prev + 1) % leftPages;
             console.log(`🎠 LEFT Page ${next + 1}/${leftPages}`);
             return next;
           });
-        }, 5000);
+        }, carouselInterval);
       } else {
         console.log(`✅ LEFT side fits on one page - no carousel`);
         setCarouselPageLeft(0);
@@ -789,14 +799,14 @@ function TVDisplayContent() {
       // Setup independent carousel for right side
       let rightInterval: NodeJS.Timeout | null = null;
       if (rightPages > 1) {
-        console.log(`🎠 RIGHT side needs carousel: ${rightPages} pages`);
+        console.log(`🎠 RIGHT side needs carousel: ${rightPages} pages (${carouselInterval}ms interval)`);
         rightInterval = setInterval(() => {
           setCarouselPageRight((prev) => {
             const next = (prev + 1) % rightPages;
             console.log(`🎠 RIGHT Page ${next + 1}/${rightPages}`);
             return next;
           });
-        }, 5000);
+        }, carouselInterval);
       } else {
         console.log(`✅ RIGHT side fits on one page - no carousel`);
         setCarouselPageRight(0);
@@ -817,7 +827,7 @@ function TVDisplayContent() {
         return;
       }
 
-      console.log(`🎠 AUTO CAROUSEL: ${totalPages} pages, rotating every 5 seconds`);
+      console.log(`🎠 AUTO CAROUSEL: ${totalPages} pages, rotating every ${carouselInterval / 1000} seconds`);
 
       const interval = setInterval(() => {
         setCarouselPage((prev) => {
@@ -825,7 +835,7 @@ function TVDisplayContent() {
           console.log(`🎠 Page ${next + 1}/${totalPages}`);
           return next;
         });
-      }, 5000);
+      }, carouselInterval); // Using configured interval instead of hardcoded 5000
 
       return () => {
         clearInterval(interval);

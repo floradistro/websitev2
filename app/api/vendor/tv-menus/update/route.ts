@@ -69,6 +69,12 @@ export async function POST(request: NextRequest) {
     if (splitRightPriceBreaks !== undefined) {
       config_data.splitRightPriceBreaks = splitRightPriceBreaks;
     }
+    if (enableCarousel !== undefined) {
+      config_data.enableCarousel = enableCarousel;
+    }
+    if (carouselInterval !== undefined) {
+      config_data.carouselInterval = carouselInterval;
+    }
 
     const { data, error } = await supabase
       .from('tv_menus')

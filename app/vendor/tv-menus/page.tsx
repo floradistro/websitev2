@@ -1754,6 +1754,71 @@ export default function SimpleTVMenusPage() {
                   </div>
                 </div>
 
+                {/* Carousel / Auto-Slide Configuration */}
+                <div className="p-5 bg-gradient-to-r from-blue-500/10 to-cyan-500/10 border border-blue-500/20 rounded-xl">
+                  <div className="flex items-center gap-2 mb-3">
+                    <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                    <label className="text-white font-semibold">
+                      Auto-Slide Configuration
+                    </label>
+                  </div>
+                  <p className="text-sm text-white/60 mb-4">
+                    Automatically rotate through product pages when there are too many to fit on screen
+                  </p>
+
+                  {/* Enable/Disable Toggle */}
+                  <div className="flex items-center justify-between p-3 bg-white/5 rounded-lg mb-4">
+                    <div>
+                      <div className="text-sm font-medium text-white">Enable Auto-Slide</div>
+                      <div className="text-xs text-white/50">Automatically cycle through pages</div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setEnableCarousel(!enableCarousel)}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        enableCarousel ? 'bg-blue-500' : 'bg-white/20'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          enableCarousel ? 'translate-x-6' : 'translate-x-1'
+                        }`}
+                      />
+                    </button>
+                  </div>
+
+                  {/* Interval Slider - Only show when enabled */}
+                  {enableCarousel && (
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <label className="text-sm text-white/80">Slide Interval</label>
+                        <span className="text-lg font-bold text-blue-300">{carouselInterval}s</span>
+                      </div>
+                      <input
+                        type="range"
+                        min="3"
+                        max="15"
+                        step="1"
+                        value={carouselInterval}
+                        onChange={(e) => setCarouselInterval(parseInt(e.target.value))}
+                        className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer slider"
+                        style={{
+                          background: `linear-gradient(to right, rgb(59 130 246) 0%, rgb(59 130 246) ${((carouselInterval - 3) / 12) * 100}%, rgba(255,255,255,0.1) ${((carouselInterval - 3) / 12) * 100}%, rgba(255,255,255,0.1) 100%)`
+                        }}
+                      />
+                      <div className="flex justify-between text-xs text-white/40">
+                        <span>3s (Fast)</span>
+                        <span>15s (Slow)</span>
+                      </div>
+                      <p className="text-xs text-blue-300/70 italic">
+                        Products will transition every {carouselInterval} seconds
+                      </p>
+                    </div>
+                  )}
+                </div>
+
                 {/* Theme Selector */}
                 <div>
                   <label className="block text-white/60 text-sm font-medium mb-3 flex items-center gap-2">
