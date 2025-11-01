@@ -248,10 +248,7 @@ export default function DisplayGroupManager({ vendorId }: DisplayGroupManagerPro
                 </div>
                 <div className="flex items-center gap-1">
                   <Grid3x3 className="w-4 h-4" />
-                  <span>{group.shared_grid_columns}×{group.shared_grid_rows} grid</span>
-                </div>
-                <div className="px-2 py-1 bg-white/10 rounded">
-                  {group.shared_theme}
+                  <span>{group.shared_grid_columns}×{group.shared_grid_rows} grid layout</span>
                 </div>
               </div>
 

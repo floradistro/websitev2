@@ -65,7 +65,8 @@ export async function GET(request: NextRequest) {
 
 /**
  * POST /api/display-groups
- * Create a new display group
+ * Create a new display group - LAYOUT ONLY (grid columns/rows + category assignment)
+ * All theme, pricing, and display settings are configured in main menu editor
  */
 export async function POST(request: NextRequest) {
   try {
@@ -75,15 +76,8 @@ export async function POST(request: NextRequest) {
       locationId,
       name,
       description,
-      theme,
-      displayMode,
-      typography,
-      spacing,
       gridColumns,
       gridRows,
-      pricingTierId, // Which pricing tier (filters products)
-      visible_price_breaks, // Which sizes to show (e.g., ['1g', '3_5g'])
-      displayConfig,
       devices, // Array of { deviceId, position, categories }
     } = body;
 
@@ -96,7 +90,8 @@ export async function POST(request: NextRequest) {
 
     const supabase = getServiceSupabase();
 
-    // Create group
+    // Create group - ONLY layout configuration (grid columns/rows)
+    // Theme/pricing/display settings moved to main menu editor
     const { data: group, error: groupError } = await supabase
       .from('tv_display_groups')
       .insert({
@@ -104,30 +99,9 @@ export async function POST(request: NextRequest) {
         location_id: locationId,
         name,
         description,
-        shared_theme: theme || 'midnight-elegance',
-        shared_display_mode: displayMode || 'dense',
-        shared_typography: typography || {
-          productNameSize: 22,
-          priceSize: 36,
-          detailsSize: 16,
-        },
-        shared_spacing: spacing || {
-          cardPadding: 16,
-          gridGap: 16,
-          margins: 24,
-        },
-        shared_grid_columns: gridColumns || 6, // Default to 6 columns (6×5 = 30 products)
-        shared_grid_rows: gridRows || 5, // Default to 5 rows
-        pricing_tier_id: pricingTierId || null, // Which tier of products to show
-        visible_price_breaks: visible_price_breaks || [], // Which sizes to show
-        display_config: displayConfig || {
-          show_images: true,
-          show_header: false,
-          show_strain_type: true,
-          show_thc: true,
-          show_cbd: true,
-          show_brand: false,
-        },
+        shared_grid_columns: gridColumns || 6,
+        shared_grid_rows: gridRows || 5,
+        // Removed: theme, display_mode, pricing, displayConfig - these are in menu settings now
       })
       .select()
       .single();

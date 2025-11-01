@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ArrowRight, ArrowLeft, Monitor, Grid3x3, Palette, Check } from 'lucide-react';
+import { X, ArrowRight, ArrowLeft, Monitor, Grid3x3, Check, Settings } from 'lucide-react';
 
 interface Device {
   id: string;
@@ -19,39 +19,7 @@ interface GroupConfigWizardProps {
   onClose: () => void;
 }
 
-const THEMES = [
-  { id: 'midnight-elegance', name: 'Midnight Elegance', description: 'Dark, premium aesthetic' },
-  { id: 'fresh-market', name: 'Fresh Market', description: 'Bright and inviting' },
-  { id: 'ocean-breeze', name: 'Ocean Breeze', description: 'Cool blues and calm' },
-  { id: 'sunset-warmth', name: 'Sunset Warmth', description: 'Warm oranges and reds' },
-  { id: 'forest-zen', name: 'Forest Zen', description: 'Natural greens and earth' },
-  { id: 'bold-vibrant', name: 'Bold Vibrant', description: 'High contrast and energy' },
-];
-
-const DISPLAY_MODES = [
-  { id: 'dense', name: 'Dense Grid', description: 'Maximum products on screen' },
-  { id: 'carousel', name: 'Carousel', description: 'Rotating pages with transitions' },
-];
-
-const PRICE_TIERS = [
-  { id: '1g', name: 'Gram', description: 'Show 1g pricing' },
-  { id: '3_5g', name: 'Eighth (3.5g)', description: 'Show eighth pricing' },
-  { id: '7g', name: 'Quarter (7g)', description: 'Show quarter pricing' },
-  { id: '14g', name: 'Half (14g)', description: 'Show half ounce pricing' },
-  { id: '28g', name: 'Ounce (28g)', description: 'Show ounce pricing' },
-];
-
-const PRICE_DISPLAY_MODES = [
-  { id: 'hero_only', name: 'Hero Only', description: 'Show only the main price tier (cleanest)' },
-  { id: 'hero_with_supporting', name: 'Hero + Others', description: 'Main price + 1-2 supporting prices' },
-  { id: 'all_tiers', name: 'All Tiers', description: 'Show all available price tiers' },
-  { id: 'minimal', name: 'Minimal', description: 'Show only smallest tier' },
-];
-
-const PRICE_LOCATIONS = [
-  { id: 'on_card', name: 'On Product Card', description: 'Pricing shown within each product' },
-  { id: 'header', name: 'Header Banner', description: 'Pricing shown in header (coming soon)', disabled: true },
-];
+// Display groups now only configure layout - all theme/pricing/display settings moved to main menu editor
 
 export default function GroupConfigWizard({ vendorId, existingGroup, onComplete, onClose }: GroupConfigWizardProps) {
   const [step, setStep] = useState(1);
@@ -60,31 +28,13 @@ export default function GroupConfigWizard({ vendorId, existingGroup, onComplete,
   const [availablePricingTiers, setAvailablePricingTiers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Form state
+  // Form state - LAYOUT ONLY (theme, pricing, display settings moved to main menu editor)
   const [groupName, setGroupName] = useState('');
   const [groupDescription, setGroupDescription] = useState('');
   const [selectedDevices, setSelectedDevices] = useState<string[]>([]);
-  const [theme, setTheme] = useState('midnight-elegance');
-  const [displayMode, setDisplayMode] = useState('dense');
   const [gridColumns, setGridColumns] = useState(6);
   const [gridRows, setGridRows] = useState(5);
   const [deviceCategories, setDeviceCategories] = useState<{ [deviceId: string]: string[] }>({});
-
-  // Pricing tier selection (which tier of products to show - e.g., "Budget", "Mid", "Premium")
-  const [pricingTierId, setPricingTierId] = useState<string>('');
-  const [pricingTiers, setPricingTiers] = useState<any[]>([]);
-
-  // Visible price breaks (which sizes to show - e.g., ['1g', '3_5g', '28g'])
-  const [visiblePriceBreaks, setVisiblePriceBreaks] = useState<string[]>([]);
-
-  // Display configuration - all enabled by default
-  const [showImages, setShowImages] = useState(true);
-  const [showCategoryHeader, setShowCategoryHeader] = useState(true);
-  const [showHeader, setShowHeader] = useState(false);
-  const [showStrainType, setShowStrainType] = useState(true);
-  const [showThc, setShowThc] = useState(true);
-  const [showCbd, setShowCbd] = useState(true);
-  const [showBrand, setShowBrand] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -95,25 +45,8 @@ export default function GroupConfigWizard({ vendorId, existingGroup, onComplete,
     if (existingGroup) {
       setGroupName(existingGroup.name || '');
       setGroupDescription(existingGroup.description || '');
-      setTheme(existingGroup.shared_theme || 'midnight-elegance');
-      setDisplayMode(existingGroup.shared_display_mode || 'dense');
-      setGridColumns(existingGroup.shared_grid_columns || 4);
-      setGridRows(existingGroup.shared_grid_rows || 3);
-
-      // Pricing configuration
-      setPricingTierId(existingGroup.pricing_tier_id || '');
-      setVisiblePriceBreaks(existingGroup.visible_price_breaks || []);
-
-      // Display configuration
-      if (existingGroup.display_config) {
-        setShowImages(existingGroup.display_config.show_images !== false);
-        setShowCategoryHeader(existingGroup.display_config.show_category_header !== false);
-        setShowHeader(existingGroup.display_config.show_header === true);
-        setShowStrainType(existingGroup.display_config.show_strain_type !== false);
-        setShowThc(existingGroup.display_config.show_thc !== false);
-        setShowCbd(existingGroup.display_config.show_cbd !== false);
-        setShowBrand(existingGroup.display_config.show_brand === true);
-      }
+      setGridColumns(existingGroup.shared_grid_columns || 6);
+      setGridRows(existingGroup.shared_grid_rows || 5);
 
       // Set selected devices and categories
       if (existingGroup.members) {
@@ -149,15 +82,6 @@ export default function GroupConfigWizard({ vendorId, existingGroup, onComplete,
         console.error('❌ Failed to load categories:', categoriesData.error);
         setAvailableCategories([]);
       }
-
-      // Load pricing tier blueprints (for filtering products by tier)
-      const blueprintsResponse = await fetch(`/api/vendor/pricing-blueprints`, {
-        headers: { 'x-vendor-id': vendorId }
-      });
-      const blueprintsData = await blueprintsResponse.json();
-      if (blueprintsData.success) {
-        setPricingTiers(blueprintsData.blueprints || []);
-      }
     } catch (error) {
       console.error('Error loading data:', error);
     } finally {
@@ -191,29 +115,15 @@ export default function GroupConfigWizard({ vendorId, existingGroup, onComplete,
     onComplete({
       name: groupName,
       description: groupDescription,
-      theme,
-      displayMode,
       gridColumns,
       gridRows,
-      pricingTierId: pricingTierId || null, // Which pricing tier (filters products)
-      visible_price_breaks: visiblePriceBreaks, // Which sizes to show (1g, 3.5g, etc.)
       devices,
-      displayConfig: {
-        show_images: showImages,
-        show_category_header: showCategoryHeader,
-        show_header: showHeader,
-        show_strain_type: showStrainType,
-        show_thc: showThc,
-        show_cbd: showCbd,
-        show_brand: showBrand,
-      },
     });
   };
 
   const canProceed = () => {
     if (step === 1) return groupName.trim() && selectedDevices.length >= 2;
-    if (step === 2) return true;
-    if (step === 3) return true;
+    if (step === 2) return true; // Layout step - grid values always valid
     return false;
   };
 
@@ -244,7 +154,7 @@ export default function GroupConfigWizard({ vendorId, existingGroup, onComplete,
           <div>
             <h2 className="text-2xl font-bold text-white">Create Display Group</h2>
             <p className="text-white/60 text-sm mt-1">
-              Step {step} of 3: {step === 1 ? 'Select Displays' : step === 2 ? 'Configure Layout' : 'Assign Categories'}
+              Step {step} of 3: {step === 1 ? 'Select Displays' : step === 2 ? 'Grid Layout (Rows/Columns)' : 'Assign Categories Per Display'}
             </p>
           </div>
           <button
@@ -355,7 +265,7 @@ export default function GroupConfigWizard({ vendorId, existingGroup, onComplete,
               </motion.div>
             )}
 
-            {/* Step 2: Configure Layout */}
+            {/* Step 2: Grid Layout Only */}
             {step === 2 && (
               <motion.div
                 key="step2"
@@ -364,65 +274,17 @@ export default function GroupConfigWizard({ vendorId, existingGroup, onComplete,
                 exit={{ opacity: 0, x: -20 }}
                 className="space-y-6"
               >
-                <div>
-                  <label className="block text-sm font-medium text-white mb-3">
-                    Theme (all displays will use this theme)
-                  </label>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {THEMES.map((t) => (
-                      <button
-                        key={t.id}
-                        onClick={() => setTheme(t.id)}
-                        className={`p-4 rounded-lg border-2 transition-all text-left ${
-                          theme === t.id
-                            ? 'border-purple-500 bg-purple-500/10'
-                            : 'border-white/10 bg-white/5 hover:border-white/20'
-                        }`}
-                      >
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="font-medium text-white">{t.name}</span>
-                          {theme === t.id && (
-                            <div className="w-5 h-5 rounded-full bg-purple-500 flex items-center justify-center">
-                              <Check className="w-3 h-3 text-white" />
-                            </div>
-                          )}
-                        </div>
-                        <p className="text-sm text-white/60">{t.description}</p>
-                      </button>
-                    ))}
-                  </div>
+                <div className="p-5 bg-gradient-to-r from-purple-500/10 to-blue-500/10 border border-purple-500/20 rounded-xl">
+                  <h3 className="text-white font-semibold mb-2 flex items-center gap-2">
+                    <Grid3x3 className="w-5 h-5 text-purple-400" />
+                    Grid Layout Configuration
+                  </h3>
+                  <p className="text-sm text-white/70">
+                    Set the grid size for all displays in this group. All theme, pricing, and display settings are configured in the main "Displays & Menus" tab.
+                  </p>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-white mb-3">
-                    Display Mode
-                  </label>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {DISPLAY_MODES.map((mode) => (
-                      <button
-                        key={mode.id}
-                        onClick={() => setDisplayMode(mode.id)}
-                        className={`p-4 rounded-lg border-2 transition-all text-left ${
-                          displayMode === mode.id
-                            ? 'border-purple-500 bg-purple-500/10'
-                            : 'border-white/10 bg-white/5 hover:border-white/20'
-                        }`}
-                      >
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="font-medium text-white">{mode.name}</span>
-                          {displayMode === mode.id && (
-                            <div className="w-5 h-5 rounded-full bg-purple-500 flex items-center justify-center">
-                              <Check className="w-3 h-3 text-white" />
-                            </div>
-                          )}
-                        </div>
-                        <p className="text-sm text-white/60">{mode.description}</p>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-6">
                   <div>
                     <label className="block text-sm font-medium text-white mb-2">
                       Grid Columns
@@ -433,7 +295,7 @@ export default function GroupConfigWizard({ vendorId, existingGroup, onComplete,
                       max="12"
                       value={gridColumns || 6}
                       onChange={(e) => setGridColumns(parseInt(e.target.value) || 6)}
-                      className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500 text-lg font-semibold"
                     />
                     <p className="text-xs text-white/40 mt-1">3-12 columns</p>
                   </div>
@@ -447,281 +309,35 @@ export default function GroupConfigWizard({ vendorId, existingGroup, onComplete,
                       max="10"
                       value={gridRows || 5}
                       onChange={(e) => setGridRows(parseInt(e.target.value) || 5)}
-                      className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500 text-lg font-semibold"
                     />
                     <p className="text-xs text-white/40 mt-1">3-10 rows</p>
                   </div>
                 </div>
 
-                <div className="p-4 bg-purple-500/10 border border-purple-500/20 rounded-lg">
+                <div className="p-6 bg-purple-500/10 border border-purple-500/20 rounded-xl">
                   <div className="flex items-start gap-3">
-                    <Grid3x3 className="w-5 h-5 text-purple-400 mt-0.5" />
+                    <Grid3x3 className="w-6 h-6 text-purple-400 mt-0.5" />
                     <div className="text-sm text-white/80">
-                      <div className="font-medium mb-1">Layout Preview</div>
-                      <div>
-                        Each display will show {gridColumns} × {gridRows} = {gridColumns * gridRows} products per page
+                      <div className="font-semibold text-lg mb-2">Layout Preview</div>
+                      <div className="text-white/90 mb-1">
+                        Each display will show {gridColumns} × {gridRows} = <span className="font-bold text-purple-300">{gridColumns * gridRows} products</span> per page
                       </div>
-                      <div className="text-white/60 mt-1">
-                        Total across {selectedDevices.length} displays: {gridColumns * gridRows * selectedDevices.length} products visible at once
+                      <div className="text-white/60 mt-2">
+                        Total across {selectedDevices.length} displays: <span className="font-bold text-purple-300">{gridColumns * gridRows * selectedDevices.length} products</span> visible at once
                       </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Pricing Configuration */}
-                <div className="border-t border-white/10 pt-6 mt-6">
-                  <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                    <Palette className="w-5 h-5 text-purple-400" />
-                    Pricing Configuration
-                  </h3>
-
-                  {/* Step 1: Which pricing tier (which products to show) */}
-                  <div className="mb-6">
-                    <label className="block text-sm font-medium text-white mb-3">
-                      Which pricing tier to show
-                    </label>
-                    <p className="text-xs text-white/50 mb-3">
-                      Choose which tier of products to display (e.g., Budget, Mid-tier, Premium). Leave empty to show all tiers.
-                    </p>
-                    <select
-                      value={pricingTierId}
-                      onChange={(e) => setPricingTierId(e.target.value)}
-                      className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:border-purple-500"
-                    >
-                      <option value="">Show all pricing tiers</option>
-                      {pricingTiers.map((tier) => (
-                        <option key={tier.id} value={tier.id}>
-                          {tier.name} {tier.description ? `- ${tier.description}` : ''}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Step 2: Which price breaks to show (1g, 3.5g, etc.) */}
-                  <div className="mb-6">
-                    <label className="block text-sm font-medium text-white mb-3">
-                      Which sizes to show
-                    </label>
-                    <p className="text-xs text-white/50 mb-4">
-                      Select which sizes/weights to display (e.g., 1g, 3.5g, 28g)
-                    </p>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                      {PRICE_TIERS.map((tier) => {
-                        const isSelected = visiblePriceBreaks.includes(tier.id);
-                        return (
-                          <button
-                            key={tier.id}
-                            onClick={() => {
-                              if (isSelected) {
-                                setVisiblePriceBreaks(visiblePriceBreaks.filter(id => id !== tier.id));
-                              } else {
-                                setVisiblePriceBreaks([...visiblePriceBreaks, tier.id]);
-                              }
-                            }}
-                            className={`p-3 rounded-lg border-2 transition-all text-left ${
-                              isSelected
-                                ? 'border-purple-500 bg-purple-500/20'
-                                : 'border-white/10 bg-white/5 hover:border-white/20'
-                            }`}
-                          >
-                            <div className="flex items-center justify-between mb-1">
-                              <span className="font-semibold text-white text-sm">{tier.name}</span>
-                              {isSelected && (
-                                <div className="w-5 h-5 rounded-full bg-purple-500 flex items-center justify-center">
-                                  <Check className="w-3 h-3 text-white" />
-                                </div>
-                              )}
-                            </div>
-                            <div className="text-xs text-white/60">{tier.description}</div>
-                          </button>
-                        );
-                      })}
+                <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+                  <div className="text-sm text-white/80">
+                    <div className="font-medium mb-1 flex items-center gap-2">
+                      <Settings className="w-4 h-4 text-blue-400" />
+                      Configure Theme & Display Settings
                     </div>
-                    {visiblePriceBreaks.length === 0 && (
-                      <div className="mt-3 p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
-                        <p className="text-xs text-yellow-200">
-                          Select at least one price tier to display
-                        </p>
-                      </div>
-                    )}
-                    {visiblePriceBreaks.length > 0 && (
-                      <div className="mt-3 p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
-                        <p className="text-xs text-white/70">
-                          <span className="font-semibold">Selected:</span> {visiblePriceBreaks.map(id => PRICE_TIERS.find(t => t.id === id)?.name).join(', ')}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Display Configuration */}
-                <div className="border-t border-white/10 pt-6 mt-6">
-                  <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                    <Monitor className="w-5 h-5 text-purple-400" />
-                    What to Display
-                  </h3>
-                  <p className="text-sm text-white/60 mb-4">
-                    Customize what information appears on your TV displays
-                  </p>
-
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                    {/* Product Images */}
-                    <button
-                      onClick={() => setShowImages(!showImages)}
-                      className={`p-4 rounded-lg border-2 transition-all text-left ${
-                        showImages
-                          ? 'border-purple-500 bg-purple-500/20'
-                          : 'border-white/10 bg-white/5 hover:border-white/20'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="font-medium text-white text-sm">Images</span>
-                        {showImages && (
-                          <div className="w-4 h-4 rounded-full bg-purple-500 flex items-center justify-center">
-                            <Check className="w-3 h-3 text-white" />
-                          </div>
-                        )}
-                      </div>
-                      <p className="text-xs text-white/60">Product photos</p>
-                    </button>
-
-                    {/* Category Header */}
-                    <button
-                      onClick={() => setShowCategoryHeader(!showCategoryHeader)}
-                      className={`p-4 rounded-lg border-2 transition-all text-left ${
-                        showCategoryHeader
-                          ? 'border-purple-500 bg-purple-500/20'
-                          : 'border-white/10 bg-white/5 hover:border-white/20'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="font-medium text-white text-sm">Category</span>
-                        {showCategoryHeader && (
-                          <div className="w-4 h-4 rounded-full bg-purple-500 flex items-center justify-center">
-                            <Check className="w-3 h-3 text-white" />
-                          </div>
-                        )}
-                      </div>
-                      <p className="text-xs text-white/60">Show category name</p>
-                    </button>
-
-                    {/* Menu Header */}
-                    <button
-                      onClick={() => setShowHeader(!showHeader)}
-                      className={`p-4 rounded-lg border-2 transition-all text-left ${
-                        showHeader
-                          ? 'border-purple-500 bg-purple-500/20'
-                          : 'border-white/10 bg-white/5 hover:border-white/20'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="font-medium text-white text-sm">Menu Header</span>
-                        {showHeader && (
-                          <div className="w-4 h-4 rounded-full bg-purple-500 flex items-center justify-center">
-                            <Check className="w-3 h-3 text-white" />
-                          </div>
-                        )}
-                      </div>
-                      <p className="text-xs text-white/60">Menu name & desc</p>
-                    </button>
-
-                    {/* Strain Type */}
-                    <button
-                      onClick={() => {
-                        console.log('🔄 Toggling Strain Type:', !showStrainType);
-                        setShowStrainType(!showStrainType);
-                      }}
-                      className={`p-4 rounded-lg border-2 transition-all text-left ${
-                        showStrainType
-                          ? 'border-purple-500 bg-purple-500/20'
-                          : 'border-white/10 bg-white/5 hover:border-white/20'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="font-medium text-white text-sm">Strain Type</span>
-                        {showStrainType && (
-                          <div className="w-4 h-4 rounded-full bg-purple-500 flex items-center justify-center">
-                            <Check className="w-3 h-3 text-white" />
-                          </div>
-                        )}
-                      </div>
-                      <p className="text-xs text-white/60">I/S/H badge</p>
-                    </button>
-
-                    {/* THC % */}
-                    <button
-                      onClick={() => setShowThc(!showThc)}
-                      className={`p-4 rounded-lg border-2 transition-all text-left ${
-                        showThc
-                          ? 'border-purple-500 bg-purple-500/20'
-                          : 'border-white/10 bg-white/5 hover:border-white/20'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="font-medium text-white text-sm">THC %</span>
-                        {showThc && (
-                          <div className="w-4 h-4 rounded-full bg-purple-500 flex items-center justify-center">
-                            <Check className="w-3 h-3 text-white" />
-                          </div>
-                        )}
-                      </div>
-                      <p className="text-xs text-white/60">THC content</p>
-                    </button>
-
-                    {/* CBD % */}
-                    <button
-                      onClick={() => setShowCbd(!showCbd)}
-                      className={`p-4 rounded-lg border-2 transition-all text-left ${
-                        showCbd
-                          ? 'border-purple-500 bg-purple-500/20'
-                          : 'border-white/10 bg-white/5 hover:border-white/20'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="font-medium text-white text-sm">CBD %</span>
-                        {showCbd && (
-                          <div className="w-4 h-4 rounded-full bg-purple-500 flex items-center justify-center">
-                            <Check className="w-3 h-3 text-white" />
-                          </div>
-                        )}
-                      </div>
-                      <p className="text-xs text-white/60">CBD content</p>
-                    </button>
-
-                    {/* Brand */}
-                    <button
-                      onClick={() => setShowBrand(!showBrand)}
-                      className={`p-4 rounded-lg border-2 transition-all text-left ${
-                        showBrand
-                          ? 'border-purple-500 bg-purple-500/20'
-                          : 'border-white/10 bg-white/5 hover:border-white/20'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="font-medium text-white text-sm">Brand</span>
-                        {showBrand && (
-                          <div className="w-4 h-4 rounded-full bg-purple-500 flex items-center justify-center">
-                            <Check className="w-3 h-3 text-white" />
-                          </div>
-                        )}
-                      </div>
-                      <p className="text-xs text-white/60">Brand name</p>
-                    </button>
-                  </div>
-
-                  <div className="mt-4 p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
-                    <div className="text-sm text-white/80">
-                      <div className="font-medium mb-1">Display Options</div>
-                      <div className="text-white/60">
-                        {[
-                          showImages && 'Product images',
-                          showHeader && 'Menu header',
-                          showStrainType && 'Strain type',
-                          showThc && 'THC%',
-                          showCbd && 'CBD%',
-                          showBrand && 'Brand'
-                        ].filter(Boolean).join(', ') || 'Nothing selected'}
-                      </div>
+                    <div className="text-white/60">
+                      Theme, pricing display, product info, and all other visual settings are configured in the main "Displays & Menus" editor. Display groups only control the grid layout.
                     </div>
                   </div>
                 </div>

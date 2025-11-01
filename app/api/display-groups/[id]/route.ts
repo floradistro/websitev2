@@ -40,7 +40,8 @@ export async function DELETE(
 
 /**
  * PUT /api/display-groups/[id]
- * Update a display group and its members
+ * Update a display group - LAYOUT ONLY (grid columns/rows + category assignment)
+ * All theme, pricing, and display settings are configured in main menu editor
  */
 export async function PUT(
   request: NextRequest,
@@ -52,39 +53,22 @@ export async function PUT(
     const {
       name,
       description,
-      theme,
-      displayMode,
       gridColumns,
       gridRows,
-      typography,
-      spacing,
-      pricingTierId, // Which pricing tier (filters products)
-      visible_price_breaks, // Which sizes to show (e.g., ['1g', '3_5g'])
-      displayConfig,
       devices, // Array of { deviceId, position, categories }
     } = body;
 
     const supabase = getServiceSupabase();
 
-    // Update group
+    // Update group - ONLY layout configuration
     const updateData: any = {
       name,
       description,
-      shared_theme: theme,
-      shared_display_mode: displayMode,
       shared_grid_columns: gridColumns,
       shared_grid_rows: gridRows,
-      shared_typography: typography,
-      shared_spacing: spacing,
-      pricing_tier_id: pricingTierId || null, // Which tier of products to show
-      visible_price_breaks: visible_price_breaks || [], // Which sizes to show
       updated_at: new Date().toISOString(),
+      // Removed: theme, display_mode, typography, spacing, pricing, displayConfig
     };
-
-    // Only include display_config if it was provided
-    if (displayConfig !== undefined) {
-      updateData.display_config = displayConfig;
-    }
 
     const { data: group, error: groupError } = await supabase
       .from('tv_display_groups')
