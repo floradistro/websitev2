@@ -45,10 +45,11 @@ export default function POSRegisterPage() {
     loadPromotions();
   }, []);
 
-  // Subscribe to promotions changes
+  // Subscribe to promotions changes with unique channel per instance
   useEffect(() => {
+    const channelId = `pos_promotions_${Math.random().toString(36).substring(7)}`;
     const channel = supabase
-      .channel('pos_promotions_changes')
+      .channel(channelId)
       .on('postgres_changes', {
         event: '*',
         schema: 'public',

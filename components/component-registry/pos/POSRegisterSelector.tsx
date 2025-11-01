@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Monitor, Check, Users, DollarSign, Clock, X } from 'lucide-react';
+import { Monitor, Check, Users, DollarSign, Clock } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
 
 interface Register {
@@ -32,15 +32,14 @@ export function POSRegisterSelector({
 }: POSRegisterSelectorProps) {
   const [registers, setRegisters] = useState<Register[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showSessionModal, setShowSessionModal] = useState(false);
-  const [selectedRegisterWithSession, setSelectedRegisterWithSession] = useState<Register | null>(null);
 
   useEffect(() => {
     loadRegisters();
 
-    // Subscribe to real-time session changes
+    // Subscribe to real-time session changes with unique channel per instance
+    const channelId = `pos_sessions_${locationId}_${Math.random().toString(36).substring(7)}`;
     const channel = supabase
-      .channel('pos_sessions_changes')
+      .channel(channelId)
       .on('postgres_changes', {
         event: '*',
         schema: 'public',
@@ -52,14 +51,8 @@ export function POSRegisterSelector({
       })
       .subscribe();
 
-    // Also poll every 2 seconds as fallback for instant updates
-    const pollInterval = setInterval(() => {
-      loadRegisters();
-    }, 2000);
-
     return () => {
       supabase.removeChannel(channel);
-      clearInterval(pollInterval);
     };
   }, [locationId]);
 
@@ -84,14 +77,14 @@ export function POSRegisterSelector({
   };
 
   const handleSelectRegister = async (register: Register) => {
-    // If register has active session, show modal with options
+    // If register has active session, just join it directly
     if (register.current_session) {
-      setSelectedRegisterWithSession(register);
-      setShowSessionModal(true);
+      console.log('✅ Joining existing session:', register.current_session.id);
+      onRegisterSelected(register.id, register.current_session.id);
       return;
     }
 
-    // No active session - proceed with new session
+    // No active session - start new one
     startNewSession(register.id);
   };
 
@@ -119,49 +112,6 @@ export function POSRegisterSelector({
     }
   };
 
-  const joinExistingSession = async () => {
-    if (!selectedRegisterWithSession?.current_session) return;
-
-    // Join existing session
-    onRegisterSelected(
-      selectedRegisterWithSession.id,
-      selectedRegisterWithSession.current_session.id
-    );
-    setShowSessionModal(false);
-  };
-
-  const endAndStartNew = async () => {
-    if (!selectedRegisterWithSession) return;
-
-    try {
-      // End existing session
-      const endResponse = await fetch('/api/pos/sessions/close', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          sessionId: selectedRegisterWithSession.current_session?.id,
-          closingCash: 0, // Will be reconciled later
-        }),
-      });
-
-      if (!endResponse.ok) {
-        throw new Error('Failed to end session');
-      }
-
-      // Close modal and reload registers
-      setShowSessionModal(false);
-      setSelectedRegisterWithSession(null);
-
-      // Force reload registers to show updated state
-      await loadRegisters();
-
-      // Start new session
-      await startNewSession(selectedRegisterWithSession.id);
-    } catch (error) {
-      console.error('Error ending session:', error);
-      alert('Failed to end session');
-    }
-  };
 
   const formatDuration = (startedAt: string) => {
     const start = new Date(startedAt);
@@ -181,7 +131,6 @@ export function POSRegisterSelector({
   }
 
   return (
-    <>
       <div className="min-h-screen bg-black text-white flex items-center justify-center p-6">
         <div className="max-w-2xl w-full">
           {/* Header */}
@@ -276,80 +225,6 @@ export function POSRegisterSelector({
           </div>
         </div>
       </div>
-
-      {/* Session Modal */}
-      {showSessionModal && selectedRegisterWithSession && (
-        <div className="fixed inset-0 bg-black/90 backdrop-blur-xl z-[9999] flex items-center justify-center p-6">
-          <div className="bg-[#141414] border-2 border-white/20 rounded-3xl p-8 max-w-md w-full relative">
-            {/* Close button */}
-            <button
-              onClick={() => setShowSessionModal(false)}
-              className="absolute top-4 right-4 w-8 h-8 bg-white/10 rounded-xl flex items-center justify-center hover:bg-white/20 transition-all"
-            >
-              <X size={16} className="text-white" />
-            </button>
-
-            {/* Header */}
-            <div className="text-center mb-6">
-              <h2 className="text-2xl font-black text-white uppercase tracking-tight mb-2" style={{ fontWeight: 900 }}>
-                Active Session
-              </h2>
-              <p className="text-white/60 text-sm uppercase tracking-[0.15em]">
-                {selectedRegisterWithSession.register_name}
-              </p>
-            </div>
-
-            {/* Session Info */}
-            {selectedRegisterWithSession.current_session && (
-              <div className="bg-white/5 border border-white/10 rounded-2xl p-4 mb-6 space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-white/60 text-xs uppercase tracking-[0.15em]">Session</span>
-                  <span className="text-white font-black text-sm">{selectedRegisterWithSession.current_session.session_number}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-white/60 text-xs uppercase tracking-[0.15em]">Total Sales</span>
-                  <span className="text-green-400 font-black text-sm">${selectedRegisterWithSession.current_session.total_sales.toFixed(2)}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-white/60 text-xs uppercase tracking-[0.15em]">Duration</span>
-                  <span className="text-white/60 text-sm">{formatDuration(selectedRegisterWithSession.current_session.started_at)}</span>
-                </div>
-                {selectedRegisterWithSession.current_session.user_name && (
-                  <div className="flex items-center justify-between">
-                    <span className="text-white/60 text-xs uppercase tracking-[0.15em]">User</span>
-                    <span className="text-white text-sm">{selectedRegisterWithSession.current_session.user_name}</span>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Actions */}
-            <div className="space-y-3">
-              <button
-                onClick={joinExistingSession}
-                className="w-full bg-white/10 border-2 border-white/20 text-white rounded-2xl px-4 py-4 text-xs uppercase tracking-[0.15em] hover:bg-white/20 hover:border-white/30 font-black transition-all"
-                style={{ fontWeight: 900 }}
-              >
-                Join Session
-              </button>
-              <button
-                onClick={endAndStartNew}
-                className="w-full bg-red-500/10 border-2 border-red-500/30 text-red-400 rounded-2xl px-4 py-4 text-xs uppercase tracking-[0.15em] hover:bg-red-500/20 hover:border-red-500/50 font-black transition-all"
-                style={{ fontWeight: 900 }}
-              >
-                End Session & Start New
-              </button>
-              <button
-                onClick={() => setShowSessionModal(false)}
-                className="w-full border border-white/10 text-white/60 rounded-2xl px-4 py-3 text-xs uppercase tracking-[0.15em] hover:bg-white/5 hover:border-white/20 transition-all"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </>
   );
 }
 
