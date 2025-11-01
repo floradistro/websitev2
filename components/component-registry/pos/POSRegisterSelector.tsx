@@ -248,12 +248,12 @@ export function POSRegisterSelector({
                         )}
                       </div>
                       {/* Close Session Button */}
-                      <button
+                      <div
                         onClick={(e) => handleCloseSession(e, register)}
-                        className="mt-3 w-full py-2 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 hover:border-red-500/50 rounded-lg text-red-400 text-[10px] uppercase tracking-[0.15em] font-black transition-all"
+                        className="mt-3 w-full py-2 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 hover:border-red-500/50 rounded-lg text-red-400 text-[10px] uppercase tracking-[0.15em] font-black transition-all text-center cursor-pointer"
                       >
                         End Session
-                      </button>
+                      </div>
                     </div>
                   ) : (
                     <div className="flex items-center gap-2 text-[10px] text-white/40 uppercase tracking-[0.15em]">
