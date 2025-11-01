@@ -38,12 +38,29 @@ export function POSCustomerSelector({
 
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Load customers for vendor
+  // Load customers for vendor on open
   useEffect(() => {
     if (isOpen) {
       loadCustomers();
     }
   }, [isOpen, vendorId]);
+
+  // Debounced search
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const timer = setTimeout(() => {
+      if (searchQuery.trim().length >= 2) {
+        // Server-side search for 2+ characters
+        loadCustomers(searchQuery.trim());
+      } else if (searchQuery.trim().length === 0) {
+        // Reset to top 1000 when search cleared
+        loadCustomers();
+      }
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery, isOpen]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -57,16 +74,18 @@ export function POSCustomerSelector({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const loadCustomers = async () => {
+  const loadCustomers = async (search: string = '') => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/pos/customers?vendorId=${vendorId}`);
-      
+      const url = `/api/pos/customers?vendorId=${vendorId}${search ? `&search=${encodeURIComponent(search)}` : ''}`;
+      const response = await fetch(url);
+
       if (!response.ok) {
         throw new Error('Failed to load customers');
       }
 
       const data = await response.json();
+      console.log(`📊 Loaded ${data.customers?.length || 0} customers from API (total: ${data.total})`);
       setCustomers(data.customers || []);
     } catch (error) {
       console.error('Error loading customers:', error);
@@ -76,20 +95,8 @@ export function POSCustomerSelector({
     }
   };
 
-  // Filter customers based on search
-  const filteredCustomers = customers.filter(customer => {
-    const query = searchQuery.toLowerCase();
-    const fullName = `${customer.first_name} ${customer.last_name}`.toLowerCase();
-    const phone = (customer.phone || '').replace(/\D/g, '');
-    const searchPhone = query.replace(/\D/g, '');
-    
-    return (
-      fullName.includes(query) ||
-      customer.email.toLowerCase().includes(query) ||
-      phone.includes(searchPhone) ||
-      (customer.vendor_customer_number || '').toLowerCase().includes(query)
-    );
-  });
+  // Customers are now filtered server-side
+  const filteredCustomers = customers;
 
   const handleSelectCustomer = (customer: Customer) => {
     onCustomerSelect(customer);
@@ -200,14 +207,17 @@ export function POSCustomerSelector({
                     <div className="text-white font-black text-xs uppercase tracking-tight" style={{ fontWeight: 900 }}>
                       {customer.first_name} {customer.last_name}
                     </div>
-                    <span className={`text-[10px] uppercase tracking-[0.15em] font-black ${getTierColor(customer.loyalty_tier)}`}>
-                      {customer.loyalty_tier}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-green-400 font-black text-xs">
+                        {customer.loyalty_points.toLocaleString()}
+                      </span>
+                      <span className={`text-[9px] uppercase tracking-[0.15em] font-black ${getTierColor(customer.loyalty_tier)}`}>
+                        {customer.loyalty_tier}
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2 text-[10px] text-white/40 uppercase tracking-[0.15em]">
-                    <span>{customer.phone || customer.email}</span>
-                    <span>·</span>
-                    <span>{customer.loyalty_points} pts</span>
+                  <div className="text-[10px] text-white/40 uppercase tracking-[0.15em]">
+                    {customer.phone || customer.email}
                   </div>
                 </button>
               ))
@@ -221,10 +231,9 @@ export function POSCustomerSelector({
                 setShowIDScanner(true);
                 setIsOpen(false);
               }}
-              className="w-full bg-blue-500/20 text-blue-300 border-2 border-blue-500/40 rounded-2xl py-2.5 text-[10px] uppercase tracking-[0.15em] hover:bg-blue-500/30 hover:border-blue-500/60 font-black transition-all duration-300 flex items-center justify-center gap-2"
-              style={{ fontWeight: 900 }}
+              className="w-full bg-white/[0.02] border border-white/[0.06] rounded-2xl py-2.5 text-[10px] uppercase tracking-[0.15em] text-white/60 hover:bg-white/[0.04] hover:text-white/80 transition-all font-light flex items-center justify-center gap-2"
             >
-              <Scan size={12} strokeWidth={2.5} />
+              <Scan size={12} strokeWidth={1.5} />
               Scan ID / License
             </button>
             <button

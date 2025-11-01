@@ -101,249 +101,338 @@ export default function CustomersPage() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white p-8">
-      {/* Header */}
-      <div className="mb-8 pb-6 border-b border-white/5">
-        <div className="flex items-center gap-4 mb-2">
-          <Users size={32} className="text-white" strokeWidth={2} />
-          <div>
-            <h1 className="text-xs uppercase tracking-[0.15em] text-white font-black" style={{ fontWeight: 900 }}>
-              Customers
-            </h1>
-            <p className="text-[10px] uppercase tracking-[0.15em] text-white/40 mt-1">
-              {stats.total.toLocaleString()} total customers
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-        <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
-          <div className="flex items-center justify-between">
+    <div className="min-h-screen bg-[#0a0a0a] text-white">
+      {/* Content Container */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+        {/* Header */}
+        <div className="mb-6 sm:mb-8 pb-6 sm:pb-8 border-b border-white/[0.04]">
+          <div className="flex items-center gap-3 sm:gap-4">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-white/[0.04] border border-white/[0.06] flex items-center justify-center">
+              <Users size={24} className="text-teal-400/70 sm:w-7 sm:h-7" strokeWidth={1.5} />
+            </div>
             <div>
-              <p className="text-[10px] uppercase tracking-[0.15em] text-white/40 mb-2">Total Customers</p>
-              <p className="text-3xl font-black text-white">{stats.total.toLocaleString()}</p>
-            </div>
-            <div className="p-3 bg-blue-500/20 rounded-xl border border-blue-500/30">
-              <Users className="w-6 h-6 text-blue-400" />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-[10px] uppercase tracking-[0.15em] text-white/40 mb-2">Loyalty Members</p>
-              <p className="text-3xl font-black text-white">{stats.withLoyalty.toLocaleString()}</p>
-            </div>
-            <div className="p-3 bg-purple-500/20 rounded-xl border border-purple-500/30">
-              <Award className="w-6 h-6 text-purple-400" />
+              <h1 className="text-base sm:text-lg font-light text-white/80 tracking-tight">
+                Customers
+              </h1>
+              <p className="text-[11px] text-white/30 mt-0.5 tracking-wide">
+                {stats.total.toLocaleString()} total customers
+              </p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-[10px] uppercase tracking-[0.15em] text-white/40 mb-2">Avg Loyalty Points</p>
-              <p className="text-3xl font-black text-white">{stats.avgPoints.toLocaleString()}</p>
+        {/* Stats Cards */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
+          <div className="bg-white/[0.02] border border-white/[0.06] rounded-2xl p-4 sm:p-5">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-white/[0.04] border border-white/[0.06] flex items-center justify-center">
+                <Users className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400/70" strokeWidth={1.5} />
+              </div>
+              <p className="text-[10px] sm:text-[11px] uppercase tracking-[0.15em] text-white/30 font-light">Total</p>
             </div>
-            <div className="p-3 bg-green-500/20 rounded-xl border border-green-500/30">
-              <TrendingUp className="w-6 h-6 text-green-400" />
+            <p className="text-2xl sm:text-3xl font-light text-white/80 tracking-tight">{stats.total.toLocaleString()}</p>
+          </div>
+
+          <div className="bg-white/[0.02] border border-white/[0.06] rounded-2xl p-4 sm:p-5">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-white/[0.04] border border-white/[0.06] flex items-center justify-center">
+                <Award className="w-4 h-4 sm:w-5 sm:h-5 text-purple-400/70" strokeWidth={1.5} />
+              </div>
+              <p className="text-[10px] sm:text-[11px] uppercase tracking-[0.15em] text-white/30 font-light">Loyalty</p>
+            </div>
+            <p className="text-2xl sm:text-3xl font-light text-white/80 tracking-tight">{stats.withLoyalty.toLocaleString()}</p>
+          </div>
+
+          <div className="bg-white/[0.02] border border-white/[0.06] rounded-2xl p-4 sm:p-5">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-white/[0.04] border border-white/[0.06] flex items-center justify-center">
+                <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-green-400/70" strokeWidth={1.5} />
+              </div>
+              <p className="text-[10px] sm:text-[11px] uppercase tracking-[0.15em] text-white/30 font-light">Avg Pts</p>
+            </div>
+            <p className="text-2xl sm:text-3xl font-light text-white/80 tracking-tight">{stats.avgPoints.toLocaleString()}</p>
+          </div>
+
+          <div className="bg-white/[0.02] border border-white/[0.06] rounded-2xl p-4 sm:p-5">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-white/[0.04] border border-white/[0.06] flex items-center justify-center">
+                <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-400/70" strokeWidth={1.5} />
+              </div>
+              <p className="text-[10px] sm:text-[11px] uppercase tracking-[0.15em] text-white/30 font-light">LTV</p>
+            </div>
+            <p className="text-2xl sm:text-3xl font-light text-white/80 tracking-tight">${stats.totalLifetimeValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
+          </div>
+        </div>
+
+        {/* Filters */}
+        <div className="bg-white/[0.02] border border-white/[0.06] rounded-2xl p-4 sm:p-5 mb-6">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+            {/* Search */}
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" strokeWidth={1.5} />
+              <input
+                type="text"
+                placeholder="Search customers..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-white/[0.02] border border-white/[0.06] text-white/80 pl-10 pr-4 py-2.5 rounded-xl text-[11px] tracking-wide font-light focus:outline-none focus:border-white/[0.1] focus:bg-white/[0.04] placeholder:text-white/30 transition-all"
+              />
+            </div>
+
+            {/* Tier Filter */}
+            <div className="relative sm:w-48">
+              <select
+                value={tierFilter}
+                onChange={(e) => setTierFilter(e.target.value)}
+                className="w-full bg-white/[0.02] border border-white/[0.06] text-white/80 px-4 py-2.5 rounded-xl text-[11px] tracking-wide font-light focus:outline-none focus:border-white/[0.1] focus:bg-white/[0.04] transition-all cursor-pointer appearance-none pr-10"
+              >
+                <option value="all">All Tiers</option>
+                <option value="bronze">Bronze</option>
+                <option value="silver">Silver</option>
+                <option value="gold">Gold</option>
+                <option value="platinum">Platinum</option>
+              </select>
+              <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                <svg className="w-3 h-3 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-[10px] uppercase tracking-[0.15em] text-white/40 mb-2">Lifetime Value</p>
-              <p className="text-3xl font-black text-white">${stats.totalLifetimeValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
-            </div>
-            <div className="p-3 bg-yellow-500/20 rounded-xl border border-yellow-500/30">
-              <DollarSign className="w-6 h-6 text-yellow-400" />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Filters */}
-      <div className="bg-white/5 border border-white/10 rounded-2xl p-4 mb-6">
-        <div className="flex flex-col md:flex-row gap-4">
-          {/* Search */}
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
-            <input
-              type="text"
-              placeholder="Search customers..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-white/5 border border-white/10 text-white pl-10 pr-4 py-2.5 rounded-2xl text-[10px] uppercase tracking-[0.15em] focus:outline-none focus:border-white/20 placeholder:text-white/40 hover:bg-white/10 transition-all"
-            />
-          </div>
-
-          {/* Tier Filter */}
-          <div className="relative">
-            <select
-              value={tierFilter}
-              onChange={(e) => setTierFilter(e.target.value)}
-              className="bg-white/5 border border-white/10 text-white px-4 py-2.5 rounded-2xl text-[10px] uppercase tracking-[0.15em] focus:outline-none focus:border-white/20 hover:bg-white/10 transition-all cursor-pointer appearance-none pr-10"
-            >
-              <option value="all">All Tiers</option>
-              <option value="bronze">Bronze</option>
-              <option value="silver">Silver</option>
-              <option value="gold">Gold</option>
-              <option value="platinum">Platinum</option>
-            </select>
-            <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-              <svg className="w-3 h-3 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-              </svg>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Customers Table */}
-      <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden mb-6">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="border-b border-white/5">
-              <tr>
-                <th className="px-6 py-4 text-left text-[10px] uppercase tracking-[0.15em] text-white/40 font-black">
-                  Customer
-                </th>
-                <th className="px-6 py-4 text-left text-[10px] uppercase tracking-[0.15em] text-white/40 font-black">
-                  Contact
-                </th>
-                <th className="px-6 py-4 text-left text-[10px] uppercase tracking-[0.15em] text-white/40 font-black">
-                  Loyalty
-                </th>
-                <th className="px-6 py-4 text-left text-[10px] uppercase tracking-[0.15em] text-white/40 font-black">
-                  Orders
-                </th>
-                <th className="px-6 py-4 text-left text-[10px] uppercase tracking-[0.15em] text-white/40 font-black">
-                  Total Spent
-                </th>
-                <th className="px-6 py-4 text-left text-[10px] uppercase tracking-[0.15em] text-white/40 font-black">
-                  Last Order
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-white/5">
-              {loading ? (
+        {/* Customers Table - Desktop */}
+        <div className="hidden xl:block bg-white/[0.02] border border-white/[0.06] rounded-2xl overflow-hidden mb-6">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="border-b border-white/[0.04]">
                 <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center text-white/40 text-[10px] uppercase tracking-[0.15em]">
-                    Loading customers...
-                  </td>
+                  <th className="px-6 py-4 text-left text-[11px] uppercase tracking-[0.15em] text-white/30 font-light">
+                    Customer
+                  </th>
+                  <th className="px-6 py-4 text-left text-[11px] uppercase tracking-[0.15em] text-white/30 font-light">
+                    Contact
+                  </th>
+                  <th className="px-6 py-4 text-left text-[11px] uppercase tracking-[0.15em] text-white/30 font-light">
+                    Loyalty
+                  </th>
+                  <th className="px-6 py-4 text-left text-[11px] uppercase tracking-[0.15em] text-white/30 font-light">
+                    Orders
+                  </th>
+                  <th className="px-6 py-4 text-left text-[11px] uppercase tracking-[0.15em] text-white/30 font-light">
+                    Total Spent
+                  </th>
+                  <th className="px-6 py-4 text-left text-[11px] uppercase tracking-[0.15em] text-white/30 font-light">
+                    Last Order
+                  </th>
                 </tr>
-              ) : customers.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center text-white/40 text-[10px] uppercase tracking-[0.15em]">
-                    No customers found
-                  </td>
-                </tr>
-              ) : (
-                customers.map((customer) => (
-                  <tr key={customer.id} className="hover:bg-white/5 transition-colors">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center gap-3">
-                        <div className="flex-shrink-0 h-10 w-10 bg-white/10 rounded-full flex items-center justify-center border border-white/20">
-                          <span className="text-white/60 font-medium text-sm">
-                            {customer.first_name?.[0] || '?'}{customer.last_name?.[0] || ''}
+              </thead>
+              <tbody className="divide-y divide-white/[0.04]">
+                {loading ? (
+                  <tr>
+                    <td colSpan={6} className="px-6 py-12 text-center text-white/30 text-[11px] tracking-wide font-light">
+                      Loading customers...
+                    </td>
+                  </tr>
+                ) : customers.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="px-6 py-12 text-center text-white/30 text-[11px] tracking-wide font-light">
+                      No customers found
+                    </td>
+                  </tr>
+                ) : (
+                  customers.map((customer) => (
+                    <tr key={customer.id} className="hover:bg-white/[0.02] transition-colors">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center gap-3">
+                          <div className="flex-shrink-0 h-10 w-10 bg-white/[0.04] rounded-2xl flex items-center justify-center border border-white/[0.06]">
+                            <span className="text-white/40 font-light text-sm">
+                              {customer.first_name?.[0] || '?'}{customer.last_name?.[0] || ''}
+                            </span>
+                          </div>
+                          <div>
+                            <div className="text-[11px] tracking-wide font-light text-white/80">
+                              {customer.first_name || 'Unknown'} {customer.last_name || ''}
+                            </div>
+                            <div className="text-[10px] text-white/30 truncate max-w-[200px]">
+                              {customer.email}
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex flex-col gap-1.5">
+                          {customer.email && !customer.email.includes('@phone.local') && !customer.email.includes('@alpine.local') && (
+                            <div className="flex items-center text-[10px] text-white/40 gap-2">
+                              <Mail className="w-3 h-3" strokeWidth={1.5} />
+                              <span className="truncate max-w-[200px]">{customer.email}</span>
+                            </div>
+                          )}
+                          {customer.phone && (
+                            <div className="flex items-center text-[10px] text-white/40 gap-2">
+                              <Phone className="w-3 h-3" strokeWidth={1.5} />
+                              {customer.phone}
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex flex-col gap-2">
+                          <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] uppercase tracking-[0.15em] font-light border ${tierColors[customer.loyalty_tier as keyof typeof tierColors] || 'bg-gray-500/20 text-gray-300 border-gray-500/30'}`}>
+                            {customer.loyalty_tier || 'bronze'}
+                          </span>
+                          <span className="text-[11px] text-white/60 tracking-wide font-light">
+                            {(customer.loyalty_points || 0).toLocaleString()} PTS
                           </span>
                         </div>
-                        <div>
-                          <div className="text-[10px] uppercase tracking-[0.15em] font-black text-white">
-                            {customer.first_name || 'Unknown'} {customer.last_name || ''}
-                          </div>
-                          <div className="text-[10px] text-white/40">
-                            {customer.email}
-                          </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-[11px] tracking-wide text-white/60 font-light">
+                        {customer.total_orders || 0}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-[11px] tracking-wide text-white/60 font-light">
+                        ${(customer.total_spent || 0).toFixed(2)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-[10px] text-white/40 tracking-wide font-light">
+                        {customer.last_order_date
+                          ? new Date(customer.last_order_date).toLocaleDateString()
+                          : 'Never'
+                        }
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Customers Cards - Mobile/Tablet */}
+        <div className="xl:hidden space-y-3 mb-6">
+          {loading ? (
+            <div className="bg-white/[0.02] border border-white/[0.06] rounded-2xl p-8 text-center">
+              <p className="text-white/30 text-[11px] tracking-wide font-light">Loading customers...</p>
+            </div>
+          ) : customers.length === 0 ? (
+            <div className="bg-white/[0.02] border border-white/[0.06] rounded-2xl p-8 text-center">
+              <p className="text-white/30 text-[11px] tracking-wide font-light">No customers found</p>
+            </div>
+          ) : (
+            customers.map((customer) => (
+                <div key={customer.id} className="bg-white/[0.02] border border-white/[0.06] rounded-2xl p-4">
+                {/* Customer Header */}
+                <div className="flex items-center gap-3 mb-4 pb-4 border-b border-white/[0.04]">
+                  <div className="flex-shrink-0 h-12 w-12 bg-white/[0.04] rounded-2xl flex items-center justify-center border border-white/[0.06]">
+                    <span className="text-white/40 font-light text-base">
+                      {customer.first_name?.[0] || '?'}{customer.last_name?.[0] || ''}
+                    </span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-light text-white/80 tracking-tight">
+                      {customer.first_name || 'Unknown'} {customer.last_name || ''}
+                    </div>
+                    <div className="text-[10px] text-white/30 truncate">
+                      {customer.email}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Customer Details Grid */}
+                <div className="grid grid-cols-2 gap-4">
+                  {/* Contact */}
+                  <div>
+                    <p className="text-[11px] uppercase tracking-[0.15em] text-white/30 mb-2 font-light">Contact</p>
+                    <div className="flex flex-col gap-2">
+                      {customer.email && !customer.email.includes('@phone.local') && !customer.email.includes('@alpine.local') && (
+                        <div className="flex items-center text-[10px] text-white/40 gap-2">
+                          <Mail className="w-3 h-3 flex-shrink-0" strokeWidth={1.5} />
+                          <span className="truncate">{customer.email}</span>
                         </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex flex-col gap-2">
-                        {customer.email && !customer.email.includes('@phone.local') && !customer.email.includes('@alpine.local') && (
-                          <div className="flex items-center text-[10px] text-white/60 gap-2">
-                            <Mail className="w-3 h-3" />
-                            <span className="truncate max-w-[200px]">{customer.email}</span>
-                          </div>
-                        )}
-                        {customer.phone && (
-                          <div className="flex items-center text-[10px] text-white/60 gap-2">
-                            <Phone className="w-3 h-3" />
-                            {customer.phone}
-                          </div>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex flex-col gap-2">
-                        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] uppercase tracking-[0.15em] font-black border ${tierColors[customer.loyalty_tier as keyof typeof tierColors] || 'bg-gray-500/20 text-gray-300 border-gray-500/30'}`}>
-                          {customer.loyalty_tier || 'bronze'}
-                        </span>
-                        <span className="text-[10px] text-white font-black uppercase tracking-[0.15em]" style={{ fontWeight: 900 }}>
-                          {(customer.loyalty_points || 0).toLocaleString()} PTS
-                        </span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-[10px] uppercase tracking-[0.15em] text-white font-black">
-                      {customer.total_orders || 0}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-[10px] uppercase tracking-[0.15em] text-white font-black">
-                      ${(customer.total_spent || 0).toFixed(2)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-[10px] text-white/40 uppercase tracking-[0.15em]">
+                      )}
+                      {customer.phone && (
+                        <div className="flex items-center text-[10px] text-white/40 gap-2">
+                          <Phone className="w-3 h-3 flex-shrink-0" strokeWidth={1.5} />
+                          <span>{customer.phone}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Loyalty */}
+                  <div>
+                    <p className="text-[11px] uppercase tracking-[0.15em] text-white/30 mb-2 font-light">Loyalty</p>
+                    <div className="flex flex-col gap-2">
+                      <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] uppercase tracking-[0.15em] font-light border w-fit ${tierColors[customer.loyalty_tier as keyof typeof tierColors] || 'bg-gray-500/20 text-gray-300 border-gray-500/30'}`}>
+                        {customer.loyalty_tier || 'bronze'}
+                      </span>
+                      <span className="text-[11px] text-white/60 tracking-wide font-light">
+                        {(customer.loyalty_points || 0).toLocaleString()} PTS
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Orders */}
+                  <div>
+                    <p className="text-[11px] uppercase tracking-[0.15em] text-white/30 mb-2 font-light">Orders</p>
+                    <p className="text-base font-light text-white/80">{customer.total_orders || 0}</p>
+                  </div>
+
+                  {/* Total Spent */}
+                  <div>
+                    <p className="text-[11px] uppercase tracking-[0.15em] text-white/30 mb-2 font-light">Total Spent</p>
+                    <p className="text-base font-light text-white/80">${(customer.total_spent || 0).toFixed(2)}</p>
+                  </div>
+
+                  {/* Last Order */}
+                  <div className="col-span-2">
+                    <p className="text-[11px] uppercase tracking-[0.15em] text-white/30 mb-2 font-light">Last Order</p>
+                    <p className="text-[10px] text-white/40 tracking-wide font-light">
                       {customer.last_order_date
                         ? new Date(customer.last_order_date).toLocaleDateString()
                         : 'Never'
                       }
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+                    </p>
+                  </div>
+                </div>
+              </div>
+          ))
+        )}
       </div>
 
-      {/* Pagination */}
-      {pagination.totalPages > 1 && (
-        <div className="flex items-center justify-between">
-          <div className="text-[10px] uppercase tracking-[0.15em] text-white/40">
-            Showing <span className="text-white font-black">{((page - 1) * pagination.limit) + 1}</span> to{' '}
-            <span className="text-white font-black">{Math.min(page * pagination.limit, pagination.total)}</span> of{' '}
-            <span className="text-white font-black">{pagination.total}</span> customers
+        {/* Pagination */}
+        {pagination.totalPages > 1 && (
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-white/[0.04]">
+            <div className="text-[11px] tracking-wide text-white/30 text-center sm:text-left font-light">
+              Showing <span className="text-white/60">{((page - 1) * pagination.limit) + 1}</span> to{' '}
+              <span className="text-white/60">{Math.min(page * pagination.limit, pagination.total)}</span> of{' '}
+              <span className="text-white/60">{pagination.total}</span> customers
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setPage(Math.max(1, page - 1))}
+                disabled={page === 1}
+                className="bg-white/[0.02] border border-white/[0.06] px-3 sm:px-4 py-2 rounded-xl text-[11px] tracking-wide font-light text-white/60 hover:bg-white/[0.04] hover:text-white/80 transition-all disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                <ChevronLeft className="w-4 h-4" strokeWidth={1.5} />
+                <span className="hidden sm:inline">Previous</span>
+              </button>
+
+              <span className="text-[11px] tracking-wide text-white/30 px-3 font-light">
+                <span className="text-white/60">{page}</span> / <span className="text-white/60">{pagination.totalPages}</span>
+              </span>
+
+              <button
+                onClick={() => setPage(Math.min(pagination.totalPages, page + 1))}
+                disabled={page === pagination.totalPages}
+                className="bg-white/[0.02] border border-white/[0.06] px-3 sm:px-4 py-2 rounded-xl text-[11px] tracking-wide font-light text-white/60 hover:bg-white/[0.04] hover:text-white/80 transition-all disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                <span className="hidden sm:inline">Next</span>
+                <ChevronRight className="w-4 h-4" strokeWidth={1.5} />
+              </button>
+            </div>
           </div>
-
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setPage(Math.max(1, page - 1))}
-              disabled={page === 1}
-              className="bg-white/5 border border-white/10 px-4 py-2 rounded-xl text-[10px] uppercase tracking-[0.15em] font-black hover:bg-white/10 transition-all disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-2"
-            >
-              <ChevronLeft className="w-4 h-4" />
-              Previous
-            </button>
-
-            <span className="text-[10px] uppercase tracking-[0.15em] text-white/60">
-              Page <span className="text-white font-black">{page}</span> of <span className="text-white font-black">{pagination.totalPages}</span>
-            </span>
-
-            <button
-              onClick={() => setPage(Math.min(pagination.totalPages, page + 1))}
-              disabled={page === pagination.totalPages}
-              className="bg-white/5 border border-white/10 px-4 py-2 rounded-xl text-[10px] uppercase tracking-[0.15em] font-black hover:bg-white/10 transition-all disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-2"
-            >
-              Next
-              <ChevronRight className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

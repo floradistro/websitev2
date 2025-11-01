@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
   try {
     const supabase = getServiceSupabase();
     const body = await request.json();
-    const { vendorId, firstName, lastName, phone, email, dateOfBirth, address, city, state, postalCode } = body;
+    const { vendorId, firstName, middleName, lastName, phone, email, dateOfBirth, address, city, state, postalCode } = body;
 
     if (!vendorId || !firstName || !lastName) {
       return NextResponse.json(
@@ -31,7 +31,9 @@ export async function POST(request: NextRequest) {
       last_name: lastName,
       email: email,
       phone: phone,
-      display_name: `${firstName} ${lastName.charAt(0)}.`,
+      display_name: middleName
+        ? `${firstName} ${middleName.charAt(0)}. ${lastName.charAt(0)}.`
+        : `${firstName} ${lastName.charAt(0)}.`,
       role: 'customer',
       is_active: true,
     };
@@ -41,12 +43,16 @@ export async function POST(request: NextRequest) {
 
     // Build billing address from ID scan data if provided
     if (address || city || state || postalCode) {
+      const fullName = middleName
+        ? `${firstName} ${middleName} ${lastName}`
+        : `${firstName} ${lastName}`;
+
       customerData.billing_address = {
         first_name: firstName,
         last_name: lastName,
         company: "",
         address_1: address || "",
-        address_2: "",
+        address_2: middleName ? `Middle Name: ${middleName}` : "",
         city: city || "",
         state: state || "",
         postcode: postalCode || "",

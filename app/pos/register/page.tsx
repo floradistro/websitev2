@@ -18,6 +18,7 @@ export default function POSRegisterPage() {
   const [processing, setProcessing] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [registerId, setRegisterId] = useState<string | null>(null);
+  const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
   const [skuInput, setSkuInput] = useState('');
   const [skuLoading, setSkuLoading] = useState(false);
   const [skuError, setSkuError] = useState<string | null>(null);
@@ -286,8 +287,9 @@ export default function POSRegisterPage() {
   };
 
   // Open payment modal
-  const handleCheckout = () => {
+  const handleCheckout = (customer?: any) => {
     if (cart.length === 0) return;
+    setSelectedCustomer(customer || null);
     setShowPayment(true);
   };
 
@@ -299,6 +301,12 @@ export default function POSRegisterPage() {
       const subtotal = cart.reduce((sum, item) => sum + item.lineTotal, 0);
       const taxAmount = subtotal * 0.08;
       const total = subtotal + taxAmount;
+
+      // Get customer info
+      const customerId = selectedCustomer?.id || null;
+      const customerName = selectedCustomer
+        ? `${selectedCustomer.first_name} ${selectedCustomer.last_name}`
+        : 'Walk-In';
 
       const response = await fetch('/api/pos/sales/create', {
         method: 'POST',
@@ -315,7 +323,8 @@ export default function POSRegisterPage() {
           paymentMethod: paymentData.paymentMethod,
           cashTendered: paymentData.cashTendered,
           changeGiven: paymentData.changeGiven,
-          customerName: 'Walk-In',
+          customerId,
+          customerName,
         }),
       });
 
@@ -329,8 +338,9 @@ export default function POSRegisterPage() {
       // Show receipt/success
       alert(`✅ Sale completed!\n\nOrder: ${result.order.order_number}\nTotal: $${total.toFixed(2)}\n\nChange: $${paymentData.changeGiven?.toFixed(2) || '0.00'}`);
 
-      // Clear cart and close payment
+      // Clear cart, customer, and close payment
       setCart([]);
+      setSelectedCustomer(null);
       setShowPayment(false);
       
       // Reload session to update totals

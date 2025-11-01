@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useRef, useCallback } from 'react';
 import Image from 'next/image';
-import { ShoppingBag, Eye, Package } from 'lucide-react';
+import { ShoppingBag, Eye, Package, ArrowDownAZ } from 'lucide-react';
 import { POSQuickView } from './POSQuickView';
 import { POSVendorDropdown } from './POSVendorDropdown';
 import { useAppAuth } from '@/context/AppAuthContext';
@@ -60,6 +60,11 @@ interface POSProductGridProps {
   skuInputRef?: React.RefObject<HTMLInputElement | null>;
 }
 
+// Category hierarchy - subcategories grouped under parent categories
+const CATEGORY_HIERARCHY: Record<string, string[]> = {
+  'Beverages': ['Day Drinker (5mg)', 'Golden Hour (10mg)', 'Darkside (30mg)', 'Riptide (60mg)'],
+};
+
 export function POSProductGrid({
   locationId,
   locationName = 'Location',
@@ -82,12 +87,32 @@ export function POSProductGrid({
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(null);
+  const [selectedStrainType, setSelectedStrainType] = useState<string | null>(null);
+  const [selectedConsistency, setSelectedConsistency] = useState<string | null>(null);
+  const [selectedFlavor, setSelectedFlavor] = useState<string | null>(null);
   const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
+
+  // Alphabetical scroll indicator
+  const [sortAlphabetically, setSortAlphabetically] = useState(false);
+  const [currentLetter, setCurrentLetter] = useState<string>('');
+  const [showScrollIndicator, setShowScrollIndicator] = useState(false);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const productRefsMap = useRef<Map<string, HTMLDivElement>>(new Map());
 
   // Load location inventory
   useEffect(() => {
     loadInventory();
   }, [locationId]);
+
+  // Clear product refs when switching sort modes
+  useEffect(() => {
+    if (!sortAlphabetically) {
+      productRefsMap.current.clear();
+      setShowScrollIndicator(false);
+      setCurrentLetter('');
+    }
+  }, [sortAlphabetically]);
 
   const loadInventory = async () => {
     try {
@@ -109,11 +134,142 @@ export function POSProductGrid({
     }
   };
 
-  // Get unique categories
+  // Handle scroll to track current letter
+  const handleScroll = useCallback(() => {
+    if (!scrollContainerRef.current) return;
+
+    const container = scrollContainerRef.current;
+    const scrollTop = container.scrollTop;
+    const isScrolling = scrollTop > 50;
+
+    setShowScrollIndicator(isScrolling);
+
+    // Find which letter section we're in
+    const containerRect = container.getBoundingClientRect();
+    const centerY = containerRect.top + containerRect.height / 2;
+
+    let closestLetter = '';
+    let closestDistance = Infinity;
+
+    productRefsMap.current.forEach((element, letter) => {
+      const rect = element.getBoundingClientRect();
+      const distance = Math.abs(rect.top - centerY);
+
+      if (distance < closestDistance) {
+        closestDistance = distance;
+        closestLetter = letter;
+      }
+    });
+
+    if (closestLetter) {
+      setCurrentLetter(closestLetter);
+    }
+  }, []);
+
+  // Jump to letter section
+  const jumpToLetter = useCallback((letter: string) => {
+    const element = productRefsMap.current.get(letter);
+    if (element && scrollContainerRef.current) {
+      const container = scrollContainerRef.current;
+      const containerTop = container.getBoundingClientRect().top;
+      const elementTop = element.getBoundingClientRect().top;
+      const offset = elementTop - containerTop + container.scrollTop - 20;
+
+      container.scrollTo({
+        top: offset,
+        behavior: 'smooth',
+      });
+    }
+  }, []);
+
+  // Get unique parent categories (excluding subcategories)
   const categories = useMemo(() => {
-    const cats = new Set(products.map(p => p.category).filter(Boolean));
-    return ['all', ...Array.from(cats)];
+    const allCategories = new Set(
+      products
+        .map(p => p.category)
+        .filter((cat): cat is string => typeof cat === 'string')
+    );
+    const parents = new Set<string>();
+
+    allCategories.forEach(cat => {
+      // Check if this category is a subcategory
+      let isSubcategory = false;
+      for (const [parent, subs] of Object.entries(CATEGORY_HIERARCHY)) {
+        if (subs.includes(cat)) {
+          isSubcategory = true;
+          parents.add(parent);
+          break;
+        }
+      }
+      if (!isSubcategory) {
+        parents.add(cat);
+      }
+    });
+
+    return ['all', ...Array.from(parents).sort()];
   }, [products]);
+
+  // Get subcategories for the selected parent category
+  const availableSubcategories = useMemo(() => {
+    if (selectedCategory === 'all') return [];
+
+    const subcats = CATEGORY_HIERARCHY[selectedCategory];
+    if (!subcats) return [];
+
+    // Only show subcategories that have products
+    return subcats.filter(subcat =>
+      products.some(p => p.category === subcat)
+    );
+  }, [selectedCategory, products]);
+
+  // Get available strain types for current category
+  const availableStrainTypes = useMemo(() => {
+    const relevantCategories = ['Flower', 'Concentrates', 'Vape'];
+
+    const strainTypes = new Set<string>();
+    products.forEach(product => {
+      // When "all" is selected, show strain types from all relevant categories
+      if (selectedCategory === 'all') {
+        if (relevantCategories.includes(product.category || '')) {
+          const strainType = product.fields?.find(f => f.label === 'strain_type')?.value;
+          if (strainType) strainTypes.add(strainType);
+        }
+      } else if (product.category === selectedCategory) {
+        // When specific category selected, only show for that category
+        const strainType = product.fields?.find(f => f.label === 'strain_type')?.value;
+        if (strainType) strainTypes.add(strainType);
+      }
+    });
+    return Array.from(strainTypes).sort();
+  }, [selectedCategory, products]);
+
+  // Get available consistencies for concentrates
+  const availableConsistencies = useMemo(() => {
+    const consistencies = new Set<string>();
+    products.forEach(product => {
+      if (selectedCategory === 'all' || product.category === 'Concentrates') {
+        if (product.category === 'Concentrates') {
+          const consistency = product.fields?.find(f => f.label === 'consistency')?.value;
+          if (consistency) consistencies.add(consistency);
+        }
+      }
+    });
+    return Array.from(consistencies).sort();
+  }, [selectedCategory, products]);
+
+  // Get available flavors for beverages
+  const availableFlavors = useMemo(() => {
+    const beverageCategories = ['Day Drinker (5mg)', 'Golden Hour (10mg)', 'Darkside (30mg)', 'Riptide (60mg)'];
+
+    const flavors = new Set<string>();
+    products.forEach(product => {
+      if (beverageCategories.includes(product.category || '')) {
+        const flavor = product.fields?.find(f => f.label === 'flavor')?.value;
+        if (flavor) flavors.add(flavor);
+      }
+    });
+    return Array.from(flavors).sort();
+  }, [selectedCategory, selectedSubcategory, products]);
 
   // Filter products
   const filteredProducts = useMemo(() => {
@@ -122,33 +278,101 @@ export function POSProductGrid({
       if (searchQuery && !product.name.toLowerCase().includes(searchQuery.toLowerCase())) {
         return false;
       }
-      
-      // Category filter
-      if (selectedCategory !== 'all' && product.category !== selectedCategory) {
-        return false;
+
+      // Category filter - handle both parent categories and subcategories
+      if (selectedCategory !== 'all') {
+        // If a subcategory is selected, filter by that
+        if (selectedSubcategory) {
+          if (product.category !== selectedSubcategory) {
+            return false;
+          }
+        } else {
+          // If only parent category selected, show all products in that parent or its subcategories
+          const subcats = CATEGORY_HIERARCHY[selectedCategory];
+          if (subcats) {
+            // Parent has subcategories - show products matching any subcategory
+            if (!subcats.includes(product.category || '')) {
+              return false;
+            }
+          } else {
+            // Parent has no subcategories - direct match
+            if (product.category !== selectedCategory) {
+              return false;
+            }
+          }
+        }
       }
-      
+
+      // Strain type filter
+      if (selectedStrainType) {
+        const strainType = product.fields?.find(f => f.label === 'strain_type')?.value;
+        if (strainType !== selectedStrainType) {
+          return false;
+        }
+      }
+
+      // Consistency filter
+      if (selectedConsistency) {
+        const consistency = product.fields?.find(f => f.label === 'consistency')?.value;
+        if (consistency !== selectedConsistency) {
+          return false;
+        }
+      }
+
+      // Flavor filter
+      if (selectedFlavor) {
+        const flavor = product.fields?.find(f => f.label === 'flavor')?.value;
+        if (flavor !== selectedFlavor) {
+          return false;
+        }
+      }
+
       return true;
     });
-  }, [products, searchQuery, selectedCategory]);
+  }, [products, searchQuery, selectedCategory, selectedSubcategory, selectedStrainType, selectedConsistency, selectedFlavor]);
+
+  // Group products by first letter for alphabetical indicator
+  const productsByLetter = useMemo(() => {
+    const grouped = new Map<string, Product[]>();
+
+    filteredProducts.forEach(product => {
+      const firstLetter = product.name[0]?.toUpperCase() || '#';
+      if (!grouped.has(firstLetter)) {
+        grouped.set(firstLetter, []);
+      }
+      grouped.get(firstLetter)!.push(product);
+    });
+
+    return new Map([...grouped.entries()].sort());
+  }, [filteredProducts]);
+
+  // Get all available letters
+  const availableLetters = useMemo(() => {
+    return Array.from(productsByLetter.keys());
+  }, [productsByLetter]);
 
   const handleAddProduct = (product: Product, priceTier?: PricingTier) => {
     // If pricing tier provided, use its qty, otherwise prompt
     let quantity: number;
-    
+    let price: number;
+
     if (priceTier) {
       quantity = priceTier.qty;
+      // Tier price is the TOTAL for this quantity, so calculate unit price
+      // e.g., "2g - $40" means $40 total, so unit price = $40 / 2 = $20
+      price = priceTier.price ? priceTier.price / priceTier.qty : product.price;
     } else {
       quantity = parseFloat(prompt(`Enter quantity for ${product.name}:`, '1') || '0');
+      price = product.price;
     }
-    
+
     if (quantity > 0) {
       if (quantity > product.inventory_quantity) {
         // Just use the max available
-        onAddToCart(product, product.inventory_quantity);
+        onAddToCart({ ...product, price }, product.inventory_quantity);
         return;
       }
-      onAddToCart(product, quantity);
+      onAddToCart({ ...product, price }, quantity);
     }
   };
 
@@ -292,8 +516,7 @@ export function POSProductGrid({
               <button
                 type="button"
                 onClick={(e) => onSkuSubmit(e as any)}
-                className="px-4 py-2.5 bg-white/10 border border-white/20 rounded-2xl text-[10px] uppercase tracking-[0.15em] hover:bg-white/20 transition-all font-black"
-                style={{ fontWeight: 900 }}
+                className="px-4 py-2.5 bg-white/[0.02] border border-white/[0.06] rounded-2xl text-[10px] uppercase tracking-[0.15em] text-white/60 hover:bg-white/[0.04] hover:text-white/80 transition-all font-light"
               >
                 Scan
               </button>
@@ -304,7 +527,14 @@ export function POSProductGrid({
           <div className="relative">
             <select
               value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
+              onChange={(e) => {
+                setSelectedCategory(e.target.value);
+                // Reset all filters when category changes
+                setSelectedSubcategory(null);
+                setSelectedStrainType(null);
+                setSelectedConsistency(null);
+                setSelectedFlavor(null);
+              }}
               className="bg-white/5 border border-white/10 text-white px-3 py-2.5 rounded-2xl text-[10px] uppercase tracking-[0.15em] focus:outline-none focus:border-white/20 hover:bg-white/10 transition-all min-w-[140px] cursor-pointer appearance-none pr-8"
               style={{
                 colorScheme: 'dark'
@@ -327,37 +557,173 @@ export function POSProductGrid({
               </svg>
             </div>
           </div>
+
+          {/* Alphabetical Sort Toggle */}
+          <button
+            onClick={() => setSortAlphabetically(!sortAlphabetically)}
+            className={`px-4 py-2.5 rounded-2xl text-[10px] uppercase tracking-[0.15em] transition-all font-light border flex items-center gap-2 ${
+              sortAlphabetically
+                ? 'bg-white/[0.1] border-white/[0.15] text-white/80'
+                : 'bg-white/[0.02] border-white/[0.06] text-white/60 hover:bg-white/[0.04] hover:text-white/80'
+            }`}
+          >
+            <ArrowDownAZ size={14} strokeWidth={1.5} />
+            A-Z
+          </button>
         </div>
+
+        {/* Dynamic Filter Pills - Single horizontal row, Apple-style */}
+        {(availableSubcategories.length > 0 || availableStrainTypes.length > 0 || availableConsistencies.length > 0 || availableFlavors.length > 0) && (
+          <div
+            className="flex items-center gap-2 pt-2 overflow-x-auto hide-scrollbar"
+            style={{
+              WebkitOverflowScrolling: 'touch',
+              scrollbarWidth: 'none',
+              msOverflowStyle: 'none'
+            }}
+          >
+            {/* All filters in one seamless row */}
+            {availableSubcategories.map((subcat) => (
+              <button
+                key={`subcat-${subcat}`}
+                onClick={() => {
+                  setSelectedSubcategory(subcat === selectedSubcategory ? null : subcat);
+                  if (subcat !== selectedSubcategory) {
+                    setSelectedFlavor(null);
+                  }
+                }}
+                className={`px-4 py-2 rounded-full text-[10px] font-semibold tracking-tight transition-all whitespace-nowrap flex-shrink-0 ${
+                  selectedSubcategory === subcat
+                    ? 'bg-white text-black shadow-lg'
+                    : 'bg-white/[0.08] text-white/80 hover:bg-white/[0.12] backdrop-blur-sm'
+                }`}
+              >
+                {subcat}
+              </button>
+            ))}
+
+            {availableStrainTypes.map((strain) => (
+              <button
+                key={`strain-${strain}`}
+                onClick={() => setSelectedStrainType(strain === selectedStrainType ? null : strain)}
+                className={`px-4 py-2 rounded-full text-[10px] font-semibold tracking-tight transition-all whitespace-nowrap flex-shrink-0 ${
+                  selectedStrainType === strain
+                    ? 'bg-white text-black shadow-lg'
+                    : 'bg-white/[0.08] text-white/80 hover:bg-white/[0.12] backdrop-blur-sm'
+                }`}
+              >
+                {strain}
+              </button>
+            ))}
+
+            {availableConsistencies.map((consistency) => (
+              <button
+                key={`consistency-${consistency}`}
+                onClick={() => setSelectedConsistency(consistency === selectedConsistency ? null : consistency)}
+                className={`px-4 py-2 rounded-full text-[10px] font-semibold tracking-tight transition-all whitespace-nowrap flex-shrink-0 ${
+                  selectedConsistency === consistency
+                    ? 'bg-white text-black shadow-lg'
+                    : 'bg-white/[0.08] text-white/80 hover:bg-white/[0.12] backdrop-blur-sm'
+                }`}
+              >
+                {consistency}
+              </button>
+            ))}
+
+            {availableFlavors.map((flavor) => (
+              <button
+                key={`flavor-${flavor}`}
+                onClick={() => setSelectedFlavor(flavor === selectedFlavor ? null : flavor)}
+                className={`px-4 py-2 rounded-full text-[10px] font-semibold tracking-tight transition-all whitespace-nowrap flex-shrink-0 ${
+                  selectedFlavor === flavor
+                    ? 'bg-white text-black shadow-lg'
+                    : 'bg-white/[0.08] text-white/80 hover:bg-white/[0.12] backdrop-blur-sm'
+                }`}
+              >
+                {flavor}
+              </button>
+            ))}
+
+            {/* Clear All - Only show if any filter is active */}
+            {(selectedSubcategory || selectedStrainType || selectedConsistency || selectedFlavor) && (
+              <>
+                {/* Subtle divider */}
+                <div className="w-px h-5 bg-white/10 flex-shrink-0 mx-1" />
+                <button
+                  onClick={() => {
+                    setSelectedSubcategory(null);
+                    setSelectedStrainType(null);
+                    setSelectedConsistency(null);
+                    setSelectedFlavor(null);
+                  }}
+                  className="px-4 py-2 rounded-full text-[10px] font-semibold tracking-tight transition-all whitespace-nowrap flex-shrink-0 bg-white/[0.08] text-white/60 hover:bg-white/[0.12] hover:text-white/80 backdrop-blur-sm"
+                >
+                  Clear
+                </button>
+              </>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Products Grid - Scrollable */}
-      <div
-        className="flex-1 overflow-y-auto overflow-x-hidden px-4 pb-4"
-        style={{
-          minHeight: 0,
-          WebkitOverflowScrolling: 'touch',
-          overscrollBehavior: 'contain'
-        }}
-      >
-        {filteredProducts.length === 0 ? (
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-12 text-center">
-            <div className="text-white/40">No products found</div>
-          </div>
-        ) : displayMode === 'cards' ? (
-          <div className="grid grid-cols-3 gap-4">
-            {filteredProducts.map((product) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                onAddToCart={handleAddProduct}
-                onProductClick={onProductClick}
-                onQuickView={setQuickViewProduct}
-                showInventory={showInventory}
-                vendorLogo={vendor?.logo_url || null}
-              />
-            ))}
-          </div>
-        ) : (
+      <div className="relative flex-1">
+        <div
+          ref={scrollContainerRef}
+          onScroll={handleScroll}
+          className="absolute inset-0 overflow-y-auto overflow-x-hidden px-4 pb-4 pt-1"
+          style={{
+            WebkitOverflowScrolling: 'touch',
+            overscrollBehavior: 'contain'
+          }}
+        >
+          {filteredProducts.length === 0 ? (
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-12 text-center">
+              <div className="text-white/40">No products found</div>
+            </div>
+          ) : displayMode === 'cards' ? (
+            sortAlphabetically ? (
+              <>
+                {Array.from(productsByLetter.entries()).map(([letter, products]) => (
+                  <div key={letter} ref={(el) => { if (el) productRefsMap.current.set(letter, el); }}>
+                    {/* Letter Header */}
+                    <div className="sticky top-0 z-10 bg-[#0a0a0a]/95 backdrop-blur-sm py-2 mb-3">
+                      <h3 className="text-[11px] uppercase tracking-[0.2em] text-white/40 font-light">{letter}</h3>
+                    </div>
+
+                    {/* Products Grid for this letter */}
+                    <div className="grid grid-cols-3 gap-4 mb-6">
+                      {products.map((product) => (
+                        <ProductCard
+                          key={product.id}
+                          product={product}
+                          onAddToCart={handleAddProduct}
+                          onProductClick={onProductClick}
+                          onQuickView={setQuickViewProduct}
+                          showInventory={showInventory}
+                          vendorLogo={vendor?.logo_url || null}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </>
+            ) : (
+              <div className="grid grid-cols-3 gap-4 pt-1">
+                {filteredProducts.map((product) => (
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                    onAddToCart={handleAddProduct}
+                    onProductClick={onProductClick}
+                    onQuickView={setQuickViewProduct}
+                    showInventory={showInventory}
+                    vendorLogo={vendor?.logo_url || null}
+                  />
+                ))}
+              </div>
+            )
+          ) : (
           // List view
           <div className="space-y-2">
             {filteredProducts.map((product) => (
@@ -401,6 +767,29 @@ export function POSProductGrid({
                     ${product.price.toFixed(2)}
                   </div>
                 </div>
+              </button>
+            ))}
+          </div>
+        )}
+        </div>
+
+        {/* Alphabetical Scroll Indicator */}
+        {sortAlphabetically && showScrollIndicator && availableLetters.length > 1 && (
+          <div className="absolute right-2 top-1/2 -translate-y-1/2 z-20 flex flex-col gap-0.5 py-2">
+            {availableLetters.map((letter) => (
+              <button
+                key={letter}
+                onClick={() => jumpToLetter(letter)}
+                className={`
+                  w-5 h-5 flex items-center justify-center text-[9px] font-light tracking-wide
+                  transition-all duration-200 rounded-full
+                  ${currentLetter === letter
+                    ? 'bg-white/20 text-white scale-125'
+                    : 'bg-white/[0.05] text-white/40 hover:bg-white/[0.1] hover:text-white/60'
+                  }
+                `}
+              >
+                {letter}
               </button>
             ))}
           </div>

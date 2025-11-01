@@ -100,6 +100,30 @@ export function POSCart({
           selectedCustomer={selectedCustomer}
           onCustomerSelect={setSelectedCustomer}
         />
+
+        {/* Customer Loyalty Info */}
+        {selectedCustomer && (
+          <div className="mt-2 p-2 bg-white/5 border border-white/10 rounded-xl">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-white text-[10px] font-bold uppercase tracking-wide">
+                  {selectedCustomer.first_name} {selectedCustomer.last_name}
+                </div>
+                <div className="text-white/60 text-[9px] uppercase tracking-wider mt-0.5">
+                  Tier: {selectedCustomer.loyalty_tier}
+                </div>
+              </div>
+              <div className="text-right">
+                <div className="text-green-400 text-xs font-black">
+                  {selectedCustomer.loyalty_points.toLocaleString()}
+                </div>
+                <div className="text-white/40 text-[8px] uppercase tracking-wider">
+                  Points
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Cart Items - Scrollable */}

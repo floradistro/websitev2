@@ -168,6 +168,57 @@ export function POSIDScanner({
     }
   };
 
+  // Helper function to convert text to proper case
+  const toProperCase = (text: string): string => {
+    if (!text) return '';
+
+    // Split on spaces and hyphens, convert each word to title case
+    return text
+      .toLowerCase()
+      .split(/(\s+|-)/g) // Split on spaces and hyphens but keep them
+      .map((word) => {
+        if (word.match(/^\s+$/) || word === '-') return word; // Keep whitespace and hyphens as-is
+        return word.charAt(0).toUpperCase() + word.slice(1);
+      })
+      .join('');
+  };
+
+  // Helper function to parse full name into first, middle, last
+  const parseFullName = (fullName: string, existingFirst?: string, existingMiddle?: string, existingLast?: string) => {
+    if (!fullName) {
+      return {
+        firstName: existingFirst || '',
+        middleName: existingMiddle || '',
+        lastName: existingLast || ''
+      };
+    }
+
+    const nameParts = fullName.trim().split(/\s+/);
+
+    if (nameParts.length === 1) {
+      // Only one name part - treat as first name
+      return {
+        firstName: toProperCase(nameParts[0]),
+        middleName: existingMiddle || '',
+        lastName: existingLast || ''
+      };
+    } else if (nameParts.length === 2) {
+      // Two parts - first and last
+      return {
+        firstName: toProperCase(nameParts[0]),
+        middleName: existingMiddle || '',
+        lastName: toProperCase(nameParts[1])
+      };
+    } else {
+      // Three or more parts - first, middle(s), last
+      return {
+        firstName: toProperCase(nameParts[0]),
+        middleName: toProperCase(nameParts.slice(1, -1).join(' ')),
+        lastName: toProperCase(nameParts[nameParts.length - 1])
+      };
+    }
+  };
+
   // Handle captured ID
   const handleIdCaptured = async (capturedId: any) => {
     console.log('🎯 ID captured - raw data:', capturedId);
@@ -183,31 +234,69 @@ export function POSIDScanner({
       setMessage('Processing ID data...');
 
       // Extract data from captured ID
-      let firstName = capturedId.firstName;
-      let lastName = capturedId.lastName;
-      let middleName = capturedId.middleName;
-      let documentNumber = capturedId.documentNumber;
+      let rawFirstName = capturedId.firstName || '';
+      let rawLastName = capturedId.lastName || '';
+      let rawMiddleName = capturedId.middleName || '';
+      let documentNumber = capturedId.documentNumber || '';
       let dateOfBirth = capturedId.dateOfBirth;
       let dateOfExpiry = capturedId.dateOfExpiry;
-      let address = capturedId.address;
-      let city = capturedId.city;
-      let state = capturedId.state;
-      let zipCode = capturedId.zipCode || capturedId.postalCode;
+      let rawAddress = capturedId.address || '';
+      let rawCity = capturedId.city || '';
+      let rawState = capturedId.state || '';
+      let zipCode = capturedId.zipCode || capturedId.postalCode || '';
 
       // Try barcode result first (most reliable for US IDs)
       if (capturedId.barcode) {
         const barcode = capturedId.barcode;
-        firstName = firstName || barcode.firstName;
-        lastName = lastName || barcode.lastName;
-        middleName = middleName || barcode.middleName;
-        documentNumber = documentNumber || barcode.documentNumber;
+        rawFirstName = rawFirstName || barcode.firstName || '';
+        rawLastName = rawLastName || barcode.lastName || '';
+        rawMiddleName = rawMiddleName || barcode.middleName || '';
+        documentNumber = documentNumber || barcode.documentNumber || '';
         dateOfBirth = dateOfBirth || barcode.dateOfBirth;
         dateOfExpiry = dateOfExpiry || barcode.dateOfExpiry;
-        address = address || barcode.address;
-        city = city || barcode.city;
-        state = state || barcode.state;
-        zipCode = zipCode || barcode.postalCode || barcode.zipCode;
+        rawAddress = rawAddress || barcode.address || '';
+        rawCity = rawCity || barcode.city || '';
+        rawState = rawState || barcode.state || '';
+        zipCode = zipCode || barcode.postalCode || barcode.zipCode || '';
       }
+
+      // Parse names - handle case where first and middle are combined
+      let firstName = '';
+      let middleName = '';
+      let lastName = '';
+
+      // If we have separate first, middle, last already
+      if (rawFirstName && rawLastName) {
+        // Check if firstName contains multiple words (first + middle combined)
+        const firstNameParts = rawFirstName.trim().split(/\s+/);
+        if (firstNameParts.length > 1 && !rawMiddleName) {
+          // First name has multiple parts and no separate middle name
+          firstName = toProperCase(firstNameParts[0]);
+          middleName = toProperCase(firstNameParts.slice(1).join(' '));
+          lastName = toProperCase(rawLastName);
+        } else {
+          // Use as-is with proper case
+          firstName = toProperCase(rawFirstName);
+          middleName = toProperCase(rawMiddleName);
+          lastName = toProperCase(rawLastName);
+        }
+      } else if (rawFirstName) {
+        // Only have first name, might be full name
+        const parsed = parseFullName(rawFirstName);
+        firstName = parsed.firstName;
+        middleName = parsed.middleName;
+        lastName = parsed.lastName || toProperCase(rawLastName);
+      } else {
+        // Fallback
+        firstName = toProperCase(rawFirstName);
+        middleName = toProperCase(rawMiddleName);
+        lastName = toProperCase(rawLastName);
+      }
+
+      // Apply proper case to address fields
+      const address = toProperCase(rawAddress);
+      const city = toProperCase(rawCity);
+      const state = rawState.toUpperCase(); // State codes should be uppercase
 
       // Handle DateResult objects or string dates
       let dobString = '';
@@ -239,19 +328,19 @@ export function POSIDScanner({
       }
 
       const idData: ScannedIDData = {
-        firstName: firstName || '',
-        lastName: lastName || '',
-        middleName: middleName || '',
+        firstName: firstName,
+        lastName: lastName,
+        middleName: middleName,
         dateOfBirth: dobString,
-        address: address || '',
-        city: city || '',
-        state: state || '',
-        postalCode: zipCode || '',
-        licenseNumber: documentNumber || '',
+        address: address,
+        city: city,
+        state: state,
+        postalCode: zipCode,
+        licenseNumber: documentNumber,
         expirationDate: expString,
       };
 
-      console.log('✅ Extracted result:', idData);
+      console.log('✅ Extracted result (with proper case):', idData);
 
       if (!idData.firstName && !idData.lastName) {
         throw new Error('Unable to extract name from ID');

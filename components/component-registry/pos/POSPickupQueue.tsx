@@ -24,8 +24,8 @@ interface Customer {
 interface PickupOrder {
   id: string;
   order_number: string;
-  customer_id: string;
-  customers: Customer;
+  customer_id: string | null;
+  customers: Customer | null;
   order_items: OrderItem[];
   total_amount: number;
   subtotal: number;
@@ -35,6 +35,7 @@ interface PickupOrder {
   payment_method: string | null;
   created_at: string;
   metadata: any;
+  billing_address?: any;
   // Shipping-specific fields
   shipping_address?: any;
   tracking_number?: string;
@@ -45,7 +46,7 @@ interface PickupOrder {
   shipped_date?: string;
 }
 
-type OrderType = 'pickup' | 'shipping';
+type OrderType = 'pickup' | 'shipping' | 'instore';
 
 interface POSPickupQueueProps {
   locationId: string;
@@ -62,9 +63,10 @@ export function POSPickupQueue({
   refreshInterval = 30,
   enableSound = true,
 }: POSPickupQueueProps) {
-  const [activeTab, setActiveTab] = useState<OrderType>('pickup');
+  const [activeTab, setActiveTab] = useState<OrderType>('instore');
   const [pickupOrders, setPickupOrders] = useState<PickupOrder[]>([]);
   const [shippingOrders, setShippingOrders] = useState<PickupOrder[]>([]);
+  const [instoreOrders, setInstoreOrders] = useState<PickupOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [fulfilling, setFulfilling] = useState<string | null>(null);
@@ -74,7 +76,7 @@ export function POSPickupQueue({
   });
 
   // Get active orders based on tab
-  const orders = activeTab === 'pickup' ? pickupOrders : shippingOrders;
+  const orders = activeTab === 'pickup' ? pickupOrders : (activeTab === 'shipping' ? shippingOrders : instoreOrders);
 
   // Request notification permission on mount
   useEffect(() => {
@@ -92,8 +94,12 @@ export function POSPickupQueue({
   // Show browser notification
   const showNotification = (order: PickupOrder) => {
     if ('Notification' in window && Notification.permission === 'granted') {
+      const customerName = order.customers
+        ? `${order.customers.first_name} ${order.customers.last_name}`
+        : 'Walk-In Customer';
+
       const notification = new Notification('New Pickup Order!', {
-        body: `${order.customers.first_name} ${order.customers.last_name}\n$${order.total_amount.toFixed(2)} - ${order.order_items.length} items`,
+        body: `${customerName}\n$${order.total_amount.toFixed(2)} - ${order.order_items.length} items`,
         icon: '/icons/pos-192.png',
         badge: '/icons/pos-192.png',
         tag: order.id,
@@ -175,14 +181,36 @@ export function POSPickupQueue({
     }
   }, [locationId]);
 
+  // Load in-store orders (POS sales) via API
+  const loadInstoreOrders = useCallback(async () => {
+    console.log('🏪 Loading in-store orders for location:', locationId);
+    try {
+      const response = await fetch(`/api/pos/orders/instore?locationId=${locationId}`);
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('❌ In-store orders API error:', errorData);
+        throw new Error(errorData.error || 'Failed to load in-store orders');
+      }
+
+      const { orders } = await response.json();
+      console.log('✅ Loaded in-store orders:', orders.length);
+      setInstoreOrders(orders as PickupOrder[] || []);
+      setError(null);
+    } catch (err: any) {
+      console.error('Error loading in-store orders:', err);
+      setError(err.message);
+    }
+  }, [locationId]);
+
   // Load all orders
   const loadAllOrders = useCallback(async () => {
-    console.log('📦 Loading all orders (pickup + shipping)...');
+    console.log('📦 Loading all orders (pickup + shipping + in-store)...');
     setLoading(true);
-    await Promise.all([loadPickupOrders(), loadShippingOrders()]);
+    await Promise.all([loadPickupOrders(), loadShippingOrders(), loadInstoreOrders()]);
     setLoading(false);
     console.log('✅ All orders loaded');
-  }, [loadPickupOrders, loadShippingOrders]);
+  }, [loadPickupOrders, loadShippingOrders, loadInstoreOrders]);
 
   // Initial load
   useEffect(() => {
@@ -365,7 +393,7 @@ export function POSPickupQueue({
         <div className="flex items-center gap-4">
           <div className="bg-white/5 border border-white/10 rounded-2xl px-6 py-3 text-center">
             <div className="text-white/40 text-xs uppercase tracking-wide">
-              {activeTab === 'pickup' ? 'Pickup Ready' : 'To Ship'}
+              {activeTab === 'pickup' ? 'Pickup Ready' : (activeTab === 'shipping' ? 'To Ship' : 'Today\'s Sales')}
             </div>
             <div className="text-white font-black text-2xl mt-1" style={{ fontWeight: 900 }}>
               {orders.length}
@@ -382,6 +410,24 @@ export function POSPickupQueue({
 
       {/* Tabs */}
       <div className="flex gap-2 border-b border-white/10 pb-4">
+        <button
+          onClick={() => setActiveTab('instore')}
+          className={`px-6 py-3 rounded-xl font-black uppercase text-sm transition-all ${
+            activeTab === 'instore'
+              ? 'bg-white/20 text-white border-2 border-white/30'
+              : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white border-2 border-transparent'
+          }`}
+          style={{ fontWeight: 900 }}
+        >
+          In Store
+          {instoreOrders.length > 0 && (
+            <span className={`ml-2 px-2 py-0.5 rounded-full text-xs ${
+              activeTab === 'instore' ? 'bg-white/20 text-white' : 'bg-white/10 text-white/60'
+            }`}>
+              {instoreOrders.length}
+            </span>
+          )}
+        </button>
         <button
           onClick={() => setActiveTab('pickup')}
           className={`px-6 py-3 rounded-xl font-black uppercase text-sm transition-all ${
@@ -424,10 +470,10 @@ export function POSPickupQueue({
       {orders.length === 0 ? (
         <div className="bg-white/5 border border-white/10 rounded-2xl p-12 text-center">
           <div className="text-white/40 text-lg mb-2">
-            No {activeTab === 'pickup' ? 'Pickup' : 'Shipping'} Orders
+            No {activeTab === 'pickup' ? 'Pickup' : (activeTab === 'shipping' ? 'Shipping' : 'In-Store')} Orders
           </div>
           <div className="text-white/20 text-sm">
-            New orders will appear here in real-time
+            {activeTab === 'instore' ? 'Completed POS sales will appear here' : 'New orders will appear here in real-time'}
           </div>
         </div>
       ) : (
@@ -448,9 +494,12 @@ export function POSPickupQueue({
                     Order #{order.order_number}
                   </div>
                   <div className="text-white/80 text-lg mt-1">
-                    {order.customers.first_name} {order.customers.last_name}
+                    {order.customers
+                      ? `${order.customers.first_name} ${order.customers.last_name}`
+                      : (order.billing_address?.name || order.metadata?.customer_name || 'Walk-In Customer')
+                    }
                   </div>
-                  {order.customers.phone && (
+                  {order.customers?.phone && (
                     <div className="text-white/40 text-sm mt-1">
                       {order.customers.phone}
                     </div>
@@ -544,25 +593,27 @@ export function POSPickupQueue({
 
               {/* Actions */}
               <div className="flex gap-2">
-                <button
-                  onClick={() => fulfillOrder(order.id, order.order_number)}
-                  disabled={fulfilling === order.id}
-                  className="flex-1 bg-white/10 text-white border-2 border-white/20 font-black uppercase py-4 rounded-2xl hover:bg-white/20 hover:border-white/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                  style={{ fontWeight: 900 }}
-                >
-                  {fulfilling === order.id
-                    ? (activeTab === 'pickup' ? 'Fulfilling...' : 'Shipping...')
-                    : (activeTab === 'pickup' ? 'Fulfill Order' : 'Mark as Shipped')
-                  }
-                </button>
+                {activeTab !== 'instore' && (
+                  <button
+                    onClick={() => fulfillOrder(order.id, order.order_number)}
+                    disabled={fulfilling === order.id}
+                    className="flex-1 bg-white/10 text-white border-2 border-white/20 font-black uppercase py-4 rounded-2xl hover:bg-white/20 hover:border-white/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                    style={{ fontWeight: 900 }}
+                  >
+                    {fulfilling === order.id
+                      ? (activeTab === 'pickup' ? 'Fulfilling...' : 'Shipping...')
+                      : (activeTab === 'pickup' ? 'Fulfill Order' : 'Mark as Shipped')
+                    }
+                  </button>
+                )}
                 <button
                   onClick={() => setModal({
                     isOpen: true,
                     title: 'Customer Contact',
-                    message: order.customers.phone || order.customers.email,
+                    message: order.customers?.phone || order.customers?.email || 'No contact information available',
                     type: 'info',
                   })}
-                  className="px-6 border border-white/20 text-white rounded-2xl hover:bg-white/5 font-bold uppercase text-sm"
+                  className={`${activeTab === 'instore' ? 'flex-1' : 'px-6'} border border-white/20 text-white rounded-2xl hover:bg-white/5 font-bold uppercase text-sm`}
                 >
                   Contact
                 </button>
