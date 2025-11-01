@@ -87,17 +87,15 @@ export function POSIDScanner({
       }
 
       // Configure camera settings for better barcode scanning
-      const cameraSettings = SDCCore.Camera.defaultSettings;
-      if (cameraSettings) {
-        // Set preferred resolution for better barcode detection
-        cameraSettings.preferredResolution = SDCCore.VideoResolution.FullHD;
-        // Enable auto-focus for better barcode locking
-        cameraSettings.focusMode = SDCCore.FocusMode.Continuous;
-        // Set focus range to far for ID scanning
-        cameraSettings.focusRange = SDCCore.FocusRange.Far;
-        await camera.applySettings(cameraSettings);
-        console.log('✅ Camera settings applied for barcode scanning');
-      }
+      const cameraSettings = new SDCCore.CameraSettings();
+      // Set preferred resolution for better barcode detection
+      cameraSettings.preferredResolution = SDCCore.VideoResolution.FullHD;
+      // Enable auto-focus for better barcode locking
+      cameraSettings.focusMode = SDCCore.FocusMode.Continuous;
+      // Set focus range to far for ID scanning
+      cameraSettings.focusRange = SDCCore.FocusRange.Far;
+      await camera.applySettings(cameraSettings);
+      console.log('✅ Camera settings applied for barcode scanning');
 
       await context.setFrameSource(camera);
       cameraRef.current = camera;

@@ -61,18 +61,26 @@ export default function SimpleTVMenusPage() {
   const [editMenuCustomFields, setEditMenuCustomFields] = useState<string[]>([]);
   const [availableCustomFields, setAvailableCustomFields] = useState<string[]>([]);
 
+  // Grid configuration - moved from display groups
+  const [gridColumns, setGridColumns] = useState(6);
+  const [gridRows, setGridRows] = useState(5);
+
   // New comprehensive menu config state
   const [customFieldsConfig, setCustomFieldsConfig] = useState<{ [field: string]: { showLabel: boolean } }>({});
   const [visiblePriceBreaks, setVisiblePriceBreaks] = useState<string[]>([]);
   const [availablePriceBreaks] = useState(['1g', '3_5g', '7g', '14g', '28g']);
   const [hideAllFieldLabels, setHideAllFieldLabels] = useState(false);
 
-  // Split view / dual category state
+  // Split view / dual category state - with per-side configuration
   const [layoutStyle, setLayoutStyle] = useState<'single' | 'split'>('single');
   const [splitLeftCategory, setSplitLeftCategory] = useState('');
   const [splitLeftTitle, setSplitLeftTitle] = useState('');
+  const [splitLeftCustomFields, setSplitLeftCustomFields] = useState<string[]>([]);
+  const [splitLeftPriceBreaks, setSplitLeftPriceBreaks] = useState<string[]>([]);
   const [splitRightCategory, setSplitRightCategory] = useState('');
   const [splitRightTitle, setSplitRightTitle] = useState('');
+  const [splitRightCustomFields, setSplitRightCustomFields] = useState<string[]>([]);
+  const [splitRightPriceBreaks, setSplitRightPriceBreaks] = useState<string[]>([]);
 
   const [deletingMenu, setDeletingMenu] = useState<TVMenu | null>(null);
   const [deletingDevice, setDeletingDevice] = useState<TVDevice | null>(null);
@@ -343,12 +351,20 @@ export default function SimpleTVMenusPage() {
     setVisiblePriceBreaks(menu.config_data?.visible_price_breaks || []);
     setHideAllFieldLabels(menu.config_data?.hideAllFieldLabels || false);
 
-    // Load split view config
+    // Load grid configuration
+    setGridColumns(menu.config_data?.gridColumns || 6);
+    setGridRows(menu.config_data?.gridRows || 5);
+
+    // Load split view config with per-side settings
     setLayoutStyle(menu.config_data?.layoutStyle || 'single');
     setSplitLeftCategory(menu.config_data?.splitLeftCategory || '');
     setSplitLeftTitle(menu.config_data?.splitLeftTitle || '');
+    setSplitLeftCustomFields(menu.config_data?.splitLeftCustomFields || []);
+    setSplitLeftPriceBreaks(menu.config_data?.splitLeftPriceBreaks || []);
     setSplitRightCategory(menu.config_data?.splitRightCategory || '');
     setSplitRightTitle(menu.config_data?.splitRightTitle || '');
+    setSplitRightCustomFields(menu.config_data?.splitRightCustomFields || []);
+    setSplitRightPriceBreaks(menu.config_data?.splitRightPriceBreaks || []);
 
     setError(null);
 
@@ -401,13 +417,18 @@ export default function SimpleTVMenusPage() {
         description: editMenuDescription,
         theme: editMenuTheme,
         display_mode: editMenuDisplayMode,
+        gridColumns,
+        gridRows,
         categories: editMenuCategories,
         customFields: editMenuCustomFields,
         customFieldsConfig: customFieldsConfig,
         visible_price_breaks: visiblePriceBreaks,
         hideAllFieldLabels: hideAllFieldLabels,
         layoutStyle: layoutStyle,
-        splitConfig: layoutStyle === 'split' ? { splitLeftCategory, splitLeftTitle, splitRightCategory, splitRightTitle } : null
+        splitConfig: layoutStyle === 'split' ? {
+          left: { splitLeftCategory, splitLeftTitle, splitLeftCustomFields, splitLeftPriceBreaks },
+          right: { splitRightCategory, splitRightTitle, splitRightCustomFields, splitRightPriceBreaks }
+        } : null
       });
 
       const response = await fetch('/api/vendor/tv-menus/update', {
@@ -421,6 +442,8 @@ export default function SimpleTVMenusPage() {
           description: editMenuDescription || null,
           theme: editMenuTheme,
           display_mode: editMenuDisplayMode,
+          gridColumns,
+          gridRows,
           categories: editMenuCategories,
           customFields: editMenuCustomFields,
           customFieldsConfig: customFieldsConfig,
@@ -429,8 +452,12 @@ export default function SimpleTVMenusPage() {
           layoutStyle: layoutStyle,
           splitLeftCategory: splitLeftCategory,
           splitLeftTitle: splitLeftTitle,
+          splitLeftCustomFields: splitLeftCustomFields,
+          splitLeftPriceBreaks: splitLeftPriceBreaks,
           splitRightCategory: splitRightCategory,
-          splitRightTitle: splitRightTitle
+          splitRightTitle: splitRightTitle,
+          splitRightCustomFields: splitRightCustomFields,
+          splitRightPriceBreaks: splitRightPriceBreaks
         })
       });
 
