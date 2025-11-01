@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { X, Save, DollarSign, Plus, Trash2 } from 'lucide-react';
 import { showNotification } from '@/components/NotificationToast';
+import { Button, Input, Textarea, Select, ds, cn } from '@/components/ds';
 import axios from 'axios';
 
 interface PriceBreak {
@@ -329,10 +330,23 @@ export function PricingBlueprintModal({
           <div className="border-b border-white/5 p-6 bg-black">
             <div className="flex items-start justify-between">
               <div>
-                <h2 className="text-xs uppercase tracking-[0.15em] text-white mb-2 font-black" style={{ fontWeight: 900 }}>
+                <h2 className={cn(
+                  ds.typography.size.xs,
+                  ds.typography.transform.uppercase,
+                  ds.typography.tracking.wide,
+                  ds.colors.text.primary,
+                  ds.typography.weight.light,
+                  'mb-2'
+                )}>
                   {isEditMode ? 'Edit Pricing Blueprint' : 'Create Pricing Blueprint'}
                 </h2>
-                <p className="text-white/40 text-[10px] uppercase tracking-wider">
+                <p className={cn(
+                  ds.colors.text.quaternary,
+                  ds.typography.size.xs,
+                  ds.typography.transform.uppercase,
+                  ds.typography.tracking.wide,
+                  ds.typography.weight.light
+                )}>
                   {isEditMode ? 'Update pricing structure' : 'Configure a new pricing structure'}
                 </p>
               </div>
@@ -424,14 +438,14 @@ export function PricingBlueprintModal({
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <h3 className="text-white/60 text-[10px] uppercase tracking-wider font-medium">Price Breaks</h3>
-                  <button
+                  <Button
                     onClick={addPriceBreak}
-                    className="px-3 py-2 bg-white/5 border border-white/5 text-white/60 hover:bg-white/10 hover:text-white transition-all rounded-xl text-[10px] uppercase tracking-[0.15em] font-black flex items-center gap-2"
-                    style={{ fontWeight: 900 }}
+                    variant="ghost"
+                    icon={Plus}
+                    size="xs"
                   >
-                    <Plus size={12} />
                     Add Tier
-                  </button>
+                  </Button>
                 </div>
                 <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-3 mb-4">
                   <div className="flex items-start gap-2">
@@ -571,22 +585,20 @@ export function PricingBlueprintModal({
               {priceBreaks.length} price break{priceBreaks.length !== 1 ? 's' : ''} configured
             </div>
             <div className="flex items-center gap-3">
-              <button
+              <Button
                 onClick={onClose}
-                className="px-6 py-3 bg-black/20 border border-white/5 text-white/60 hover:bg-white/5 hover:text-white transition-colors rounded-xl text-[10px] uppercase tracking-[0.15em] font-black"
-                style={{ fontWeight: 900 }}
+                variant="ghost"
               >
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={handleSave}
                 disabled={saving}
-                className="px-8 py-3 bg-white/10 text-white border border-white/20 hover:bg-white/20 disabled:opacity-30 disabled:cursor-not-allowed transition-all rounded-xl text-[10px] uppercase tracking-[0.15em] font-black flex items-center gap-2"
-                style={{ fontWeight: 900 }}
+                loading={saving}
+                icon={Save}
               >
-                <Save size={12} />
                 {saving ? 'Saving...' : (isEditMode ? 'Save Changes' : 'Create Blueprint')}
-              </button>
+              </Button>
             </div>
           </div>
         </div>

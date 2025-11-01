@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { X, Save, Trash2, ImageIcon, DollarSign, AlertCircle, Package, FileText } from 'lucide-react';
 import { showNotification, showConfirm } from '@/components/NotificationToast';
+import { Button, Input, Textarea, Select, ds, cn } from '@/components/ds';
 import axios from 'axios';
 
 interface ProductQuickViewProps {
@@ -296,8 +297,21 @@ export function ProductQuickView({ product, vendorId, isOpen, onClose, onSave, o
             ) : (
               <div className="flex items-start justify-between">
                 <div className="flex-1 min-w-0">
-                  <h2 className="text-xs uppercase tracking-[0.15em] text-white mb-2 font-black" style={{ fontWeight: 900 }}>{displayProduct.name}</h2>
-                  <div className="flex items-center gap-3 text-[9px] text-white/40 uppercase tracking-[0.15em]">
+                  <h2 className={cn(
+                    ds.typography.size.xs,
+                    ds.typography.transform.uppercase,
+                    ds.typography.tracking.wide,
+                    ds.colors.text.primary,
+                    ds.typography.weight.light,
+                    'mb-2'
+                  )}>{displayProduct.name}</h2>
+                  <div className={cn(
+                    'flex items-center gap-3',
+                    ds.typography.size.micro,
+                    ds.colors.text.quaternary,
+                    ds.typography.transform.uppercase,
+                    ds.typography.tracking.wide
+                  )}>
                     <span className="px-2 py-0.5 bg-green-500/10 border border-green-500/20 text-green-400/80 rounded text-[8px]">
                       {displayProduct.status}
                     </span>
@@ -324,56 +338,81 @@ export function ProductQuickView({ product, vendorId, isOpen, onClose, onSave, o
             <div className="flex items-center gap-1 px-6 overflow-x-auto">
               <button
                 onClick={() => setActiveTab('basic')}
-                className={`px-4 py-3 text-[10px] uppercase tracking-[0.15em] font-black transition-all border-b-2 whitespace-nowrap ${
+                className={cn(
+                  'px-4 py-3',
+                  ds.typography.size.xs,
+                  ds.typography.transform.uppercase,
+                  ds.typography.tracking.wide,
+                  ds.typography.weight.light,
+                  'transition-all border-b-2 whitespace-nowrap',
                   activeTab === 'basic'
                     ? 'text-white border-white'
                     : 'text-white/40 border-transparent hover:text-white/70'
-                }`}
-                style={{ fontWeight: 900 }}
+                )}
               >
                 Basic Info
               </button>
               <button
                 onClick={() => setActiveTab('pricing')}
-                className={`px-4 py-3 text-[10px] uppercase tracking-[0.15em] font-black transition-all border-b-2 whitespace-nowrap ${
+                className={cn(
+                  'px-4 py-3',
+                  ds.typography.size.xs,
+                  ds.typography.transform.uppercase,
+                  ds.typography.tracking.wide,
+                  ds.typography.weight.light,
+                  'transition-all border-b-2 whitespace-nowrap',
                   activeTab === 'pricing'
                     ? 'text-white border-white'
                     : 'text-white/40 border-transparent hover:text-white/70'
-                }`}
-                style={{ fontWeight: 900 }}
+                )}
               >
                 Pricing
               </button>
               <button
                 onClick={() => setActiveTab('fields')}
-                className={`px-4 py-3 text-[10px] uppercase tracking-[0.15em] font-black transition-all border-b-2 whitespace-nowrap ${
+                className={cn(
+                  'px-4 py-3',
+                  ds.typography.size.xs,
+                  ds.typography.transform.uppercase,
+                  ds.typography.tracking.wide,
+                  ds.typography.weight.light,
+                  'transition-all border-b-2 whitespace-nowrap',
                   activeTab === 'fields'
                     ? 'text-white border-white'
                     : 'text-white/40 border-transparent hover:text-white/70'
-                }`}
-                style={{ fontWeight: 900 }}
+                )}
               >
                 Fields
               </button>
               <button
                 onClick={() => setActiveTab('images')}
-                className={`px-4 py-3 text-[10px] uppercase tracking-[0.15em] font-black transition-all border-b-2 whitespace-nowrap ${
+                className={cn(
+                  'px-4 py-3',
+                  ds.typography.size.xs,
+                  ds.typography.transform.uppercase,
+                  ds.typography.tracking.wide,
+                  ds.typography.weight.light,
+                  'transition-all border-b-2 whitespace-nowrap',
                   activeTab === 'images'
                     ? 'text-white border-white'
                     : 'text-white/40 border-transparent hover:text-white/70'
-                }`}
-                style={{ fontWeight: 900 }}
+                )}
               >
                 Images
               </button>
               <button
                 onClick={() => setActiveTab('coas')}
-                className={`px-4 py-3 text-[10px] uppercase tracking-[0.15em] font-black transition-all border-b-2 whitespace-nowrap ${
+                className={cn(
+                  'px-4 py-3',
+                  ds.typography.size.xs,
+                  ds.typography.transform.uppercase,
+                  ds.typography.tracking.wide,
+                  ds.typography.weight.light,
+                  'transition-all border-b-2 whitespace-nowrap',
                   activeTab === 'coas'
                     ? 'text-white border-white'
                     : 'text-white/40 border-transparent hover:text-white/70'
-                }`}
-                style={{ fontWeight: 900 }}
+                )}
               >
                 Lab Results
               </button>
@@ -391,72 +430,54 @@ export function ProductQuickView({ product, vendorId, isOpen, onClose, onSave, o
             {activeTab === 'basic' && (
               <div className="space-y-6">
                 <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-white/40 text-[10px] uppercase tracking-wider mb-2">Product Name</label>
-                    <input
-                      type="text"
-                      value={editedProduct.name || ''}
-                      onChange={(e) => setEditedProduct((prev: any) => ({ ...prev, name: e.target.value }))}
-                      className="w-full bg-black/20 border border-white/10 text-white px-4 py-3 rounded-[14px] focus:outline-none focus:border-white/30 transition-all"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-white/40 text-[10px] uppercase tracking-wider mb-2">SKU</label>
-                    <input
-                      type="text"
-                      value={editedProduct.sku || ''}
-                      onChange={(e) => setEditedProduct((prev: any) => ({ ...prev, sku: e.target.value }))}
-                      className="w-full bg-black/20 border border-white/10 text-white px-4 py-3 rounded-[14px] focus:outline-none focus:border-white/30 transition-all"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-white/40 text-[10px] uppercase tracking-wider mb-2">Category</label>
-                  <input
+                  <Input
+                    label="Product Name"
                     type="text"
-                    value={editedProduct.category || ''}
-                    onChange={(e) => setEditedProduct((prev: any) => ({ ...prev, category: e.target.value }))}
-                    className="w-full bg-black/20 border border-white/10 text-white px-4 py-3 rounded-[14px] focus:outline-none focus:border-white/30 transition-all"
+                    value={editedProduct.name || ''}
+                    onChange={(e) => setEditedProduct((prev: any) => ({ ...prev, name: e.target.value }))}
+                  />
+                  <Input
+                    label="SKU"
+                    type="text"
+                    value={editedProduct.sku || ''}
+                    onChange={(e) => setEditedProduct((prev: any) => ({ ...prev, sku: e.target.value }))}
                   />
                 </div>
 
-                <div>
-                  <label className="block text-white/40 text-[10px] uppercase tracking-wider mb-2">Description</label>
-                  <textarea
-                    value={editedProduct.description || ''}
-                    onChange={(e) => setEditedProduct((prev: any) => ({ ...prev, description: e.target.value }))}
-                    rows={6}
-                    className="w-full bg-black/20 border border-white/10 text-white px-4 py-3 rounded-[14px] focus:outline-none focus:border-white/30 transition-all resize-none"
-                    placeholder="Describe this product..."
-                  />
-                </div>
+                <Input
+                  label="Category"
+                  type="text"
+                  value={editedProduct.category || ''}
+                  onChange={(e) => setEditedProduct((prev: any) => ({ ...prev, category: e.target.value }))}
+                />
+
+                <Textarea
+                  label="Description"
+                  value={editedProduct.description || ''}
+                  onChange={(e) => setEditedProduct((prev: any) => ({ ...prev, description: e.target.value }))}
+                  rows={6}
+                  placeholder="Describe this product..."
+                />
               </div>
             )}
 
             {activeTab === 'pricing' && (
               <div className="space-y-6">
                 <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-white/40 text-[10px] uppercase tracking-wider mb-2">Retail Price ($/g)</label>
-                    <input
-                      type="number"
-                      step="0.01"
-                      value={editedProduct.regular_price || ''}
-                      onChange={(e) => setEditedProduct((prev: any) => ({ ...prev, regular_price: parseFloat(e.target.value) || 0 }))}
-                      className="w-full bg-black/20 border border-white/10 text-white px-4 py-3 rounded-[14px] focus:outline-none focus:border-white/30 transition-all"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-white/40 text-[10px] uppercase tracking-wider mb-2">Cost Price ($/g)</label>
-                    <input
-                      type="number"
-                      step="0.01"
-                      value={editedProduct.cost_price || ''}
-                      onChange={(e) => setEditedProduct((prev: any) => ({ ...prev, cost_price: parseFloat(e.target.value) || 0 }))}
-                      className="w-full bg-black/20 border border-white/10 text-white px-4 py-3 rounded-[14px] focus:outline-none focus:border-white/30 transition-all"
-                    />
-                  </div>
+                  <Input
+                    label="Retail Price ($/g)"
+                    type="number"
+                    step="0.01"
+                    value={editedProduct.regular_price || ''}
+                    onChange={(e) => setEditedProduct((prev: any) => ({ ...prev, regular_price: parseFloat(e.target.value) || 0 }))}
+                  />
+                  <Input
+                    label="Cost Price ($/g)"
+                    type="number"
+                    step="0.01"
+                    value={editedProduct.cost_price || ''}
+                    onChange={(e) => setEditedProduct((prev: any) => ({ ...prev, cost_price: parseFloat(e.target.value) || 0 }))}
+                  />
                 </div>
 
                 {/* Margin Display */}
@@ -625,21 +646,19 @@ export function ProductQuickView({ product, vendorId, isOpen, onClose, onSave, o
                             </label>
 
                             {fieldType === 'select' && fieldDef.options ? (
-                              <select
+                              <Select
                                 value={fieldValue}
                                 onChange={(e) => setEditedBlueprintFields(prev => ({
                                   ...prev,
                                   [fieldId]: e.target.value
                                 }))}
-                                className="w-full bg-black/20 border border-white/10 text-white px-4 py-3 rounded-[14px] focus:outline-none focus:border-white/30 transition-all"
-                              >
-                                <option value="">Select...</option>
-                                {fieldDef.options.map((opt: string) => (
-                                  <option key={opt} value={opt}>{opt}</option>
-                                ))}
-                              </select>
+                                options={[
+                                  { value: '', label: 'Select...' },
+                                  ...fieldDef.options.map((opt: string) => ({ value: opt, label: opt }))
+                                ]}
+                              />
                             ) : fieldType === 'textarea' ? (
-                              <textarea
+                              <Textarea
                                 value={fieldValue}
                                 onChange={(e) => setEditedBlueprintFields(prev => ({
                                   ...prev,
@@ -647,11 +666,10 @@ export function ProductQuickView({ product, vendorId, isOpen, onClose, onSave, o
                                 }))}
                                 placeholder={fieldDef.placeholder || ''}
                                 rows={3}
-                                className="w-full bg-black/20 border border-white/10 text-white px-4 py-3 rounded-[14px] focus:outline-none focus:border-white/30 transition-all resize-none"
                               />
                             ) : fieldType === 'number' ? (
                               <div className="relative">
-                                <input
+                                <Input
                                   type="number"
                                   step="0.01"
                                   value={fieldValue}
@@ -660,16 +678,15 @@ export function ProductQuickView({ product, vendorId, isOpen, onClose, onSave, o
                                     [fieldId]: e.target.value
                                   }))}
                                   placeholder={fieldDef.placeholder || ''}
-                                  className="w-full bg-black/20 border border-white/10 text-white px-4 py-3 rounded-[14px] focus:outline-none focus:border-white/30 transition-all"
                                 />
                                 {fieldDef.suffix && (
-                                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 text-sm">
+                                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 text-sm pointer-events-none">
                                     {fieldDef.suffix}
                                   </span>
                                 )}
                               </div>
                             ) : (
-                              <input
+                              <Input
                                 type="text"
                                 value={fieldValue}
                                 onChange={(e) => setEditedBlueprintFields(prev => ({
@@ -677,7 +694,6 @@ export function ProductQuickView({ product, vendorId, isOpen, onClose, onSave, o
                                   [fieldId]: e.target.value
                                 }))}
                                 placeholder={fieldDef.placeholder || ''}
-                                className="w-full bg-black/20 border border-white/10 text-white px-4 py-3 rounded-[14px] focus:outline-none focus:border-white/30 transition-all"
                               />
                             )}
                           </div>
@@ -706,8 +722,20 @@ export function ProductQuickView({ product, vendorId, isOpen, onClose, onSave, o
                   <a
                     href="/vendor/media-library"
                     target="_blank"
-                    className="px-3 py-2 bg-white/5 border border-white/5 text-white/60 hover:bg-white/10 hover:text-white transition-all rounded-xl text-[10px] uppercase tracking-[0.15em] font-black"
-                    style={{ fontWeight: 900 }}
+                    className={cn(
+                      'px-3 py-2',
+                      ds.colors.bg.elevated,
+                      'border',
+                      ds.colors.border.default,
+                      ds.colors.text.secondary,
+                      'hover:bg-white/10 hover:text-white',
+                      'transition-all',
+                      ds.effects.radius.xl,
+                      ds.typography.size.xs,
+                      ds.typography.transform.uppercase,
+                      ds.typography.tracking.wide,
+                      ds.typography.weight.light
+                    )}
                   >
                     Media Library
                   </a>
@@ -716,13 +744,37 @@ export function ProductQuickView({ product, vendorId, isOpen, onClose, onSave, o
                 {!displayProduct.images || displayProduct.images.length === 0 ? (
                   <div className="text-center py-16 bg-[#0a0a0a] border border-white/5 rounded-2xl">
                     <ImageIcon size={48} className="text-white/20 mx-auto mb-4" />
-                    <p className="text-white text-xs uppercase tracking-[0.15em] mb-2 font-black" style={{ fontWeight: 900 }}>No images uploaded</p>
-                    <p className="text-white/40 text-[10px] uppercase tracking-wider mb-6">Add product photos from your media library</p>
+                    <p className={cn(
+                      ds.colors.text.primary,
+                      ds.typography.size.xs,
+                      ds.typography.transform.uppercase,
+                      ds.typography.tracking.wide,
+                      ds.typography.weight.light,
+                      'mb-2'
+                    )}>No images uploaded</p>
+                    <p className={cn(
+                      ds.colors.text.quaternary,
+                      ds.typography.size.xs,
+                      ds.typography.transform.uppercase,
+                      ds.typography.tracking.wide,
+                      ds.typography.weight.light,
+                      'mb-6'
+                    )}>Add product photos from your media library</p>
                     <a
                       href="/vendor/media-library"
                       target="_blank"
-                      className="inline-flex items-center gap-2 px-6 py-3 bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded-xl text-[10px] uppercase tracking-[0.15em] font-black transition-all"
-                      style={{ fontWeight: 900 }}
+                      className={cn(
+                        'inline-flex items-center gap-2 px-6 py-3',
+                        'bg-white/10 hover:bg-white/20',
+                        ds.colors.text.primary,
+                        'border border-white/20',
+                        ds.effects.radius.xl,
+                        ds.typography.size.xs,
+                        ds.typography.transform.uppercase,
+                        ds.typography.tracking.wide,
+                        ds.typography.weight.light,
+                        'transition-all'
+                      )}
                     >
                       Upload Images
                     </a>
@@ -757,8 +809,20 @@ export function ProductQuickView({ product, vendorId, isOpen, onClose, onSave, o
                     <h4 className="text-white/60 text-[10px] uppercase tracking-wider font-medium">Lab Results & COAs</h4>
                   </div>
                   <button
-                    className="px-3 py-2 bg-white/5 border border-white/5 text-white/60 hover:bg-white/10 hover:text-white transition-all rounded-xl text-[10px] uppercase tracking-[0.15em] font-black"
-                    style={{ fontWeight: 900 }}
+                    className={cn(
+                      'px-3 py-2',
+                      ds.colors.bg.elevated,
+                      'border',
+                      ds.colors.border.default,
+                      ds.colors.text.secondary,
+                      'hover:bg-white/10 hover:text-white',
+                      'transition-all',
+                      ds.effects.radius.xl,
+                      ds.typography.size.xs,
+                      ds.typography.transform.uppercase,
+                      ds.typography.tracking.wide,
+                      ds.typography.weight.light
+                    )}
                   >
                     Upload COA
                   </button>
@@ -767,11 +831,34 @@ export function ProductQuickView({ product, vendorId, isOpen, onClose, onSave, o
                 {!displayProduct.coas || displayProduct.coas.length === 0 ? (
                   <div className="text-center py-16 bg-[#0a0a0a] border border-white/5 rounded-2xl">
                     <FileText size={48} className="text-white/20 mx-auto mb-4" />
-                    <p className="text-white text-xs uppercase tracking-[0.15em] mb-2 font-black" style={{ fontWeight: 900 }}>No lab results uploaded</p>
-                    <p className="text-white/40 text-[10px] uppercase tracking-wider mb-6">Upload certificates of analysis for this product</p>
-                    <button className="inline-flex items-center gap-2 px-6 py-3 bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded-xl text-[10px] uppercase tracking-[0.15em] font-black transition-all"
-                      style={{ fontWeight: 900 }}
-                    >
+                    <p className={cn(
+                      ds.colors.text.primary,
+                      ds.typography.size.xs,
+                      ds.typography.transform.uppercase,
+                      ds.typography.tracking.wide,
+                      ds.typography.weight.light,
+                      'mb-2'
+                    )}>No lab results uploaded</p>
+                    <p className={cn(
+                      ds.colors.text.quaternary,
+                      ds.typography.size.xs,
+                      ds.typography.transform.uppercase,
+                      ds.typography.tracking.wide,
+                      ds.typography.weight.light,
+                      'mb-6'
+                    )}>Upload certificates of analysis for this product</p>
+                    <button className={cn(
+                      'inline-flex items-center gap-2 px-6 py-3',
+                      'bg-white/10 hover:bg-white/20',
+                      ds.colors.text.primary,
+                      'border border-white/20',
+                      ds.effects.radius.xl,
+                      ds.typography.size.xs,
+                      ds.typography.transform.uppercase,
+                      ds.typography.tracking.wide,
+                      ds.typography.weight.light,
+                      'transition-all'
+                    )}>
                       Upload COA
                     </button>
                   </div>
@@ -782,11 +869,24 @@ export function ProductQuickView({ product, vendorId, isOpen, onClose, onSave, o
                         <div className="flex items-start justify-between gap-4">
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-2">
-                              <h5 className="text-white text-xs uppercase tracking-tight font-black" style={{ fontWeight: 900 }}>
+                              <h5 className={cn(
+                                ds.colors.text.primary,
+                                ds.typography.size.xs,
+                                ds.typography.transform.uppercase,
+                                ds.typography.tracking.tight,
+                                ds.typography.weight.light
+                              )}>
                                 {coa.file_name}
                               </h5>
                               {coa.is_verified && (
-                                <span className="px-2 py-0.5 bg-green-500/10 border border-green-500/20 text-green-400/80 rounded text-[8px] uppercase tracking-wider font-black">
+                                <span className={cn(
+                                  'px-2 py-0.5',
+                                  'bg-green-500/10 border border-green-500/20 text-green-400/80 rounded',
+                                  'text-[8px]',
+                                  ds.typography.transform.uppercase,
+                                  ds.typography.tracking.wide,
+                                  ds.typography.weight.light
+                                )}>
                                   Verified
                                 </span>
                               )}
@@ -847,31 +947,28 @@ export function ProductQuickView({ product, vendorId, isOpen, onClose, onSave, o
 
           {/* Footer */}
           <div className="border-t border-white/5 p-6 bg-black flex items-center justify-between">
-            <button
+            <Button
+              variant="danger"
+              icon={Trash2}
               onClick={handleDelete}
-              className="px-4 py-3 bg-black/40 border border-white/5 text-white/40 hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/20 transition-all rounded-xl text-[10px] uppercase tracking-[0.15em] font-black flex items-center gap-2"
-              style={{ fontWeight: 900 }}
             >
-              <Trash2 size={12} />
               Delete Product
-            </button>
+            </Button>
             <div className="flex items-center gap-3">
-              <button
+              <Button
+                variant="ghost"
                 onClick={onClose}
-                className="px-6 py-3 bg-black/20 border border-white/5 text-white/60 hover:bg-white/5 hover:text-white transition-colors rounded-xl text-[10px] uppercase tracking-[0.15em] font-black"
-                style={{ fontWeight: 900 }}
               >
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
+                icon={Save}
                 onClick={handleSave}
                 disabled={saving}
-                className="px-8 py-3 bg-white/10 text-white border border-white/20 hover:bg-white/20 disabled:opacity-30 disabled:cursor-not-allowed transition-all rounded-xl text-[10px] uppercase tracking-[0.15em] font-black flex items-center gap-2"
-                style={{ fontWeight: 900 }}
+                loading={saving}
               >
-                <Save size={12} />
                 {saving ? 'Saving...' : 'Save Changes'}
-              </button>
+              </Button>
             </div>
           </div>
         </div>
