@@ -64,6 +64,61 @@ export default function POSRegisterPage() {
     };
   }, []);
 
+  // Monitor session status - kick back to register selector if session closes
+  useEffect(() => {
+    if (!sessionId || !registerId) return;
+
+    console.log('👀 Monitoring session:', sessionId);
+
+    const channel = supabase
+      .channel(`pos-sessions-${CHARLOTTE_CENTRAL_ID}`, {
+        config: {
+          broadcast: { self: true },
+        },
+      })
+      .on('broadcast', { event: 'session-update' }, (payload) => {
+        console.log('🔄 Session update received:', payload);
+
+        // If this session was closed, kick back to register selector
+        if (payload.payload?.sessionId === sessionId && payload.payload?.action === 'closed') {
+          console.log('❌ Session closed, returning to register selector');
+          setSessionId(null);
+          setRegisterId(null);
+          setCart([]);
+        }
+      })
+      .subscribe();
+
+    // Verify session still exists periodically
+    const verifySession = async () => {
+      try {
+        const { data: session } = await supabase
+          .from('pos_sessions')
+          .select('id, status')
+          .eq('id', sessionId)
+          .single();
+
+        if (!session || session.status !== 'open') {
+          console.log('❌ Session no longer active, returning to register selector');
+          setSessionId(null);
+          setRegisterId(null);
+          setCart([]);
+        }
+      } catch (error) {
+        console.error('Error verifying session:', error);
+      }
+    };
+
+    // Check session every 30 seconds
+    const interval = setInterval(verifySession, 30000);
+    verifySession(); // Check immediately
+
+    return () => {
+      supabase.removeChannel(channel);
+      clearInterval(interval);
+    };
+  }, [sessionId, registerId]);
+
   const loadActiveSession = async () => {
     try {
       const response = await fetch(`/api/pos/sessions/active?locationId=${CHARLOTTE_CENTRAL_ID}`);
