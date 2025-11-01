@@ -56,15 +56,13 @@ export default function POSRegisterPage() {
       .on('broadcast', { event: 'promotion-update' }, (payload) => {
         console.log('🎉 Promotion update broadcast received:', payload);
         loadPromotions();
-        // Recalculate cart with new promotions
-        recalculateCart();
       })
       .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [recalculateCart]);
+  }, []);
 
   const loadActiveSession = async () => {
     try {
