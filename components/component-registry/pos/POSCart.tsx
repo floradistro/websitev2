@@ -66,9 +66,9 @@ export function POSCart({
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
-    <div className="flex flex-col h-full bg-[#0a0a0a]" style={{ touchAction: 'auto' }}>
+    <div className="flex flex-col h-full bg-[#0a0a0a]">
       {/* Header */}
-      <div className="flex-shrink-0 px-4 py-4 border-b border-white/5" style={{ touchAction: 'auto' }}>
+      <div className="flex-shrink-0 px-4 py-4 border-b border-white/5">
         <h3 className="text-xs uppercase tracking-[0.15em] text-white font-black" style={{ fontWeight: 900 }}>
           Cart
         </h3>
@@ -78,8 +78,8 @@ export function POSCart({
       </div>
 
       {/* Customer Selector with Quick Scan */}
-      <div className="flex-shrink-0 px-4 py-3 border-b border-white/5" style={{ touchAction: 'auto' }}>
-        <div className="flex items-center justify-between mb-2" style={{ touchAction: 'auto' }}>
+      <div className="flex-shrink-0 px-4 py-3 border-b border-white/5">
+        <div className="flex items-center justify-between mb-2">
           <label className="text-white/40 text-[10px] uppercase tracking-[0.15em]">
             Customer
           </label>
@@ -89,7 +89,7 @@ export function POSCart({
               setShowIDScanner(true);
             }}
             className="bg-white/10 text-white border border-white/20 rounded-xl px-2.5 py-1.5 text-[9px] uppercase tracking-[0.15em] hover:bg-white/20 hover:border-white/30 font-black transition-all flex items-center gap-1.5"
-            style={{ fontWeight: 900, touchAction: 'auto', cursor: 'pointer' }}
+            style={{ fontWeight: 900 }}
           >
             <Scan size={11} strokeWidth={2.5} />
             Scan ID
@@ -248,24 +248,23 @@ export function POSCart({
       )}
 
       {/* Actions */}
-      <div className="flex-shrink-0 px-4 pb-4 pt-3 border-t border-white/5 space-y-2 bg-black" style={{ touchAction: 'auto' }}>
+      <div className="flex-shrink-0 px-4 pb-4 pt-3 border-t border-white/5 space-y-2 bg-black">
         {items.length > 0 && (
           <>
             <button
               onClick={() => onCheckout(selectedCustomer)}
               disabled={isProcessing}
               className="w-full bg-white/10 text-white border-2 border-white/20 rounded-2xl px-4 py-4 text-xs uppercase tracking-[0.15em] hover:bg-white/20 hover:border-white/30 font-black transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-              style={{ fontWeight: 900, touchAction: 'auto', cursor: 'pointer' }}
+              style={{ fontWeight: 900 }}
             >
               {isProcessing ? 'Processing...' : `Charge $${total.toFixed(2)}`}
             </button>
-            
-            <div className="flex gap-2" style={{ touchAction: 'auto' }}>
+
+            <div className="flex gap-2">
               <button
                 onClick={onClearCart}
                 disabled={isProcessing}
                 className="flex-1 px-3 py-2.5 border border-white/10 text-white rounded-2xl hover:bg-white/5 hover:border-white/20 text-[10px] font-bold uppercase disabled:opacity-50 tracking-[0.15em] transition-all"
-                style={{ touchAction: 'auto', cursor: 'pointer' }}
               >
                 Clear
               </button>
@@ -273,7 +272,6 @@ export function POSCart({
                 onClick={() => {}} // TODO: Implement hold feature
                 disabled={isProcessing}
                 className="flex-1 px-3 py-2.5 border border-white/10 text-white rounded-2xl hover:bg-white/5 hover:border-white/20 text-[10px] font-bold uppercase disabled:opacity-50 tracking-[0.15em] transition-all"
-                style={{ touchAction: 'auto', cursor: 'pointer' }}
               >
                 Hold
               </button>

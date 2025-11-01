@@ -459,10 +459,10 @@ export function POSIDScanner({
   }
 
   return (
-    <div className="fixed inset-0 bg-black/95 backdrop-blur-xl z-[99999] flex items-center justify-center p-2 md:p-4" style={{ touchAction: 'auto' }}>
-      <div className="bg-[#0a0a0a] border border-white/10 rounded-2xl max-w-2xl w-full overflow-hidden scanner-modal" style={{ touchAction: 'auto' }}>
+    <div className="fixed inset-0 bg-black/95 backdrop-blur-xl z-[9999] flex items-center justify-center p-2 md:p-4">
+      <div className="bg-[#0a0a0a] border border-white/10 rounded-2xl max-w-2xl w-full overflow-hidden scanner-modal">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-white/10" style={{ touchAction: 'auto' }}>
+        <div className="flex items-center justify-between p-6 border-b border-white/10">
           <div className="flex items-center gap-3">
             <Camera size={20} className="text-white/60" />
             <h3 className="text-xs uppercase tracking-[0.15em] text-white font-black" style={{ fontWeight: 900 }}>
@@ -472,7 +472,6 @@ export function POSIDScanner({
           <button
             onClick={onClose}
             className="text-white/40 hover:text-white transition-colors"
-            style={{ touchAction: 'auto', cursor: 'pointer' }}
           >
             <X size={20} />
           </button>
@@ -568,7 +567,6 @@ export function POSIDScanner({
           height: 60vh;
           max-height: 600px;
           position: relative;
-          touch-action: auto;
         }
 
         /* Portrait orientation (mobile) */
@@ -607,8 +605,6 @@ export function POSIDScanner({
           max-height: 95vh;
           display: flex;
           flex-direction: column;
-          touch-action: auto;
-          pointer-events: auto;
         }
 
         /* In portrait mode on mobile, maximize vertical space */

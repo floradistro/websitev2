@@ -61,6 +61,7 @@ function POSLayoutInner({
           height: 100% !important;
           position: fixed !important;
           width: 100% !important;
+          touch-action: pan-x pan-y;
         }
         /* iOS PWA - Full height viewport */
         @supports (-webkit-touch-callout: none) {
@@ -76,10 +77,14 @@ function POSLayoutInner({
         body {
           overscroll-behavior: none;
         }
+        /* Allow touches on buttons and interactive elements */
+        button, a, input, select, textarea {
+          touch-action: manipulation;
+        }
       `}</style>
       {/* PWA Safe Area Spacer for iOS status bar */}
       <div
-        className="fixed top-0 left-0 right-0 z-[9999] pointer-events-none bg-black"
+        className="fixed top-0 left-0 right-0 z-50 pointer-events-none bg-black"
         style={{
           height: 'env(safe-area-inset-top, 0px)'
         }}
