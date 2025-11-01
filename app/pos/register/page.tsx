@@ -45,16 +45,17 @@ export default function POSRegisterPage() {
     loadPromotions();
   }, []);
 
-  // Subscribe to broadcast channel for promotion updates (more reliable)
+  // Subscribe to database changes for promotion updates
   useEffect(() => {
     const channel = supabase
-      .channel(`pos-promotions-${FLORA_DISTRO_VENDOR_ID}`, {
-        config: {
-          broadcast: { self: true },
-        },
-      })
-      .on('broadcast', { event: 'promotion-update' }, (payload) => {
-        console.log('🎉 Promotion update broadcast received:', payload);
+      .channel(`pos-promotions-db`)
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'promotions',
+        filter: `vendor_id=eq.${FLORA_DISTRO_VENDOR_ID}`,
+      }, (payload) => {
+        console.log('🎉 Promotion database change:', payload.eventType);
         loadPromotions();
       })
       .subscribe();
@@ -71,16 +72,17 @@ export default function POSRegisterPage() {
     console.log('👀 Monitoring session:', sessionId);
 
     const channel = supabase
-      .channel(`pos-sessions-${CHARLOTTE_CENTRAL_ID}`, {
-        config: {
-          broadcast: { self: true },
-        },
-      })
-      .on('broadcast', { event: 'session-update' }, (payload) => {
+      .channel(`pos-session-monitor-${sessionId}`)
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'pos_sessions',
+        filter: `id=eq.${sessionId}`,
+      }, (payload) => {
         console.log('🔄 Session update received:', payload);
 
         // If this session was closed, kick back to register selector
-        if (payload.payload?.sessionId === sessionId && payload.payload?.action === 'closed') {
+        if (payload.new.status === 'closed') {
           console.log('❌ Session closed, returning to register selector');
           setSessionId(null);
           setRegisterId(null);

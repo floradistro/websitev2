@@ -36,15 +36,16 @@ export function POSRegisterSelector({
   useEffect(() => {
     loadRegisters();
 
-    // Subscribe to broadcast channel for session updates (more reliable for multi-device)
+    // Subscribe to database changes for session updates
     const channel = supabase
-      .channel(`pos-sessions-${locationId}`, {
-        config: {
-          broadcast: { self: true },
-        },
-      })
-      .on('broadcast', { event: 'session-update' }, (payload) => {
-        console.log('🔄 Session update broadcast received:', payload);
+      .channel(`pos-sessions-db-${locationId}`)
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'pos_sessions',
+        filter: `location_id=eq.${locationId}`,
+      }, (payload) => {
+        console.log('🔄 Session database change:', payload.eventType);
         loadRegisters();
       })
       .subscribe();
