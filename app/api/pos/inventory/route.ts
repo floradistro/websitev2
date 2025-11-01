@@ -174,8 +174,14 @@ export async function GET(request: NextRequest) {
         }
 
         // Get product fields from custom_fields JSONB
-        const blueprintFields = inv.products.custom_fields || [];
-        const productFields = Array.isArray(blueprintFields) ? blueprintFields : [];
+        // custom_fields is an object like { "strain_type": "Indica", "terpenes": "..." }
+        // Convert to array of { label, value, type } objects
+        const customFields = inv.products.custom_fields || {};
+        const productFields = Object.entries(customFields).map(([key, value]) => ({
+          label: key,
+          value: String(value || ''),
+          type: typeof value === 'number' ? 'number' : 'text'
+        }));
 
         // Get vendor info
         const vendor = inv.products.vendors || null;
