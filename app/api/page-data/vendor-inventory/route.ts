@@ -34,9 +34,7 @@ export async function GET(request: NextRequest) {
           featured_image_storage,
           description,
           custom_fields,
-          product_categories(
-            category:categories(id, name)
-          )
+          primary_category:categories!primary_category_id(id, name)
         `)
         .eq('vendor_id', vendorId)
         .order('name', { ascending: true }),
@@ -103,7 +101,7 @@ export async function GET(request: NextRequest) {
         product_name: p.name,
         sku: p.sku || '',
         quantity: totalQuantity,
-        category_name: p.product_categories?.[0]?.category?.name || 'Product',
+        category_name: p.primary_category?.name || 'Product',
         image: p.featured_image_storage,
         price: parseFloat(String(p.price || 0)),
         cost_price: p.cost_price ? parseFloat(String(p.cost_price)) : undefined,

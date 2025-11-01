@@ -42,9 +42,7 @@ export async function GET(request: NextRequest) {
           meta_data,
           vendor_id,
           created_at,
-          product_categories(
-            category:categories(id, name, slug)
-          ),
+          primary_category:categories!primary_category_id(id, name, slug),
           inventory(
             id,
             quantity,
@@ -188,7 +186,7 @@ export async function GET(request: NextRequest) {
         stock_status: actualStockStatus, // Use calculated status
         featured_image_storage: p.featured_image_storage,
         image_gallery_storage: p.image_gallery_storage,
-        categories: p.product_categories?.map((pc: any) => pc.category) || [],
+        categories: p.primary_category ? [p.primary_category] : [],
         inventory: p.inventory || [],
         total_stock: totalStock, // Use calculated value
         fields: fields,

@@ -29,6 +29,7 @@ export interface NavItem {
   description?: string;
   isCore?: boolean; // Show in mobile bottom nav
   group?: 'core' | 'sales' | 'content' | 'settings';
+  appKey?: string; // App access key - if undefined, always visible
 }
 
 // Consolidated navigation - 13 core items
@@ -41,6 +42,7 @@ export const vendorNavItems: NavItem[] = [
     description: 'Overview & metrics',
     isCore: true,
     group: 'core'
+    // No appKey - always visible
   },
   {
     href: '/vendor/products',
@@ -48,7 +50,8 @@ export const vendorNavItems: NavItem[] = [
     label: 'Products',
     description: 'Catalog & inventory',
     isCore: true,
-    group: 'core'
+    group: 'core',
+    appKey: 'products'
   },
   {
     href: '/vendor/lab-results',
@@ -56,7 +59,8 @@ export const vendorNavItems: NavItem[] = [
     label: 'Lab Results',
     description: 'COAs & compliance',
     isCore: false,
-    group: 'core'
+    group: 'core',
+    appKey: 'products'
   },
   {
     href: '/vendor/orders',
@@ -64,7 +68,8 @@ export const vendorNavItems: NavItem[] = [
     label: 'Orders',
     description: 'Transactions',
     isCore: true,
-    group: 'sales'
+    group: 'sales',
+    appKey: 'orders'
   },
   {
     href: '/vendor/customers',
@@ -72,15 +77,17 @@ export const vendorNavItems: NavItem[] = [
     label: 'Customers',
     description: 'Customer management',
     isCore: false,
-    group: 'sales'
+    group: 'sales',
+    appKey: 'customers'
   },
-  { 
-    href: '/pos/register', 
-    icon: CreditCard, 
+  {
+    href: '/pos/register',
+    icon: CreditCard,
     label: 'Point of Sale',
     description: 'In-store register',
     isCore: true,
-    group: 'sales'
+    group: 'sales',
+    appKey: 'pos'
   },
   {
     href: '/vendor/analytics',
@@ -88,7 +95,8 @@ export const vendorNavItems: NavItem[] = [
     label: 'Analytics',
     description: 'Performance insights',
     isCore: false,
-    group: 'sales'
+    group: 'sales',
+    appKey: 'analytics'
   },
   {
     href: '/vendor/marketing',
@@ -96,7 +104,8 @@ export const vendorNavItems: NavItem[] = [
     label: 'Marketing',
     description: 'Campaigns & loyalty',
     isCore: false,
-    group: 'sales'
+    group: 'sales',
+    appKey: 'marketing'
   },
 
   // Inventory (1)
@@ -106,9 +115,10 @@ export const vendorNavItems: NavItem[] = [
     label: 'Inventory',
     description: 'Stock management',
     isCore: false,
-    group: 'core'
+    group: 'core',
+    appKey: 'inventory'
   },
-  
+
   // Content & Media (3)
   {
     href: '/vendor/media-library',
@@ -116,7 +126,8 @@ export const vendorNavItems: NavItem[] = [
     label: 'Media',
     description: 'Images & assets',
     isCore: false,
-    group: 'content'
+    group: 'content',
+    appKey: 'products'
   },
   {
     href: '/vendor/branding',
@@ -124,7 +135,8 @@ export const vendorNavItems: NavItem[] = [
     label: 'Branding',
     description: 'Store customization',
     isCore: false,
-    group: 'content'
+    group: 'content',
+    appKey: 'code'
   },
   {
     href: '/vendor/tv-menus',
@@ -132,27 +144,30 @@ export const vendorNavItems: NavItem[] = [
     label: 'Digital Signage',
     description: 'TV menus & displays',
     isCore: false,
-    group: 'content'
+    group: 'content',
+    appKey: 'tv_menus'
   },
-  
+
   // Financial (1)
-  { 
-    href: '/vendor/payouts', 
-    icon: DollarSign, 
+  {
+    href: '/vendor/payouts',
+    icon: DollarSign,
     label: 'Payouts',
     description: 'Earnings & payments',
     isCore: false,
-    group: 'sales'
+    group: 'sales',
+    appKey: 'analytics'
   },
-  
+
   // Settings (1)
-  { 
-    href: '/vendor/settings', 
-    icon: Settings, 
+  {
+    href: '/vendor/settings',
+    icon: Settings,
     label: 'Settings',
     description: 'Account & preferences',
     isCore: true,
     group: 'settings'
+    // No appKey - always visible
   },
 ];
 

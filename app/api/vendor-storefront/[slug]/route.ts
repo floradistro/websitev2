@@ -35,10 +35,7 @@ export async function GET(
       .from('products')
       .select(`
         *,
-        primary_category:categories!primary_category_id(id, name, slug),
-        product_categories(
-          category:categories(id, name, slug)
-        )
+        primary_category:categories!primary_category_id(id, name, slug)
       `)
       .eq('vendor_id', vendor.id)
       .eq('status', 'published');

@@ -38,9 +38,7 @@ export async function GET(request: NextRequest) {
             display_unit
           )
         ),
-        product_categories(
-          category:categories(name)
-        )
+        primary_category:categories!primary_category_id(name)
       `)
       .eq('vendor_id', vendorId)
       .eq('status', 'published')

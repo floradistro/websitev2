@@ -58,6 +58,22 @@ export default function SimpleTVMenusPage() {
   const [editMenuDisplayMode, setEditMenuDisplayMode] = useState<'dense' | 'carousel'>('dense');
   const [editMenuCategories, setEditMenuCategories] = useState<string[]>([]);
   const [availableCategories, setAvailableCategories] = useState<string[]>([]);
+  const [editMenuCustomFields, setEditMenuCustomFields] = useState<string[]>([]);
+  const [availableCustomFields, setAvailableCustomFields] = useState<string[]>([]);
+
+  // New comprehensive menu config state
+  const [customFieldsConfig, setCustomFieldsConfig] = useState<{ [field: string]: { showLabel: boolean } }>({});
+  const [visiblePriceBreaks, setVisiblePriceBreaks] = useState<string[]>([]);
+  const [availablePriceBreaks] = useState(['1g', '3_5g', '7g', '14g', '28g']);
+  const [hideAllFieldLabels, setHideAllFieldLabels] = useState(false);
+
+  // Split view / dual category state
+  const [layoutStyle, setLayoutStyle] = useState<'single' | 'split'>('single');
+  const [splitLeftCategory, setSplitLeftCategory] = useState('');
+  const [splitLeftTitle, setSplitLeftTitle] = useState('');
+  const [splitRightCategory, setSplitRightCategory] = useState('');
+  const [splitRightTitle, setSplitRightTitle] = useState('');
+
   const [deletingMenu, setDeletingMenu] = useState<TVMenu | null>(null);
   const [deletingDevice, setDeletingDevice] = useState<TVDevice | null>(null);
   const [updating, setUpdating] = useState(false);
@@ -322,25 +338,52 @@ export default function SimpleTVMenusPage() {
     setEditMenuTheme(menu.theme || 'midnight-elegance');
     setEditMenuDisplayMode((menu as any).display_mode || 'dense');
     setEditMenuCategories(menu.config_data?.categories || []);
+    setEditMenuCustomFields(menu.config_data?.customFields || []);
+    setCustomFieldsConfig(menu.config_data?.customFieldsConfig || {});
+    setVisiblePriceBreaks(menu.config_data?.visible_price_breaks || []);
+    setHideAllFieldLabels(menu.config_data?.hideAllFieldLabels || false);
+
+    // Load split view config
+    setLayoutStyle(menu.config_data?.layoutStyle || 'single');
+    setSplitLeftCategory(menu.config_data?.splitLeftCategory || '');
+    setSplitLeftTitle(menu.config_data?.splitLeftTitle || '');
+    setSplitRightCategory(menu.config_data?.splitRightCategory || '');
+    setSplitRightTitle(menu.config_data?.splitRightTitle || '');
+
     setError(null);
 
-    // Fetch available categories from API
+    // Fetch available categories and custom fields from API
     if (vendor) {
       try {
+        // Fetch categories
         console.log('🔍 Fetching categories for vendor:', vendor.id);
-        const response = await fetch(`/api/vendor/products/categories?vendor_id=${vendor.id}`);
-        const data = await response.json();
+        const catResponse = await fetch(`/api/vendor/products/categories?vendor_id=${vendor.id}`);
+        const catData = await catResponse.json();
 
-        if (data.success) {
-          console.log('📂 Fetched categories:', data.categories);
-          setAvailableCategories(data.categories || []);
+        if (catData.success) {
+          console.log('📂 Fetched categories:', catData.categories);
+          setAvailableCategories(catData.categories || []);
         } else {
-          console.error('❌ Error fetching categories:', data.error);
+          console.error('❌ Error fetching categories:', catData.error);
           setAvailableCategories([]);
         }
+
+        // Fetch custom fields
+        console.log('🔍 Fetching custom fields for vendor:', vendor.id);
+        const fieldsResponse = await fetch(`/api/vendor/products/custom-fields?vendor_id=${vendor.id}`);
+        const fieldsData = await fieldsResponse.json();
+
+        if (fieldsData.success) {
+          console.log('📋 Fetched custom fields:', fieldsData.customFields);
+          setAvailableCustomFields(fieldsData.customFields || []);
+        } else {
+          console.error('❌ Error fetching custom fields:', fieldsData.error);
+          setAvailableCustomFields([]);
+        }
       } catch (err) {
-        console.error('❌ Error fetching categories:', err);
+        console.error('❌ Error fetching data:', err);
         setAvailableCategories([]);
+        setAvailableCustomFields([]);
       }
     }
   };
@@ -358,7 +401,13 @@ export default function SimpleTVMenusPage() {
         description: editMenuDescription,
         theme: editMenuTheme,
         display_mode: editMenuDisplayMode,
-        categories: editMenuCategories
+        categories: editMenuCategories,
+        customFields: editMenuCustomFields,
+        customFieldsConfig: customFieldsConfig,
+        visible_price_breaks: visiblePriceBreaks,
+        hideAllFieldLabels: hideAllFieldLabels,
+        layoutStyle: layoutStyle,
+        splitConfig: layoutStyle === 'split' ? { splitLeftCategory, splitLeftTitle, splitRightCategory, splitRightTitle } : null
       });
 
       const response = await fetch('/api/vendor/tv-menus/update', {
@@ -372,7 +421,16 @@ export default function SimpleTVMenusPage() {
           description: editMenuDescription || null,
           theme: editMenuTheme,
           display_mode: editMenuDisplayMode,
-          categories: editMenuCategories
+          categories: editMenuCategories,
+          customFields: editMenuCustomFields,
+          customFieldsConfig: customFieldsConfig,
+          visible_price_breaks: visiblePriceBreaks,
+          hideAllFieldLabels: hideAllFieldLabels,
+          layoutStyle: layoutStyle,
+          splitLeftCategory: splitLeftCategory,
+          splitLeftTitle: splitLeftTitle,
+          splitRightCategory: splitRightCategory,
+          splitRightTitle: splitRightTitle
         })
       });
 
@@ -1124,6 +1182,292 @@ export default function SimpleTVMenusPage() {
                     showAllOption={true}
                   />
                 </div>
+
+                {/* Custom Fields Selector */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm font-medium text-white">
+                      Product Information to Display
+                    </label>
+                    <span className="text-xs text-white/40">
+                      {editMenuCustomFields.length === 0
+                        ? 'None selected'
+                        : `${editMenuCustomFields.length} field${editMenuCustomFields.length > 1 ? 's' : ''}`}
+                    </span>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2 max-h-48 overflow-y-auto">
+                    {availableCustomFields.map((field) => {
+                      const isSelected = editMenuCustomFields.includes(field);
+                      const displayName = field.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                      const showLabel = customFieldsConfig[field]?.showLabel !== false;
+
+                      return (
+                        <div key={field} className="flex items-center gap-1">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (isSelected) {
+                                setEditMenuCustomFields(editMenuCustomFields.filter(f => f !== field));
+                                const newConfig = { ...customFieldsConfig };
+                                delete newConfig[field];
+                                setCustomFieldsConfig(newConfig);
+                              } else {
+                                setEditMenuCustomFields([...editMenuCustomFields, field]);
+                                setCustomFieldsConfig({ ...customFieldsConfig, [field]: { showLabel: true } });
+                              }
+                            }}
+                            className={`
+                              px-4 py-2.5 rounded-full text-sm font-bold
+                              transition-all duration-200 ease-out
+                              ${
+                                isSelected
+                                  ? 'bg-white text-black shadow-lg shadow-white/20'
+                                  : 'bg-white/10 text-white hover:bg-white/20 hover:scale-105'
+                              }
+                            `}
+                          >
+                            {displayName}
+                          </button>
+                          {isSelected && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setCustomFieldsConfig({
+                                  ...customFieldsConfig,
+                                  [field]: { showLabel: !showLabel }
+                                });
+                              }}
+                              className={`
+                                px-2 py-2.5 rounded-full text-xs font-bold
+                                transition-all duration-200 ease-out
+                                ${
+                                  showLabel
+                                    ? 'bg-white/20 text-white'
+                                    : 'bg-white/5 text-white/40'
+                                }
+                              `}
+                              title={showLabel ? 'Hide field label' : 'Show field label'}
+                            >
+                              ABC
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {availableCustomFields.length === 0 && (
+                    <div className="text-sm text-white/40 italic py-4 text-center bg-white/5 border border-white/10 rounded-lg">
+                      No custom fields available yet.
+                    </div>
+                  )}
+
+                  <p className="text-xs text-white/30 mt-2">
+                    Select which product information to show on the menu (e.g., THC content, strain type, dosage). Click "ABC" to show/hide field labels.
+                  </p>
+                </div>
+
+                {/* Price Breaks Selector */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm font-medium text-white">
+                      Pricing to Display
+                    </label>
+                    <span className="text-xs text-white/40">
+                      {visiblePriceBreaks.length === 0
+                        ? 'None selected'
+                        : `${visiblePriceBreaks.length} tier${visiblePriceBreaks.length > 1 ? 's' : ''}`}
+                    </span>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2">
+                    {availablePriceBreaks.map((breakId) => {
+                      const isSelected = visiblePriceBreaks.includes(breakId);
+                      const labels: { [key: string]: string } = {
+                        '1g': '1g',
+                        '3_5g': '3.5g',
+                        '7g': '7g',
+                        '14g': '14g',
+                        '28g': '28g'
+                      };
+                      const displayName = labels[breakId] || breakId;
+
+                      return (
+                        <button
+                          key={breakId}
+                          type="button"
+                          onClick={() => {
+                            console.log('🎯 Price break clicked:', breakId);
+                            console.log('   Current visiblePriceBreaks:', visiblePriceBreaks);
+                            console.log('   Is selected:', isSelected);
+
+                            if (isSelected) {
+                              const updated = visiblePriceBreaks.filter(b => b !== breakId);
+                              console.log('   Removing, new array:', updated);
+                              setVisiblePriceBreaks(updated);
+                            } else {
+                              const updated = [...visiblePriceBreaks, breakId];
+                              console.log('   Adding, new array:', updated);
+                              setVisiblePriceBreaks(updated);
+                            }
+                          }}
+                          className={`
+                            px-4 py-2.5 rounded-full text-sm font-bold
+                            transition-all duration-200 ease-out
+                            ${
+                              isSelected
+                                ? 'bg-white text-black shadow-lg shadow-white/20'
+                                : 'bg-white/10 text-white hover:bg-white/20 hover:scale-105'
+                            }
+                          `}
+                        >
+                          {displayName}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <p className="text-xs text-white/30 mt-2">
+                    Choose which price tiers to show on product cards (e.g., 1g, 3.5g, 28g). Up to 2 will be displayed.
+                  </p>
+                </div>
+
+                {/* Hide All Field Labels Toggle */}
+                {editMenuCustomFields.length > 0 && (
+                  <div className="flex items-center justify-between p-4 bg-white/5 border border-white/10 rounded-xl">
+                    <div>
+                      <label className="text-sm font-medium text-white block mb-1">
+                        Hide All Field Labels
+                      </label>
+                      <p className="text-xs text-white/40">
+                        Show only values without "Field Name:" labels
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setHideAllFieldLabels(!hideAllFieldLabels)}
+                      className={`
+                        relative w-14 h-7 rounded-full transition-colors duration-200 ease-in-out
+                        ${hideAllFieldLabels ? 'bg-white' : 'bg-white/20'}
+                      `}
+                    >
+                      <div
+                        className={`
+                          absolute top-0.5 left-0.5 w-6 h-6 rounded-full transition-transform duration-200 ease-in-out
+                          ${hideAllFieldLabels ? 'translate-x-7 bg-black' : 'translate-x-0 bg-white'}
+                        `}
+                      />
+                    </button>
+                  </div>
+                )}
+
+                {/* Layout Style Selector */}
+                <div className="space-y-3">
+                  <label className="text-sm font-medium text-white">
+                    Layout Style
+                  </label>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setLayoutStyle('single')}
+                      className={`
+                        p-4 rounded-xl border-2 text-left transition-all
+                        ${layoutStyle === 'single'
+                          ? 'border-white bg-white/5'
+                          : 'border-white/10 hover:border-white/30'
+                        }
+                      `}
+                    >
+                      <div className="text-white font-bold text-sm mb-1">Full Screen</div>
+                      <div className="text-white/40 text-xs">One category, full display</div>
+                      <div className="mt-2 h-8 bg-white/10 rounded border border-white/20"></div>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setLayoutStyle('split')}
+                      className={`
+                        p-4 rounded-xl border-2 text-left transition-all
+                        ${layoutStyle === 'split'
+                          ? 'border-white bg-white/5'
+                          : 'border-white/10 hover:border-white/30'
+                        }
+                      `}
+                    >
+                      <div className="text-white font-bold text-sm mb-1">Split View</div>
+                      <div className="text-white/40 text-xs">Two categories side-by-side</div>
+                      <div className="mt-2 flex gap-1">
+                        <div className="flex-1 h-8 bg-white/10 rounded border border-white/20"></div>
+                        <div className="flex-1 h-8 bg-white/10 rounded border border-white/20"></div>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Split View Configuration */}
+                {layoutStyle === 'split' && (
+                  <div className="space-y-4 p-4 bg-white/5 border border-white/10 rounded-xl">
+                    <div className="text-sm font-medium text-white mb-3">Split View Configuration</div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      {/* Left Side */}
+                      <div className="space-y-3">
+                        <div className="text-xs font-bold text-white/60 uppercase">Left Side</div>
+                        <div>
+                          <label className="text-xs text-white/60 block mb-1">Category</label>
+                          <select
+                            value={splitLeftCategory}
+                            onChange={(e) => setSplitLeftCategory(e.target.value)}
+                            className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-white/20"
+                          >
+                            <option value="">Select category...</option>
+                            {availableCategories.map(cat => (
+                              <option key={cat} value={cat}>{cat}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <div>
+                          <label className="text-xs text-white/60 block mb-1">Title</label>
+                          <input
+                            type="text"
+                            value={splitLeftTitle}
+                            onChange={(e) => setSplitLeftTitle(e.target.value)}
+                            placeholder="e.g., Flower"
+                            className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white text-sm placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-white/20"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Right Side */}
+                      <div className="space-y-3">
+                        <div className="text-xs font-bold text-white/60 uppercase">Right Side</div>
+                        <div>
+                          <label className="text-xs text-white/60 block mb-1">Category</label>
+                          <select
+                            value={splitRightCategory}
+                            onChange={(e) => setSplitRightCategory(e.target.value)}
+                            className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-white/20"
+                          >
+                            <option value="">Select category...</option>
+                            {availableCategories.map(cat => (
+                              <option key={cat} value={cat}>{cat}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <div>
+                          <label className="text-xs text-white/60 block mb-1">Title</label>
+                          <input
+                            type="text"
+                            value={splitRightTitle}
+                            onChange={(e) => setSplitRightTitle(e.target.value)}
+                            placeholder="e.g., Edibles"
+                            className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white text-sm placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-white/20"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {/* Display Mode Selector */}
                 <div>

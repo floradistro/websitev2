@@ -167,51 +167,53 @@ export function AppsGrid({ badgeCounts = {} }: { badgeCounts?: BadgeCounts }) {
   };
 
   return (
-    <div className="grid grid-cols-3 md:grid-cols-4 gap-x-8 gap-y-10">
-      {accessibleApps.map((app) => {
-        const Icon = app.icon;
-        const iconColor = iconColors[app.glowColor] || 'text-white';
+    <div className="flex justify-center">
+      <div className="grid grid-cols-3 gap-x-16 gap-y-10">
+        {accessibleApps.map((app) => {
+          const Icon = app.icon;
+          const iconColor = iconColors[app.glowColor] || 'text-white';
 
-        return (
-          <Link
-            key={app.key}
-            href={app.route}
-            prefetch={true}
-            onMouseEnter={() => handleMouseEnter(app.route)}
-            className="group flex flex-col items-center gap-3 active:scale-[0.92] transition-transform duration-200 ease-out"
-          >
-            {/* Premium Icon Container */}
-            <div className="relative w-20 h-20">
-              {/* Subtle shadow layer */}
-              <div className="absolute inset-0 bg-gradient-to-b from-white/[0.015] to-transparent rounded-3xl" />
+          return (
+            <Link
+              key={app.key}
+              href={app.route}
+              prefetch={true}
+              onMouseEnter={() => handleMouseEnter(app.route)}
+              className="group flex flex-col items-center gap-3 active:scale-[0.92] transition-transform duration-200 ease-out"
+            >
+              {/* Premium Icon Container */}
+              <div className="relative w-20 h-20">
+                {/* Subtle shadow layer */}
+                <div className="absolute inset-0 bg-gradient-to-b from-white/[0.015] to-transparent rounded-3xl" />
 
-              {/* Dark container with premium hover */}
-              <div className="relative w-full h-full bg-[#0a0a0a] group-hover:bg-white/[0.06] rounded-3xl flex items-center justify-center border border-white/[0.04] group-hover:border-white/[0.08] transition-all duration-400 ease-out shadow-lg shadow-black/30">
-                {/* Colored icon with subtle refinement */}
-                <Icon
-                  size={60}
-                  className={`${iconColor} transition-all duration-400 ease-out group-hover:scale-[1.03] group-hover:opacity-90`}
-                  strokeWidth={1.5}
-                />
+                {/* Dark container with premium hover */}
+                <div className="relative w-full h-full bg-[#0a0a0a] group-hover:bg-white/[0.06] rounded-3xl flex items-center justify-center border border-white/[0.04] group-hover:border-white/[0.08] transition-all duration-400 ease-out shadow-lg shadow-black/30">
+                  {/* Colored icon with subtle refinement */}
+                  <Icon
+                    size={60}
+                    className={`${iconColor} transition-all duration-400 ease-out group-hover:scale-[1.03] group-hover:opacity-90`}
+                    strokeWidth={1.5}
+                  />
+                </div>
+
+                {/* Notification Badge */}
+                {badgeCounts[app.key] > 0 && (
+                  <div className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-red-500 rounded-full flex items-center justify-center border-2 border-black">
+                    <span className="text-white text-[9px] font-semibold">
+                      {badgeCounts[app.key] > 99 ? '99+' : badgeCounts[app.key]}
+                    </span>
+                  </div>
+                )}
               </div>
 
-              {/* Notification Badge */}
-              {badgeCounts[app.key] > 0 && (
-                <div className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-red-500 rounded-full flex items-center justify-center border-2 border-black">
-                  <span className="text-white text-[9px] font-semibold">
-                    {badgeCounts[app.key] > 99 ? '99+' : badgeCounts[app.key]}
-                  </span>
-                </div>
-              )}
-            </div>
-
-            {/* App Name - Premium Typography */}
-            <div className="text-white/60 group-hover:text-white/80 text-[10px] text-center uppercase tracking-[0.2em] leading-tight transition-colors duration-400 ease-out font-light">
-              {app.name}
-            </div>
-          </Link>
-        );
-      })}
+              {/* App Name - Premium Typography */}
+              <div className="text-white/60 group-hover:text-white/80 text-[10px] text-center uppercase tracking-[0.2em] leading-tight transition-colors duration-400 ease-out font-light">
+                {app.name}
+              </div>
+            </Link>
+          );
+        })}
+      </div>
     </div>
   );
 }

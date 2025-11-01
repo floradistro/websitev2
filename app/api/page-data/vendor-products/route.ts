@@ -30,9 +30,7 @@ export async function GET(request: NextRequest) {
         stock_quantity,
         featured_image_storage,
         created_at,
-        product_categories(
-          category:categories(id, name, slug)
-        )
+        primary_category:categories!primary_category_id(id, name, slug)
       `)
       .eq('vendor_id', vendorId)
       .order('created_at', { ascending: false });
@@ -54,7 +52,7 @@ export async function GET(request: NextRequest) {
         status: status,
         quantity: p.stock_quantity || 0,
         price: `$${parseFloat(p.price || 0).toFixed(2)}`,
-        category: p.product_categories?.[0]?.category?.name || 'Product',
+        category: p.primary_category?.name || 'Product',
         coaStatus: 'missing',
         submittedDate: p.created_at,
         rejectionReason: null

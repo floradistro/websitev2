@@ -86,8 +86,15 @@ export function AppAuthProvider({ children }: { children: React.ReactNode }) {
         setVendor(userData.vendor);
         setIsAuthenticated(true);
 
+        // Default apps available to all users: POS, Customers, Digital Menus
+        const defaultApps = ['pos', 'customers', 'tv_menus'];
         if (savedApps) {
-          setAccessibleApps(JSON.parse(savedApps));
+          const parsedApps = JSON.parse(savedApps);
+          // If empty array and not vendor_admin, use default apps
+          setAccessibleApps(parsedApps.length === 0 && userData.role !== 'vendor_admin' ? defaultApps : parsedApps);
+        } else {
+          // No saved apps - use defaults for non-admins
+          setAccessibleApps(userData.role === 'vendor_admin' ? [] : defaultApps);
         }
 
         if (savedLocations) {
@@ -166,7 +173,7 @@ export function AppAuthProvider({ children }: { children: React.ReactNode }) {
 
         // Save to localStorage (but NOT session token - it's in HTTP-only cookie)
         localStorage.setItem('app_user', JSON.stringify(legacyUser));
-        localStorage.setItem('app_accessible_apps', JSON.stringify([]));
+        localStorage.setItem('app_accessible_apps', JSON.stringify([])); // Vendor admins have access to all
         localStorage.setItem('app_locations', JSON.stringify([]));
         // Also set legacy keys for backwards compatibility
         localStorage.setItem('vendor_id', data.vendor.id);
@@ -199,7 +206,9 @@ export function AppAuthProvider({ children }: { children: React.ReactNode }) {
       setIsAuthenticated(true);
 
       // Store accessible apps (vendor admins have access to all)
-      const apps = data.user.role === 'vendor_admin' ? [] : (data.apps || []);
+      // Default apps available to all users: POS, Customers, Digital Menus
+      const defaultApps = ['pos', 'customers', 'tv_menus'];
+      const apps = data.user.role === 'vendor_admin' ? [] : (data.apps || defaultApps);
       setAccessibleApps(apps);
 
       // Store locations
@@ -290,7 +299,9 @@ export function AppAuthProvider({ children }: { children: React.ReactNode }) {
         setUser(updatedUser);
         setVendor(data.user.vendor);
 
-        const apps = data.user.role === 'vendor_admin' ? [] : (data.apps || []);
+        // Default apps available to all users: POS, Customers, Digital Menus
+        const defaultApps = ['pos', 'customers', 'tv_menus'];
+        const apps = data.user.role === 'vendor_admin' ? [] : (data.apps || defaultApps);
         setAccessibleApps(apps);
 
         const userLocations = data.locations || [];

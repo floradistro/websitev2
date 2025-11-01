@@ -21,9 +21,7 @@ export async function GET(request: NextRequest) {
     const { data: products, error: productsError } = await supabase
       .from('products')
       .select(`
-        product_categories(
-          category:categories(name)
-        )
+        primary_category:categories!primary_category_id(name)
       `)
       .eq('vendor_id', vendorId);
 
@@ -34,11 +32,9 @@ export async function GET(request: NextRequest) {
     // Extract unique categories from products
     const categorySet = new Set<string>();
     products?.forEach((product: any) => {
-      product.product_categories?.forEach((pc: any) => {
-        if (pc.category?.name) {
-          categorySet.add(pc.category.name);
-        }
-      });
+      if (product.primary_category?.name) {
+        categorySet.add(product.primary_category.name);
+      }
     });
 
     console.log('✅ Found categories from products:', [...categorySet]);

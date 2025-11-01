@@ -41,12 +41,10 @@ export async function GET(request: NextRequest) {
       .from('products')
       .select(`
         vendor_id,
-        product_categories(
-          category:categories(slug, name)
-        )
+        primary_category:categories!primary_category_id(slug, name)
       `)
       .eq('status', 'published');
-    
+
     const vendorStats = (productData || []).reduce((acc: any, p: any) => {
       if (!acc[p.vendor_id]) {
         acc[p.vendor_id] = {
@@ -55,9 +53,9 @@ export async function GET(request: NextRequest) {
         };
       }
       acc[p.vendor_id].count++;
-      p.product_categories?.forEach((pc: any) => {
-        if (pc.category?.name) acc[p.vendor_id].categories.add(pc.category.name);
-      });
+      if (p.primary_category?.name) {
+        acc[p.vendor_id].categories.add(p.primary_category.name);
+      }
       return acc;
     }, {});
     

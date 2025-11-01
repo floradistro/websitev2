@@ -27,9 +27,7 @@ export async function GET(
           state,
           city
         ),
-        product_categories(
-          category:categories(id, name, slug)
-        ),
+        primary_category:categories!primary_category_id(id, name, slug),
         inventory(
           id,
           quantity,
@@ -183,7 +181,7 @@ export async function GET(
       images: images, // Formatted images array
       featured_image_storage: p.featured_image_storage,
       image_gallery_storage: p.image_gallery_storage,
-      categories: p.product_categories?.map((pc: any) => pc.category) || [],
+      categories: p.primary_category ? [p.primary_category] : [],
       inventory: p.inventory || [],
       total_stock: totalStock, // Use already calculated value
       fields: fields,

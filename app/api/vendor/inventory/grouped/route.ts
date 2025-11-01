@@ -45,26 +45,12 @@ export async function GET(request: NextRequest) {
     // Fetch products only for those in inventory (faster)
     const { data: products } = await supabase
       .from('products')
-      .select('id, name, sku, price, cost_price')
+      .select('id, name, sku, price, cost_price, primary_category:categories!primary_category_id(name)')
       .in('id', productIds)
       .eq('vendor_id', vendorId);
 
-    // Get categories in one query
-    const { data: productCategories } = await supabase
-      .from('product_categories')
-      .select('product_id, categories(name)')
-      .in('product_id', productIds);
-
     // Build location map for fast lookup
     const locationMap = new Map(locations.map(l => [l.id, l.name]));
-    
-    // Build category map
-    const categoryMap = new Map(
-      (productCategories || []).map(pc => [
-        pc.product_id, 
-        (pc.categories as any)?.name || 'Uncategorized'
-      ])
-    );
 
     // Group inventory by product
     const inventoryByProduct = new Map<string, any[]>();
@@ -95,7 +81,7 @@ export async function GET(request: NextRequest) {
         product_id: product.id,
         product_name: product.name,
         sku: product.sku || '',
-        category: categoryMap.get(product.id) || 'Uncategorized',
+        category: (product.primary_category as any)?.name || 'Uncategorized',
         price: parseFloat(product.price) || 0,
         cost_price: product.cost_price ? parseFloat(product.cost_price) : undefined,
         total_quantity,

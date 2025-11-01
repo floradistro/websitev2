@@ -50,6 +50,9 @@ export function TableRowSkeleton() {
 }
 
 export function ChartSkeleton() {
+  // Use deterministic heights to avoid hydration mismatch
+  const barHeights = [42, 47, 26, 30, 33, 34, 88, 29, 95, 99, 51, 11];
+
   return (
     <div className="minimal-glass p-6 animate-pulse">
       <div className="mb-6">
@@ -57,8 +60,8 @@ export function ChartSkeleton() {
         <div className="h-3 w-24 bg-white/5 rounded"></div>
       </div>
       <div className="h-64 flex items-end justify-between gap-2">
-        {[...Array(12)].map((_, i) => (
-          <div key={i} className="flex-1 bg-white/5 rounded" style={{ height: `${Math.random() * 100}%` }}></div>
+        {barHeights.map((height, i) => (
+          <div key={i} className="flex-1 bg-white/5 rounded" style={{ height: `${height}%` }}></div>
         ))}
       </div>
     </div>

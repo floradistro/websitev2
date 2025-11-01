@@ -26,7 +26,7 @@ function VendorLayoutContent({
   const isVisible = useAutoHideHeader(); // ✅ Shared hook - no memory leak
   const pathname = usePathname();
   const router = useRouter();
-  const { vendor, isAuthenticated, isLoading, logout } = useAppAuth();
+  const { vendor, isAuthenticated, isLoading, logout, hasAppAccess } = useAppAuth();
 
   // Protect vendor routes - redirect to login if not authenticated
   useEffect(() => {
@@ -71,19 +71,8 @@ function VendorLayoutContent({
     return <>{children}</>;
   }
 
-  // Show loading while checking auth
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="text-white/60">Loading...</div>
-      </div>
-    );
-  }
-
-  // If not authenticated, don't render (redirect will happen via useEffect)
-  if (!isAuthenticated) {
-    return null;
-  }
+  // Don't block rendering - let pages handle their own loading states
+  // The redirect will happen via useEffect if not authenticated
 
   async function handleLogout() {
     await showConfirm({
@@ -249,29 +238,31 @@ function VendorLayoutContent({
             </div>
 
             <nav className="flex-1 overflow-y-auto px-3 py-3 relative z-10">
-              {vendorNavItems.map((item) => {
-                const Icon = item.icon;
-                const active = isActive(item.href);
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    onClick={() => setMobileMenuOpen(false)}
-                    onMouseEnter={() => handleNavHover(item.href)}
-                    className={`flex items-center justify-between px-3 py-2.5 mb-1 rounded-xl transition-all duration-200 border ${
-                      active
-                        ? 'bg-white/10 text-white border-white/20'
-                        : 'text-white/40 hover:text-white/70 border-transparent hover:bg-white/5'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <Icon size={16} strokeWidth={active ? 2 : 1.5} />
-                      <span className="text-[10px] uppercase tracking-[0.15em]">{item.label}</span>
-                    </div>
-                    {active && <div className="w-1 h-1 rounded-full bg-white" />}
-                  </Link>
-                );
-              })}
+              {vendorNavItems
+                .filter(item => !item.appKey || hasAppAccess(item.appKey))
+                .map((item) => {
+                  const Icon = item.icon;
+                  const active = isActive(item.href);
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setMobileMenuOpen(false)}
+                      onMouseEnter={() => handleNavHover(item.href)}
+                      className={`flex items-center justify-between px-3 py-2.5 mb-1 rounded-xl transition-all duration-200 border ${
+                        active
+                          ? 'bg-white/10 text-white border-white/20'
+                          : 'text-white/40 hover:text-white/70 border-transparent hover:bg-white/5'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <Icon size={16} strokeWidth={active ? 2 : 1.5} />
+                        <span className="text-[10px] uppercase tracking-[0.15em]">{item.label}</span>
+                      </div>
+                      {active && <div className="w-1 h-1 rounded-full bg-white" />}
+                    </Link>
+                  );
+                })}
             </nav>
 
             <div className="px-3 py-3 border-t border-white/5 relative z-10 space-y-2" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 1rem)' }}>
@@ -349,28 +340,30 @@ function VendorLayoutContent({
           }}
         >
           <nav className="px-3 py-4 space-y-1 pb-8">
-            {vendorNavItems.map((item) => {
-              const Icon = item.icon;
-              const active = isActive(item.href);
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onMouseEnter={() => handleNavHover(item.href)}
-                  className={`group flex items-center justify-between px-3 py-2.5 transition-all duration-200 border rounded-xl ${
-                    active
-                      ? 'text-white bg-white/10 border-white/20'
-                      : 'text-white/40 hover:text-white/70 hover:bg-white/5 border-transparent'
-                  }`}
-                >
-                  <div className="flex items-center gap-2.5">
-                    <Icon size={16} strokeWidth={active ? 2 : 1.5} />
-                    <span className="text-[10px] uppercase tracking-[0.15em]">{item.label}</span>
-                  </div>
-                  {active && <div className="w-1 h-1 rounded-full bg-white" />}
-                </Link>
-              );
-            })}
+            {vendorNavItems
+              .filter(item => !item.appKey || hasAppAccess(item.appKey))
+              .map((item) => {
+                const Icon = item.icon;
+                const active = isActive(item.href);
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onMouseEnter={() => handleNavHover(item.href)}
+                    className={`group flex items-center justify-between px-3 py-2.5 transition-all duration-200 border rounded-xl ${
+                      active
+                        ? 'text-white bg-white/10 border-white/20'
+                        : 'text-white/40 hover:text-white/70 hover:bg-white/5 border-transparent'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <Icon size={16} strokeWidth={active ? 2 : 1.5} />
+                      <span className="text-[10px] uppercase tracking-[0.15em]">{item.label}</span>
+                    </div>
+                    {active && <div className="w-1 h-1 rounded-full bg-white" />}
+                  </Link>
+                );
+              })}
           </nav>
         </aside>
 
