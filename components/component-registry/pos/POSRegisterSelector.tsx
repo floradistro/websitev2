@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Monitor, Check, Users, DollarSign, Clock } from 'lucide-react';
+import { Monitor, Check, Users, DollarSign, Clock, X } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
 
 interface Register {
@@ -86,6 +86,44 @@ export function POSRegisterSelector({
     startNewSession(register.id);
   };
 
+  const handleCloseSession = async (e: React.MouseEvent, register: Register) => {
+    e.stopPropagation(); // Prevent selecting the register
+
+    if (!register.current_session) return;
+
+    const confirmed = confirm(
+      `Close session ${register.current_session.session_number}?\n\n` +
+      `Sales: $${register.current_session.total_sales.toFixed(2)}\n` +
+      `Duration: ${formatDuration(register.current_session.started_at)}`
+    );
+
+    if (!confirmed) return;
+
+    try {
+      const response = await fetch('/api/pos/sessions/close', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sessionId: register.current_session.id,
+          closingCash: 0, // Quick close, no cash count
+          closingNotes: 'Closed from register selector',
+        }),
+      });
+
+      if (response.ok) {
+        console.log('✅ Session closed successfully');
+        // Reload to show updated status
+        loadRegisters();
+      } else {
+        const error = await response.json();
+        alert(`Failed to close session: ${error.error || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error('Error closing session:', error);
+      alert('Failed to close session');
+    }
+  };
+
   const startNewSession = async (registerId: string) => {
     try {
       const response = await fetch('/api/pos/sessions/open', {
@@ -99,10 +137,19 @@ export function POSRegisterSelector({
 
       if (response.ok) {
         const data = await response.json();
+        console.log('✅ Session opened:', data.session);
         onRegisterSelected(registerId, data.session?.id);
       } else {
         const error = await response.json();
-        alert(`Failed to start session: ${error.message || 'Unknown error'}`);
+        console.error('❌ Failed to start session:', error);
+
+        // If session already exists, try to join it
+        if (error.session?.id) {
+          console.log('📍 Session already exists, joining:', error.session.id);
+          onRegisterSelected(registerId, error.session.id);
+        } else {
+          alert(`Failed to start session: ${error.error || 'Unknown error'}`);
+        }
       }
     } catch (error) {
       console.error('Error starting session:', error);
@@ -200,6 +247,13 @@ export function POSRegisterSelector({
                           </div>
                         )}
                       </div>
+                      {/* Close Session Button */}
+                      <button
+                        onClick={(e) => handleCloseSession(e, register)}
+                        className="mt-3 w-full py-2 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 hover:border-red-500/50 rounded-lg text-red-400 text-[10px] uppercase tracking-[0.15em] font-black transition-all"
+                      >
+                        End Session
+                      </button>
                     </div>
                   ) : (
                     <div className="flex items-center gap-2 text-[10px] text-white/40 uppercase tracking-[0.15em]">
