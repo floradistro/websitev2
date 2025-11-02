@@ -950,12 +950,13 @@ function TVDisplayContent() {
       <div className="absolute inset-0 overflow-hidden p-4">
         <div className="h-full w-full flex flex-col">
           {/* Category Header - Compact and always on top (hidden in split view) */}
-          {(!isSplitView && displayGroup?.display_config?.show_category_header === true && groupMember?.assigned_categories && groupMember.assigned_categories.length > 0) && (
+          {(!isSplitView && groupMember?.assigned_categories && groupMember.assigned_categories.length > 0) && (
             <div className="text-center flex-shrink-0 mb-3">
               <h1
-                className="uppercase tracking-[0.2em] font-black text-white"
+                className="uppercase tracking-[0.2em] font-black"
                 style={{
-                  fontSize: '4.5rem',
+                  color: theme.styles.productName.color,
+                  fontSize: 'clamp(2rem, 4vw, 4.5rem)',
                   lineHeight: 1,
                   letterSpacing: '0.2em',
                   opacity: 0.9
@@ -966,8 +967,8 @@ function TVDisplayContent() {
             </div>
           )}
 
-          {/* Menu Header - Full header with name and description */}
-          {(displayGroup?.display_config?.show_header === true) && (
+          {/* Menu Header - Full header with name and description (removed display_config check) */}
+          {false && (
             <div className="text-center flex-shrink-0 mb-4">
               <h1
                 className="uppercase tracking-[0.15em]"
