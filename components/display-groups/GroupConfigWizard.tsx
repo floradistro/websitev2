@@ -117,7 +117,8 @@ export default function GroupConfigWizard({ vendorId, existingGroup, onComplete,
 
   const canProceed = () => {
     if (step === 1) return groupName.trim() && selectedDevices.length >= 2;
-    return false; // Only 2 steps now
+    if (step === 2) return true; // Category assignment is optional
+    return false;
   };
 
   if (loading) {
@@ -270,13 +271,13 @@ export default function GroupConfigWizard({ vendorId, existingGroup, onComplete,
                 <div className="p-5 bg-gradient-to-r from-purple-500/10 to-blue-500/10 border border-purple-500/20 rounded-xl mb-4">
                   <h3 className="text-white font-semibold mb-2 flex items-center gap-2">
                     <Grid3x3 className="w-5 h-5 text-purple-400" />
-                    Category Assignment Per Display
+                    Category Assignment Per Display (Optional)
                   </h3>
                   <p className="text-sm text-white/70">
-                    Assign specific product categories to each display. All grid, theme, pricing, and display settings are configured in the main "Displays & Menus" editor.
+                    Optionally assign specific product categories to each display. All grid, theme, pricing, and display settings are configured in the main "Displays & Menus" editor.
                   </p>
                   <p className="text-xs text-white/50 mt-2">
-                    💡 Tip: Leave empty to show all categories on that display
+                    💡 Tip: Skip this step or leave empty to show all categories on all displays. You can always edit this later.
                   </p>
                 </div>
 
@@ -380,13 +381,21 @@ export default function GroupConfigWizard({ vendorId, existingGroup, onComplete,
                 <ArrowRight className="w-4 h-4" />
               </button>
             ) : (
-              <button
-                onClick={handleComplete}
-                className="flex items-center gap-2 px-6 py-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-lg hover:from-green-600 hover:to-emerald-600 transition-all"
-              >
-                <Check className="w-4 h-4" />
-                Create Display Group
-              </button>
+              <>
+                <button
+                  onClick={handleComplete}
+                  className="px-4 py-2 text-white/60 hover:text-white transition-colors"
+                >
+                  Skip & Create
+                </button>
+                <button
+                  onClick={handleComplete}
+                  className="flex items-center gap-2 px-6 py-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-lg hover:from-green-600 hover:to-emerald-600 transition-all"
+                >
+                  <Check className="w-4 h-4" />
+                  Create Display Group
+                </button>
+              </>
             )}
           </div>
         </div>
