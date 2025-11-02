@@ -84,7 +84,7 @@ export async function GET(request: NextRequest) {
       // Extract tier names (break_ids) from pricing blueprints
       const assignments = product.product_pricing_assignments || [];
       for (const assignment of assignments) {
-        const blueprint = assignment.pricing_tier_blueprints;
+        const blueprint = assignment.pricing_tier_blueprints as any;
         if (!blueprint?.price_breaks || !Array.isArray(blueprint.price_breaks)) {
           continue;
         }
