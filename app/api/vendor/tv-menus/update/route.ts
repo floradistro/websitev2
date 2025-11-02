@@ -5,7 +5,7 @@ export async function POST(request: NextRequest) {
   try {
     const {
       menuId, name, description, theme, display_mode, gridColumns, gridRows, categories, customFields, customFieldsConfig,
-      visible_price_breaks, categoryPricingConfig, hideAllFieldLabels, layoutStyle, splitLeftCategory, splitLeftTitle,
+      visible_price_breaks, categoryPricingConfig, hideAllFieldLabels, displayMode, layoutStyle, splitLeftCategory, splitLeftTitle,
       splitLeftCustomFields, splitLeftPriceBreaks, splitRightCategory, splitRightTitle,
       splitRightCustomFields, splitRightPriceBreaks, enableCarousel, carouselInterval
     } = await request.json();
@@ -44,6 +44,9 @@ export async function POST(request: NextRequest) {
     }
     if (hideAllFieldLabels !== undefined) {
       config_data.hideAllFieldLabels = hideAllFieldLabels;
+    }
+    if (displayMode !== undefined) {
+      config_data.displayMode = displayMode;
     }
     if (layoutStyle !== undefined) {
       config_data.layoutStyle = layoutStyle;

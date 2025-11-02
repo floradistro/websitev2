@@ -13,6 +13,7 @@ import { getTheme } from '@/lib/themes';
 import { calculatePrice, calculateTierPrices, type Promotion } from '@/lib/pricing';
 import { type CategoryPricingConfig } from '@/lib/category-pricing-defaults';
 import { MinimalProductCard } from '@/components/tv-display/MinimalProductCard';
+import { ListProductCard } from '@/components/tv-display/ListProductCard';
 
 interface TVDisplayContentProps {}
 
@@ -1081,9 +1082,16 @@ function TVDisplayContent() {
 
             console.log(`📐 Grid: ${adjustedGridColumns}x${adjustedGridRows} (original: ${gridColumns}x${gridRows}, split: ${isSplitView})`);
 
+            // Get display mode (grid or list)
+            const menuDisplayMode = activeMenu?.config_data?.displayMode || 'grid';
+            console.log('📺 Display Mode:', menuDisplayMode);
+
             // Dynamic grid classes based on group settings - minimal gaps
-            const gridClasses = `grid gap-2`;
-            const gridStyle = {
+            const gridClasses = menuDisplayMode === 'list' ? 'flex flex-col' : `grid gap-2`;
+            const gridStyle = menuDisplayMode === 'list' ? {
+              maxHeight: '100%',
+              maxWidth: '100%',
+            } : {
               gridTemplateColumns: `repeat(${adjustedGridColumns}, 1fr)`,
               gridTemplateRows: `repeat(${adjustedGridRows}, 1fr)`,
               maxHeight: '100%',
@@ -1284,20 +1292,37 @@ function TVDisplayContent() {
                   flex: '1 1 0',
                   minHeight: 0, // Critical: allows grid to shrink
                 }}>
-                  {productsToShow.map((product: any, index: number) => (
-                    <MinimalProductCard
-                      key={product.id}
-                      product={product}
-                      theme={theme}
-                      index={index}
-                      visiblePriceBreaks={getPriceBreaksForProduct(product)}
-                      displayConfig={displayGroup?.display_config}
-                      customFieldsToShow={activeMenu?.config_data?.customFields || []}
-                      customFieldsConfig={activeMenu?.config_data?.customFieldsConfig || {}}
-                      hideAllFieldLabels={activeMenu?.config_data?.hideAllFieldLabels || false}
-                      gridColumns={gridColumns}
-                    />
-                  ))}
+                  {menuDisplayMode === 'list' ? (
+                    // List View - Apple Store style
+                    productsToShow.map((product: any, index: number) => (
+                      <ListProductCard
+                        key={product.id}
+                        product={product}
+                        theme={theme}
+                        index={index}
+                        visiblePriceBreaks={getPriceBreaksForProduct(product)}
+                        customFieldsToShow={activeMenu?.config_data?.customFields || []}
+                        customFieldsConfig={activeMenu?.config_data?.customFieldsConfig || {}}
+                        hideAllFieldLabels={activeMenu?.config_data?.hideAllFieldLabels || false}
+                      />
+                    ))
+                  ) : (
+                    // Grid View - Card style
+                    productsToShow.map((product: any, index: number) => (
+                      <MinimalProductCard
+                        key={product.id}
+                        product={product}
+                        theme={theme}
+                        index={index}
+                        visiblePriceBreaks={getPriceBreaksForProduct(product)}
+                        displayConfig={displayGroup?.display_config}
+                        customFieldsToShow={activeMenu?.config_data?.customFields || []}
+                        customFieldsConfig={activeMenu?.config_data?.customFieldsConfig || {}}
+                        hideAllFieldLabels={activeMenu?.config_data?.hideAllFieldLabels || false}
+                        gridColumns={gridColumns}
+                      />
+                    ))
+                  )}
                 </div>
 
                 {/* Carousel Page Indicators */}

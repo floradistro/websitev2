@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Palette, Layout, Sparkles, Grid3x3, Monitor, DollarSign, Eye } from 'lucide-react';
+import { X, Palette, Layout, Sparkles, Grid3x3, Monitor, DollarSign, Eye, List } from 'lucide-react';
 import { themes, type TVTheme } from '@/lib/themes';
 import CategorySelector from '@/components/tv-menus/CategorySelector';
 import {
@@ -60,6 +60,7 @@ export default function MenuEditorModal({
   }, [categories.join(',')]); // Only update when category list changes
 
   // Layout
+  const [displayMode, setDisplayMode] = useState<'grid' | 'list'>(menu?.config_data?.displayMode || 'grid');
   const [layoutStyle, setLayoutStyle] = useState<'single' | 'split'>(menu?.config_data?.layoutStyle || 'single');
   const [gridColumns, setGridColumns] = useState(menu?.config_data?.gridColumns || 6);
   const [gridRows, setGridRows] = useState(menu?.config_data?.gridRows || 5);
@@ -103,6 +104,7 @@ export default function MenuEditorModal({
       customFieldsConfig,
       categoryPricingConfig,
       hideAllFieldLabels,
+      displayMode,
       layoutStyle,
       gridColumns,
       gridRows,
@@ -394,6 +396,41 @@ export default function MenuEditorModal({
                 exit={{ opacity: 0, x: 20 }}
                 className="space-y-6"
               >
+                {/* Display Mode: Grid vs List */}
+                <div>
+                  <label className="block text-sm font-bold text-white mb-3">Display Mode</label>
+                  <div className="grid grid-cols-2 gap-4">
+                    {['grid', 'list'].map((mode) => (
+                      <button
+                        key={mode}
+                        onClick={() => setDisplayMode(mode as 'grid' | 'list')}
+                        className={`p-6 rounded-xl border-2 transition-all ${
+                          displayMode === mode
+                            ? 'border-green-500 bg-green-500/10 shadow-lg shadow-green-500/20'
+                            : 'border-white/10 hover:border-white/30'
+                        }`}
+                      >
+                        <div className="flex flex-col items-center gap-3">
+                          {mode === 'grid' ? (
+                            <Grid3x3 size={32} className="text-white" />
+                          ) : (
+                            <List size={32} className="text-white" />
+                          )}
+                          <div>
+                            <div className="text-white font-bold capitalize mb-1">{mode} View</div>
+                            <div className="text-xs text-white/60">
+                              {mode === 'grid' ? 'Product cards in grid' : 'Apple Store-style rows'}
+                            </div>
+                          </div>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                  <p className="text-xs text-white/40 mt-2">
+                    💡 List view shows more products per screen - perfect for portrait displays
+                  </p>
+                </div>
+
                 {/* Layout Style */}
                 <div>
                   <label className="block text-sm font-bold text-white mb-3">Layout Mode</label>
