@@ -196,21 +196,23 @@ export async function POST(request: NextRequest) {
     if (transaction.order_id) {
       const { data: orderItems } = await supabase
         .from('order_items')
-        .select('product_id, quantity, inventory_id')
+        .select('product_id, product_name, quantity, inventory_id')
         .eq('order_id', transaction.order_id);
 
       if (orderItems) {
         for (const item of orderItems) {
-          // Add back to inventory directly
+          // Add back to inventory using atomic increment
           if (item.inventory_id) {
-            await supabase
-              .from('inventory')
-              .update({
-                quantity: supabase.raw(`quantity + ${item.quantity}`)
-              })
-              .eq('id', item.inventory_id);
+            const { data: result, error: incrementError } = await supabase.rpc('increment_inventory', {
+              p_inventory_id: item.inventory_id,
+              p_quantity: item.quantity
+            });
 
-            console.log(`  ✅ Restocked ${item.quantity} units`);
+            if (incrementError) {
+              console.error(`⚠️  Failed to restock ${item.product_name || item.product_id}:`, incrementError);
+            } else {
+              console.log(`  ✅ Restocked ${item.product_name || item.product_id}: ${result.old_quantity} → ${result.new_quantity}`);
+            }
           }
         }
         console.log(`✅ Inventory restocked: ${orderItems.length} items`);
