@@ -116,18 +116,18 @@ export default function POSRegisterPage() {
     loadPromotions();
   }, []);
 
-  // Real-time session monitoring with fallback polling
+  // Real-time session monitoring - ONLY kicks out when session explicitly closed
   useEffect(() => {
     if (!sessionId || !registerId) return;
 
     const handleSessionClosed = () => {
-      console.log('❌ Session closed, returning to register selector');
+      console.log('❌ Session closed via realtime event, returning to register selector');
       setSessionId(null);
       setRegisterId(null);
       setCart([]);
     };
 
-    // Real-time listener for session updates
+    // Real-time listener for session updates - PRIMARY method for detecting closure
     const channel = supabase
       .channel(`pos-session-${sessionId}-${Date.now()}`)
       .on('postgres_changes', {
@@ -136,7 +136,7 @@ export default function POSRegisterPage() {
         table: 'pos_sessions',
         filter: `id=eq.${sessionId}`,
       }, (payload) => {
-        console.log('🔄 Session updated:', payload.new);
+        console.log('🔄 Session updated via realtime:', payload.new);
         if (payload.new.status === 'closed') {
           handleSessionClosed();
         }
@@ -147,34 +147,13 @@ export default function POSRegisterPage() {
         table: 'pos_sessions',
         filter: `id=eq.${sessionId}`,
       }, () => {
+        console.log('🗑️ Session deleted via realtime');
         handleSessionClosed();
       })
       .subscribe();
 
-    // Backup polling every 30 seconds - only to catch missed realtime events
-    const checkSession = async () => {
-      try {
-        const { data: session, error } = await supabase
-          .from('pos_sessions')
-          .select('id, status')
-          .eq('id', sessionId)
-          .single();
-
-        // Only kick out if session explicitly closed, NOT on database errors
-        if (!error && session && session.status === 'closed') {
-          handleSessionClosed();
-        }
-      } catch (error) {
-        // Don't kick out on errors - database might be temporarily unavailable
-        console.error('Error checking session (not kicking out):', error);
-      }
-    };
-
-    const interval = setInterval(checkSession, 30000);
-
     return () => {
       supabase.removeChannel(channel);
-      clearInterval(interval);
     };
   }, [sessionId, registerId]);
 
