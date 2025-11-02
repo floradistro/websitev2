@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase/client';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Tv, X, ExternalLink, Circle, Pencil, Trash2, Palette, LayoutGrid, RotateCw, Sparkles, Grid3x3 } from 'lucide-react';
 import { themes, getTheme, type TVTheme } from '@/lib/themes';
+import { type CategoryPricingConfig } from '@/lib/category-pricing-defaults';
 import CategorySelector from '@/components/tv-menus/CategorySelector';
 import DisplayConfigWizard from '@/components/ai/DisplayConfigWizard';
 import AIRecommendationViewer from '@/components/ai/AIRecommendationViewer';
@@ -69,8 +70,6 @@ export default function SimpleTVMenusPage() {
 
   // New comprehensive menu config state
   const [customFieldsConfig, setCustomFieldsConfig] = useState<{ [field: string]: { showLabel: boolean } }>({});
-  const [visiblePriceBreaks, setVisiblePriceBreaks] = useState<string[]>([]);
-  const [availablePriceBreaks] = useState(['1g', '3_5g', '7g', '14g', '28g']);
   const [hideAllFieldLabels, setHideAllFieldLabels] = useState(false);
 
   // Split view / dual category state - with per-side configuration
@@ -354,7 +353,6 @@ export default function SimpleTVMenusPage() {
     setEditMenuCategories(menu.config_data?.categories || []);
     setEditMenuCustomFields(menu.config_data?.customFields || []);
     setCustomFieldsConfig(menu.config_data?.customFieldsConfig || {});
-    setVisiblePriceBreaks(menu.config_data?.visible_price_breaks || []);
     setHideAllFieldLabels(menu.config_data?.hideAllFieldLabels || false);
 
     // Load grid configuration
@@ -437,7 +435,7 @@ export default function SimpleTVMenusPage() {
           categories: menuData.categories,
           customFields: menuData.customFields,
           customFieldsConfig: menuData.customFieldsConfig,
-          visible_price_breaks: menuData.visiblePriceBreaks,
+          categoryPricingConfig: menuData.categoryPricingConfig,
           hideAllFieldLabels: false,
           layoutStyle: menuData.layoutStyle,
           splitLeftCategory: menuData.splitLeftCategory,
@@ -1137,7 +1135,6 @@ export default function SimpleTVMenusPage() {
             error={error}
             availableCategories={availableCategories}
             availableCustomFields={availableCustomFields}
-            availablePriceBreaks={availablePriceBreaks}
           />
         )}
       </AnimatePresence>

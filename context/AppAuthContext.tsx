@@ -271,16 +271,11 @@ export function AppAuthProvider({ children }: { children: React.ReactNode }) {
     if (!user) return;
 
     try {
-      // Re-fetch user data to get latest permissions
-      // Session token is automatically sent via HTTP-only cookie
-      const response = await fetch('/api/auth/app-login', {
+      // Re-fetch user data using the refresh endpoint (not login)
+      const response = await fetch('/api/auth/refresh', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include', // Include cookies
-        body: JSON.stringify({
-          email: user.email
-          // No need to send refreshToken - it's in HTTP-only cookie
-        })
+        credentials: 'include', // Include cookies with session token
       });
 
       const data = await response.json();

@@ -11,6 +11,7 @@ import { supabase } from '@/lib/supabase/client';
 import { motion } from 'framer-motion';
 import { getTheme } from '@/lib/themes';
 import { calculatePrice, calculateTierPrices, type Promotion } from '@/lib/pricing';
+import { type CategoryPricingConfig } from '@/lib/category-pricing-defaults';
 import { MinimalProductCard } from '@/components/tv-display/MinimalProductCard';
 
 interface TVDisplayContentProps {}
@@ -1089,11 +1090,20 @@ function TVDisplayContent() {
               maxWidth: '100%',
             };
 
-            // Get visible price breaks - Priority 1: Menu config, Priority 2: Display group (fallback)
-            const visiblePriceBreaks = activeMenu?.config_data?.visible_price_breaks || displayGroup?.visible_price_breaks || [];
+            // Get category pricing configuration from menu
+            const categoryPricingConfig: CategoryPricingConfig = activeMenu?.config_data?.categoryPricingConfig || {};
 
-            console.log('💰 Visible price breaks:', visiblePriceBreaks.length > 0 ? visiblePriceBreaks : 'none configured (will show no pricing)');
-            console.log('   Source: menu =', activeMenu?.config_data?.visible_price_breaks, ', group =', displayGroup?.visible_price_breaks);
+            // Helper function to get price breaks for a product based on its category
+            const getPriceBreaksForProduct = (product: any): string[] => {
+              const category = product.primary_category?.name || product.custom_fields?.category;
+              if (!category) return [];
+
+              const categoryConfig = categoryPricingConfig[category];
+              return categoryConfig?.selected || [];
+            };
+
+            console.log('💰 Category pricing config loaded:', Object.keys(categoryPricingConfig).length, 'categories configured');
+            console.log('   Categories:', Object.keys(categoryPricingConfig).join(', '));
 
             // Split view rendering
             if (isSplitView) {
@@ -1104,16 +1114,20 @@ function TVDisplayContent() {
 
               // Get per-side configurations
               const splitLeftCustomFields = activeMenu?.config_data?.splitLeftCustomFields || activeMenu?.config_data?.customFields || [];
-              const splitLeftPriceBreaks = activeMenu?.config_data?.splitLeftPriceBreaks || visiblePriceBreaks;
               const splitRightCustomFields = activeMenu?.config_data?.splitRightCustomFields || activeMenu?.config_data?.customFields || [];
-              const splitRightPriceBreaks = activeMenu?.config_data?.splitRightPriceBreaks || visiblePriceBreaks;
+
+              // Get category-specific price breaks for each side
+              const splitLeftPriceBreaks = splitLeftCategory ? (categoryPricingConfig[splitLeftCategory]?.selected || []) : [];
+              const splitRightPriceBreaks = splitRightCategory ? (categoryPricingConfig[splitRightCategory]?.selected || []) : [];
 
               console.log('📱 Split view per-side config:', {
                 left: {
+                  category: splitLeftCategory,
                   customFields: splitLeftCustomFields,
                   priceBreaks: splitLeftPriceBreaks
                 },
                 right: {
+                  category: splitRightCategory,
                   customFields: splitRightCustomFields,
                   priceBreaks: splitRightPriceBreaks
                 }

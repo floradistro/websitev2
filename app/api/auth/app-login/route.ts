@@ -7,6 +7,9 @@ import { createAuthCookie } from '@/lib/auth/middleware';
  * Unified login endpoint for vendor admins and employees
  * Supports role-based access control (RBAC)
  */
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -14,6 +17,10 @@ export async function POST(request: NextRequest) {
     // Validate input
     const validation = validateData(LoginSchema, body);
     if (!validation.success) {
+      console.error('❌ Login validation failed:', {
+        error: validation.error,
+        receivedBody: body
+      });
       return NextResponse.json(
         { success: false, error: validation.error },
         { status: 400 }
