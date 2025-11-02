@@ -376,16 +376,17 @@ export async function POST(request: NextRequest) {
     // STEP 9: UPDATE SESSION TOTALS
     // ============================================================================
     if (transaction.session_id) {
-      // Decrement session total
-      await supabase
-        .from('pos_sessions')
-        .update({
-          total_sales: supabase.raw(`total_sales - ${transaction.total_amount}`),
-          voided_count: supabase.raw('voided_count + 1')
-        })
-        .eq('id', transaction.session_id);
+      // Decrement session total using atomic RPC function
+      const { data: sessionResult, error: sessionError } = await supabase.rpc('update_session_on_void', {
+        p_session_id: transaction.session_id,
+        p_amount_to_subtract: transaction.total_amount
+      });
 
-      console.log('✅ Session totals updated');
+      if (sessionError) {
+        console.error('⚠️  Failed to update session totals:', sessionError);
+      } else {
+        console.log(`✅ Session totals updated: $${sessionResult.old_total} → $${sessionResult.new_total}, voids: ${sessionResult.new_voided_count}`);
+      }
     }
 
     // ============================================================================
