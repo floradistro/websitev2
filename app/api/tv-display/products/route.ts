@@ -41,7 +41,12 @@ export async function GET(request: NextRequest) {
             display_unit
           )
         ),
-        primary_category:categories!primary_category_id(name),
+        primary_category:categories!primary_category_id(
+          id,
+          name,
+          slug,
+          parent_id
+        ),
         inventory!product_id(
           id,
           quantity,
@@ -62,6 +67,40 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Fetch parent categories for products that have a parent_id
+    const parentIds = new Set(
+      (products || [])
+        .map((p: any) => p.primary_category?.parent_id)
+        .filter((id: string | null) => id !== null)
+    );
+
+    let parentCategoriesMap = new Map();
+    if (parentIds.size > 0) {
+      const { data: parentCategories } = await supabase
+        .from('categories')
+        .select('id, name, slug')
+        .in('id', Array.from(parentIds));
+
+      parentCategoriesMap = new Map(
+        (parentCategories || []).map((cat: any) => [cat.id, cat])
+      );
+    }
+
+    // Enrich products with parent category data
+    const productsWithParents = (products || []).map((product: any) => {
+      if (product.primary_category?.parent_id) {
+        const parentCategory = parentCategoriesMap.get(product.primary_category.parent_id);
+        return {
+          ...product,
+          primary_category: {
+            ...product.primary_category,
+            parent_category: parentCategory || null
+          }
+        };
+      }
+      return product;
+    });
+
     // Fetch vendor pricing configs for this vendor
     const { data: vendorConfigs, error: pricingError } = await supabase
       .from('vendor_pricing_configs')
@@ -79,7 +118,7 @@ export async function GET(request: NextRequest) {
     );
 
     // Transform products to add pricing_tiers field
-    const productsWithPricing = (products || []).map((product: any) => {
+    const productsWithPricing = (productsWithParents || []).map((product: any) => {
       // Get the product's pricing assignment
       const assignment = product.pricing_assignments?.[0];
       if (!assignment || !assignment.blueprint) {
@@ -111,9 +150,9 @@ export async function GET(request: NextRequest) {
         return !!locationInventory;
       });
 
-      console.log(`📦 Inventory filter: ${products?.length || 0} total products → ${filteredProducts.length} in stock at location ${locationId}`);
+      console.log(`📦 Inventory filter: ${productsWithParents?.length || 0} total products → ${filteredProducts.length} in stock at location ${locationId}`);
     } else {
-      console.log(`✅ TV Display: Fetched ${products?.length || 0} products (no location filter)`);
+      console.log(`✅ TV Display: Fetched ${productsWithParents?.length || 0} products (no location filter)`);
     }
 
     return NextResponse.json({

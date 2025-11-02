@@ -15,6 +15,7 @@ import { type CategoryPricingConfig } from '@/lib/category-pricing-defaults';
 import { MinimalProductCard } from '@/components/tv-display/MinimalProductCard';
 import { ListProductCard } from '@/components/tv-display/ListProductCard';
 import { CompactListProductCard } from '@/components/tv-display/CompactListProductCard';
+import { SubcategoryGroup } from '@/components/tv-display/SubcategoryGroup';
 
 interface TVDisplayContentProps {}
 
@@ -58,6 +59,41 @@ function TVDisplayContent() {
     console.log('🗺️ Created pricing config map with', map.size, 'entries');
     return map;
   }, [vendorConfigs]);
+
+  /**
+   * Helper function to group products by their subcategory
+   * Returns: { subcategoryName: products[] }
+   */
+  const groupProductsBySubcategory = (products: any[]) => {
+    const grouped = new Map<string, any[]>();
+    const ungrouped: any[] = [];
+
+    products.forEach((product) => {
+      const hasParent = product.primary_category?.parent_category?.name;
+
+      if (hasParent) {
+        // Product has a parent category, group by its own category name (the subcategory)
+        const subcategoryName = product.primary_category?.name;
+        if (subcategoryName) {
+          if (!grouped.has(subcategoryName)) {
+            grouped.set(subcategoryName, []);
+          }
+          grouped.get(subcategoryName)!.push(product);
+        }
+      } else {
+        // No parent category, add to ungrouped
+        ungrouped.push(product);
+      }
+    });
+
+    console.log('📂 Grouped products:', {
+      subcategories: Array.from(grouped.keys()),
+      counts: Array.from(grouped.entries()).map(([name, prods]) => `${name}: ${prods.length}`),
+      ungrouped: ungrouped.length
+    });
+
+    return { grouped, ungrouped };
+  };
 
   /**
    * Orientation Detection
@@ -538,17 +574,22 @@ function TVDisplayContent() {
           console.log('📦 Sample product categories:');
           enrichedProducts.slice(0, 5).forEach((p: any) => {
             const categoryName = p.primary_category?.name || null;
-            console.log(`   - "${p.name}": [${categoryName || 'NO CATEGORY'}]`);
+            const parentCategoryName = p.primary_category?.parent_category?.name || null;
+            console.log(`   - "${p.name}": [${categoryName || 'NO CATEGORY'}]${parentCategoryName ? ` (parent: ${parentCategoryName})` : ''}`);
           });
         }
 
         filteredProducts = enrichedProducts.filter((p: any) => {
-          // Check if product has any of the selected categories
           const categoryName = p.primary_category?.name;
-          const matches = categoryName && selectedCategories.includes(categoryName);
+          const parentCategoryName = p.primary_category?.parent_category?.name;
 
-          if (!matches && categoryName) {
-            console.log(`   ⚠️ Product "${p.name}" filtered out - has "${categoryName}", need one of [${selectedCategories.join(', ')}]`);
+          // Check if product's category OR parent category matches any selected category
+          const directMatch = categoryName && selectedCategories.includes(categoryName);
+          const parentMatch = parentCategoryName && selectedCategories.includes(parentCategoryName);
+          const matches = directMatch || parentMatch;
+
+          if (!matches && (categoryName || parentCategoryName)) {
+            console.log(`   ⚠️ Product "${p.name}" filtered out - has "${categoryName}"${parentCategoryName ? ` (parent: ${parentCategoryName})` : ''}, need one of [${selectedCategories.join(', ')}]`);
           }
 
           return matches;
@@ -1180,14 +1221,26 @@ function TVDisplayContent() {
                 right: { category: splitRightCategory, title: splitRightTitle }
               });
 
+              console.log('🔍 Split view product filtering:');
+              console.log('   Total products available:', products.length);
+              console.log('   Split left category:', splitLeftCategory);
+              console.log('   Split right category:', splitRightCategory);
+
               // Filter products for each side from ALL products (not productsToShow)
               // Use case-insensitive matching for category names
-              const allLeftProducts = products.filter((p: any) =>
-                p.primary_category?.name?.toLowerCase() === splitLeftCategory?.toLowerCase()
-              );
-              const allRightProducts = products.filter((p: any) =>
-                p.primary_category?.name?.toLowerCase() === splitRightCategory?.toLowerCase()
-              );
+              // Support both direct category match AND parent category match (for nested categories)
+              const allLeftProducts = products.filter((p: any) => {
+                const categoryName = p.primary_category?.name?.toLowerCase();
+                const parentCategoryName = p.primary_category?.parent_category?.name?.toLowerCase();
+                const targetCategory = splitLeftCategory?.toLowerCase();
+                return categoryName === targetCategory || parentCategoryName === targetCategory;
+              });
+              const allRightProducts = products.filter((p: any) => {
+                const categoryName = p.primary_category?.name?.toLowerCase();
+                const parentCategoryName = p.primary_category?.parent_category?.name?.toLowerCase();
+                const targetCategory = splitRightCategory?.toLowerCase();
+                return categoryName === targetCategory || parentCategoryName === targetCategory;
+              });
 
               // Apply independent pagination for each side
               const productsPerPage = adjustedGridColumns * adjustedGridRows;
@@ -1209,13 +1262,23 @@ function TVDisplayContent() {
                   total: allLeftProducts.length,
                   showing: leftProducts.length,
                   page: `${carouselPageLeft + 1}/${leftTotalPages}`,
-                  needsCarousel: leftTotalPages > 1
+                  needsCarousel: leftTotalPages > 1,
+                  sample: leftProducts[0] ? {
+                    name: leftProducts[0].name,
+                    category: leftProducts[0].primary_category?.name,
+                    parent: leftProducts[0].primary_category?.parent_category?.name,
+                    has_pricing_tiers: !!leftProducts[0].pricing_tiers
+                  } : 'none'
                 },
                 right: {
                   total: allRightProducts.length,
                   showing: rightProducts.length,
                   page: `${carouselPageRight + 1}/${rightTotalPages}`,
-                  needsCarousel: rightTotalPages > 1
+                  needsCarousel: rightTotalPages > 1,
+                  sample: rightProducts[0] ? {
+                    name: rightProducts[0].name,
+                    has_pricing_tiers: !!rightProducts[0].pricing_tiers
+                  } : 'none'
                 }
               });
 
@@ -1243,47 +1306,118 @@ function TVDisplayContent() {
                           {splitLeftTitle || splitLeftCategory}
                         </h2>
                       )}
-                      <div className={`${gridClasses} w-full`} style={{
-                        ...gridStyle,
-                        flex: '1 1 0',
-                        minHeight: 0,
-                      }}>
-                        {menuDisplayMode === 'list' ? (
-                          // List View - Apple Store style (adaptive compact/regular)
-                          leftProducts.map((product: any, index: number) => {
-                            const CardComponent = useCompactCards ? CompactListProductCard : ListProductCard;
-                            return (
-                              <CardComponent
-                                key={product.id}
-                                product={product}
-                                theme={theme}
-                                index={index}
-                                visiblePriceBreaks={splitLeftPriceBreaks}
-                                customFieldsToShow={splitLeftCustomFields}
-                                customFieldsConfig={activeMenu?.config_data?.customFieldsConfig || {}}
-                                hideAllFieldLabels={activeMenu?.config_data?.hideAllFieldLabels || false}
-                              />
-                            );
-                          })
-                        ) : (
-                          // Grid View - Card style
-                          leftProducts.map((product: any, index: number) => (
-                            <MinimalProductCard
-                              key={product.id}
-                              product={product}
-                              theme={theme}
-                              index={index}
-                              visiblePriceBreaks={splitLeftPriceBreaks}
-                              displayConfig={displayGroup?.display_config}
-                              customFieldsToShow={splitLeftCustomFields}
-                              customFieldsConfig={activeMenu?.config_data?.customFieldsConfig || {}}
-                              hideAllFieldLabels={activeMenu?.config_data?.hideAllFieldLabels || false}
-                              splitSide="left"
-                              gridColumns={adjustedGridColumns}
-                            />
-                          ))
-                        )}
-                      </div>
+                      {(() => {
+                        const { grouped: leftGrouped, ungrouped: leftUngrouped } = groupProductsBySubcategory(leftProducts);
+                        const hasLeftSubcategories = leftGrouped.size > 0;
+
+                        return (
+                          <div className={`w-full ${hasLeftSubcategories ? 'overflow-y-auto' : gridClasses}`} style={{
+                            ...(!hasLeftSubcategories && gridStyle),
+                            flex: '1 1 0',
+                            minHeight: 0,
+                          }}>
+                            {hasLeftSubcategories ? (
+                              // Grouped by Subcategory Display
+                              <div className="space-y-4 pb-4">
+                                {Array.from(leftGrouped.entries()).map(([subcategoryName, subcategoryProducts]) => (
+                                  <SubcategoryGroup
+                                    key={subcategoryName}
+                                    subcategoryName={subcategoryName}
+                                    products={subcategoryProducts}
+                                    theme={theme}
+                                    displayMode={menuDisplayMode}
+                                    gridColumns={adjustedGridColumns}
+                                    gridRows={adjustedGridRows}
+                                    visiblePriceBreaks={splitLeftPriceBreaks}
+                                    customFieldsToShow={splitLeftCustomFields}
+                                    customFieldsConfig={activeMenu?.config_data?.customFieldsConfig || {}}
+                                    hideAllFieldLabels={activeMenu?.config_data?.hideAllFieldLabels || false}
+                                    displayConfig={displayGroup?.display_config}
+                                    useCompactCards={useCompactCards}
+                                    splitSide="left"
+                                  />
+                                ))}
+                                {leftUngrouped.length > 0 && (
+                                  <div className={gridClasses} style={gridStyle}>
+                                    {menuDisplayMode === 'list' ? (
+                                      leftUngrouped.map((product: any, index: number) => {
+                                        const CardComponent = useCompactCards ? CompactListProductCard : ListProductCard;
+                                        return (
+                                          <CardComponent
+                                            key={product.id}
+                                            product={product}
+                                            theme={theme}
+                                            index={index}
+                                            visiblePriceBreaks={splitLeftPriceBreaks}
+                                            customFieldsToShow={splitLeftCustomFields}
+                                            customFieldsConfig={activeMenu?.config_data?.customFieldsConfig || {}}
+                                            hideAllFieldLabels={activeMenu?.config_data?.hideAllFieldLabels || false}
+                                          />
+                                        );
+                                      })
+                                    ) : (
+                                      leftUngrouped.map((product: any, index: number) => (
+                                        <MinimalProductCard
+                                          key={product.id}
+                                          product={product}
+                                          theme={theme}
+                                          index={index}
+                                          visiblePriceBreaks={splitLeftPriceBreaks}
+                                          displayConfig={displayGroup?.display_config}
+                                          customFieldsToShow={splitLeftCustomFields}
+                                          customFieldsConfig={activeMenu?.config_data?.customFieldsConfig || {}}
+                                          hideAllFieldLabels={activeMenu?.config_data?.hideAllFieldLabels || false}
+                                          splitSide="left"
+                                          gridColumns={adjustedGridColumns}
+                                        />
+                                      ))
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                            ) : (
+                              // No subcategories - Regular flat display
+                              <>
+                                {menuDisplayMode === 'list' ? (
+                                  // List View - Apple Store style (adaptive compact/regular)
+                                  leftProducts.map((product: any, index: number) => {
+                                    const CardComponent = useCompactCards ? CompactListProductCard : ListProductCard;
+                                    return (
+                                      <CardComponent
+                                        key={product.id}
+                                        product={product}
+                                        theme={theme}
+                                        index={index}
+                                        visiblePriceBreaks={splitLeftPriceBreaks}
+                                        customFieldsToShow={splitLeftCustomFields}
+                                        customFieldsConfig={activeMenu?.config_data?.customFieldsConfig || {}}
+                                        hideAllFieldLabels={activeMenu?.config_data?.hideAllFieldLabels || false}
+                                      />
+                                    );
+                                  })
+                                ) : (
+                                  // Grid View - Card style
+                                  leftProducts.map((product: any, index: number) => (
+                                    <MinimalProductCard
+                                      key={product.id}
+                                      product={product}
+                                      theme={theme}
+                                      index={index}
+                                      visiblePriceBreaks={splitLeftPriceBreaks}
+                                      displayConfig={displayGroup?.display_config}
+                                      customFieldsToShow={splitLeftCustomFields}
+                                      customFieldsConfig={activeMenu?.config_data?.customFieldsConfig || {}}
+                                      hideAllFieldLabels={activeMenu?.config_data?.hideAllFieldLabels || false}
+                                      splitSide="left"
+                                      gridColumns={adjustedGridColumns}
+                                    />
+                                  ))
+                                )}
+                              </>
+                            )}
+                          </div>
+                        );
+                      })()}
                     </div>
 
                     {/* Elegant Divider - Steve Jobs style */}
@@ -1316,47 +1450,118 @@ function TVDisplayContent() {
                           {splitRightTitle || splitRightCategory}
                         </h2>
                       )}
-                      <div className={`${gridClasses} w-full`} style={{
-                        ...gridStyle,
-                        flex: '1 1 0',
-                        minHeight: 0,
-                      }}>
-                        {menuDisplayMode === 'list' ? (
-                          // List View - Apple Store style (adaptive compact/regular)
-                          rightProducts.map((product: any, index: number) => {
-                            const CardComponent = useCompactCards ? CompactListProductCard : ListProductCard;
-                            return (
-                              <CardComponent
-                                key={product.id}
-                                product={product}
-                                theme={theme}
-                                index={index}
-                                visiblePriceBreaks={splitRightPriceBreaks}
-                                customFieldsToShow={splitRightCustomFields}
-                                customFieldsConfig={activeMenu?.config_data?.customFieldsConfig || {}}
-                                hideAllFieldLabels={activeMenu?.config_data?.hideAllFieldLabels || false}
-                              />
-                            );
-                          })
-                        ) : (
-                          // Grid View - Card style
-                          rightProducts.map((product: any, index: number) => (
-                            <MinimalProductCard
-                              key={product.id}
-                              product={product}
-                              theme={theme}
-                              index={index}
-                              visiblePriceBreaks={splitRightPriceBreaks}
-                              displayConfig={displayGroup?.display_config}
-                              customFieldsToShow={splitRightCustomFields}
-                              customFieldsConfig={activeMenu?.config_data?.customFieldsConfig || {}}
-                              hideAllFieldLabels={activeMenu?.config_data?.hideAllFieldLabels || false}
-                              splitSide="right"
-                              gridColumns={adjustedGridColumns}
-                            />
-                          ))
-                        )}
-                      </div>
+                      {(() => {
+                        const { grouped: rightGrouped, ungrouped: rightUngrouped } = groupProductsBySubcategory(rightProducts);
+                        const hasRightSubcategories = rightGrouped.size > 0;
+
+                        return (
+                          <div className={`w-full ${hasRightSubcategories ? 'overflow-y-auto' : gridClasses}`} style={{
+                            ...(!hasRightSubcategories && gridStyle),
+                            flex: '1 1 0',
+                            minHeight: 0,
+                          }}>
+                            {hasRightSubcategories ? (
+                              // Grouped by Subcategory Display
+                              <div className="space-y-4 pb-4">
+                                {Array.from(rightGrouped.entries()).map(([subcategoryName, subcategoryProducts]) => (
+                                  <SubcategoryGroup
+                                    key={subcategoryName}
+                                    subcategoryName={subcategoryName}
+                                    products={subcategoryProducts}
+                                    theme={theme}
+                                    displayMode={menuDisplayMode}
+                                    gridColumns={adjustedGridColumns}
+                                    gridRows={adjustedGridRows}
+                                    visiblePriceBreaks={splitRightPriceBreaks}
+                                    customFieldsToShow={splitRightCustomFields}
+                                    customFieldsConfig={activeMenu?.config_data?.customFieldsConfig || {}}
+                                    hideAllFieldLabels={activeMenu?.config_data?.hideAllFieldLabels || false}
+                                    displayConfig={displayGroup?.display_config}
+                                    useCompactCards={useCompactCards}
+                                    splitSide="right"
+                                  />
+                                ))}
+                                {rightUngrouped.length > 0 && (
+                                  <div className={gridClasses} style={gridStyle}>
+                                    {menuDisplayMode === 'list' ? (
+                                      rightUngrouped.map((product: any, index: number) => {
+                                        const CardComponent = useCompactCards ? CompactListProductCard : ListProductCard;
+                                        return (
+                                          <CardComponent
+                                            key={product.id}
+                                            product={product}
+                                            theme={theme}
+                                            index={index}
+                                            visiblePriceBreaks={splitRightPriceBreaks}
+                                            customFieldsToShow={splitRightCustomFields}
+                                            customFieldsConfig={activeMenu?.config_data?.customFieldsConfig || {}}
+                                            hideAllFieldLabels={activeMenu?.config_data?.hideAllFieldLabels || false}
+                                          />
+                                        );
+                                      })
+                                    ) : (
+                                      rightUngrouped.map((product: any, index: number) => (
+                                        <MinimalProductCard
+                                          key={product.id}
+                                          product={product}
+                                          theme={theme}
+                                          index={index}
+                                          visiblePriceBreaks={splitRightPriceBreaks}
+                                          displayConfig={displayGroup?.display_config}
+                                          customFieldsToShow={splitRightCustomFields}
+                                          customFieldsConfig={activeMenu?.config_data?.customFieldsConfig || {}}
+                                          hideAllFieldLabels={activeMenu?.config_data?.hideAllFieldLabels || false}
+                                          splitSide="right"
+                                          gridColumns={adjustedGridColumns}
+                                        />
+                                      ))
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                            ) : (
+                              // No subcategories - Regular flat display
+                              <>
+                                {menuDisplayMode === 'list' ? (
+                                  // List View - Apple Store style (adaptive compact/regular)
+                                  rightProducts.map((product: any, index: number) => {
+                                    const CardComponent = useCompactCards ? CompactListProductCard : ListProductCard;
+                                    return (
+                                      <CardComponent
+                                        key={product.id}
+                                        product={product}
+                                        theme={theme}
+                                        index={index}
+                                        visiblePriceBreaks={splitRightPriceBreaks}
+                                        customFieldsToShow={splitRightCustomFields}
+                                        customFieldsConfig={activeMenu?.config_data?.customFieldsConfig || {}}
+                                        hideAllFieldLabels={activeMenu?.config_data?.hideAllFieldLabels || false}
+                                      />
+                                    );
+                                  })
+                                ) : (
+                                  // Grid View - Card style
+                                  rightProducts.map((product: any, index: number) => (
+                                    <MinimalProductCard
+                                      key={product.id}
+                                      product={product}
+                                      theme={theme}
+                                      index={index}
+                                      visiblePriceBreaks={splitRightPriceBreaks}
+                                      displayConfig={displayGroup?.display_config}
+                                      customFieldsToShow={splitRightCustomFields}
+                                      customFieldsConfig={activeMenu?.config_data?.customFieldsConfig || {}}
+                                      hideAllFieldLabels={activeMenu?.config_data?.hideAllFieldLabels || false}
+                                      splitSide="right"
+                                      gridColumns={adjustedGridColumns}
+                                    />
+                                  ))
+                                )}
+                              </>
+                            )}
+                          </div>
+                        );
+                      })()}
                     </div>
                   </div>
                 </>
@@ -1364,46 +1569,113 @@ function TVDisplayContent() {
             }
 
             // Single view rendering (default)
+            // Check if we should use grouped subcategory display
+            const { grouped, ungrouped } = groupProductsBySubcategory(productsToShow);
+            const hasSubcategories = grouped.size > 0;
+
             return (
               <>
-                <div className={`${gridClasses} w-full`} style={{
-                  ...gridStyle,
+                <div className={`w-full ${hasSubcategories ? 'overflow-y-auto' : gridClasses}`} style={{
+                  ...(!hasSubcategories && gridStyle),
                   flex: '1 1 0',
                   minHeight: 0, // Critical: allows grid to shrink
                 }}>
-                  {menuDisplayMode === 'list' ? (
-                    // List View - Apple Store style (adaptive compact/regular)
-                    productsToShow.map((product: any, index: number) => {
-                      const CardComponent = useCompactCards ? CompactListProductCard : ListProductCard;
-                      return (
-                        <CardComponent
-                          key={product.id}
-                          product={product}
+                  {hasSubcategories ? (
+                    // Grouped by Subcategory Display
+                    <div className="space-y-6 pb-4">
+                      {Array.from(grouped.entries()).map(([subcategoryName, subcategoryProducts]) => (
+                        <SubcategoryGroup
+                          key={subcategoryName}
+                          subcategoryName={subcategoryName}
+                          products={subcategoryProducts}
                           theme={theme}
-                          index={index}
-                          visiblePriceBreaks={getPriceBreaksForProduct(product)}
+                          displayMode={menuDisplayMode}
+                          gridColumns={gridColumns}
+                          gridRows={gridRows}
+                          visiblePriceBreaks={getPriceBreaksForProduct(subcategoryProducts[0])}
                           customFieldsToShow={activeMenu?.config_data?.customFields || []}
                           customFieldsConfig={activeMenu?.config_data?.customFieldsConfig || {}}
                           hideAllFieldLabels={activeMenu?.config_data?.hideAllFieldLabels || false}
+                          displayConfig={displayGroup?.display_config}
+                          useCompactCards={useCompactCards}
                         />
-                      );
-                    })
+                      ))}
+                      {/* Render ungrouped products at the end if any */}
+                      {ungrouped.length > 0 && (
+                        <div className={gridClasses} style={gridStyle}>
+                          {menuDisplayMode === 'list' ? (
+                            ungrouped.map((product: any, index: number) => {
+                              const CardComponent = useCompactCards ? CompactListProductCard : ListProductCard;
+                              return (
+                                <CardComponent
+                                  key={product.id}
+                                  product={product}
+                                  theme={theme}
+                                  index={index}
+                                  visiblePriceBreaks={getPriceBreaksForProduct(product)}
+                                  customFieldsToShow={activeMenu?.config_data?.customFields || []}
+                                  customFieldsConfig={activeMenu?.config_data?.customFieldsConfig || {}}
+                                  hideAllFieldLabels={activeMenu?.config_data?.hideAllFieldLabels || false}
+                                />
+                              );
+                            })
+                          ) : (
+                            ungrouped.map((product: any, index: number) => (
+                              <MinimalProductCard
+                                key={product.id}
+                                product={product}
+                                theme={theme}
+                                index={index}
+                                visiblePriceBreaks={getPriceBreaksForProduct(product)}
+                                displayConfig={displayGroup?.display_config}
+                                customFieldsToShow={activeMenu?.config_data?.customFields || []}
+                                customFieldsConfig={activeMenu?.config_data?.customFieldsConfig || {}}
+                                hideAllFieldLabels={activeMenu?.config_data?.hideAllFieldLabels || false}
+                                gridColumns={gridColumns}
+                              />
+                            ))
+                          )}
+                        </div>
+                      )}
+                    </div>
                   ) : (
-                    // Grid View - Card style
-                    productsToShow.map((product: any, index: number) => (
-                      <MinimalProductCard
-                        key={product.id}
-                        product={product}
-                        theme={theme}
-                        index={index}
-                        visiblePriceBreaks={getPriceBreaksForProduct(product)}
-                        displayConfig={displayGroup?.display_config}
-                        customFieldsToShow={activeMenu?.config_data?.customFields || []}
-                        customFieldsConfig={activeMenu?.config_data?.customFieldsConfig || {}}
-                        hideAllFieldLabels={activeMenu?.config_data?.hideAllFieldLabels || false}
-                        gridColumns={gridColumns}
-                      />
-                    ))
+                    // No subcategories - Regular flat display
+                    <>
+                      {menuDisplayMode === 'list' ? (
+                        // List View - Apple Store style (adaptive compact/regular)
+                        productsToShow.map((product: any, index: number) => {
+                          const CardComponent = useCompactCards ? CompactListProductCard : ListProductCard;
+                          return (
+                            <CardComponent
+                              key={product.id}
+                              product={product}
+                              theme={theme}
+                              index={index}
+                              visiblePriceBreaks={getPriceBreaksForProduct(product)}
+                              customFieldsToShow={activeMenu?.config_data?.customFields || []}
+                              customFieldsConfig={activeMenu?.config_data?.customFieldsConfig || {}}
+                              hideAllFieldLabels={activeMenu?.config_data?.hideAllFieldLabels || false}
+                            />
+                          );
+                        })
+                      ) : (
+                        // Grid View - Card style
+                        productsToShow.map((product: any, index: number) => (
+                          <MinimalProductCard
+                            key={product.id}
+                            product={product}
+                            theme={theme}
+                            index={index}
+                            visiblePriceBreaks={getPriceBreaksForProduct(product)}
+                            displayConfig={displayGroup?.display_config}
+                            customFieldsToShow={activeMenu?.config_data?.customFields || []}
+                            customFieldsConfig={activeMenu?.config_data?.customFieldsConfig || {}}
+                            hideAllFieldLabels={activeMenu?.config_data?.hideAllFieldLabels || false}
+                            gridColumns={gridColumns}
+                          />
+                        ))
+                      )}
+                    </>
                   )}
                 </div>
 
