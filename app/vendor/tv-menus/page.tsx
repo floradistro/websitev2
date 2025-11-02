@@ -1135,6 +1135,7 @@ export default function SimpleTVMenusPage() {
             error={error}
             availableCategories={availableCategories}
             availableCustomFields={availableCustomFields}
+            availablePriceBreaks={[]}
           />
         )}
       </AnimatePresence>

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Palette, Layout, Sparkles, Grid3x3, Monitor, DollarSign } from 'lucide-react';
+import { X, Palette, Layout, Sparkles, Grid3x3, Monitor, DollarSign, Eye } from 'lucide-react';
 import { themes, type TVTheme } from '@/lib/themes';
 import CategorySelector from '@/components/tv-menus/CategorySelector';
 import {
@@ -226,7 +226,26 @@ export default function MenuEditorModal({
 
                 {/* Custom Fields */}
                 <div>
-                  <label className="block text-sm font-bold text-white mb-3">Product Information</label>
+                  <div className="flex items-center justify-between mb-3">
+                    <label className="block text-sm font-bold text-white">Product Information</label>
+
+                    {/* Hide All Labels Toggle */}
+                    {customFields.length > 0 && (
+                      <button
+                        onClick={() => setHideAllFieldLabels(!hideAllFieldLabels)}
+                        className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
+                          hideAllFieldLabels
+                            ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg'
+                            : 'bg-white/10 text-white/70 hover:bg-white/20'
+                        }`}
+                        title={hideAllFieldLabels ? 'Show all field labels' : 'Hide all field labels'}
+                      >
+                        <Eye size={14} className={hideAllFieldLabels ? 'opacity-50' : ''} />
+                        {hideAllFieldLabels ? 'Labels Hidden' : 'Hide All Labels'}
+                      </button>
+                    )}
+                  </div>
+
                   <div className="flex flex-wrap gap-2">
                     {availableCustomFields.map((field) => {
                       const isSelected = customFields.includes(field);
