@@ -1170,7 +1170,7 @@ function TVDisplayContent() {
                         borderRight: `1px solid ${theme.styles.productName.color}15`,
                       }}
                     >
-                      {splitLeftTitle && (
+                      {(splitLeftTitle || splitLeftCategory) && (
                         <h2
                           className="font-black uppercase tracking-wide text-center mb-2 flex-shrink-0"
                           style={{
@@ -1179,7 +1179,7 @@ function TVDisplayContent() {
                             lineHeight: 0.9,
                           }}
                         >
-                          {splitLeftTitle}
+                          {splitLeftTitle || splitLeftCategory}
                         </h2>
                       )}
                       <div className={`${gridClasses} w-full`} style={{
@@ -1223,7 +1223,7 @@ function TVDisplayContent() {
                         paddingLeft: '0.75%',
                       }}
                     >
-                      {splitRightTitle && (
+                      {(splitRightTitle || splitRightCategory) && (
                         <h2
                           className="font-black uppercase tracking-wide text-center mb-2 flex-shrink-0"
                           style={{
@@ -1232,7 +1232,7 @@ function TVDisplayContent() {
                             lineHeight: 0.9,
                           }}
                         >
-                          {splitRightTitle}
+                          {splitRightTitle || splitRightCategory}
                         </h2>
                       )}
                       <div className={`${gridClasses} w-full`} style={{
