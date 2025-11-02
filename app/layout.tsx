@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+// import { Geist, Geist_Mono } from "next/font/google";
 import { Suspense } from "react";
 import "./globals.css";
 import "./(storefront)/storefront.css";
@@ -11,15 +11,16 @@ import Providers from "./providers";
 // Enable static optimization for better performance
 export const dynamic = 'auto';
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
+// Temporarily disabled due to network restrictions
+// const geistSans = Geist({
+//   variable: "--font-geist-sans",
+//   subsets: ["latin"],
+// });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+// const geistMono = Geist_Mono({
+//   variable: "--font-geist-mono",
+//   subsets: ["latin"],
+// });
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -87,7 +88,7 @@ export default function RootLayout({
         <link rel="apple-touch-startup-image" href="/yacht-club-logo.png" />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col overflow-x-hidden min-h-screen`}
+        className="antialiased flex flex-col overflow-x-hidden min-h-screen font-sans"
         style={{
           backgroundColor: '#000000'
         }}
