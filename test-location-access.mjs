@@ -7,25 +7,39 @@ async function testLocationAccess() {
   const context = await browser.newContext();
   const page = await context.newPage();
 
-  // Listen to console messages from the page
+  // Listen to ALL console messages from the page
   page.on('console', msg => {
     const text = msg.text();
-    // Only show relevant logs
-    if (text.includes('👤') || text.includes('👑') || text.includes('🔍') ||
-        text.includes('Staff user') || text.includes('Admin user') ||
-        text.includes('Dropdown visibility') || text.includes('Auto-selecting')) {
-      console.log(`📋 Console: ${text}`);
-    }
+    console.log(`📋 Console: ${text}`);
   });
 
   try {
-    // Navigate directly to TV menus page (user should be logged in already)
+    // Go to login page
+    console.log('🔐 Going to login page...');
+    await page.goto('http://localhost:3000/vendor/login');
+    await page.waitForLoadState('networkidle');
+
+    // Fill in login form
+    console.log('📝 Filling in login credentials...');
+    await page.fill('input[name="email"]', 'charlottecental@floradistro.com');
+    await page.fill('input[name="password"]', 'Nations123!');
+
+    // Click login button
+    console.log('🔑 Clicking login button...');
+    await page.click('button[type="submit"]');
+
+    // Wait for navigation
+    await page.waitForURL('**/vendor/**', { timeout: 10000 });
+    console.log('✅ Login successful!\n');
+
+    // Navigate to TV menus page
     console.log('📺 Navigating to TV Menus page...');
     await page.goto('http://localhost:3000/vendor/tv-menus');
     await page.waitForLoadState('networkidle');
 
-    // Wait a bit for permissions to load
-    await page.waitForTimeout(2000);
+    // Wait for permissions to load
+    console.log('⏳ Waiting for permissions to load...');
+    await page.waitForTimeout(3000);
 
     // Check if location dropdown exists
     const locationDropdown = await page.locator('select').filter({ hasText: 'All Locations' }).first();

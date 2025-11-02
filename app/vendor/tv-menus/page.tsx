@@ -677,6 +677,7 @@ export default function SimpleTVMenusPage() {
               </h1>
               <p className="text-[10px] uppercase tracking-[0.15em] text-white/40">
                 {devices.filter(d => d.connection_status === 'online').length} of {devices.length} Displays Online · {menus.length} Menus
+                {user && <span className="ml-2">· Logged in as: {user.email} ({role})</span>}
               </p>
             </div>
 
