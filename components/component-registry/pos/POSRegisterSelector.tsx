@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { Monitor, Check, Users, DollarSign, Clock, X } from 'lucide-react';
-import { supabase } from '@/lib/supabase/client';
 
 interface Register {
   id: string;
@@ -35,29 +34,15 @@ export function POSRegisterSelector({
   const [closingAll, setClosingAll] = useState(false);
 
   useEffect(() => {
+    // Initial load
     loadRegisters();
 
-    // Real-time listener for session changes
-    const channel = supabase
-      .channel(`register-sessions-${locationId}-${Date.now()}`)
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'pos_sessions',
-        filter: `location_id=eq.${locationId}`,
-      }, (payload) => {
-        console.log('🔄 Session changed:', payload.eventType);
-        loadRegisters();
-      })
-      .subscribe();
-
-    // Backup polling every 30 seconds in case realtime fails
+    // Aggressive polling every 3 seconds - reliable for all devices/networks
     const interval = setInterval(() => {
       loadRegisters();
-    }, 30000);
+    }, 3000);
 
     return () => {
-      supabase.removeChannel(channel);
       clearInterval(interval);
     };
   }, [locationId]);

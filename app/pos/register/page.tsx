@@ -116,44 +116,36 @@ export default function POSRegisterPage() {
     loadPromotions();
   }, []);
 
-  // Real-time session monitoring - ONLY kicks out when session explicitly closed
+  // Simple session monitoring with polling - works on all devices/networks
   useEffect(() => {
     if (!sessionId || !registerId) return;
 
-    const handleSessionClosed = () => {
-      console.log('❌ Session closed via realtime event, returning to register selector');
-      setSessionId(null);
-      setRegisterId(null);
-      setCart([]);
+    const checkSession = async () => {
+      try {
+        const { data: session, error } = await supabase
+          .from('pos_sessions')
+          .select('id, status')
+          .eq('id', sessionId)
+          .single();
+
+        // Kick out ONLY if session is explicitly closed
+        if (!error && session && session.status === 'closed') {
+          console.log('❌ Session closed, returning to register selector');
+          setSessionId(null);
+          setRegisterId(null);
+          setCart([]);
+        }
+      } catch (error) {
+        // Don't kick out on errors - just log them
+        console.error('Session check error (not kicking out):', error);
+      }
     };
 
-    // Real-time listener for session updates - PRIMARY method for detecting closure
-    const channel = supabase
-      .channel(`pos-session-${sessionId}-${Date.now()}`)
-      .on('postgres_changes', {
-        event: 'UPDATE',
-        schema: 'public',
-        table: 'pos_sessions',
-        filter: `id=eq.${sessionId}`,
-      }, (payload) => {
-        console.log('🔄 Session updated via realtime:', payload.new);
-        if (payload.new.status === 'closed') {
-          handleSessionClosed();
-        }
-      })
-      .on('postgres_changes', {
-        event: 'DELETE',
-        schema: 'public',
-        table: 'pos_sessions',
-        filter: `id=eq.${sessionId}`,
-      }, () => {
-        console.log('🗑️ Session deleted via realtime');
-        handleSessionClosed();
-      })
-      .subscribe();
+    // Poll every 3 seconds - same as Square POS
+    const interval = setInterval(checkSession, 3000);
 
     return () => {
-      supabase.removeChannel(channel);
+      clearInterval(interval);
     };
   }, [sessionId, registerId]);
 
