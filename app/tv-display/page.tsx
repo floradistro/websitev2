@@ -950,22 +950,28 @@ function TVDisplayContent() {
       <div className="absolute inset-0 overflow-hidden p-4">
         <div className="h-full w-full flex flex-col">
           {/* Category Header - Compact and always on top (hidden in split view) */}
-          {(!isSplitView && groupMember?.assigned_categories && groupMember.assigned_categories.length > 0) && (
-            <div className="text-center flex-shrink-0 mb-3">
-              <h1
-                className="uppercase tracking-[0.2em] font-black"
-                style={{
-                  color: theme.styles.productName.color,
-                  fontSize: 'clamp(2rem, 4vw, 4.5rem)',
-                  lineHeight: 1,
-                  letterSpacing: '0.2em',
-                  opacity: 0.9
-                }}
-              >
-                {groupMember.assigned_categories.join(' • ')}
-              </h1>
-            </div>
-          )}
+          {(() => {
+            // Use same category priority logic as product filtering
+            // Priority 1: Menu categories, Priority 2: Group member categories
+            const displayCategories = activeMenu?.config_data?.categories || groupMember?.assigned_categories || [];
+
+            return (!isSplitView && displayCategories.length > 0) && (
+              <div className="text-center flex-shrink-0 mb-3">
+                <h1
+                  className="uppercase tracking-[0.2em] font-black"
+                  style={{
+                    color: theme.styles.productName.color,
+                    fontSize: 'clamp(2rem, 4vw, 4.5rem)',
+                    lineHeight: 1,
+                    letterSpacing: '0.2em',
+                    opacity: 0.9
+                  }}
+                >
+                  {displayCategories.join(' • ')}
+                </h1>
+              </div>
+            );
+          })()}
 
           {/* Menu Header - Full header with name and description (removed display_config check) */}
           {false && (
