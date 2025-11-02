@@ -920,10 +920,10 @@ function TVDisplayContent() {
     );
   }
 
-  // Get theme - Use display group's theme if device is part of a group, otherwise use menu theme
-  const themeId = displayGroup?.shared_theme || activeMenu.theme;
+  // Get theme - Menu theme takes priority, display group theme is fallback
+  const themeId = activeMenu.theme || displayGroup?.shared_theme;
   const theme = getTheme(themeId);
-  console.log('🎨 Using theme:', themeId, displayGroup ? '(from display group)' : '(from menu)');
+  console.log('🎨 Using theme:', themeId, activeMenu.theme ? '(from menu)' : displayGroup?.shared_theme ? '(from display group)' : '(default)');
 
   // Check if split view mode
   const layoutStyle = activeMenu?.config_data?.layoutStyle || 'single';
