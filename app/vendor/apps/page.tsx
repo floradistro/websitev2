@@ -10,7 +10,7 @@ import { KPIWidget } from '@/components/dashboard/KPIWidget';
 import { AIKPICreator } from '@/components/dashboard/AIKPICreator';
 
 export default function MegaDashboard() {
-  const { user, vendor, locations, primaryLocation, role } = useAppAuth();
+  const { user, vendor, locations, primaryLocation, role, isLoading } = useAppAuth();
   const { data: dashboardData, loading } = useVendorDashboard();
 
   const [stats, setStats] = useState({
@@ -107,7 +107,9 @@ export default function MegaDashboard() {
     console.log('Refreshing KPI:', id);
   };
 
-  if (loading) {
+  // CRITICAL FIX: Wait for auth context to load before rendering apps
+  // This prevents "No apps available" from showing during context load
+  if (isLoading || loading) {
     return <DashboardSkeleton />;
   }
 

@@ -62,8 +62,45 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Fetch vendor pricing configs for this vendor
+    const { data: vendorConfigs, error: pricingError } = await supabase
+      .from('vendor_pricing_configs')
+      .select('blueprint_id, pricing_values')
+      .eq('vendor_id', vendorId)
+      .eq('is_active', true);
+
+    if (pricingError) {
+      console.error('❌ Error fetching vendor pricing configs:', pricingError);
+    }
+
+    // Build a map of blueprint_id -> pricing_values for quick lookup
+    const vendorPricingMap = new Map(
+      (vendorConfigs || []).map((config: any) => [config.blueprint_id, config.pricing_values])
+    );
+
+    // Transform products to add pricing_tiers field
+    const productsWithPricing = (products || []).map((product: any) => {
+      // Get the product's pricing assignment
+      const assignment = product.pricing_assignments?.[0];
+      if (!assignment || !assignment.blueprint) {
+        return product;
+      }
+
+      const blueprintId = assignment.blueprint_id;
+      const vendorPricing = vendorPricingMap.get(blueprintId) || {};
+      const productOverrides = assignment.price_overrides || {};
+
+      // Merge vendor pricing with product-specific overrides
+      const pricing_tiers = { ...vendorPricing, ...productOverrides };
+
+      return {
+        ...product,
+        pricing_tiers
+      };
+    });
+
     // Filter products to only show those with inventory > 0 at this location
-    let filteredProducts = products || [];
+    let filteredProducts = productsWithPricing || [];
 
     if (locationId && filteredProducts.length > 0) {
       filteredProducts = filteredProducts.filter((product: any) => {

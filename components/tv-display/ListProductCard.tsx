@@ -1,6 +1,6 @@
 /**
  * List Product Card - Apple Store Style
- * Clean, minimal, data-dense product rows
+ * Clean, minimal, data-dense product rows optimized for TV displays
  */
 
 import { motion } from 'framer-motion';
@@ -44,10 +44,8 @@ export function ListProductCard({
         })
     : [];
 
-  // Get the primary price (first available or lowest)
-  const primaryPrice = availablePrices.length > 0
-    ? availablePrices[0]
-    : null;
+  // Get the primary price (first available)
+  const primaryPrice = availablePrices.length > 0 ? availablePrices[0] : null;
 
   // Format custom field value
   const formatFieldValue = (field: string, value: any) => {
@@ -79,102 +77,107 @@ export function ListProductCard({
 
   return (
     <motion.div
-      initial={{ opacity: 0, x: -20 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ delay: index * 0.02 }}
-      className="relative"
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.015, duration: 0.2 }}
+      className="flex-shrink-0"
       style={{
-        borderBottom: `1px solid ${theme.styles.productCard.borderColor}15`,
+        borderBottom: `1px solid ${theme.styles.productCard.borderColor}20`,
       }}
     >
-      <div
-        className="px-8 py-6 flex items-center justify-between hover:bg-white/[0.02] transition-all duration-200"
-        style={{
-          background: 'transparent',
-        }}
-      >
-        {/* Left: Product Info */}
-        <div className="flex-1 min-w-0 pr-8">
-          {/* Product Name */}
+      <div className="px-4 py-3 flex items-center gap-4">
+        {/* Product Name - Left aligned, takes available space */}
+        <div className="flex-1 min-w-0">
           <h3
-            className="font-bold mb-2 truncate"
+            className="font-bold leading-tight"
             style={{
               color: theme.styles.productName.color,
-              fontSize: 'clamp(1.5rem, 2.5vw, 2.5rem)',
+              fontSize: '1.5rem',
               fontWeight: 700,
-              letterSpacing: '-0.02em',
+              letterSpacing: '-0.01em',
             }}
           >
             {product.name}
           </h3>
-
-          {/* Custom Fields - Single line with dots */}
-          {customFieldsDisplay.length > 0 && (
-            <div
-              className="flex items-center gap-3 flex-wrap"
-              style={{
-                color: theme.styles.productDescription.color,
-                fontSize: 'clamp(0.875rem, 1.25vw, 1.25rem)',
-                opacity: 0.7,
-              }}
-            >
-              {customFieldsDisplay.map((field, idx) => (
-                <div key={idx} className="flex items-center gap-3">
-                  <span>{field}</span>
-                  {idx < customFieldsDisplay.length - 1 && (
-                    <span style={{ opacity: 0.4 }}>·</span>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Additional price tiers (if more than one) */}
-          {availablePrices.length > 1 && (
-            <div
-              className="flex items-center gap-4 mt-3 flex-wrap"
-              style={{
-                color: theme.styles.price.color,
-                fontSize: 'clamp(0.75rem, 1vw, 1.125rem)',
-                opacity: 0.6,
-              }}
-            >
-              {availablePrices.slice(1).map((price, idx) => (
-                <div key={idx} className="flex items-center gap-2">
-                  <span style={{ opacity: 0.7 }}>{price.label}</span>
-                  <span className="font-bold">${price.price.toFixed(2)}</span>
-                </div>
-              ))}
-            </div>
-          )}
         </div>
 
-        {/* Right: Primary Price */}
+        {/* Custom Fields - Compact inline */}
+        {customFieldsDisplay.length > 0 && (
+          <div className="flex items-center gap-2 flex-shrink-0">
+            {customFieldsDisplay.map((field, idx) => (
+              <span
+                key={idx}
+                style={{
+                  color: theme.styles.productDescription.color,
+                  fontSize: '1rem',
+                  opacity: 0.7,
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {field}
+                {idx < customFieldsDisplay.length - 1 && <span style={{ opacity: 0.4, marginLeft: '0.5rem' }}>·</span>}
+              </span>
+            ))}
+          </div>
+        )}
+
+        {/* Additional Prices - Compact but clear pairing */}
+        {availablePrices.length > 1 && (
+          <div className="flex items-center gap-4 flex-shrink-0">
+            {availablePrices.slice(1).map((price, idx) => (
+              <div key={idx} className="flex items-baseline gap-1.5" style={{ whiteSpace: 'nowrap' }}>
+                <span
+                  className="font-medium"
+                  style={{
+                    color: theme.styles.price.color,
+                    fontSize: '1rem',
+                    opacity: 0.75,
+                  }}
+                >
+                  {price.label}
+                </span>
+                <span
+                  className="font-bold"
+                  style={{
+                    color: theme.styles.price.color,
+                    fontSize: '1.25rem',
+                  }}
+                >
+                  ${price.price.toFixed(2)}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Primary Price - Right aligned, prominent with tier label */}
         {primaryPrice && (
-          <div className="flex flex-col items-end justify-center flex-shrink-0">
+          <div className="flex items-baseline gap-2 flex-shrink-0" style={{ minWidth: '140px' }}>
+            {/* Tier Label - Prominent */}
             <div
-              className="font-bold tracking-tight"
+              className="font-semibold"
               style={{
                 color: theme.styles.price.color,
-                fontSize: 'clamp(2rem, 3.5vw, 3.5rem)',
+                fontSize: '1.25rem',
+                opacity: 0.8,
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {primaryPrice.label}
+            </div>
+            {/* Price */}
+            <div
+              className="font-bold"
+              style={{
+                color: theme.styles.price.color,
+                fontSize: '2rem',
                 fontWeight: 600,
-                letterSpacing: '-0.03em',
+                letterSpacing: '-0.02em',
+                lineHeight: 1,
               }}
             >
               ${primaryPrice.price.toFixed(2)}
             </div>
-            {availablePrices.length > 1 && (
-              <div
-                className="mt-1"
-                style={{
-                  color: theme.styles.price.color,
-                  fontSize: 'clamp(0.75rem, 1vw, 1rem)',
-                  opacity: 0.5,
-                }}
-              >
-                {primaryPrice.label}
-              </div>
-            )}
           </div>
         )}
       </div>

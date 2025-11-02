@@ -354,14 +354,15 @@ function VendorLayoutContent({
         top: 'calc(48px + env(safe-area-inset-top, 0px))',
         paddingBottom: 'env(safe-area-inset-bottom)'
       }}>
-        {/* Desktop Sidebar - DESKTOP ONLY (hidden on mobile/tablet) */}
-        <aside
-          className="hidden xl:block w-64 border-r border-white/5 fixed left-0 bottom-0 overflow-y-auto bg-[#0a0a0a]"
-          style={{
-            top: 'calc(64px + env(safe-area-inset-top, 0px))',
-            bottom: 'env(safe-area-inset-bottom)'
-          }}
-        >
+        {/* Desktop Sidebar - DESKTOP ONLY (hidden on mobile/tablet and tv-menus page) */}
+        {!pathname?.includes('/tv-menus') && (
+          <aside
+            className="hidden xl:block w-64 border-r border-white/5 fixed left-0 bottom-0 overflow-y-auto bg-[#0a0a0a]"
+            style={{
+              top: 'calc(64px + env(safe-area-inset-top, 0px))',
+              bottom: 'env(safe-area-inset-bottom)'
+            }}
+          >
           <nav className="px-3 py-4 space-y-1 pb-8">
             {vendorNavItems
               .filter(item => !item.appKey || hasAppAccess(item.appKey))
@@ -389,10 +390,11 @@ function VendorLayoutContent({
               })}
           </nav>
         </aside>
+        )}
 
-        {/* Main Content - FULL WIDTH on mobile/tablet, with sidebar on desktop */}
-        <main className="absolute inset-0 xl:left-64 overflow-y-auto overflow-x-hidden">
-          <div className="px-4 md:px-6 lg:px-8 xl:py-10 xl:px-10 2xl:px-16 pt-4 md:pt-6 pb-10">
+        {/* Main Content - FULL WIDTH on mobile/tablet and tv-menus, with sidebar on desktop */}
+        <main className={`absolute inset-0 overflow-y-auto overflow-x-hidden ${!pathname?.includes('/tv-menus') ? 'xl:left-64' : ''}`}>
+          <div className={pathname?.includes('/tv-menus') ? '' : 'px-4 md:px-6 lg:px-8 xl:py-10 xl:px-10 2xl:px-16 pt-4 md:pt-6 pb-10'}>
             {children}
           </div>
         </main>

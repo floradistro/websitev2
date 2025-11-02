@@ -975,6 +975,50 @@ export const themes: TVTheme[] = [
       },
     },
   },
+  {
+    id: 'bulk',
+    name: 'Bulk Display',
+    description: 'Maximum density - fit 30+ products on screen',
+    preview: {
+      background: '#ffffff',
+      cardBg: '#fafafa',
+      textPrimary: '#000000',
+      textSecondary: '#666666',
+      accent: '#000000',
+    },
+    styles: {
+      background: '#ffffff',
+      productCard: {
+        background: 'transparent',
+        borderColor: '#e5e5e5',
+        borderWidth: '0px',
+        shadow: 'none',
+      },
+      productName: {
+        color: '#000000',
+        fontSize: '16px',
+        fontWeight: '600',
+      },
+      productDescription: {
+        color: '#666666',
+        fontSize: '13px',
+      },
+      price: {
+        color: '#000000',
+        fontSize: '18px',
+        fontWeight: '700',
+      },
+      menuTitle: {
+        color: '#000000',
+        fontSize: '32px',
+        fontWeight: '700',
+      },
+      menuDescription: {
+        color: '#666666',
+        fontSize: '18px',
+      },
+    },
+  },
 ];
 
 export const getTheme = (themeId: string | null | undefined): TVTheme => {

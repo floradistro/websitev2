@@ -111,7 +111,7 @@ export default function CategorySelector({
 
       {availableCategories.length === 0 && (
         <div className="text-sm text-white/40 italic py-4 text-center bg-white/5 border border-white/10 rounded-lg">
-          No categories available. Add products with categories to enable filtering.
+          No categories found. Make sure products have categories assigned in your inventory.
         </div>
       )}
 

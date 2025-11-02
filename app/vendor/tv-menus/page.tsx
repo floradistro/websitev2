@@ -4,13 +4,12 @@ import { useEffect, useState, useCallback } from 'react';
 import { useAppAuth } from '@/context/AppAuthContext';
 import { supabase } from '@/lib/supabase/client';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Tv, X, ExternalLink, Circle, Pencil, Trash2, Palette, LayoutGrid, RotateCw, Sparkles, Grid3x3 } from 'lucide-react';
+import { Plus, Tv, X, ExternalLink, Circle, Pencil, Trash2, Palette, LayoutGrid, RotateCw, Sparkles } from 'lucide-react';
 import { themes, getTheme, type TVTheme } from '@/lib/themes';
 import { type CategoryPricingConfig } from '@/lib/category-pricing-defaults';
 import CategorySelector from '@/components/tv-menus/CategorySelector';
 import DisplayConfigWizard from '@/components/ai/DisplayConfigWizard';
 import AIRecommendationViewer from '@/components/ai/AIRecommendationViewer';
-import DisplayGroupManager from '@/components/display-groups/DisplayGroupManager';
 import MenuEditorModal from '@/components/tv-menus/MenuEditorModal';
 
 interface Location {
@@ -39,10 +38,11 @@ interface TVMenu {
 }
 
 export default function SimpleTVMenusPage() {
-  const { vendor } = useAppAuth();
+  const { vendor, user, role } = useAppAuth();
 
   // State
   const [locations, setLocations] = useState<Location[]>([]);
+  const [accessibleLocationIds, setAccessibleLocationIds] = useState<string[]>([]);
   const [selectedLocation, setSelectedLocation] = useState<string | null>(null);
   const [devices, setDevices] = useState<TVDevice[]>([]);
   const [menus, setMenus] = useState<TVMenu[]>([]);
@@ -99,8 +99,8 @@ export default function SimpleTVMenusPage() {
   const [aiRecommendation, setAIRecommendation] = useState<any>(null);
   const [generatingAI, setGeneratingAI] = useState(false);
 
-  // Tab state
-  const [activeTab, setActiveTab] = useState<'displays' | 'groups'>('displays');
+  // Open New Display modal
+  const [showOpenNewDisplay, setShowOpenNewDisplay] = useState(false);
 
   // Reset location filter on mount to prevent React Fast Refresh from preserving stale state
   useEffect(() => {
@@ -112,6 +112,41 @@ export default function SimpleTVMenusPage() {
   useEffect(() => {
     console.log('🔄 selectedLocation changed to:', selectedLocation);
   }, [selectedLocation]);
+
+  // Load user location permissions
+  useEffect(() => {
+    const loadUserLocations = async () => {
+      if (!user || !vendor) return;
+
+      // Check if user is admin (vendor_owner or vendor_manager can see all locations)
+      const isAdmin = role === 'vendor_owner' || role === 'vendor_manager' || role === 'admin';
+
+      if (isAdmin) {
+        console.log('👑 Admin user - access to all locations');
+        setAccessibleLocationIds([]); // Empty array means "all locations"
+        return;
+      }
+
+      // For staff users, fetch their assigned locations
+      console.log('👤 Staff user - fetching location assignments...');
+      const { data, error } = await supabase
+        .from('user_locations')
+        .select('location_id')
+        .eq('user_id', user.id);
+
+      if (error) {
+        console.error('❌ Error fetching user locations:', error);
+        setAccessibleLocationIds([]);
+        return;
+      }
+
+      const locationIds = data?.map(ul => ul.location_id) || [];
+      console.log(`✅ User has access to ${locationIds.length} locations:`, locationIds);
+      setAccessibleLocationIds(locationIds);
+    };
+
+    loadUserLocations();
+  }, [user, vendor, role]);
 
   // Load everything
   const loadData = useCallback(async () => {
@@ -135,7 +170,19 @@ export default function SimpleTVMenusPage() {
       console.log(`   Response:`, locData.success ? `${locData.locations?.length || 0} locations` : 'failed');
 
       if (locData.success) {
-        setLocations(locData.locations || []);
+        let allLocations = locData.locations || [];
+
+        // Filter locations based on user permissions
+        // If accessibleLocationIds is empty, user is admin and can see all
+        // Otherwise, filter to only accessible locations
+        if (accessibleLocationIds.length > 0) {
+          allLocations = allLocations.filter(loc => accessibleLocationIds.includes(loc.id));
+          console.log(`   🔒 Filtered to ${allLocations.length} accessible locations`);
+        } else {
+          console.log(`   👑 Admin access - showing all ${allLocations.length} locations`);
+        }
+
+        setLocations(allLocations);
         // Don't auto-select first location - start with "All Locations"
       }
 
@@ -147,11 +194,12 @@ export default function SimpleTVMenusPage() {
         .eq('vendor_id', vendor.id)
         .order('tv_number');
 
+      // Apply location filter if specific location is selected
       if (selectedLocation && selectedLocation !== '') {
         console.log(`   ⚠️ Filtering by location: ${selectedLocation}`);
         devQuery = devQuery.eq('location_id', selectedLocation);
       } else {
-        console.log(`   ✅ No location filter (showing all)`);
+        console.log(`   ✅ No location filter (showing all accessible)`);
       }
 
       const { data: devData, error: devError } = await devQuery;
@@ -603,7 +651,7 @@ export default function SimpleTVMenusPage() {
     <div className="min-h-screen bg-black">
       {/* Header */}
       <div className="border-b border-white/5 bg-black/50 backdrop-blur-xl sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-6 py-4">
+        <div className="px-6 pt-8 pb-4">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-xs uppercase tracking-[0.15em] text-white font-black mb-1" style={{ fontWeight: 900 }}>
@@ -631,6 +679,15 @@ export default function SimpleTVMenusPage() {
                 </select>
               )}
 
+              {/* Open New Display Button */}
+              <button
+                onClick={() => setShowOpenNewDisplay(true)}
+                className="flex items-center gap-2 bg-white/5 border border-white/10 text-white px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-white/10 transition-all"
+              >
+                <Tv size={18} />
+                Open New Display
+              </button>
+
               {/* Create Menu Button */}
               <button
                 onClick={() => setShowCreateMenu(true)}
@@ -645,40 +702,8 @@ export default function SimpleTVMenusPage() {
       </div>
 
       {/* Tabs */}
-      <div className="max-w-7xl mx-auto px-6 pt-6">
-        <div className="flex items-center gap-2 border-b border-white/10">
-          <button
-            onClick={() => setActiveTab('displays')}
-            className={`flex items-center gap-2 px-4 py-3 font-medium text-sm transition-all border-b-2 ${
-              activeTab === 'displays'
-                ? 'border-white text-white'
-                : 'border-transparent text-white/40 hover:text-white/60'
-            }`}
-          >
-            <Tv className="w-4 h-4" />
-            Displays & Menus
-          </button>
-          <button
-            onClick={() => setActiveTab('groups')}
-            className={`flex items-center gap-2 px-4 py-3 font-medium text-sm transition-all border-b-2 ${
-              activeTab === 'groups'
-                ? 'border-white text-white'
-                : 'border-transparent text-white/40 hover:text-white/60'
-            }`}
-          >
-            <Grid3x3 className="w-4 h-4" />
-            Display Groups
-          </button>
-        </div>
-      </div>
-
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        {activeTab === 'groups' ? (
-          /* Display Groups View */
-          vendor && <DisplayGroupManager vendorId={vendor.id} />
-        ) : (
-          <>
+      <div className={devices.length > 0 ? 'pt-12 pb-8' : 'max-w-7xl mx-auto px-6 py-8'}>
         {/* No Devices State */}
         {devices.length === 0 ? (
           <div className="text-center py-20">
@@ -763,10 +788,15 @@ export default function SimpleTVMenusPage() {
             </code>
           </div>
         ) : (
-          /* Displays Grid */
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="flex gap-2 items-start px-2">
             {devices.map((device) => {
               const assignedMenu = menus.find(m => m.id === device.active_menu_id);
+
+              // Calculate width to fit displays edge-to-edge on desktop
+              const displayCount = devices.length;
+              const flexBasis = displayCount <= 3
+                ? `calc((100vw - ${(displayCount + 1) * 8}px) / ${displayCount})`
+                : `calc((100vw - ${(displayCount + 1) * 8}px) / ${displayCount})`;
 
               return (
                 <motion.div
@@ -774,117 +804,118 @@ export default function SimpleTVMenusPage() {
                   layout
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden hover:border-white/20 transition-all group"
+                  className="flex-shrink-0 bg-white/3 border border-white/10 rounded-xl overflow-hidden hover:border-white/20 transition-all group"
+                  style={{ flexBasis, minWidth: '280px' }}
                 >
-                  {/* Device Header */}
-                  <div className="p-4 border-b border-white/10 bg-white/5">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Circle
-                          size={8}
-                          className={`${
-                            device.connection_status === 'online'
-                              ? 'fill-green-500 text-green-500'
-                              : 'fill-gray-500 text-gray-500'
-                          }`}
-                        />
-                        <h3 className="text-white font-bold">{device.device_name}</h3>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => openAIConfig(device)}
-                          className="p-1.5 bg-purple-500/10 hover:bg-purple-500/20 rounded-lg transition-colors group"
-                          title="AI Optimize Layout"
-                        >
-                          <Sparkles size={14} className="text-purple-400 group-hover:text-purple-300" />
-                        </button>
-                        <a
-                          href={`/tv-display?vendor_id=${vendor?.id}&location_id=${device.location_id || ''}&tv_number=${device.tv_number}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="p-1.5 bg-white/10 hover:bg-white/20 rounded-lg transition-colors"
-                          title="Open display"
-                        >
-                          <ExternalLink size={14} className="text-white" />
-                        </a>
-                        <button
-                          onClick={() => {
-                            setDeletingDevice(device);
-                            setError(null);
-                          }}
-                          className="p-1.5 bg-red-500/10 hover:bg-red-500/20 rounded-lg transition-colors"
-                          title="Delete display"
-                        >
-                          <Trash2 size={14} className="text-red-400" />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Live Preview */}
-                  <div className="relative aspect-video bg-black">
+                  {/* Live Preview - Large, True 16:9 */}
+                  <div className="relative bg-black overflow-hidden" style={{ aspectRatio: '16/9' }}>
                     {device.connection_status === 'online' && device.active_menu_id ? (
-                      <iframe
-                        key={`${device.id}-${device.active_menu_id}-${previewRefresh}`}
-                        src={`/tv-display?vendor_id=${vendor?.id}&location_id=${device.location_id || ''}&tv_number=${device.tv_number}&device_id=${device.id}&menu_id=${device.active_menu_id}&preview=true`}
-                        className="w-full h-full border-0 pointer-events-none"
-                        title={device.device_name}
-                      />
+                      <div
+                        className="absolute inset-0"
+                        style={{
+                          transform: 'scale(1)',
+                          transformOrigin: 'top left'
+                        }}
+                      >
+                        <iframe
+                          key={`${device.id}-${device.active_menu_id}-${previewRefresh}`}
+                          src={`/tv-display?vendor_id=${vendor?.id}&location_id=${device.location_id || ''}&tv_number=${device.tv_number}&device_id=${device.id}&menu_id=${device.active_menu_id}&preview=true`}
+                          className="border-0 pointer-events-none"
+                          title={device.device_name}
+                          style={{
+                            width: '1920px',
+                            height: '1080px',
+                            transform: 'scale(var(--scale))',
+                            transformOrigin: 'top left',
+                          }}
+                          onLoad={(e) => {
+                            const container = e.currentTarget.parentElement?.parentElement;
+                            if (container) {
+                              const containerWidth = container.offsetWidth;
+                              const scale = containerWidth / 1920;
+                              e.currentTarget.style.setProperty('--scale', scale.toString());
+                            }
+                          }}
+                        />
+                      </div>
                     ) : (
                       <div className="absolute inset-0 flex items-center justify-center">
                         <div className="text-center">
-                          <Tv size={40} className="text-white/10 mx-auto mb-2" />
-                          <p className="text-white/30 text-sm">
-                            {device.connection_status === 'offline' ? 'Offline' : 'No menu assigned'}
+                          <Tv size={48} className="text-white/10 mx-auto mb-3" />
+                          <p className="text-white/30 text-base">
+                            {device.connection_status === 'offline' ? 'Display Offline' : 'No Menu Playing'}
                           </p>
                         </div>
                       </div>
                     )}
+
+                    {/* Connection Status - Compact */}
+                    <div className="absolute top-2 left-2 flex items-center gap-1.5 bg-black/60 backdrop-blur-sm rounded-full px-2 py-1">
+                      <Circle
+                        size={6}
+                        className={`${
+                          device.connection_status === 'online'
+                            ? 'fill-green-500 text-green-500'
+                            : 'fill-gray-500 text-gray-500'
+                        }`}
+                      />
+                      <span className="text-white text-xs font-medium">{device.connection_status === 'online' ? 'LIVE' : 'OFF'}</span>
+                    </div>
+
+                    {/* Quick Actions - Compact */}
+                    <div className="absolute top-2 right-2 flex items-center gap-1">
+                      <a
+                        href={`/tv-display?vendor_id=${vendor?.id}&location_id=${device.location_id || ''}&tv_number=${device.tv_number}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="p-1.5 bg-black/60 hover:bg-black/80 backdrop-blur-sm rounded-lg transition-colors"
+                        title="Open in new window"
+                      >
+                        <ExternalLink size={14} className="text-white" />
+                      </a>
+                      <button
+                        onClick={() => {
+                          setDeletingDevice(device);
+                          setError(null);
+                        }}
+                        className="p-1.5 bg-black/60 hover:bg-red-500/60 backdrop-blur-sm rounded-lg transition-colors"
+                        title="Remove display"
+                      >
+                        <Trash2 size={14} className="text-white" />
+                      </button>
+                    </div>
                   </div>
 
-                  {/* Menu Selector */}
+                  {/* Menu Controls - Compact */}
                   <div className="p-4">
-                    <label className="block text-white/40 text-xs font-medium uppercase tracking-wide mb-2">
-                      Playing
-                    </label>
+                    <div className="text-white/60 text-xs font-bold uppercase tracking-wider mb-2">{device.device_name}</div>
+
                     <div className="flex items-center gap-2">
                       <select
                         value={device.active_menu_id || ''}
-                        onChange={(e) => {
-                          console.log('Assigning menu:', e.target.value, 'to device:', device.id);
-                          assignMenu(device.id, e.target.value || null);
-                        }}
-                        className="flex-1 appearance-none bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white text-sm cursor-pointer hover:bg-white/10 transition-colors focus:outline-none focus:ring-2 focus:ring-white/20"
+                        onChange={(e) => assignMenu(device.id, e.target.value || null)}
+                        className="flex-1 appearance-none bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-sm font-medium cursor-pointer hover:bg-white/10 transition-colors focus:outline-none focus:ring-2 focus:ring-white/20"
                       >
-                        <option value="" className="bg-black">None</option>
+                        <option value="" className="bg-black">Select menu...</option>
                         {menus
-                          .filter(m => {
-                            // Show all menus without location_id, or menus matching device location
-                            const show = !m.location_id || m.location_id === device.location_id;
-                            if (!show) {
-                              console.log(`Menu "${m.name}" hidden: menu location=${m.location_id}, device location=${device.location_id}`);
-                            }
-                            return show;
-                          })
+                          .filter(m => !m.location_id || m.location_id === device.location_id)
                           .map((menu) => (
                             <option key={menu.id} value={menu.id} className="bg-black">
                               {menu.name}
                             </option>
                           ))}
                       </select>
-                      {device.active_menu_id && (
+
+                      {device.active_menu_id && assignedMenu && (
                         <button
-                          onClick={() => assignMenu(device.id, null)}
-                          className="px-3 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-xl text-xs font-bold transition-colors whitespace-nowrap"
-                          title="Clear menu"
+                          onClick={() => openEditMenu(assignedMenu)}
+                          className="p-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition-colors"
+                          title="Edit menu"
                         >
-                          Clear
+                          <Pencil size={16} className="text-white" />
                         </button>
                       )}
                     </div>
-                    <p className="text-white/30 text-xs mt-1">
-                      {menus.filter(m => !m.location_id || m.location_id === device.location_id).length} available
-                    </p>
                   </div>
                 </motion.div>
               );
@@ -892,156 +923,51 @@ export default function SimpleTVMenusPage() {
           </div>
         )}
 
-        {/* Always Show: Open New Display Section */}
-        <div className="mt-8 bg-white/5 border border-white/10 rounded-2xl p-6">
-          <h2 className="text-lg font-black text-white mb-4" style={{ fontWeight: 900 }}>
-            Open New Display
-          </h2>
-          <p className="text-white/40 text-sm mb-4">
-            Open this URL on any device to add a new display{selectedLocation ? ' at this location' : ''}:
-          </p>
+        {/* Unused Menus - Minimal, Only Show Orphans */}
+        {(() => {
+          const unusedMenus = menus.filter(m => !devices.some(d => d.active_menu_id === m.id));
 
-          <div className="space-y-3">
-            {/* Next available TV number */}
-            <div>
-              <label className="block text-white/40 text-xs font-medium uppercase tracking-wide mb-2">
-                Next Available Display
-              </label>
-              <div className="flex items-center gap-3">
-                <code className="flex-1 bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-white/80 font-mono text-sm break-all">
-                  {typeof window !== 'undefined' && window.location.origin}/tv-display?vendor_id={vendor?.id}&tv_number={Math.max(...devices.map(d => d.tv_number), 0) + 1}{selectedLocation ? `&location_id=${selectedLocation}` : ''}
-                </code>
-                <button
-                  onClick={async () => {
-                    // Get the next available TV number from database
-                    const { data: existingDevices } = await supabase
-                      .from('tv_devices')
-                      .select('tv_number')
-                      .eq('vendor_id', vendor?.id)
-                      .order('tv_number', { ascending: false })
-                      .limit(1);
+          if (unusedMenus.length === 0) return null;
 
-                    const nextNumber = existingDevices && existingDevices.length > 0
-                      ? existingDevices[0].tv_number + 1
-                      : 1;
-
-                    const url = `${window.location.origin}/tv-display?vendor_id=${vendor?.id}&tv_number=${nextNumber}${selectedLocation ? `&location_id=${selectedLocation}` : ''}`;
-                    window.open(url, '_blank');
-
-                    // Reload data after a short delay to show the new device
-                    setTimeout(() => loadData(), 1000);
-                  }}
-                  className="px-4 py-3 bg-white/10 hover:bg-white/20 text-white rounded-xl font-bold text-sm transition-colors flex items-center gap-2 whitespace-nowrap"
-                >
-                  <ExternalLink size={16} />
-                  Open
-                </button>
+          return (
+            <div className="mt-6 px-6">
+              <div className="flex items-center gap-2 text-white/40 text-xs uppercase tracking-wider mb-3">
+                <span>Unused Menus ({unusedMenus.length})</span>
               </div>
-            </div>
-
-            {/* Custom TV number */}
-            <details className="group">
-              <summary className="cursor-pointer text-white/40 text-xs font-medium uppercase tracking-wide hover:text-white/60 transition-colors">
-                Custom Display Number
-              </summary>
-              <div className="mt-3 flex items-center gap-3">
-                <input
-                  type="number"
-                  min="1"
-                  placeholder="Enter TV number"
-                  id="custom-tv-number"
-                  className="flex-1 bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-white/20 transition-all"
-                />
-                <button
-                  onClick={() => {
-                    const input = document.getElementById('custom-tv-number') as HTMLInputElement;
-                    const tvNum = parseInt(input.value);
-                    if (tvNum && tvNum > 0) {
-                      const url = `${window.location.origin}/tv-display?vendor_id=${vendor?.id}&tv_number=${tvNum}${selectedLocation ? `&location_id=${selectedLocation}` : ''}`;
-                      window.open(url, '_blank');
-                      input.value = '';
-                    }
-                  }}
-                  className="px-4 py-3 bg-white/10 hover:bg-white/20 text-white rounded-xl font-bold text-sm transition-colors flex items-center gap-2 whitespace-nowrap"
-                >
-                  <ExternalLink size={16} />
-                  Open
-                </button>
-              </div>
-            </details>
-          </div>
-        </div>
-
-        {/* Menu Library Section */}
-        {menus.length > 0 && (
-          <div className="mt-8 bg-white/5 border border-white/10 rounded-2xl p-6">
-            <h2 className="text-lg font-black text-white mb-4" style={{ fontWeight: 900 }}>
-              Menu Library
-            </h2>
-            <p className="text-white/40 text-sm mb-6">
-              Manage all your menus - edit names, descriptions, or delete unused menus
-            </p>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {menus.map((menu) => {
-                // Count devices using this menu
-                const devicesUsingMenu = devices.filter(d => d.active_menu_id === menu.id).length;
-
-                return (
-                  <div
+              <div className="flex gap-2 overflow-x-auto pb-2">
+                {unusedMenus.map((menu) => (
+                  <motion.div
                     key={menu.id}
-                    className="bg-white/5 border border-white/10 rounded-xl p-4 hover:border-white/20 transition-all"
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="flex-shrink-0 bg-white/5 border border-white/10 rounded-lg px-3 py-2 hover:border-white/20 transition-all flex items-center gap-2"
                   >
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex-1 min-w-0">
-                        <h3 className="text-white font-bold text-base truncate">
-                          {menu.name}
-                        </h3>
-                        {menu.description && (
-                          <p className="text-white/40 text-xs mt-1 line-clamp-2">
-                            {menu.description}
-                          </p>
-                        )}
-                      </div>
+                    <span className="text-white text-sm font-medium">{menu.name}</span>
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => openEditMenu(menu)}
+                        className="p-1 hover:bg-white/10 rounded transition-colors"
+                        title="Edit menu"
+                      >
+                        <Pencil size={12} className="text-white/60" />
+                      </button>
+                      <button
+                        onClick={() => {
+                          setDeletingMenu(menu);
+                          setError(null);
+                        }}
+                        className="p-1 hover:bg-red-500/20 rounded transition-colors"
+                        title="Delete menu"
+                      >
+                        <Trash2 size={12} className="text-red-400/60" />
+                      </button>
                     </div>
-
-                    <div className="flex items-center justify-between">
-                      <span className="text-white/30 text-xs">
-                        {devicesUsingMenu > 0 ? (
-                          <>Used by {devicesUsingMenu} display{devicesUsingMenu !== 1 ? 's' : ''}</>
-                        ) : (
-                          <>Not in use</>
-                        )}
-                      </span>
-
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => openEditMenu(menu)}
-                          className="p-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors"
-                          title="Edit menu"
-                        >
-                          <Pencil size={14} className="text-white" />
-                        </button>
-                        <button
-                          onClick={() => {
-                            setDeletingMenu(menu);
-                            setError(null);
-                          }}
-                          className="p-2 bg-red-500/10 hover:bg-red-500/20 rounded-lg transition-colors"
-                          title="Delete menu"
-                        >
-                          <Trash2 size={14} className="text-red-400" />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
+                  </motion.div>
+                ))}
+              </div>
             </div>
-          </div>
-        )}
-        </>
-        )}
+          );
+        })()}
       </div>
 
       {/* Create Menu Modal */}
@@ -1323,6 +1249,109 @@ export default function SimpleTVMenusPage() {
           onApply={handleLayoutApplied}
         />
       )}
+
+      {/* Open New Display Modal */}
+      <AnimatePresence>
+        {showOpenNewDisplay && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setShowOpenNewDisplay(false)}
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-6"
+          >
+            <motion.div
+              initial={{ scale: 0.95, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.95, y: 20 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-8 max-w-2xl w-full"
+            >
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold text-white">Open New Display</h2>
+                <button
+                  onClick={() => setShowOpenNewDisplay(false)}
+                  className="p-2 hover:bg-white/10 rounded-xl transition-colors"
+                >
+                  <X size={24} className="text-white" />
+                </button>
+              </div>
+
+              <p className="text-white/60 mb-6">
+                Open this URL on any device to add a new TV display{selectedLocation ? ' at this location' : ''}:
+              </p>
+
+              {/* Next Available Display */}
+              <div className="mb-6">
+                <label className="block text-white/40 text-xs font-medium uppercase tracking-wide mb-3">
+                  Next Available Display
+                </label>
+                <div className="flex items-center gap-3">
+                  <code className="flex-1 bg-black/50 border border-white/10 rounded-xl px-4 py-4 text-white/80 font-mono text-sm break-all">
+                    {typeof window !== 'undefined' && window.location.origin}/tv-display?vendor_id={vendor?.id}&tv_number={Math.max(...devices.map(d => d.tv_number), 0) + 1}{selectedLocation ? `&location_id=${selectedLocation}` : ''}
+                  </code>
+                  <button
+                    onClick={async () => {
+                      const { data: existingDevices } = await supabase
+                        .from('tv_devices')
+                        .select('tv_number')
+                        .eq('vendor_id', vendor?.id)
+                        .order('tv_number', { ascending: false })
+                        .limit(1);
+
+                      const nextNumber = existingDevices && existingDevices.length > 0
+                        ? existingDevices[0].tv_number + 1
+                        : 1;
+
+                      const url = `${window.location.origin}/tv-display?vendor_id=${vendor?.id}&tv_number=${nextNumber}${selectedLocation ? `&location_id=${selectedLocation}` : ''}`;
+                      window.open(url, '_blank');
+
+                      setShowOpenNewDisplay(false);
+                      setTimeout(() => loadData(), 1000);
+                    }}
+                    className="px-5 py-4 bg-white text-black rounded-xl font-bold text-sm transition-all hover:bg-white/90 shadow-lg flex items-center gap-2 whitespace-nowrap"
+                  >
+                    <ExternalLink size={18} />
+                    Open
+                  </button>
+                </div>
+              </div>
+
+              {/* Custom Display Number */}
+              <details className="group">
+                <summary className="cursor-pointer text-white/60 text-sm font-medium hover:text-white transition-colors">
+                  Or use a custom display number...
+                </summary>
+                <div className="mt-4 flex items-center gap-3">
+                  <input
+                    type="number"
+                    min="1"
+                    placeholder="Enter display number"
+                    id="custom-tv-number-modal"
+                    className="flex-1 bg-black/50 border border-white/10 rounded-xl px-4 py-4 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-white/20 transition-all"
+                  />
+                  <button
+                    onClick={() => {
+                      const input = document.getElementById('custom-tv-number-modal') as HTMLInputElement;
+                      const tvNum = parseInt(input.value);
+                      if (tvNum && tvNum > 0) {
+                        const url = `${window.location.origin}/tv-display?vendor_id=${vendor?.id}&tv_number=${tvNum}${selectedLocation ? `&location_id=${selectedLocation}` : ''}`;
+                        window.open(url, '_blank');
+                        input.value = '';
+                        setShowOpenNewDisplay(false);
+                      }
+                    }}
+                    className="px-5 py-4 bg-white text-black rounded-xl font-bold text-sm transition-all hover:bg-white/90 shadow-lg flex items-center gap-2 whitespace-nowrap"
+                  >
+                    <ExternalLink size={18} />
+                    Open
+                  </button>
+                </div>
+              </details>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* AI Generating Loader */}
       <AnimatePresence>

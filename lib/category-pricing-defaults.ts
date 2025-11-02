@@ -44,7 +44,11 @@ export const PRICE_BREAK_LABELS: Record<string, string> = {
   'pack_10': '10-Pack',
   '15ml': '15ml',
   '30ml': '30ml',
-  '60ml': '60ml'
+  '60ml': '60ml',
+  // VAPE quantity-based tiers
+  '1': '1',
+  '2': '2',
+  '3': '3'
 };
 
 /**
