@@ -175,26 +175,33 @@ export async function POST(request: NextRequest) {
       // Load accessible locations (only for employees)
       let locations: any[] = [];
       if (user.role === 'pos_staff' || user.role === 'inventory_staff' || user.role === 'location_manager') {
-        const { data: employeeLocations } = await supabase
-          .from('employee_locations')
+        // CRITICAL FIX: Table is user_locations, not employee_locations
+        // CRITICAL FIX: locations table doesn't have 'address' column - use address_line1, city, state
+        console.log('🔍 Loading locations for employee, user_id:', user.id);
+        const { data: userLocations, error: locError } = await supabase
+          .from('user_locations')
           .select(`
             location_id,
-            is_primary,
             locations (
               id,
               name,
-              address
+              address_line1,
+              city,
+              state
             )
           `)
-          .eq('user_id', user.id)
-          .eq('can_access', true);
+          .eq('user_id', user.id);
 
-        locations = employeeLocations?.map((el: any) => ({
-          id: el.locations.id,
-          name: el.locations.name,
-          address: el.locations.address,
-          is_primary: el.is_primary
+        console.log('📍 User locations query result:', { count: userLocations?.length, error: locError, data: userLocations });
+
+        locations = userLocations?.map((ul: any) => ({
+          id: ul.locations.id,
+          name: ul.locations.name,
+          address: `${ul.locations.address_line1 || ''} ${ul.locations.city || ''}, ${ul.locations.state || ''}`.trim(),
+          is_primary: false
         })) || [];
+
+        console.log('✅ Mapped employee locations:', locations.length, locations);
       } else if (user.role === 'vendor_owner' || user.role === 'vendor_manager') {
         // Vendor owners/managers have access to all their vendor's locations
         console.log('🔍 Loading locations for vendor owner/manager, vendor_id:', user.vendor_id);

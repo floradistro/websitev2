@@ -501,6 +501,12 @@ export default function POSRegisterPage() {
             setSessionId(sessionId);
           }
         }}
+        onBackToLocationSelector={() => {
+          // Clear location selection to go back to location selector
+          setSelectedLocation(null);
+          localStorage.removeItem('pos_selected_location');
+          console.log('🔙 Cleared location selection, returning to location selector');
+        }}
       />
     );
   }

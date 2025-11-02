@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Monitor, Check, Users, DollarSign, Clock, X, Home, ChevronRight } from 'lucide-react';
+import { Monitor, Check, Users, DollarSign, Clock, X, Home, ChevronRight, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 
 interface Register {
@@ -23,12 +23,14 @@ interface POSRegisterSelectorProps {
   locationId: string;
   locationName: string;
   onRegisterSelected: (registerId: string, sessionId?: string) => void;
+  onBackToLocationSelector?: () => void;
 }
 
 export function POSRegisterSelector({
   locationId,
   locationName,
   onRegisterSelected,
+  onBackToLocationSelector,
 }: POSRegisterSelectorProps) {
   const [registers, setRegisters] = useState<Register[]>([]);
   const [loading, setLoading] = useState(true);
@@ -210,8 +212,8 @@ export function POSRegisterSelector({
   return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center p-6">
         <div className="max-w-2xl w-full">
-          {/* Breadcrumbs */}
-          <div className="mb-6">
+          {/* Breadcrumbs and Back Button */}
+          <div className="mb-6 flex items-center justify-between">
             <nav className="flex items-center gap-2 text-sm">
               <Link
                 href="/vendor/apps"
@@ -225,6 +227,17 @@ export function POSRegisterSelector({
               <ChevronRight size={16} className="text-white/20" />
               <span className="text-white uppercase tracking-[0.15em]">Select Register</span>
             </nav>
+
+            {/* Back to Location Selector Button */}
+            {onBackToLocationSelector && (
+              <button
+                onClick={onBackToLocationSelector}
+                className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 hover:border-white/20 transition-all text-xs uppercase tracking-[0.15em] text-white/60 hover:text-white"
+              >
+                <ArrowLeft size={14} />
+                <span>Change Location</span>
+              </button>
+            )}
           </div>
 
           {/* Header */}
