@@ -6,7 +6,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { LogOut, Menu, X, RefreshCw } from 'lucide-react';
 import VendorSupportChat from '@/components/VendorSupportChat';
 import AIActivityMonitor from '@/components/AIActivityMonitor';
-import { useAppAuth, AppAuthProvider } from '@/context/AppAuthContext';
+import { useAppAuth } from '@/context/AppAuthContext';
 import { showConfirm } from '@/components/NotificationToast';
 import { dashboardKeyframes } from '@/lib/dashboard-theme';
 import { vendorNavItems, mobileNavItems } from '@/lib/vendor-navigation';
@@ -83,7 +83,8 @@ function VendorLayoutContent({
       type: 'warning',
       onConfirm: () => {
         logout();
-        router.push('/vendor/login');
+        // Force full page reload to clear all state
+        window.location.href = '/vendor/login';
       },
     });
   }
@@ -408,10 +409,9 @@ export default function VendorLayout({
 }: {
   children: React.ReactNode;
 }) {
+  // AppAuthProvider moved to root Providers - no longer duplicated here
   return (
-    <AppAuthProvider>
-      <VendorLayoutContent>{children}</VendorLayoutContent>
-    </AppAuthProvider>
+    <VendorLayoutContent>{children}</VendorLayoutContent>
   );
 }
 

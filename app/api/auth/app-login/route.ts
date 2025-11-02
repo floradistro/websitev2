@@ -65,13 +65,17 @@ export async function POST(request: NextRequest) {
 
       if (!user) {
         // Create user record for vendor admin
+        // SCHEMA FIX: Use first_name/last_name instead of name, employee_id instead of employee_code
         const { data: newUser, error: createError} = await supabase
           .from('users')
           .insert({
             vendor_id: vendor.id,
             email: vendor.email,
-            name: vendor.store_name,
-            role: 'vendor_admin'
+            first_name: vendor.store_name,
+            last_name: '',
+            role: 'vendor_owner', // SCHEMA FIX: Database uses vendor_owner, not vendor_admin
+            status: 'active',
+            login_enabled: true
           })
           .select()
           .single();
@@ -87,6 +91,25 @@ export async function POST(request: NextRequest) {
         userId = newUser.id;
       }
 
+      // Load all vendor locations (CRITICAL FIX: was returning empty array)
+      console.log('🔍 Loading locations for vendor_admin (legacy mode), vendor_id:', vendor.id);
+      const { data: allLocations, error: locError } = await supabase
+        .from('locations')
+        .select('id, name, address_line1, city, state')
+        .eq('vendor_id', vendor.id);
+
+      console.log('📍 Locations query result (legacy mode):', { count: allLocations?.length, error: locError });
+
+      const locations = allLocations?.map(l => ({
+        id: l.id,
+        name: l.name,
+        address: `${l.address_line1 || ''} ${l.city || ''}, ${l.state || ''}`.trim(),
+        is_primary: false
+      })) || [];
+
+      console.log('✅ Mapped locations (legacy mode):', locations.length);
+      console.log('📍 Returning locations:', JSON.stringify(locations, null, 2));
+
       // Return vendor admin data (legacy mode)
       return NextResponse.json({
         success: true,
@@ -94,7 +117,7 @@ export async function POST(request: NextRequest) {
           id: userId,
           email: vendor.email,
           name: vendor.store_name,
-          role: 'vendor_admin',
+          role: 'vendor_owner', // SCHEMA FIX: Use vendor_owner to match enum
           vendor_id: vendor.id,
           vendor: {
             id: vendor.id,
@@ -107,7 +130,7 @@ export async function POST(request: NextRequest) {
           }
         },
         apps: [], // Vendor admins have access to all apps
-        locations: [],
+        locations: locations, // CRITICAL FIX: Load locations from database
         message: 'Logged in as vendor admin (legacy mode)'
       });
     }
@@ -139,7 +162,7 @@ export async function POST(request: NextRequest) {
 
       // Load app permissions (only for non-admin roles)
       let accessibleApps: string[] = [];
-      if (user.role !== 'vendor_admin') {
+      if (user.role !== 'vendor_owner' && user.role !== 'vendor_manager') {
         const { data: permissions } = await supabase
           .from('user_app_permissions')
           .select('app_key')
@@ -151,7 +174,7 @@ export async function POST(request: NextRequest) {
 
       // Load accessible locations (only for employees)
       let locations: any[] = [];
-      if (user.role === 'employee' || user.role === 'manager') {
+      if (user.role === 'pos_staff' || user.role === 'inventory_staff' || user.role === 'location_manager') {
         const { data: employeeLocations } = await supabase
           .from('employee_locations')
           .select(`
@@ -172,19 +195,24 @@ export async function POST(request: NextRequest) {
           address: el.locations.address,
           is_primary: el.is_primary
         })) || [];
-      } else if (user.role === 'vendor_admin') {
-        // Vendor admins have access to all their vendor's locations
-        const { data: allLocations } = await supabase
+      } else if (user.role === 'vendor_owner' || user.role === 'vendor_manager') {
+        // Vendor owners/managers have access to all their vendor's locations
+        console.log('🔍 Loading locations for vendor owner/manager, vendor_id:', user.vendor_id);
+        const { data: allLocations, error: locError } = await supabase
           .from('locations')
-          .select('id, name, address')
+          .select('id, name, address_line1, city, state')
           .eq('vendor_id', user.vendor_id);
+
+        console.log('📍 Locations query result:', { count: allLocations?.length, error: locError });
 
         locations = allLocations?.map(l => ({
           id: l.id,
           name: l.name,
-          address: l.address,
+          address: `${l.address_line1 || ''} ${l.city || ''}, ${l.state || ''}`.trim(),
           is_primary: false
         })) || [];
+
+        console.log('✅ Mapped locations:', locations.length);
       }
 
       // Log activity (fire-and-forget, silent fail if RPC doesn't exist)
@@ -197,16 +225,26 @@ export async function POST(request: NextRequest) {
         }
       });
 
+      // CRITICAL DEBUG: Log what we're about to return
+      console.log('📤 FINAL RESPONSE DATA:', {
+        success: true,
+        userName: `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email,
+        role: user.role,
+        locationsCount: locations.length,
+        locationsData: locations,
+        appsCount: accessibleApps.length
+      });
+
       // Create response with HTTP-only cookie (secure)
       const response = NextResponse.json({
         success: true,
         user: {
           id: user.id,
           email: user.email,
-          name: user.name,
+          name: `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email, // SCHEMA FIX: Combine first/last names
           role: user.role,
           vendor_id: user.vendor_id,
-          employee_code: user.employee_code,
+          employee_code: user.employee_id, // SCHEMA FIX: Use employee_id from DB
           vendor: vendor ? {
             id: vendor.id,
             store_name: vendor.store_name,
@@ -238,13 +276,17 @@ export async function POST(request: NextRequest) {
 
     if (vendor) {
       // Create user record for vendor with vendor_admin role
+      // SCHEMA FIX: Use first_name/last_name instead of name
       const { data: newUser, error: createError } = await supabase
         .from('users')
         .insert({
           vendor_id: vendor.id,
           email: vendor.email,
-          name: vendor.store_name,
-          role: 'vendor_admin'
+          first_name: vendor.store_name,
+          last_name: '',
+          role: 'vendor_owner', // SCHEMA FIX: Database uses vendor_owner, not vendor_admin
+          status: 'active',
+          login_enabled: true
         })
         .select()
         .single();
@@ -260,13 +302,13 @@ export async function POST(request: NextRequest) {
       // Load all vendor locations
       const { data: allLocations } = await supabase
         .from('locations')
-        .select('id, name, address')
+        .select('id, name, address_line1, city, state')
         .eq('vendor_id', vendor.id);
 
       const locations = allLocations?.map(l => ({
         id: l.id,
         name: l.name,
-        address: l.address,
+        address: `${l.address_line1 || ''} ${l.city || ''}, ${l.state || ''}`.trim(),
         is_primary: false
       })) || [];
 
@@ -287,8 +329,8 @@ export async function POST(request: NextRequest) {
         user: {
           id: newUser.id,
           email: vendor.email,
-          name: vendor.store_name,
-          role: 'vendor_admin',
+          name: vendor.store_name, // For new users, first_name is set to store_name
+          role: 'vendor_owner', // SCHEMA FIX: Use vendor_owner to match enum
           vendor_id: vendor.id,
           vendor: {
             id: vendor.id,

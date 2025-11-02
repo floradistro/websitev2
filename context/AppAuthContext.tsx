@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
-export type UserRole = 'vendor_admin' | 'manager' | 'employee';
+export type UserRole = 'vendor_owner' | 'vendor_manager' | 'location_manager' | 'pos_staff' | 'inventory_staff' | 'readonly' | 'admin';
 
 interface Vendor {
   id: string;
@@ -88,17 +88,23 @@ export function AppAuthProvider({ children }: { children: React.ReactNode }) {
 
         // Default apps available to all users: POS, Customers, Digital Menus
         const defaultApps = ['pos', 'customers', 'tv_menus'];
+        const isAdmin = userData.role === 'vendor_owner' || userData.role === 'vendor_manager' || userData.role === 'admin';
         if (savedApps) {
           const parsedApps = JSON.parse(savedApps);
-          // If empty array and not vendor_admin, use default apps
-          setAccessibleApps(parsedApps.length === 0 && userData.role !== 'vendor_admin' ? defaultApps : parsedApps);
+          // If empty array and not admin, use default apps
+          setAccessibleApps(parsedApps.length === 0 && !isAdmin ? defaultApps : parsedApps);
         } else {
           // No saved apps - use defaults for non-admins
-          setAccessibleApps(userData.role === 'vendor_admin' ? [] : defaultApps);
+          setAccessibleApps(isAdmin ? [] : defaultApps);
         }
 
         if (savedLocations) {
-          setLocations(JSON.parse(savedLocations));
+          const parsedLocations = JSON.parse(savedLocations);
+          setLocations(parsedLocations);
+          console.log('📍 Loaded locations from localStorage:', parsedLocations.length, 'locations');
+        } else {
+          console.warn('⚠️  No locations found in localStorage');
+          setLocations([]);
         }
 
         // Ensure legacy keys are set for backwards compatibility
@@ -127,6 +133,22 @@ export function AppAuthProvider({ children }: { children: React.ReactNode }) {
 
   async function login(email: string, password: string): Promise<boolean> {
     try {
+      // CRITICAL FIX: Clear ALL localStorage BEFORE login to prevent stale data
+      console.log('🧹 Clearing all auth data before fresh login...');
+      localStorage.removeItem('app_user');
+      localStorage.removeItem('app_accessible_apps');
+      localStorage.removeItem('app_locations');
+      localStorage.removeItem('vendor_id');
+      localStorage.removeItem('vendor_email');
+      localStorage.removeItem('supabase_session');
+
+      // Reset state immediately
+      setUser(null);
+      setVendor(null);
+      setIsAuthenticated(false);
+      setAccessibleApps([]);
+      setLocations([]);
+
       // SECURITY FIX: Session token now stored in HTTP-only cookie (XSS protection)
       // Try new unified app login endpoint first
       let response = await fetch('/api/auth/app-login', {
@@ -138,55 +160,19 @@ export function AppAuthProvider({ children }: { children: React.ReactNode }) {
 
       let data = await response.json();
 
-      // If new endpoint fails, fallback to old vendor login
-      if (!data.success) {
-        console.log('⚠️  New auth endpoint failed, falling back to legacy vendor login');
-        response = await fetch('/api/vendor/auth/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password }),
-          credentials: 'include' // Include cookies in request
-        });
+      console.log('📥 Login response received:', {
+        success: data.success,
+        hasUser: !!data.user,
+        hasVendor: !!data.user?.vendor,
+        locationsCount: data.locations?.length || 0,
+        appsCount: data.apps?.length || 0,
+        role: data.user?.role,
+        error: data.error
+      });
 
-        data = await response.json();
-
-        if (!data.success || !data.vendor) {
-          console.error('Login failed:', data.error);
-          return false;
-        }
-
-        // Convert vendor response to user format
-        const legacyUser: AppUser = {
-          id: data.vendor.id,
-          email: data.vendor.email,
-          name: data.vendor.store_name,
-          role: 'vendor_admin',
-          vendor_id: data.vendor.id,
-          vendor: data.vendor
-        };
-
-        setUser(legacyUser);
-        setVendor(data.vendor);
-        setIsAuthenticated(true);
-        setAccessibleApps([]); // Vendor admins have access to all
-        setLocations([]);
-
-        // Save to localStorage (but NOT session token - it's in HTTP-only cookie)
-        localStorage.setItem('app_user', JSON.stringify(legacyUser));
-        localStorage.setItem('app_accessible_apps', JSON.stringify([])); // Vendor admins have access to all
-        localStorage.setItem('app_locations', JSON.stringify([]));
-        // Also set legacy keys for backwards compatibility
-        localStorage.setItem('vendor_id', data.vendor.id);
-        localStorage.setItem('vendor_email', data.vendor.email);
-        // Clean up old session storage
-        localStorage.removeItem('supabase_session');
-
-        console.log('✅ Legacy login successful:', legacyUser.name);
-        return true;
-      }
-
-      if (!data.user) {
-        console.error('Login failed: No user data');
+      // No more legacy fallback - new unified endpoint only
+      if (!data.success || !data.user) {
+        console.error('Login failed:', data.error || 'No user data');
         return false;
       }
 
@@ -205,20 +191,24 @@ export function AppAuthProvider({ children }: { children: React.ReactNode }) {
       setVendor(data.user.vendor);
       setIsAuthenticated(true);
 
-      // Store accessible apps (vendor admins have access to all)
+      // Store accessible apps (vendor owners/managers have access to all)
       // Default apps available to all users: POS, Customers, Digital Menus
       const defaultApps = ['pos', 'customers', 'tv_menus'];
-      const apps = data.user.role === 'vendor_admin' ? [] : (data.apps || defaultApps);
+      const isAdmin = data.user.role === 'vendor_owner' || data.user.role === 'vendor_manager' || data.user.role === 'admin';
+      const apps = isAdmin ? [] : (data.apps || defaultApps);
       setAccessibleApps(apps);
 
       // Store locations
       const userLocations = data.locations || [];
+      console.log('🗺️  Login response locations:', data.locations);
+      console.log('🗺️  Setting locations:', userLocations);
       setLocations(userLocations);
 
       // Save to localStorage (but NOT session token - it's in HTTP-only cookie)
       localStorage.setItem('app_user', JSON.stringify(userData));
       localStorage.setItem('app_accessible_apps', JSON.stringify(apps));
       localStorage.setItem('app_locations', JSON.stringify(userLocations));
+      console.log('💾 Saved to localStorage - locations count:', userLocations.length);
       // Also set legacy keys for backwards compatibility
       localStorage.setItem('vendor_id', userData.vendor_id);
       if (data.user.vendor) {
@@ -296,7 +286,8 @@ export function AppAuthProvider({ children }: { children: React.ReactNode }) {
 
         // Default apps available to all users: POS, Customers, Digital Menus
         const defaultApps = ['pos', 'customers', 'tv_menus'];
-        const apps = data.user.role === 'vendor_admin' ? [] : (data.apps || defaultApps);
+        const isAdmin = data.user.role === 'vendor_owner' || data.user.role === 'vendor_manager' || data.user.role === 'admin';
+        const apps = isAdmin ? [] : (data.apps || defaultApps);
         setAccessibleApps(apps);
 
         const userLocations = data.locations || [];
@@ -319,8 +310,8 @@ export function AppAuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   function hasAppAccess(appKey: string): boolean {
-    // Vendor admins have access to everything
-    if (user?.role === 'vendor_admin') {
+    // Vendor owners/managers/admins have access to everything
+    if (user?.role === 'vendor_owner' || user?.role === 'vendor_manager' || user?.role === 'admin') {
       return true;
     }
 

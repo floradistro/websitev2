@@ -11,13 +11,27 @@ import { supabase } from '@/lib/supabase/client';
 import { calculatePrice, type Promotion } from '@/lib/pricing';
 
 export default function POSRegisterPage() {
-  const { user, vendor, locations } = useAppAuth();
+  const { user, vendor, locations, isLoading } = useAppAuth();
   const [cart, setCart] = useState<CartItem[]>([]);
   const [showPayment, setShowPayment] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [registerId, setRegisterId] = useState<string | null>(null);
-  const [selectedLocation, setSelectedLocation] = useState<{ id: string; name: string } | null>(null);
+
+  // CRITICAL FIX: Persist selected location in localStorage to survive navigation
+  const [selectedLocation, setSelectedLocation] = useState<{ id: string; name: string } | null>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('pos_selected_location');
+      if (saved) {
+        try {
+          return JSON.parse(saved);
+        } catch (e) {
+          return null;
+        }
+      }
+    }
+    return null;
+  });
   const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
   const [skuInput, setSkuInput] = useState('');
   const [skuLoading, setSkuLoading] = useState(false);
@@ -32,7 +46,10 @@ export default function POSRegisterPage() {
   useEffect(() => {
     if (!selectedLocation && locations.length === 1) {
       const singleLocation = locations[0];
-      setSelectedLocation({ id: singleLocation.id, name: singleLocation.name });
+      const location = { id: singleLocation.id, name: singleLocation.name };
+      setSelectedLocation(location);
+      // CRITICAL FIX: Persist to localStorage
+      localStorage.setItem('pos_selected_location', JSON.stringify(location));
       console.log('🎯 Auto-selected single location:', singleLocation.name);
     }
   }, [locations, selectedLocation]);
@@ -444,13 +461,28 @@ export default function POSRegisterPage() {
   const taxAmount = subtotal * 0.08;
   const total = subtotal + taxAmount;
 
+  // CRITICAL FIX: Wait for context to load before showing location selector
+  // This prevents "No locations found" when navigating back from dashboard
+  if (isLoading) {
+    console.log('⏳ POS waiting for auth context to load...');
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="text-white/40 text-xs uppercase tracking-[0.15em]">Loading...</div>
+      </div>
+    );
+  }
+
   // Show location selector if not selected (for admins or multi-location staff)
   if (!selectedLocation) {
+    console.log('📍 POS showing location selector - locations available:', locations.length);
     return (
       <POSLocationSelector
         locations={locations}
         onLocationSelected={(locationId, locationName) => {
-          setSelectedLocation({ id: locationId, name: locationName });
+          const location = { id: locationId, name: locationName };
+          setSelectedLocation(location);
+          // CRITICAL FIX: Persist to localStorage
+          localStorage.setItem('pos_selected_location', JSON.stringify(location));
           console.log('✅ Location selected:', locationName);
         }}
       />

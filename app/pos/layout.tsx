@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { AppAuthProvider, useAppAuth } from '@/context/AppAuthContext';
+import { useAppAuth } from '@/context/AppAuthContext';
 
 function POSLayoutInner({
   children,
@@ -102,11 +102,10 @@ export default function POSLayout({
 }: {
   children: React.ReactNode;
 }) {
+  // AppAuthProvider moved to root Providers - no longer duplicated here
   return (
-    <AppAuthProvider>
-      <POSLayoutInner>
-        {children}
-      </POSLayoutInner>
-    </AppAuthProvider>
+    <POSLayoutInner>
+      {children}
+    </POSLayoutInner>
   );
 }

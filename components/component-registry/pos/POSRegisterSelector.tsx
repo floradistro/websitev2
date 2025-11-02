@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Monitor, Check, Users, DollarSign, Clock, X } from 'lucide-react';
+import { Monitor, Check, Users, DollarSign, Clock, X, Home, ChevronRight } from 'lucide-react';
+import Link from 'next/link';
 
 interface Register {
   id: string;
@@ -209,6 +210,23 @@ export function POSRegisterSelector({
   return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center p-6">
         <div className="max-w-2xl w-full">
+          {/* Breadcrumbs */}
+          <div className="mb-6">
+            <nav className="flex items-center gap-2 text-sm">
+              <Link
+                href="/vendor/apps"
+                className="flex items-center gap-1 text-white/40 hover:text-white/80 transition-colors uppercase tracking-[0.15em]"
+              >
+                <Home size={16} />
+                <span>Dashboard</span>
+              </Link>
+              <ChevronRight size={16} className="text-white/20" />
+              <span className="text-white/60 uppercase tracking-[0.15em]">POS</span>
+              <ChevronRight size={16} className="text-white/20" />
+              <span className="text-white uppercase tracking-[0.15em]">Select Register</span>
+            </nav>
+          </div>
+
           {/* Header */}
           <div className="text-center mb-8">
             <h1 className="text-3xl font-black text-white uppercase tracking-tight mb-2" style={{ fontWeight: 900 }}>
