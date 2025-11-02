@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Palette, Layout, Sparkles, Grid3x3, Monitor } from 'lucide-react';
 import { themes, type TVTheme } from '@/lib/themes';
-import CategorySelector from '@/components/product-library/CategorySelector';
+import CategorySelector from '@/components/tv-menus/CategorySelector';
 
 interface MenuEditorModalProps {
   menu: any;
