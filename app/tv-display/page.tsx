@@ -686,7 +686,7 @@ function TVDisplayContent() {
       console.log('🎨 Cleaning up menu subscription');
       supabase.removeChannel(channel);
     };
-  }, [activeMenu?.id, activeMenu?.theme, isPreview]);
+  }, [activeMenu?.id, isPreview]);
 
   /**
    * Real-time subscription for display group changes (pricing tier, display config, etc.)
