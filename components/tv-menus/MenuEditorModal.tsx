@@ -1,10 +1,16 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Palette, Layout, Sparkles, Grid3x3, Monitor } from 'lucide-react';
+import { X, Palette, Layout, Sparkles, Grid3x3, Monitor, DollarSign } from 'lucide-react';
 import { themes, type TVTheme } from '@/lib/themes';
 import CategorySelector from '@/components/tv-menus/CategorySelector';
+import {
+  initializeCategoryPricingConfig,
+  getAvailablePriceBreaks,
+  PRICE_BREAK_LABELS,
+  type CategoryPricingConfig
+} from '@/lib/category-pricing-defaults';
 
 interface MenuEditorModalProps {
   menu: any;
@@ -39,9 +45,18 @@ export default function MenuEditorModal({
   const [customFieldsConfig, setCustomFieldsConfig] = useState<{ [field: string]: { showLabel: boolean } }>(
     menu?.config_data?.customFieldsConfig || {}
   );
-  const [visiblePriceBreaks, setVisiblePriceBreaks] = useState<string[]>(
-    menu?.config_data?.visible_price_breaks || []
+
+  // Per-category pricing configuration
+  const [categoryPricingConfig, setCategoryPricingConfig] = useState<CategoryPricingConfig>(
+    menu?.config_data?.categoryPricingConfig || initializeCategoryPricingConfig(menu?.config_data?.categories || [])
   );
+
+  // Update category pricing config when categories change
+  useEffect(() => {
+    if (categories.length > 0) {
+      setCategoryPricingConfig(initializeCategoryPricingConfig(categories, categoryPricingConfig));
+    }
+  }, [categories.join(',')]); // Only update when category list changes
 
   // Layout
   const [layoutStyle, setLayoutStyle] = useState<'single' | 'split'>(menu?.config_data?.layoutStyle || 'single');
@@ -85,7 +100,7 @@ export default function MenuEditorModal({
       categories,
       customFields,
       customFieldsConfig,
-      visiblePriceBreaks,
+      categoryPricingConfig,
       layoutStyle,
       gridColumns,
       gridRows,
@@ -100,14 +115,6 @@ export default function MenuEditorModal({
       enableCarousel,
       carouselInterval
     });
-  };
-
-  const priceBreakLabels: { [key: string]: string } = {
-    '1g': '1g',
-    '3_5g': '3.5g',
-    '7g': '7g',
-    '14g': '14g',
-    '28g': '28g'
   };
 
   return (

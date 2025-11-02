@@ -81,23 +81,29 @@ export function POSVendorDropdown({
   }, []);
 
   const loadActiveSession = useCallback(async () => {
-    if (!registerId) return;
+    if (!registerId) {
+      console.log('⚠️ POSVendorDropdown: No registerId - cannot load session');
+      return;
+    }
 
     try {
+      console.log('📡 Loading active session:', { locationId, registerId });
       const response = await fetch(`/api/pos/sessions/active?locationId=${locationId}&registerId=${registerId}`);
 
       if (response.ok) {
         const data = await response.json();
+        console.log('✅ Session loaded:', data.session);
         setSession(data.session);
 
         if (data.session) {
           loadCashMovements(data.session.id);
         }
       } else {
+        console.log('❌ No active session found');
         setSession(null);
       }
     } catch (error) {
-      console.error('Error loading session:', error);
+      console.error('❌ Error loading session:', error);
       setSession(null);
     }
   }, [locationId, registerId]);
