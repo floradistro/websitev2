@@ -58,6 +58,7 @@ interface POSProductGridProps {
   onSkuInputChange?: (value: string) => void;
   onSkuSubmit?: (e: React.FormEvent) => void;
   skuInputRef?: React.RefObject<HTMLInputElement | null>;
+  onSessionClosed?: () => void;
 }
 
 // Category hierarchy - subcategories grouped under parent categories
@@ -80,6 +81,7 @@ export function POSProductGrid({
   onSkuInputChange,
   onSkuSubmit,
   skuInputRef,
+  onSessionClosed,
 }: POSProductGridProps) {
   const { vendor } = useAppAuth();
   const [products, setProducts] = useState<Product[]>([]);
@@ -479,6 +481,7 @@ export function POSProductGrid({
             userId={userId}
             userName={userName}
             registerId={registerId}
+            onSessionClosed={onSessionClosed}
           />
 
           {/* Search Bar - filters as you type, Enter/double-click/button to lookup SKU */}

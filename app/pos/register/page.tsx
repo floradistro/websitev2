@@ -439,6 +439,11 @@ export default function POSRegisterPage() {
             onSkuInputChange={setSkuInput}
             onSkuSubmit={handleSkuSubmit}
             skuInputRef={skuInputRef}
+            onSessionClosed={() => {
+              setSessionId(null);
+              setRegisterId(null);
+              setCart([]);
+            }}
           />
         </div>
 

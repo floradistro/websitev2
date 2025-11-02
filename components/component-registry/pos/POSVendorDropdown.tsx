@@ -37,6 +37,7 @@ interface POSVendorDropdownProps {
   userName?: string;
   vendorId?: string;
   registerId?: string;
+  onSessionClosed?: () => void;
 }
 
 export function POSVendorDropdown({
@@ -46,6 +47,7 @@ export function POSVendorDropdown({
   userName = 'Staff',
   vendorId = 'cd2e1122-d511-4edb-be5d-98ef274b4baf',
   registerId,
+  onSessionClosed,
 }: POSVendorDropdownProps) {
   const { vendor, refreshUserData } = useAppAuth();
   const [session, setSession] = useState<POSSession | null>(null);
@@ -149,6 +151,10 @@ export function POSVendorDropdown({
             setModal({ isOpen: false, title: '', message: '', type: 'success' });
             loadActiveSession();
             setIsOpen(false);
+            // Notify parent that session was closed
+            if (onSessionClosed) {
+              onSessionClosed();
+            }
           } else {
             const error = await response.json();
             setModal({
