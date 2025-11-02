@@ -19,7 +19,7 @@ export function useStableEffect(effect: () => void | (() => void), deps: any[]) 
         cleanupRef.current();
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // TODO: Review useEffect dependencies
   }, []);
 
   useEffect(() => {
@@ -32,7 +32,7 @@ export function useStableEffect(effect: () => void | (() => void), deps: any[]) 
         cleanupRef.current();
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // TODO: Review useEffect dependencies
   }, deps);
 }
 

@@ -169,7 +169,7 @@ export default function DeliveryAvailability({
         }
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // TODO: Review useEffect dependencies
   }, [selectedTab, selectedStore]);
 
   // Calculate delivery dates

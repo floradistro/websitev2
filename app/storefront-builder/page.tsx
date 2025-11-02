@@ -126,7 +126,7 @@ export default function StorefrontBuilder() {
     if (newCode !== codeEditor.code) {
       codeEditor.setCode(newCode);
     }
-  }, [vendorSelection.selectedVendor]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [vendorSelection.selectedVendor]); // TODO: Review useEffect dependencies
 
   // Listen for clicks in preview iframe
   useEffect(() => {

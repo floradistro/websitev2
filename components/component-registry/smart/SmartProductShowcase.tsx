@@ -78,7 +78,7 @@ export function SmartProductShowcase({
     }
     
     fetchProducts();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // TODO: Review useEffect dependencies
   }, [vendorId, activeFilter, JSON.stringify(categoryIds), limit]);
   
   if (loading) {

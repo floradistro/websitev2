@@ -92,7 +92,7 @@ export function SmartProductGrid({
     }
     
     loadProducts();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // TODO: Review useEffect dependencies
   }, [isClient, vendorId, JSON.stringify(selectedProductIds), JSON.stringify(selectedCategoryIds), maxProducts]);
   
   // Show loading state while hydrating

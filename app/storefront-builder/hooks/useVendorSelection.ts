@@ -42,7 +42,7 @@ export function useVendorSelection(onCodeUpdate: (code: string) => void, onPrevi
       .catch(err => {
         // Vendor fetch failed - continue with default
       });
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []); // TODO: Review useEffect dependencies
 
   // Update code when vendor changes
   const handleVendorChange = (newVendorId: string, currentCode: string) => {

@@ -58,7 +58,7 @@ export function SmartLocationMap({
     }
     
     loadLocations();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // TODO: Review useEffect dependencies
   }, [isClient, vendorId, JSON.stringify(selectedLocationIds)]);
   
   // SSR: render nothing to avoid hydration mismatch
