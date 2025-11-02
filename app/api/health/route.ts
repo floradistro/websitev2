@@ -1,13 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   const checks = {
     timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'unknown',
     status: 'healthy',
+    env: {
+      supabaseUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
+      supabaseUrlLength: process.env.NEXT_PUBLIC_SUPABASE_URL?.length || 0,
+      supabaseAnonKey: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+      supabaseAnonKeyLength: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.length || 0,
+      supabaseServiceKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
+      supabaseServiceKeyLength: process.env.SUPABASE_SERVICE_ROLE_KEY?.length || 0,
+    },
     checks: {
       database: { status: 'unknown', latency: 0 },
       api: { status: 'healthy', latency: 0 },
@@ -15,6 +23,22 @@ export async function GET(request: NextRequest) {
       storage: { status: 'unknown', latency: 0 }
     }
   };
+
+  // Check for missing environment variables
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    checks.status = 'unhealthy';
+    return NextResponse.json({
+      ...checks,
+      error: 'Missing required environment variables',
+      missing: {
+        supabaseUrl: !process.env.NEXT_PUBLIC_SUPABASE_URL,
+        serviceKey: !process.env.SUPABASE_SERVICE_ROLE_KEY,
+      }
+    }, { status: 503 });
+  }
+
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
   try {
     // Database check

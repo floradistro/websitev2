@@ -186,11 +186,22 @@ const nextConfig: NextConfig = {
         ],
       },
       {
+        // POS API routes - NEVER cache (real-time data required)
+        source: '/api/pos/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-store, no-cache, must-revalidate, max-age=0',
+          },
+        ],
+      },
+      {
+        // All other API routes - cache in production
         source: '/api/:path*',
         headers: [
           {
             key: 'Cache-Control',
-            value: isDev 
+            value: isDev
               ? 'no-store, no-cache, must-revalidate, max-age=0'
               : 'public, s-maxage=60, stale-while-revalidate=30',
           },
