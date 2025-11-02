@@ -165,6 +165,11 @@ export default function SimpleTVMenusPage() {
       return;
     }
 
+    if (!permissionsLoaded) {
+      console.log('⏸️ loadData: Permissions not loaded yet, skipping');
+      return;
+    }
+
     console.log('🔄 loadData: Starting...');
     console.log('   vendorId:', vendor.id);
     console.log('   selectedLocation:', selectedLocation);
@@ -266,7 +271,7 @@ export default function SimpleTVMenusPage() {
       console.error('❌ Error loading data:', err);
       setLoading(false);
     }
-  }, [vendor, selectedLocation, accessibleLocationIds]);
+  }, [vendor, selectedLocation, accessibleLocationIds, permissionsLoaded]);
 
   useEffect(() => {
     loadData();
