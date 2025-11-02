@@ -1844,7 +1844,7 @@ export default function SimpleTVMenusPage() {
                         >
                           {/* Theme Preview */}
                           <div
-                            className="h-20 rounded-lg mb-2 overflow-hidden relative"
+                            className="h-20 rounded-lg mb-2 overflow-hidden relative pointer-events-none"
                             style={{
                               background: theme.preview.background,
                             }}
@@ -1870,7 +1870,7 @@ export default function SimpleTVMenusPage() {
                           </div>
 
                           {/* Theme Name & Description */}
-                          <div>
+                          <div className="pointer-events-none">
                             <div className="text-white font-bold text-sm mb-0.5">
                               {theme.name}
                             </div>
@@ -1884,7 +1884,7 @@ export default function SimpleTVMenusPage() {
                             <motion.div
                               initial={{ scale: 0 }}
                               animate={{ scale: 1 }}
-                              className="absolute top-2 right-2 w-5 h-5 bg-white rounded-full flex items-center justify-center"
+                              className="absolute top-2 right-2 w-5 h-5 bg-white rounded-full flex items-center justify-center pointer-events-none"
                             >
                               <div className="w-2 h-2 bg-black rounded-full" />
                             </motion.div>
