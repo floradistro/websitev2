@@ -22,8 +22,10 @@ export async function GET(request: NextRequest) {
 
     const supabase = getServiceSupabase();
 
-    // Fetch products with all necessary relationships, filtered by location inventory
-    let query = supabase
+    // Fetch products with all necessary relationships
+    // NOTE: We fetch ALL inventory records and filter in JavaScript below
+    // Using .eq('inventory.location_id') would exclude products without inventory records entirely
+    const query = supabase
       .from('products')
       .select(`
         *,
@@ -47,14 +49,10 @@ export async function GET(request: NextRequest) {
         )
       `)
       .eq('vendor_id', vendorId)
-      .eq('status', 'published');
+      .eq('status', 'published')
+      .order('name');
 
-    // Filter by location if provided
-    if (locationId) {
-      query = query.eq('inventory.location_id', locationId);
-    }
-
-    const { data: products, error } = await query.order('name');
+    const { data: products, error } = await query;
 
     if (error) {
       console.error('❌ Error fetching TV display products:', error);
