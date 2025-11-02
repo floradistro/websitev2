@@ -39,7 +39,8 @@ export async function GET(request: NextRequest) {
       .from('products')
       .select(`
         id,
-        primary_category:categories!products_primary_category_id_fkey(id, name),
+        primary_category_id,
+        categories!products_primary_category_id_fkey(id, name),
         product_pricing_assignments(
           pricing_tier_blueprints(
             id,
@@ -69,7 +70,8 @@ export async function GET(request: NextRequest) {
     const categoryToTiers = new Map<string, Set<string>>();
 
     for (const product of products) {
-      const categoryName = product.primary_category?.name;
+      const category = product.categories as any;
+      const categoryName = category?.name;
       if (!categoryName) continue;
 
       // Initialize set for this category
