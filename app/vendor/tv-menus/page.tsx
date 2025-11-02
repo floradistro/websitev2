@@ -1901,7 +1901,13 @@ export default function SimpleTVMenusPage() {
                   </div>
                 )}
 
-                <div className="flex gap-3 pt-4">
+                {/* Extra padding at bottom to prevent content from being hidden behind sticky buttons */}
+                <div className="h-20"></div>
+              </div>
+
+              {/* Sticky Action Buttons */}
+              <div className="sticky bottom-0 left-0 right-0 bg-gradient-to-t from-black via-black to-transparent pt-6 pb-0 px-8 -mx-8 -mb-8">
+                <div className="flex gap-3">
                   <button
                     onClick={() => {
                       setEditingMenu(null);
