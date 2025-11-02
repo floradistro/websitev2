@@ -151,25 +151,26 @@ export default function POSRegisterPage() {
       })
       .subscribe();
 
-    // Backup polling every 10 seconds
+    // Backup polling every 30 seconds - only to catch missed realtime events
     const checkSession = async () => {
       try {
-        const { data: session } = await supabase
+        const { data: session, error } = await supabase
           .from('pos_sessions')
           .select('id, status')
           .eq('id', sessionId)
           .single();
 
-        if (!session || session.status !== 'open') {
+        // Only kick out if session explicitly closed, NOT on database errors
+        if (!error && session && session.status === 'closed') {
           handleSessionClosed();
         }
       } catch (error) {
-        console.error('Error checking session:', error);
-        handleSessionClosed();
+        // Don't kick out on errors - database might be temporarily unavailable
+        console.error('Error checking session (not kicking out):', error);
       }
     };
 
-    const interval = setInterval(checkSession, 10000);
+    const interval = setInterval(checkSession, 30000);
 
     return () => {
       supabase.removeChannel(channel);
