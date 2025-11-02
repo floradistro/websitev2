@@ -36,22 +36,28 @@ export function POSRegisterSelector({
   useEffect(() => {
     loadRegisters();
 
-    // Subscribe to database changes for session updates
+    // Real-time listener for session changes
     const channel = supabase
-      .channel(`pos-sessions-db-${locationId}`)
+      .channel(`register-sessions-${locationId}-${Date.now()}`)
       .on('postgres_changes', {
         event: '*',
         schema: 'public',
         table: 'pos_sessions',
         filter: `location_id=eq.${locationId}`,
       }, (payload) => {
-        console.log('🔄 Session database change:', payload.eventType);
+        console.log('🔄 Session changed:', payload.eventType);
         loadRegisters();
       })
       .subscribe();
 
+    // Backup polling every 30 seconds in case realtime fails
+    const interval = setInterval(() => {
+      loadRegisters();
+    }, 30000);
+
     return () => {
       supabase.removeChannel(channel);
+      clearInterval(interval);
     };
   }, [locationId]);
 

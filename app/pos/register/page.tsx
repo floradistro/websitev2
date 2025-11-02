@@ -25,6 +25,77 @@ export default function POSRegisterPage() {
   const skuInputRef = useRef<HTMLInputElement>(null);
   const [promotions, setPromotions] = useState<Promotion[]>([]);
   const [productsCache, setProductsCache] = useState<Map<string, any>>(new Map());
+  const [showSessionModal, setShowSessionModal] = useState(false);
+  const [existingSessionInfo, setExistingSessionInfo] = useState<any>(null);
+
+  // Check for existing session on mount
+  useEffect(() => {
+    if (!registerId) return;
+
+    const checkExistingSession = async () => {
+      try {
+        const { data: existingSession } = await supabase
+          .from('pos_sessions')
+          .select('id, session_number, total_sales, opened_at')
+          .eq('register_id', registerId)
+          .eq('status', 'open')
+          .maybeSingle();
+
+        if (existingSession && !sessionId) {
+          // Found existing session - show modal
+          setExistingSessionInfo(existingSession);
+          setShowSessionModal(true);
+        }
+      } catch (error) {
+        console.error('Error checking for existing session:', error);
+      }
+    };
+
+    checkExistingSession();
+  }, [registerId, sessionId]);
+
+  const handleJoinSession = () => {
+    if (existingSessionInfo) {
+      setSessionId(existingSessionInfo.id);
+      setShowSessionModal(false);
+    }
+  };
+
+  const handleStartNewSession = async () => {
+    // Close existing session and start new one
+    if (existingSessionInfo) {
+      try {
+        await fetch('/api/pos/sessions/close', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            sessionId: existingSessionInfo.id,
+            closingCash: 0,
+            closingNotes: 'Closed to start new session',
+          }),
+        });
+
+        // Start new session
+        const response = await fetch('/api/pos/sessions/open', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            registerId,
+            locationId: CHARLOTTE_CENTRAL_ID,
+          }),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setSessionId(data.session.id);
+          setShowSessionModal(false);
+        }
+      } catch (error) {
+        console.error('Error starting new session:', error);
+        alert('Failed to start new session');
+      }
+    }
+  };
 
   // Load promotions
   const loadPromotions = async () => {
@@ -45,54 +116,43 @@ export default function POSRegisterPage() {
     loadPromotions();
   }, []);
 
-  // Subscribe to database changes for promotion updates
-  useEffect(() => {
-    const channel = supabase
-      .channel(`pos-promotions-db`)
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'promotions',
-        filter: `vendor_id=eq.${FLORA_DISTRO_VENDOR_ID}`,
-      }, (payload) => {
-        console.log('🎉 Promotion database change:', payload.eventType);
-        loadPromotions();
-      })
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, []);
-
-  // Monitor session status - kick back to register selector if session closes
+  // Real-time session monitoring with fallback polling
   useEffect(() => {
     if (!sessionId || !registerId) return;
 
-    console.log('👀 Monitoring session:', sessionId);
+    const handleSessionClosed = () => {
+      console.log('❌ Session closed, returning to register selector');
+      setSessionId(null);
+      setRegisterId(null);
+      setCart([]);
+    };
 
+    // Real-time listener for session updates
     const channel = supabase
-      .channel(`pos-session-monitor-${sessionId}`)
+      .channel(`pos-session-${sessionId}-${Date.now()}`)
       .on('postgres_changes', {
         event: 'UPDATE',
         schema: 'public',
         table: 'pos_sessions',
         filter: `id=eq.${sessionId}`,
       }, (payload) => {
-        console.log('🔄 Session update received:', payload);
-
-        // If this session was closed, kick back to register selector
+        console.log('🔄 Session updated:', payload.new);
         if (payload.new.status === 'closed') {
-          console.log('❌ Session closed, returning to register selector');
-          setSessionId(null);
-          setRegisterId(null);
-          setCart([]);
+          handleSessionClosed();
         }
+      })
+      .on('postgres_changes', {
+        event: 'DELETE',
+        schema: 'public',
+        table: 'pos_sessions',
+        filter: `id=eq.${sessionId}`,
+      }, () => {
+        handleSessionClosed();
       })
       .subscribe();
 
-    // Verify session still exists periodically
-    const verifySession = async () => {
+    // Backup polling every 10 seconds
+    const checkSession = async () => {
       try {
         const { data: session } = await supabase
           .from('pos_sessions')
@@ -101,18 +161,15 @@ export default function POSRegisterPage() {
           .single();
 
         if (!session || session.status !== 'open') {
-          console.log('❌ Session no longer active, returning to register selector');
-          setSessionId(null);
-          setRegisterId(null);
-          setCart([]);
+          handleSessionClosed();
         }
       } catch (error) {
-        console.error('Error verifying session:', error);
+        console.error('Error checking session:', error);
+        handleSessionClosed();
       }
     };
 
-    // Check session every 30 seconds (don't check immediately to avoid race condition)
-    const interval = setInterval(verifySession, 30000);
+    const interval = setInterval(checkSession, 10000);
 
     return () => {
       supabase.removeChannel(channel);
@@ -469,6 +526,48 @@ export default function POSRegisterPage() {
           onPaymentComplete={handlePaymentComplete}
           onCancel={() => setShowPayment(false)}
         />
+      )}
+
+      {/* Existing Session Modal */}
+      {showSessionModal && existingSessionInfo && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-black border-2 border-white/20 rounded-2xl p-8 max-w-md w-full">
+            <h2 className="text-2xl font-black text-white uppercase tracking-tight mb-4" style={{ fontWeight: 900 }}>
+              Session Active
+            </h2>
+            <p className="text-white/60 text-sm mb-6">
+              This register has an active session. Would you like to join it or start a new one?
+            </p>
+
+            <div className="space-y-3 mb-6">
+              <div className="bg-white/5 rounded-xl p-4 space-y-2">
+                <div className="text-white/40 text-xs uppercase tracking-[0.15em]">Session</div>
+                <div className="text-white font-bold">{existingSessionInfo.session_number}</div>
+              </div>
+              <div className="bg-white/5 rounded-xl p-4 space-y-2">
+                <div className="text-white/40 text-xs uppercase tracking-[0.15em]">Total Sales</div>
+                <div className="text-white font-bold">${existingSessionInfo.total_sales.toFixed(2)}</div>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <button
+                onClick={handleJoinSession}
+                className="w-full py-3 bg-white text-black rounded-xl hover:bg-white/90 transition-all text-sm font-black uppercase tracking-[0.15em]"
+                style={{ fontWeight: 900 }}
+              >
+                Join Session
+              </button>
+              <button
+                onClick={handleStartNewSession}
+                className="w-full py-3 bg-red-500/10 border border-red-500/30 text-red-400 rounded-xl hover:bg-red-500/20 hover:border-red-500/50 transition-all text-sm font-black uppercase tracking-[0.15em]"
+                style={{ fontWeight: 900 }}
+              >
+                End & Start New
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

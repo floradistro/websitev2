@@ -30,11 +30,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (session.status !== 'open') {
-      return NextResponse.json(
-        { error: 'Session is not open' },
-        { status: 400 }
-      );
+    if (session.status === 'closed') {
+      // Already closed - return success with existing data
+      return NextResponse.json({
+        success: true,
+        message: 'Session already closed',
+        summary: {
+          session_number: session.session_number,
+          total_sales: session.total_sales,
+          total_transactions: session.total_transactions,
+          status: 'closed',
+        },
+      });
     }
 
     // Calculate expected cash
