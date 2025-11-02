@@ -5,19 +5,19 @@ import { POSProductGrid } from '@/components/component-registry/pos/POSProductGr
 import { POSCart, CartItem } from '@/components/component-registry/pos/POSCart';
 import { POSPayment, PaymentData } from '@/components/component-registry/pos/POSPayment';
 import { POSRegisterSelector } from '@/components/component-registry/pos/POSRegisterSelector';
+import { POSLocationSelector } from '@/components/component-registry/pos/POSLocationSelector';
+import { useAppAuth } from '@/context/AppAuthContext';
 import { supabase } from '@/lib/supabase/client';
 import { calculatePrice, type Promotion } from '@/lib/pricing';
 
-// For now, hardcode Charlotte Central - will add location selector later
-const CHARLOTTE_CENTRAL_ID = 'c4eedafb-4050-4d2d-a6af-e164aad5d934';
-const FLORA_DISTRO_VENDOR_ID = 'cd2e1122-d511-4edb-be5d-98ef274b4baf';
-
 export default function POSRegisterPage() {
+  const { user, vendor, locations } = useAppAuth();
   const [cart, setCart] = useState<CartItem[]>([]);
   const [showPayment, setShowPayment] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [registerId, setRegisterId] = useState<string | null>(null);
+  const [selectedLocation, setSelectedLocation] = useState<{ id: string; name: string } | null>(null);
   const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
   const [skuInput, setSkuInput] = useState('');
   const [skuLoading, setSkuLoading] = useState(false);
@@ -27,6 +27,15 @@ export default function POSRegisterPage() {
   const [productsCache, setProductsCache] = useState<Map<string, any>>(new Map());
   const [showSessionModal, setShowSessionModal] = useState(false);
   const [existingSessionInfo, setExistingSessionInfo] = useState<any>(null);
+
+  // Auto-select location for single-location staff
+  useEffect(() => {
+    if (!selectedLocation && locations.length === 1) {
+      const singleLocation = locations[0];
+      setSelectedLocation({ id: singleLocation.id, name: singleLocation.name });
+      console.log('🎯 Auto-selected single location:', singleLocation.name);
+    }
+  }, [locations, selectedLocation]);
 
   // Check for existing session on mount
   useEffect(() => {
@@ -81,7 +90,7 @@ export default function POSRegisterPage() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             registerId,
-            locationId: CHARLOTTE_CENTRAL_ID,
+            locationId: selectedLocation?.id,
           }),
         });
 
@@ -99,8 +108,9 @@ export default function POSRegisterPage() {
 
   // Load promotions
   const loadPromotions = async () => {
+    if (!vendor?.id) return;
     try {
-      const response = await fetch(`/api/vendor/promotions?vendor_id=${FLORA_DISTRO_VENDOR_ID}`);
+      const response = await fetch(`/api/vendor/promotions?vendor_id=${vendor.id}`);
       const data = await response.json();
       if (data.success) {
         setPromotions(data.promotions || []);
@@ -114,7 +124,7 @@ export default function POSRegisterPage() {
   // Load initial data
   useEffect(() => {
     loadPromotions();
-  }, []);
+  }, [vendor]);
 
   // Simple session monitoring with polling - works on all devices/networks
   useEffect(() => {
@@ -150,8 +160,9 @@ export default function POSRegisterPage() {
   }, [sessionId, registerId]);
 
   const loadActiveSession = async () => {
+    if (!selectedLocation?.id) return;
     try {
-      const response = await fetch(`/api/pos/sessions/active?locationId=${CHARLOTTE_CENTRAL_ID}`);
+      const response = await fetch(`/api/pos/sessions/active?locationId=${selectedLocation.id}`);
       if (response.ok) {
         const data = await response.json();
         if (data.session) {
@@ -306,7 +317,7 @@ export default function POSRegisterPage() {
 
     try {
       const response = await fetch(
-        `/api/pos/products/lookup?sku=${encodeURIComponent(sku.trim())}&location_id=${CHARLOTTE_CENTRAL_ID}`
+        `/api/pos/products/lookup?sku=${encodeURIComponent(sku.trim())}&location_id=${selectedLocation?.id}`
       );
 
       if (!response.ok) {
@@ -388,10 +399,10 @@ export default function POSRegisterPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          locationId: CHARLOTTE_CENTRAL_ID,
-          vendorId: FLORA_DISTRO_VENDOR_ID,
+          locationId: selectedLocation?.id,
+          vendorId: vendor?.id,
           sessionId,
-          userId: null, // TODO: Get from auth
+          userId: user?.id,
           items: cart,
           subtotal,
           taxAmount,
@@ -433,12 +444,25 @@ export default function POSRegisterPage() {
   const taxAmount = subtotal * 0.08;
   const total = subtotal + taxAmount;
 
-  // Show register selector if not assigned
+  // Show location selector if not selected (for admins or multi-location staff)
+  if (!selectedLocation) {
+    return (
+      <POSLocationSelector
+        locations={locations}
+        onLocationSelected={(locationId, locationName) => {
+          setSelectedLocation({ id: locationId, name: locationName });
+          console.log('✅ Location selected:', locationName);
+        }}
+      />
+    );
+  }
+
+  // Show register selector if location selected but no register assigned
   if (!registerId) {
     return (
       <POSRegisterSelector
-        locationId={CHARLOTTE_CENTRAL_ID}
-        locationName="Charlotte Central"
+        locationId={selectedLocation.id}
+        locationName={selectedLocation.name}
         onRegisterSelected={(id, sessionId) => {
           setRegisterId(id);
           if (sessionId) {
@@ -456,10 +480,10 @@ export default function POSRegisterPage() {
         {/* Left: Product Selection */}
         <div className="flex-1 flex flex-col overflow-hidden">
           <POSProductGrid
-            locationId={CHARLOTTE_CENTRAL_ID}
-            locationName="Charlotte Central"
-            vendorId={FLORA_DISTRO_VENDOR_ID}
-            userName="Staff Member"
+            locationId={selectedLocation.id}
+            locationName={selectedLocation.name}
+            vendorId={vendor?.id || ''}
+            userName={user?.name || 'Staff Member'}
             registerId={registerId}
             onAddToCart={handleAddToCart}
             displayMode="cards"
@@ -480,7 +504,7 @@ export default function POSRegisterPage() {
         <div className="w-[400px] flex-shrink-0 border-l border-white/10 bg-[#0a0a0a]">
           <POSCart
             items={cart}
-            vendorId={FLORA_DISTRO_VENDOR_ID}
+            vendorId={vendor?.id || ''}
             onUpdateQuantity={handleUpdateQuantity}
             onRemoveItem={handleRemoveItem}
             onClearCart={handleClearCart}
