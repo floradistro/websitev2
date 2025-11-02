@@ -587,22 +587,26 @@ export async function POST(request: NextRequest) {
         console.error('⚠️  Alpine IQ sync failed (continuing anyway):', error);
 
         // Queue for retry
-        await supabase
-          .from('alpine_iq_sync_queue')
-          .insert({
-            vendor_id: vendorId,
-            type: 'sale',
-            data: {
-              order_id: order.id,
-              order_number: orderNumber,
-              customer_id: customerId
-            },
-            status: 'pending',
-            retry_count: 0,
-            error_message: error.message
-          })
-          .then(() => console.log('📝 Sale queued for Alpine IQ retry'))
-          .catch(() => {}); // Ignore queue errors
+        try {
+          await supabase
+            .from('alpine_iq_sync_queue')
+            .insert({
+              vendor_id: vendorId,
+              type: 'sale',
+              data: {
+                order_id: order.id,
+                order_number: orderNumber,
+                customer_id: customerId
+              },
+              status: 'pending',
+              retry_count: 0,
+              error_message: error.message
+            });
+          console.log('📝 Sale queued for Alpine IQ retry');
+        } catch (queueError) {
+          // Ignore queue errors - don't fail the sale
+          console.error('Failed to queue for retry:', queueError);
+        }
       }
     }
 
