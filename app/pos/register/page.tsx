@@ -141,8 +141,8 @@ export default function POSRegisterPage() {
       }
     };
 
-    // Poll every 3 seconds - same as Square POS
-    const interval = setInterval(checkSession, 3000);
+    // Poll every 2 seconds - fast enough to prevent issues
+    const interval = setInterval(checkSession, 2000);
 
     return () => {
       clearInterval(interval);

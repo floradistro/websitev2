@@ -37,10 +37,10 @@ export function POSRegisterSelector({
     // Initial load
     loadRegisters();
 
-    // Aggressive polling every 3 seconds - reliable for all devices/networks
+    // Aggressive polling every 2 seconds - fast enough to prevent duplicate sessions
     const interval = setInterval(() => {
       loadRegisters();
-    }, 3000);
+    }, 2000);
 
     return () => {
       clearInterval(interval);
@@ -68,11 +68,21 @@ export function POSRegisterSelector({
   };
 
   const handleSelectRegister = async (register: Register) => {
-    // If register has active session, just join it directly
-    if (register.current_session) {
-      console.log('✅ Joining existing session:', register.current_session.id);
-      onRegisterSelected(register.id, register.current_session.id);
-      return;
+    // CRITICAL: Fetch LATEST register state to prevent duplicate sessions
+    console.log('🔄 Fetching latest register state before proceeding...');
+    await loadRegisters();
+
+    // Re-check register state after refresh
+    const response = await fetch(`/api/pos/registers?locationId=${locationId}`);
+    if (response.ok) {
+      const data = await response.json();
+      const latestRegister = data.registers?.find((r: Register) => r.id === register.id);
+
+      if (latestRegister?.current_session) {
+        console.log('✅ Joining existing session:', latestRegister.current_session.id);
+        onRegisterSelected(register.id, latestRegister.current_session.id);
+        return;
+      }
     }
 
     // No active session - start new one

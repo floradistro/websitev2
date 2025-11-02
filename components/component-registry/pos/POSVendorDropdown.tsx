@@ -120,8 +120,8 @@ export function POSVendorDropdown({
     // Initial load
     loadActiveSession();
 
-    // Aggressive polling every 3 seconds - works on all devices/networks
-    const interval = setInterval(loadActiveSession, 3000);
+    // Aggressive polling every 2 seconds - fast updates
+    const interval = setInterval(loadActiveSession, 2000);
 
     return () => {
       clearInterval(interval);
