@@ -280,39 +280,77 @@ export default function MenuEditorModal({
                   )}
                 </div>
 
-                {/* Price Breaks */}
-                <div>
-                  <label className="block text-sm font-bold text-white mb-3">Pricing Tiers</label>
-                  <div className="flex flex-wrap gap-2">
-                    {availablePriceBreaks.map((breakId) => {
-                      const isSelected = visiblePriceBreaks.includes(breakId);
-                      const displayName = priceBreakLabels[breakId] || breakId;
+                {/* Per-Category Pricing Configuration */}
+                {categories.length > 0 && (
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2">
+                      <DollarSign size={18} className="text-green-500" />
+                      <label className="text-sm font-bold text-white">Pricing Tiers by Category</label>
+                    </div>
 
-                      return (
-                        <button
-                          key={breakId}
-                          onClick={() => {
-                            if (isSelected) {
-                              setVisiblePriceBreaks(visiblePriceBreaks.filter(b => b !== breakId));
-                            } else {
-                              setVisiblePriceBreaks([...visiblePriceBreaks, breakId]);
-                            }
-                          }}
-                          className={`px-4 py-2 rounded-full text-sm font-bold transition-all ${
-                            isSelected
-                              ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-lg'
-                              : 'bg-white/10 text-white hover:bg-white/20'
-                          }`}
-                        >
-                          {displayName}
-                        </button>
-                      );
-                    })}
+                    <div className="bg-white/5 border border-white/10 rounded-xl p-4 space-y-4">
+                      {categories.map(category => {
+                        const config = categoryPricingConfig[category];
+                        if (!config) return null;
+
+                        const { available, selected } = config;
+
+                        return (
+                          <div key={category} className="space-y-2">
+                            {/* Category Header */}
+                            <div className="flex items-center justify-between">
+                              <h4 className="text-sm font-bold text-white">{category}</h4>
+                              <span className="text-xs text-white/50">
+                                {selected.length} of {available.length} selected
+                              </span>
+                            </div>
+
+                            {/* Pricing Options */}
+                            <div className="flex flex-wrap gap-2">
+                              {available.map(priceBreak => {
+                                const isSelected = selected.includes(priceBreak);
+                                const displayName = PRICE_BREAK_LABELS[priceBreak] || priceBreak;
+
+                                return (
+                                  <button
+                                    key={priceBreak}
+                                    onClick={() => {
+                                      const newSelected = isSelected
+                                        ? selected.filter(b => b !== priceBreak)
+                                        : [...selected, priceBreak];
+
+                                      setCategoryPricingConfig({
+                                        ...categoryPricingConfig,
+                                        [category]: { ...config, selected: newSelected }
+                                      });
+                                    }}
+                                    className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
+                                      isSelected
+                                        ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-lg scale-105'
+                                        : 'bg-white/10 text-white/70 hover:bg-white/20 hover:text-white'
+                                    }`}
+                                  >
+                                    {displayName}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    <p className="text-xs text-white/40">
+                      💡 Each category shows only relevant pricing options. Select which prices to display on your menu.
+                    </p>
                   </div>
-                  {visiblePriceBreaks.length === 0 && (
-                    <p className="text-xs text-white/40 mt-2">No pricing selected - prices won't display</p>
-                  )}
-                </div>
+                )}
+
+                {categories.length === 0 && (
+                  <div className="bg-white/5 border border-white/10 rounded-xl p-6 text-center">
+                    <p className="text-sm text-white/50">Select categories above to configure pricing tiers</p>
+                  </div>
+                )}
               </motion.div>
             )}
 

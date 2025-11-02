@@ -122,18 +122,18 @@ export default function POSRegisterPage() {
 
     const checkSession = async () => {
       try {
-        const { data: session, error } = await supabase
-          .from('pos_sessions')
-          .select('id, status')
-          .eq('id', sessionId)
-          .single();
+        const response = await fetch(`/api/pos/sessions/status?sessionId=${sessionId}`);
 
-        // Kick out ONLY if session is explicitly closed
-        if (!error && session && session.status === 'closed') {
-          console.log('❌ Session closed, returning to register selector');
-          setSessionId(null);
-          setRegisterId(null);
-          setCart([]);
+        if (response.ok) {
+          const { session } = await response.json();
+
+          // Kick out ONLY if session is explicitly closed
+          if (session && session.status === 'closed') {
+            console.log('❌ Session closed, returning to register selector');
+            setSessionId(null);
+            setRegisterId(null);
+            setCart([]);
+          }
         }
       } catch (error) {
         // Don't kick out on errors - just log them
