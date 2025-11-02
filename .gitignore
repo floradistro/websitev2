@@ -57,3 +57,4 @@ backups/*.sql
 playwright/.auth/
 .env.local
 build-output.log
+ai-agent/dist/
