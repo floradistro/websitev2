@@ -44,11 +44,17 @@ export function SubcategoryGroup({
   const firstProduct = products[0];
   const pricingTiers = firstProduct?.pricing_tiers || {};
   const pricingBlueprint = firstProduct?.pricing_blueprint;
-  const priceBreaks = pricingBlueprint?.price_breaks || [];
+  const priceBreaks = (pricingBlueprint?.price_breaks || []) as Array<{
+    break_id: string;
+    label: string;
+    qty: number;
+    unit: string;
+    sort_order: number;
+  }>;
 
   // Create a map of break_id to price break info (for labels)
   const priceBreakMap = new Map(
-    priceBreaks.map((pb: any) => [pb.break_id, pb])
+    priceBreaks.map((pb) => [pb.break_id, pb])
   );
 
   // Filter to only show enabled pricing breaks that are in visiblePriceBreaks
@@ -63,7 +69,7 @@ export function SubcategoryGroup({
       return {
         breakId,
         label: priceBreak?.label || breakId,
-        qty: priceBreak?.qty,
+        qty: priceBreak?.qty || 1,
         unit: priceBreak?.unit || '',
         price: breakData.price,
         sortOrder: priceBreak?.sort_order || 999
