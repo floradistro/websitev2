@@ -23,9 +23,9 @@ export default function VendorLogin() {
       const success = await login(email, password);
 
       if (success) {
-        // Force router refresh to ensure auth context is fully loaded before navigating
-        router.refresh();
-        router.push('/vendor/apps');
+        // Force full page reload to ensure auth context is properly initialized
+        // This prevents the issue where apps don't show until manual refresh
+        window.location.href = '/vendor/apps';
       } else {
         setError('Invalid email or password. Please try again.');
       }
