@@ -13,7 +13,7 @@ export const runtime = 'nodejs';
 export async function POST(request: NextRequest) {
   try {
     // Get auth token from HTTP-only cookie
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const authToken = cookieStore.get('auth_token')?.value;
 
     if (!authToken) {

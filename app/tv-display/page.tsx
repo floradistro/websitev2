@@ -1290,7 +1290,7 @@ function TVDisplayContent() {
                       product={product}
                       theme={theme}
                       index={index}
-                      visiblePriceBreaks={visiblePriceBreaks}
+                      visiblePriceBreaks={getPriceBreaksForProduct(product)}
                       displayConfig={displayGroup?.display_config}
                       customFieldsToShow={activeMenu?.config_data?.customFields || []}
                       customFieldsConfig={activeMenu?.config_data?.customFieldsConfig || {}}

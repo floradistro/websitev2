@@ -5,7 +5,7 @@ export async function POST(request: NextRequest) {
   try {
     const {
       menuId, name, description, theme, display_mode, gridColumns, gridRows, categories, customFields, customFieldsConfig,
-      visible_price_breaks, hideAllFieldLabels, layoutStyle, splitLeftCategory, splitLeftTitle,
+      visible_price_breaks, categoryPricingConfig, hideAllFieldLabels, layoutStyle, splitLeftCategory, splitLeftTitle,
       splitLeftCustomFields, splitLeftPriceBreaks, splitRightCategory, splitRightTitle,
       splitRightCustomFields, splitRightPriceBreaks, enableCarousel, carouselInterval
     } = await request.json();
@@ -38,6 +38,9 @@ export async function POST(request: NextRequest) {
     }
     if (visible_price_breaks !== undefined) {
       config_data.visible_price_breaks = visible_price_breaks;
+    }
+    if (categoryPricingConfig !== undefined) {
+      config_data.categoryPricingConfig = categoryPricingConfig;
     }
     if (hideAllFieldLabels !== undefined) {
       config_data.hideAllFieldLabels = hideAllFieldLabels;
