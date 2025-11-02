@@ -9,6 +9,7 @@ export async function GET(request: NextRequest) {
     const supabase = getServiceSupabase();
     const { searchParams } = new URL(request.url);
     const locationId = searchParams.get('locationId');
+    const registerId = searchParams.get('registerId');
 
     if (!locationId) {
       return NextResponse.json(
@@ -17,8 +18,8 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get active session for this location
-    const { data: session, error } = await supabase
+    // Build query
+    let query = supabase
       .from('pos_sessions')
       .select(`
         id,
@@ -35,7 +36,14 @@ export async function GET(request: NextRequest) {
         last_transaction_at
       `)
       .eq('location_id', locationId)
-      .eq('status', 'open')
+      .eq('status', 'open');
+
+    // Filter by register if provided
+    if (registerId) {
+      query = query.eq('register_id', registerId);
+    }
+
+    const { data: session, error } = await query
       .order('opened_at', { ascending: false })
       .limit(1)
       .maybeSingle();

@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
           )
         ),
         primary_category:categories!primary_category_id(name),
-        inventory:inventory_items(
+        inventory!product_id(
           id,
           quantity,
           location_id

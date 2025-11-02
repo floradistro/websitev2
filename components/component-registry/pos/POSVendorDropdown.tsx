@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { DollarSign, ChevronDown, MapPin, User, CreditCard, ShoppingBag, Clock, LogOut, Package } from 'lucide-react';
 import { POSModal } from './POSModal';
 import { POSCashDrawer } from './POSCashDrawer';
+import { supabase } from '@/lib/supabase/client';
 
 interface POSSession {
   id: string;
@@ -81,8 +82,10 @@ export function POSVendorDropdown({
   }, []);
 
   const loadActiveSession = useCallback(async () => {
+    if (!registerId) return;
+
     try {
-      const response = await fetch(`/api/pos/sessions/active?locationId=${locationId}`);
+      const response = await fetch(`/api/pos/sessions/active?locationId=${locationId}&registerId=${registerId}`);
 
       if (response.ok) {
         const data = await response.json();
@@ -98,7 +101,7 @@ export function POSVendorDropdown({
       console.error('Error loading session:', error);
       setSession(null);
     }
-  }, [locationId]);
+  }, [locationId, registerId]);
 
   const loadCashMovements = async (sessionId: string) => {
     try {
@@ -113,10 +116,32 @@ export function POSVendorDropdown({
   };
 
   useEffect(() => {
+    if (!registerId) return;
+
     loadActiveSession();
-    const interval = setInterval(loadActiveSession, 30000);
-    return () => clearInterval(interval);
-  }, [loadActiveSession]);
+
+    // Real-time listener for session changes
+    const channel = supabase
+      .channel(`vendor-dropdown-sessions-${registerId}-${Date.now()}`)
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'pos_sessions',
+        filter: `register_id=eq.${registerId}`,
+      }, (payload) => {
+        console.log('🔄 Vendor dropdown - session changed:', payload.eventType);
+        loadActiveSession();
+      })
+      .subscribe();
+
+    // Backup polling every 10 seconds
+    const interval = setInterval(loadActiveSession, 10000);
+
+    return () => {
+      supabase.removeChannel(channel);
+      clearInterval(interval);
+    };
+  }, [loadActiveSession, registerId]);
 
   const getSessionDuration = () => {
     if (!session) return '--';
