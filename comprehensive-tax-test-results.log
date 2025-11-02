@@ -1,0 +1,104 @@
+
+================================================================================
+[1m[36m🧪 COMPREHENSIVE TAX CONFIGURATION TESTING[0m
+================================================================================
+
+📍 Found 5 active retail locations
+
+
+================================================================================
+[1m[36mTesting: Blowing Rock (NC)[0m
+================================================================================
+[34m📋 Tax Configuration:[0m
+   Tax Rate: 6.75%
+   Decimal: 0.0675
+   Status: Active
+
+🧪 Testing with $100.00 purchase...
+[31m❌ FAIL: No inventory available[0m
+
+================================================================================
+[1m[36mTesting: Charlotte Central (NC)[0m
+================================================================================
+[34m📋 Tax Configuration:[0m
+   Tax Rate: 7.25%
+   Decimal: 0.0725
+   Status: Active
+
+🧪 Testing with $100.00 purchase...
+[32m✅ PASS: Tax calculated correctly[0m
+   Subtotal: $100.00
+   Tax (7.25%): $7.25
+   Total: $107.25
+   Order: POS-CHA-20251102-6993
+
+================================================================================
+[1m[36mTesting: Charlotte Monroe (NC)[0m
+================================================================================
+[34m📋 Tax Configuration:[0m
+   Tax Rate: 7.25%
+   Decimal: 0.0725
+   Status: Active
+
+🧪 Testing with $100.00 purchase...
+[31m❌ FAIL: No inventory available[0m
+
+================================================================================
+[1m[36mTesting: Elizabethton (TN)[0m
+================================================================================
+[34m📋 Tax Configuration:[0m
+   Tax Rate: 15.75%
+   Decimal: 0.1575
+   Status: Active
+   Tax Breakdown:
+      - Tennessee state tax: 7% (Active)
+      - Elizabethton county tax: 2.75% (Active)
+      - Tennessee hemp tax: 6% (Active)
+
+🧪 Testing with $100.00 purchase...
+[31m❌ FAIL: No inventory available[0m
+
+================================================================================
+[1m[36mTesting: Salisbury (NC)[0m
+================================================================================
+[34m📋 Tax Configuration:[0m
+   Tax Rate: 7%
+   Decimal: 0.07
+   Status: Active
+
+🧪 Testing with $100.00 purchase...
+[31m❌ FAIL: No inventory available[0m
+
+================================================================================
+[1m[36m📊 TEST SUMMARY[0m
+================================================================================
+
+Total Tests: 5
+[32m✅ Passed: 1/5 (20.0%)[0m
+[31m❌ Failed: 4/5[0m
+
+📋 Detailed Results:
+[31m❌ Blowing Rock (6.75%)[0m
+   Error: No inventory available
+[32m✅ Charlotte Central (7.25%)[0m
+   Order: POS-CHA-20251102-6993
+   Subtotal: $100.00, Tax: $7.25, Total: $107.25
+[31m❌ Charlotte Monroe (7.25%)[0m
+   Error: No inventory available
+[31m❌ Elizabethton (15.75%)[0m
+   Error: No inventory available
+[31m❌ Salisbury (7%)[0m
+   Error: No inventory available
+
+================================================================================
+[1m[36m🔍 DATABASE VERIFICATION[0m
+================================================================================
+
+📦 Recent Orders (last 5 minutes):
+   POS-CHA-20251102-6993 - Charlotte Central
+      Subtotal: $100, Tax: $7.25 (7.25%), Total: $107.25
+
+================================================================================
+[1m[36m✅ TESTING COMPLETE[0m
+================================================================================
+[33m⚠️  4 test(s) failed - review required[0m

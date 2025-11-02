@@ -1,0 +1,49 @@
+================================================================================
+🧪 COMPLETE POS FLOW TEST - FLORA DISTRO
+================================================================================
+
+👤 STEP 1: Creating/Getting test customer...
+✅ Found existing test customer: 849d1df9-8826-44d1-9427-9f1c491c114e
+   Name: Test POS Customer
+   Email: test.pos@floradistro.test
+
+📍 STEP 2: Getting Flora location and inventory...
+✅ Location: Charlotte Central
+✅ Found 2 products:
+   1. Dixie Dust - $25 (45.94 in stock)
+   2. Bolo Candy - $25 (31.68 in stock)
+
+💳 STEP 3: Creating POS sale...
+   Subtotal: $50.00
+   Tax: $4.00
+   Total: $54.00
+
+✅ SALE COMPLETED SUCCESSFULLY!
+
+📋 Sale Details:
+   Order Number: POS-CHA-20251102-3168
+   Points Earned: 54
+   Tier Change: None
+   Alpine IQ Synced: ❌ NO (check logs)
+   Alpine IQ Error: Forbidden
+
+🎁 Loyalty Details:
+   Points Earned: 54
+   Total Points: 54
+   Lifetime Points: 54
+   Tier: Bronze
+   Tier Upgraded: No
+
+🔍 STEP 4: Verifying database updates...
+✅ Inventory verified:
+   Dixie Dust: 45.94 → 44.94 (1 sold)
+   Bolo Candy: 31.68 → 30.68 (1 sold)
+
+✅ Loyalty verified:
+   Points: 54
+   Lifetime: 54
+   Tier: Bronze (Level 1)
+
+TypeError: Cannot read properties of null (reading 'length')
+    at runCompleteTest (file:///Users/whale/Desktop/Website/scripts/create-and-test-pos-flora.mjs:229:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)

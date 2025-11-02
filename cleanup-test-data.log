@@ -1,0 +1,160 @@
+
+================================================================================
+🧹 CLEANING UP TEST DATA
+================================================================================
+
+
+📋 Found 1 customers matching "test.pos@floradistro.test"
+   Deleting: Test POS Customer (test.pos@floradistro.test)
+      ↳ Deleted 12 orders
+
+📋 Found 67 customers matching "%@test.com"
+   Deleting: Admin Test null (admintest@test.com)
+      ↳ Deleted 0 orders
+   Deleting: Wallet Tester (wallet-test-1761778699210@test.com)
+      ↳ Deleted 1 orders
+   Deleting: Test Complete Flow null (completeflow@test.com)
+      ↳ Deleted 0 orders
+   Deleting: Wallet Tester (wallet-test-1761778732991@test.com)
+      ↳ Deleted 1 orders
+   Deleting: FINAL TEST null (finaltest1760995464@test.com)
+      ↳ Deleted 0 orders
+   Deleting: Perfect Vendor null (perfectvendor1760994493@test.com)
+      ↳ Deleted 0 orders
+   Deleting: Real Vendor 1760994119 null (realvendor1760994119@test.com)
+      ↳ Deleted 0 orders
+   Deleting: Test Vendor 1760994808 null (testvendor1760994808@test.com)
+      ↳ Deleted 0 orders
+   Deleting: WORKING VENDOR 1760993737 null (working1760993737@test.com)
+      ↳ Deleted 0 orders
+   Deleting: Concurrent0 Test (concurrent.1762064273003@test.com)
+      ↳ Deleted 0 orders
+   Deleting: Low Inventory Test (low.inv.1762064269926@test.com)
+      ↳ Deleted 1 orders
+   Deleting: Stress Test One (stress.test.1762064267730@test.com)
+      ↳ Deleted 0 orders
+   Deleting: Concurrent0 Test (concurrent.1762064305486@test.com)
+      ↳ Deleted 0 orders
+   Deleting: Concurrent2 Test (concurrent.1762064305783@test.com)
+      ↳ Deleted 0 orders
+   Deleting: Multi Item Test (multi.item.1762064268050@test.com)
+      ↳ Deleted 0 orders
+   Deleting: Tier Upgrade Test (tier.upgrade.1762064272530@test.com)
+      ↳ Deleted 0 orders
+   Deleting: Concurrent1 Test (concurrent.1762064273168@test.com)
+      ↳ Deleted 0 orders
+   Deleting: Concurrent2 Test (concurrent.1762064273327@test.com)
+      ↳ Deleted 0 orders
+   Deleting: AlpineIQ Sync Test (alpineiq.1762064273473@test.com)
+      ↳ Deleted 0 orders
+   Deleting: Large Sale Test (large.sale.1762064273635@test.com)
+      ↳ Deleted 0 orders
+   Deleting: Stress Test One (stress.test.1762064302023@test.com)
+      ↳ Deleted 0 orders
+   Deleting: Multi Item Test (multi.item.1762064302294@test.com)
+      ↳ Deleted 0 orders
+   Deleting: Low Inventory Test (low.inv.1762064302556@test.com)
+      ↳ Deleted 1 orders
+   Deleting: Tier Upgrade Test (tier.upgrade.1762064305153@test.com)
+      ↳ Deleted 0 orders
+   Deleting: Concurrent1 Test (concurrent.1762064305639@test.com)
+      ↳ Deleted 0 orders
+   Deleting: AlpineIQ Sync Test (alpineiq.1762064305931@test.com)
+      ↳ Deleted 0 orders
+   Deleting: Large Sale Test (large.sale.1762064306107@test.com)
+      ↳ Deleted 0 orders
+   Deleting: Stress Test One (stress.test.1762064325815@test.com)
+      ↳ Deleted 1 orders
+   Deleting: Multi Item Test (multi.item.1762064329471@test.com)
+      ↳ Deleted 1 orders
+   Deleting: Low Inventory Test (low.inv.1762064331186@test.com)
+      ↳ Deleted 1 orders
+   Deleting: Oversell Test (oversell.1762064332732@test.com)
+      ↳ Deleted 0 orders
+   Deleting: Tier Upgrade Test (tier.upgrade.1762064333176@test.com)
+      ↳ Deleted 1 orders
+   Deleting: Concurrent1 Test (concurrent.1762064335069@test.com)
+      ↳ Deleted 1 orders
+   Deleting: Concurrent0 Test (concurrent.1762064334929@test.com)
+      ↳ Deleted 1 orders
+   Deleting: Concurrent2 Test (concurrent.1762064335276@test.com)
+      ↳ Deleted 1 orders
+   Deleting: AlpineIQ Sync Test (alpineiq.1762064337174@test.com)
+      ↳ Deleted 1 orders
+   Deleting: Large Sale Test (large.sale.1762064338680@test.com)
+      ↳ Deleted 0 orders
+   Deleting: Stress Test One (stress.test.1762065017034@test.com)
+      ↳ Deleted 1 orders
+   Deleting: Multi Item Test (multi.item.1762065021514@test.com)
+      ↳ Deleted 0 orders
+   Deleting: Low Inventory Test (low.inv.1762065022880@test.com)
+      ↳ Deleted 1 orders
+   Deleting: Oversell Test (oversell.1762065025428@test.com)
+      ↳ Deleted 0 orders
+   Deleting: Tier Upgrade Test (tier.upgrade.1762065025792@test.com)
+      ↳ Deleted 0 orders
+   Deleting: Concurrent0 Test (concurrent.1762065026196@test.com)
+      ↳ Deleted 1 orders
+   Deleting: Concurrent2 Test (concurrent.1762065026523@test.com)
+      ↳ Deleted 1 orders
+   Deleting: Concurrent1 Test (concurrent.1762065026368@test.com)
+      ↳ Deleted 1 orders
+   Deleting: AlpineIQ Sync Test (alpineiq.1762065028361@test.com)
+      ↳ Deleted 1 orders
+   Deleting: Large Sale Test (large.sale.1762065029904@test.com)
+      ↳ Deleted 0 orders
+   Deleting: Stress Test One (stress.test.1762065076287@test.com)
+      ↳ Deleted 1 orders
+   Deleting: Multi Item Test (multi.item.1762065079602@test.com)
+      ↳ Deleted 1 orders
+   Deleting: Low Inventory Test (low.inv.1762065081251@test.com)
+      ↳ Deleted 1 orders
+   Deleting: Oversell Test (oversell.1762065082677@test.com)
+      ↳ Deleted 0 orders
+   Deleting: Tier Upgrade Test (tier.upgrade.1762065083021@test.com)
+      ↳ Deleted 1 orders
+   Deleting: Concurrent1 Test (concurrent.1762065084822@test.com)
+      ↳ Deleted 1 orders
+   Deleting: Concurrent0 Test (concurrent.1762065084672@test.com)
+      ↳ Deleted 1 orders
+   Deleting: Concurrent2 Test (concurrent.1762065085013@test.com)
+      ↳ Deleted 1 orders
+   Deleting: AlpineIQ Sync Test (alpineiq.1762065086662@test.com)
+      ↳ Deleted 1 orders
+   Deleting: Large Sale Test (large.sale.1762065088111@test.com)
+      ↳ Deleted 1 orders
+   Deleting: RaceTest0 Customer (racetest0.1762065440032@test.com)
+      ↳ Deleted 1 orders
+   Deleting: RaceTest2 Customer (racetest2.1762065440415@test.com)
+      ↳ Deleted 1 orders
+   Deleting: RaceTest4 Customer (racetest4.1762065440724@test.com)
+      ↳ Deleted 1 orders
+   Deleting: RaceTest3 Customer (racetest3.1762065440570@test.com)
+      ↳ Deleted 1 orders
+   Deleting: RaceTest1 Customer (racetest1.1762065440197@test.com)
+      ↳ Deleted 1 orders
+   Deleting: RaceTest2 Customer (racetest2.1762065524473@test.com)
+      ↳ Deleted 1 orders
+   Deleting: RaceTest0 Customer (racetest0.1762065524083@test.com)
+      ↳ Deleted 1 orders
+   Deleting: RaceTest1 Customer (racetest1.1762065524241@test.com)
+      ↳ Deleted 1 orders
+   Deleting: RaceTest4 Customer (racetest4.1762065524810@test.com)
+      ↳ Deleted 1 orders
+   Deleting: RaceTest3 Customer (racetest3.1762065524634@test.com)
+      ↳ Deleted 1 orders
+
+📦 Deleted 3 walk-in POS orders from today
+
+🔄 Deleted 3 pending Alpine IQ sync queue items
+
+================================================================================
+✅ CLEANUP COMPLETE
+================================================================================
+
+📊 Summary:
+   Customers Deleted: 68
+   Orders Deleted: 52
+   Loyalty Records Deleted: 39
+   Alpine IQ Queue Cleaned: 3
+

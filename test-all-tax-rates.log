@@ -1,0 +1,177 @@
+
+================================================================================
+[1m[36m🧪 COMPREHENSIVE TAX RATE VERIFICATION[0m
+================================================================================
+
+📍 Testing 5 tax configurations
+
+
+================================================================================
+[1m[36mTesting: Blowing Rock - 6.75% Tax[0m
+================================================================================
+
+📋 Expected Calculations:
+   Subtotal: $100.00
+   Tax Rate: 6.75% (0.0675)
+   Tax Amount: $6.75
+   Total: $106.75
+
+✅ Standard $100:
+   Subtotal: $100.00 ✓
+   Tax: $6.75 (expected $6.75) ✓
+   Total: $106.75 (expected $106.75) ✓
+   Order: POS-CHA-20251102-2911
+
+✅ Fractional $50.50:
+   Subtotal: $50.50 ✓
+   Tax: $3.41 (expected $3.41) ✓
+   Total: $53.91 (expected $53.91) ✓
+   Order: POS-CHA-20251102-4086
+
+✅ Typical product $27.33:
+   Subtotal: $27.33 ✓
+   Tax: $1.84 (expected $1.84) ✓
+   Total: $29.17 (expected $29.17) ✓
+   Order: POS-CHA-20251102-5191
+
+================================================================================
+[1m[36mTesting: Charlotte Central - 7.25% Tax[0m
+================================================================================
+
+📋 Expected Calculations:
+   Subtotal: $100.00
+   Tax Rate: 7.25% (0.0725)
+   Tax Amount: $7.25
+   Total: $107.25
+
+✅ Standard $100:
+   Subtotal: $100.00 ✓
+   Tax: $7.25 (expected $7.25) ✓
+   Total: $107.25 (expected $107.25) ✓
+   Order: POS-CHA-20251102-6603
+
+✅ Fractional $50.50:
+   Subtotal: $50.50 ✓
+   Tax: $3.66 (expected $3.66) ✓
+   Total: $54.16 (expected $54.16) ✓
+   Order: POS-CHA-20251102-7705
+
+❌ Typical product $27.33: FAILED
+   Error: Insufficient inventory for Berry Twist. Available: 0.87, Requested: 1.0932
+
+================================================================================
+[1m[36mTesting: Charlotte Monroe - 7.25% Tax[0m
+================================================================================
+
+📋 Expected Calculations:
+   Subtotal: $100.00
+   Tax Rate: 7.25% (0.0725)
+   Tax Amount: $7.25
+   Total: $107.25
+
+✅ Standard $100:
+   Subtotal: $100.00 ✓
+   Tax: $7.25 (expected $7.25) ✓
+   Total: $107.25 (expected $107.25) ✓
+   Order: POS-CHA-20251102-9177
+
+✅ Fractional $50.50:
+   Subtotal: $50.50 ✓
+   Tax: $3.66 (expected $3.66) ✓
+   Total: $54.16 (expected $54.16) ✓
+   Order: POS-CHA-20251102-0286
+
+✅ Typical product $27.33:
+   Subtotal: $27.33 ✓
+   Tax: $1.98 (expected $1.98) ✓
+   Total: $29.31 (expected $29.31) ✓
+   Order: POS-CHA-20251102-1423
+
+================================================================================
+[1m[36mTesting: Elizabethton - 15.75% Tax[0m
+================================================================================
+
+📋 Expected Calculations:
+   Subtotal: $100.00
+   Tax Rate: 15.75% (0.1575)
+   Tax Amount: $15.75
+   Total: $115.75
+
+✅ Standard $100:
+   Subtotal: $100.00 ✓
+   Tax: $15.75 (expected $15.75) ✓
+   Total: $115.75 (expected $115.75) ✓
+   Order: POS-CHA-20251102-2885
+
+✅ Fractional $50.50:
+   Subtotal: $50.50 ✓
+   Tax: $7.95 (expected $7.95) ✓
+   Total: $58.45 (expected $58.45) ✓
+   Order: POS-CHA-20251102-4045
+
+✅ Typical product $27.33:
+   Subtotal: $27.33 ✓
+   Tax: $4.30 (expected $4.30) ✓
+   Total: $31.63 (expected $31.63) ✓
+   Order: POS-CHA-20251102-5160
+
+================================================================================
+[1m[36mTesting: Salisbury - 7% Tax[0m
+================================================================================
+
+📋 Expected Calculations:
+   Subtotal: $100.00
+   Tax Rate: 7% (0.07)
+   Tax Amount: $7.00
+   Total: $107.00
+
+✅ Standard $100:
+   Subtotal: $100.00 ✓
+   Tax: $7.00 (expected $7.00) ✓
+   Total: $107.00 (expected $107.00) ✓
+   Order: POS-CHA-20251102-6661
+
+✅ Fractional $50.50:
+   Subtotal: $50.50 ✓
+   Tax: $3.54 (expected $3.54) ✓
+   Total: $54.04 (expected $54.03) ✓
+   Order: POS-CHA-20251102-7790
+
+✅ Typical product $27.33:
+   Subtotal: $27.33 ✓
+   Tax: $1.91 (expected $1.91) ✓
+   Total: $29.24 (expected $29.24) ✓
+   Order: POS-CHA-20251102-8919
+
+================================================================================
+[1m[36m📊 FINAL RESULTS[0m
+================================================================================
+
+Total Locations Tested: 5
+[33m✅ Passed: 4/5 (80.0%)[0m
+[31m❌ Failed: 1/5[0m
+
+📋 Location Summary:
+[32m✅ Blowing Rock - 6.75%[0m
+[31m❌ Charlotte Central - 7.25%[0m
+[32m✅ Charlotte Monroe - 7.25%[0m
+[32m✅ Elizabethton - 15.75%[0m
+[32m✅ Salisbury - 7%[0m
+
+================================================================================
+[1m[36m🔍 DATABASE AUDIT[0m
+================================================================================
+
+📦 Created 15 test orders in last 5 minutes
+
+Sample orders:
+   POS-CHA-20251102-8919: $27.33 + $1.91 (6.99%) = $29.24
+   POS-CHA-20251102-7790: $50.5 + $3.54 (7.01%) = $54.04
+   POS-CHA-20251102-6661: $100 + $7 (7.00%) = $107
+   POS-CHA-20251102-5160: $27.33 + $4.3 (15.73%) = $31.63
+   POS-CHA-20251102-4045: $50.5 + $7.95 (15.74%) = $58.45
+
+================================================================================
+[1m[36m✅ TESTING COMPLETE[0m
+================================================================================
+[33m⚠️  Some tests failed - review required[0m

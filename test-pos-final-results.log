@@ -1,0 +1,12 @@
+================================================================================
+🧪 COMPLETE POS FLOW TEST - FLORA DISTRO
+================================================================================
+
+👤 STEP 1: Creating/Getting test customer...
+✅ Found existing test customer: 849d1df9-8826-44d1-9427-9f1c491c114e
+   Name: Test POS Customer
+   Email: test.pos@floradistro.test
+
+📍 STEP 2: Getting Flora location and inventory...
+✅ Location: Charlotte Central
+❌ No inventory found

@@ -1,0 +1,118 @@
+
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+=
+🔬 DETAILED RACE CONDITION TEST
+================================================================================
+
+📦 Test Product: Snickerdoodle Cookies
+   Initial Quantity: 11
+   Inventory ID: 3b4d3d72-1257-46bb-bdba-66a4ddb047fa
+
+✅ Created 5 test customers
+
+🚀 Launching 5 CONCURRENT sales to same product...
+
+⏱️  All sales completed
+
+📊 RESULTS:
+   Successful: 5/5
+   Failed: 0/5
+
+   ✅ Customer 0: POS-CHA-20251102-2208 (2221ms)
+   ✅ Customer 1: POS-CHA-20251102-2224 (2240ms)
+   ✅ Customer 2: POS-CHA-20251102-2256 (2258ms)
+   ✅ Customer 3: POS-CHA-20251102-2274 (2284ms)
+   ✅ Customer 4: POS-CHA-20251102-2271 (2242ms)
+
+📊 INVENTORY CHECK:
+   Starting Quantity: 11
+   Expected After (11 - 5): 6
+   Actual Quantity: 10
+
+❌ RACE CONDITION DETECTED!
+   Discrepancy: 4 units
+   Lost Inventory: NO
+   Extra Deductions: 4
+
+================================================================================
+TEST COMPLETE
+================================================================================
+
