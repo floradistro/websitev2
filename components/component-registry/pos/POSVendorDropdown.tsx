@@ -315,6 +315,16 @@ export function POSVendorDropdown({
             {session ? (
               <>
                 <div className="px-4 py-3 border-b border-white/10 space-y-3">
+                  {/* Session Number & ID */}
+                  <div className="flex items-center gap-2">
+                    <Clock size={14} className="text-white/40" />
+                    <div className="flex-1">
+                      <div className="text-white/40 text-[9px] uppercase tracking-wider">Session</div>
+                      <div className="text-white font-bold text-xs">{session.session_number}</div>
+                      <div className="text-white/30 text-[9px] font-mono">{session.id.substring(0, 8)}...</div>
+                    </div>
+                  </div>
+
                   {/* Cash Drawer */}
                   <button
                     onClick={() => {
@@ -347,15 +357,6 @@ export function POSVendorDropdown({
                     <div className="flex-1">
                       <div className="text-white/40 text-[9px] uppercase tracking-wider">Transactions</div>
                       <div className="text-white font-bold text-xs">{session.total_transactions}</div>
-                    </div>
-                  </div>
-
-                  {/* Duration */}
-                  <div className="flex items-center gap-2">
-                    <Clock size={14} className="text-white/40" />
-                    <div className="flex-1">
-                      <div className="text-white/40 text-[9px] uppercase tracking-wider">Duration</div>
-                      <div className="text-white font-bold text-xs">{getSessionDuration()}</div>
                     </div>
                   </div>
                 </div>

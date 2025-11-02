@@ -32,6 +32,7 @@ export function POSRegisterSelector({
 }: POSRegisterSelectorProps) {
   const [registers, setRegisters] = useState<Register[]>([]);
   const [loading, setLoading] = useState(true);
+  const [closingAll, setClosingAll] = useState(false);
 
   useEffect(() => {
     loadRegisters();
@@ -174,6 +175,52 @@ export function POSRegisterSelector({
     return `${hours}h ${minutes}m`;
   };
 
+  const handleForceEndAllSessions = async () => {
+    const confirmed = confirm(
+      `⚠️ Force end ALL active sessions?\n\nThis will close all sessions for all registers at this location.\n\nAre you sure?`
+    );
+
+    if (!confirmed) return;
+
+    setClosingAll(true);
+
+    try {
+      // Get all active sessions
+      const activeSessions = registers
+        .filter(r => r.current_session)
+        .map(r => r.current_session!.id);
+
+      if (activeSessions.length === 0) {
+        alert('No active sessions to close');
+        setClosingAll(false);
+        return;
+      }
+
+      // Close each session
+      const closePromises = activeSessions.map(sessionId =>
+        fetch('/api/pos/sessions/close', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            sessionId,
+            closingCash: 0,
+            closingNotes: 'Force closed from register selector',
+          }),
+        })
+      );
+
+      await Promise.all(closePromises);
+
+      alert(`✅ Closed ${activeSessions.length} session(s)`);
+      loadRegisters();
+    } catch (error) {
+      console.error('Error force closing sessions:', error);
+      alert('Failed to close some sessions');
+    } finally {
+      setClosingAll(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
@@ -282,6 +329,20 @@ export function POSRegisterSelector({
             <p>Select any register to begin</p>
             <p className="mt-2 text-white/20">You can switch registers anytime</p>
           </div>
+
+          {/* Force End All Sessions Button */}
+          {registers.some(r => r.current_session) && (
+            <div className="mt-6 flex justify-center">
+              <button
+                onClick={handleForceEndAllSessions}
+                disabled={closingAll}
+                className="px-6 py-3 bg-red-500/10 border border-red-500/30 text-red-400 rounded-xl hover:bg-red-500/20 hover:border-red-500/50 transition-all text-[10px] font-black uppercase tracking-[0.15em] disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{ fontWeight: 900 }}
+              >
+                {closingAll ? 'Closing All Sessions...' : '⚠️ Force End All Sessions'}
+              </button>
+            </div>
+          )}
         </div>
       </div>
   );
