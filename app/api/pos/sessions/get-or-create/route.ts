@@ -43,13 +43,14 @@ export async function POST(request: NextRequest) {
 
     // Call the atomic database function
     // This is IMPOSSIBLE to race condition - database handles locking
+    // IMPORTANT: PostgREST requires parameters in ALPHABETICAL order
     const { data, error } = await supabase
       .rpc('get_or_create_session', {
-        p_register_id: registerId,
-        p_location_id: locationId,
-        p_vendor_id: vendorId,
-        p_user_id: userId,
-        p_opening_cash: openingCash
+        p_location_id: locationId,      // alphabetical: 1st
+        p_opening_cash: openingCash,    // alphabetical: 2nd
+        p_register_id: registerId,      // alphabetical: 3rd
+        p_user_id: userId,              // alphabetical: 4th
+        p_vendor_id: vendorId          // alphabetical: 5th
       });
 
     if (error) {
