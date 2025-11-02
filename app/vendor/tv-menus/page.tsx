@@ -436,7 +436,7 @@ export default function SimpleTVMenusPage() {
           customFields: menuData.customFields,
           customFieldsConfig: menuData.customFieldsConfig,
           categoryPricingConfig: menuData.categoryPricingConfig,
-          hideAllFieldLabels: false,
+          hideAllFieldLabels: menuData.hideAllFieldLabels || false,
           layoutStyle: menuData.layoutStyle,
           splitLeftCategory: menuData.splitLeftCategory,
           splitLeftTitle: menuData.splitLeftTitle,

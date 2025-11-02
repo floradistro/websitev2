@@ -45,6 +45,7 @@ export default function MenuEditorModal({
   const [customFieldsConfig, setCustomFieldsConfig] = useState<{ [field: string]: { showLabel: boolean } }>(
     menu?.config_data?.customFieldsConfig || {}
   );
+  const [hideAllFieldLabels, setHideAllFieldLabels] = useState(menu?.config_data?.hideAllFieldLabels || false);
 
   // Per-category pricing configuration
   const [categoryPricingConfig, setCategoryPricingConfig] = useState<CategoryPricingConfig>(
@@ -101,6 +102,7 @@ export default function MenuEditorModal({
       customFields,
       customFieldsConfig,
       categoryPricingConfig,
+      hideAllFieldLabels,
       layoutStyle,
       gridColumns,
       gridRows,
