@@ -43,6 +43,7 @@ export default function SimpleTVMenusPage() {
   // State
   const [locations, setLocations] = useState<Location[]>([]);
   const [accessibleLocationIds, setAccessibleLocationIds] = useState<string[]>([]);
+  const [permissionsLoaded, setPermissionsLoaded] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<string | null>(null);
   const [devices, setDevices] = useState<TVDevice[]>([]);
   const [menus, setMenus] = useState<TVMenu[]>([]);
@@ -124,6 +125,7 @@ export default function SimpleTVMenusPage() {
       if (isAdmin) {
         console.log('👑 Admin user - access to all locations');
         setAccessibleLocationIds([]); // Empty array means "all locations"
+        setPermissionsLoaded(true);
         return;
       }
 
@@ -137,12 +139,20 @@ export default function SimpleTVMenusPage() {
       if (error) {
         console.error('❌ Error fetching user locations:', error);
         setAccessibleLocationIds([]);
+        setPermissionsLoaded(true);
         return;
       }
 
       const locationIds = data?.map(ul => ul.location_id) || [];
       console.log(`✅ User has access to ${locationIds.length} locations:`, locationIds);
       setAccessibleLocationIds(locationIds);
+      setPermissionsLoaded(true);
+
+      // If user has only 1 location, auto-select it and lock them to it
+      if (locationIds.length === 1) {
+        console.log(`🔒 Auto-selecting single location: ${locationIds[0]}`);
+        setSelectedLocation(locationIds[0]);
+      }
     };
 
     loadUserLocations();
@@ -176,7 +186,7 @@ export default function SimpleTVMenusPage() {
         // If accessibleLocationIds is empty, user is admin and can see all
         // Otherwise, filter to only accessible locations
         if (accessibleLocationIds.length > 0) {
-          allLocations = allLocations.filter(loc => accessibleLocationIds.includes(loc.id));
+          allLocations = allLocations.filter((loc: Location) => accessibleLocationIds.includes(loc.id));
           console.log(`   🔒 Filtered to ${allLocations.length} accessible locations`);
         } else {
           console.log(`   👑 Admin access - showing all ${allLocations.length} locations`);
@@ -211,7 +221,7 @@ export default function SimpleTVMenusPage() {
 
         // Check heartbeat timestamps and update status
         const now = new Date();
-        const devicesWithStatus = devData?.map(device => {
+        let devicesWithStatus = devData?.map(device => {
           const lastHeartbeat = device.last_heartbeat_at ? new Date(device.last_heartbeat_at) : null;
           const secondsSinceHeartbeat = lastHeartbeat ? (now.getTime() - lastHeartbeat.getTime()) / 1000 : Infinity;
 
@@ -228,6 +238,14 @@ export default function SimpleTVMenusPage() {
             connection_status: actualStatus
           };
         }) || [];
+
+        // Filter devices based on location permissions (unless specific location is selected, which is already filtered)
+        if (!selectedLocation && accessibleLocationIds.length > 0) {
+          devicesWithStatus = devicesWithStatus.filter(device =>
+            device.location_id && accessibleLocationIds.includes(device.location_id)
+          );
+          console.log(`   🔒 Filtered to ${devicesWithStatus.length} devices in accessible locations`);
+        }
 
         setDevices(devicesWithStatus);
       }
@@ -248,7 +266,7 @@ export default function SimpleTVMenusPage() {
       console.error('❌ Error loading data:', err);
       setLoading(false);
     }
-  }, [vendor, selectedLocation]);
+  }, [vendor, selectedLocation, accessibleLocationIds]);
 
   useEffect(() => {
     loadData();
@@ -663,14 +681,27 @@ export default function SimpleTVMenusPage() {
             </div>
 
             <div className="flex items-center gap-3">
-              {/* Location Selector */}
-              {locations.length > 0 && (
+              {/* Location Selector - Only show if user has access to multiple locations or is admin */}
+              {/* Hide dropdown for staff with single location */}
+              {(() => {
+                const shouldShowDropdown = permissionsLoaded && locations.length > 0 && (accessibleLocationIds.length === 0 || accessibleLocationIds.length > 1);
+                console.log('🔍 Dropdown visibility check:', {
+                  permissionsLoaded,
+                  locationsCount: locations.length,
+                  accessibleLocationIds: accessibleLocationIds.length,
+                  shouldShowDropdown
+                });
+                return shouldShowDropdown;
+              })() && (
                 <select
                   value={selectedLocation || ''}
                   onChange={(e) => setSelectedLocation(e.target.value || null)}
                   className="appearance-none bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm font-medium cursor-pointer hover:bg-white/10 transition-colors focus:outline-none focus:ring-2 focus:ring-white/20"
                 >
-                  <option value="" className="bg-black">All Locations</option>
+                  {/* Show "All Locations" only for admins or staff with multiple locations */}
+                  {(accessibleLocationIds.length === 0 || accessibleLocationIds.length > 1) && (
+                    <option value="" className="bg-black">All Locations</option>
+                  )}
                   {locations.map((loc) => (
                     <option key={loc.id} value={loc.id} className="bg-black">
                       {loc.name}
