@@ -82,6 +82,7 @@ export default function NewProduct() {
   const [categoryId, setCategoryId] = useState('');
   const [dynamicFields, setDynamicFields] = useState<DynamicField[]>([]);
   const [customFieldValues, setCustomFieldValues] = useState<Record<string, any>>({});
+  const [fieldVisibility, setFieldVisibility] = useState<Record<string, boolean>>({});
   const [loadingFields, setLoadingFields] = useState(false);
 
   // Bulk input state
@@ -1253,7 +1254,8 @@ export default function NewProduct() {
         coa_url: uploadedCoaUrl,
         product_type: productType,
         // Add dynamic blueprint fields - ONLY source of truth for product fields
-        custom_fields: customFieldValues
+        custom_fields: customFieldValues,
+        field_visibility: fieldVisibility // Controls which fields show on storefront product cards
       };
 
       if (productType === 'simple') {
@@ -1683,6 +1685,13 @@ export default function NewProduct() {
               setCustomFieldValues(prev => ({
                 ...prev,
                 [fieldName]: value
+              }));
+            }}
+            fieldVisibility={fieldVisibility}
+            onFieldVisibilityChange={(fieldName, visible) => {
+              setFieldVisibility(prev => ({
+                ...prev,
+                [fieldName]: visible
               }));
             }}
           />

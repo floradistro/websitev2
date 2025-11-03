@@ -1,6 +1,6 @@
 "use client";
 
-import { X } from 'lucide-react';
+import { X, Eye, EyeOff } from 'lucide-react';
 import SectionHeader from '@/components/ui/SectionHeader';
 
 interface DynamicField {
@@ -26,12 +26,16 @@ interface DynamicFieldsPanelProps {
   dynamicFields: DynamicField[];
   customFieldValues: Record<string, any>;
   onFieldChange: (fieldName: string, value: any) => void;
+  fieldVisibility?: Record<string, boolean>;
+  onFieldVisibilityChange?: (fieldName: string, visible: boolean) => void;
 }
 
 export default function DynamicFieldsPanel({
   dynamicFields,
   customFieldValues,
-  onFieldChange
+  onFieldChange,
+  fieldVisibility = {},
+  onFieldVisibilityChange
 }: DynamicFieldsPanelProps) {
   if (!dynamicFields || dynamicFields.length === 0) {
     return null;
@@ -44,21 +48,44 @@ export default function DynamicFieldsPanel({
   // Steve Jobs style: Subtle indicator for inherited fields
   const renderLabel = (field: DynamicField, isRequired: boolean) => {
     const displayLabel = field.label || field.name || 'Field';
+    const isVisible = fieldVisibility[field.name] !== false; // Default to visible
 
     return (
       <label className={labelClasses} style={{ fontWeight: 900 }}>
-        <span className="flex items-center gap-2">
-          <span>
-            {displayLabel} {isRequired && <span className="text-red-400">*</span>}
-          </span>
-          {field.inherited && (
-            <span
-              className="px-1.5 py-0.5 bg-white/5 border border-white/10 rounded text-[8px] text-white/40 font-black uppercase tracking-[0.15em]"
-              style={{ fontWeight: 900 }}
-              title="Inherited from parent category"
-            >
-              Inherited
+        <span className="flex items-center justify-between gap-2">
+          <span className="flex items-center gap-2">
+            <span>
+              {displayLabel} {isRequired && <span className="text-red-400">*</span>}
             </span>
+            {field.inherited && (
+              <span
+                className="px-1.5 py-0.5 bg-white/5 border border-white/10 rounded text-[8px] text-white/40 font-black uppercase tracking-[0.15em]"
+                style={{ fontWeight: 900 }}
+                title="Inherited from parent category"
+              >
+                Inherited
+              </span>
+            )}
+          </span>
+          {onFieldVisibilityChange && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                onFieldVisibilityChange(field.name, !isVisible);
+              }}
+              className={`flex items-center gap-1.5 px-2 py-1 rounded transition-all ${
+                isVisible
+                  ? 'bg-white/10 border border-white/20 text-white/80 hover:bg-white/15'
+                  : 'bg-white/5 border border-white/10 text-white/40 hover:bg-white/10'
+              }`}
+              title={isVisible ? 'Visible on storefront' : 'Hidden on storefront'}
+            >
+              {isVisible ? <Eye size={12} /> : <EyeOff size={12} />}
+              <span className="text-[8px] font-black uppercase tracking-[0.15em]">
+                {isVisible ? 'Show' : 'Hide'}
+              </span>
+            </button>
           )}
         </span>
       </label>
