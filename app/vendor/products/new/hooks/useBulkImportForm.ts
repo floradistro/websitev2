@@ -335,12 +335,15 @@ export function useBulkImportForm({
         }),
       });
 
-      if (!response.ok) throw new Error('Failed to start bulk enrichment');
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`AI enrichment failed (${response.status}): ${errorText || 'Server error'}`);
+      }
 
       // Process streaming response
       const reader = response.body?.getReader();
       const decoder = new TextDecoder();
-      if (!reader) throw new Error('No response stream available');
+      if (!reader) throw new Error('Could not establish streaming connection. Please try again.');
 
       let buffer = '';
       let allResults: BulkAIResult[] = [];
@@ -399,16 +402,36 @@ export function useBulkImportForm({
       setBulkProducts(parsedProducts);
       setCurrentReviewIndex(0);
 
-      showNotification({
-        type: 'success',
-        title: 'AI Enrichment Complete',
-        message: `Enriched ${Object.keys(enrichedData).length}/${lines.length} products`,
-      });
+      const enrichedCount = Object.keys(enrichedData).length;
+      const totalProducts = lines.length;
+
+      if (enrichedCount === 0) {
+        showNotification({
+          type: 'warning',
+          title: '⚠️ No Data Enriched',
+          message: `Could not find AI data for any of the ${totalProducts} product${totalProducts > 1 ? 's' : ''}. Try checking product names or try again.`,
+          duration: 6000,
+        });
+      } else if (enrichedCount < totalProducts) {
+        showNotification({
+          type: 'success',
+          title: '✅ Enrichment Partially Complete',
+          message: `Enhanced ${enrichedCount} of ${totalProducts} product${totalProducts > 1 ? 's' : ''} with AI data.`,
+        });
+      } else {
+        showNotification({
+          type: 'success',
+          title: '✅ AI Enrichment Complete!',
+          message: `All ${enrichedCount} product${enrichedCount > 1 ? 's' : ''} enhanced with strain data, terpenes, and descriptions.`,
+        });
+      }
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
       showNotification({
         type: 'error',
-        title: 'AI Processing Failed',
-        message: error instanceof Error ? error.message : 'Failed to enrich products',
+        title: '❌ AI Enrichment Failed',
+        message: errorMessage,
+        duration: 6000,
       });
     } finally {
       setLoadingAI(false);
@@ -539,39 +562,69 @@ export function useBulkImportForm({
           if (failCount === 1) {
             const axiosError = err as AxiosError<APIErrorResponse>;
             const errorData = axiosError.response?.data;
-            let errorMessage = 'Unknown error';
+            let errorMessage = 'Validation failed. Please check product data and try again.';
 
             if (errorData?.details && Array.isArray(errorData.details)) {
-              errorMessage = errorData.details.map((d: ValidationErrorDetail) => `${d.field}: ${d.message}`).join('\n');
+              // Format validation errors with better structure
+              const fieldErrors = errorData.details.map((d: ValidationErrorDetail) =>
+                `• ${d.field.replace(/_/g, ' ').toUpperCase()}: ${d.message}`
+              ).join('\n');
+              errorMessage = `Please fix the following issues:\n\n${fieldErrors}`;
             } else if (errorData?.error) {
               errorMessage = errorData.error;
+            } else if (axiosError.message) {
+              errorMessage = `Network error: ${axiosError.message}`;
             }
 
             showNotification({
               type: 'error',
-              title: `Validation Failed: ${product.name}`,
+              title: `❌ Failed to create "${product.name}"`,
               message: errorMessage,
+              duration: 8000, // Longer duration for detailed errors
             });
           }
         }
       }
 
-      // Show final summary
-      showNotification({
-        type: 'success',
-        title: 'Bulk Import Complete',
-        message: `Success: ${successCount} | Failed: ${failCount}`,
-      });
+      // Show final summary with appropriate type and message
+      const totalProcessed = successCount + failCount;
+
+      if (successCount === 0) {
+        // All failed
+        showNotification({
+          type: 'error',
+          title: '❌ Bulk Import Failed',
+          message: `All ${failCount} product${failCount > 1 ? 's' : ''} failed to import. Please check the error above and try again.`,
+          duration: 6000,
+        });
+      } else if (failCount === 0) {
+        // All succeeded
+        showNotification({
+          type: 'success',
+          title: '✅ Import Successful!',
+          message: `All ${successCount} product${successCount > 1 ? 's' : ''} created successfully.`,
+        });
+      } else {
+        // Partial success
+        showNotification({
+          type: 'warning',
+          title: '⚠️ Import Partially Complete',
+          message: `${successCount} product${successCount > 1 ? 's' : ''} created, ${failCount} failed. Check errors above.`,
+          duration: 6000,
+        });
+      }
 
       // Redirect on success
       if (successCount > 0) {
-        setTimeout(() => router.push('/vendor/products'), 1500);
+        setTimeout(() => router.push('/vendor/products'), 2000);
       }
     } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'An unexpected error occurred';
       showNotification({
         type: 'error',
-        title: 'Import Failed',
-        message: 'Could not process bulk products',
+        title: '❌ Import Failed',
+        message: `Could not process bulk products: ${errorMessage}`,
+        duration: 6000,
       });
     } finally {
       setBulkProcessing(false);
