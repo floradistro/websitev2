@@ -7,7 +7,7 @@ import { LogIn } from 'lucide-react';
 
 export default function AdminLoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -18,23 +18,16 @@ export default function AdminLoginPage() {
     setLoading(true);
 
     try {
-      const response = await fetch('/api/auth/login', {
+      const response = await fetch('/api/admin/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ username, password }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
         throw new Error(data.error || 'Login failed');
-      }
-
-      // Check if user has admin role
-      if (data.user?.role !== 'admin') {
-        setError('Access denied. Admin privileges required.');
-        setLoading(false);
-        return;
       }
 
       // Store auth token
@@ -77,14 +70,14 @@ export default function AdminLoginPage() {
         {/* Login Form */}
         <form onSubmit={handleLogin} className="space-y-6">
           <div>
-            <label htmlFor="email" className={cn(ds.typography.size.sm, ds.typography.weight.medium, ds.colors.text.secondary, "block mb-2")}>
-              Email
+            <label htmlFor="username" className={cn(ds.typography.size.sm, ds.typography.weight.medium, ds.colors.text.secondary, "block mb-2")}>
+              Username
             </label>
             <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              id="username"
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
               required
               className={cn(
                 "w-full px-4 py-3 rounded-lg",
@@ -95,7 +88,8 @@ export default function AdminLoginPage() {
                 "focus:outline-none focus:ring-2 focus:ring-blue-500/50",
                 "transition-all"
               )}
-              placeholder="admin@whaletools.dev"
+              placeholder="admin"
+              autoComplete="username"
             />
           </div>
 
