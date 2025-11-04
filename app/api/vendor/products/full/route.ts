@@ -12,7 +12,10 @@ export async function GET(request: NextRequest) {
   try {
     // Use secure middleware to get vendor_id from session
     const authResult = await requireVendor(request);
-    if (authResult instanceof NextResponse) return authResult;
+    if (authResult instanceof NextResponse) {
+      console.error('[Products API] Auth failed:', authResult);
+      return authResult;
+    }
     const { vendorId } = authResult;
 
     // Parse query parameters for pagination and filtering
