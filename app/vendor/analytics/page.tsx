@@ -152,10 +152,14 @@ function VendorAnalyticsContent() {
           sublabel="Total revenue"
           icon={DollarSign}
           delay="0s"
-          trend={{
-            value: formatPercentage(Math.abs(normalizeTrend(analytics.revenue.trend).changePercent), { decimals: 0 }),
-            direction: normalizeTrend(analytics.revenue.trend).direction
-          }}
+          trend={
+            normalizeTrend(analytics.revenue.trend).direction !== 'neutral'
+              ? {
+                  value: formatPercentage(Math.abs(normalizeTrend(analytics.revenue.trend).changePercent), { decimals: 0 }),
+                  direction: normalizeTrend(analytics.revenue.trend).direction as 'up' | 'down'
+                }
+              : undefined
+          }
         />
         <StatCard
           label="Profit Margin"
@@ -177,10 +181,14 @@ function VendorAnalyticsContent() {
           sublabel="Per transaction"
           icon={ShoppingCart}
           delay="0.3s"
-          trend={{
-            value: formatPercentage(Math.abs(normalizeTrend(analytics.orders.trend).changePercent), { decimals: 0 }),
-            direction: normalizeTrend(analytics.orders.trend).direction
-          }}
+          trend={
+            normalizeTrend(analytics.orders.trend).direction !== 'neutral'
+              ? {
+                  value: formatPercentage(Math.abs(normalizeTrend(analytics.orders.trend).changePercent), { decimals: 0 }),
+                  direction: normalizeTrend(analytics.orders.trend).direction as 'up' | 'down'
+                }
+              : undefined
+          }
         />
       </div>
 
