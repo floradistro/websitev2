@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import AIAutofillPanel from './AIAutofillPanel';
 import SectionHeader from '@/components/ui/SectionHeader';
 import { DynamicField, EnrichedProductData } from '@/lib/types/product';
+import { ds, cn } from '@/components/ds';
 
 interface Category {
   id: string;
@@ -111,7 +112,7 @@ export default function ProductBasicInfo({
   };
 
   return (
-    <div className="bg-[#141414] border border-white/5 rounded-2xl p-4">
+    <div className={cn(ds.components.card, "rounded-2xl")}>
       <SectionHeader>Basic Information</SectionHeader>
 
       <div className="space-y-4">
@@ -126,7 +127,7 @@ export default function ProductBasicInfo({
             value={formData.name}
             onChange={(e) => onFormDataChange({...formData, name: e.target.value})}
             placeholder="e.g., Blue Dream"
-            className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl text-white placeholder-white/20 px-3 py-2.5 focus:outline-none focus:border-white/20 transition-all text-xs"
+            className={cn(ds.colors.bg.primary, "w-full border border-white/10 rounded-xl text-white placeholder-white/20 px-3 py-2.5 focus:outline-none focus:border-white/20 transition-all text-xs")}
           />
 
           {/* AI Autofill Panel - Enhanced with field selection and custom prompts */}
@@ -154,7 +155,7 @@ export default function ProductBasicInfo({
             value={formData.description}
             onChange={(e) => onFormDataChange({...formData, description: e.target.value})}
             placeholder="Describe your product..."
-            className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl text-white placeholder-white/20 px-3 py-2.5 focus:outline-none focus:border-white/20 transition-all resize-none text-xs"
+            className={cn(ds.colors.bg.primary, "w-full border border-white/10 rounded-xl text-white placeholder-white/20 px-3 py-2.5 focus:outline-none focus:border-white/20 transition-all resize-none text-xs")}
           />
         </div>
 
@@ -169,7 +170,7 @@ export default function ProductBasicInfo({
             required
             value={selectedParent}
             onChange={(e) => handleParentChange(e.target.value)}
-            className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl text-white px-3 py-2.5 focus:outline-none focus:border-white/20 transition-all text-xs cursor-pointer"
+            className={cn(ds.colors.bg.primary, "w-full border border-white/10 rounded-xl text-white px-3 py-2.5 focus:outline-none focus:border-white/20 transition-all text-xs cursor-pointer")}
           >
             <option value="">Select category...</option>
             {categories.map((cat) => (
@@ -196,7 +197,7 @@ export default function ProductBasicInfo({
                     required
                     value={categoryId}
                     onChange={(e) => handleSubcategoryChange(e.target.value)}
-                    className="w-full bg-[#0a0a0a] border border-purple-500/20 rounded-xl text-white px-3 py-2.5 focus:outline-none focus:border-purple-500/40 transition-all text-xs cursor-pointer"
+                    className={cn(ds.colors.bg.primary, "w-full border border-purple-500/20 rounded-xl text-white px-3 py-2.5 focus:outline-none focus:border-purple-500/40 transition-all text-xs cursor-pointer")}
                   >
                     <option value="">Choose one...</option>
                     {subcategories.map((subcat) => (
@@ -227,11 +228,12 @@ export default function ProductBasicInfo({
             <button
               type="button"
               onClick={() => onProductTypeChange('simple')}
-              className={`px-3 py-2.5 rounded-xl border transition-all text-[10px] uppercase tracking-[0.15em] font-black ${
+              className={cn(
+                "px-3 py-2.5 rounded-xl border transition-all text-[10px] uppercase tracking-[0.15em] font-black",
                 productType === 'simple'
                   ? 'bg-white/10 border-white/20 text-white'
-                  : 'bg-[#0a0a0a] border-white/10 text-white/60 hover:border-white/20'
-              }`}
+                  : cn(ds.colors.bg.primary, 'border-white/10 text-white/60 hover:border-white/20')
+              )}
               style={{ fontWeight: 900 }}
             >
               Simple
@@ -239,11 +241,12 @@ export default function ProductBasicInfo({
             <button
               type="button"
               onClick={() => onProductTypeChange('variable')}
-              className={`px-3 py-2.5 rounded-xl border transition-all text-[10px] uppercase tracking-[0.15em] font-black ${
+              className={cn(
+                "px-3 py-2.5 rounded-xl border transition-all text-[10px] uppercase tracking-[0.15em] font-black",
                 productType === 'variable'
                   ? 'bg-white/10 border-white/20 text-white'
-                  : 'bg-[#0a0a0a] border-white/10 text-white/60 hover:border-white/20'
-              }`}
+                  : cn(ds.colors.bg.primary, 'border-white/10 text-white/60 hover:border-white/20')
+              )}
               style={{ fontWeight: 900 }}
             >
               Variable
@@ -260,11 +263,12 @@ export default function ProductBasicInfo({
             <button
               type="button"
               onClick={() => onFormDataChange({...formData, product_visibility: 'internal'})}
-              className={`px-3 py-2.5 rounded-xl border transition-all text-[10px] uppercase tracking-[0.15em] font-black ${
+              className={cn(
+                "px-3 py-2.5 rounded-xl border transition-all text-[10px] uppercase tracking-[0.15em] font-black",
                 formData.product_visibility === 'internal'
                   ? 'bg-white/10 border-white/20 text-white'
-                  : 'bg-[#0a0a0a] border-white/10 text-white/60 hover:border-white/20'
-              }`}
+                  : cn(ds.colors.bg.primary, 'border-white/10 text-white/60 hover:border-white/20')
+              )}
               style={{ fontWeight: 900 }}
             >
               <div className="flex flex-col items-center gap-1">
@@ -275,11 +279,12 @@ export default function ProductBasicInfo({
             <button
               type="button"
               onClick={() => onFormDataChange({...formData, product_visibility: 'marketplace'})}
-              className={`px-3 py-2.5 rounded-xl border transition-all text-[10px] uppercase tracking-[0.15em] font-black ${
+              className={cn(
+                "px-3 py-2.5 rounded-xl border transition-all text-[10px] uppercase tracking-[0.15em] font-black",
                 formData.product_visibility === 'marketplace'
                   ? 'bg-white/10 border-white/20 text-white'
-                  : 'bg-[#0a0a0a] border-white/10 text-white/60 hover:border-white/20'
-              }`}
+                  : cn(ds.colors.bg.primary, 'border-white/10 text-white/60 hover:border-white/20')
+              )}
               style={{ fontWeight: 900 }}
             >
               <div className="flex flex-col items-center gap-1">

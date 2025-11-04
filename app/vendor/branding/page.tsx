@@ -5,550 +5,285 @@ import { Save, AlertCircle, CheckCircle, Palette, Clock, FileText, Code, Image a
 import { useAppAuth } from '@/context/AppAuthContext';
 import { ds, cn } from '@/lib/design-system';
 import { Button } from '@/components/ds/Button';
-import {
-  ImageUploader,
-  ColorPicker,
-  BusinessHoursEditor,
-  ReturnPolicyEditor,
-  ShippingPolicyEditor,
-  CustomCssEditor,
-  EnhancedStorefrontPreview,
-  BrandAssetLibrary
-} from '@/components/vendor/branding';
+import { ImageUploader, ColorPicker, StorefrontPreview, SimpleBusinessHours, SimplePolicy, SimpleCssEditor, BrandAssetLibrary } from '@/components/vendor/branding';
 import { FormField, FormSection, FormGrid } from '@/components/ui/FormField';
 import { validateBrandingForm, formatUrl, sanitizeSocialHandle } from '@/lib/branding-validation';
 import type { BrandingFormState, VendorBranding } from '@/types/branding';
 
-const FONT_OPTIONS = [
-  'Inter',
-  'Playfair Display',
-  'Montserrat',
-  'Lato',
-  'Roboto',
-  'Open Sans',
-  'Poppins',
-  'Raleway',
-  'Merriweather',
-  'Crimson Text'
-];
-
-type TabId = 'basics' | 'visual' | 'hours' | 'policies' | 'advanced' | 'assets';
-
+const FONTS = ['Inter', 'Playfair Display', 'Montserrat', 'Lato', 'Roboto', 'Open Sans', 'Poppins', 'Raleway'];
 const TABS = [
-  { id: 'basics' as const, label: 'Basics', icon: Palette },
-  { id: 'visual' as const, label: 'Visual Identity', icon: ImageIcon },
-  { id: 'hours' as const, label: 'Business Hours', icon: Clock },
-  { id: 'policies' as const, label: 'Policies', icon: FileText },
-  { id: 'advanced' as const, label: 'Custom CSS', icon: Code },
-  { id: 'assets' as const, label: 'Asset Library', icon: ImageIcon }
-];
+  { id: 'basics', label: 'Basics', icon: Palette },
+  { id: 'visual', label: 'Visual', icon: ImageIcon },
+  { id: 'hours', label: 'Hours', icon: Clock },
+  { id: 'policies', label: 'Policies', icon: FileText },
+  { id: 'css', label: 'CSS', icon: Code },
+  { id: 'assets', label: 'Assets', icon: ImageIcon }
+] as const;
+
+type TabId = typeof TABS[number]['id'];
+
+const RETURN_TEMPLATE = `# Return Policy\n\n## Returns within 30 days\n- Unused items in original packaging\n- No cannabis returns (state law)\n- Contact: returns@example.com`;
+const SHIPPING_TEMPLATE = `# Shipping Policy\n\n## Delivery Options\n- Local delivery: Same/next day\n- Free pickup available\n- Age 21+ verification required`;
 
 export default function VendorBranding() {
   const { vendor, refreshUserData } = useAppAuth();
-  const [activeTab, setActiveTab] = useState<TabId>('basics');
+  const [tab, setTab] = useState<TabId>('basics');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const [validationErrors, setValidationErrors] = useState<{ [key: string]: string }>({});
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const [branding, setBranding] = useState<Partial<BrandingFormState>>({
-    tagline: '',
-    about: '',
-    primaryColor: '#000000',
-    secondaryColor: '#FFFFFF',
-    accentColor: '#666666',
-    backgroundColor: '#FFFFFF',
-    textColor: '#1A1A1A',
-    website: '',
-    instagram: '',
-    facebook: '',
-    twitter: '',
-    customFont: 'Inter',
-    logoFile: null,
-    logoPreview: '',
-    bannerFile: null,
-    bannerPreview: '',
-    returnPolicy: '',
-    shippingPolicy: '',
-    customCss: '',
-    businessHours: {}
+  const [form, setForm] = useState<Partial<BrandingFormState>>({
+    tagline: '', about: '', primaryColor: '#000000', secondaryColor: '#FFFFFF',
+    accentColor: '#666666', textColor: '#1A1A1A', website: '', instagram: '',
+    facebook: '', customFont: 'Inter', logoFile: null, logoPreview: '',
+    bannerFile: null, bannerPreview: '', returnPolicy: '', shippingPolicy: '',
+    customCss: '', businessHours: {}
   });
+  const [initialForm, setInitialForm] = useState<string>('');
+  const [hasChanges, setHasChanges] = useState(false);
 
+  useEffect(() => { if (vendor) loadBranding(); }, [vendor]);
+
+  // Track unsaved changes
   useEffect(() => {
-    if (vendor) {
-      loadBranding();
+    if (initialForm) {
+      setHasChanges(JSON.stringify(form) !== initialForm);
     }
-  }, [vendor]);
+  }, [form, initialForm]);
+
+  // Warn on page leave with unsaved changes
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (hasChanges) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [hasChanges]);
+
+  // Keyboard shortcut: Cmd/Ctrl + S to save
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+        e.preventDefault();
+        handleSubmit(new Event('submit') as any);
+      }
+    };
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [form]);
 
   const loadBranding = async () => {
     try {
-      const vendorId = vendor?.id;
-      if (!vendorId) return;
+      const res = await fetch('/api/supabase/vendor/branding', { headers: { 'x-vendor-id': vendor!.id } });
+      if (!res.ok) return;
 
-      const response = await fetch('/api/supabase/vendor/branding', {
-        headers: { 'x-vendor-id': vendorId }
-      });
+      const { branding: data }: { branding: VendorBranding } = await res.json();
+      const colors = data.brand_colors || { primary: '#000000', secondary: '#FFFFFF', accent: '#666666', text: '#1A1A1A' };
+      const social = data.social_links || {};
 
-      if (response.ok) {
-        const result = await response.json();
-        const data: VendorBranding = result.branding;
-
-        const brandColors = data.brand_colors || {
-          primary: '#000000',
-          secondary: '#FFFFFF',
-          accent: '#666666',
-          background: '#FFFFFF',
-          text: '#1A1A1A'
-        };
-
-        const socialLinks = data.social_links || {
-          website: '',
-          instagram: '',
-          facebook: '',
-          twitter: ''
-        };
-
-        setBranding({
-          tagline: data.store_tagline || '',
-          about: data.store_description || '',
-          primaryColor: brandColors.primary,
-          secondaryColor: brandColors.secondary,
-          accentColor: brandColors.accent,
-          backgroundColor: brandColors.background,
-          textColor: brandColors.text,
-          website: socialLinks.website || '',
-          instagram: socialLinks.instagram || '',
-          facebook: socialLinks.facebook || '',
-          twitter: socialLinks.twitter || '',
-          customFont: data.custom_font || 'Inter',
-          logoFile: null,
-          logoPreview: data.logo_url || '',
-          bannerFile: null,
-          bannerPreview: data.banner_url || '',
-          returnPolicy: data.return_policy || '',
-          shippingPolicy: data.shipping_policy || '',
-          customCss: data.custom_css || '',
-          businessHours: data.business_hours || {}
-        });
-      }
+      const loadedForm = {
+        tagline: data.store_tagline || '', about: data.store_description || '',
+        primaryColor: colors.primary, secondaryColor: colors.secondary,
+        accentColor: colors.accent, textColor: colors.text,
+        website: social.website || '', instagram: social.instagram || '',
+        facebook: social.facebook || '', customFont: data.custom_font || 'Inter',
+        logoFile: null, logoPreview: data.logo_url || '',
+        bannerFile: null, bannerPreview: data.banner_url || '',
+        returnPolicy: data.return_policy || '', shippingPolicy: data.shipping_policy || '',
+        customCss: data.custom_css || '', businessHours: data.business_hours || {}
+      };
+      setForm(loadedForm);
+      setInitialForm(JSON.stringify(loadedForm));
+      setHasChanges(false);
     } catch (err) {
-      console.error('Failed to load branding:', err);
-      setError('Failed to load branding settings');
+      console.error(err);
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    setSuccess('');
-    setValidationErrors({});
+    setError(''); setSuccess(''); setErrors({});
 
-    const validation = validateBrandingForm(branding);
+    const validation = validateBrandingForm(form);
     if (!validation.isValid) {
-      setValidationErrors(validation.errors);
-      setError('Please fix the errors before saving');
+      setErrors(validation.errors);
+      setError('Fix errors before saving');
       return;
     }
 
     setLoading(true);
-
     try {
-      const vendorId = vendor?.id;
-      if (!vendorId) throw new Error('Not authenticated');
+      let logoUrl = form.logoPreview;
+      let bannerUrl = form.bannerPreview;
 
-      let logoUrl = branding.logoPreview;
-      let bannerUrl = branding.bannerPreview;
-
-      if (branding.logoFile) {
-        const formData = new FormData();
-        formData.append('file', branding.logoFile);
-        formData.append('type', 'logo');
-
-        const uploadResponse = await fetch('/api/supabase/vendor/upload', {
-          method: 'POST',
-          headers: { 'x-vendor-id': vendorId },
-          body: formData
-        });
-
-        if (!uploadResponse.ok) throw new Error('Logo upload failed');
-        const uploadData = await uploadResponse.json();
-        logoUrl = uploadData.file.url;
+      // Upload logo
+      if (form.logoFile) {
+        const fd = new FormData();
+        fd.append('file', form.logoFile);
+        fd.append('type', 'logo');
+        const res = await fetch('/api/supabase/vendor/upload', { method: 'POST', headers: { 'x-vendor-id': vendor!.id }, body: fd });
+        if (res.ok) logoUrl = (await res.json()).file.url;
       }
 
-      if (branding.bannerFile) {
-        const formData = new FormData();
-        formData.append('file', branding.bannerFile);
-        formData.append('type', 'banner');
-
-        const uploadResponse = await fetch('/api/supabase/vendor/upload', {
-          method: 'POST',
-          headers: { 'x-vendor-id': vendorId },
-          body: formData
-        });
-
-        if (!uploadResponse.ok) throw new Error('Banner upload failed');
-        const uploadData = await uploadResponse.json();
-        bannerUrl = uploadData.file.url;
+      // Upload banner
+      if (form.bannerFile) {
+        const fd = new FormData();
+        fd.append('file', form.bannerFile);
+        fd.append('type', 'banner');
+        const res = await fetch('/api/supabase/vendor/upload', { method: 'POST', headers: { 'x-vendor-id': vendor!.id }, body: fd });
+        if (res.ok) bannerUrl = (await res.json()).file.url;
       }
 
-      const updateData = {
-        store_tagline: branding.tagline,
-        store_description: branding.about,
-        brand_colors: JSON.stringify({
-          primary: branding.primaryColor,
-          secondary: branding.secondaryColor,
-          accent: branding.accentColor,
-          background: branding.backgroundColor,
-          text: branding.textColor
-        }),
-        social_links: JSON.stringify({
-          website: branding.website ? formatUrl(branding.website) : '',
-          instagram: branding.instagram ? sanitizeSocialHandle(branding.instagram) : '',
-          facebook: branding.facebook || '',
-          twitter: branding.twitter || ''
-        }),
-        custom_font: branding.customFont,
-        return_policy: branding.returnPolicy,
-        shipping_policy: branding.shippingPolicy,
-        custom_css: branding.customCss,
-        business_hours: JSON.stringify(branding.businessHours),
-        ...(logoUrl && { logo_url: logoUrl }),
-        ...(bannerUrl && { banner_url: bannerUrl })
-      };
-
-      const response = await fetch('/api/supabase/vendor/branding', {
+      // Save branding
+      const res = await fetch('/api/supabase/vendor/branding', {
         method: 'PUT',
-        headers: {
-          'x-vendor-id': vendorId,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(updateData)
+        headers: { 'x-vendor-id': vendor!.id, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          store_tagline: form.tagline,
+          store_description: form.about,
+          brand_colors: JSON.stringify({ primary: form.primaryColor, secondary: form.secondaryColor, accent: form.accentColor, text: form.textColor }),
+          social_links: JSON.stringify({ website: form.website ? formatUrl(form.website) : '', instagram: form.instagram ? sanitizeSocialHandle(form.instagram) : '', facebook: form.facebook || '' }),
+          custom_font: form.customFont,
+          return_policy: form.returnPolicy,
+          shipping_policy: form.shippingPolicy,
+          custom_css: form.customCss,
+          business_hours: JSON.stringify(form.businessHours),
+          ...(logoUrl && { logo_url: logoUrl }),
+          ...(bannerUrl && { banner_url: bannerUrl })
+        })
       });
 
-      if (!response.ok) throw new Error('Save failed');
+      if (!res.ok) throw new Error('Save failed');
 
-      setSuccess('Branding updated successfully!');
+      setSuccess('Saved!');
       await loadBranding();
       await refreshUserData();
-
-      setBranding(prev => ({
-        ...prev,
-        logoFile: null,
-        bannerFile: null
-      }));
-
-      setTimeout(() => setSuccess(''), 5000);
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Failed to update branding';
-      setError(message);
+      setTimeout(() => setSuccess(''), 3000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to save');
     } finally {
       setLoading(false);
     }
   };
 
-  const updateBranding = (updates: Partial<BrandingFormState>) => {
-    setBranding(prev => ({ ...prev, ...updates }));
-    setValidationErrors(prev => {
-      const newErrors = { ...prev };
-      Object.keys(updates).forEach(key => delete newErrors[key]);
-      return newErrors;
-    });
+  const update = (u: Partial<BrandingFormState>) => {
+    setForm(f => ({ ...f, ...u }));
+    setErrors(e => { const n = { ...e }; Object.keys(u).forEach(k => delete n[k]); return n; });
   };
 
   return (
-    <div className={cn(ds.colors.bg.primary, 'min-h-screen', ds.colors.text.primary)}>
-      <div className="max-w-[1600px] mx-auto px-4 py-8">
+    <div className={cn(ds.colors.bg.primary, 'min-h-screen p-4', ds.colors.text.primary)}>
+      <div className="max-w-[1600px] mx-auto">
         {/* Header */}
-        <div className={cn('mb-8 pb-6', 'border-b', ds.colors.border.subtle)}>
-          <h1 className={cn(
-            ds.typography.size.xs,
-            ds.typography.transform.uppercase,
-            ds.typography.tracking.widest,
-            ds.colors.text.primary,
-            ds.typography.weight.bold,
-            'mb-1'
-          )}>
-            Brand Settings
-          </h1>
-          <p className={cn(
-            ds.typography.size.micro,
-            ds.typography.transform.uppercase,
-            ds.typography.tracking.wide,
-            ds.colors.text.quaternary
-          )}>
-            Customize Your Brand · Storefront Appearance · Policies & Hours
-          </p>
+        <div className="mb-6">
+          <h1 className={cn(ds.typography.size.xs, ds.typography.transform.uppercase, ds.typography.tracking.widest, ds.colors.text.primary, 'mb-1')}>Brand Settings</h1>
+          <p className={cn(ds.typography.size.micro, ds.colors.text.quaternary)}>Customize your brand identity</p>
         </div>
 
         <form onSubmit={handleSubmit} className="grid lg:grid-cols-3 gap-6">
-          {/* Left Column - Navigation & Preview */}
-          <div className="lg:col-span-1 space-y-6">
-            {/* Tab Navigation */}
-            <div className={cn(
-              ds.colors.bg.elevated,
-              'border',
-              ds.colors.border.default,
-              ds.effects.radius.lg,
-              'p-2'
-            )}>
-              <nav className="space-y-1">
-                {TABS.map(({ id, label, icon: Icon }) => (
-                  <button
-                    key={id}
-                    type="button"
-                    onClick={() => setActiveTab(id)}
-                    className={cn(
-                      'w-full',
-                      'flex items-center gap-3',
-                      'px-3 py-2',
-                      ds.effects.radius.md,
-                      ds.effects.transition.fast,
-                      ds.typography.size.sm,
-                      activeTab === id
-                        ? cn(ds.colors.bg.active, ds.colors.text.primary, 'font-medium')
-                        : cn('hover:bg-white/[0.04]', ds.colors.text.tertiary)
-                    )}
-                  >
-                    <Icon size={16} strokeWidth={1.5} />
-                    <span>{label}</span>
-                  </button>
-                ))}
-              </nav>
+          {/* Sidebar */}
+          <div className="space-y-4">
+            {/* Tabs */}
+            <div className={cn(ds.colors.bg.elevated, 'border', ds.colors.border.default, 'rounded-lg p-2')}>
+              {TABS.map(({ id, label, icon: Icon }) => (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => setTab(id)}
+                  className={cn(
+                    'w-full flex items-center gap-2 px-3 py-2 rounded text-sm',
+                    tab === id
+                      ? cn(ds.colors.bg.active, ds.colors.text.primary)
+                      : cn('hover:bg-white/5', ds.colors.text.tertiary)
+                  )}
+                >
+                  <Icon size={14} />
+                  {label}
+                </button>
+              ))}
             </div>
 
-            {/* Live Preview */}
-            <EnhancedStorefrontPreview vendorSlug={vendor?.slug} />
+            {/* Preview */}
+            <StorefrontPreview vendorSlug={vendor?.slug} />
 
-            {/* Save Button */}
-            <Button
-              type="submit"
-              variant="primary"
-              size="md"
-              icon={Save}
-              loading={loading}
-              fullWidth
-            >
-              {loading ? 'Saving...' : 'Save All Changes'}
-            </Button>
+            {/* Save */}
+            <div className="space-y-2">
+              <Button type="submit" variant="primary" icon={Save} loading={loading} fullWidth>
+                {loading ? 'Saving...' : hasChanges ? 'Save Changes *' : 'Save Changes'}
+              </Button>
+              {hasChanges && (
+                <p className={cn(ds.typography.size.micro, ds.colors.text.quaternary, 'text-center')}>
+                  Unsaved changes • Press Cmd/Ctrl+S
+                </p>
+              )}
+            </div>
 
             {/* Messages */}
             {error && (
-              <div className={cn(
-                'bg-red-500/10',
-                'border border-red-500/20',
-                ds.effects.radius.md,
-                'p-4',
-                'flex items-start gap-3'
-              )}>
-                <AlertCircle size={20} className="text-red-400 mt-0.5 flex-shrink-0" />
-                <div className={cn(ds.typography.size.sm, 'text-red-400')}>{error}</div>
+              <div className="bg-red-500/10 border border-red-500/20 rounded p-3 flex gap-2 text-sm text-red-400">
+                <AlertCircle size={16} className="flex-shrink-0 mt-0.5" />
+                {error}
               </div>
             )}
-
             {success && (
-              <div className={cn(
-                'bg-green-500/10',
-                'border border-green-500/20',
-                ds.effects.radius.md,
-                'p-4',
-                'flex items-start gap-3'
-              )}>
-                <CheckCircle size={20} className="text-green-400 mt-0.5 flex-shrink-0" />
-                <div className={cn(ds.typography.size.sm, 'text-green-400')}>{success}</div>
+              <div className="bg-green-500/10 border border-green-500/20 rounded p-3 flex gap-2 text-sm text-green-400">
+                <CheckCircle size={16} className="flex-shrink-0 mt-0.5" />
+                {success}
               </div>
             )}
           </div>
 
-          {/* Right Column - Tab Content */}
+          {/* Content */}
           <div className="lg:col-span-2">
-            <div className={cn(
-              ds.colors.bg.elevated,
-              'border',
-              ds.colors.border.default,
-              ds.effects.radius.lg,
-              'p-6'
-            )}>
-              {/* Basics Tab */}
-              {activeTab === 'basics' && (
+            <div className={cn(ds.colors.bg.elevated, 'border', ds.colors.border.default, 'rounded-lg p-6')}>
+              {tab === 'basics' && (
                 <div className="space-y-6">
-                  <FormSection title="Store Information">
-                    <FormField
-                      label="Tagline"
-                      type="text"
-                      value={branding.tagline || ''}
-                      onChange={(value) => updateBranding({ tagline: value })}
-                      placeholder="Your brand's tagline"
-                      error={validationErrors.tagline}
-                      hint="Max 100 characters"
-                    />
-
-                    <FormField
-                      label="About Your Brand"
-                      type="textarea"
-                      value={branding.about || ''}
-                      onChange={(value) => updateBranding({ about: value })}
-                      placeholder="Tell customers about your brand..."
-                      rows={4}
-                      error={validationErrors.about}
-                      hint="Max 500 characters"
-                    />
+                  <FormSection title="Store Info">
+                    <FormField label="Tagline" type="text" value={form.tagline || ''} onChange={v => update({ tagline: v })} error={errors.tagline} />
+                    <FormField label="About" type="textarea" value={form.about || ''} onChange={v => update({ about: v })} rows={4} error={errors.about} />
                   </FormSection>
-
                   <FormSection title="Typography">
-                    <FormField
-                      label="Font Family"
-                      type="select"
-                      value={branding.customFont || 'Inter'}
-                      onChange={(value) => updateBranding({ customFont: value })}
-                      options={FONT_OPTIONS.map(font => ({ value: font, label: font }))}
-                    />
+                    <FormField label="Font" type="select" value={form.customFont || 'Inter'} onChange={v => update({ customFont: v })} options={FONTS.map(f => ({ value: f, label: f }))} />
                   </FormSection>
-
-                  <FormSection title="Social Media">
-                    <FormField
-                      label="Website"
-                      type="url"
-                      value={branding.website || ''}
-                      onChange={(value) => updateBranding({ website: value })}
-                      placeholder="https://yourbrand.com"
-                      error={validationErrors.website}
-                    />
-
+                  <FormSection title="Social">
+                    <FormField label="Website" type="url" value={form.website || ''} onChange={v => update({ website: v })} error={errors.website} />
                     <FormGrid columns={2}>
-                      <FormField
-                        label="Instagram"
-                        type="text"
-                        value={branding.instagram || ''}
-                        onChange={(value) => updateBranding({ instagram: value })}
-                        placeholder="@yourbrand"
-                        error={validationErrors.instagram}
-                      />
-
-                      <FormField
-                        label="Facebook"
-                        type="text"
-                        value={branding.facebook || ''}
-                        onChange={(value) => updateBranding({ facebook: value })}
-                        placeholder="yourbrand"
-                        error={validationErrors.facebook}
-                      />
+                      <FormField label="Instagram" type="text" value={form.instagram || ''} onChange={v => update({ instagram: v })} />
+                      <FormField label="Facebook" type="text" value={form.facebook || ''} onChange={v => update({ facebook: v })} />
                     </FormGrid>
                   </FormSection>
                 </div>
               )}
 
-              {/* Visual Identity Tab */}
-              {activeTab === 'visual' && (
+              {tab === 'visual' && (
                 <div className="space-y-6">
-                  <FormSection title="Brand Assets">
-                    <ImageUploader
-                      label="Brand Logo"
-                      preview={branding.logoPreview || ''}
-                      onFileChange={(file) => updateBranding({ logoFile: file })}
-                      onPreviewChange={(preview) => updateBranding({ logoPreview: preview })}
-                      aspectRatio="square"
-                      recommendedSize="300x300px"
-                    />
-
-                    <ImageUploader
-                      label="Hero Banner"
-                      preview={branding.bannerPreview || ''}
-                      onFileChange={(file) => updateBranding({ bannerFile: file })}
-                      onPreviewChange={(preview) => updateBranding({ bannerPreview: preview })}
-                      aspectRatio="banner"
-                      recommendedSize="1920x600px"
-                    />
-                  </FormSection>
-
-                  <FormSection title="Brand Colors">
-                    <FormGrid columns={2}>
-                      <ColorPicker
-                        label="Primary Color"
-                        value={branding.primaryColor || '#000000'}
-                        onChange={(value) => updateBranding({ primaryColor: value })}
-                        hint="Main brand color"
-                      />
-
-                      <ColorPicker
-                        label="Secondary Color"
-                        value={branding.secondaryColor || '#FFFFFF'}
-                        onChange={(value) => updateBranding({ secondaryColor: value })}
-                        hint="Supporting color"
-                      />
-
-                      <ColorPicker
-                        label="Accent Color"
-                        value={branding.accentColor || '#666666'}
-                        onChange={(value) => updateBranding({ accentColor: value })}
-                        hint="Highlights & CTAs"
-                      />
-
-                      <ColorPicker
-                        label="Text Color"
-                        value={branding.textColor || '#1A1A1A'}
-                        onChange={(value) => updateBranding({ textColor: value })}
-                        hint="Body text color"
-                      />
-                    </FormGrid>
-
-                    {validationErrors.colorContrast && (
-                      <div className={cn(
-                        'p-3',
-                        'bg-orange-500/10',
-                        'border border-orange-500/20',
-                        ds.effects.radius.md,
-                        ds.typography.size.xs,
-                        ds.colors.status.warning
-                      )}>
-                        <AlertCircle size={14} className="inline mr-2" />
-                        {validationErrors.colorContrast}
-                      </div>
-                    )}
-                  </FormSection>
+                  <ImageUploader label="Logo" preview={form.logoPreview || ''} onFileChange={f => update({ logoFile: f })} onPreviewChange={p => update({ logoPreview: p })} aspectRatio="square" />
+                  <ImageUploader label="Banner" preview={form.bannerPreview || ''} onFileChange={f => update({ bannerFile: f })} onPreviewChange={p => update({ bannerPreview: p })} aspectRatio="banner" />
+                  <FormGrid columns={2}>
+                    <ColorPicker label="Primary" value={form.primaryColor || '#000000'} onChange={v => update({ primaryColor: v })} />
+                    <ColorPicker label="Secondary" value={form.secondaryColor || '#FFFFFF'} onChange={v => update({ secondaryColor: v })} />
+                    <ColorPicker label="Accent" value={form.accentColor || '#666666'} onChange={v => update({ accentColor: v })} />
+                    <ColorPicker label="Text" value={form.textColor || '#1A1A1A'} onChange={v => update({ textColor: v })} />
+                  </FormGrid>
                 </div>
               )}
 
-              {/* Business Hours Tab */}
-              {activeTab === 'hours' && (
-                <BusinessHoursEditor
-                  value={branding.businessHours || {}}
-                  onChange={(hours) => updateBranding({ businessHours: hours })}
-                />
-              )}
+              {tab === 'hours' && <SimpleBusinessHours value={form.businessHours || {}} onChange={v => update({ businessHours: v })} />}
 
-              {/* Policies Tab */}
-              {activeTab === 'policies' && (
+              {tab === 'policies' && (
                 <div className="space-y-6">
-                  <ReturnPolicyEditor
-                    value={branding.returnPolicy || ''}
-                    onChange={(value) => updateBranding({ returnPolicy: value })}
-                  />
-
-                  <ShippingPolicyEditor
-                    value={branding.shippingPolicy || ''}
-                    onChange={(value) => updateBranding({ shippingPolicy: value })}
-                  />
+                  <SimplePolicy label="Return Policy" value={form.returnPolicy || ''} onChange={v => update({ returnPolicy: v })} template={RETURN_TEMPLATE} />
+                  <SimplePolicy label="Shipping Policy" value={form.shippingPolicy || ''} onChange={v => update({ shippingPolicy: v })} template={SHIPPING_TEMPLATE} />
                 </div>
               )}
 
-              {/* Advanced Tab */}
-              {activeTab === 'advanced' && (
-                <CustomCssEditor
-                  value={branding.customCss || ''}
-                  onChange={(value) => updateBranding({ customCss: value })}
-                />
-              )}
+              {tab === 'css' && <SimpleCssEditor value={form.customCss || ''} onChange={v => update({ customCss: v })} />}
 
-              {/* Assets Tab */}
-              {activeTab === 'assets' && vendor?.id && (
-                <BrandAssetLibrary
-                  vendorId={vendor.id}
-                  onAssetSelect={(asset) => {
-                    // Optionally set as logo or banner
-                    console.log('Asset selected:', asset);
-                  }}
-                />
-              )}
+              {tab === 'assets' && vendor?.id && <BrandAssetLibrary vendorId={vendor.id} />}
             </div>
           </div>
         </form>

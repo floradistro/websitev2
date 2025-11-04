@@ -2,6 +2,7 @@
 
 import { Plus, X, Zap } from 'lucide-react';
 import SectionHeader from '@/components/ui/SectionHeader';
+import { ds, cn } from '@/components/ds';
 
 interface PricingTier {
   weight?: string;

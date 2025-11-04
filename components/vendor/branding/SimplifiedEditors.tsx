@@ -2,9 +2,17 @@
 
 import { useState } from 'react';
 import { Clock, FileText, Code, Copy, Check, Eye, EyeOff } from 'lucide-react';
-import Editor from '@monaco-editor/react';
+import dynamic from 'next/dynamic';
 import { ds, cn } from '@/lib/design-system';
 import type { BusinessHours, DayHours } from '@/types/branding';
+
+// Lazy load Monaco Editor (saves ~2MB on initial load)
+const Editor = dynamic(() => import('@monaco-editor/react'), {
+  loading: () => <div className={cn('h-[400px] flex items-center justify-center', ds.colors.bg.elevated)}>
+    <div className={cn(ds.typography.size.sm, ds.colors.text.tertiary)}>Loading editor...</div>
+  </div>,
+  ssr: false
+});
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // BUSINESS HOURS EDITOR (Simplified)
@@ -25,8 +33,8 @@ export function SimpleBusinessHours({ value, onChange }: { value: BusinessHours;
           <div key={day} className={cn('border', ds.colors.border.default, 'rounded-lg p-3')}>
             <div className="flex items-center gap-3 mb-2">
               <Clock size={14} className={ds.colors.text.quaternary} />
-              <span className={cn(ds.typography.size.sm, 'capitalize flex-1')}>{day}</span>
-              <label className="flex items-center gap-2 text-xs">
+              <span className={cn(ds.typography.size.sm, ds.colors.text.secondary, 'capitalize flex-1')}>{day}</span>
+              <label className={cn('flex items-center gap-2', ds.typography.size.xs, ds.colors.text.tertiary)}>
                 <input
                   type="checkbox"
                   checked={closed}
@@ -42,14 +50,14 @@ export function SimpleBusinessHours({ value, onChange }: { value: BusinessHours;
                 <input
                   type="time"
                   value={hours?.open || '09:00'}
-                  onChange={(e) => update(day, { ...hours, open: e.target.value, close: hours?.close || '21:00' })}
-                  className={cn('px-3 py-2 rounded-lg', ds.colors.bg.input, 'border', ds.colors.border.default, ds.typography.size.sm)}
+                  onChange={(e) => update(day, { ...hours, open: e.target.value, close: hours?.close || '21:00', closed: false })}
+                  className={cn('px-3 py-2 rounded-lg', ds.colors.bg.input, 'border', ds.colors.border.default, ds.colors.text.secondary, ds.typography.size.sm)}
                 />
                 <input
                   type="time"
                   value={hours?.close || '21:00'}
-                  onChange={(e) => update(day, { ...hours, open: hours?.open || '09:00', close: e.target.value })}
-                  className={cn('px-3 py-2 rounded-lg', ds.colors.bg.input, 'border', ds.colors.border.default, ds.typography.size.sm)}
+                  onChange={(e) => update(day, { ...hours, open: hours?.open || '09:00', close: e.target.value, closed: false })}
+                  className={cn('px-3 py-2 rounded-lg', ds.colors.bg.input, 'border', ds.colors.border.default, ds.colors.text.secondary, ds.typography.size.sm)}
                 />
               </div>
             )}
@@ -88,7 +96,7 @@ export function SimplePolicy({ label, value, onChange, template, maxLength = 200
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <label className={cn(ds.typography.size.xs, ds.typography.transform.uppercase, 'flex items-center gap-2')}>
+        <label className={cn(ds.typography.size.xs, ds.typography.transform.uppercase, ds.colors.text.tertiary, 'flex items-center gap-2')}>
           <FileText size={14} />
           {label}
         </label>
@@ -97,7 +105,7 @@ export function SimplePolicy({ label, value, onChange, template, maxLength = 200
             {count}/{maxLength}
           </span>
           {value && (
-            <button type="button" onClick={copy} className="p-1 hover:bg-white/5 rounded">
+            <button type="button" onClick={copy} className={cn('p-1 hover:bg-white/5 rounded', ds.colors.text.quaternary)}>
               {copied ? <Check size={12} /> : <Copy size={12} />}
             </button>
           )}
@@ -105,7 +113,7 @@ export function SimplePolicy({ label, value, onChange, template, maxLength = 200
             <button
               type="button"
               onClick={() => setShowTemplate(!showTemplate)}
-              className={cn('px-2 py-1 text-xs border rounded', ds.colors.border.default)}
+              className={cn('px-2 py-1 text-xs border rounded', ds.colors.border.default, ds.colors.text.tertiary)}
             >
               {showTemplate ? 'Hide' : 'Template'}
             </button>
@@ -118,11 +126,11 @@ export function SimplePolicy({ label, value, onChange, template, maxLength = 200
           <button
             type="button"
             onClick={() => { onChange(template); setShowTemplate(false); }}
-            className="px-3 py-1 bg-white text-black rounded text-xs"
+            className="px-3 py-1 bg-white text-black rounded text-xs hover:bg-white/90"
           >
             Use Template
           </button>
-          <pre className={cn('p-2 bg-black/20 rounded text-xs overflow-auto max-h-40')}>{template}</pre>
+          <pre className={cn('p-2 bg-black/20 rounded text-xs overflow-auto max-h-40', ds.colors.text.quaternary)}>{template}</pre>
         </div>
       )}
 
@@ -130,7 +138,7 @@ export function SimplePolicy({ label, value, onChange, template, maxLength = 200
         value={value}
         onChange={(e) => onChange(e.target.value.slice(0, maxLength))}
         rows={12}
-        className={cn('w-full p-4 rounded-lg resize-y', ds.colors.bg.input, 'border', ds.colors.border.default, ds.typography.size.sm)}
+        className={cn('w-full p-4 rounded-lg resize-y', ds.colors.bg.input, 'border', ds.colors.border.default, ds.colors.text.secondary, ds.typography.size.sm, 'placeholder:text-white/20')}
         placeholder={`Enter your ${label.toLowerCase()}...`}
       />
     </div>
@@ -167,7 +175,7 @@ export function SimpleCssEditor({ value, onChange, maxLength = 10000 }: { value:
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <label className={cn(ds.typography.size.xs, ds.typography.transform.uppercase, 'flex items-center gap-2')}>
+        <label className={cn(ds.typography.size.xs, ds.typography.transform.uppercase, ds.colors.text.tertiary, 'flex items-center gap-2')}>
           <Code size={14} />
           Custom CSS
         </label>
@@ -175,7 +183,7 @@ export function SimpleCssEditor({ value, onChange, maxLength = 10000 }: { value:
           <span className={cn(ds.typography.size.micro, warn ? 'text-orange-400' : ds.colors.text.quaternary)}>
             {count}/{maxLength}
           </span>
-          <button type="button" onClick={() => setPreview(!preview)} className="p-1 hover:bg-white/5 rounded">
+          <button type="button" onClick={() => setPreview(!preview)} className={cn('p-1 hover:bg-white/5 rounded', ds.colors.text.quaternary)}>
             {preview ? <EyeOff size={12} /> : <Eye size={12} />}
           </button>
         </div>
@@ -202,10 +210,10 @@ export function SimpleCssEditor({ value, onChange, maxLength = 10000 }: { value:
         <div className={cn('p-4 border rounded-lg', ds.colors.border.default)}>
           <style dangerouslySetInnerHTML={{ __html: value }} />
           <div className="space-y-3">
-            <div className="p-4 bg-white/5 border border-white/10 rounded">
+            <div className={cn('p-4 bg-white/5 border border-white/10 rounded', ds.colors.text.secondary)}>
               <h3>Sample Element</h3>
             </div>
-            <button className="px-4 py-2 bg-blue-500 rounded">Sample Button</button>
+            <button className="px-4 py-2 bg-blue-500 text-white rounded">Sample Button</button>
           </div>
         </div>
       )}
