@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { verifyAuth } from '@/lib/auth/middleware';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -8,11 +9,14 @@ const supabase = createClient(
 
 export async function GET(request: NextRequest) {
   try {
-    // TODO: Add admin authentication check here
-    // const session = await getServerSession();
-    // if (!session || session.user.role !== 'admin') {
-    //   return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    // }
+    // Verify admin authentication
+    const user = await verifyAuth(request);
+    if (!user || user.role !== 'admin') {
+      return NextResponse.json(
+        { error: 'Unauthorized - Admin access required' },
+        { status: 401 }
+      );
+    }
 
     // Get recent vendors (WhaleTools customers)
     const { data: vendors, error } = await supabase

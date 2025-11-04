@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   Users, DollarSign, TrendingUp, Activity, AlertCircle, CheckCircle,
   Clock, Zap, Eye, Target, BarChart3, ArrowUpRight, ArrowDownRight,
@@ -62,6 +63,7 @@ interface Customer {
 }
 
 export default function AdminDashboard() {
+  const router = useRouter();
   const [metrics, setMetrics] = useState<SaaSMetrics>({
     mrr: 0, arr: 0, totalCustomers: 0, activeTrials: 0, churnedThisMonth: 0,
     activeToday: 0, activeThisWeek: 0, activeThisMonth: 0, uptime: 99.9,
@@ -73,11 +75,24 @@ export default function AdminDashboard() {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
   const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d'>('30d');
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  // Check authentication on mount
+  useEffect(() => {
+    const auth = localStorage.getItem('admin-auth');
+    if (!auth) {
+      router.push('/admin/login');
+      return;
+    }
+    setIsAuthenticated(true);
+  }, [router]);
 
   useEffect(() => {
-    loadMetrics();
-    loadCustomers();
-  }, [timeRange]);
+    if (isAuthenticated) {
+      loadMetrics();
+      loadCustomers();
+    }
+  }, [timeRange, isAuthenticated]);
 
   const loadMetrics = async () => {
     try {
