@@ -256,10 +256,10 @@ export default function AdminDashboard() {
         {/* Hero Metrics - Revenue & Growth */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2">
-            <div className={cn(ds.colors.bg.elevated, "border", ds.colors.border.default, "rounded-2xl p-6")}>
+            <div className={cn("bg-[#0a0a0a]", "border", "border-white/10", "rounded-2xl p-6")}>
               <div className="flex items-center justify-between mb-6">
                 <div>
-                  <p className={cn(ds.typography.size.xs, ds.typography.transform.uppercase, ds.colors.text.quaternary, "mb-2")}>
+                  <p className={cn(ds.typography.size.xs, ds.typography.transform.uppercase, ds.colors.text.tertiary, "mb-2")}>
                     Monthly Recurring Revenue
                   </p>
                   <div className="flex items-baseline gap-3">
@@ -333,10 +333,10 @@ export default function AdminDashboard() {
           </div>
 
           {/* Customer Growth */}
-          <div className={cn(ds.colors.bg.elevated, "border", ds.colors.border.default, "rounded-2xl p-6")}>
+          <div className={cn("bg-[#0a0a0a]", "border", "border-white/10", "rounded-2xl p-6")}>
             <div className="flex items-center justify-between mb-6">
               <div>
-                <p className={cn(ds.typography.size.xs, ds.typography.transform.uppercase, ds.colors.text.quaternary, "mb-2")}>
+                <p className={cn(ds.typography.size.xs, ds.typography.transform.uppercase, ds.colors.text.tertiary, "mb-2")}>
                   Total Customers
                 </p>
                 <div className="flex items-baseline gap-3">
@@ -438,7 +438,7 @@ export default function AdminDashboard() {
         {/* Activity Heatmap & Top Customers */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Activity by Hour */}
-          <div className={cn(ds.colors.bg.elevated, "border", ds.colors.border.default, "rounded-2xl p-6")}>
+          <div className={cn("bg-[#0a0a0a]", "border", "border-white/10", "rounded-2xl p-6")}>
             <h3 className={cn(ds.typography.size.md, ds.typography.weight.semibold, ds.colors.text.primary, "mb-6")}>
               Activity by Hour
             </h3>
@@ -472,14 +472,14 @@ export default function AdminDashboard() {
           </div>
 
           {/* Top Customers */}
-          <div className={cn(ds.colors.bg.elevated, "border", ds.colors.border.default, "rounded-2xl p-6")}>
+          <div className={cn("bg-[#0a0a0a]", "border", "border-white/10", "rounded-2xl p-6")}>
             <h3 className={cn(ds.typography.size.md, ds.typography.weight.semibold, ds.colors.text.primary, "mb-6")}>
               Top Customers
             </h3>
             <div className="space-y-3">
               {topCustomers.length === 0 ? (
                 <div className="text-center py-8">
-                  <Users className={cn(ds.colors.icon.quaternary, "w-10 h-10 mx-auto mb-3")} />
+                  <Users className={cn(ds.colors.icon.tertiary, "w-10 h-10 mx-auto mb-3")} />
                   <p className={cn(ds.typography.size.sm, ds.colors.text.tertiary)}>
                     No customers yet
                   </p>
@@ -507,7 +507,7 @@ export default function AdminDashboard() {
                         <p className={cn(ds.typography.size.sm, ds.typography.weight.medium, ds.colors.text.primary)}>
                           {customer.name || customer.email}
                         </p>
-                        <p className={cn(ds.typography.size.xs, ds.colors.text.quaternary)}>
+                        <p className={cn(ds.typography.size.xs, ds.colors.text.tertiary)}>
                           {customer.productsCount} products
                         </p>
                       </div>
@@ -526,14 +526,14 @@ export default function AdminDashboard() {
         </div>
 
         {/* All Customers Table */}
-        <div className={cn(ds.colors.bg.elevated, "border", ds.colors.border.default, "rounded-2xl p-6")}>
+        <div className={cn("bg-[#0a0a0a]", "border", "border-white/10", "rounded-2xl p-6")}>
           <h3 className={cn(ds.typography.size.md, ds.typography.weight.semibold, ds.colors.text.primary, "mb-6")}>
             All Customers
           </h3>
 
           {customers.length === 0 ? (
             <div className="text-center py-12">
-              <Users className={cn(ds.colors.icon.quaternary, "w-16 h-16 mx-auto mb-4")} />
+              <Users className={cn(ds.colors.icon.tertiary, "w-16 h-16 mx-auto mb-4")} />
               <p className={cn(ds.typography.size.lg, ds.typography.weight.semibold, ds.colors.text.primary, "mb-2")}>
                 No customers yet
               </p>
@@ -575,28 +575,28 @@ export default function AdminDashboard() {
                     </div>
 
                     <div className="text-center px-4">
-                      <p className={cn(ds.typography.size.xs, ds.colors.text.quaternary, "mb-1")}>Products</p>
+                      <p className={cn(ds.typography.size.xs, ds.colors.text.tertiary, "mb-1")}>Products</p>
                       <p className={cn(ds.typography.size.sm, ds.typography.weight.semibold, ds.colors.text.primary)}>
                         {customer.productsCount}
                       </p>
                     </div>
 
                     <div className="text-center px-4">
-                      <p className={cn(ds.typography.size.xs, ds.colors.text.quaternary, "mb-1")}>Revenue</p>
+                      <p className={cn(ds.typography.size.xs, ds.colors.text.tertiary, "mb-1")}>Revenue</p>
                       <p className={cn(ds.typography.size.sm, ds.typography.weight.semibold, "text-green-400")}>
                         ${customer.revenue.toLocaleString()}
                       </p>
                     </div>
 
                     <div className="text-right px-4">
-                      <p className={cn(ds.typography.size.xs, ds.colors.text.quaternary, "mb-1")}>Joined</p>
+                      <p className={cn(ds.typography.size.xs, ds.colors.text.tertiary, "mb-1")}>Joined</p>
                       <p className={cn(ds.typography.size.xs, ds.colors.text.tertiary)}>
                         {new Date(customer.created_at).toLocaleDateString()}
                       </p>
                     </div>
 
                     <div className="text-right px-4">
-                      <p className={cn(ds.typography.size.xs, ds.colors.text.quaternary, "mb-1")}>Last Active</p>
+                      <p className={cn(ds.typography.size.xs, ds.colors.text.tertiary, "mb-1")}>Last Active</p>
                       <p className={cn(ds.typography.size.xs, ds.colors.text.tertiary)}>
                         {customer.last_active
                           ? new Date(customer.last_active).toLocaleDateString()
@@ -630,9 +630,9 @@ function EngagementCard({ title, value, subtitle, icon: Icon, color }: any) {
   const colorClass = colors[color as keyof typeof colors];
 
   return (
-    <div className={cn(ds.colors.bg.elevated, "border", ds.colors.border.default, "rounded-2xl p-6")}>
+    <div className={cn("bg-[#0a0a0a]", "border", "border-white/10", "rounded-2xl p-6")}>
       <div className="flex items-center justify-between mb-4">
-        <p className={cn(ds.typography.size.xs, ds.typography.transform.uppercase, ds.colors.text.quaternary)}>
+        <p className={cn(ds.typography.size.xs, ds.typography.transform.uppercase, ds.colors.text.tertiary)}>
           {title}
         </p>
         <div className={cn("p-2 rounded-lg", colorClass.bg)}>
@@ -642,7 +642,7 @@ function EngagementCard({ title, value, subtitle, icon: Icon, color }: any) {
       <p className={cn(ds.typography.size.xl, ds.typography.weight.bold, ds.colors.text.primary, "mb-1")}>
         {value}
       </p>
-      <p className={cn(ds.typography.size.xs, ds.colors.text.quaternary)}>
+      <p className={cn(ds.typography.size.xs, ds.colors.text.tertiary)}>
         {subtitle}
       </p>
     </div>
