@@ -8,7 +8,7 @@ import { PricingBlueprintModal } from '@/components/vendor/PricingBlueprintModal
 import { FieldVisibilityModal } from '@/components/vendor/FieldVisibilityModal';
 import { CategoryModal } from '@/components/vendor/CategoryModal';
 import { CustomFieldModal } from '@/components/vendor/CustomFieldModal';
-import type { Category, FieldGroup, PricingBlueprint, FieldVisibilityConfig } from '@/lib/types/product';
+import type { Category, FieldGroup, PricingBlueprint, FieldVisibilityConfig, DynamicField } from '@/lib/types/product';
 import axios from 'axios';
 
 interface CategoriesManagementProps {
@@ -141,11 +141,17 @@ export function CategoriesManagement({ vendorId }: CategoriesManagementProps) {
 
   const openFieldVisibilityModal = (categoryId: string, fieldSlug: string, fieldName: string) => {
     const category = categories.find(c => c.id === categoryId);
+    const defaultConfig: FieldVisibilityConfig = {
+      shop: true,
+      product_page: true,
+      pos: true,
+      tv_menu: true
+    };
     setVisibilityModalData({
       categoryId,
       fieldSlug,
       fieldName,
-      currentConfig: category?.field_visibility?.[fieldSlug]
+      currentConfig: category?.field_visibility?.[fieldSlug] || defaultConfig
     });
     setShowFieldVisibilityModal(true);
   };

@@ -123,9 +123,9 @@ export default function AIAutofillPanel({
               {availableFields.map((field) => {
                 const isSelected = selectedFields.has(field.id);
                 const isAvailable = field.id === 'description' || dynamicFields.some(f =>
-                  f.name === field.id ||
-                  f.slug === field.id ||
-                  (f.name || '').toLowerCase() === field.id.toLowerCase()
+                  f.label === field.id ||
+                  f.fieldId === field.id ||
+                  (f.label || '').toLowerCase() === field.id.toLowerCase()
                 );
 
                 return (
@@ -241,13 +241,13 @@ export default function AIAutofillPanel({
               </div>
             )}
 
-            {selectedFields.has('terpene_profile') && aiSuggestions?.terpenes && aiSuggestions.terpenes.length > 0 && (
+            {selectedFields.has('terpene_profile') && aiSuggestions?.terpene_profile && aiSuggestions.terpene_profile.length > 0 && (
               <div>
                 <div className="text-white/40 text-[9px] uppercase tracking-[0.15em] mb-1.5 font-black" style={{ fontWeight: 900 }}>
                   🧪 Terpenes
                 </div>
                 <div className="flex flex-wrap gap-1">
-                  {aiSuggestions.terpenes.map((terpene: string, idx: number) => (
+                  {aiSuggestions.terpene_profile.map((terpene: string, idx: number) => (
                     <span key={idx} className="bg-white/5 border border-white/10 rounded px-2 py-0.5 text-[9px] text-white/70 uppercase tracking-wider">
                       {terpene}
                     </span>

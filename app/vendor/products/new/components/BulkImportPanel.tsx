@@ -65,6 +65,13 @@ interface BulkImportPanelProps {
 
   // Submission
   bulkProcessing: boolean;
+  bulkProgress: {
+    current: number;
+    total: number;
+    currentProduct: string;
+    successCount: number;
+    failCount: number;
+  };
   onBulkSubmit: () => void;
   onCancel: () => void;
 }
@@ -87,6 +94,7 @@ export default function BulkImportPanel({
   pricingConfigs,
   onApplyPricingTemplate,
   bulkProcessing,
+  bulkProgress,
   onBulkSubmit,
   onCancel
 }: BulkImportPanelProps) {
@@ -127,7 +135,7 @@ export default function BulkImportPanel({
       const blueprintField = field.replace('custom_fields.', '');
       updated[index].custom_fields[blueprintField] = value;
     } else {
-      (updated[index] as Record<string, unknown>)[field] = value;
+      (updated[index] as unknown as Record<string, unknown>)[field] = value;
     }
     onBulkProductsChange(updated);
   };
@@ -419,7 +427,7 @@ export default function BulkImportPanel({
                       </label>
                       <input
                         type="text"
-                        value={bulkProducts[currentReviewIndex].custom_fields[fieldKey] || ''}
+                        value={String(bulkProducts[currentReviewIndex].custom_fields[fieldKey] || '')}
                         onChange={(e) => handleProductFieldChange(currentReviewIndex, `custom_fields.${fieldKey}`, e.target.value)}
                         className={cn(ds.components.card, "w-full rounded-xl text-white px-3 py-2 text-[10px]")}
                       />

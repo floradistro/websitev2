@@ -94,6 +94,13 @@ interface UseBulkImportFormReturn {
 
   // Loading states
   bulkProcessing: boolean;
+  bulkProgress: {
+    current: number;
+    total: number;
+    currentProduct: string;
+    successCount: number;
+    failCount: number;
+  };
   loadingAI: boolean;
 
   // Reset function
@@ -184,6 +191,18 @@ export function useBulkImportForm({
    * Loading state for bulk product submission
    */
   const [bulkProcessing, setBulkProcessing] = useState(false);
+
+  /**
+   * Progress tracking for bulk submission
+   * Tracks current product being processed and counts
+   */
+  const [bulkProgress, setBulkProgress] = useState({
+    current: 0,
+    total: 0,
+    currentProduct: '',
+    successCount: 0,
+    failCount: 0,
+  });
 
   // ==========================================
   // COMPUTED VALUES
@@ -446,12 +465,31 @@ export function useBulkImportForm({
 
     setBulkProcessing(true);
 
+    // Initialize progress
+    setBulkProgress({
+      current: 0,
+      total: bulkProducts.length,
+      currentProduct: '',
+      successCount: 0,
+      failCount: 0,
+    });
+
     try {
       let successCount = 0;
       let failCount = 0;
 
       // Submit each product sequentially
-      for (const product of bulkProducts) {
+      for (let i = 0; i < bulkProducts.length; i++) {
+        const product = bulkProducts[i];
+
+        // Update progress
+        setBulkProgress({
+          current: i + 1,
+          total: bulkProducts.length,
+          currentProduct: product.name,
+          successCount,
+          failCount,
+        });
         try {
           const enrichedData = bulkEnrichedData[product.name] || {};
           const description = enrichedData.description || `Bulk imported product: ${product.name}`;
@@ -593,6 +631,7 @@ export function useBulkImportForm({
 
     // Loading states
     bulkProcessing,
+    bulkProgress,
     loadingAI,
 
     // Utility

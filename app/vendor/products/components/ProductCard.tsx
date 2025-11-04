@@ -3,20 +3,10 @@ import { Eye, Trash2, DollarSign, Package } from 'lucide-react';
 import { Card, ds, cn } from '@/components/ds';
 import { showConfirm } from '@/components/NotificationToast';
 import { useDeleteProduct } from '@/lib/hooks/useProducts';
+import type { Product } from '@/lib/types/product';
 
 interface ProductCardProps {
-  product: {
-    id: string;
-    name: string;
-    sku: string;
-    category: string;
-    price: number;
-    cost_price?: number;
-    description?: string;
-    status: string;
-    total_stock: number;
-    images: string[];
-  };
+  product: Product;
   onView: (productId: string) => void;
 }
 
@@ -73,7 +63,7 @@ export function ProductCard({ product, onView }: ProductCardProps) {
     draft: { bg: 'bg-white/5', text: 'text-white/40', border: 'border-white/10' },
   };
 
-  const imageUrl = product.images?.[0] ? getSupabaseImageUrl(product.images[0], 112, 112) : '';
+  const imageUrl = product.images?.[0] ? getSupabaseImageUrl(typeof product.images[0] === 'string' ? product.images[0] : product.images[0].url, 112, 112) : '';
   const statusStyle = statusStyles[product.status as keyof typeof statusStyles] || statusStyles.draft;
 
   return (
@@ -135,7 +125,7 @@ export function ProductCard({ product, onView }: ProductCardProps) {
             <div className="flex items-center gap-2">
               <DollarSign className={cn("w-4 h-4", ds.colors.icon.green)} strokeWidth={1.5} />
               <span className={cn(ds.typography.size.sm, ds.typography.weight.medium, "text-white/90")}>
-                ${product.price.toFixed(2)}
+                ${product.price?.toFixed(2) || '0.00'}
               </span>
               {product.cost_price && (
                 <span className={cn(ds.typography.size.xs, ds.colors.text.quaternary)}>
