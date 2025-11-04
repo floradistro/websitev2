@@ -123,12 +123,12 @@ function VendorAnalyticsContent() {
 
         {/* Time Range Selector */}
         <div className="flex gap-2">
-          {[
-            { label: '7D', value: '7d' },
-            { label: '30D', value: '30d' },
-            { label: '90D', value: '90d' },
-            { label: '1Y', value: '1y' },
-          ].map((range) => (
+          {([
+            { label: '7D', value: '7d' as TimeRange },
+            { label: '30D', value: '30d' as TimeRange },
+            { label: '90D', value: '90d' as TimeRange },
+            { label: '1Y', value: '1y' as TimeRange },
+          ]).map((range) => (
             <button
               key={range.value}
               onClick={() => setTimeRange(range.value)}
