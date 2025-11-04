@@ -198,8 +198,9 @@ export async function GET(request: NextRequest) {
 
       const vendorNetEarnings = vendorSubtotal - vendorCommission;
 
-      const customerName = order.customers
-        ? `${order.customers.first_name} ${order.customers.last_name}`
+      const customer = Array.isArray(order.customers) ? order.customers[0] : order.customers;
+      const customerName = customer
+        ? `${customer.first_name} ${customer.last_name}`
         : 'Guest';
 
       const locationName =
