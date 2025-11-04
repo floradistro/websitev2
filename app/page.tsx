@@ -1,201 +1,293 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Check } from "lucide-react";
 import { HomeNavigation } from "@/components/HomeNavigation";
-import { HomeCountdown } from "@/components/HomeCountdown";
 import { HeroContent } from "@/components/HomePage/HeroContent";
-import { ProductShowcase } from "@/components/HomePage/ProductShowcase";
 import { AnimatedSection, AnimatedGrid, AnimatedGridItem } from "@/components/HomePage/AnimatedSection";
 
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-black text-white overflow-hidden">
-      {/* Navigation - Client Component */}
+      {/* Navigation */}
       <HomeNavigation />
 
-      {/* Hero Section - Animated */}
+      {/* Hero Section */}
       <section className="pt-24 sm:pt-32 md:pt-40 pb-12 sm:pb-16 md:pb-20 px-4 sm:px-6 relative">
         <HeroContent />
       </section>
 
-      {/* Product Showcase - Beautiful Animation */}
-      <ProductShowcase />
+      {/* The Problem - Jobs style: Show the pain */}
+      <AnimatedSection id="features" className="py-12 sm:py-16 md:py-24 px-4 sm:px-6 bg-gradient-to-b from-transparent via-white/[0.01] to-transparent">
+        <div className="max-w-5xl mx-auto text-center mb-16 sm:mb-20">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black mb-6 tracking-tight uppercase" style={{ fontWeight: 900 }}>
+            <span className="text-white/40">Your current stack</span>
+            <br />
+            <span className="text-white">is costing you a fortune</span>
+          </h2>
+          <p className="text-lg sm:text-xl md:text-2xl text-white/60 max-w-3xl mx-auto leading-relaxed">
+            Most hemp businesses juggle 5-8 different tools.
+            <br />
+            Different logins. Different bills. Different headaches.
+          </p>
+        </div>
 
-      {/* What Gets Built */}
-      <AnimatedSection className="py-12 sm:py-16 md:py-20 px-4 sm:px-6">
+        {/* Competitor Stack Visualization */}
         <div className="max-w-4xl mx-auto">
-          <div className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-6 sm:p-10 md:p-12 lg:p-16 hover:border-white/10 transition-colors duration-500 relative overflow-hidden">
-            {/* Subtle gradient overlay */}
-            <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent pointer-events-none" />
-
-            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black mb-8 sm:mb-10 md:mb-12 tracking-tight uppercase text-center relative z-10" style={{ fontWeight: 900 }}>
-              Everything You Need
-            </h2>
-            <AnimatedGrid className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8 relative z-10">
+          <div className="bg-[#0a0a0a] border border-white/5 rounded-3xl p-8 sm:p-12 hover:border-white/10 transition-all duration-500">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
               {[
-                { title: "Dispensary POS", desc: "Compliant point-of-sale systems" },
-                { title: "E-Commerce", desc: "Online menu & ordering" },
-                { title: "Inventory Management", desc: "Multi-location tracking" },
-                { title: "Wholesale B2B", desc: "Distributor & brand portals" },
-                { title: "Compliance & COAs", desc: "Lab results & documentation" },
-                { title: "Analytics", desc: "Sales & performance insights" },
-              ].map((item) => (
-                <AnimatedGridItem key={item.title} className="text-center group">
-                  <div className="text-xs uppercase tracking-[0.12em] font-black text-white mb-2 group-hover:text-white/80 transition-colors" style={{ fontWeight: 900 }}>
-                    {item.title}
+                { name: "Cova POS", cost: "$1,200/mo", for: "Point of Sale" },
+                { name: "Alpine IQ", cost: "$1,800/mo", for: "Marketing & Loyalty" },
+                { name: "Shopify", cost: "$600/mo", for: "Online Store" },
+                { name: "Dutchie", cost: "$500/mo", for: "Menus & Ordering" },
+              ].map((tool) => (
+                <div key={tool.name} className="flex items-center justify-between py-4 px-6 bg-black/40 border border-white/5 rounded-xl">
+                  <div>
+                    <div className="text-sm font-black text-white/90 mb-1">{tool.name}</div>
+                    <div className="text-xs text-white/40">{tool.for}</div>
                   </div>
-                  <div className="text-sm text-white/60">
-                    {item.desc}
-                  </div>
-                </AnimatedGridItem>
+                  <div className="text-lg font-black text-white/60">{tool.cost}</div>
+                </div>
               ))}
-            </AnimatedGrid>
+            </div>
+            <div className="border-t border-white/10 pt-6 flex items-center justify-between">
+              <div className="text-sm uppercase tracking-wider text-white/40 font-black">Total Monthly Cost</div>
+              <div className="text-3xl font-black text-red-400">$4,100/mo</div>
+            </div>
+            <div className="mt-4 text-center">
+              <p className="text-xs uppercase tracking-wider text-white/30">That's $49,200 per year</p>
+            </div>
           </div>
         </div>
       </AnimatedSection>
 
-      {/* The Stack */}
-      <AnimatedSection className="py-12 sm:py-16 md:py-20 px-4 sm:px-6">
-        <div className="max-w-4xl mx-auto text-center">
-          <div className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-6 sm:p-10 md:p-12 lg:p-16 hover:border-white/10 transition-all duration-500 group relative overflow-hidden">
-            {/* Glow effect on hover */}
-            <div className="absolute inset-0 bg-gradient-to-br from-white/[0.03] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+      {/* The Solution - Jobs style: Show the magic */}
+      <AnimatedSection className="py-12 sm:py-16 md:py-24 px-4 sm:px-6">
+        <div className="max-w-5xl mx-auto text-center mb-16 sm:mb-20">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black mb-6 tracking-tight uppercase" style={{ fontWeight: 900 }}>
+            <span className="text-white">One Platform</span>
+            <br />
+            <span className="text-white/40">Replaces Everything</span>
+          </h2>
+        </div>
 
-            <div className="mb-6 sm:mb-8 relative">
-              <div className="inline-block relative">
+        {/* WhaleTools Stack - Beautifully Simple */}
+        <div className="max-w-6xl mx-auto">
+          <div className="bg-gradient-to-br from-white/[0.03] to-transparent border-2 border-white/20 rounded-3xl p-8 sm:p-12 lg:p-16 relative overflow-hidden">
+            {/* Glow effect */}
+            <div className="absolute inset-0 bg-gradient-to-br from-white/[0.05] to-transparent pointer-events-none" />
+
+            <div className="relative z-10">
+              <div className="flex items-center justify-center gap-4 mb-12">
+                <Image src="/whale.png" alt="WhaleTools" width={60} height={60} className="object-contain" />
+                <div>
+                  <div className="text-2xl sm:text-3xl font-black text-white">WhaleTools</div>
+                  <div className="text-sm text-white/50">All-In-One Platform</div>
+                </div>
+              </div>
+
+              <AnimatedGrid className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-10">
+                {[
+                  "Point of Sale System",
+                  "eCommerce Storefront",
+                  "Inventory Management",
+                  "Multi-Location Sync",
+                  "TV Menu Displays",
+                  "Analytics & Reporting",
+                  "Customer Loyalty",
+                  "Product Catalog",
+                  "Order Management",
+                  "Wholesale B2B Portal",
+                  "Lab Results (COAs)",
+                  "AI Product Descriptions",
+                ].map((feature) => (
+                  <AnimatedGridItem key={feature} className="flex items-center gap-3 py-3 px-4 bg-black/20 border border-white/10 rounded-xl hover:border-white/20 transition-all">
+                    <Check size={16} className="text-green-400 flex-shrink-0" />
+                    <span className="text-sm text-white/90">{feature}</span>
+                  </AnimatedGridItem>
+                ))}
+              </AnimatedGrid>
+
+              <div className="border-t border-white/20 pt-8 flex flex-col sm:flex-row items-center justify-between gap-6">
+                <div>
+                  <div className="text-sm uppercase tracking-wider text-white/60 font-black mb-2">Starting at</div>
+                  <div className="text-5xl sm:text-6xl font-black text-white">$299<span className="text-2xl text-white/40">/mo</span></div>
+                </div>
+                <div className="text-right">
+                  <div className="text-sm uppercase tracking-wider text-green-400 font-black mb-2">You Save</div>
+                  <div className="text-3xl font-black text-green-400">$3,801/mo</div>
+                  <div className="text-xs text-white/40 mt-1">$45,612 per year</div>
+                </div>
+              </div>
+
+              <div className="mt-10 text-center">
+                <Link
+                  href="/vendor/login"
+                  className="inline-flex items-center justify-center gap-3 bg-white text-black px-10 py-5 rounded-2xl text-sm uppercase tracking-[0.1em] font-black transition-all hover:scale-[1.02] hover:shadow-[0_0_60px_rgba(255,255,255,0.3)]"
+                  style={{ fontWeight: 900 }}
+                >
+                  Start Free Trial
+                  <ArrowRight size={18} />
+                </Link>
+                <p className="text-xs text-white/40 mt-4 uppercase tracking-wider">14-day free trial • No credit card required</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </AnimatedSection>
+
+      {/* Core Features - Simple, Powerful */}
+      <AnimatedSection className="py-12 sm:py-16 md:py-24 px-4 sm:px-6 bg-gradient-to-b from-transparent via-white/[0.01] to-transparent">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-16 sm:mb-20">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-black mb-4 tracking-tight uppercase" style={{ fontWeight: 900 }}>
+              Everything You Need
+            </h2>
+            <p className="text-lg sm:text-xl text-white/60">Built for hemp businesses. Not hacked together.</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {[
+              {
+                title: "Point of Sale",
+                desc: "Lightning-fast POS. Accept payments. Print receipts. Sync inventory in real-time across all locations.",
+                icon: "💳"
+              },
+              {
+                title: "eCommerce",
+                desc: "Beautiful online store. Mobile-optimized. Cart. Checkout. Order tracking. Everything your customers expect.",
+                icon: "🛒"
+              },
+              {
+                title: "Inventory Management",
+                desc: "Track stock across multiple locations. Automated reorder alerts. Never run out. Never overstock.",
+                icon: "📦"
+              },
+              {
+                title: "Analytics",
+                desc: "Real-time sales data. Revenue trends. Best sellers. Profit margins. Make decisions with confidence.",
+                icon: "📊"
+              },
+              {
+                title: "TV Menus",
+                desc: "Digital signage for your store. Auto-updating prices. Beautiful displays. Impress every customer.",
+                icon: "📺"
+              },
+              {
+                title: "AI Features",
+                desc: "Generate product descriptions in seconds. Optimize pricing. Save 10+ hours per week.",
+                icon: "✨"
+              },
+            ].map((feature) => (
+              <div key={feature.title} className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-8 hover:border-white/10 hover:bg-white/[0.01] transition-all duration-300 group">
+                <div className="text-4xl mb-4">{feature.icon}</div>
+                <h3 className="text-xl font-black text-white mb-3 uppercase tracking-tight" style={{ fontWeight: 900 }}>
+                  {feature.title}
+                </h3>
+                <p className="text-white/60 leading-relaxed">
+                  {feature.desc}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </AnimatedSection>
+
+      {/* Built for Cannabis - Jobs style pride */}
+      <AnimatedSection className="py-12 sm:py-16 md:py-24 px-4 sm:px-6">
+        <div className="max-w-4xl mx-auto text-center">
+          <div className="bg-[#0a0a0a] border border-white/5 rounded-3xl p-12 sm:p-16 lg:p-20 hover:border-white/10 transition-all duration-500 relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent pointer-events-none" />
+
+            <div className="relative z-10">
+              <div className="mb-8">
                 <Image
                   src="/yacht-club-logo.png"
                   alt="Yacht Club"
-                  width={60}
-                  height={60}
-                  className="object-contain mx-auto opacity-40 sm:w-20 sm:h-20 group-hover:opacity-60 transition-opacity duration-500"
+                  width={80}
+                  height={80}
+                  className="object-contain mx-auto opacity-60"
                 />
-                {/* Subtle glow */}
-                <div className="absolute inset-0 bg-white/5 rounded-full blur-xl scale-150 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               </div>
+              <h3 className="text-3xl sm:text-4xl md:text-5xl font-black mb-6 uppercase tracking-tight" style={{ fontWeight: 900 }}>
+                Built for Hemp
+              </h3>
+              <p className="text-lg sm:text-xl text-white/60 max-w-2xl mx-auto leading-relaxed">
+                Not a generic eCommerce platform with plugins.
+                <br />
+                <br />
+                Every feature designed specifically for hemp businesses.
+                <br />
+                Compliance. Lab results. Strain data. Age verification.
+                <br />
+                <br />
+                <span className="text-white">We speak your language.</span>
+              </p>
             </div>
-            <h3 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-black mb-4 sm:mb-6 uppercase tracking-tight relative z-10" style={{ fontWeight: 900 }}>
-              Built for Cannabis
-            </h3>
-            <p className="text-sm sm:text-base md:text-lg text-white/60 max-w-2xl mx-auto px-4 relative z-10">
-              Every tool cannabis businesses need: compliant menus, strain data management, COA tracking, age verification, wholesale ordering, multi-location inventory, TV menu boards, and integrated POS. One platform, complete control.
-            </p>
           </div>
         </div>
       </AnimatedSection>
 
-      {/* Capabilities Grid */}
-      <AnimatedSection className="py-12 sm:py-16 md:py-20 px-4 sm:px-6">
-        <div className="max-w-6xl mx-auto">
-          <h2
-            className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black mb-10 sm:mb-12 md:mb-16 text-center uppercase tracking-tight"
+      {/* Final CTA - Simple, Direct */}
+      <AnimatedSection className="py-12 sm:py-16 md:py-24 px-4 sm:px-6">
+        <div className="max-w-4xl mx-auto text-center">
+          <h2 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black mb-8 uppercase tracking-tight leading-tight" style={{ fontWeight: 900 }}>
+            Stop Overpaying.
+            <br />
+            <span className="text-white/40">Start Today.</span>
+          </h2>
+
+          <p className="text-xl sm:text-2xl text-white/60 mb-12 max-w-2xl mx-auto">
+            14-day free trial. No credit card required.
+            <br />
+            <span className="text-white/40">See why businesses are switching to WhaleTools.</span>
+          </p>
+
+          <Link
+            href="/vendor/login"
+            className="inline-flex items-center justify-center gap-3 bg-white text-black px-12 py-6 rounded-2xl text-base uppercase tracking-[0.1em] font-black transition-all hover:scale-[1.02] hover:shadow-[0_0_80px_rgba(255,255,255,0.3)]"
             style={{ fontWeight: 900 }}
           >
-            Full-Stack Solutions
-          </h2>
-          <AnimatedGrid className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-            {[
-              "Dispensary POS & payments",
-              "Online menu & ordering",
-              "Multi-location inventory",
-              "Wholesale B2B portals",
-              "Compliance & lab results",
-              "Digital menu displays",
-              "Brand & distributor tools",
-              "Customer loyalty & analytics"
-            ].map((item) => (
-              <AnimatedGridItem
-                key={item}
-                className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-4 sm:p-6 hover:border-white/10 hover:bg-white/[0.02] transition-all duration-300 group"
-              >
-                <div className="text-xs sm:text-sm font-black uppercase tracking-[0.08em] group-hover:text-white/90 transition-colors" style={{ fontWeight: 900 }}>
-                  {item}
-                </div>
-              </AnimatedGridItem>
-            ))}
-          </AnimatedGrid>
-        </div>
-      </AnimatedSection>
+            Start Free Trial
+            <ArrowRight size={20} />
+          </Link>
 
-      {/* Countdown Section - Client Component */}
-      <HomeCountdown />
-
-      {/* CTA Section */}
-      <AnimatedSection className="py-12 sm:py-16 md:py-20 px-4 sm:px-6">
-        <div className="max-w-4xl mx-auto text-center">
-          <div className="mb-8 sm:mb-12 relative inline-block">
-            <Image
-              src="/yacht-club-logo.png"
-              alt="Yacht Club"
-              width={80}
-              height={80}
-              className="object-contain mx-auto sm:w-[100px] sm:h-[100px] relative z-10"
-            />
-            {/* Pulsing glow */}
-            <div className="absolute inset-0 bg-white/10 rounded-full blur-2xl animate-pulse" />
+          <div className="mt-8 flex items-center justify-center gap-8 text-sm text-white/40">
+            <span>✓ No setup fees</span>
+            <span>✓ Cancel anytime</span>
+            <span>✓ Free support</span>
           </div>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black mb-8 sm:mb-12 uppercase tracking-tight leading-tight bg-gradient-to-b from-white to-white/80 bg-clip-text text-transparent" style={{ fontWeight: 900 }}>
-            Ready To Build?
-          </h2>
-          <AnimatedGrid className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link
-              href="/vendor/login"
-              className="group inline-flex items-center justify-center gap-3 bg-white text-black px-8 py-4 rounded-2xl text-xs uppercase tracking-[0.08em] font-black transition-all hover:scale-105 hover:shadow-[0_0_50px_rgba(255,255,255,0.2)] w-full sm:w-auto relative overflow-hidden"
-              style={{ fontWeight: 900 }}
-            >
-              <span className="relative z-10">Create Account</span>
-              <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform relative z-10" />
-              {/* Animated shine */}
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000" />
-            </Link>
-            <Link
-              href="/partners"
-              className="inline-flex items-center justify-center gap-3 bg-transparent border border-white/10 text-white px-8 py-4 rounded-2xl text-xs uppercase tracking-[0.08em] hover:bg-white/5 hover:border-white/20 font-black transition-all hover:scale-105 w-full sm:w-auto"
-              style={{ fontWeight: 900 }}
-            >
-              <span>Partners</span>
-            </Link>
-          </AnimatedGrid>
         </div>
       </AnimatedSection>
 
-      {/* Footer */}
-      <footer className="border-t border-white/5 py-10 sm:py-12 md:py-16 px-4 sm:px-6 bg-black">
+      {/* Footer - Minimal */}
+      <footer className="border-t border-white/5 py-12 px-4 sm:px-6 bg-black">
         <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6 sm:gap-8 mb-8 sm:mb-12">
-            <div className="flex items-center gap-3 sm:gap-4">
-              <Image 
-                src="/yacht-club-logo.png" 
-                alt="Yacht Club" 
-                width={28} 
-                height={28}
-                className="object-contain opacity-60 sm:w-8 sm:h-8"
-              />
-              <span className="text-xs uppercase tracking-[0.12em] text-white/40 font-black" style={{ fontWeight: 900 }}>
+          <div className="flex flex-col md:flex-row items-center justify-between gap-8 mb-8">
+            <div className="flex items-center gap-3">
+              <Image src="/whale.png" alt="WhaleTools" width={24} height={24} className="object-contain opacity-40" />
+              <span className="text-xs uppercase tracking-[0.12em] text-white/30 font-black" style={{ fontWeight: 900 }}>
                 © 2025 WhaleTools
               </span>
             </div>
-            <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 md:gap-8">
-              {['About', 'Partners', 'API', 'Privacy', 'Terms'].map(link => (
-                <Link 
-                  key={link} 
-                  href={`/${link.toLowerCase()}`} 
+            <div className="flex flex-wrap items-center justify-center gap-6">
+              {[
+                { name: 'Pricing', href: '/pricing' },
+                { name: 'Features', href: '/#features' },
+                { name: 'API', href: '/api' },
+                { name: 'Privacy', href: '/privacy' },
+                { name: 'Terms', href: '/terms' }
+              ].map(link => (
+                <Link
+                  key={link.name}
+                  href={link.href}
                   className="text-xs uppercase tracking-[0.12em] text-white/40 hover:text-white transition-colors font-black"
                   style={{ fontWeight: 900 }}
                 >
-                  {link}
+                  {link.name}
                 </Link>
               ))}
             </div>
-          </div>
-          <div className="text-center">
-            <Image 
-              src="/yacht-club-logo.png" 
-              alt="Yacht Club" 
-              width={48} 
-              height={48}
-              className="object-contain mx-auto opacity-20 sm:w-[60px] sm:h-[60px]"
-            />
           </div>
         </div>
       </footer>
