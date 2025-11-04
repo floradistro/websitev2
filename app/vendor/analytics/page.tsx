@@ -92,7 +92,7 @@ function VendorAnalyticsContent() {
     return (
       <div className="w-full px-4 lg:px-0 py-12">
         <div className="text-center">
-          <p className="text-red-400 mb-4">{error || 'Failed to load analytics'}</p>
+          <p className="text-red-400 mb-4">{error.message || 'Failed to load analytics'}</p>
           <button
             onClick={() => refetch()}
             className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-white transition"
