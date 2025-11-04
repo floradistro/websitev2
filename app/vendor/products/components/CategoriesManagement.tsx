@@ -84,7 +84,7 @@ export function CategoriesManagement({ vendorId }: CategoriesManagementProps) {
             name: String(f.label || (f.definition as Record<string, unknown>)?.label || 'Unnamed'),
             slug: String(f.fieldId || f.slug || ''),
             description: String(f.description || (f.definition as Record<string, unknown>)?.description || ''),
-            fields: [field as Record<string, unknown>],
+            fields: [field] as unknown as DynamicField[],
             is_active: true,
             category_id: f.categoryId as string | undefined
           } as FieldGroup;

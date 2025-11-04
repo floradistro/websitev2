@@ -234,7 +234,7 @@ function MarketingAnalyticsContent() {
             <div>
               <h3 className="text-white font-bold">Email Performance</h3>
               <p className="text-xs text-white/60">
-                {data.channel_performance.email.campaigns} campaigns
+                {channelPerformance.email.campaigns} campaigns
               </p>
             </div>
           </div>
