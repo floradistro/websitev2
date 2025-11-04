@@ -479,7 +479,7 @@ export default function AdminDashboard() {
             <div className="space-y-3">
               {topCustomers.length === 0 ? (
                 <div className="text-center py-8">
-                  <Users className={cn(ds.colors.icon.tertiary, "w-10 h-10 mx-auto mb-3")} />
+                  <Users className={cn("text-white/40", "w-10 h-10 mx-auto mb-3")} />
                   <p className={cn(ds.typography.size.sm, ds.colors.text.tertiary)}>
                     No customers yet
                   </p>
@@ -533,7 +533,7 @@ export default function AdminDashboard() {
 
           {customers.length === 0 ? (
             <div className="text-center py-12">
-              <Users className={cn(ds.colors.icon.tertiary, "w-16 h-16 mx-auto mb-4")} />
+              <Users className={cn("text-white/40", "w-16 h-16 mx-auto mb-4")} />
               <p className={cn(ds.typography.size.lg, ds.typography.weight.semibold, ds.colors.text.primary, "mb-2")}>
                 No customers yet
               </p>
