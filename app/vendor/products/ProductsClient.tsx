@@ -91,7 +91,7 @@ export default function ProductsClient() {
                 : cn(ds.colors.text.quaternary, 'hover:text-white/60', 'border-transparent')
             )}
           >
-            <Package size={14} />
+            <Package size={14} strokeWidth={1.5} />
             Products
             <span className={cn("px-2 py-0.5 rounded text-[8px]", ds.colors.bg.hover)}>
               {total}
@@ -114,7 +114,7 @@ export default function ProductsClient() {
                 : cn(ds.colors.text.quaternary, 'hover:text-white/60', 'border-transparent')
             )}
           >
-            <FolderTree size={14} />
+            <FolderTree size={14} strokeWidth={1.5} />
             Categories
             <span className={cn("px-2 py-0.5 rounded text-[8px]", ds.colors.bg.hover)}>
               {categoriesData?.length || 0}

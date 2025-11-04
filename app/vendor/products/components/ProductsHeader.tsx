@@ -29,7 +29,7 @@ export function ProductsHeader({ totalProducts, isLoading }: ProductsHeaderProps
 
       <Link href="/vendor/products/new" aria-label="Add a new product to your catalog">
         <Button className="flex items-center gap-2">
-          <Plus className="w-4 h-4" aria-hidden="true" />
+          <Plus className="w-4 h-4" strokeWidth={1.5} aria-hidden="true" />
           Add Product
         </Button>
       </Link>

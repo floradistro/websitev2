@@ -21,7 +21,7 @@ export function ProductsFilters({ categories }: ProductsFiltersProps) {
     <div className="mb-6 space-y-4" role="search" aria-label="Product filters and search">
       {/* Search Bar */}
       <div className="relative">
-        <Search className={cn("absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5", ds.colors.text.quaternary)} aria-hidden="true" />
+        <Search className={cn("absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5", ds.colors.text.quaternary)} strokeWidth={1.5} aria-hidden="true" />
         <Input
           type="text"
           placeholder="Search products by name, SKU, or description..."
@@ -44,7 +44,7 @@ export function ProductsFilters({ categories }: ProductsFiltersProps) {
       {/* Filter Dropdowns */}
       <div className="flex items-center gap-4" role="group" aria-label="Product filters">
         <div className={cn("flex items-center gap-2", ds.typography.size.xs, ds.colors.text.quaternary)} aria-hidden="true">
-          <Filter className="w-4 h-4" />
+          <Filter className="w-4 h-4" strokeWidth={1.5} />
           <span>Filters:</span>
         </div>
 

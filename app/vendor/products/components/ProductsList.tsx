@@ -27,7 +27,7 @@ export function ProductsList({ products, isLoading, error, onViewProduct }: Prod
         role="alert"
         aria-live="assertive"
       >
-        <AlertCircle className={cn("w-12 h-12 mx-auto mb-3", ds.colors.icon.red)} aria-hidden="true" />
+        <AlertCircle className={cn("w-12 h-12 mx-auto mb-3", ds.colors.icon.red)} strokeWidth={1.5} aria-hidden="true" />
         <h3 className={cn(ds.typography.size.base, ds.typography.weight.medium, "text-red-400/90 mb-2")}>Failed to Load Products</h3>
         <p className={cn(ds.typography.size.xs, "text-red-400/70 mb-4")}>{error.message}</p>
         <button

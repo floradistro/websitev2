@@ -92,7 +92,7 @@ export function ProductCard({ product, onView }: ProductCardProps) {
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
-              <Package className={cn("w-8 h-8", ds.colors.text.quaternary)} aria-hidden="true" />
+              <Package className={cn("w-8 h-8", ds.colors.text.quaternary)} strokeWidth={1.5} aria-hidden="true" />
             </div>
           )}
         </div>
@@ -133,7 +133,7 @@ export function ProductCard({ product, onView }: ProductCardProps) {
           {/* Price & Stock */}
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
-              <DollarSign className={cn("w-4 h-4", ds.colors.icon.green)} />
+              <DollarSign className={cn("w-4 h-4", ds.colors.icon.green)} strokeWidth={1.5} />
               <span className={cn(ds.typography.size.sm, ds.typography.weight.medium, "text-white/90")}>
                 ${product.price.toFixed(2)}
               </span>
@@ -144,7 +144,7 @@ export function ProductCard({ product, onView }: ProductCardProps) {
               )}
             </div>
             <div className="flex items-center gap-2">
-              <Package className={cn("w-4 h-4", ds.colors.icon.blue)} />
+              <Package className={cn("w-4 h-4", ds.colors.icon.blue)} strokeWidth={1.5} />
               <span className={cn(ds.typography.size.xs, ds.colors.text.tertiary)}>
                 Stock: <span className="font-medium text-white/70">{product.total_stock}</span>
               </span>
@@ -164,7 +164,7 @@ export function ProductCard({ product, onView }: ProductCardProps) {
             )}
             aria-label={`View and edit ${product.name}`}
           >
-            <Eye className="w-5 h-5" aria-hidden="true" />
+            <Eye className="w-5 h-5" strokeWidth={1.5} aria-hidden="true" />
           </button>
           <button
             onClick={handleDelete}
@@ -178,7 +178,7 @@ export function ProductCard({ product, onView }: ProductCardProps) {
             aria-label={`Delete ${product.name}`}
             aria-busy={isDeleting}
           >
-            <Trash2 className="w-5 h-5" aria-hidden="true" />
+            <Trash2 className="w-5 h-5" strokeWidth={1.5} aria-hidden="true" />
           </button>
         </div>
       </div>

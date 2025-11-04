@@ -484,7 +484,7 @@ export function CategoriesManagement({ vendorId }: CategoriesManagementProps) {
                               "flex items-center gap-1.5"
                             )}
                           >
-                            <Plus size={12} />
+                            <Plus size={12} strokeWidth={1.5} />
                             Create Rule
                           </button>
                         </div>

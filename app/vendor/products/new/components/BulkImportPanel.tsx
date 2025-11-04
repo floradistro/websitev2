@@ -248,7 +248,7 @@ export default function BulkImportPanel({
           <div className={cn(ds.components.card, "mt-4 rounded-2xl")}>
             <SectionHeader withMargin={false} className="mb-3">
               <div className="flex items-center gap-2">
-                <Sparkles size={12} className="text-white/60" />
+                <Sparkles size={12} strokeWidth={1.5} className="text-white/60" />
                 AI Enrichment Options
               </div>
             </SectionHeader>
@@ -294,7 +294,7 @@ export default function BulkImportPanel({
                     >
                       <span className="text-[14px]">{field.icon}</span>
                       <span className="flex-1">{field.label}</span>
-                      {isSelected && <CheckCircle size={10} strokeWidth={3} />}
+                      {isSelected && <CheckCircle size={10} strokeWidth={1.5} />}
                     </button>
                   );
                 })}
@@ -319,7 +319,7 @@ export default function BulkImportPanel({
                 </>
               ) : (
                 <>
-                  <Sparkles size={12} />
+                  <Sparkles size={12} strokeWidth={1.5} />
                   Generate AI Data for All Products
                 </>
               )}
@@ -341,7 +341,7 @@ export default function BulkImportPanel({
                   disabled={currentReviewIndex === 0}
                   className="p-1.5 bg-white/10 border border-white/20 rounded-lg text-white hover:bg-white/20 disabled:opacity-30 transition-all"
                 >
-                  <ChevronLeft size={12} />
+                  <ChevronLeft size={12} strokeWidth={1.5} />
                 </button>
                 <button
                   type="button"
@@ -349,7 +349,7 @@ export default function BulkImportPanel({
                   disabled={currentReviewIndex === bulkProducts.length - 1}
                   className="p-1.5 bg-white/10 border border-white/20 rounded-lg text-white hover:bg-white/20 disabled:opacity-30 transition-all"
                 >
-                  <ChevronRight size={12} />
+                  <ChevronRight size={12} strokeWidth={1.5} />
                 </button>
               </div>
             </div>
