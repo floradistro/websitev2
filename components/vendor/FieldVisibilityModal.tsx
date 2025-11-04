@@ -108,7 +108,7 @@ export function FieldVisibilityModal({
                 <Icon
                   size={16}
                   strokeWidth={1.5}
-                  className={isEnabled ? 'text-green-400' : cn(ds.colors.icon.whisper)}
+                  className={isEnabled ? 'text-green-400' : cn(ds.colors.text.whisper)}
                 />
                 <div className="text-left">
                   <div className={cn(ds.typography.size.xs, "text-white/90")}>
