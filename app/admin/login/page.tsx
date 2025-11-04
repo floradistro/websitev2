@@ -45,8 +45,8 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div className={cn("min-h-screen flex items-center justify-center p-4", ds.colors.bg.default)}>
-      <div className={cn("w-full max-w-md", ds.colors.bg.elevated, "border", ds.colors.border.default, "rounded-2xl p-8")}>
+    <div className="min-h-screen flex items-center justify-center p-4 bg-black">
+      <div className="w-full max-w-md bg-[#0a0a0a] border border-white/10 rounded-2xl p-8">
         {/* Header */}
         <div className="text-center mb-8">
           <div className={cn("inline-flex items-center justify-center w-16 h-16 rounded-full mb-4", "bg-blue-500/10")}>
