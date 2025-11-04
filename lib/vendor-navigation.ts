@@ -19,7 +19,8 @@ import {
   Tv,
   Megaphone,
   Users,
-  Sparkles
+  Sparkles,
+  Smartphone
 } from 'lucide-react';
 
 export interface NavItem {
@@ -86,6 +87,15 @@ export const vendorNavItems: NavItem[] = [
     label: 'Point of Sale',
     description: 'In-store register',
     isCore: true,
+    group: 'sales',
+    appKey: 'pos'
+  },
+  {
+    href: '/vendor/terminals',
+    icon: Smartphone,
+    label: 'Terminals',
+    description: 'POS registers',
+    isCore: false,
     group: 'sales',
     appKey: 'pos'
   },
@@ -159,7 +169,16 @@ export const vendorNavItems: NavItem[] = [
     appKey: 'analytics'
   },
 
-  // Settings (1)
+  // Settings (2)
+  {
+    href: '/vendor/payment-processors',
+    icon: CreditCard,
+    label: 'Payment Processors',
+    description: 'Terminal credentials',
+    isCore: false,
+    group: 'settings'
+    // No appKey - always visible for setup
+  },
   {
     href: '/vendor/settings',
     icon: Settings,

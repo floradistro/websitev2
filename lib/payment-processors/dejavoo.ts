@@ -28,6 +28,8 @@ export type DejavooTransactionType =
 
 export type DejavooResultCode = 'Ok' | 'TerminalError' | 'ApiError';
 
+export type DejavooReceiptOption = 'No' | 'Both' | 'Merchant' | 'Customer';
+
 export interface DejavooConfig {
   authkey: string;
   tpn: string; // Terminal Profile Number
@@ -41,8 +43,8 @@ export interface DejavooSaleRequest {
   paymentType: DejavooPaymentType;
   referenceId: string; // Must be unique within one batch
   invoiceNumber?: string;
-  printReceipt?: 'Yes' | 'No';
-  getReceipt?: 'Yes' | 'No';
+  printReceipt?: DejavooReceiptOption;
+  getReceipt?: DejavooReceiptOption;
   getExtendedData?: boolean;
   timeout?: number; // SPInProxyTimeout in minutes
 }
@@ -52,15 +54,15 @@ export interface DejavooReturnRequest {
   paymentType: DejavooPaymentType;
   referenceId: string;
   invoiceNumber?: string;
-  printReceipt?: 'Yes' | 'No';
-  getReceipt?: 'Yes' | 'No';
+  printReceipt?: DejavooReceiptOption;
+  getReceipt?: DejavooReceiptOption;
   getExtendedData?: boolean;
 }
 
 export interface DejavooVoidRequest {
   referenceId: string; // Reference ID of transaction to void
-  printReceipt?: 'Yes' | 'No';
-  getReceipt?: 'Yes' | 'No';
+  printReceipt?: DejavooReceiptOption;
+  getReceipt?: DejavooReceiptOption;
 }
 
 export interface DejavooAuthRequest {
@@ -68,8 +70,8 @@ export interface DejavooAuthRequest {
   paymentType: DejavooPaymentType;
   referenceId: string;
   invoiceNumber?: string;
-  printReceipt?: 'Yes' | 'No';
-  getReceipt?: 'Yes' | 'No';
+  printReceipt?: DejavooReceiptOption;
+  getReceipt?: DejavooReceiptOption;
   getExtendedData?: boolean;
 }
 
@@ -132,8 +134,8 @@ export class DejavooClient {
       PaymentType: request.paymentType,
       ReferenceId: request.referenceId,
       InvoiceNumber: request.invoiceNumber,
-      PrintReceipt: request.printReceipt || 'No',
-      GetReceipt: request.getReceipt || 'Yes',
+      PrintReceipt: request.printReceipt ?? 'No',
+      GetReceipt: request.getReceipt ?? 'Both',
       GetExtendedData: request.getExtendedData !== false,
       Tpn: this.tpn,
       Authkey: this.authkey,
@@ -152,8 +154,8 @@ export class DejavooClient {
       PaymentType: request.paymentType,
       ReferenceId: request.referenceId,
       InvoiceNumber: request.invoiceNumber,
-      PrintReceipt: request.printReceipt || 'No',
-      GetReceipt: request.getReceipt || 'Yes',
+      PrintReceipt: request.printReceipt ?? 'No',
+      GetReceipt: request.getReceipt ?? 'Both',
       GetExtendedData: request.getExtendedData !== false,
       Tpn: this.tpn,
       Authkey: this.authkey,
@@ -168,8 +170,8 @@ export class DejavooClient {
   async void(request: DejavooVoidRequest): Promise<DejavooTransactionResponse> {
     const payload = {
       ReferenceId: request.referenceId,
-      PrintReceipt: request.printReceipt || 'No',
-      GetReceipt: request.getReceipt || 'Yes',
+      PrintReceipt: request.printReceipt ?? 'No',
+      GetReceipt: request.getReceipt ?? 'Both',
       Tpn: this.tpn,
       Authkey: this.authkey,
     };
@@ -186,8 +188,8 @@ export class DejavooClient {
       PaymentType: request.paymentType,
       ReferenceId: request.referenceId,
       InvoiceNumber: request.invoiceNumber,
-      PrintReceipt: request.printReceipt || 'No',
-      GetReceipt: request.getReceipt || 'Yes',
+      PrintReceipt: request.printReceipt ?? 'No',
+      GetReceipt: request.getReceipt ?? 'Both',
       GetExtendedData: request.getExtendedData !== false,
       Tpn: this.tpn,
       Authkey: this.authkey,
@@ -205,6 +207,11 @@ export class DejavooClient {
   ): Promise<T> {
     const url = `${this.baseUrl}/${endpoint}`;
 
+    console.log('🔵 DejaVoo API Request:', {
+      url,
+      payload: JSON.stringify(payload, null, 2)
+    });
+
     try {
       const response = await fetch(url, {
         method: 'POST',
@@ -216,8 +223,16 @@ export class DejavooClient {
 
       // Check for HTTP errors
       if (!response.ok) {
+        let errorBody = '';
+        try {
+          errorBody = await response.text();
+          console.error('🔴 DejaVoo API Error Response:', errorBody);
+        } catch (e) {
+          // Ignore
+        }
+
         throw new DejavooApiError(
-          `HTTP ${response.status}: ${response.statusText}`,
+          `HTTP ${response.status}: ${response.statusText}${errorBody ? ` - ${errorBody}` : ''}`,
           response.status.toString(),
           response.statusText
         );

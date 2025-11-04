@@ -236,12 +236,13 @@ export default function DynamicFieldsPanel({
         );
 
       case 'checkbox':
+        const boolValue = rawValue === true || rawValue === 'true';
         return (
           <div key={index} className="lg:col-span-2">
             <label className="flex items-center gap-2 cursor-pointer">
               <input
                 type="checkbox"
-                checked={fieldValue === true || fieldValue === 'true'}
+                checked={boolValue}
                 onChange={(e) => handleChange(e.target.checked)}
                 className={cn(ds.colors.bg.primary, "w-4 h-4 rounded border-white/20")}
               />

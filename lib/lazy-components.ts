@@ -10,12 +10,6 @@ export const VendorWhaleAnimation = dynamic(() => import('@/components/VendorWha
   loading: () => null,
 });
 
-// Charts - load on demand  
-export const AdminAnalytics = dynamic(() => import('@/app/admin/analytics/page'), {
-  ssr: false,
-  loading: () => null,
-});
-
 // Image editing - load on demand
 export const ImageEditorModal = dynamic(() => import('@/components/ImageEditorModal'), {
   ssr: false,

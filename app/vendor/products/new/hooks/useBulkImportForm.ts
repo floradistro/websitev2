@@ -391,8 +391,8 @@ export function useBulkImportForm({
             strain_type: aiData.strain_type || '',
             lineage: aiData.lineage || '',
             nose: Array.isArray(aiData.nose) ? aiData.nose.join(', ') : '',
-            effects: aiData.effects || [],
-            terpene_profile: aiData.terpene_profile || []
+            effects: Array.isArray(aiData.effects) ? aiData.effects.join(', ') : '',
+            terpene_profile: Array.isArray(aiData.terpene_profile) ? aiData.terpene_profile.join(', ') : ''
           };
         }
       }

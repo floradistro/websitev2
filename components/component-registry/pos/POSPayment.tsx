@@ -12,6 +12,8 @@ interface POSPaymentProps {
   total: number;
   onPaymentComplete: (paymentData: PaymentData) => void;
   onCancel: () => void;
+  locationId?: string;
+  registerId?: string;
 }
 
 export interface PaymentData {
@@ -19,10 +21,13 @@ export interface PaymentData {
   cashTendered?: number;
   changeGiven?: number;
   authorizationCode?: string;
+  transactionId?: string;
+  cardType?: string;
+  cardLast4?: string;
   splitPayments?: SplitPayment[];
 }
 
-export function POSPayment({ total, onPaymentComplete, onCancel }: POSPaymentProps) {
+export function POSPayment({ total, onPaymentComplete, onCancel, locationId, registerId }: POSPaymentProps) {
   const [paymentMethod, setPaymentMethod] = useState<'cash' | 'card' | 'split'>('cash');
   const [cashTendered, setCashTendered] = useState('');
   const [processing, setProcessing] = useState(false);
@@ -63,7 +68,7 @@ export function POSPayment({ total, onPaymentComplete, onCancel }: POSPaymentPro
       if (paymentMethod === 'cash') {
         const tendered = parseFloat(cashTendered);
         const change = tendered - total;
-        
+
         onPaymentComplete({
           paymentMethod: 'cash',
           cashTendered: tendered,
@@ -74,16 +79,39 @@ export function POSPayment({ total, onPaymentComplete, onCancel }: POSPaymentPro
           paymentMethod: 'split',
           splitPayments,
         });
-      } else {
-        // Card payment (future: integrate with terminal)
-        console.log('Card payment processed');
+      } else if (paymentMethod === 'card') {
+        // Process card payment through DejaVoo terminal
+        const response = await fetch('/api/pos/payment/process', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            locationId: locationId || localStorage.getItem('pos_selected_location_id'),
+            registerId: registerId || localStorage.getItem('pos_register_id'),
+            amount: total,
+            paymentMethod: 'credit',
+            referenceId: `POS-${Date.now()}`,
+          }),
+        });
+
+        const result = await response.json();
+
+        console.log('Payment API response:', result);
+
+        if (!result.success) {
+          throw new Error(result.error || 'Payment failed');
+        }
+
         onPaymentComplete({
           paymentMethod: 'card',
-          authorizationCode: `AUTH-${Date.now()}`,
+          authorizationCode: result.authorizationCode,
+          transactionId: result.transactionId,
+          cardType: result.cardType,
+          cardLast4: result.cardLast4,
         });
       }
     } catch (error: any) {
       console.error('Payment error:', error);
+      alert(`Payment failed: ${error.message}`);
       setProcessing(false);
     }
   };
@@ -205,12 +233,25 @@ export function POSPayment({ total, onPaymentComplete, onCancel }: POSPaymentPro
             <div className="flex justify-center mb-3">
               <CreditCard size={48} className="text-white/20" />
             </div>
-            <div className="text-white/60 text-xs uppercase tracking-wider mb-2">
-              Card terminal integration coming soon
-            </div>
-            <div className="text-white/40 text-[10px]">
-              For now, this will record as "card" payment
-            </div>
+            {processing ? (
+              <>
+                <div className="text-white text-sm font-bold uppercase tracking-wider mb-2">
+                  Processing on terminal...
+                </div>
+                <div className="text-white/60 text-[10px]">
+                  Please follow prompts on DejaVoo terminal
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="text-white text-sm font-bold uppercase tracking-wider mb-2">
+                  Ready to process
+                </div>
+                <div className="text-white/60 text-[10px]">
+                  Click Complete to send to DejaVoo terminal
+                </div>
+              </>
+            )}
           </div>
         )}
 

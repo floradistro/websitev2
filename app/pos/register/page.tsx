@@ -559,6 +559,8 @@ export default function POSRegisterPage() {
           total={total}
           onPaymentComplete={handlePaymentComplete}
           onCancel={() => setShowPayment(false)}
+          locationId={selectedLocation?.id}
+          registerId={registerId || undefined}
         />
       )}
 

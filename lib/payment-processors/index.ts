@@ -154,7 +154,8 @@ class DejavooPaymentProcessor implements IPaymentProcessor {
         paymentType: this.mapPaymentMethodToDejavoo(request.paymentMethod),
         referenceId,
         invoiceNumber: request.invoiceNumber,
-        getReceipt: 'Yes',
+        printReceipt: 'No',
+        getReceipt: 'Both',
         getExtendedData: true,
       });
 
@@ -258,7 +259,8 @@ class DejavooPaymentProcessor implements IPaymentProcessor {
         amount: refundAmount,
         paymentType: this.mapPaymentMethodToDejavoo(originalTxn.payment_method),
         referenceId,
-        getReceipt: 'Yes',
+        printReceipt: 'No',
+        getReceipt: 'Both',
         getExtendedData: true,
       });
 
@@ -337,7 +339,8 @@ class DejavooPaymentProcessor implements IPaymentProcessor {
     try {
       const response = await this.client.void({
         referenceId: originalTxn.processor_reference_id,
-        getReceipt: 'Yes',
+        printReceipt: 'No',
+        getReceipt: 'Both',
       });
 
       // Update original transaction

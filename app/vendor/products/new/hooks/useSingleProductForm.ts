@@ -588,8 +588,8 @@ export function useSingleProductForm({
         pricing_mode: pricingMode,
         image_urls: uploadedImageUrls,
         custom_fields: customFieldValues,
-        cost_price: formData.cost_price ? parseFloat(formData.cost_price) : null,
-        initial_quantity: formData.initial_quantity ? parseFloat(formData.initial_quantity) : null,
+        cost_price: formData.cost_price ? parseFloat(formData.cost_price) : undefined,
+        initial_quantity: formData.initial_quantity ? parseFloat(formData.initial_quantity) : undefined,
       };
 
       // Add pricing data based on mode
