@@ -55,7 +55,7 @@ export default function ProductsClient() {
     }
 
     // Single pass through array instead of 3 separate filters (3x faster)
-    return products.reduce((acc: { total: number; approved: number; pending: number; rejected: number }, p) => {
+    return products.reduce((acc: { total: number; approved: number; pending: number; rejected: number }, p: Product) => {
       acc.total++;
       if (p.status === 'published' || p.status === 'approved') {
         acc.approved++;
