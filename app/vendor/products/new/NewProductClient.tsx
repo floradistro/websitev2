@@ -711,7 +711,7 @@ export default function NewProductClient() {
                           AI-enriched data
                         </p>
                         <div className={cn("space-y-2", ds.typography.size.xs, ds.colors.text.tertiary)}>
-                          {Object.entries(bulkForm.currentProduct.custom_fields).map(([key, value]) => (
+                          {Object.entries(bulkForm.currentProduct.custom_fields || {}).map(([key, value]) => (
                             <div key={key}>
                               <span className="text-white/40">{key}:</span> {Array.isArray(value) ? value.join(', ') : value}
                             </div>
