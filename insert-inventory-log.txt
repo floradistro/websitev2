@@ -1,0 +1,5 @@
+📄 Running SQL from: scripts/insert-flora-inventory.sql
+✅ Connected to Supabase
+
+✅ Query executed successfully
+   Rows affected: 0

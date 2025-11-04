@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServiceSupabase } from '@/lib/supabase/client';
+import { requireVendor } from '@/lib/auth/middleware';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 30;
@@ -7,27 +8,50 @@ export const revalidate = 60; // Cache for 60 seconds
 
 export async function GET(request: NextRequest) {
   const startTime = Date.now();
-  
+
   try {
-    const vendorId = request.headers.get('x-vendor-id');
-    
-    if (!vendorId) {
-      return NextResponse.json(
-        { success: false, error: 'Vendor ID required' },
-        { status: 401 }
-      );
-    }
-    
+    // Use secure middleware to get vendor_id from session
+    const authResult = await requireVendor(request);
+    if (authResult instanceof NextResponse) return authResult;
+    const { vendorId } = authResult;
+
+    // Parse query parameters for pagination and filtering
+    const { searchParams } = new URL(request.url);
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = Math.min(parseInt(searchParams.get('limit') || '20'), 100); // Max 100 per page
+    const search = searchParams.get('search') || '';
+    const status = searchParams.get('status') || '';
+    const category = searchParams.get('category') || '';
+
     const supabase = getServiceSupabase();
-    
-    console.log(`[Products API] Fetching for vendor: ${vendorId}`);
-    
-    // Fetch products - essential fields including images, category, and custom_fields
-    const productsStart = Date.now();
-    const { data: products, error: productsError } = await supabase
+
+    console.log(`[Products API] Fetching for vendor: ${vendorId} (page ${page}, limit ${limit})`);
+
+    // Build query
+    let query = supabase
       .from('products')
-      .select('id, name, sku, price, cost_price, description, status, featured_image_storage, image_gallery_storage, primary_category_id, custom_fields, categories:primary_category_id(name)')
-      .eq('vendor_id', vendorId)
+      .select('id, name, sku, price, cost_price, description, status, featured_image_storage, image_gallery_storage, primary_category_id, custom_fields, categories:primary_category_id(name)', { count: 'exact' })
+      .eq('vendor_id', vendorId);
+
+    // Apply filters
+    if (search) {
+      query = query.or(`name.ilike.%${search}%,sku.ilike.%${search}%,description.ilike.%${search}%`);
+    }
+    if (status && status !== 'all') {
+      query = query.eq('status', status);
+    }
+    if (category && category !== 'all') {
+      query = query.eq('categories.name', category);
+    }
+
+    // Apply pagination
+    const from = (page - 1) * limit;
+    const to = from + limit - 1;
+
+    // Fetch products with count
+    const productsStart = Date.now();
+    const { data: products, error: productsError, count } = await query
+      .range(from, to)
       .order('name');
 
     if (productsError) throw productsError;
@@ -38,7 +62,10 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({
         success: true,
         products: [],
-        total: 0,
+        total: count || 0,
+        page,
+        limit,
+        totalPages: 0,
         elapsed_ms: Date.now() - startTime
       });
     }
@@ -96,18 +123,28 @@ export async function GET(request: NextRequest) {
     });
 
     const elapsed = Date.now() - startTime;
-    console.log(`✅ Products full API loaded in ${elapsed}ms - ${formattedProducts.length} products, ${inventoryRecords?.length || 0} inventory records`);
+    const totalPages = count ? Math.ceil(count / limit) : 0;
+
+    console.log(`✅ Products full API loaded in ${elapsed}ms - ${formattedProducts.length} products (page ${page}/${totalPages}), ${inventoryRecords?.length || 0} inventory records`);
 
     return NextResponse.json({
       success: true,
       products: formattedProducts,
-      total: formattedProducts.length,
+      total: count || 0,
+      page,
+      limit,
+      totalPages,
+      hasNextPage: page < totalPages,
+      hasPreviousPage: page > 1,
       elapsed_ms: elapsed
     }, {
       headers: {
         'Cache-Control': 'private, s-maxage=60, stale-while-revalidate=120',
         'X-Response-Time': `${elapsed}ms`,
-        'CDN-Cache-Control': 'max-age=60'
+        'CDN-Cache-Control': 'max-age=60',
+        'X-Total-Count': String(count || 0),
+        'X-Page': String(page),
+        'X-Total-Pages': String(totalPages)
       }
     });
   } catch (error: any) {

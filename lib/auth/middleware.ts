@@ -155,7 +155,7 @@ export function createAuthCookie(token: string): {
     options: {
       httpOnly: true,              // Prevent JavaScript access (XSS protection)
       secure: process.env.NODE_ENV === 'production', // HTTPS only in production
-      sameSite: 'strict',          // CSRF protection
+      sameSite: 'lax',             // CSRF protection (lax for better compatibility)
       maxAge: 60 * 60 * 24 * 7,   // 7 days
       path: '/'
     }

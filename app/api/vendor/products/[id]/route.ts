@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServiceSupabase } from '@/lib/supabase/client';
+import { requireVendor } from '@/lib/auth/middleware';
+import { updateProductSchema, safeValidateProductData } from '@/lib/validations/product';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,14 +11,10 @@ export async function GET(
 ) {
   const { id } = await params;
   try {
-    const vendorId = request.headers.get('x-vendor-id');
-    
-    if (!vendorId) {
-      return NextResponse.json(
-        { success: false, error: 'Vendor ID required' },
-        { status: 401 }
-      );
-    }
+    // Use secure middleware to get vendor_id from session
+    const authResult = await requireVendor(request);
+    if (authResult instanceof NextResponse) return authResult;
+    const { vendorId } = authResult;
     
     const productId = id;
     const supabase = getServiceSupabase();
@@ -170,27 +168,41 @@ export async function PUT(
 ) {
   const { id } = await params;
   try {
-    const vendorId = request.headers.get('x-vendor-id');
-    
-    if (!vendorId) {
-      return NextResponse.json(
-        { success: false, error: 'Vendor ID required' },
-        { status: 401 }
-      );
-    }
+    // Use secure middleware to get vendor_id from session
+    const authResult = await requireVendor(request);
+    if (authResult instanceof NextResponse) return authResult;
+    const { vendorId } = authResult;
     
     const productId = id;
     const body = await request.json();
-    
+
+    // Validate request body with Zod schema
+    const validation = safeValidateProductData(updateProductSchema, body);
+
+    if (!validation.success) {
+      const errorMessages = validation.errors.issues.map((err: any) => ({
+        field: err.path.join('.'),
+        message: err.message
+      }));
+
+      return NextResponse.json({
+        success: false,
+        error: 'Validation failed',
+        details: errorMessages
+      }, { status: 400 });
+    }
+
+    const validatedData = validation.data;
+
     const supabase = getServiceSupabase();
-    
+
     // Verify ownership
     const { data: existing, error: fetchError } = await supabase
       .from('products')
       .select('id, vendor_id')
       .eq('id', productId)
       .single();
-    
+
     if (fetchError || !existing || existing.vendor_id !== vendorId) {
       return NextResponse.json(
         { success: false, error: 'Product not found or unauthorized' },
@@ -198,20 +210,36 @@ export async function PUT(
       );
     }
 
-    // Build update data
+    // Build update data from validated input
     const updateData: any = {
       updated_at: new Date().toISOString()
     };
 
-    if (body.name) updateData.name = body.name;
-    if (body.sku !== undefined) updateData.sku = body.sku;
-    if (body.description !== undefined) updateData.description = body.description;
-    if (body.price !== undefined) updateData.price = body.price;
-    if (body.cost_price !== undefined) updateData.cost_price = body.cost_price;
+    if (validatedData.name) updateData.name = validatedData.name;
+    if (validatedData.sku !== undefined) updateData.sku = validatedData.sku;
+    if (validatedData.description !== undefined) updateData.description = validatedData.description;
+    if (validatedData.price !== undefined) updateData.price = validatedData.price;
+    if (validatedData.cost_price !== undefined) updateData.cost_price = validatedData.cost_price;
+    if (validatedData.stock_quantity !== undefined) updateData.stock_quantity = validatedData.stock_quantity;
+    if (validatedData.stock_status !== undefined) updateData.stock_status = validatedData.stock_status;
+    if (validatedData.manage_stock !== undefined) updateData.manage_stock = validatedData.manage_stock;
 
     // Update custom_fields - vendors have full autonomy over custom fields
-    if (body.custom_fields) {
-      updateData.custom_fields = body.custom_fields;
+    if (validatedData.custom_fields) {
+      updateData.custom_fields = validatedData.custom_fields;
+    }
+
+    // Update field visibility
+    if (validatedData.field_visibility) {
+      updateData.field_visibility = validatedData.field_visibility;
+    }
+
+    // Update media
+    if (validatedData.featured_image_storage !== undefined) {
+      updateData.featured_image_storage = validatedData.featured_image_storage;
+    }
+    if (validatedData.image_gallery_storage !== undefined) {
+      updateData.image_gallery_storage = validatedData.image_gallery_storage;
     }
 
     // Update product
@@ -236,6 +264,68 @@ export async function PUT(
     });
   } catch (error: any) {
     console.error('Product PUT error:', error);
+    return NextResponse.json(
+      { success: false, error: error.message || 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+  try {
+    // Use secure middleware to get vendor_id from session
+    const authResult = await requireVendor(request);
+    if (authResult instanceof NextResponse) return authResult;
+    const { vendorId } = authResult;
+
+    const productId = id;
+    const supabase = getServiceSupabase();
+
+    // Verify ownership before deletion
+    const { data: existing, error: fetchError } = await supabase
+      .from('products')
+      .select('id, vendor_id, name')
+      .eq('id', productId)
+      .single();
+
+    if (fetchError || !existing) {
+      return NextResponse.json(
+        { success: false, error: 'Product not found' },
+        { status: 404 }
+      );
+    }
+
+    if (existing.vendor_id !== vendorId) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized - Cannot delete products from other vendors' },
+        { status: 403 }
+      );
+    }
+
+    // Delete the product (CASCADE will handle related records)
+    const { error: deleteError } = await supabase
+      .from('products')
+      .delete()
+      .eq('id', productId);
+
+    if (deleteError) {
+      console.error('Delete error:', deleteError);
+      return NextResponse.json(
+        { success: false, error: deleteError.message },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: `Product "${existing.name}" deleted successfully`
+    });
+  } catch (error: any) {
+    console.error('Product DELETE error:', error);
     return NextResponse.json(
       { success: false, error: error.message || 'Internal server error' },
       { status: 500 }

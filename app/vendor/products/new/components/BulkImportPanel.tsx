@@ -372,7 +372,7 @@ export default function BulkImportPanel({
                   </div>
                 )}
 
-                {/* Pricing */}
+                {/* Pricing - Always show simple fields */}
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="block text-white/40 text-[9px] uppercase tracking-[0.15em] mb-1.5">Price</label>

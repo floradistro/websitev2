@@ -1,9 +1,16 @@
-"use client";
+'use client';
+
+/**
+ * ProductQuickView - Clean, Jobs-worthy modal for editing products
+ * Simplified from 978 lines to <400 lines
+ * Focus: Edit basic info quickly, link to full editor for complex tasks
+ */
 
 import { useState, useEffect } from 'react';
-import { X, Save, Trash2, ImageIcon, DollarSign, AlertCircle, Package, FileText } from 'lucide-react';
+import { X, Save, Trash2, ExternalLink } from 'lucide-react';
+import Link from 'next/link';
 import { showNotification, showConfirm } from '@/components/NotificationToast';
-import { Button, Input, Textarea, Select, ds, cn } from '@/components/ds';
+import { Button, Input, Textarea, Modal, ds, cn } from '@/components/ds';
 import axios from 'axios';
 
 interface ProductQuickViewProps {
@@ -16,199 +23,51 @@ interface ProductQuickViewProps {
 }
 
 export function ProductQuickView({ product, vendorId, isOpen, onClose, onSave, onDelete }: ProductQuickViewProps) {
-  const [fullProduct, setFullProduct] = useState<any>(null);
   const [editedProduct, setEditedProduct] = useState<any>({});
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<'basic' | 'pricing' | 'fields' | 'images' | 'coas'>('basic');
-  const [availableBlueprints, setAvailableBlueprints] = useState<any[]>([]);
-  const [selectedBlueprintIds, setSelectedBlueprintIds] = useState<string[]>([]);
-  const [originalBlueprintIds, setOriginalBlueprintIds] = useState<string[]>([]);
-  const [categoryFields, setCategoryFields] = useState<any[]>([]);
-  const [editedBlueprintFields, setEditedBlueprintFields] = useState<Record<string, string>>({});
 
-  // Load full product details when modal opens
+  // Load product data when modal opens
   useEffect(() => {
-    const loadFullProduct = async () => {
-      if (isOpen && product?.id) {
-        setLoading(true);
-        try {
-          const response = await axios.get(`/api/vendor/products/${product.id}`, {
-            headers: { 'x-vendor-id': vendorId }
-          });
-
+    if (isOpen && product?.id) {
+      setLoading(true);
+      axios.get(`/api/vendor/products/${product.id}`, {
+        headers: { 'x-vendor-id': vendorId }
+      })
+        .then(response => {
           if (response.data.success) {
-            const loadedProduct = response.data.product;
-            console.log('Loaded product:', loadedProduct);
-            console.log('Pricing tiers:', loadedProduct.pricing_tiers);
-            console.log('Custom fields:', loadedProduct.custom_fields);
-            console.log('Images:', loadedProduct.images);
-            console.log('COAs:', loadedProduct.coas);
-            console.log('Blueprint fields:', loadedProduct.custom_fields);
-            setFullProduct(loadedProduct);
+            const p = response.data.product;
             setEditedProduct({
-              name: loadedProduct.name || '',
-              sku: loadedProduct.sku || '',
-              category: loadedProduct.category || '',
-              regular_price: loadedProduct.regular_price || loadedProduct.price || 0,
-              cost_price: loadedProduct.cost_price || 0,
-              description: loadedProduct.description || ''
+              name: p.name || '',
+              sku: p.sku || '',
+              regular_price: p.regular_price || p.price || 0,
+              cost_price: p.cost_price || 0,
+              description: p.description || '',
+              status: p.status || 'draft'
             });
-
-            // Load available pricing blueprints (filtered by category)
-            try {
-              const blueprintsRes = await axios.get(`/api/vendor/pricing-config?vendor_id=${vendorId}`);
-              if (blueprintsRes.data.success) {
-                const allBlueprints = blueprintsRes.data.configs
-                  .filter((config: any) => config.blueprint && config.is_active)
-                  .map((config: any) => config.blueprint);
-
-                // Filter blueprints by product category
-                const filteredBlueprints = allBlueprints.filter((bp: any) => {
-                  // If blueprint has no category restrictions, show it for all products
-                  if (!bp.applicable_to_categories || bp.applicable_to_categories.length === 0) {
-                    return true;
-                  }
-                  // Otherwise, only show if this product's category is in the list
-                  return bp.applicable_to_categories.includes(loadedProduct.category_id);
-                });
-
-                setAvailableBlueprints(filteredBlueprints);
-              }
-            } catch (err) {
-              console.error('Failed to load blueprints:', err);
-            }
-
-            // Load category fields
-            try {
-              if (loadedProduct.category_id) {
-                const fieldsRes = await axios.get(`/api/vendor/product-fields?category_id=${loadedProduct.category_id}`, {
-                  headers: { 'x-vendor-id': vendorId }
-                });
-                if (fieldsRes.data.success) {
-                  setCategoryFields(fieldsRes.data.fields || []);
-
-                  // Initialize edited fields from product's custom_fields
-                  // custom_fields is stored as an object: { field_name: value }
-                  const initialFields: Record<string, string> = {};
-                  const blueprintFieldsData = loadedProduct.custom_fields || {};
-
-                  // Handle both object format (new) and array format (legacy)
-                  if (Array.isArray(blueprintFieldsData)) {
-                    // Legacy array format: [{ field_name: 'x', field_value: 'y' }]
-                    blueprintFieldsData.forEach((bf: any) => {
-                      initialFields[bf.field_name] = bf.field_value || '';
-                    });
-                  } else if (typeof blueprintFieldsData === 'object') {
-                    // New object format: { field_name: value }
-                    Object.entries(blueprintFieldsData).forEach(([key, value]) => {
-                      initialFields[key] = String(value || '');
-                    });
-                  }
-
-                  setEditedBlueprintFields(initialFields);
-                }
-              }
-            } catch (err) {
-              console.error('Failed to load category fields:', err);
-            }
-
-            // Load current pricing tier assignments
-            try {
-              console.log('🔍 Loading pricing assignments for product:', product.id);
-              const assignmentsRes = await axios.get(`/api/vendor/product-pricing?product_id=${product.id}`);
-              console.log('📦 Assignments response:', assignmentsRes.data);
-              if (assignmentsRes.data.success && assignmentsRes.data.assignments) {
-                const assignedIds = assignmentsRes.data.assignments
-                  .filter((a: any) => a.is_active)
-                  .map((a: any) => a.blueprint_id);
-                console.log('✅ Loaded assigned blueprint IDs:', assignedIds);
-                setSelectedBlueprintIds(assignedIds);
-                setOriginalBlueprintIds(assignedIds); // Track original state
-              } else {
-                console.log('ℹ️ No assignments found, setting empty array');
-                setSelectedBlueprintIds([]);
-                setOriginalBlueprintIds([]);
-              }
-            } catch (err) {
-              console.error('❌ Failed to load assignments (non-blocking):', err);
-              setSelectedBlueprintIds([]);
-            }
           }
-        } catch (error) {
-          console.error('Failed to load product details:', error);
+        })
+        .catch(error => {
           showNotification({
             type: 'error',
             title: 'Load Failed',
             message: 'Failed to load product details'
           });
-        } finally {
-          setLoading(false);
-        }
-        setActiveTab('basic');
-      }
-    };
-
-    loadFullProduct();
+        })
+        .finally(() => setLoading(false));
+    }
   }, [isOpen, product?.id, vendorId]);
 
   const handleSave = async () => {
     setSaving(true);
     try {
-      // Build custom_fields object from edited fields (keep as object format)
-      const blueprintFields: Record<string, string> = {};
-      Object.entries(editedBlueprintFields).forEach(([fieldId, value]) => {
-        if (value) { // Only include fields with values
-          blueprintFields[fieldId] = value;
-        }
-      });
-
-      const response = await axios.patch('/api/vendor/products/update', {
-        product_id: product.id,
-        updates: {
-          ...editedProduct,
-          custom_fields: blueprintFields
-        }
-      }, {
-        headers: { 'x-vendor-id': vendorId }
-      });
+      const response = await axios.put(
+        `/api/vendor/products/${product.id}`,
+        editedProduct,
+        { headers: { 'x-vendor-id': vendorId } }
+      );
 
       if (response.data.success) {
-        // Save pricing tier assignments
-        console.log('💾 Saving pricing tier assignments:', selectedBlueprintIds);
-        console.log('📋 Original assignments:', originalBlueprintIds);
-
-        // Find removed assignments (were selected, now unselected)
-        const removedIds = originalBlueprintIds.filter(id => !selectedBlueprintIds.includes(id));
-        console.log('🗑️ Removed assignments:', removedIds);
-
-        // Find added assignments (newly selected)
-        const addedIds = selectedBlueprintIds.filter(id => !originalBlueprintIds.includes(id));
-        console.log('➕ Added assignments:', addedIds);
-
-        try {
-          // Remove unassigned tiers
-          for (const blueprintId of removedIds) {
-            console.log('🗑️ Removing assignment for blueprint:', blueprintId);
-            await axios.delete(`/api/vendor/product-pricing?product_id=${product.id}&blueprint_id=${blueprintId}`);
-            console.log('✅ Assignment removed');
-          }
-
-          // Add new assignments
-          for (const blueprintId of addedIds) {
-            console.log('📤 Adding assignment for blueprint:', blueprintId);
-            const res = await axios.post('/api/vendor/product-pricing', {
-              vendor_id: vendorId,
-              product_ids: [product.id],
-              blueprint_id: blueprintId,
-              price_overrides: {}
-            });
-            console.log('✅ Assignment added:', res.data);
-          }
-        } catch (pricingError) {
-          console.error('❌ Error saving pricing assignments:', pricingError);
-        }
-
         showNotification({
           type: 'success',
           title: 'Saved',
@@ -220,7 +79,7 @@ export function ProductQuickView({ product, vendorId, isOpen, onClose, onSave, o
     } catch (error: any) {
       showNotification({
         type: 'error',
-        title: 'Failed',
+        title: 'Save Failed',
         message: error.response?.data?.error || 'Failed to save product'
       });
     } finally {
@@ -229,750 +88,216 @@ export function ProductQuickView({ product, vendorId, isOpen, onClose, onSave, o
   };
 
   const handleDelete = async () => {
-    await showConfirm({
+    const confirmed = await showConfirm({
       title: 'Delete Product',
-      message: `Are you sure you want to delete "${product.name}"? This will remove it from all locations.`,
+      message: `Delete "${product.name}"? This cannot be undone.`,
       confirmText: 'Delete',
-      cancelText: 'Cancel',
-      type: 'warning',
-      onConfirm: async () => {
-        try {
-          const response = await axios.delete(`/api/vendor/products?product_id=${product.id}`, {
-            headers: { 'x-vendor-id': vendorId }
-          });
-
-          if (response.data.success) {
-            showNotification({
-              type: 'success',
-              title: 'Deleted',
-              message: 'Product deleted successfully'
-            });
-            onDelete();
-            onClose();
-          }
-        } catch (error: any) {
-          showNotification({
-            type: 'error',
-            title: 'Delete Failed',
-            message: error.response?.data?.error || 'Failed to delete product'
-          });
-        }
-      }
+      cancelText: 'Cancel'
     });
+
+    if (confirmed) {
+      try {
+        await axios.delete(`/api/vendor/products/${product.id}`, {
+          headers: { 'x-vendor-id': vendorId }
+        });
+        showNotification({
+          type: 'success',
+          title: 'Deleted',
+          message: 'Product deleted successfully'
+        });
+        onDelete();
+        onClose();
+      } catch (error: any) {
+        showNotification({
+          type: 'error',
+          title: 'Delete Failed',
+          message: error.response?.data?.error || 'Failed to delete product'
+        });
+      }
+    }
   };
 
-  if (!isOpen) return null;
-
-  const displayProduct = fullProduct || product;
-  const margin = displayProduct.cost_price && displayProduct.price
-    ? ((displayProduct.price - displayProduct.cost_price) / displayProduct.price * 100).toFixed(1)
-    : null;
+  const hasChanges = Object.keys(editedProduct).length > 0;
 
   return (
-    <>
-      {/* Backdrop */}
-      <div
-        className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50"
-        onClick={onClose}
-        style={{ animation: 'fade-in 0.2s ease-out' }}
-      />
-
-      {/* Modal */}
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
-        <div
-          className="w-full max-w-4xl bg-black/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl pointer-events-auto overflow-hidden"
-          style={{
-            animation: 'fade-in 0.3s ease-out',
-            boxShadow: '0 0 60px rgba(255,255,255,0.05)'
-          }}
-          onClick={(e) => e.stopPropagation()}
-        >
-          {/* Header */}
-          <div className="border-b border-white/5 p-6 bg-black">
-            {loading ? (
-              <div className="text-center py-8">
-                <div className="w-12 h-12 border-4 border-white/20 border-t-white rounded-full animate-spin mx-auto mb-4"></div>
-                <p className="text-white/40 text-[10px] uppercase tracking-wider">Loading product details...</p>
-              </div>
-            ) : (
-              <div className="flex items-start justify-between">
-                <div className="flex-1 min-w-0">
-                  <h2 className={cn(
-                    ds.typography.size.xs,
-                    ds.typography.transform.uppercase,
-                    ds.typography.tracking.wide,
-                    ds.colors.text.primary,
-                    ds.typography.weight.light,
-                    'mb-2'
-                  )}>{displayProduct.name}</h2>
-                  <div className={cn(
-                    'flex items-center gap-3',
-                    ds.typography.size.micro,
-                    ds.colors.text.quaternary,
-                    ds.typography.transform.uppercase,
-                    ds.typography.tracking.wide
-                  )}>
-                    <span className="px-2 py-0.5 bg-green-500/10 border border-green-500/20 text-green-400/80 rounded text-[8px]">
-                      {displayProduct.status}
-                    </span>
-                    {displayProduct.sku && <span>SKU: {displayProduct.sku}</span>}
-                    <span className="text-white/20">•</span>
-                    <span className="flex items-center gap-1">
-                      <Package size={10} />
-                      {displayProduct.total_stock?.toFixed(2) || displayProduct.stock_quantity?.toFixed(2) || '0.00'}g in stock
-                    </span>
-                  </div>
-                </div>
-                <button
-                  onClick={onClose}
-                  className="text-white/40 hover:text-white transition-colors p-2 ml-4"
-                >
-                  <X size={20} />
-                </button>
-              </div>
-            )}
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Edit Product"
+      size="lg"
+    >
+      {loading ? (
+        <div className="py-12 text-center">
+          <div className={cn(ds.typography.size.xs, ds.colors.text.quaternary, ds.typography.transform.uppercase, ds.typography.tracking.wide)}>
+            Loading...
           </div>
-
-          {/* Tabs */}
-          <div className="border-b border-white/5 bg-black">
-            <div className="flex items-center gap-1 px-6 overflow-x-auto">
-              <button
-                onClick={() => setActiveTab('basic')}
-                className={cn(
-                  'px-4 py-3',
-                  ds.typography.size.xs,
-                  ds.typography.transform.uppercase,
-                  ds.typography.tracking.wide,
-                  ds.typography.weight.light,
-                  'transition-all border-b-2 whitespace-nowrap',
-                  activeTab === 'basic'
-                    ? 'text-white border-white'
-                    : 'text-white/40 border-transparent hover:text-white/70'
-                )}
-              >
-                Basic Info
-              </button>
-              <button
-                onClick={() => setActiveTab('pricing')}
-                className={cn(
-                  'px-4 py-3',
-                  ds.typography.size.xs,
-                  ds.typography.transform.uppercase,
-                  ds.typography.tracking.wide,
-                  ds.typography.weight.light,
-                  'transition-all border-b-2 whitespace-nowrap',
-                  activeTab === 'pricing'
-                    ? 'text-white border-white'
-                    : 'text-white/40 border-transparent hover:text-white/70'
-                )}
-              >
-                Pricing
-              </button>
-              <button
-                onClick={() => setActiveTab('fields')}
-                className={cn(
-                  'px-4 py-3',
-                  ds.typography.size.xs,
-                  ds.typography.transform.uppercase,
-                  ds.typography.tracking.wide,
-                  ds.typography.weight.light,
-                  'transition-all border-b-2 whitespace-nowrap',
-                  activeTab === 'fields'
-                    ? 'text-white border-white'
-                    : 'text-white/40 border-transparent hover:text-white/70'
-                )}
-              >
-                Fields
-              </button>
-              <button
-                onClick={() => setActiveTab('images')}
-                className={cn(
-                  'px-4 py-3',
-                  ds.typography.size.xs,
-                  ds.typography.transform.uppercase,
-                  ds.typography.tracking.wide,
-                  ds.typography.weight.light,
-                  'transition-all border-b-2 whitespace-nowrap',
-                  activeTab === 'images'
-                    ? 'text-white border-white'
-                    : 'text-white/40 border-transparent hover:text-white/70'
-                )}
-              >
-                Images
-              </button>
-              <button
-                onClick={() => setActiveTab('coas')}
-                className={cn(
-                  'px-4 py-3',
-                  ds.typography.size.xs,
-                  ds.typography.transform.uppercase,
-                  ds.typography.tracking.wide,
-                  ds.typography.weight.light,
-                  'transition-all border-b-2 whitespace-nowrap',
-                  activeTab === 'coas'
-                    ? 'text-white border-white'
-                    : 'text-white/40 border-transparent hover:text-white/70'
-                )}
-              >
-                Lab Results
-              </button>
+        </div>
+      ) : (
+        <>
+          {/* Header with status badge */}
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className={cn(ds.typography.size.base, ds.typography.weight.medium, "text-white/90")}>
+                {product.name}
+              </h2>
+              <p className={cn(ds.typography.size.xs, ds.colors.text.tertiary, "mt-0.5")}>
+                SKU: {product.sku}
+              </p>
+            </div>
+            <div className={cn(
+              "px-3 py-1.5 rounded-full border",
+              ds.typography.size.micro,
+              ds.typography.transform.uppercase,
+              ds.typography.tracking.wide,
+              editedProduct.status === 'published' ? 'bg-green-500/10 text-green-400/70 border-green-500/20' :
+              editedProduct.status === 'pending' ? 'bg-orange-500/10 text-orange-400/70 border-orange-500/20' :
+              'bg-white/5 text-white/40 border-white/10'
+            )}>
+              {editedProduct.status}
             </div>
           </div>
 
-          {/* Content */}
-          <div className="p-6 max-h-[60vh] overflow-y-auto">
-            {loading ? (
-              <div className="text-center py-12">
-                <div className="w-12 h-12 border-4 border-white/20 border-t-white rounded-full animate-spin mx-auto"></div>
-              </div>
-            ) : (
+          {/* Quick Edit Form */}
+          <div className="space-y-4 mb-6">
+            <div>
+              <label className={cn(ds.typography.size.xs, ds.colors.text.tertiary, "block mb-1.5")}>
+                Product Name
+              </label>
+              <Input
+                value={editedProduct.name || ''}
+                onChange={(e) => setEditedProduct({ ...editedProduct, name: e.target.value })}
+                placeholder="Enter product name"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
               <div>
-            {activeTab === 'basic' && (
-              <div className="space-y-6">
-                <div className="grid grid-cols-2 gap-4">
-                  <Input
-                    label="Product Name"
-                    type="text"
-                    value={editedProduct.name || ''}
-                    onChange={(e) => setEditedProduct((prev: any) => ({ ...prev, name: e.target.value }))}
-                  />
-                  <Input
-                    label="SKU"
-                    type="text"
-                    value={editedProduct.sku || ''}
-                    onChange={(e) => setEditedProduct((prev: any) => ({ ...prev, sku: e.target.value }))}
-                  />
-                </div>
-
+                <label className={cn(ds.typography.size.xs, ds.colors.text.tertiary, "block mb-1.5")}>
+                  Regular Price
+                </label>
                 <Input
-                  label="Category"
-                  type="text"
-                  value={editedProduct.category || ''}
-                  onChange={(e) => setEditedProduct((prev: any) => ({ ...prev, category: e.target.value }))}
-                />
-
-                <Textarea
-                  label="Description"
-                  value={editedProduct.description || ''}
-                  onChange={(e) => setEditedProduct((prev: any) => ({ ...prev, description: e.target.value }))}
-                  rows={6}
-                  placeholder="Describe this product..."
+                  type="number"
+                  step="0.01"
+                  value={editedProduct.regular_price || ''}
+                  onChange={(e) => setEditedProduct({ ...editedProduct, regular_price: parseFloat(e.target.value) })}
+                  placeholder="0.00"
                 />
               </div>
-            )}
 
-            {activeTab === 'pricing' && (
-              <div className="space-y-6">
-                <div className="grid grid-cols-2 gap-4">
-                  <Input
-                    label="Retail Price ($/g)"
-                    type="number"
-                    step="0.01"
-                    value={editedProduct.regular_price || ''}
-                    onChange={(e) => setEditedProduct((prev: any) => ({ ...prev, regular_price: parseFloat(e.target.value) || 0 }))}
-                  />
-                  <Input
-                    label="Cost Price ($/g)"
-                    type="number"
-                    step="0.01"
-                    value={editedProduct.cost_price || ''}
-                    onChange={(e) => setEditedProduct((prev: any) => ({ ...prev, cost_price: parseFloat(e.target.value) || 0 }))}
-                  />
-                </div>
-
-                {/* Margin Display */}
-                {margin && (
-                  <div className="bg-white/5 border border-white/10 p-6 rounded-[14px]">
-                    <div className="grid grid-cols-3 gap-6">
-                      <div>
-                        <div className="text-white/40 text-[10px] uppercase tracking-wider mb-2">Profit Margin</div>
-                        <div className="text-3xl font-light text-white">{margin}%</div>
-                      </div>
-                      <div>
-                        <div className="text-white/40 text-[10px] uppercase tracking-wider mb-2">Profit per Gram</div>
-                        <div className="text-2xl font-light text-white">
-                          ${((editedProduct.regular_price || 0) - (editedProduct.cost_price || 0)).toFixed(2)}
-                        </div>
-                      </div>
-                      <div>
-                        <div className="text-white/40 text-[10px] uppercase tracking-wider mb-2">Potential Revenue</div>
-                        <div className="text-2xl font-light text-white">
-                          ${((editedProduct.regular_price || 0) * (displayProduct.total_stock || displayProduct.stock_quantity || 0)).toLocaleString(undefined, {maximumFractionDigits: 0})}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Assign Pricing Tiers */}
-                {availableBlueprints.length > 0 && (
-                  <div>
-                    <div className="flex items-center gap-2 mb-4">
-                      <DollarSign size={16} className="text-white/60" />
-                      <h4 className="text-white/60 text-[10px] uppercase tracking-wider font-medium">Assign Pricing Tiers</h4>
-                    </div>
-
-                    {(() => {
-                      const grouped: Record<string, any[]> = {};
-                      availableBlueprints.forEach(bp => {
-                        const ctx = bp.context || 'retail';
-                        if (!grouped[ctx]) grouped[ctx] = [];
-                        grouped[ctx].push(bp);
-                      });
-
-                      const masterGroups = [
-                        { key: 'retail', label: 'Retail' },
-                        { key: 'wholesale', label: 'Wholesale' },
-                        { key: 'distributor', label: 'Distributor' }
-                      ];
-
-                      return masterGroups.map(mg => {
-                        const groupBlueprints = grouped[mg.key] || [];
-                        if (groupBlueprints.length === 0) return null;
-
-                        return (
-                          <div key={mg.key} className="mb-4 last:mb-0">
-                            <div className="mb-3">
-                              <h5 className="text-white/60 text-[10px] uppercase tracking-wider font-medium">{mg.label}</h5>
-                            </div>
-
-                            <div className="space-y-2 pl-4">
-                              {groupBlueprints.map(blueprint => {
-                                const isSelected = selectedBlueprintIds.includes(blueprint.id);
-
-                                return (
-                                  <label
-                                    key={blueprint.id}
-                                    className={`flex items-start gap-2 p-2 rounded-lg border cursor-pointer transition-all ${
-                                      isSelected
-                                        ? 'bg-white/10 border-white/30'
-                                        : 'bg-white/5 border-white/10 hover:bg-white/8'
-                                    }`}
-                                  >
-                                    <input
-                                      type="checkbox"
-                                      checked={isSelected}
-                                      onChange={(e) => {
-                                        if (e.target.checked) {
-                                          console.log('✓ Adding blueprint:', blueprint.name, blueprint.id);
-                                          setSelectedBlueprintIds([...selectedBlueprintIds, blueprint.id]);
-                                        } else {
-                                          console.log('✗ Removing blueprint:', blueprint.name, blueprint.id);
-                                          setSelectedBlueprintIds(selectedBlueprintIds.filter(id => id !== blueprint.id));
-                                        }
-                                      }}
-                                      className="w-4 h-4 mt-0.5 cursor-pointer"
-                                    />
-                                    <div className="flex-1">
-                                      <div className="text-white text-xs font-medium">{blueprint.name}</div>
-                                      {blueprint.description && (
-                                        <div className="text-white/40 text-[10px] mt-0.5">{blueprint.description}</div>
-                                      )}
-                                    </div>
-                                  </label>
-                                );
-                              })}
-                            </div>
-                          </div>
-                        );
-                      });
-                    })()}
-
-                    <div className="mt-3 pt-3 border-t border-white/10 text-white/40 text-[10px]">
-                      {selectedBlueprintIds.length === 0
-                        ? 'No tiers selected'
-                        : `${selectedBlueprintIds.length} tier${selectedBlueprintIds.length === 1 ? '' : 's'} selected`
-                      }
-                    </div>
-                  </div>
-                )}
-
-                {/* Volume Pricing Tiers */}
-                <div>
-                  <div className="flex items-center gap-2 mb-4">
-                    <DollarSign size={16} className="text-white/60" />
-                    <h4 className="text-white/60 text-[10px] uppercase tracking-wider font-medium">Volume Pricing</h4>
-                  </div>
-                  {displayProduct.pricing_tiers && displayProduct.pricing_tiers.length > 0 ? (
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-                      {displayProduct.pricing_tiers.map((tier: any, idx: number) => (
-                        <div key={idx} className="bg-white/5 border border-white/10 p-4 rounded-[12px]">
-                          <div className="text-white/40 text-[10px] uppercase tracking-wider mb-2">{tier.label || tier.tier_name || 'Tier'}</div>
-                          <div className="text-white text-xl font-medium">${parseFloat(tier.price).toFixed(2)}</div>
-                          {(tier.min_quantity || tier.quantity) && (
-                            <div className="text-white/40 text-xs mt-1">
-                              {tier.min_quantity || tier.quantity}{tier.max_quantity ? `-${tier.max_quantity}` : '+'} {tier.unit || 'g'}
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center py-8 bg-white/[0.02] border border-white/5 rounded-[14px]">
-                      <DollarSign size={32} className="text-white/20 mx-auto mb-3" />
-                      <p className="text-white/40 text-sm">No volume pricing configured</p>
-                      <p className="text-white/30 text-xs mt-1">Edit this product to add pricing tiers</p>
-                    </div>
-                  )}
-                </div>
+              <div>
+                <label className={cn(ds.typography.size.xs, ds.colors.text.tertiary, "block mb-1.5")}>
+                  Cost Price
+                </label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={editedProduct.cost_price || ''}
+                  onChange={(e) => setEditedProduct({ ...editedProduct, cost_price: parseFloat(e.target.value) })}
+                  placeholder="0.00"
+                />
               </div>
-            )}
+            </div>
 
-            {activeTab === 'fields' && (
-              <div className="space-y-6">
-                {/* Custom Fields */}
-                {categoryFields.length > 0 ? (
-                  <div>
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center gap-2">
-                        <FileText size={16} className="text-white/60" />
-                        <h4 className="text-white/60 text-[10px] uppercase tracking-wider font-medium">Custom Fields</h4>
-                      </div>
-                      <span className="text-white/30 text-[10px]">{categoryFields.length} fields • {displayProduct.category}</span>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      {categoryFields.map((field: any) => {
-                        const fieldId = field.fieldId || field.field_id;
-                        const fieldLabel = field.label || fieldId;
-                        const fieldValue = editedBlueprintFields[fieldId] || '';
-                        const fieldDef = field.definition || field;
-                        const fieldType = fieldDef.type || 'text';
+            <div>
+              <label className={cn(ds.typography.size.xs, ds.colors.text.tertiary, "block mb-1.5")}>
+                Description
+              </label>
+              <Textarea
+                value={editedProduct.description || ''}
+                onChange={(e) => setEditedProduct({ ...editedProduct, description: e.target.value })}
+                placeholder="Product description"
+                rows={3}
+              />
+            </div>
 
-                        return (
-                          <div key={fieldId} className="space-y-2">
-                            <label className="block text-white/40 text-[10px] uppercase tracking-wider">
-                              {fieldLabel}
-                              {fieldDef.required && <span className="text-red-400 ml-1">*</span>}
-                            </label>
-
-                            {fieldType === 'select' && fieldDef.options ? (
-                              <Select
-                                value={fieldValue}
-                                onChange={(e) => setEditedBlueprintFields(prev => ({
-                                  ...prev,
-                                  [fieldId]: e.target.value
-                                }))}
-                                options={[
-                                  { value: '', label: 'Select...' },
-                                  ...fieldDef.options.map((opt: string) => ({ value: opt, label: opt }))
-                                ]}
-                              />
-                            ) : fieldType === 'textarea' ? (
-                              <Textarea
-                                value={fieldValue}
-                                onChange={(e) => setEditedBlueprintFields(prev => ({
-                                  ...prev,
-                                  [fieldId]: e.target.value
-                                }))}
-                                placeholder={fieldDef.placeholder || ''}
-                                rows={3}
-                              />
-                            ) : fieldType === 'number' ? (
-                              <div className="relative">
-                                <Input
-                                  type="number"
-                                  step="0.01"
-                                  value={fieldValue}
-                                  onChange={(e) => setEditedBlueprintFields(prev => ({
-                                    ...prev,
-                                    [fieldId]: e.target.value
-                                  }))}
-                                  placeholder={fieldDef.placeholder || ''}
-                                />
-                                {fieldDef.suffix && (
-                                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 text-sm pointer-events-none">
-                                    {fieldDef.suffix}
-                                  </span>
-                                )}
-                              </div>
-                            ) : (
-                              <Input
-                                type="text"
-                                value={fieldValue}
-                                onChange={(e) => setEditedBlueprintFields(prev => ({
-                                  ...prev,
-                                  [fieldId]: e.target.value
-                                }))}
-                                placeholder={fieldDef.placeholder || ''}
-                              />
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                ) : (
-                  <div className="text-center py-12">
-                    <FileText size={48} className="text-white/20 mx-auto mb-4" />
-                    <p className="text-white/40 text-sm">No custom fields configured</p>
-                    <p className="text-white/30 text-xs mt-2">Go to Categories tab to add custom fields for {displayProduct.category}</p>
-                  </div>
+            <div>
+              <label className={cn(ds.typography.size.xs, ds.colors.text.tertiary, "block mb-1.5")}>
+                Status
+              </label>
+              <select
+                value={editedProduct.status || 'draft'}
+                onChange={(e) => setEditedProduct({ ...editedProduct, status: e.target.value })}
+                className={cn(
+                  "w-full px-3 py-2 rounded-lg",
+                  ds.typography.size.xs,
+                  ds.colors.bg.primary,
+                  ds.colors.border.default,
+                  "border text-white/90",
+                  "focus:outline-none focus:ring-2 focus:ring-blue-500/50"
                 )}
-
-              </div>
-            )}
-
-            {activeTab === 'images' && (
-              <div className="space-y-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-2">
-                    <ImageIcon size={16} className="text-white/60" />
-                    <h4 className="text-white/60 text-[10px] uppercase tracking-wider font-medium">Product Images</h4>
-                  </div>
-                  <a
-                    href="/vendor/media-library"
-                    target="_blank"
-                    className={cn(
-                      'px-3 py-2',
-                      ds.colors.bg.elevated,
-                      'border',
-                      ds.colors.border.default,
-                      ds.colors.text.secondary,
-                      'hover:bg-white/10 hover:text-white',
-                      'transition-all',
-                      ds.effects.radius.xl,
-                      ds.typography.size.xs,
-                      ds.typography.transform.uppercase,
-                      ds.typography.tracking.wide,
-                      ds.typography.weight.light
-                    )}
-                  >
-                    Media Library
-                  </a>
-                </div>
-
-                {!displayProduct.images || displayProduct.images.length === 0 ? (
-                  <div className="text-center py-16 bg-[#0a0a0a] border border-white/5 rounded-2xl">
-                    <ImageIcon size={48} className="text-white/20 mx-auto mb-4" />
-                    <p className={cn(
-                      ds.colors.text.primary,
-                      ds.typography.size.xs,
-                      ds.typography.transform.uppercase,
-                      ds.typography.tracking.wide,
-                      ds.typography.weight.light,
-                      'mb-2'
-                    )}>No images uploaded</p>
-                    <p className={cn(
-                      ds.colors.text.quaternary,
-                      ds.typography.size.xs,
-                      ds.typography.transform.uppercase,
-                      ds.typography.tracking.wide,
-                      ds.typography.weight.light,
-                      'mb-6'
-                    )}>Add product photos from your media library</p>
-                    <a
-                      href="/vendor/media-library"
-                      target="_blank"
-                      className={cn(
-                        'inline-flex items-center gap-2 px-6 py-3',
-                        'bg-white/10 hover:bg-white/20',
-                        ds.colors.text.primary,
-                        'border border-white/20',
-                        ds.effects.radius.xl,
-                        ds.typography.size.xs,
-                        ds.typography.transform.uppercase,
-                        ds.typography.tracking.wide,
-                        ds.typography.weight.light,
-                        'transition-all'
-                      )}
-                    >
-                      Upload Images
-                    </a>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                    {displayProduct.images.map((img: string, idx: number) => (
-                      <div key={idx} className="aspect-square bg-white/5 border border-white/5 rounded-xl overflow-hidden relative group">
-                        <img src={img} alt={`Product ${idx + 1}`} className="w-full h-full object-cover" />
-                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                          <button className="p-2 bg-red-500/20 border border-red-500/20 rounded-lg text-red-400 hover:bg-red-500/30 hover:text-red-300 transition-all">
-                            <Trash2 size={16} />
-                          </button>
-                        </div>
-                        {idx === 0 && (
-                          <div className="absolute top-2 left-2">
-                            <span className="px-2 py-0.5 bg-white/10 backdrop-blur-sm border border-white/20 rounded text-white text-[8px] uppercase tracking-wider font-black">Featured</span>
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {activeTab === 'coas' && (
-              <div className="space-y-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-2">
-                    <FileText size={16} className="text-white/60" />
-                    <h4 className="text-white/60 text-[10px] uppercase tracking-wider font-medium">Lab Results & COAs</h4>
-                  </div>
-                  <button
-                    className={cn(
-                      'px-3 py-2',
-                      ds.colors.bg.elevated,
-                      'border',
-                      ds.colors.border.default,
-                      ds.colors.text.secondary,
-                      'hover:bg-white/10 hover:text-white',
-                      'transition-all',
-                      ds.effects.radius.xl,
-                      ds.typography.size.xs,
-                      ds.typography.transform.uppercase,
-                      ds.typography.tracking.wide,
-                      ds.typography.weight.light
-                    )}
-                  >
-                    Upload COA
-                  </button>
-                </div>
-
-                {!displayProduct.coas || displayProduct.coas.length === 0 ? (
-                  <div className="text-center py-16 bg-[#0a0a0a] border border-white/5 rounded-2xl">
-                    <FileText size={48} className="text-white/20 mx-auto mb-4" />
-                    <p className={cn(
-                      ds.colors.text.primary,
-                      ds.typography.size.xs,
-                      ds.typography.transform.uppercase,
-                      ds.typography.tracking.wide,
-                      ds.typography.weight.light,
-                      'mb-2'
-                    )}>No lab results uploaded</p>
-                    <p className={cn(
-                      ds.colors.text.quaternary,
-                      ds.typography.size.xs,
-                      ds.typography.transform.uppercase,
-                      ds.typography.tracking.wide,
-                      ds.typography.weight.light,
-                      'mb-6'
-                    )}>Upload certificates of analysis for this product</p>
-                    <button className={cn(
-                      'inline-flex items-center gap-2 px-6 py-3',
-                      'bg-white/10 hover:bg-white/20',
-                      ds.colors.text.primary,
-                      'border border-white/20',
-                      ds.effects.radius.xl,
-                      ds.typography.size.xs,
-                      ds.typography.transform.uppercase,
-                      ds.typography.tracking.wide,
-                      ds.typography.weight.light,
-                      'transition-all'
-                    )}>
-                      Upload COA
-                    </button>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {displayProduct.coas.map((coa: any) => (
-                      <div key={coa.id} className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-4 hover:border-white/10 transition-all">
-                        <div className="flex items-start justify-between gap-4">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                              <h5 className={cn(
-                                ds.colors.text.primary,
-                                ds.typography.size.xs,
-                                ds.typography.transform.uppercase,
-                                ds.typography.tracking.tight,
-                                ds.typography.weight.light
-                              )}>
-                                {coa.file_name}
-                              </h5>
-                              {coa.is_verified && (
-                                <span className={cn(
-                                  'px-2 py-0.5',
-                                  'bg-green-500/10 border border-green-500/20 text-green-400/80 rounded',
-                                  'text-[8px]',
-                                  ds.typography.transform.uppercase,
-                                  ds.typography.tracking.wide,
-                                  ds.typography.weight.light
-                                )}>
-                                  Verified
-                                </span>
-                              )}
-                            </div>
-                            {coa.lab_name && (
-                              <p className="text-white/40 text-[10px] uppercase tracking-wider mb-1">
-                                Lab: {coa.lab_name}
-                              </p>
-                            )}
-                            {coa.test_date && (
-                              <p className="text-white/30 text-[9px] uppercase tracking-wider">
-                                Test Date: {new Date(coa.test_date).toLocaleDateString()}
-                              </p>
-                            )}
-                            {coa.batch_number && (
-                              <p className="text-white/30 text-[9px] uppercase tracking-wider">
-                                Batch: {coa.batch_number}
-                              </p>
-                            )}
-                            {coa.test_results && (
-                              <div className="mt-3 grid grid-cols-3 gap-3">
-                                {Object.entries(coa.test_results).map(([key, value]: [string, any]) => (
-                                  <div key={key}>
-                                    <div className="text-white/40 text-[8px] uppercase tracking-wider mb-0.5">
-                                      {key.replace(/_/g, ' ')}
-                                    </div>
-                                    <div className="text-white text-xs font-medium">{value}</div>
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                          <div className="flex items-center gap-2">
-                            {coa.file_url && (
-                              <a
-                                href={coa.file_url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="p-2 bg-white/5 border border-white/5 text-white/60 hover:bg-white/10 hover:text-white transition-all rounded-lg"
-                              >
-                                <FileText size={16} />
-                              </a>
-                            )}
-                            <button className="p-2 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 hover:bg-red-500/20 hover:text-red-300 transition-all">
-                              <Trash2 size={16} />
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-              </div>
-            )}
+              >
+                <option value="draft">Draft</option>
+                <option value="pending">Pending Review</option>
+                <option value="published">Published</option>
+                <option value="rejected">Rejected</option>
+              </select>
+            </div>
           </div>
 
-          {/* Footer */}
-          <div className="border-t border-white/5 p-6 bg-black flex items-center justify-between">
-            <Button
-              variant="danger"
-              icon={Trash2}
+          {/* Advanced edit link */}
+          <div className={cn("p-4 rounded-lg mb-6", ds.colors.bg.elevated, ds.colors.border.default, "border")}>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className={cn(ds.typography.size.xs, "text-white/80")}>
+                  Need to edit pricing tiers, images, or custom fields?
+                </p>
+                <p className={cn(ds.typography.size.micro, ds.colors.text.quaternary, "mt-0.5")}>
+                  Use the full editor for advanced options
+                </p>
+              </div>
+              <Link href={`/vendor/products/${product.id}/edit`}>
+                <Button variant="secondary" size="sm">
+                  <ExternalLink className="w-3 h-3 mr-1.5" />
+                  Full Editor
+                </Button>
+              </Link>
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div className="flex items-center justify-between pt-4 border-t" style={{ borderColor: ds.colors.border.default }}>
+            <button
               onClick={handleDelete}
+              className={cn(
+                "px-4 py-2 rounded-lg transition-colors",
+                ds.typography.size.xs,
+                ds.typography.transform.uppercase,
+                ds.typography.tracking.wide,
+                "text-red-400/70 hover:bg-red-500/10",
+                "focus:outline-none focus:ring-2 focus:ring-red-500/50"
+              )}
             >
-              Delete Product
-            </Button>
+              <Trash2 className="w-3 h-3 inline mr-1.5" />
+              Delete
+            </button>
+
             <div className="flex items-center gap-3">
-              <Button
-                variant="ghost"
+              <button
                 onClick={onClose}
+                className={cn(
+                  "px-4 py-2 rounded-lg transition-colors",
+                  ds.typography.size.xs,
+                  ds.typography.transform.uppercase,
+                  ds.typography.tracking.wide,
+                  ds.colors.text.tertiary,
+                  "hover:text-white/80",
+                  "focus:outline-none focus:ring-2 focus:ring-white/20"
+                )}
               >
                 Cancel
-              </Button>
+              </button>
+
               <Button
-                icon={Save}
                 onClick={handleSave}
-                disabled={saving}
-                loading={saving}
+                disabled={saving || !hasChanges}
               >
+                <Save className="w-3 h-3 mr-1.5" />
                 {saving ? 'Saving...' : 'Save Changes'}
               </Button>
             </div>
           </div>
-        </div>
-      </div>
-    </>
+        </>
+      )}
+    </Modal>
   );
 }

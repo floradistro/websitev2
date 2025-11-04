@@ -2,317 +2,492 @@ import { NextRequest } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
 import Exa from 'exa-js';
 
-// Increase timeout for bulk processing
 export const maxDuration = 300; // 5 minutes
 export const dynamic = 'force-dynamic';
 
-const SYSTEM_PROMPT = `Extract cannabis STRAIN DATA ONLY from web sources (strain databases, seed banks, cannabis info sites). Return ONLY a JSON array with REAL DATA.
+// ============================================================================
+// TYPES
+// ============================================================================
 
-CRITICAL RULES - READ CAREFULLY:
-- NEVER use placeholder text like "Unknown", "N/A", "TBD", or generic descriptions
-- If you CANNOT find real data from sources, use null or empty array []
-- Only extract ACTUAL strain data found in the provided sources
-- Do NOT make up, guess, or use placeholder values
-- FOCUS ON STRAIN INFO: lineage/genetics, terpenes, effects, aroma descriptors
-- Extract lineage/genetics (e.g., "Gelato x Wedding Cake", "OG Kush x Durban Poison") - THIS IS CRITICAL
-- Extract ACTUAL terpene names (like "Myrcene", "Limonene", "Caryophyllene", "Pinene") from sources
-- Extract ACTUAL effects (like "Relaxing", "Euphoric", "Uplifting", "Focused") from sources
-- Extract ACTUAL aroma/flavor descriptors (single words like "Candy", "Cake", "Glue", "Gas", "Sherb", "Pine", "Citrus", "Berry", "Diesel", "Fruity")
-- For description: Use REAL strain description from sources, or null if not found
-- DO NOT extract lab test percentages (THC%, CBD%) - focus on strain genetics and characteristics
+interface StrainInfo {
+  product_name: string;
+  strain_type: string | null;
+  lineage: string | null;
+  terpene_profile: string[];
+  effects: string[];
+  nose: string[];
+  description: string | null;
+}
 
-Return JSON array with one object per product:
-[
-  {
-    "product_name": "exact product name from sources",
-    "strain_type": "Sativa" | "Indica" | "Hybrid" | null (ONLY if found in sources),
-    "lineage": "Parent1 x Parent2" | null (CRITICAL - extract actual genetics/lineage from sources),
-    "terpene_profile": ["Myrcene", "Limonene", "Caryophyllene"] | [] (ONLY actual terpene names from sources),
-    "effects": ["Relaxing", "Euphoric", "Uplifting"] | [] (ONLY actual effects from sources),
-    "nose": ["Candy", "Cake", "Gas", "Pine"] | [] (ONLY actual aroma descriptors from sources),
-    "description": "actual strain description from sources" | null (REAL description or null),
-    "suggested_pricing": {
-      "tier_type": "exotic" | "top-shelf" | "mid-shelf" | "value" | null,
-      "price_range": "high" | "medium" | "low" | null
+// ============================================================================
+// CONFIG
+// ============================================================================
+
+const CONFIG = {
+  BATCH_SIZE: 5, // Process in batches of 5
+  SEARCH_RESULTS: 15, // Increased for better coverage
+  MAX_CHARS: 6000, // More context
+  AI_TOKENS: 8000,
+  MAX_RETRIES: 5, // Increased retries
+  REQUIRE_ALL_FIELDS: true, // MANDATORY: All fields must be filled
+} as const;
+
+// ============================================================================
+// VALIDATION
+// ============================================================================
+
+function validateStrainData(strain: StrainInfo, requestedFields: string[]): {
+  valid: boolean;
+  missing: string[];
+  score: number;
+} {
+  const missing: string[] = [];
+  let score = 0;
+
+  // Check each requested field
+  if (requestedFields.includes('lineage')) {
+    if (strain.lineage) {
+      score += 4;
+    } else {
+      missing.push('lineage');
     }
   }
-]
 
-PRIORITY FIELDS (search extra hard for these):
-1. lineage - VERY IMPORTANT, look for "bred by", "cross of", "genetics", "parents"
-2. terpene_profile - look for "dominant terpenes", "terps", "terpene content"
-3. effects - look for "effects", "high", "feeling"
-4. nose - look for "aroma", "smell", "flavor", "taste"
+  if (requestedFields.includes('terpene_profile')) {
+    if (strain.terpene_profile.length > 0) {
+      score += 2;
+    } else {
+      missing.push('terpene_profile');
+    }
+  }
 
-REMEMBER: Empty/null is better than fake placeholder data. Search THOROUGHLY in sources for lineage, terpenes, effects, and aroma before marking as null.`;
+  if (requestedFields.includes('effects')) {
+    if (strain.effects.length > 0) {
+      score += 2;
+    } else {
+      missing.push('effects');
+    }
+  }
+
+  if (requestedFields.includes('nose')) {
+    if (strain.nose.length > 0) {
+      score += 1;
+    } else {
+      missing.push('nose');
+    }
+  }
+
+  if (requestedFields.includes('description')) {
+    if (strain.description) {
+      score += 1;
+    } else {
+      missing.push('description');
+    }
+  }
+
+  return {
+    valid: missing.length === 0,
+    missing,
+    score
+  };
+}
+
+// ============================================================================
+// SEARCH
+// ============================================================================
+
+async function searchStrain(name: string, category: string, exa: Exa, attempt: number = 1) {
+  // Build variations
+  const variations = [name];
+
+  if (name.includes('Soufflé') || name.includes('Souffle')) {
+    variations.push(name.replace(/Soufflé|Souffle/gi, 'Soufflé'));
+    variations.push(name.replace(/Soufflé|Souffle/gi, 'Souffle'));
+  }
+
+  if (/Pop(?!s)/i.test(name)) {
+    variations.push(name.replace(/Pop/i, 'Pops'));
+  }
+
+  // Special handling for Runtz variants
+  if (name.includes('Runtz')) {
+    variations.push(name.replace(/Runtz/i, 'Runts')); // Common misspelling
+    variations.push(name + ' strain'); // Add explicit "strain"
+  }
+
+  if (attempt > 1) {
+    variations.push(name.replace(/\s+/g, ''));
+    variations.push(name.replace(/\s+/g, '-'));
+    variations.push(name + ' weed');
+    variations.push(name + ' cannabis');
+  }
+
+  if (attempt > 2) {
+    // Even more aggressive on attempt 3+
+    variations.push(name + ' genetics');
+    variations.push(name + ' lineage');
+    variations.push(name + ' bred by');
+  }
+
+  const query = variations.map(v => `"${v}"`).join(' OR ') +
+    ` ${category} strain genetics lineage parent strains bred from terpenes effects`;
+
+  console.log(`🔍 [${name}] Search (try ${attempt}): ${query.substring(0, 120)}`);
+
+  try {
+    const response = await exa.searchAndContents(query, {
+      type: 'auto',
+      useAutoprompt: true,
+      numResults: CONFIG.SEARCH_RESULTS,
+      text: { maxCharacters: CONFIG.MAX_CHARS }
+    });
+
+    console.log(`✅ [${name}] Found ${response.results?.length || 0} sources`);
+    return response.results || [];
+  } catch (error: any) {
+    console.error(`❌ [${name}] Search error:`, error.message);
+    return [];
+  }
+}
+
+// ============================================================================
+// AI EXTRACTION
+// ============================================================================
+
+const TOOL = {
+  name: 'extract_strain',
+  description: 'Extract verified cannabis strain data',
+  input_schema: {
+    type: 'object' as const,
+    properties: {
+      product_name: { type: 'string' },
+      strain_type: { type: 'string', enum: ['Sativa', 'Indica', 'Hybrid'] },
+      lineage: { type: 'string', description: 'Parent genetics (e.g., "OG Kush x Durban")' },
+      terpene_profile: { type: 'array', items: { type: 'string' } },
+      effects: { type: 'array', items: { type: 'string' } },
+      nose: { type: 'array', items: { type: 'string' } },
+      description: { type: 'string' }
+    },
+    required: ['product_name']
+  }
+};
+
+async function extractData(
+  name: string,
+  sources: any[],
+  requestedFields: string[],
+  anthropic: Anthropic,
+  attempt: number
+): Promise<StrainInfo | null> {
+  if (sources.length === 0) return null;
+
+  const context = sources
+    .map((s, i) => `SOURCE ${i + 1}: ${s.title}\n${s.text}`)
+    .join('\n\n---\n\n')
+    .substring(0, 35000);
+
+  const fieldList = requestedFields.join(', ');
+  const urgency = attempt > 1 ? `\n\n🚨🚨🚨 CRITICAL RETRY ${attempt}/${CONFIG.MAX_RETRIES}: LINEAGE IS ABSOLUTELY MANDATORY! 🚨🚨🚨\nThis is attempt ${attempt} - we MUST find lineage data or the system will fail!\nSearch EVERY source THOROUGHLY for parent strains, genetics, breeding information!` : '';
+
+  const prompt = `Extract cannabis strain data for "${name}".
+
+REQUESTED FIELDS (ALL MANDATORY): ${fieldList}${urgency}
+
+🎯 ABSOLUTE PRIORITY: LINEAGE/GENETICS
+Search EXTREMELY thoroughly for parent strains. Look for:
+- "X x Y" patterns (e.g., "Runtz x Zkittlez", "OG Kush x Durban")
+- "cross of", "cross between"
+- "bred from", "bred by crossing"
+- "genetics:", "lineage:", "parents:"
+- "descended from", "offspring of"
+- Even PARTIAL info is valuable (e.g., "Runtz cross", "OG Kush phenotype")
+
+STRAIN NAME VARIATIONS:
+- "Pez Runtz" could be "Pez" + "Runtz", check both
+- "Blo Pop" = "Blow Pop" = "Blowpop"
+- "Soufflé" = "Souffle" = "Soufle"
+- Check with/without spaces, with/without hyphens
+
+OTHER FIELDS:
+- Terpenes: Myrcene, Limonene, Caryophyllene, Pinene, Linalool, Humulene, Ocimene, Terpinolene
+- Effects: Relaxing, Euphoric, Uplifting, Creative, Focused, Energetic, Sleepy, Happy, Calm
+- Nose/Aroma: Citrus, Pine, Diesel, Earthy, Sweet, Berry, Gas, Fruity, Floral, Spicy, Herbal
+
+IMPORTANT: Only return data actually found in sources. Use null/empty if genuinely not found.
+
+SOURCES:
+${context}
+
+Use extract_strain tool with ALL available data.`;
+
+  try {
+    const response = await anthropic.messages.create({
+      model: 'claude-sonnet-4-5-20250929',
+      max_tokens: CONFIG.AI_TOKENS,
+      temperature: 0,
+      tools: [TOOL],
+      messages: [{ role: 'user', content: prompt }]
+    });
+
+    const tool = response.content.find(c => c.type === 'tool_use');
+    if (!tool || tool.type !== 'tool_use') return null;
+
+    const data = tool.input as any;
+
+    return {
+      product_name: name,
+      strain_type: data.strain_type || null,
+      lineage: data.lineage || null,
+      terpene_profile: Array.isArray(data.terpene_profile) ? data.terpene_profile : [],
+      effects: Array.isArray(data.effects) ? data.effects : [],
+      nose: Array.isArray(data.nose) ? data.nose : [],
+      description: data.description || null
+    };
+  } catch (error: any) {
+    console.error(`❌ [${name}] AI error:`, error.message);
+    return null;
+  }
+}
+
+// ============================================================================
+// PROCESS WITH RETRY
+// ============================================================================
+
+async function processProduct(
+  name: string,
+  category: string,
+  requestedFields: string[],
+  exa: Exa,
+  anthropic: Anthropic
+): Promise<StrainInfo> {
+  console.log(`\n${'='.repeat(70)}`);
+  console.log(`🌿 Processing: ${name}`);
+  console.log(`📋 Required fields: ${requestedFields.join(', ')}`);
+  console.log(`${'='.repeat(70)}`);
+
+  let bestResult: StrainInfo | null = null;
+  let bestScore = 0;
+
+  for (let attempt = 1; attempt <= CONFIG.MAX_RETRIES; attempt++) {
+    const sources = await searchStrain(name, category, exa, attempt);
+    const extracted = await extractData(name, sources, requestedFields, anthropic, attempt);
+
+    if (!extracted) {
+      console.log(`❌ [${name}] Attempt ${attempt} failed`);
+      continue;
+    }
+
+    const validation = validateStrainData(extracted, requestedFields);
+    console.log(`📊 [${name}] Attempt ${attempt} - Score: ${validation.score}/10, Missing: ${validation.missing.join(', ') || 'none'}`);
+
+    if (validation.score > bestScore) {
+      bestResult = extracted;
+      bestScore = validation.score;
+    }
+
+    if (validation.valid) {
+      console.log(`✅ [${name}] Complete with all requested fields!`);
+      return extracted;
+    }
+
+    if (attempt < CONFIG.MAX_RETRIES) {
+      console.log(`⚠️ [${name}] Retrying to fill: ${validation.missing.join(', ')}`);
+      await new Promise(r => setTimeout(r, 1000));
+    }
+  }
+
+  console.log(`⚠️ [${name}] Returning best result (score: ${bestScore}/10)`);
+  return bestResult || {
+    product_name: name,
+    strain_type: null,
+    lineage: null,
+    terpene_profile: [],
+    effects: [],
+    nose: [],
+    description: null
+  };
+}
+
+// ============================================================================
+// MAIN ENDPOINT
+// ============================================================================
 
 export async function POST(request: NextRequest) {
   const encoder = new TextEncoder();
 
   const stream = new ReadableStream({
     async start(controller) {
-      const sendMessage = (data: any) => {
-        controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
+      let isClosed = false;
+
+      const send = (data: any) => {
+        if (isClosed) return; // Don't try to send if already closed
+        try {
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
+        } catch (err) {
+          console.error('Stream error:', err);
+          isClosed = true; // Mark as closed if error
+        }
+      };
+
+      const closeStream = () => {
+        if (isClosed) return;
+        try {
+          controller.close();
+          isClosed = true;
+        } catch (err) {
+          console.error('Error closing stream:', err);
+        }
       };
 
       try {
-        // Check for required API keys
-        if (!process.env.ANTHROPIC_API_KEY) {
-          console.error('❌ Missing ANTHROPIC_API_KEY');
-          sendMessage({
-            type: 'error',
-            message: 'AI service not configured'
-          });
-          controller.close();
+        if (!process.env.ANTHROPIC_API_KEY || !process.env.EXASEARCH_API_KEY) {
+          send({ type: 'error', message: 'AI services not configured' });
+          closeStream();
           return;
         }
 
-        if (!process.env.EXASEARCH_API_KEY) {
-          console.error('❌ Missing EXASEARCH_API_KEY');
-          sendMessage({
-            type: 'error',
-            message: 'Search service not configured'
-          });
-          controller.close();
-          return;
-        }
-
-        const anthropic = new Anthropic({
-          apiKey: process.env.ANTHROPIC_API_KEY
-        });
+        const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
         const exa = new Exa(process.env.EXASEARCH_API_KEY);
 
-        const { products, category, selectedFields, customPrompt } = await request.json();
+        const { products, category, requestedFields } = await request.json();
 
-        if (!products || !Array.isArray(products) || products.length === 0) {
-          sendMessage({ type: 'error', message: 'Products array required' });
-          controller.close();
+        if (!Array.isArray(products) || products.length === 0) {
+          send({ type: 'error', message: 'Products array required' });
+          closeStream();
           return;
         }
 
-        console.log(`🔍 Bulk AI Autofill (Streaming): ${products.length} products${customPrompt ? ' [custom prompt]' : ''}${selectedFields ? ` [${selectedFields.length} fields]` : ''}`);
+        const fields = requestedFields || ['lineage', 'terpene_profile', 'effects', 'nose', 'description'];
 
-        // Send start message
-        sendMessage({
+        console.log(`\n${'='.repeat(80)}`);
+        console.log(`🚀 BULK AI AUTOFILL - BATCH VERIFICATION MODE`);
+        console.log(`📦 Total products: ${products.length}`);
+        console.log(`🏷️  Category: ${category}`);
+        console.log(`📋 Requested fields: ${fields.join(', ')}`);
+        console.log(`${'='.repeat(80)}`);
+
+        send({
           type: 'start',
           total: products.length,
-          message: `Starting bulk enrichment for ${products.length} products...`
+          message: `Processing ${products.length} products with field verification...`
         });
 
-        // Process in batches of 5 for optimal performance
-        const BATCH_SIZE = 5;
-        const results: any[] = [];
+        const results: { [key: string]: StrainInfo } = {};
+        const batches: string[][] = [];
 
-        for (let i = 0; i < products.length; i += BATCH_SIZE) {
-          const batch = products.slice(i, i + BATCH_SIZE);
-          const batchNum = Math.floor(i / BATCH_SIZE) + 1;
-          const totalBatches = Math.ceil(products.length / BATCH_SIZE);
-
-          console.log(`📦 Processing batch ${batchNum}/${totalBatches} (${batch.length} products)`);
-
-          // Send batch start message
-          sendMessage({
-            type: 'batch_start',
-            batch: batchNum,
-            totalBatches,
-            products: batch.map((p: any) => p.name),
-            message: `📦 Batch ${batchNum}/${totalBatches}: Processing ${batch.map((p: any) => p.name).join(', ')}...`
-          });
-
-          try {
-            // Single web search for all products in batch - comprehensive query for all strain data
-            const searchQuery = batch.map((p: any) => p.name).join(', ') +
-              ` ${category || 'cannabis'} strain genetics lineage parent strains terpene profile nose aroma effects THCa percentage indica sativa hybrid`;
-
-            sendMessage({
-              type: 'progress',
-              message: `🔍 Searching web for batch ${batchNum}...`
-            });
-
-            const searchResults = await exa.searchAndContents(searchQuery, {
-              type: 'auto',
-              useAutoprompt: true,
-              numResults: Math.min(15, batch.length * 3), // 3 results per product for better data coverage
-              text: true
-            });
-
-            if (!searchResults.results || searchResults.results.length === 0) {
-              console.warn(`⚠️ No search results for batch ${batchNum}`);
-              batch.forEach((product: any) => {
-                results.push({
-                  product_name: product.name,
-                  success: false,
-                  error: 'No search results found'
-                });
-              });
-
-              sendMessage({
-                type: 'batch_complete',
-                batch: batchNum,
-                success: 0,
-                failed: batch.length,
-                message: `⚠️ Batch ${batchNum} complete: No search results`
-              });
-              continue;
-            }
-
-            // Combine search results
-            const context = searchResults.results
-              .map((r) => `${r.title}\n${r.text}`)
-              .join('\n---\n');
-
-            sendMessage({
-              type: 'progress',
-              message: `🤖 AI extracting data for batch ${batchNum}...`
-            });
-
-            // Build user prompt with optional custom instructions and field focus
-            let userPrompt = `Extract STRAIN DATA for these ${batch.length} products:\n${batch.map((p: any, idx: number) => `${idx + 1}. ${p.name}`).join('\n')}\n\n`;
-
-            // Add field focus if selectedFields provided
-            if (selectedFields && selectedFields.length > 0) {
-              userPrompt += `FOCUS ON THESE FIELDS:\n${selectedFields.map((f: string) => `- ${f.replace('_', ' ').toUpperCase()}`).join('\n')}\n\n`;
-            } else {
-              userPrompt += `FOCUS ON:\n- LINEAGE/GENETICS (Parent1 x Parent2) - MOST IMPORTANT\n- Terpene profile (Myrcene, Limonene, etc.)\n- Effects (Relaxing, Euphoric, etc.)\n- Nose/Aroma (Candy, Gas, Pine, etc.)\n- Strain type (Sativa/Indica/Hybrid)\n\n`;
-            }
-
-            // Add custom prompt if provided
-            if (customPrompt) {
-              userPrompt += `ADDITIONAL INSTRUCTIONS: ${customPrompt}\n\n`;
-            }
-
-            userPrompt += `Search THOROUGHLY in sources for lineage and genetics information.\n\nSOURCES:\n${context.substring(0, 15000)}\n\nReturn ONLY a JSON array with ${batch.length} objects, one per product in order.`;
-
-            // Claude extraction for entire batch
-            const response = await anthropic.messages.create({
-              model: 'claude-sonnet-4-20250514',
-              max_tokens: 4000,
-              temperature: 0,
-              system: SYSTEM_PROMPT,
-              messages: [
-                {
-                  role: 'user',
-                  content: userPrompt
-                }
-              ]
-            });
-
-            const claudeText = response.content[0];
-            if (claudeText.type !== 'text') {
-              throw new Error('Invalid response');
-            }
-
-            // Parse JSON array
-            const jsonMatch = claudeText.text.match(/\[[\s\S]*\]/);
-            if (!jsonMatch) {
-              console.error(`❌ No JSON found in batch ${batchNum}`);
-              batch.forEach((product: any) => {
-                results.push({
-                  product_name: product.name,
-                  success: false,
-                  error: 'Failed to extract data'
-                });
-              });
-
-              sendMessage({
-                type: 'batch_complete',
-                batch: batchNum,
-                success: 0,
-                failed: batch.length,
-                message: `❌ Batch ${batchNum} failed: Could not parse AI response`
-              });
-              continue;
-            }
-
-            const batchData = JSON.parse(jsonMatch[0]);
-
-            // Match results to products
-            let batchSuccess = 0;
-            batch.forEach((product: any, idx: number) => {
-              const data = batchData[idx] || batchData.find((d: any) =>
-                d.product_name?.toLowerCase().includes(product.name.toLowerCase()) ||
-                product.name.toLowerCase().includes(d.product_name?.toLowerCase())
-              );
-
-              if (data) {
-                results.push({
-                  product_name: product.name,
-                  success: true,
-                  suggestions: data
-                });
-                batchSuccess++;
-              } else {
-                results.push({
-                  product_name: product.name,
-                  success: false,
-                  error: 'No data matched'
-                });
-              }
-            });
-
-            // Send batch complete message
-            sendMessage({
-              type: 'batch_complete',
-              batch: batchNum,
-              totalBatches,
-              success: batchSuccess,
-              failed: batch.length - batchSuccess,
-              completed: results.length,
-              total: products.length,
-              message: `✅ Batch ${batchNum}/${totalBatches}: ${batchSuccess} enriched, ${batch.length - batchSuccess} failed`
-            });
-
-            console.log(`✅ Batch ${batchNum} complete: ${batchSuccess}/${batch.length} successful`);
-
-          } catch (error: any) {
-            console.error(`❌ Error in batch ${batchNum}:`, error.message);
-
-            // Add error results for this batch
-            batch.forEach((product: any) => {
-              results.push({
-                product_name: product.name,
-                success: false,
-                error: error.message || 'Processing failed'
-              });
-            });
-
-            sendMessage({
-              type: 'batch_error',
-              batch: batchNum,
-              error: error.message,
-              message: `❌ Batch ${batchNum} error: ${error.message}`
-            });
-          }
-
-          // Small delay between batches to avoid rate limits
-          if (i + BATCH_SIZE < products.length) {
-            await new Promise(resolve => setTimeout(resolve, 500));
-          }
+        // Split into batches
+        const names = products.map(p => p.name);
+        for (let i = 0; i < names.length; i += CONFIG.BATCH_SIZE) {
+          batches.push(names.slice(i, i + CONFIG.BATCH_SIZE));
         }
 
-        const successCount = results.filter(r => r.success).length;
-        console.log(`✅ Bulk autofill complete: ${successCount}/${products.length} successful`);
+        console.log(`📦 Split into ${batches.length} batch(es) of ${CONFIG.BATCH_SIZE}`);
 
-        // Send final complete message
-        sendMessage({
-          type: 'complete',
-          total: products.length,
-          successful: successCount,
-          failed: products.length - successCount,
-          results,
-          message: `✅ Complete: ${successCount}/${products.length} products enriched`
+        // Process each batch
+        for (let batchIdx = 0; batchIdx < batches.length; batchIdx++) {
+          const batch = batches[batchIdx];
+          const batchNum = batchIdx + 1;
+
+          console.log(`\n${'='.repeat(80)}`);
+          console.log(`📦 BATCH ${batchNum}/${batches.length}: ${batch.join(', ')}`);
+          console.log(`${'='.repeat(80)}`);
+
+          send({
+            type: 'batch_start',
+            batch: batchNum,
+            total_batches: batches.length,
+            products: batch,
+            message: `\n🔄 Batch ${batchNum}/${batches.length}: Processing ${batch.length} products...`
+          });
+
+          // Process all products in batch
+          for (let i = 0; i < batch.length; i++) {
+            const name = batch[i];
+            const overall = batchIdx * CONFIG.BATCH_SIZE + i + 1;
+
+            send({
+              type: 'progress',
+              current: overall,
+              total: names.length,
+              message: `[Batch ${batchNum}] Processing ${name}... (${i + 1}/${batch.length})`
+            });
+
+            const data = await processProduct(name, category, fields, exa, anthropic);
+            results[name] = data;
+
+            send({
+              type: 'product_complete',
+              product: name,
+              current: overall,
+              total: names.length,
+              data: data
+            });
+
+            await new Promise(r => setTimeout(r, 500));
+          }
+
+          // Validate batch
+          const batchResults = batch.map(name => results[name]);
+          const validations = batchResults.map(r => validateStrainData(r, fields));
+          const allValid = validations.every(v => v.valid);
+          const validCount = validations.filter(v => v.valid).length;
+
+          console.log(`\n📊 BATCH ${batchNum} VALIDATION:`);
+          batch.forEach((name, idx) => {
+            const val = validations[idx];
+            const status = val.valid ? '✅' : '⚠️';
+            console.log(`  ${status} ${name}: ${val.score}/10 ${val.missing.length > 0 ? `(missing: ${val.missing.join(', ')})` : ''}`);
+          });
+
+          send({
+            type: 'batch_complete',
+            batch: batchNum,
+            total_batches: batches.length,
+            valid: validCount,
+            total: batch.length,
+            all_valid: allValid,
+            results: batch.map(name => ({
+              name,
+              data: results[name],
+              validation: validateStrainData(results[name], fields)
+            })),
+            message: `✅ Batch ${batchNum} complete: ${validCount}/${batch.length} products have all requested fields`
+          });
+
+          console.log(`${allValid ? '✅' : '⚠️'} Batch ${batchNum}: ${validCount}/${batch.length} complete`);
+        }
+
+        // Final summary
+        const allResults = Object.values(results);
+        const allValidations = allResults.map(r => validateStrainData(r, fields));
+        const completeCount = allValidations.filter(v => v.valid).length;
+
+        console.log(`\n${'='.repeat(80)}`);
+        console.log(`✅ ALL BATCHES COMPLETE`);
+        console.log(`📊 ${completeCount}/${names.length} products have ALL requested fields`);
+        console.log(`${'='.repeat(80)}`);
+
+        names.forEach(name => {
+          const val = validateStrainData(results[name], fields);
+          console.log(`  ${val.valid ? '✅' : '⚠️'} ${name}: ${val.score}/10`);
         });
 
-        controller.close();
+        send({
+          type: 'complete',
+          total: names.length,
+          successful: allResults.filter(r => r.lineage || r.terpene_profile.length > 0).length,
+          complete: completeCount,
+          withLineage: allResults.filter(r => r.lineage).length,
+          results: results,
+          message: `Complete: ${completeCount}/${names.length} products have all requested fields`
+        });
+
+        closeStream();
 
       } catch (error: any) {
-        console.error('❌ Bulk autofill error:', error);
-        sendMessage({
-          type: 'error',
-          message: error.message || 'Bulk autofill failed',
-          details: process.env.NODE_ENV === 'development' ? error.stack : undefined
-        });
-        controller.close();
+        console.error('❌ Error:', error);
+        send({ type: 'error', message: error.message || 'Processing failed' });
+        closeStream();
       }
     }
   });
@@ -321,7 +496,7 @@ export async function POST(request: NextRequest) {
     headers: {
       'Content-Type': 'text/event-stream',
       'Cache-Control': 'no-cache',
-      'Connection': 'keep-alive',
-    },
+      'Connection': 'keep-alive'
+    }
   });
 }

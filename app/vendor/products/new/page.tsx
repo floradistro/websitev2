@@ -1,6 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
+import { FormErrorBoundary } from '@/components/ErrorBoundary';
 
 // Lazy load the heavy product creation form
 const NewProductClient = dynamic(() => import('./NewProductClient'), {
@@ -16,5 +17,9 @@ const NewProductClient = dynamic(() => import('./NewProductClient'), {
 });
 
 export default function NewProductPage() {
-  return <NewProductClient />;
+  return (
+    <FormErrorBoundary>
+      <NewProductClient />
+    </FormErrorBoundary>
+  );
 }

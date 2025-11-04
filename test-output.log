@@ -1,0 +1,56 @@
+
+Running 1 test using 1 worker
+
+✅ Logged in as Flora Distro vendor
+🧪 Starting bulk product creation test...
+✅ Navigated to new product page
+✅ Switched to Bulk mode
+📝 Selecting category and entering product list...
+✅ Selected Flower category
+✅ Filled product list
+🤖 Clicking AI enrichment button...
+⏳ Waiting for AI enrichment to complete...
+✅ AI enrichment complete - review interface shown
+✅ All 5 products ready for review
+✅ First product (Blo Pop) is visible in review
+📊 Found 6 input fields (should include AI-enriched data)
+✅ AI enrichment verified - proceeding to submit
+📤 Submitting all products...
+⏳ Waiting for submission to complete...
+📍 Current URL after submission: http://localhost:3000/vendor/products/new
+✅ Success notification shown
+🔍 Verifying products in database...
+❌ Product not found: Blo Pop
+❌ Product not found: Gorilla Glue #4
+❌ Product not found: Lemon Runtz
+❌ Product not found: Pez Runtz
+❌ Product not found: Pink Soufflé
+
+📊 Results: 0/5 products found on products page
+  ✘  1 [chromium] › tests/bulk-product-creation.spec.ts:28:7 › Bulk Product Creation Flow › should bulk create 5 cannabis strain products with AI autofill (27.7s)
+
+
+  1) [chromium] › tests/bulk-product-creation.spec.ts:28:7 › Bulk Product Creation Flow › should bulk create 5 cannabis strain products with AI autofill 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThanOrEqual[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: >= [32m3[39m
+    Received:    [31m0[39m
+
+      159 |     console.log(`\n📊 Results: ${foundCount}/5 products found on products page`);
+      160 |
+    > 161 |     expect(foundCount).toBeGreaterThanOrEqual(3); // At least 3 should be visible
+          |                        ^
+      162 |   });
+      163 |
+      164 |   test('should show AI data in console logs', async ({ page }) => {
+        at /Users/whale/Desktop/Website/tests/bulk-product-creation.spec.ts:161:24
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/bulk-product-creation-Bulk-30c36-n-products-with-AI-autofill-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/bulk-product-creation-Bulk-30c36-n-products-with-AI-autofill-chromium/error-context.md
+
+  1 failed
+    [chromium] › tests/bulk-product-creation.spec.ts:28:7 › Bulk Product Creation Flow › should bulk create 5 cannabis strain products with AI autofill 

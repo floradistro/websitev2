@@ -1,16 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServiceSupabase } from '@/lib/supabase/client';
+import { requireVendor } from '@/lib/auth/middleware';
 
 export async function PATCH(request: NextRequest) {
   try {
-    const vendorId = request.headers.get('x-vendor-id');
-    
-    if (!vendorId) {
-      return NextResponse.json(
-        { success: false, error: 'Vendor ID required' },
-        { status: 401 }
-      );
-    }
+    // Use secure middleware to get vendor_id from session
+    const authResult = await requireVendor(request);
+    if (authResult instanceof NextResponse) return authResult;
+    const { vendorId } = authResult;
     
     const body = await request.json();
     const { product_id, updates } = body;
@@ -84,6 +81,11 @@ export async function PATCH(request: NextRequest) {
       }).filter(f => f.value); // Only include non-empty values
 
       updateData.custom_fields = fieldsArray;
+    }
+
+    // Handle meta_data updates (for pricing blueprints, etc.)
+    if (updates.meta_data !== undefined) {
+      updateData.meta_data = updates.meta_data;
     }
     
     console.log('Updating product with data:', updateData);

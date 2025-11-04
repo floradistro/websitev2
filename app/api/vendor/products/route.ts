@@ -4,6 +4,7 @@ import { productCache, vendorCache, inventoryCache } from '@/lib/cache-manager';
 import { jobQueue } from '@/lib/job-queue';
 import { requireVendor } from '@/lib/auth/middleware';
 import { withErrorHandler } from '@/lib/api-handler';
+import { createProductSchema, safeValidateProductData } from '@/lib/validations/product';
 
 export const GET = withErrorHandler(async (request: NextRequest) => {
   try {
@@ -17,7 +18,7 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
     const supabase = getServiceSupabase();
     const { data: products, error } = await supabase
       .from('products')
-      .select('*, categories:primary_category_id(id, name, slug)')
+      .select('*, categories:primary_category_id(id, name, slug), meta_data')
       .eq('vendor_id', vendorId)
       .order('created_at', { ascending: false });
 
@@ -49,11 +50,25 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
     }
     const { vendorId } = authResult;
 
-    const productData = await request.json();
+    const body = await request.json();
 
-    if (!productData.name) {
-      return NextResponse.json({ error: 'Product name is required' }, { status: 400 });
+    // Validate request body with Zod schema
+    const validation = safeValidateProductData(createProductSchema, body);
+
+    if (!validation.success) {
+      const errorMessages = validation.errors.issues.map((err: any) => ({
+        field: err.path.join('.'),
+        message: err.message
+      }));
+
+      return NextResponse.json({
+        success: false,
+        error: 'Validation failed',
+        details: errorMessages
+      }, { status: 400 });
     }
+
+    const productData = validation.data;
     
     const supabase = getServiceSupabase();
 
@@ -76,7 +91,7 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
     }
 
     // Prepare product data for Supabase
-    const stockQty = productData.initial_quantity ? parseInt(productData.initial_quantity) : 0;
+    const stockQty = productData.initial_quantity ? parseInt(productData.initial_quantity.toString()) : 0;
     
     // Determine stock management strategy (following enterprise patterns)
     const shouldManageStock = stockQty > 0 || productData.manage_stock === true;
@@ -98,13 +113,12 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
       name: productData.name,
       slug: slug,
       description: productData.description || '',
-      short_description: productData.short_description || '',
       type: productData.product_type || 'simple',
       status: productStatus,
       product_visibility: productVisibility,
       vendor_id: vendorId,
-      regular_price: productData.price ? parseFloat(productData.price) : null,
-      cost_price: productData.cost_price ? parseFloat(productData.cost_price) : null,
+      regular_price: productData.price ? parseFloat(productData.price.toString()) : null,
+      cost_price: productData.cost_price ? parseFloat(productData.cost_price.toString()) : null,
       sku: productData.sku || `YC-${Date.now()}`,
       // Stock management follows enterprise patterns
       manage_stock: shouldManageStock,

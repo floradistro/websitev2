@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
     // TRUE MULTI-TENANT: Return global categories (vendor_id IS NULL) + vendor-specific categories
     let query = supabase
       .from('categories')
-      .select('id, name, slug, description, icon, image_url, vendor_id, parent_id');
+      .select('id, name, slug, description, icon, image_url, vendor_id, parent_id, field_visibility');
 
     if (vendorId) {
       // Get global categories OR categories owned by this vendor
@@ -121,7 +121,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { id, name, description, icon, image_url } = body;
+    const { id, name, description, icon, image_url, field_visibility } = body;
 
     if (!id) {
       return NextResponse.json({ error: 'Category ID is required' }, { status: 400 });
@@ -129,7 +129,7 @@ export async function PUT(request: NextRequest) {
 
     const supabase = getServiceSupabase();
 
-    // Verify vendor owns this category
+    // Verify category exists and check ownership
     const { data: existing, error: fetchError } = await supabase
       .from('categories')
       .select('vendor_id')
@@ -138,7 +138,13 @@ export async function PUT(request: NextRequest) {
 
     if (fetchError) throw fetchError;
 
-    if (existing.vendor_id !== vendorId) {
+    // Allow vendors to update field_visibility on both their own categories AND global categories
+    // But block updates to name/description/icon/image_url on categories they don't own
+    const isOwnCategory = existing.vendor_id === vendorId;
+    const isGlobalCategory = existing.vendor_id === null;
+    const onlyUpdatingFieldVisibility = Object.keys(body).filter(k => k !== 'id' && k !== 'field_visibility').length === 0;
+
+    if (!isOwnCategory && !(isGlobalCategory && onlyUpdatingFieldVisibility)) {
       return NextResponse.json(
         { error: 'Not authorized to edit this category' },
         { status: 403 }
@@ -150,6 +156,15 @@ export async function PUT(request: NextRequest) {
     if (description !== undefined) updateData.description = description;
     if (icon !== undefined) updateData.icon = icon;
     if (image_url !== undefined) updateData.image_url = image_url;
+    if (field_visibility !== undefined) updateData.field_visibility = field_visibility;
+
+    // Ensure we have something to update
+    if (Object.keys(updateData).length === 0) {
+      return NextResponse.json(
+        { error: 'No fields provided to update' },
+        { status: 400 }
+      );
+    }
 
     const { data: category, error } = await supabase
       .from('categories')

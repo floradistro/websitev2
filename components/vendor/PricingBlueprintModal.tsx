@@ -354,7 +354,7 @@ export function PricingBlueprintModal({
                 onClick={onClose}
                 className="text-white/40 hover:text-white transition-colors p-2"
               >
-                <X size={20} />
+                <X size={20} strokeWidth={1.5} />
               </button>
             </div>
           </div>
@@ -536,7 +536,7 @@ export function PricingBlueprintModal({
                             onClick={() => removePriceBreak(idx)}
                             className="p-2 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 hover:bg-red-500/20 hover:text-red-300 transition-all"
                           >
-                            <Trash2 size={16} />
+                            <Trash2 size={16} strokeWidth={1.5} />
                           </button>
                         </div>
                       </div>
