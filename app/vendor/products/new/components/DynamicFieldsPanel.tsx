@@ -94,7 +94,8 @@ export default function DynamicFieldsPanel({
   };
 
   const renderField = (field: DynamicField, index: number) => {
-    const fieldValue = customFieldValues[field.name] || '';
+    const rawValue = customFieldValues[field.name];
+    const fieldValue = typeof rawValue === 'string' || typeof rawValue === 'number' ? rawValue : '';
     const handleChange = (value: string | string[] | boolean | number) => {
       onFieldChange(field.name, value);
     };
