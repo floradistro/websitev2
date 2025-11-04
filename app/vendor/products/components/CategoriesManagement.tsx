@@ -8,38 +8,8 @@ import { PricingBlueprintModal } from '@/components/vendor/PricingBlueprintModal
 import { FieldVisibilityModal } from '@/components/vendor/FieldVisibilityModal';
 import { CategoryModal } from '@/components/vendor/CategoryModal';
 import { CustomFieldModal } from '@/components/vendor/CustomFieldModal';
+import type { Category, FieldGroup, PricingBlueprint, FieldVisibilityConfig } from '@/lib/types/product';
 import axios from 'axios';
-
-interface Category {
-  id: string;
-  name: string;
-  slug: string;
-  description?: string;
-  icon?: string;
-  vendor_id?: string;
-  parent_id?: string;
-  field_visibility?: Record<string, any>;
-}
-
-interface FieldGroup {
-  id: string;
-  vendor_id: string | null;
-  name: string;
-  slug: string;
-  description?: string;
-  fields: any[];
-  is_active: boolean;
-  category_id?: string;
-}
-
-interface PricingBlueprint {
-  id: string;
-  vendor_id: string | null;
-  name: string;
-  description?: string;
-  quality_tier?: string;
-  applicable_to_categories?: string[];
-}
 
 interface CategoriesManagementProps {
   vendorId: string;
@@ -63,7 +33,7 @@ export function CategoriesManagement({ vendorId }: CategoriesManagementProps) {
     fieldName: string;
     fieldSlug: string;
     categoryId: string;
-    currentConfig: any;
+    currentConfig: FieldVisibilityConfig;
   } | null>(null);
 
   // Category modal state
@@ -106,16 +76,19 @@ export function CategoriesManagement({ vendorId }: CategoriesManagementProps) {
         headers: { 'x-vendor-id': vendorId }
       });
       if (response.data.success) {
-        const fieldGroups = (response.data.fields || []).map((field: any) => ({
-          id: field.id,
-          vendor_id: vendorId,
-          name: field.label || field.definition?.label || 'Unnamed',
-          slug: field.fieldId || field.slug,
-          description: field.description || field.definition?.description,
-          fields: [field],
-          is_active: true,
-          category_id: field.categoryId
-        }));
+        const fieldGroups = (response.data.fields || []).map((field: unknown) => {
+          const f = field as Record<string, unknown>;
+          return {
+            id: String(f.id || ''),
+            vendor_id: vendorId,
+            name: String(f.label || (f.definition as Record<string, unknown>)?.label || 'Unnamed'),
+            slug: String(f.fieldId || f.slug || ''),
+            description: String(f.description || (f.definition as Record<string, unknown>)?.description || ''),
+            fields: [field as Record<string, unknown>],
+            is_active: true,
+            category_id: f.categoryId as string | undefined
+          } as FieldGroup;
+        });
         setFieldGroups(fieldGroups);
       }
     } catch (error) {
@@ -155,11 +128,12 @@ export function CategoriesManagement({ vendorId }: CategoriesManagementProps) {
           });
           loadCategories();
         }
-      } catch (error: any) {
+      } catch (error) {
+        const err = error as { response?: { data?: { error?: string } } };
         showNotification({
           type: 'error',
           title: 'Delete Failed',
-          message: error.response?.data?.error || 'Failed to delete category'
+          message: err.response?.data?.error || 'Failed to delete category'
         });
       }
     }
@@ -176,7 +150,7 @@ export function CategoriesManagement({ vendorId }: CategoriesManagementProps) {
     setShowFieldVisibilityModal(true);
   };
 
-  const handleFieldVisibilitySave = async (config: any) => {
+  const handleFieldVisibilitySave = async (config: FieldVisibilityConfig) => {
     if (!visibilityModalData) return;
 
     try {
@@ -196,11 +170,12 @@ export function CategoriesManagement({ vendorId }: CategoriesManagementProps) {
         });
         loadCategories();
       }
-    } catch (error: any) {
+    } catch (error) {
+      const err = error as { response?: { data?: { error?: string } } };
       showNotification({
         type: 'error',
         title: 'Save Failed',
-        message: error.response?.data?.error || 'Failed to save configuration'
+        message: err.response?.data?.error || 'Failed to save configuration'
       });
     }
   };
@@ -246,11 +221,12 @@ export function CategoriesManagement({ vendorId }: CategoriesManagementProps) {
         } else {
           throw new Error(data.error || 'Failed to delete');
         }
-      } catch (error: any) {
+      } catch (error) {
+        const err = error as { message?: string };
         showNotification({
           type: 'error',
           title: 'Delete Failed',
-          message: error.message || 'Failed to delete pricing rule'
+          message: err.message || 'Failed to delete pricing rule'
         });
       }
     }
