@@ -19,12 +19,16 @@ export async function GET(request: NextRequest) {
       .eq('vendor_id', vendorId)
       .in('status', ['pending', 'processing', 'ready']);
 
-    // Count products with incomplete data (missing name, price, or description)
-    const { count: incompleteProductsCount } = await supabase
+    // Count products with incomplete data (missing name or price)
+    const { count: incompleteProductsCount, error: productsError } = await supabase
       .from('products')
       .select('*', { count: 'exact', head: true })
       .eq('vendor_id', vendorId)
-      .or('name.is.null,description.is.null,price.is.null,name.eq.,description.eq.');
+      .or('name.is.null,regular_price.is.null');
+
+    if (productsError) {
+      console.error('Products count error:', productsError);
+    }
 
     const badgeCounts = {
       orders: ordersCount || 0,
