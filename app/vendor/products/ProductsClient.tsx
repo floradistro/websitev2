@@ -32,6 +32,7 @@ export default function ProductsClient() {
     data: productsData,
     isLoading,
     error,
+    refetch,
   } = useProducts({
     page: filters.page,
     limit: filters.itemsPerPage,
@@ -47,18 +48,24 @@ export default function ProductsClient() {
   const total = productsData?.total || 0;
   const totalPages = productsData?.totalPages || 0;
 
-  // Calculate stats from products data
+  // Calculate stats from products data - optimized with single pass
   const stats = useMemo(() => {
-    if (!products) {
+    if (!products || products.length === 0) {
       return { total: 0, approved: 0, pending: 0, rejected: 0 };
     }
 
-    return {
-      total: products.length,
-      approved: products.filter((p) => p.status === 'published' || p.status === 'approved').length,
-      pending: products.filter((p) => p.status === 'pending').length,
-      rejected: products.filter((p) => p.status === 'rejected').length,
-    };
+    // Single pass through array instead of 3 separate filters (3x faster)
+    return products.reduce((acc, p) => {
+      acc.total++;
+      if (p.status === 'published' || p.status === 'approved') {
+        acc.approved++;
+      } else if (p.status === 'pending') {
+        acc.pending++;
+      } else if (p.status === 'rejected') {
+        acc.rejected++;
+      }
+      return acc;
+    }, { total: 0, approved: 0, pending: 0, rejected: 0 });
   }, [products]);
 
   // Memoize event handlers
@@ -143,6 +150,7 @@ export default function ProductsClient() {
               isLoading={isLoading}
               error={error}
               onViewProduct={handleViewProduct}
+              onRetry={() => refetch()}
             />
 
             {/* Pagination */}

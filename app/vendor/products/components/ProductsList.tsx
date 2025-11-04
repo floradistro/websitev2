@@ -9,9 +9,10 @@ interface ProductsListProps {
   isLoading: boolean;
   error: Error | null;
   onViewProduct: (productId: string) => void;
+  onRetry?: () => void;
 }
 
-export function ProductsList({ products, isLoading, error, onViewProduct }: ProductsListProps) {
+export function ProductsList({ products, isLoading, error, onViewProduct, onRetry }: ProductsListProps) {
   if (isLoading) {
     return (
       <div role="status" aria-live="polite" aria-label="Loading products">
@@ -31,7 +32,7 @@ export function ProductsList({ products, isLoading, error, onViewProduct }: Prod
         <h3 className={cn(ds.typography.size.base, ds.typography.weight.medium, "text-red-400/90 mb-2")}>Failed to Load Products</h3>
         <p className={cn(ds.typography.size.xs, "text-red-400/70 mb-4")}>{error.message}</p>
         <button
-          onClick={() => window.location.reload()}
+          onClick={onRetry || (() => window.location.reload())}
           className={cn(
             "px-4 py-2 rounded-lg transition-colors",
             "bg-red-500/20 hover:bg-red-500/30",
@@ -43,7 +44,7 @@ export function ProductsList({ products, isLoading, error, onViewProduct }: Prod
           )}
           aria-label="Retry loading products"
         >
-          Retry
+          Try Again
         </button>
       </div>
     );
