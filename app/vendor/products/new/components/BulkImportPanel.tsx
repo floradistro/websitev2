@@ -476,6 +476,49 @@ export default function BulkImportPanel({
               </div>
             )}
 
+            {/* Progress Indicator */}
+            {bulkProcessing && bulkProgress.total > 0 && (
+              <div className={cn(ds.components.card, "mt-4 p-4 rounded-xl")}>
+                <div className="space-y-2">
+                  {/* Progress Bar */}
+                  <div className="relative w-full h-2 bg-white/5 rounded-full overflow-hidden">
+                    <div
+                      className="absolute top-0 left-0 h-full bg-gradient-to-r from-white/20 to-white/30 transition-all duration-300"
+                      style={{ width: `${(bulkProgress.current / bulkProgress.total) * 100}%` }}
+                    />
+                  </div>
+
+                  {/* Status Text */}
+                  <div className="flex items-center justify-between text-[9px]">
+                    <span className="text-white/60">
+                      Processing: <span className="text-white/90 font-semibold">{bulkProgress.currentProduct}</span>
+                    </span>
+                    <span className="text-white/40">
+                      {bulkProgress.current} / {bulkProgress.total}
+                    </span>
+                  </div>
+
+                  {/* Success/Fail Counts */}
+                  {(bulkProgress.successCount > 0 || bulkProgress.failCount > 0) && (
+                    <div className="flex items-center gap-3 text-[9px]">
+                      {bulkProgress.successCount > 0 && (
+                        <div className="flex items-center gap-1">
+                          <CheckCircle size={12} strokeWidth={1.5} className="text-green-400" />
+                          <span className="text-green-400">{bulkProgress.successCount} created</span>
+                        </div>
+                      )}
+                      {bulkProgress.failCount > 0 && (
+                        <div className="flex items-center gap-1">
+                          <X size={12} strokeWidth={1.5} className="text-red-400" />
+                          <span className="text-red-400">{bulkProgress.failCount} failed</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* Submit Buttons */}
             <div className="mt-4 flex items-center gap-2">
               <button

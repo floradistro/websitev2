@@ -722,6 +722,49 @@ export default function NewProductClient() {
                   </div>
                 </div>
 
+                {/* Progress Indicator */}
+                {bulkForm.bulkProcessing && bulkForm.bulkProgress.total > 0 && (
+                  <div className={cn(ds.components.card, "p-4 rounded-xl mb-4")}>
+                    <div className="space-y-2">
+                      {/* Progress Bar */}
+                      <div className="relative w-full h-2 bg-white/5 rounded-full overflow-hidden">
+                        <div
+                          className="absolute top-0 left-0 h-full bg-gradient-to-r from-white/20 to-white/30 transition-all duration-300"
+                          style={{ width: `${(bulkForm.bulkProgress.current / bulkForm.bulkProgress.total) * 100}%` }}
+                        />
+                      </div>
+
+                      {/* Status Text */}
+                      <div className="flex items-center justify-between text-[9px]">
+                        <span className="text-white/60">
+                          Processing: <span className="text-white/90 font-semibold">{bulkForm.bulkProgress.currentProduct}</span>
+                        </span>
+                        <span className="text-white/40">
+                          {bulkForm.bulkProgress.current} / {bulkForm.bulkProgress.total}
+                        </span>
+                      </div>
+
+                      {/* Success/Fail Counts */}
+                      {(bulkForm.bulkProgress.successCount > 0 || bulkForm.bulkProgress.failCount > 0) && (
+                        <div className="flex items-center gap-3 text-[9px]">
+                          {bulkForm.bulkProgress.successCount > 0 && (
+                            <div className="flex items-center gap-1">
+                              <Sparkles size={12} strokeWidth={1.5} className="text-green-400" />
+                              <span className="text-green-400">{bulkForm.bulkProgress.successCount} created</span>
+                            </div>
+                          )}
+                          {bulkForm.bulkProgress.failCount > 0 && (
+                            <div className="flex items-center gap-1">
+                              <X size={12} strokeWidth={1.5} className="text-red-400" />
+                              <span className="text-red-400">{bulkForm.bulkProgress.failCount} failed</span>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
                 <div className="flex items-center gap-3">
                   <button
                     onClick={bulkForm.resetBulkForm}
