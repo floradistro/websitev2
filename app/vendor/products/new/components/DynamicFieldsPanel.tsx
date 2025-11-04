@@ -185,20 +185,21 @@ export default function DynamicFieldsPanel({
         );
 
       case 'multiselect':
+        const arrayValue = Array.isArray(rawValue) ? rawValue : [];
         return (
           <div key={index}>
             {renderLabel(field, isRequired)}
             <div className="space-y-2">
               {/* Selected items */}
-              {fieldValue && Array.isArray(fieldValue) && fieldValue.length > 0 && (
+              {arrayValue.length > 0 && (
                 <div className="flex flex-wrap gap-1.5">
-                  {fieldValue.map((item: string, idx: number) => (
+                  {arrayValue.map((item: string, idx: number) => (
                     <div key={idx} className="bg-white/10 border border-white/20 rounded px-2 py-1 flex items-center gap-1.5 text-[10px] text-white">
                       <span>{item}</span>
                       <button
                         type="button"
                         onClick={() => {
-                          const newValue = fieldValue.filter((_: string, i: number) => i !== idx);
+                          const newValue = arrayValue.filter((_: string, i: number) => i !== idx);
                           handleChange(newValue);
                         }}
                         className="text-white/60 hover:text-red-400 transition-colors"
@@ -214,7 +215,7 @@ export default function DynamicFieldsPanel({
                 value=""
                 onChange={(e) => {
                   if (e.target.value) {
-                    const currentValues = Array.isArray(fieldValue) ? fieldValue : [];
+                    const currentValues = Array.isArray(rawValue) ? rawValue : [];
                     if (!currentValues.includes(e.target.value)) {
                       handleChange([...currentValues, e.target.value]);
                     }
@@ -224,7 +225,7 @@ export default function DynamicFieldsPanel({
               >
                 <option value="">Add {displayLabel}...</option>
                 {field.options?.map((option, idx) => (
-                  <option key={idx} value={option} disabled={Array.isArray(fieldValue) && fieldValue.includes(option)}>
+                  <option key={idx} value={option} disabled={arrayValue.includes(option)}>
                     {option}
                   </option>
                 ))}
