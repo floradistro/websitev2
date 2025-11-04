@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import {
   BarChart3,
   TrendingUp,
+  TrendingDown,
   Mail,
   MessageSquare,
   DollarSign,
@@ -14,63 +15,19 @@ import {
   Calendar,
   ArrowUpRight,
   ArrowDownRight,
+  Minus,
   Filter,
 } from 'lucide-react';
 import { useAppAuth } from '@/context/AppAuthContext';
-
-interface AnalyticsData {
-  overview: {
-    total_campaigns: number;
-    total_sent: number;
-    total_opened: number;
-    total_clicked: number;
-    total_revenue: number;
-    avg_open_rate: number;
-    avg_click_rate: number;
-    revenue_per_campaign: number;
-  };
-  channel_performance: {
-    email: {
-      campaigns: number;
-      sent: number;
-      opened: number;
-      clicked: number;
-      revenue: number;
-    };
-    sms: {
-      campaigns: number;
-      sent: number;
-      delivered: number;
-      clicked: number;
-      revenue: number;
-    };
-  };
-  top_campaigns: Array<{
-    id: string;
-    name: string;
-    type: string;
-    sent_at: string;
-    sent: number;
-    opened: number;
-    clicked: number;
-    revenue: number;
-    open_rate: number;
-    click_rate: number;
-  }>;
-  time_series: Array<{
-    date: string;
-    sent: number;
-    opened: number;
-    clicked: number;
-    revenue: number;
-  }>;
-}
+import type { MarketingAnalyticsData, TimeRange } from '@/types/analytics';
+import { formatCurrency, formatPercentage, formatNumber } from '@/lib/analytics-utils';
 
 export default function AnalyticsPage() {
   const { vendor } = useAppAuth();
-  const [data, setData] = useState<AnalyticsData | null>(null);
+  const [data, setData] = useState<MarketingAnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d' | 'all'>('30d');
+  const [error, setError] = useState<string | null>(null);
+  const [timeRange, setTimeRange] = useState<TimeRange>('30d');
   const [channelFilter, setChannelFilter] = useState<'all' | 'email' | 'sms'>('all');
 
   useEffect(() => {
