@@ -96,7 +96,22 @@ export default function AdminDashboard() {
 
   const loadMetrics = async () => {
     try {
-      const res = await fetch(`/api/admin/metrics?range=${timeRange}`);
+      const auth = localStorage.getItem('admin-auth');
+      if (!auth) return;
+
+      const { token } = JSON.parse(auth);
+      const res = await fetch(`/api/admin/metrics?range=${timeRange}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (res.status === 401) {
+        localStorage.removeItem('admin-auth');
+        router.push('/admin/login');
+        return;
+      }
+
       if (res.ok) {
         const data = await res.json();
         setMetrics(data.metrics);
@@ -110,7 +125,22 @@ export default function AdminDashboard() {
 
   const loadCustomers = async () => {
     try {
-      const res = await fetch('/api/admin/customers');
+      const auth = localStorage.getItem('admin-auth');
+      if (!auth) return;
+
+      const { token } = JSON.parse(auth);
+      const res = await fetch('/api/admin/customers', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (res.status === 401) {
+        localStorage.removeItem('admin-auth');
+        router.push('/admin/login');
+        return;
+      }
+
       if (res.ok) {
         const data = await res.json();
         setCustomers(data.customers);
@@ -120,7 +150,12 @@ export default function AdminDashboard() {
     }
   };
 
-  if (loading) {
+  const handleLogout = () => {
+    localStorage.removeItem('admin-auth');
+    router.push('/admin/login');
+  };
+
+  if (!isAuthenticated || loading) {
     return (
       <div className={cn(ds.colors.bg.primary, "min-h-screen flex items-center justify-center")}>
         <div className="text-center">
@@ -151,22 +186,33 @@ export default function AdminDashboard() {
               </p>
             </div>
 
-            {/* Time Range Selector */}
-            <div className="flex gap-2">
-              {(['7d', '30d', '90d'] as const).map((range) => (
-                <button
-                  key={range}
-                  onClick={() => setTimeRange(range)}
-                  className={cn(
-                    "px-4 py-2 rounded-lg text-sm font-medium transition-all",
-                    timeRange === range
-                      ? "bg-white/10 text-white border border-white/20"
-                      : "text-white/60 hover:text-white hover:bg-white/5"
-                  )}
-                >
-                  {range === '7d' ? '7 Days' : range === '30d' ? '30 Days' : '90 Days'}
-                </button>
-              ))}
+            {/* Time Range Selector + Logout */}
+            <div className="flex items-center gap-4">
+              <div className="flex gap-2">
+                {(['7d', '30d', '90d'] as const).map((range) => (
+                  <button
+                    key={range}
+                    onClick={() => setTimeRange(range)}
+                    className={cn(
+                      "px-4 py-2 rounded-lg text-sm font-medium transition-all",
+                      timeRange === range
+                        ? "bg-white/10 text-white border border-white/20"
+                        : "text-white/60 hover:text-white hover:bg-white/5"
+                    )}
+                  >
+                    {range === '7d' ? '7 Days' : range === '30d' ? '30 Days' : '90 Days'}
+                  </button>
+                ))}
+              </div>
+              <button
+                onClick={handleLogout}
+                className={cn(
+                  "px-4 py-2 rounded-lg text-sm font-medium transition-all",
+                  "text-red-400 hover:text-red-300 hover:bg-red-500/10 border border-red-500/20"
+                )}
+              >
+                Logout
+              </button>
             </div>
           </div>
         </div>
