@@ -70,7 +70,7 @@ export default function ProductsClient() {
 
   // Memoize event handlers
   const handleViewProduct = useCallback((productId: string) => {
-    const product = products.find((p) => p.id === productId);
+    const product = products.find((p: Product) => p.id === productId);
     setSelectedProduct(product || null);
   }, [products]);
 
