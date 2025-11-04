@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
     // Build query
     let query = supabase
       .from('products')
-      .select('id, name, sku, price, cost_price, description, status, featured_image_storage, image_gallery_storage, primary_category_id, custom_fields, categories:primary_category_id(name)', { count: 'exact' })
+      .select('id, name, sku, regular_price, cost_price, description, status, featured_image_storage, image_gallery_storage, primary_category_id, custom_fields, categories:primary_category_id(name)', { count: 'exact' })
       .eq('vendor_id', vendorId);
 
     // Apply filters
@@ -111,7 +111,7 @@ export async function GET(request: NextRequest) {
         name: product.name,
         sku: product.sku || '',
         category: product.categories?.name || 'Uncategorized', // Get category from primary_category_id relation
-        price: parseFloat(product.price) || 0,
+        price: parseFloat(product.regular_price) || 0,
         cost_price: product.cost_price ? parseFloat(product.cost_price) : undefined,
         description: product.description || '',
         status: product.status || 'pending',
