@@ -2,6 +2,7 @@
 
 import { X, Eye, EyeOff } from 'lucide-react';
 import SectionHeader from '@/components/ui/SectionHeader';
+import { ds, cn } from '@/components/ds';
 
 interface DynamicField {
   name: string;
@@ -42,7 +43,7 @@ export default function DynamicFieldsPanel({
   }
 
   const labelClasses = "block text-white/40 text-[10px] uppercase tracking-[0.15em] mb-2 font-black";
-  const inputClasses = "w-full bg-[#0a0a0a] border border-white/10 rounded-xl text-white placeholder-white/20 px-3 py-2.5 focus:outline-none focus:border-white/20 transition-all text-xs";
+  const inputClasses = cn(ds.colors.bg.primary, "w-full border border-white/10 rounded-xl text-white placeholder-white/20 px-3 py-2.5 focus:outline-none focus:border-white/20 transition-all text-xs");
   const descClasses = "text-white/40 text-[10px] mt-1.5";
 
   // Steve Jobs style: Subtle indicator for inherited fields
@@ -81,7 +82,7 @@ export default function DynamicFieldsPanel({
               }`}
               title={isVisible ? 'Visible on storefront' : 'Hidden on storefront'}
             >
-              {isVisible ? <Eye size={12} /> : <EyeOff size={12} />}
+              {isVisible ? <Eye size={12} strokeWidth={1.5} /> : <EyeOff size={12} strokeWidth={1.5} />}
               <span className="text-[8px] font-black uppercase tracking-[0.15em]">
                 {isVisible ? 'Show' : 'Hide'}
               </span>
@@ -201,7 +202,7 @@ export default function DynamicFieldsPanel({
                         }}
                         className="text-white/60 hover:text-red-400 transition-colors"
                       >
-                        <X size={10} />
+                        <X size={10} strokeWidth={1.5} />
                       </button>
                     </div>
                   ))}
@@ -240,7 +241,7 @@ export default function DynamicFieldsPanel({
                 type="checkbox"
                 checked={fieldValue === true || fieldValue === 'true'}
                 onChange={(e) => handleChange(e.target.checked)}
-                className="w-4 h-4 rounded border-white/20 bg-[#0a0a0a]"
+                className={cn(ds.colors.bg.primary, "w-4 h-4 rounded border-white/20")}
               />
               <div>
                 <span className="text-white text-[10px] uppercase tracking-[0.15em] font-black" style={{ fontWeight: 900 }}>{displayLabel}</span>
@@ -286,7 +287,7 @@ export default function DynamicFieldsPanel({
   });
 
   return (
-    <div className="bg-[#141414] border border-white/5 rounded-2xl p-4">
+    <div className={cn(ds.components.card, "rounded-2xl")}>
       <SectionHeader>Product Attributes</SectionHeader>
 
       <div className="space-y-6">

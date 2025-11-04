@@ -16,7 +16,7 @@ export default function ProductFormHeader({ inputMode }: ProductFormHeaderProps)
           className="inline-flex items-center gap-1.5 text-white/40 hover:text-white text-[9px] uppercase tracking-[0.15em] mb-3 transition-all font-black"
           style={{ fontWeight: 900 }}
         >
-          <ArrowLeft size={10} strokeWidth={3} />
+          <ArrowLeft size={10} strokeWidth={1.5} />
           Back
         </Link>
 

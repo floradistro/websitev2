@@ -295,13 +295,13 @@ export default function ProductBasicInfo({
           </div>
           {formData.product_visibility === 'internal' && (
             <p className="text-green-400/60 text-[9px] mt-2 flex items-center gap-1.5 uppercase tracking-[0.15em]">
-              <CheckCircle size={9} strokeWidth={2.5} />
+              <CheckCircle size={9} strokeWidth={1.5} />
               Will publish immediately
             </p>
           )}
           {formData.product_visibility === 'marketplace' && (
             <p className="text-orange-400/60 text-[9px] mt-2 flex items-center gap-1.5 uppercase tracking-[0.15em]">
-              <AlertCircle size={9} strokeWidth={2.5} />
+              <AlertCircle size={9} strokeWidth={1.5} />
               Will require admin approval
             </p>
           )}

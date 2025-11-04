@@ -58,7 +58,7 @@ export default function PricingPanel({
   const profit = hasValidPrices ? (sellingPrice - costPrice) : 0;
 
   return (
-    <div className="bg-[#141414] border border-white/5 rounded-2xl p-4">
+    <div className={cn(ds.components.card, "rounded-2xl")}>
       <SectionHeader>Pricing</SectionHeader>
 
       <div className="space-y-4">
@@ -71,11 +71,12 @@ export default function PricingPanel({
             <button
               type="button"
               onClick={() => onPricingModeChange('single')}
-              className={`px-3 py-2.5 rounded-xl border transition-all text-[10px] uppercase tracking-[0.15em] font-black ${
+              className={cn(
+                "px-3 py-2.5 rounded-xl border transition-all text-[10px] uppercase tracking-[0.15em] font-black",
                 pricingMode === 'single'
                   ? 'bg-white/10 border-white/20 text-white'
-                  : 'bg-[#0a0a0a] border-white/10 text-white/60 hover:border-white/20'
-              }`}
+                  : cn(ds.colors.bg.primary, 'border-white/10 text-white/60 hover:border-white/20')
+              )}
               style={{ fontWeight: 900 }}
             >
               Single
@@ -83,11 +84,12 @@ export default function PricingPanel({
             <button
               type="button"
               onClick={() => onPricingModeChange('tiered')}
-              className={`px-3 py-2.5 rounded-xl border transition-all text-[10px] uppercase tracking-[0.15em] font-black ${
+              className={cn(
+                "px-3 py-2.5 rounded-xl border transition-all text-[10px] uppercase tracking-[0.15em] font-black",
                 pricingMode === 'tiered'
                   ? 'bg-white/10 border-white/20 text-white'
-                  : 'bg-[#0a0a0a] border-white/10 text-white/60 hover:border-white/20'
-              }`}
+                  : cn(ds.colors.bg.primary, 'border-white/10 text-white/60 hover:border-white/20')
+              )}
               style={{ fontWeight: 900 }}
             >
               Tiered
@@ -112,7 +114,7 @@ export default function PricingPanel({
                   value={formData.cost_price}
                   onChange={(e) => onFormDataChange({...formData, cost_price: e.target.value})}
                   placeholder="10.00"
-                  className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl text-white placeholder-white/20 pl-7 pr-3 py-2.5 focus:outline-none focus:border-white/20 transition-all text-xs"
+                  className={cn(ds.colors.bg.primary, "w-full border border-white/10 rounded-xl text-white placeholder-white/20 pl-7 pr-3 py-2.5 focus:outline-none focus:border-white/20 transition-all text-xs")}
                 />
               </div>
               <p className="text-white/40 text-[10px] mt-1.5">Private</p>
@@ -132,13 +134,13 @@ export default function PricingPanel({
                   value={formData.price}
                   onChange={(e) => onFormDataChange({...formData, price: e.target.value})}
                   placeholder="14.99"
-                  className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl text-white placeholder-white/20 pl-7 pr-3 py-2.5 focus:outline-none focus:border-white/20 transition-all text-xs"
+                  className={cn(ds.colors.bg.primary, "w-full border border-white/10 rounded-xl text-white placeholder-white/20 pl-7 pr-3 py-2.5 focus:outline-none focus:border-white/20 transition-all text-xs")}
                 />
               </div>
 
               {/* SHOW MARGIN CALCULATION */}
               {hasValidPrices && (
-                <div className="mt-2 flex items-center gap-2 bg-[#0a0a0a] border border-white/10 rounded-xl px-3 py-2">
+                <div className={cn(ds.colors.bg.primary, "mt-2 flex items-center gap-2 border border-white/10 rounded-xl px-3 py-2")}>
                   <div className={`font-black text-[10px] uppercase tracking-[0.15em] ${
                     margin >= 40 ? 'text-green-400' : margin >= 25 ? 'text-yellow-400' : 'text-red-400'
                   }`} style={{ fontWeight: 900 }}>
@@ -157,14 +159,14 @@ export default function PricingPanel({
 
       {/* Tiered Pricing Panel */}
       {pricingMode === 'tiered' && (
-        <div className="mt-4 bg-[#0a0a0a] border border-white/10 rounded-2xl p-4">
+        <div className={cn(ds.colors.bg.primary, "mt-4 border border-white/10 rounded-2xl p-4")}>
           <SectionHeader
             as="h3"
             withMargin={false}
             className="mb-3"
             rightContent={
               <div className="flex items-center gap-1.5">
-                <Zap size={11} strokeWidth={2.5} className="text-yellow-400" />
+                <Zap size={11} strokeWidth={1.5} className="text-yellow-400" />
                 <span className="text-yellow-400 text-[9px] uppercase tracking-[0.15em] font-black" style={{ fontWeight: 900 }}>
                   Quick Pick
                 </span>
@@ -179,7 +181,7 @@ export default function PricingPanel({
             <button
               type="button"
               onClick={() => onApplyTemplate('budget')}
-              className="bg-[#141414] border border-white/10 rounded-xl px-2.5 py-2 text-[9px] uppercase tracking-[0.15em] text-white/60 hover:text-white hover:border-white/20 hover:bg-white/5 font-black transition-all"
+              className={cn(ds.components.card, "rounded-xl px-2.5 py-2 text-[9px] uppercase tracking-[0.15em] text-white/60 hover:text-white hover:border-white/20 hover:bg-white/5 font-black transition-all")}
               style={{ fontWeight: 900 }}
             >
               Budget
@@ -187,7 +189,7 @@ export default function PricingPanel({
             <button
               type="button"
               onClick={() => onApplyTemplate('mid')}
-              className="bg-[#141414] border border-white/10 rounded-xl px-2.5 py-2 text-[9px] uppercase tracking-[0.15em] text-white/60 hover:text-white hover:border-white/20 hover:bg-white/5 font-black transition-all"
+              className={cn(ds.components.card, "rounded-xl px-2.5 py-2 text-[9px] uppercase tracking-[0.15em] text-white/60 hover:text-white hover:border-white/20 hover:bg-white/5 font-black transition-all")}
               style={{ fontWeight: 900 }}
             >
               Mid-Shelf
@@ -195,7 +197,7 @@ export default function PricingPanel({
             <button
               type="button"
               onClick={() => onApplyTemplate('premium')}
-              className="bg-[#141414] border border-white/10 rounded-xl px-2.5 py-2 text-[9px] uppercase tracking-[0.15em] text-white/60 hover:text-white hover:border-white/20 hover:bg-white/5 font-black transition-all"
+              className={cn(ds.components.card, "rounded-xl px-2.5 py-2 text-[9px] uppercase tracking-[0.15em] text-white/60 hover:text-white hover:border-white/20 hover:bg-white/5 font-black transition-all")}
               style={{ fontWeight: 900 }}
             >
               Premium
@@ -203,7 +205,7 @@ export default function PricingPanel({
             <button
               type="button"
               onClick={() => onApplyTemplate('exotic')}
-              className="bg-[#141414] border border-white/10 rounded-xl px-2.5 py-2 text-[9px] uppercase tracking-[0.15em] text-white/60 hover:text-white hover:border-white/20 hover:bg-white/5 font-black transition-all"
+              className={cn(ds.components.card, "rounded-xl px-2.5 py-2 text-[9px] uppercase tracking-[0.15em] text-white/60 hover:text-white hover:border-white/20 hover:bg-white/5 font-black transition-all")}
               style={{ fontWeight: 900 }}
             >
               Exotic
@@ -223,7 +225,7 @@ export default function PricingPanel({
                 value={newTierWeight}
                 onChange={(e) => onNewTierChange('weight', e.target.value)}
                 placeholder="1g"
-                className="w-full bg-[#141414] border border-white/10 rounded-xl text-white placeholder-white/20 px-3 py-2.5 text-xs focus:outline-none focus:border-white/20 transition-all"
+                className={cn(ds.components.card, "w-full rounded-xl text-white placeholder-white/20 px-3 py-2.5 text-xs focus:outline-none focus:border-white/20 transition-all")}
               />
             </div>
             <div>
@@ -233,7 +235,7 @@ export default function PricingPanel({
                 value={newTierQty}
                 onChange={(e) => onNewTierChange('qty', e.target.value)}
                 placeholder="1"
-                className="w-full bg-[#141414] border border-white/10 rounded-xl text-white placeholder-white/20 px-3 py-2.5 text-xs focus:outline-none focus:border-white/20 transition-all"
+                className={cn(ds.components.card, "w-full rounded-xl text-white placeholder-white/20 px-3 py-2.5 text-xs focus:outline-none focus:border-white/20 transition-all")}
               />
             </div>
             <div>
@@ -246,7 +248,7 @@ export default function PricingPanel({
                   value={newTierPrice}
                   onChange={(e) => onNewTierChange('price', e.target.value)}
                   placeholder="14.99"
-                  className="w-full bg-[#141414] border border-white/10 rounded-xl text-white placeholder-white/20 pl-7 pr-3 py-2.5 text-xs focus:outline-none focus:border-white/20 transition-all"
+                  className={cn(ds.components.card, "w-full rounded-xl text-white placeholder-white/20 pl-7 pr-3 py-2.5 text-xs focus:outline-none focus:border-white/20 transition-all")}
                 />
               </div>
             </div>
@@ -257,7 +259,7 @@ export default function PricingPanel({
                 className="w-full px-3 py-2.5 bg-white/10 border border-white/20 rounded-xl text-white hover:bg-white/20 hover:border-white/30 font-black transition-all flex items-center justify-center gap-1.5 text-[10px] uppercase tracking-[0.15em]"
                 style={{ fontWeight: 900 }}
               >
-                <Plus size={11} strokeWidth={2.5} />
+                <Plus size={11} strokeWidth={1.5} />
                 Add
               </button>
             </div>
@@ -271,7 +273,7 @@ export default function PricingPanel({
               </h4>
               <div className="space-y-2">
                 {pricingTiers.map((tier, index) => (
-                  <div key={index} className="bg-[#141414] border border-white/10 rounded-xl p-3 flex items-center gap-3">
+                  <div key={index} className={cn(ds.components.card, "rounded-xl p-3 flex items-center gap-3")}>
                     <div className="flex-1 grid grid-cols-3 gap-2">
                       <input
                         type="text"
@@ -307,7 +309,7 @@ export default function PricingPanel({
                       onClick={() => onRemoveTier(index)}
                       className="text-red-400 hover:text-red-300 p-1.5 rounded-xl hover:bg-red-500/10 transition-all"
                     >
-                      <X size={14} />
+                      <X size={14} strokeWidth={1.5} />
                     </button>
                   </div>
                 ))}

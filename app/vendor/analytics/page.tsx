@@ -32,8 +32,9 @@ function VendorAnalyticsContent() {
   const { data: analyticsResponse, loading, error, refetch } = useVendorAnalytics(timeRange);
 
   // Type-safe data extraction with defaults
+  // API returns { success: true, analytics: {...} }
   const analytics: VendorAnalyticsData = mergeWithDefaults(
-    analyticsResponse as VendorAnalyticsData | null,
+    (analyticsResponse as any)?.analytics || null,
     createDefaultVendorAnalytics()
   );
 

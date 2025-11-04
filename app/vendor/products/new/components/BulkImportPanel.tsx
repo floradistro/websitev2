@@ -5,6 +5,7 @@ import { Upload, Loader, ChevronLeft, ChevronRight, X, Sparkles, CheckCircle } f
 import SectionHeader from '@/components/ui/SectionHeader';
 import { POSInput, POSLabel, POSSelect, POSTextarea } from '@/components/ui';
 import { PricingBlueprint } from '@/lib/types/product';
+import { ds, cn } from '@/components/ds';
 
 interface Category {
   id: string;
@@ -133,7 +134,7 @@ export default function BulkImportPanel({
 
   return (
     <div className="space-y-4">
-      <div className="bg-[#141414] border border-white/5 rounded-2xl p-4">
+      <div className={cn(ds.components.card, "rounded-2xl")}>
         <SectionHeader>Bulk Product Import</SectionHeader>
 
         {/* Category Selector */}
@@ -220,13 +221,13 @@ export default function BulkImportPanel({
 
           {/* Uploaded Images Preview */}
           {bulkImages.length > 0 && (
-            <div className="mt-3 bg-[#0a0a0a] border border-white/5 rounded-xl p-3">
+            <div className={cn(ds.colors.bg.primary, "mt-3 border border-white/5 rounded-xl p-3")}>
               <div className="text-white/40 text-[9px] uppercase tracking-[0.15em] mb-2 font-black" style={{ fontWeight: 900 }}>
                 Uploaded Images ({bulkImages.length})
               </div>
               <div className="grid grid-cols-4 gap-2">
                 {bulkImages.map((img, idx) => (
-                  <div key={idx} className="relative aspect-square bg-[#141414] border border-white/10 rounded-lg overflow-hidden group">
+                  <div key={idx} className={cn(ds.components.card, "relative aspect-square rounded-lg overflow-hidden group")}>
                     <img src={img.url} alt="" className="w-full h-full object-cover" />
                     {img.matchedTo && (
                       <div className="absolute bottom-0 left-0 right-0 bg-green-500/20 border-t border-green-500/40 p-1">
@@ -244,7 +245,7 @@ export default function BulkImportPanel({
 
         {/* AI Enrichment Options */}
         {bulkCategory && bulkInput.trim() && (
-          <div className="mt-4 bg-[#141414] border border-white/5 rounded-2xl p-4">
+          <div className={cn(ds.components.card, "mt-4 rounded-2xl")}>
             <SectionHeader withMargin={false} className="mb-3">
               <div className="flex items-center gap-2">
                 <Sparkles size={12} className="text-white/60" />
@@ -262,7 +263,7 @@ export default function BulkImportPanel({
                 onChange={(e) => setCustomPrompt(e.target.value)}
                 placeholder="e.g., 'Focus on fruity flavors' or 'Emphasize relaxing effects'"
                 rows={2}
-                className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl text-white placeholder-white/20 px-3 py-2.5 focus:outline-none focus:border-white/20 transition-all resize-none text-[10px]"
+                className={cn(ds.colors.bg.primary, "w-full border border-white/10 rounded-xl text-white placeholder-white/20 px-3 py-2.5 focus:outline-none focus:border-white/20 transition-all resize-none text-[10px]")}
               />
               <p className="text-white/30 text-[8px] mt-1.5">
                 Add context to improve AI accuracy for all products
@@ -283,11 +284,12 @@ export default function BulkImportPanel({
                       key={field.id}
                       type="button"
                       onClick={() => toggleField(field.id)}
-                      className={`px-3 py-2.5 rounded-xl border transition-all text-[9px] uppercase tracking-[0.15em] font-black text-left flex items-center gap-2 ${
+                      className={cn(
+                        "px-3 py-2.5 rounded-xl border transition-all text-[9px] uppercase tracking-[0.15em] font-black text-left flex items-center gap-2 cursor-pointer",
                         isSelected
                           ? 'bg-white/10 border-white/20 text-white'
-                          : 'bg-[#0a0a0a] border-white/10 text-white/40 hover:border-white/20'
-                      } cursor-pointer`}
+                          : cn(ds.colors.bg.primary, 'border-white/10 text-white/40 hover:border-white/20')
+                      )}
                       style={{ fontWeight: 900 }}
                     >
                       <span className="text-[14px]">{field.icon}</span>
@@ -327,7 +329,7 @@ export default function BulkImportPanel({
 
         {/* Review Products (after AI enrichment) */}
         {bulkProducts.length > 0 && (
-          <div className="mt-4 bg-[#0a0a0a] border border-white/10 rounded-xl p-4">
+          <div className={cn(ds.colors.bg.primary, "mt-4 border border-white/10 rounded-xl p-4")}>
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-white text-[10px] uppercase tracking-[0.15em] font-black" style={{ fontWeight: 900 }}>
                 Review & Edit Products ({currentReviewIndex + 1}/{bulkProducts.length})
@@ -361,12 +363,12 @@ export default function BulkImportPanel({
                   type="text"
                   value={bulkProducts[currentReviewIndex].name}
                   onChange={(e) => handleProductFieldChange(currentReviewIndex, 'name', e.target.value)}
-                  className="bg-[#141414]"
+                  className={ds.components.card}
                 />
 
                 {/* Matched Image */}
                 {bulkProducts[currentReviewIndex].matched_image_url && (
-                  <div className="bg-[#141414] border border-white/10 rounded-xl p-2">
+                  <div className={cn(ds.components.card, "rounded-xl p-2")}>
                     <div className="text-white/40 text-[9px] uppercase tracking-[0.15em] mb-2 font-black" style={{ fontWeight: 900 }}>
                       Matched Image
                     </div>
@@ -389,7 +391,7 @@ export default function BulkImportPanel({
                         step="0.01"
                         value={bulkProducts[currentReviewIndex].price}
                         onChange={(e) => handleProductFieldChange(currentReviewIndex, 'price', e.target.value)}
-                        className="w-full bg-[#141414] border border-white/10 rounded-xl text-white pl-6 pr-3 py-2 text-[10px]"
+                        className={cn(ds.components.card, "w-full rounded-xl text-white pl-6 pr-3 py-2 text-[10px]")}
                       />
                     </div>
                   </div>
@@ -402,7 +404,7 @@ export default function BulkImportPanel({
                         step="0.01"
                         value={bulkProducts[currentReviewIndex].cost_price || ''}
                         onChange={(e) => handleProductFieldChange(currentReviewIndex, 'cost_price', e.target.value)}
-                        className="w-full bg-[#141414] border border-white/10 rounded-xl text-white pl-6 pr-3 py-2 text-[10px]"
+                        className={cn(ds.components.card, "w-full rounded-xl text-white pl-6 pr-3 py-2 text-[10px]")}
                       />
                     </div>
                   </div>
@@ -419,7 +421,7 @@ export default function BulkImportPanel({
                         type="text"
                         value={bulkProducts[currentReviewIndex].custom_fields[fieldKey] || ''}
                         onChange={(e) => handleProductFieldChange(currentReviewIndex, `custom_fields.${fieldKey}`, e.target.value)}
-                        className="w-full bg-[#141414] border border-white/10 rounded-xl text-white px-3 py-2 text-[10px]"
+                        className={cn(ds.components.card, "w-full rounded-xl text-white px-3 py-2 text-[10px]")}
                       />
                     </div>
                   ))}
@@ -472,7 +474,7 @@ export default function BulkImportPanel({
                 type="button"
                 onClick={onCancel}
                 disabled={bulkProcessing}
-                className="flex-1 px-4 py-2 bg-[#141414] border border-white/10 text-white/60 rounded-xl text-[9px] uppercase tracking-[0.15em] font-black hover:text-white hover:border-white/20 transition-all disabled:opacity-30"
+                className={cn(ds.components.card, "flex-1 px-4 py-2 text-white/60 rounded-xl text-[9px] uppercase tracking-[0.15em] font-black hover:text-white hover:border-white/20 transition-all disabled:opacity-30")}
                 style={{ fontWeight: 900 }}
               >
                 Cancel

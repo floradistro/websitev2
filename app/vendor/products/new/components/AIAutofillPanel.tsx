@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Sparkles, X, CheckCircle, Loader } from 'lucide-react';
 import SectionHeader from '@/components/ui/SectionHeader';
 import { DynamicField, EnrichedProductData } from '@/lib/types/product';
+import { ds, cn } from '@/components/ds';
 
 interface AIAutofillPanelProps {
   productName: string;
@@ -75,11 +76,11 @@ export default function AIAutofillPanel({
   };
 
   return (
-    <div className="bg-[#141414] border border-white/5 rounded-2xl p-4 mt-4">
+    <div className={cn(ds.components.card, "rounded-2xl p-4 mt-4")}>
       <div className="flex items-center justify-between mb-4">
         <SectionHeader withMargin={false}>
           <div className="flex items-center gap-2">
-            <Sparkles size={12} className="text-white/60" />
+            <Sparkles size={12} strokeWidth={1.5} className="text-white/60" />
             AI Autofill
           </div>
         </SectionHeader>
@@ -89,7 +90,7 @@ export default function AIAutofillPanel({
             onClick={onClose}
             className="text-white/40 hover:text-white transition-colors p-1"
           >
-            <X size={14} />
+            <X size={14} strokeWidth={1.5} />
           </button>
         )}
       </div>
@@ -106,7 +107,7 @@ export default function AIAutofillPanel({
               onChange={(e) => setCustomPrompt(e.target.value)}
               placeholder="e.g., 'Focus on the sweet candy-like flavors' or 'Emphasize relaxing effects'"
               rows={2}
-              className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl text-white placeholder-white/20 px-3 py-2.5 focus:outline-none focus:border-white/20 transition-all resize-none text-[10px]"
+              className={cn(ds.colors.bg.primary, "w-full border border-white/10 rounded-xl text-white placeholder-white/20 px-3 py-2.5 focus:outline-none focus:border-white/20 transition-all resize-none text-[10px]")}
             />
             <p className="text-white/30 text-[8px] mt-1.5">
               Add context or specific details you want AI to include
@@ -133,16 +134,18 @@ export default function AIAutofillPanel({
                     type="button"
                     onClick={() => isAvailable && toggleField(field.id)}
                     disabled={!isAvailable}
-                    className={`px-3 py-2.5 rounded-xl border transition-all text-[9px] uppercase tracking-[0.15em] font-black text-left flex items-center gap-2 ${
+                    className={cn(
+                      "px-3 py-2.5 rounded-xl border transition-all text-[9px] uppercase tracking-[0.15em] font-black text-left flex items-center gap-2",
                       isSelected
                         ? 'bg-white/10 border-white/20 text-white'
-                        : 'bg-[#0a0a0a] border-white/10 text-white/40 hover:border-white/20'
-                    } ${!isAvailable ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer'}`}
+                        : cn(ds.colors.bg.primary, 'border-white/10 text-white/40 hover:border-white/20'),
+                      !isAvailable ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer'
+                    )}
                     style={{ fontWeight: 900 }}
                   >
                     <span className="text-[14px]">{field.icon}</span>
                     <span className="flex-1">{field.label}</span>
-                    {isSelected && <CheckCircle size={10} strokeWidth={3} />}
+                    {isSelected && <CheckCircle size={10} strokeWidth={1.5} />}
                   </button>
                 );
               })}
@@ -167,7 +170,7 @@ export default function AIAutofillPanel({
               </>
             ) : (
               <>
-                <Sparkles size={12} />
+                <Sparkles size={12} strokeWidth={1.5} />
                 Generate AI Suggestions
               </>
             )}
@@ -176,7 +179,7 @@ export default function AIAutofillPanel({
       ) : (
         <>
           {/* AI Suggestions Preview */}
-          <div className="bg-[#0a0a0a] border border-white/10 rounded-xl p-3 mb-3 space-y-3 max-h-64 overflow-y-auto">
+          <div className={cn(ds.colors.bg.primary, "border border-white/10 rounded-xl p-3 mb-3 space-y-3 max-h-64 overflow-y-auto")}>
             {selectedFields.has('description') && aiSuggestions?.description && (
               <div>
                 <div className="text-white/40 text-[9px] uppercase tracking-[0.15em] mb-1.5 font-black" style={{ fontWeight: 900 }}>
@@ -259,7 +262,7 @@ export default function AIAutofillPanel({
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-2.5 bg-[#0a0a0a] border border-white/10 rounded-xl text-white/60 hover:text-white hover:border-white/20 transition-all text-[9px] uppercase tracking-[0.15em] font-black"
+              className={cn(ds.colors.bg.primary, "flex-1 px-4 py-2.5 border border-white/10 rounded-xl text-white/60 hover:text-white hover:border-white/20 transition-all text-[9px] uppercase tracking-[0.15em] font-black")}
               style={{ fontWeight: 900 }}
             >
               Cancel
@@ -270,7 +273,7 @@ export default function AIAutofillPanel({
               className="flex-1 px-4 py-2.5 bg-white/10 border-2 border-white/20 text-white rounded-xl hover:bg-white/20 hover:border-white/30 transition-all flex items-center justify-center gap-2 text-[9px] uppercase tracking-[0.15em] font-black"
               style={{ fontWeight: 900 }}
             >
-              <CheckCircle size={11} strokeWidth={3} />
+              <CheckCircle size={11} strokeWidth={1.5} />
               Apply Selected
             </button>
           </div>

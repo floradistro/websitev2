@@ -68,7 +68,7 @@ export default function ProductsClient() {
   }, [products]);
 
   return (
-    <main className="min-h-screen bg-[#0a0a0a] p-6" role="main" aria-label="Product management">
+    <main className={cn(ds.colors.bg.primary, "min-h-screen p-6")} role="main" aria-label="Product management">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <ProductsHeader totalProducts={total} isLoading={isLoading} />

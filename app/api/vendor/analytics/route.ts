@@ -124,17 +124,20 @@ export async function GET(request: NextRequest) {
       },
       products: {
         total: productsData?.length || 0,
-        topPerformers
+        topPerformers,
+        underPerformers: [] // Empty for now
       },
       costs: {
         totalCost,
         avgMargin,
-        profitability: totalRevenue > 0 ? ((totalRevenue - totalCost) / totalRevenue) * 100 : 0
+        profitability: totalRevenue > 0 ? ((totalRevenue - totalCost) / totalRevenue) * 100 : 0,
+        grossProfit: totalRevenue - totalCost
       },
       inventory: {
         turnoverRate,
         stockValue,
-        lowStockCount
+        lowStockCount,
+        daysOfInventory: turnoverRate > 0 ? 365 / turnoverRate : 0
       }
     };
 

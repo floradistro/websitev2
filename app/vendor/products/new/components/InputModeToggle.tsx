@@ -1,5 +1,7 @@
 "use client";
 
+import { ds, cn } from '@/components/ds';
+
 interface InputModeToggleProps {
   inputMode: 'single' | 'bulk';
   onModeChange: (mode: 'single' | 'bulk') => void;
@@ -12,11 +14,12 @@ export default function InputModeToggle({ inputMode, onModeChange }: InputModeTo
         <button
           type="button"
           onClick={() => onModeChange('single')}
-          className={`px-3 py-2 rounded-xl border transition-all text-[10px] uppercase tracking-[0.15em] font-black ${
+          className={cn(
+            "px-3 py-2 rounded-xl border transition-all text-[10px] uppercase tracking-[0.15em] font-black",
             inputMode === 'single'
               ? 'bg-white/10 border-white/20 text-white'
-              : 'bg-[#0a0a0a] border-white/10 text-white/60 hover:border-white/20'
-          }`}
+              : cn(ds.colors.bg.primary, 'border-white/10 text-white/60 hover:border-white/20')
+          )}
           style={{ fontWeight: 900 }}
         >
           Single
@@ -24,11 +27,12 @@ export default function InputModeToggle({ inputMode, onModeChange }: InputModeTo
         <button
           type="button"
           onClick={() => onModeChange('bulk')}
-          className={`px-3 py-2 rounded-xl border transition-all text-[10px] uppercase tracking-[0.15em] font-black ${
+          className={cn(
+            "px-3 py-2 rounded-xl border transition-all text-[10px] uppercase tracking-[0.15em] font-black",
             inputMode === 'bulk'
               ? 'bg-white/10 border-white/20 text-white'
-              : 'bg-[#0a0a0a] border-white/10 text-white/60 hover:border-white/20'
-          }`}
+              : cn(ds.colors.bg.primary, 'border-white/10 text-white/60 hover:border-white/20')
+          )}
           style={{ fontWeight: 900 }}
         >
           Bulk
