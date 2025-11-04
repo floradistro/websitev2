@@ -6,13 +6,18 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-// Simple admin token verification
-function verifyAdminToken(token: string): boolean {
+// Admin token verification (supports admin and readonly roles)
+function verifyAdminToken(token: string): { valid: boolean; role?: string; username?: string } {
   try {
     const decoded = JSON.parse(Buffer.from(token, 'base64').toString());
-    return decoded.username === 'admin' && decoded.role === 'admin';
+    const isValid = (decoded.role === 'admin' || decoded.role === 'readonly') && decoded.username;
+    return {
+      valid: isValid,
+      role: decoded.role,
+      username: decoded.username
+    };
   } catch {
-    return false;
+    return { valid: false };
   }
 }
 
@@ -22,12 +27,23 @@ export async function GET(request: NextRequest) {
     const authHeader = request.headers.get('authorization');
     const token = authHeader?.replace('Bearer ', '');
 
-    if (!token || !verifyAdminToken(token)) {
+    if (!token) {
       return NextResponse.json(
         { error: 'Unauthorized - Admin access required' },
         { status: 401 }
       );
     }
+
+    const authResult = verifyAdminToken(token);
+    if (!authResult.valid) {
+      return NextResponse.json(
+        { error: 'Unauthorized - Invalid token' },
+        { status: 401 }
+      );
+    }
+
+    const userRole = authResult.role;
+    const isReadOnly = userRole === 'readonly';
 
     // Get vendors with product counts
     const { data: vendors, error } = await supabase
@@ -75,7 +91,7 @@ export async function GET(request: NextRequest) {
 
       return {
         id: vendor.id,
-        email: vendor.email,
+        email: isReadOnly ? '•••@•••.•••' : vendor.email, // Hide emails for readonly users
         name: vendor.store_name,
         created_at: vendor.created_at,
         last_active: vendor.updated_at || vendor.created_at,

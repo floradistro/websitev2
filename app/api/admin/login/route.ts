@@ -6,27 +6,44 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-// Simple admin credentials
-const ADMIN_USERNAME = 'admin';
-const ADMIN_PASSWORD = 'floyddeservedit';
+// Admin users with roles
+const ADMIN_USERS = [
+  {
+    username: 'admin',
+    password: 'floyddeservedit',
+    role: 'admin' as const,
+    name: 'Super Admin'
+  },
+  {
+    username: 'readonly',
+    password: 'viewonly2024',
+    role: 'readonly' as const,
+    name: 'Read Only'
+  }
+];
 
 export async function POST(request: NextRequest) {
   try {
     const { username, password } = await request.json();
 
-    // Validate credentials
-    if (username !== ADMIN_USERNAME || password !== ADMIN_PASSWORD) {
+    // Find matching user
+    const user = ADMIN_USERS.find(
+      u => u.username === username && u.password === password
+    );
+
+    if (!user) {
       return NextResponse.json(
         { error: 'Invalid credentials' },
         { status: 401 }
       );
     }
 
-    // Generate a simple session token (you can make this more secure if needed)
+    // Generate session token with role
     const sessionToken = Buffer.from(
       JSON.stringify({
-        username: ADMIN_USERNAME,
-        role: 'admin',
+        username: user.username,
+        name: user.name,
+        role: user.role,
         timestamp: Date.now()
       })
     ).toString('base64');
@@ -35,8 +52,9 @@ export async function POST(request: NextRequest) {
       success: true,
       token: sessionToken,
       user: {
-        username: ADMIN_USERNAME,
-        role: 'admin'
+        username: user.username,
+        name: user.name,
+        role: user.role
       }
     });
 

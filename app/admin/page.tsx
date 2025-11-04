@@ -76,6 +76,8 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d'>('30d');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userRole, setUserRole] = useState<'admin' | 'readonly'>('admin');
+  const [userName, setUserName] = useState('Admin');
 
   // Check authentication on mount
   useEffect(() => {
@@ -84,6 +86,17 @@ export default function AdminDashboard() {
       router.push('/admin/login');
       return;
     }
+
+    try {
+      const { user } = JSON.parse(auth);
+      setUserRole(user.role || 'admin');
+      setUserName(user.name || 'Admin');
+    } catch (e) {
+      // Invalid auth data
+      router.push('/admin/login');
+      return;
+    }
+
     setIsAuthenticated(true);
   }, [router]);
 
@@ -177,13 +190,33 @@ export default function AdminDashboard() {
       <div className="border-b border-white/5 bg-gradient-to-r from-white/[0.02] to-transparent">
         <div className="max-w-[1800px] mx-auto px-8 py-6">
           <div className="flex items-center justify-between">
-            <div>
-              <h1 className={cn(ds.typography.size.xl, ds.typography.weight.bold, ds.colors.text.primary, "mb-1")}>
-                WhaleTools Command Center
-              </h1>
-              <p className={cn(ds.typography.size.sm, ds.colors.text.tertiary)}>
-                Real-time SaaS platform intelligence · Last updated {new Date().toLocaleTimeString()}
-              </p>
+            <div className="flex items-center gap-4">
+              <div>
+                <h1 className={cn(ds.typography.size.xl, ds.typography.weight.bold, ds.colors.text.primary, "mb-1")}>
+                  WhaleTools Command Center
+                </h1>
+                <p className={cn(ds.typography.size.sm, ds.colors.text.tertiary)}>
+                  Real-time SaaS platform intelligence · Last updated {new Date().toLocaleTimeString()}
+                </p>
+              </div>
+
+              {/* Role Badge */}
+              <div className={cn(
+                "px-3 py-1.5 rounded-lg border",
+                userRole === 'admin'
+                  ? "bg-blue-500/10 border-blue-500/30 text-blue-400"
+                  : "bg-purple-500/10 border-purple-500/30 text-purple-400"
+              )}>
+                <div className="flex items-center gap-2">
+                  <div className={cn(
+                    "w-2 h-2 rounded-full",
+                    userRole === 'admin' ? "bg-blue-400" : "bg-purple-400"
+                  )} />
+                  <span className={cn(ds.typography.size.xs, ds.typography.weight.medium)}>
+                    {userName}
+                  </span>
+                </div>
+              </div>
             </div>
 
             {/* Time Range Selector + Logout */}

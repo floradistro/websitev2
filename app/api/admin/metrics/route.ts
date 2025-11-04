@@ -6,13 +6,18 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-// Simple admin token verification
-function verifyAdminToken(token: string): boolean {
+// Admin token verification (supports admin and readonly roles)
+function verifyAdminToken(token: string): { valid: boolean; role?: string; username?: string } {
   try {
     const decoded = JSON.parse(Buffer.from(token, 'base64').toString());
-    return decoded.username === 'admin' && decoded.role === 'admin';
+    const isValid = (decoded.role === 'admin' || decoded.role === 'readonly') && decoded.username;
+    return {
+      valid: isValid,
+      role: decoded.role,
+      username: decoded.username
+    };
   } catch {
-    return false;
+    return { valid: false };
   }
 }
 
@@ -22,12 +27,23 @@ export async function GET(request: NextRequest) {
     const authHeader = request.headers.get('authorization');
     const token = authHeader?.replace('Bearer ', '');
 
-    if (!token || !verifyAdminToken(token)) {
+    if (!token) {
       return NextResponse.json(
         { error: 'Unauthorized - Admin access required' },
         { status: 401 }
       );
     }
+
+    const authResult = verifyAdminToken(token);
+    if (!authResult.valid) {
+      return NextResponse.json(
+        { error: 'Unauthorized - Invalid token' },
+        { status: 401 }
+      );
+    }
+
+    // Both admin and readonly can view metrics
+    const userRole = authResult.role;
     const { searchParams } = new URL(request.url);
     const range = searchParams.get('range') || '30d';
 
