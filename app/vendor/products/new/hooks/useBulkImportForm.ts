@@ -474,10 +474,6 @@ export function useBulkImportForm({
             productData.pricing_tiers = product.pricing_tiers;
           }
 
-          console.log('📦 Submitting product:', product.name);
-          console.log('📦 Product data:', JSON.stringify(productData, null, 2));
-          console.log('📦 Vendor ID:', vendorId);
-
           // Submit product to API
           const response = await axios.post('/api/vendor/products', productData, {
             headers: {
@@ -489,10 +485,8 @@ export function useBulkImportForm({
 
           if (response.data.success) {
             successCount++;
-            console.log(`✅ Created: ${product.name}`);
           } else {
             failCount++;
-            console.error(`❌ Failed: ${product.name}`, response.data);
           }
         } catch (err: any) {
           failCount++;

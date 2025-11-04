@@ -29,7 +29,7 @@ export interface TrendData {
 
 export interface RevenueMetrics {
   total: number;
-  trend: TrendData;
+  trend: number | TrendData; // Support both old (number) and new (TrendData) formats
   data: RevenueDataPoint[];
 }
 
@@ -41,9 +41,9 @@ export interface RevenueDataPoint {
 
 export interface OrderMetrics {
   total: number;
-  trend: TrendData;
+  trend: number | TrendData; // Support both old (number) and new (TrendData) formats
   avgValue: number;
-  avgItems: number;
+  avgItems?: number; // Optional for backward compatibility
 }
 
 export interface ProductPerformer {
@@ -65,7 +65,7 @@ export interface CostMetrics {
   totalCost: number;
   avgMargin: number;
   profitability: number;
-  grossProfit: number;
+  grossProfit?: number; // Optional for backward compatibility
 }
 
 export interface InventoryMetrics {

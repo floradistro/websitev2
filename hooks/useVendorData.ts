@@ -12,12 +12,64 @@ interface CacheEntry<T> {
   timestamp: number;
 }
 
-// In-memory cache
+// In-memory cache with size limit
+const MAX_CACHE_SIZE = 50; // Limit cache to 50 entries
 const cache = new Map<string, CacheEntry<any>>();
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
 // Ongoing requests to prevent duplicate fetches
 const pendingRequests = new Map<string, Promise<any>>();
+
+// Cache cleanup - evict oldest entries when cache is full
+function evictOldestCacheEntries() {
+  if (cache.size >= MAX_CACHE_SIZE) {
+    // Sort by timestamp and remove oldest 25%
+    const entries = Array.from(cache.entries());
+    entries.sort((a, b) => a[1].timestamp - b[1].timestamp);
+    const toRemove = Math.floor(MAX_CACHE_SIZE * 0.25);
+
+    for (let i = 0; i < toRemove; i++) {
+      cache.delete(entries[i][0]);
+    }
+  }
+}
+
+// Periodic cache cleanup - remove expired entries
+let cleanupInterval: NodeJS.Timeout | null = null;
+
+function startCacheCleanup() {
+  if (cleanupInterval) return;
+
+  cleanupInterval = setInterval(() => {
+    const now = Date.now();
+    for (const [key, entry] of cache.entries()) {
+      if (now - entry.timestamp > CACHE_TTL) {
+        cache.delete(key);
+      }
+    }
+  }, 60 * 1000); // Run every minute
+}
+
+function stopCacheCleanup() {
+  if (cleanupInterval) {
+    clearInterval(cleanupInterval);
+    cleanupInterval = null;
+  }
+}
+
+// Start cleanup when module loads
+if (typeof window !== 'undefined') {
+  startCacheCleanup();
+
+  // Cleanup on unmount (page unload)
+  if (typeof window !== 'undefined') {
+    window.addEventListener('beforeunload', () => {
+      stopCacheCleanup();
+      cache.clear();
+      pendingRequests.clear();
+    });
+  }
+}
 
 export function useVendorData<T>(
   endpoint: string,
@@ -104,6 +156,9 @@ export function useVendorData<T>(
           result = response.data;
         }
         
+        // Evict old entries before adding new one
+        evictOldestCacheEntries();
+
         // Cache the result
         cache.set(cacheKey, {
           data: result,

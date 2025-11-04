@@ -21,14 +21,17 @@ import {
 import { useAppAuth } from '@/context/AppAuthContext';
 import type { MarketingAnalyticsData, TimeRange } from '@/types/analytics';
 import { formatCurrency, formatPercentage, formatNumber } from '@/lib/analytics-utils';
+import { TimeSeriesChart } from '@/components/analytics/TimeSeriesChart';
+import { AnalyticsPageWrapper } from '@/components/analytics/AnalyticsPageWrapper';
 
-export default function AnalyticsPage() {
+function MarketingAnalyticsContent() {
   const { vendor } = useAppAuth();
   const [data, setData] = useState<MarketingAnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [timeRange, setTimeRange] = useState<TimeRange>('30d');
   const [channelFilter, setChannelFilter] = useState<'all' | 'email' | 'sms'>('all');
+  const [activeChartMetric, setActiveChartMetric] = useState<'sent' | 'opened' | 'clicked' | 'revenue'>('revenue');
 
   useEffect(() => {
     if (vendor) {
@@ -40,31 +43,83 @@ export default function AnalyticsPage() {
     if (!vendor) return;
 
     try {
+      setLoading(true);
+      setError(null);
+
       const response = await fetch(
         `/api/vendor/marketing/analytics?range=${timeRange}&channel=${channelFilter}`,
         {
           headers: { 'x-vendor-id': vendor.id },
         }
       );
-      const analyticsData = await response.json();
+
+      if (!response.ok) {
+        throw new Error(`Failed to load analytics: ${response.statusText}`);
+      }
+
+      const analyticsData: MarketingAnalyticsData = await response.json();
       setData(analyticsData);
-    } catch (error) {
-      console.error('Failed to load analytics:', error);
+    } catch (err) {
+      console.error('Failed to load analytics:', err);
+      setError(err instanceof Error ? err.message : 'Failed to load analytics');
     } finally {
       setLoading(false);
     }
   };
 
-  if (loading || !data) {
+  if (loading) {
     return (
       <div className="w-full px-4 lg:px-0 py-6">
-        <div className="text-center py-12 text-white/40">Loading analytics...</div>
+        <div className="text-center py-12">
+          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-white/20 border-r-white"></div>
+          <p className="mt-4 text-white/40">Loading analytics...</p>
+        </div>
       </div>
     );
   }
 
-  const openRate = data.overview.avg_open_rate * 100;
-  const clickRate = data.overview.avg_click_rate * 100;
+  if (error || !data) {
+    return (
+      <div className="w-full px-4 lg:px-0 py-6">
+        <div className="text-center py-12">
+          <p className="text-red-400">{error || 'Failed to load analytics'}</p>
+          <button
+            onClick={loadAnalytics}
+            className="mt-4 px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-white transition"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const { overview, channelPerformance, topCampaigns, timeSeries } = data;
+  const openRate = overview.avgOpenRate * 100;
+  const clickRate = overview.avgClickRate * 100;
+
+  // Helper function to render trend indicator
+  const renderTrendIndicator = (trend: { changePercent: number; direction: 'up' | 'down' | 'neutral' }) => {
+    if (trend.direction === 'neutral') {
+      return (
+        <div className="flex items-center gap-1 text-white/40 text-xs font-bold">
+          <Minus className="w-3 h-3" />
+          0%
+        </div>
+      );
+    }
+
+    const isPositive = trend.direction === 'up';
+    const color = isPositive ? 'text-green-400' : 'text-red-400';
+    const Icon = isPositive ? ArrowUpRight : ArrowDownRight;
+
+    return (
+      <div className={`flex items-center gap-1 ${color} text-xs font-bold`}>
+        <Icon className="w-3 h-3" />
+        {formatPercentage(Math.abs(trend.changePercent), { decimals: 0, showSign: false })}
+      </div>
+    );
+  };
 
   return (
     <div className="w-full px-4 lg:px-0 py-6">
@@ -112,13 +167,10 @@ export default function AnalyticsPage() {
             <div className="w-10 h-10 rounded-xl bg-blue-500/20 flex items-center justify-center">
               <BarChart3 className="w-5 h-5 text-blue-400" />
             </div>
-            <div className="flex items-center gap-1 text-green-400 text-xs font-bold">
-              <ArrowUpRight className="w-3 h-3" />
-              12%
-            </div>
+            {renderTrendIndicator(overview.trends.campaigns)}
           </div>
           <div className="text-2xl font-black text-white mb-1">
-            {data.overview.total_campaigns}
+            {formatNumber(overview.totalCampaigns)}
           </div>
           <div className="text-xs uppercase tracking-wider text-white/60">Total Campaigns</div>
         </motion.div>
@@ -131,12 +183,11 @@ export default function AnalyticsPage() {
             <div className="w-10 h-10 rounded-xl bg-green-500/20 flex items-center justify-center">
               <Eye className="w-5 h-5 text-green-400" />
             </div>
-            <div className="flex items-center gap-1 text-green-400 text-xs font-bold">
-              <ArrowUpRight className="w-3 h-3" />
-              8%
-            </div>
+            {renderTrendIndicator(overview.trends.openRate)}
           </div>
-          <div className="text-2xl font-black text-white mb-1">{openRate.toFixed(1)}%</div>
+          <div className="text-2xl font-black text-white mb-1">
+            {formatPercentage(openRate, { decimals: 1 })}
+          </div>
           <div className="text-xs uppercase tracking-wider text-white/60">Avg Open Rate</div>
         </motion.div>
 
@@ -148,12 +199,11 @@ export default function AnalyticsPage() {
             <div className="w-10 h-10 rounded-xl bg-purple-500/20 flex items-center justify-center">
               <MousePointerClick className="w-5 h-5 text-purple-400" />
             </div>
-            <div className="flex items-center gap-1 text-red-400 text-xs font-bold">
-              <ArrowDownRight className="w-3 h-3" />
-              3%
-            </div>
+            {renderTrendIndicator(overview.trends.clickRate)}
           </div>
-          <div className="text-2xl font-black text-white mb-1">{clickRate.toFixed(1)}%</div>
+          <div className="text-2xl font-black text-white mb-1">
+            {formatPercentage(clickRate, { decimals: 1 })}
+          </div>
           <div className="text-xs uppercase tracking-wider text-white/60">Avg Click Rate</div>
         </motion.div>
 
@@ -165,13 +215,10 @@ export default function AnalyticsPage() {
             <div className="w-10 h-10 rounded-xl bg-yellow-500/20 flex items-center justify-center">
               <DollarSign className="w-5 h-5 text-yellow-400" />
             </div>
-            <div className="flex items-center gap-1 text-green-400 text-xs font-bold">
-              <ArrowUpRight className="w-3 h-3" />
-              24%
-            </div>
+            {renderTrendIndicator(overview.trends.revenue)}
           </div>
           <div className="text-2xl font-black text-white mb-1">
-            ${data.overview.total_revenue.toLocaleString()}
+            {formatCurrency(overview.totalRevenue, { decimals: 0 })}
           </div>
           <div className="text-xs uppercase tracking-wider text-white/60">Total Revenue</div>
         </motion.div>
@@ -196,25 +243,25 @@ export default function AnalyticsPage() {
             <div className="flex items-center justify-between">
               <span className="text-sm text-white/60">Messages Sent</span>
               <span className="text-white font-bold">
-                {data.channel_performance.email.sent.toLocaleString()}
+                {formatNumber(channelPerformance.email.sent)}
               </span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-sm text-white/60">Opened</span>
               <span className="text-white font-bold">
-                {data.channel_performance.email.opened.toLocaleString()}
+                {formatNumber(channelPerformance.email.opened || 0)}
               </span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-sm text-white/60">Clicked</span>
               <span className="text-white font-bold">
-                {data.channel_performance.email.clicked.toLocaleString()}
+                {formatNumber(channelPerformance.email.clicked)}
               </span>
             </div>
             <div className="flex items-center justify-between pt-4 border-t border-white/10">
               <span className="text-sm text-white/60">Revenue</span>
               <span className="text-green-400 font-bold text-lg">
-                ${data.channel_performance.email.revenue.toLocaleString()}
+                {formatCurrency(channelPerformance.email.revenue, { decimals: 0 })}
               </span>
             </div>
           </div>
@@ -228,7 +275,7 @@ export default function AnalyticsPage() {
             <div>
               <h3 className="text-white font-bold">SMS Performance</h3>
               <p className="text-xs text-white/60">
-                {data.channel_performance.sms.campaigns} campaigns
+                {channelPerformance.sms.campaigns} campaigns
               </p>
             </div>
           </div>
@@ -237,25 +284,25 @@ export default function AnalyticsPage() {
             <div className="flex items-center justify-between">
               <span className="text-sm text-white/60">Messages Sent</span>
               <span className="text-white font-bold">
-                {data.channel_performance.sms.sent.toLocaleString()}
+                {formatNumber(channelPerformance.sms.sent)}
               </span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-sm text-white/60">Delivered</span>
               <span className="text-white font-bold">
-                {data.channel_performance.sms.delivered.toLocaleString()}
+                {formatNumber(channelPerformance.sms.delivered || 0)}
               </span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-sm text-white/60">Clicked</span>
               <span className="text-white font-bold">
-                {data.channel_performance.sms.clicked.toLocaleString()}
+                {formatNumber(channelPerformance.sms.clicked)}
               </span>
             </div>
             <div className="flex items-center justify-between pt-4 border-t border-white/10">
               <span className="text-sm text-white/60">Revenue</span>
               <span className="text-green-400 font-bold text-lg">
-                ${data.channel_performance.sms.revenue.toLocaleString()}
+                {formatCurrency(channelPerformance.sms.revenue, { decimals: 0 })}
               </span>
             </div>
           </div>
@@ -273,10 +320,10 @@ export default function AnalyticsPage() {
         </div>
 
         <div className="space-y-3">
-          {data.top_campaigns.length === 0 ? (
+          {topCampaigns.length === 0 ? (
             <div className="text-center py-8 text-white/40">No campaign data yet</div>
           ) : (
-            data.top_campaigns.map((campaign, index) => (
+            topCampaigns.map((campaign, index) => (
               <div
                 key={campaign.id}
                 className="p-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition-all"
@@ -291,7 +338,7 @@ export default function AnalyticsPage() {
                         <h4 className="text-white font-bold">{campaign.name}</h4>
                         <p className="text-xs text-white/60">
                           {campaign.type.toUpperCase()} •{' '}
-                          {new Date(campaign.sent_at).toLocaleDateString()}
+                          {new Date(campaign.sentAt).toLocaleDateString()}
                         </p>
                       </div>
                     </div>
@@ -299,26 +346,26 @@ export default function AnalyticsPage() {
                       <div>
                         <span className="text-white/40">Sent: </span>
                         <span className="text-white font-bold">
-                          {campaign.sent.toLocaleString()}
+                          {formatNumber(campaign.sent)}
                         </span>
                       </div>
                       <div>
                         <span className="text-white/40">Open: </span>
                         <span className="text-white font-bold">
-                          {campaign.open_rate.toFixed(1)}%
+                          {formatPercentage(campaign.openRate * 100, { decimals: 1 })}
                         </span>
                       </div>
                       <div>
                         <span className="text-white/40">Click: </span>
                         <span className="text-white font-bold">
-                          {campaign.click_rate.toFixed(1)}%
+                          {formatPercentage(campaign.clickRate * 100, { decimals: 1 })}
                         </span>
                       </div>
                     </div>
                   </div>
                   <div className="text-right">
                     <div className="text-2xl font-black text-green-400">
-                      ${campaign.revenue.toLocaleString()}
+                      {formatCurrency(campaign.revenue, { decimals: 0 })}
                     </div>
                     <div className="text-xs text-white/60">Revenue</div>
                   </div>
@@ -329,33 +376,47 @@ export default function AnalyticsPage() {
         </div>
       </div>
 
-      {/* Time Series Chart Placeholder */}
+      {/* Time Series Chart */}
       <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-white font-bold text-lg">Performance Over Time</h3>
+          <div>
+            <h3 className="text-white font-bold text-lg">Performance Over Time</h3>
+            <p className="text-white/40 text-xs mt-1">
+              Track your campaign metrics across the selected time period
+            </p>
+          </div>
           <div className="flex items-center gap-2">
-            <button className="px-3 py-1.5 bg-white/10 border border-white/10 rounded-lg text-xs text-white font-bold">
-              Sent
-            </button>
-            <button className="px-3 py-1.5 bg-white/5 border border-white/10 rounded-lg text-xs text-white/60 hover:text-white transition-colors">
-              Opened
-            </button>
-            <button className="px-3 py-1.5 bg-white/5 border border-white/10 rounded-lg text-xs text-white/60 hover:text-white transition-colors">
-              Revenue
-            </button>
+            {(['sent', 'opened', 'clicked', 'revenue'] as const).map((metric) => (
+              <button
+                key={metric}
+                onClick={() => setActiveChartMetric(metric)}
+                className={`px-3 py-1.5 border rounded-lg text-xs font-bold transition-all ${
+                  activeChartMetric === metric
+                    ? 'bg-white/10 border-white/20 text-white'
+                    : 'bg-white/5 border-white/10 text-white/60 hover:text-white hover:border-white/20'
+                }`}
+              >
+                {metric.charAt(0).toUpperCase() + metric.slice(1)}
+              </button>
+            ))}
           </div>
         </div>
 
-        <div className="h-64 flex items-center justify-center border-2 border-dashed border-white/10 rounded-xl">
-          <div className="text-center">
-            <BarChart3 className="w-12 h-12 text-white/20 mx-auto mb-2" />
-            <p className="text-white/40 text-sm">Chart visualization coming soon</p>
-            <p className="text-white/20 text-xs">
-              Integrate with a charting library like Chart.js or Recharts
-            </p>
-          </div>
-        </div>
+        <TimeSeriesChart
+          data={timeSeries}
+          activeMetric={activeChartMetric}
+          height={320}
+          className="mt-4"
+        />
       </div>
     </div>
+  );
+}
+
+export default function AnalyticsPage() {
+  return (
+    <AnalyticsPageWrapper>
+      <MarketingAnalyticsContent />
+    </AnalyticsPageWrapper>
   );
 }

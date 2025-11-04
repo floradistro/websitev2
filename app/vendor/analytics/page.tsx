@@ -1,67 +1,111 @@
 "use client";
 
-import { useEffect, useState } from 'react';
-import dynamic from 'next/dynamic';
+import { useState } from 'react';
 import { useAppAuth } from '@/context/AppAuthContext';
 import {
-  TrendingUp, TrendingDown, DollarSign, Package, ShoppingCart,
-  Users, BarChart3, Activity, Target, AlertCircle
+  TrendingUp,
+  TrendingDown,
+  DollarSign,
+  ShoppingCart,
+  Activity,
+  Target,
+  AlertCircle,
+  Minus,
+  ArrowUpRight,
+  ArrowDownRight,
 } from '@/lib/icons';
 import { useVendorAnalytics } from '@/hooks/useVendorData';
 import { StatCard } from '@/components/ui/StatCard';
+import { TimeSeriesChart } from '@/components/analytics/TimeSeriesChart';
+import { AnalyticsPageWrapper } from '@/components/analytics/AnalyticsPageWrapper';
+import type { VendorAnalyticsData, TimeRange, TrendData } from '@/types/analytics';
+import {
+  formatCurrency,
+  formatPercentage,
+  formatNumber,
+} from '@/lib/analytics-utils';
+import { createDefaultVendorAnalytics, mergeWithDefaults } from '@/lib/analytics-defaults';
 
-// Lazy load charts for better performance
-const LineChart = dynamic(() => import('recharts').then(m => ({ default: m.LineChart })), { ssr: false });
-const AreaChart = dynamic(() => import('recharts').then(m => ({ default: m.AreaChart })), { ssr: false });
-const BarChart = dynamic(() => import('recharts').then(m => ({ default: m.BarChart })), { ssr: false });
-const Line = dynamic(() => import('recharts').then(m => ({ default: m.Line })), { ssr: false });
-const Area = dynamic(() => import('recharts').then(m => ({ default: m.Area })), { ssr: false });
-const Bar = dynamic(() => import('recharts').then(m => ({ default: m.Bar })), { ssr: false });
-const XAxis = dynamic(() => import('recharts').then(m => ({ default: m.XAxis })), { ssr: false });
-const YAxis = dynamic(() => import('recharts').then(m => ({ default: m.YAxis })), { ssr: false });
-const CartesianGrid = dynamic(() => import('recharts').then(m => ({ default: m.CartesianGrid })), { ssr: false });
-const Tooltip = dynamic(() => import('recharts').then(m => ({ default: m.Tooltip })), { ssr: false });
-const ResponsiveContainer = dynamic(() => import('recharts').then(m => ({ default: m.ResponsiveContainer })), { ssr: false });
-
-interface AnalyticsData {
-  revenue: {
-    total: number;
-    trend: number;
-    data: Array<{ date: string; amount: number }>;
-  };
-  orders: {
-    total: number;
-    trend: number;
-    avgValue: number;
-  };
-  products: {
-    total: number;
-    topPerformers: Array<{ id: string; name: string; revenue: number; units: number; margin: number }>;
-  };
-  costs: {
-    totalCost: number;
-    avgMargin: number;
-    profitability: number;
-  };
-  inventory: {
-    turnoverRate: number;
-    stockValue: number;
-    lowStockCount: number;
-  };
-}
-
-export default function VendorAnalytics() {
+function VendorAnalyticsContent() {
   const { vendor } = useAppAuth();
-  const [timeRange, setTimeRange] = useState('30d');
-  const { data: analyticsResponse, loading } = useVendorAnalytics(timeRange);
-  
-  const analytics: AnalyticsData = (analyticsResponse as any)?.analytics || {
-    revenue: { total: 0, trend: 0, data: [] },
-    orders: { total: 0, trend: 0, avgValue: 0 },
-    products: { total: 0, topPerformers: [] },
-    costs: { totalCost: 0, avgMargin: 0, profitability: 0 },
-    inventory: { turnoverRate: 0, stockValue: 0, lowStockCount: 0 },
+  const [timeRange, setTimeRange] = useState<TimeRange>('30d');
+  const { data: analyticsResponse, loading, error, refetch } = useVendorAnalytics(timeRange);
+
+  // Type-safe data extraction with defaults
+  const analytics: VendorAnalyticsData = mergeWithDefaults(
+    analyticsResponse?.analytics,
+    createDefaultVendorAnalytics()
+  );
+
+  // Helper to normalize trend data (handle both old number format and new TrendData format)
+  const normalizeTrend = (trend: number | TrendData): TrendData => {
+    if (typeof trend === 'number') {
+      return {
+        value: 0,
+        change: trend,
+        changePercent: trend,
+        direction: trend > 0 ? 'up' : trend < 0 ? 'down' : 'neutral',
+      };
+    }
+    return trend;
   };
+
+  // Render trend indicator helper
+  const renderTrendIndicator = (trend: number | TrendData) => {
+    const trendData = normalizeTrend(trend);
+
+    if (trendData.direction === 'neutral') {
+      return (
+        <div className="flex items-center gap-1 text-white/40 text-xs font-bold">
+          <Minus className="w-3 h-3" />
+          0%
+        </div>
+      );
+    }
+
+    const isPositive = trendData.direction === 'up';
+    const color = isPositive ? 'text-green-400' : 'text-red-400';
+    const Icon = isPositive ? ArrowUpRight : ArrowDownRight;
+
+    return (
+      <div className={`flex items-center gap-1 ${color} text-xs font-bold`}>
+        <Icon className="w-3 h-3" />
+        {formatPercentage(Math.abs(trendData.changePercent), { decimals: 0, showSign: false })}
+      </div>
+    );
+  };
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="w-full px-4 lg:px-0 py-12">
+        <div className="text-center">
+          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-white/20 border-r-white"></div>
+          <p className="mt-4 text-white/40">Loading analytics...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="w-full px-4 lg:px-0 py-12">
+        <div className="text-center">
+          <p className="text-red-400 mb-4">{error || 'Failed to load analytics'}</p>
+          <button
+            onClick={() => refetch()}
+            className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-white transition"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Show UI with default values if no data (better UX than error)
+  const hasData = analyticsResponse?.analytics !== null && analyticsResponse?.analytics !== undefined;
 
   return (
     <div className="w-full px-4 lg:px-0">
@@ -103,39 +147,39 @@ export default function VendorAnalytics() {
       <div className="grid grid-cols-2 lg:grid-cols-4 spacing-grid mb-8">
         <StatCard
           label="Revenue"
-          value={loading ? '—' : `$${analytics.revenue.total.toLocaleString('en-US', { minimumFractionDigits: 2 })}`}
-          sublabel={`${Math.abs(analytics.revenue.trend)}% vs last period`}
+          value={formatCurrency(analytics.revenue.total, { showCents: true })}
+          sublabel="Total revenue"
           icon={DollarSign}
-          loading={loading}
           delay="0s"
-          trend={analytics.revenue.trend !== 0 ? {
-            value: `${Math.abs(analytics.revenue.trend)}%`,
-            direction: analytics.revenue.trend > 0 ? 'up' : 'down'
-          } : undefined}
+          trend={{
+            value: formatPercentage(Math.abs(normalizeTrend(analytics.revenue.trend).changePercent), { decimals: 0 }),
+            direction: normalizeTrend(analytics.revenue.trend).direction
+          }}
         />
         <StatCard
           label="Profit Margin"
-          value={loading ? '—' : `${analytics.costs.avgMargin.toFixed(1)}%`}
+          value={formatPercentage(analytics.costs.avgMargin, { decimals: 1 })}
           sublabel="Average across catalog"
           icon={Target}
-          loading={loading}
           delay="0.1s"
         />
         <StatCard
           label="Turnover Rate"
-          value={loading ? '—' : `${analytics.inventory.turnoverRate.toFixed(1)}x`}
+          value={`${analytics.inventory.turnoverRate.toFixed(1)}x`}
           sublabel="Annual rate"
           icon={Activity}
-          loading={loading}
           delay="0.2s"
         />
         <StatCard
           label="Avg Order"
-          value={loading ? '—' : `$${analytics.orders.avgValue.toFixed(2)}`}
+          value={formatCurrency(analytics.orders.avgValue, { showCents: true })}
           sublabel="Per transaction"
           icon={ShoppingCart}
-          loading={loading}
           delay="0.3s"
+          trend={{
+            value: formatPercentage(Math.abs(normalizeTrend(analytics.orders.trend).changePercent), { decimals: 0 }),
+            direction: normalizeTrend(analytics.orders.trend).direction
+          }}
         />
       </div>
 
@@ -147,54 +191,18 @@ export default function VendorAnalytics() {
             <p className="text-white/30 text-[10px] font-light">DAILY BREAKDOWN</p>
           </div>
         </div>
-        <div className="h-64">
-          {loading || analytics.revenue.data.length === 0 ? (
-            <div className="flex items-center justify-center h-full">
-              <div className="text-white/20 text-xs font-light">LOADING CHART DATA...</div>
-            </div>
-          ) : (
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={analytics.revenue.data}>
-                <defs>
-                  <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#ffffff" stopOpacity={0.1} />
-                    <stop offset="100%" stopColor="#ffffff" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" vertical={false} />
-                <XAxis 
-                  dataKey="date" 
-                  stroke="#ffffff40" 
-                  style={{ fontSize: '11px' }}
-                  tickLine={false}
-                />
-                <YAxis 
-                  stroke="#ffffff40" 
-                  style={{ fontSize: '11px' }}
-                  tickLine={false}
-                  tickFormatter={(value) => `$${value}`}
-                />
-                <Tooltip 
-                  contentStyle={{ 
-                    backgroundColor: '#000000', 
-                    border: '1px solid rgba(255,255,255,0.1)',
-                    borderRadius: '0px',
-                    fontSize: '12px'
-                  }}
-                  labelStyle={{ color: '#ffffff80' }}
-                  formatter={(value: any) => [`$${value.toFixed(2)}`, 'Revenue']}
-                />
-                <Area 
-                  type="monotone" 
-                  dataKey="amount" 
-                  stroke="#ffffff" 
-                  strokeWidth={2}
-                  fill="url(#revenueGradient)"
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          )}
-        </div>
+        <TimeSeriesChart
+          data={analytics.revenue.data.map(d => ({
+            date: d.date,
+            sent: 0,
+            opened: 0,
+            clicked: 0,
+            revenue: d.amount
+          }))}
+          activeMetric="revenue"
+          height={256}
+          className="mt-4"
+        />
       </div>
 
       {/* Top Products */}
@@ -207,13 +215,11 @@ export default function VendorAnalytics() {
         </div>
         
         <div className="space-y-4">
-          {loading ? (
-            <div className="text-center text-white/40 py-8 text-xs">Loading products...</div>
-          ) : analytics.products.topPerformers.length === 0 ? (
+          {analytics.products.topPerformers.length === 0 ? (
             <div className="text-center text-white/40 py-8 text-xs">No product data available</div>
           ) : (
             analytics.products.topPerformers.map((product, index) => (
-              <div 
+              <div
                 key={product.id}
                 className="flex items-center justify-between py-4 border-b border-white/5 hover:bg-white/[0.01] transition-all duration-300 px-4 -mx-4"
               >
@@ -223,12 +229,12 @@ export default function VendorAnalytics() {
                   </div>
                   <div>
                     <div className="text-white text-sm font-light mb-1">{product.name}</div>
-                    <div className="text-white/40 text-xs">{product.units} units sold</div>
+                    <div className="text-white/40 text-xs">{formatNumber(product.units)} units sold</div>
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="text-white font-light mb-1">${product.revenue.toFixed(2)}</div>
-                  <div className="text-green-500 text-xs">{product.margin.toFixed(1)}% margin</div>
+                  <div className="text-white font-light mb-1">{formatCurrency(product.revenue)}</div>
+                  <div className="text-green-500 text-xs">{formatPercentage(product.margin, { decimals: 1 })} margin</div>
                 </div>
               </div>
             ))
@@ -249,15 +255,17 @@ export default function VendorAnalytics() {
           <div className="space-y-4">
             <div className="flex items-center justify-between py-3 border-b border-white/5">
               <span className="text-white/60 text-xs font-light tracking-wide uppercase">Total COGS</span>
-              <span className="text-white font-light">${analytics.costs.totalCost.toFixed(2)}</span>
+              <span className="text-white font-light">{formatCurrency(analytics.costs.totalCost)}</span>
             </div>
             <div className="flex items-center justify-between py-3 border-b border-white/5">
               <span className="text-white/60 text-xs font-light tracking-wide uppercase">Gross Profit</span>
-              <span className="text-white font-light">${(analytics.revenue.total - analytics.costs.totalCost).toFixed(2)}</span>
+              <span className="text-white font-light">
+                {formatCurrency(analytics.costs.grossProfit ?? (analytics.revenue.total - analytics.costs.totalCost))}
+              </span>
             </div>
             <div className="flex items-center justify-between py-3">
               <span className="text-white/60 text-xs font-light tracking-wide uppercase">Profit Margin</span>
-              <span className="text-green-500 font-light">{analytics.costs.avgMargin.toFixed(1)}%</span>
+              <span className="text-green-500 font-light">{formatPercentage(analytics.costs.avgMargin, { decimals: 1 })}</span>
             </div>
           </div>
         </div>
@@ -273,7 +281,7 @@ export default function VendorAnalytics() {
           <div className="space-y-4">
             <div className="flex items-center justify-between py-3 border-b border-white/5">
               <span className="text-white/60 text-xs font-light tracking-wide uppercase">Stock Value</span>
-              <span className="text-white font-light">${analytics.inventory.stockValue.toFixed(2)}</span>
+              <span className="text-white font-light">{formatCurrency(analytics.inventory.stockValue)}</span>
             </div>
             <div className="flex items-center justify-between py-3 border-b border-white/5">
               <span className="text-white/60 text-xs font-light tracking-wide uppercase">Turnover Rate</span>
@@ -284,7 +292,7 @@ export default function VendorAnalytics() {
               {analytics.inventory.lowStockCount > 0 ? (
                 <span className="text-yellow-500 font-light flex items-center gap-2">
                   <AlertCircle size={14} strokeWidth={1.5} />
-                  {analytics.inventory.lowStockCount}
+                  {formatNumber(analytics.inventory.lowStockCount)}
                 </span>
               ) : (
                 <span className="text-green-500 font-light">All Good</span>
@@ -297,3 +305,11 @@ export default function VendorAnalytics() {
   );
 }
 
+
+export default function VendorAnalytics() {
+  return (
+    <AnalyticsPageWrapper>
+      <VendorAnalyticsContent />
+    </AnalyticsPageWrapper>
+  );
+}

@@ -163,7 +163,7 @@ export function calculatePeriodGrowth(data: Array<{ amount: number }>): number {
  * Format currency with proper locale and decimals
  */
 export function formatCurrency(
-  amount: number,
+  amount: number | null | undefined,
   options: {
     decimals?: number;
     compact?: boolean;
@@ -172,16 +172,24 @@ export function formatCurrency(
 ): string {
   const { decimals = 2, compact = false, showCents = true } = options;
 
-  if (compact && Math.abs(amount) >= 1000) {
-    if (Math.abs(amount) >= 1000000) {
-      return `$${(amount / 1000000).toFixed(1)}M`;
+  // Handle null/undefined
+  if (amount === null || amount === undefined || isNaN(amount)) {
+    return '$0.00';
+  }
+
+  // Ensure it's a number
+  const numAmount = Number(amount);
+
+  if (compact && Math.abs(numAmount) >= 1000) {
+    if (Math.abs(numAmount) >= 1000000) {
+      return `$${(numAmount / 1000000).toFixed(1)}M`;
     }
-    return `$${(amount / 1000).toFixed(1)}K`;
+    return `$${(numAmount / 1000).toFixed(1)}K`;
   }
 
   const fractionDigits = showCents ? decimals : 0;
 
-  return amount.toLocaleString('en-US', {
+  return numAmount.toLocaleString('en-US', {
     style: 'currency',
     currency: 'USD',
     minimumFractionDigits: fractionDigits,
@@ -193,7 +201,7 @@ export function formatCurrency(
  * Format number with compact notation
  */
 export function formatNumber(
-  value: number,
+  value: number | null | undefined,
   options: {
     decimals?: number;
     compact?: boolean;
@@ -201,14 +209,22 @@ export function formatNumber(
 ): string {
   const { decimals = 0, compact = false } = options;
 
-  if (compact && Math.abs(value) >= 1000) {
-    if (Math.abs(value) >= 1000000) {
-      return `${(value / 1000000).toFixed(1)}M`;
-    }
-    return `${(value / 1000).toFixed(1)}K`;
+  // Handle null/undefined
+  if (value === null || value === undefined || isNaN(value)) {
+    return '0';
   }
 
-  return value.toLocaleString('en-US', {
+  // Ensure it's a number
+  const numValue = Number(value);
+
+  if (compact && Math.abs(numValue) >= 1000) {
+    if (Math.abs(numValue) >= 1000000) {
+      return `${(numValue / 1000000).toFixed(1)}M`;
+    }
+    return `${(numValue / 1000).toFixed(1)}K`;
+  }
+
+  return numValue.toLocaleString('en-US', {
     minimumFractionDigits: decimals,
     maximumFractionDigits: decimals,
   });
@@ -218,15 +234,24 @@ export function formatNumber(
  * Format percentage
  */
 export function formatPercentage(
-  value: number,
+  value: number | null | undefined,
   options: {
     decimals?: number;
     showSign?: boolean;
   } = {}
 ): string {
   const { decimals = 1, showSign = false } = options;
-  const sign = showSign && value > 0 ? '+' : '';
-  return `${sign}${value.toFixed(decimals)}%`;
+
+  // Handle null/undefined
+  if (value === null || value === undefined || isNaN(value)) {
+    return '0%';
+  }
+
+  // Ensure it's a number
+  const numValue = Number(value);
+
+  const sign = showSign && numValue > 0 ? '+' : '';
+  return `${sign}${numValue.toFixed(decimals)}%`;
 }
 
 // ============================================================================
