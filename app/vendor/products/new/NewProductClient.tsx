@@ -210,7 +210,7 @@ export default function NewProductClient() {
     <div className={cn("min-h-screen p-6", ds.colors.bg.base)}>
       <div className="max-w-4xl mx-auto">
         {/* Header */}
-        <div className={cn("mb-6", ds.spacing.section.sm)}>
+        <div className="mb-6">
           <Link
             href="/vendor/products"
             className={cn(
