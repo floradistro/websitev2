@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get recent vendors (WhaleTools customers)
+    // Get vendors with product counts
     const { data: vendors, error } = await supabase
       .from('vendors')
       .select(`
@@ -37,26 +37,40 @@ export async function GET(request: NextRequest) {
         store_name,
         email,
         created_at,
-        is_active,
-        metadata
+        status,
+        metadata,
+        updated_at
       `)
       .order('created_at', { ascending: false })
       .limit(50);
 
     if (error) throw error;
 
+    // Get product counts for each vendor
+    const vendorIds = vendors?.map(v => v.id) || [];
+    const { data: productCounts } = await supabase
+      .from('products')
+      .select('vendor_id')
+      .in('vendor_id', vendorIds);
+
+    // Count products per vendor
+    const productCountMap: Record<string, number> = {};
+    productCounts?.forEach(p => {
+      productCountMap[p.vendor_id] = (productCountMap[p.vendor_id] || 0) + 1;
+    });
+
     // Transform to customer format
     const customers = vendors?.map(vendor => {
       // Determine status
-      let status: 'active' | 'trial' | 'churned' = 'active';
+      let displayStatus: 'active' | 'trial' | 'churned' = 'active';
 
       const createdDate = new Date(vendor.created_at);
       const daysSinceCreated = Math.floor((Date.now() - createdDate.getTime()) / (1000 * 60 * 60 * 24));
 
-      if (!vendor.is_active) {
-        status = 'churned';
+      if (vendor.status !== 'active') {
+        displayStatus = 'churned';
       } else if (daysSinceCreated <= 30) {
-        status = 'trial';
+        displayStatus = 'trial';
       }
 
       return {
@@ -64,9 +78,11 @@ export async function GET(request: NextRequest) {
         email: vendor.email,
         name: vendor.store_name,
         created_at: vendor.created_at,
-        last_active: vendor.metadata?.last_login || null,
-        plan: 'Standard', // TODO: Add plan field when you implement pricing tiers
-        status
+        last_active: vendor.updated_at || vendor.created_at,
+        plan: 'WhaleTools', // SaaS product name
+        status: displayStatus,
+        revenue: 0, // TODO: Track actual subscription revenue
+        productsCount: productCountMap[vendor.id] || 0
       };
     }) || [];
 
