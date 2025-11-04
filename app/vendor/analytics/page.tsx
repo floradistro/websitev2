@@ -33,7 +33,7 @@ function VendorAnalyticsContent() {
 
   // Type-safe data extraction with defaults
   const analytics: VendorAnalyticsData = mergeWithDefaults(
-    analyticsResponse?.analytics,
+    analyticsResponse as VendorAnalyticsData | null,
     createDefaultVendorAnalytics()
   );
 
@@ -105,7 +105,7 @@ function VendorAnalyticsContent() {
   }
 
   // Show UI with default values if no data (better UX than error)
-  const hasData = analyticsResponse?.analytics !== null && analyticsResponse?.analytics !== undefined;
+  const hasData = analyticsResponse !== null && analyticsResponse !== undefined;
 
   return (
     <div className="w-full px-4 lg:px-0">
