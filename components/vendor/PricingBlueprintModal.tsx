@@ -311,7 +311,10 @@ export function PricingBlueprintModal({
     <>
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50"
+        className={cn(
+          "fixed inset-0 backdrop-blur-sm z-50",
+          "bg-black/80"
+        )}
         onClick={onClose}
         style={{ animation: 'fade-in 0.2s ease-out' }}
       />
@@ -319,7 +322,14 @@ export function PricingBlueprintModal({
       {/* Modal */}
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
         <div
-          className="w-full max-w-4xl bg-black/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl pointer-events-auto overflow-hidden"
+          className={cn(
+            "w-full max-w-4xl backdrop-blur-xl pointer-events-auto overflow-hidden",
+            ds.colors.bg.secondary,
+            ds.colors.border.default,
+            "border",
+            ds.effects.radius.xl,
+            ds.effects.shadow.xl
+          )}
           style={{
             animation: 'fade-in 0.3s ease-out',
             boxShadow: '0 0 60px rgba(255,255,255,0.05)'
@@ -327,7 +337,12 @@ export function PricingBlueprintModal({
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
-          <div className="border-b border-white/5 p-6 bg-black">
+          <div className={cn(
+            "p-6",
+            ds.colors.bg.secondary,
+            ds.colors.border.subtle,
+            "border-b"
+          )}>
             <div className="flex items-start justify-between">
               <div>
                 <h2 className={cn(
@@ -352,7 +367,12 @@ export function PricingBlueprintModal({
               </div>
               <button
                 onClick={onClose}
-                className="text-white/40 hover:text-white transition-colors p-2"
+                className={cn(
+                  ds.colors.text.quaternary,
+                  "hover:text-white",
+                  ds.effects.transition.normal,
+                  "p-2"
+                )}
               >
                 <X size={20} strokeWidth={1.5} />
               </button>
@@ -364,24 +384,69 @@ export function PricingBlueprintModal({
             <div className="space-y-6">
               {/* Basic Info */}
               <div>
-                <h3 className="text-white/60 text-[10px] uppercase tracking-wider font-medium mb-4">Basic Information</h3>
+                <h3 className={cn(
+                  ds.typography.size.xs,
+                  ds.typography.transform.uppercase,
+                  ds.typography.tracking.wide,
+                  ds.colors.text.tertiary,
+                  ds.typography.weight.medium,
+                  "mb-4"
+                )}>
+                  Basic Information
+                </h3>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-white/40 text-[10px] uppercase tracking-wider mb-2">Blueprint Name</label>
+                    <label className={cn(
+                      "block mb-2",
+                      ds.typography.size.xs,
+                      ds.typography.transform.uppercase,
+                      ds.typography.tracking.wide,
+                      ds.colors.text.quaternary
+                    )}>
+                      Blueprint Name
+                    </label>
                     <input
                       type="text"
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className="w-full bg-black/20 border border-white/10 text-white px-4 py-3 rounded-xl focus:outline-none focus:border-white/30 transition-all"
+                      className={cn(
+                        "w-full px-4 py-3",
+                        ds.colors.bg.input,
+                        ds.colors.border.default,
+                        ds.colors.text.primary,
+                        "border",
+                        ds.effects.radius.lg,
+                        "focus:outline-none",
+                        "focus:border-white/[0.12]",
+                        ds.effects.transition.normal
+                      )}
                       placeholder="e.g., Top Shelf Flower"
                     />
                   </div>
                   <div>
-                    <label className="block text-white/40 text-[10px] uppercase tracking-wider mb-2">Context</label>
+                    <label className={cn(
+                      "block mb-2",
+                      ds.typography.size.xs,
+                      ds.typography.transform.uppercase,
+                      ds.typography.tracking.wide,
+                      ds.colors.text.quaternary
+                    )}>
+                      Context
+                    </label>
                     <select
                       value={formData.context}
                       onChange={(e) => setFormData({ ...formData, context: e.target.value as any })}
-                      className="w-full bg-black/20 border border-white/10 text-white px-4 py-3 rounded-xl focus:outline-none focus:border-white/30 transition-all"
+                      className={cn(
+                        "w-full px-4 py-3",
+                        ds.colors.bg.input,
+                        ds.colors.border.default,
+                        ds.colors.text.primary,
+                        "border",
+                        ds.effects.radius.lg,
+                        "focus:outline-none",
+                        "focus:border-white/[0.12]",
+                        ds.effects.transition.normal
+                      )}
                     >
                       <option value="retail">Retail</option>
                       <option value="wholesale">Wholesale</option>
@@ -392,23 +457,59 @@ export function PricingBlueprintModal({
                 </div>
 
                 <div className="mt-4">
-                  <label className="block text-white/40 text-[10px] uppercase tracking-wider mb-2">Description (Optional)</label>
+                  <label className={cn(
+                    "block mb-2",
+                    ds.typography.size.xs,
+                    ds.typography.transform.uppercase,
+                    ds.typography.tracking.wide,
+                    ds.colors.text.quaternary
+                  )}>
+                    Description (Optional)
+                  </label>
                   <textarea
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                     rows={2}
-                    className="w-full bg-black/20 border border-white/10 text-white px-4 py-3 rounded-xl focus:outline-none focus:border-white/30 transition-all resize-none"
+                    className={cn(
+                      "w-full px-4 py-3 resize-none",
+                      ds.colors.bg.input,
+                      ds.colors.border.default,
+                      ds.colors.text.primary,
+                      "border",
+                      ds.effects.radius.lg,
+                      "focus:outline-none",
+                      "focus:border-white/[0.12]",
+                      ds.effects.transition.normal
+                    )}
                     placeholder="Describe this pricing structure..."
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 mt-4">
                   <div>
-                    <label className="block text-white/40 text-[10px] uppercase tracking-wider mb-2">Pricing Type</label>
+                    <label className={cn(
+                      "block mb-2",
+                      ds.typography.size.xs,
+                      ds.typography.transform.uppercase,
+                      ds.typography.tracking.wide,
+                      ds.colors.text.quaternary
+                    )}>
+                      Pricing Type
+                    </label>
                     <select
                       value={formData.tier_type}
                       onChange={(e) => setFormData({ ...formData, tier_type: e.target.value as any })}
-                      className="w-full bg-black/20 border border-white/10 text-white px-4 py-3 rounded-xl focus:outline-none focus:border-white/30 transition-all"
+                      className={cn(
+                        "w-full px-4 py-3",
+                        ds.colors.bg.input,
+                        ds.colors.border.default,
+                        ds.colors.text.primary,
+                        "border",
+                        ds.effects.radius.lg,
+                        "focus:outline-none",
+                        "focus:border-white/[0.12]",
+                        ds.effects.transition.normal
+                      )}
                     >
                       <option value="weight">Weight-Based</option>
                       <option value="quantity">Quantity-Based</option>
@@ -418,11 +519,29 @@ export function PricingBlueprintModal({
                     </select>
                   </div>
                   <div>
-                    <label className="block text-white/40 text-[10px] uppercase tracking-wider mb-2">Quality Tier (Optional)</label>
+                    <label className={cn(
+                      "block mb-2",
+                      ds.typography.size.xs,
+                      ds.typography.transform.uppercase,
+                      ds.typography.tracking.wide,
+                      ds.colors.text.quaternary
+                    )}>
+                      Quality Tier (Optional)
+                    </label>
                     <select
                       value={formData.quality_tier}
                       onChange={(e) => setFormData({ ...formData, quality_tier: e.target.value as any })}
-                      className="w-full bg-black/20 border border-white/10 text-white px-4 py-3 rounded-xl focus:outline-none focus:border-white/30 transition-all"
+                      className={cn(
+                        "w-full px-4 py-3",
+                        ds.colors.bg.input,
+                        ds.colors.border.default,
+                        ds.colors.text.primary,
+                        "border",
+                        ds.effects.radius.lg,
+                        "focus:outline-none",
+                        "focus:border-white/[0.12]",
+                        ds.effects.transition.normal
+                      )}
                     >
                       <option value="">None</option>
                       <option value="exotic">Exotic</option>
@@ -437,7 +556,15 @@ export function PricingBlueprintModal({
               {/* Price Breaks */}
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-white/60 text-[10px] uppercase tracking-wider font-medium">Price Breaks</h3>
+                  <h3 className={cn(
+                    ds.typography.size.xs,
+                    ds.typography.transform.uppercase,
+                    ds.typography.tracking.wide,
+                    ds.colors.text.tertiary,
+                    ds.typography.weight.medium
+                  )}>
+                    Price Breaks
+                  </h3>
                   <Button
                     onClick={addPriceBreak}
                     variant="ghost"
@@ -447,12 +574,35 @@ export function PricingBlueprintModal({
                     Add Tier
                   </Button>
                 </div>
-                <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-3 mb-4">
+                <div className={cn(
+                  "p-3 mb-4",
+                  "bg-blue-500/10",
+                  "border border-blue-500/20",
+                  ds.effects.radius.lg
+                )}>
                   <div className="flex items-start gap-2">
-                    <div className="text-blue-400 text-xs">ℹ️</div>
+                    <div className={cn(
+                      ds.typography.size.xs,
+                      ds.colors.icon.blue
+                    )}>
+                      ℹ️
+                    </div>
                     <div>
-                      <div className="text-blue-400 text-[9px] font-bold uppercase tracking-wider mb-1">Pricing Mode</div>
-                      <div className="text-white/60 text-[9px] leading-relaxed">
+                      <div className={cn(
+                        ds.typography.size.micro,
+                        ds.typography.weight.semibold,
+                        ds.typography.transform.uppercase,
+                        ds.typography.tracking.wide,
+                        ds.colors.icon.blue,
+                        "mb-1"
+                      )}>
+                        Pricing Mode
+                      </div>
+                      <div className={cn(
+                        ds.typography.size.micro,
+                        ds.colors.text.tertiary,
+                        "leading-relaxed"
+                      )}>
                         <strong>With Price:</strong> Use your custom price (e.g., 1g = $12)<br/>
                         <strong>Without Price (Optional):</strong> Auto-calculate from product base price × quantity
                       </div>
@@ -462,33 +612,81 @@ export function PricingBlueprintModal({
 
                 <div className="space-y-3">
                   {priceBreaks.map((priceBreak, idx) => (
-                    <div key={idx} className="bg-[#0a0a0a] border border-white/5 rounded-xl p-4">
+                    <div key={idx} className={cn(
+                      "p-4",
+                      ds.colors.bg.primary,
+                      ds.colors.border.subtle,
+                      "border",
+                      ds.effects.radius.lg
+                    )}>
                       <div className="grid grid-cols-12 gap-3 items-end">
                         <div className="col-span-3">
-                          <label className="block text-white/40 text-[8px] uppercase tracking-wider mb-2">Label</label>
+                          <label className={cn(
+                            "block mb-2",
+                            ds.typography.size.micro,
+                            ds.typography.transform.uppercase,
+                            ds.typography.tracking.wide,
+                            ds.colors.text.quaternary
+                          )}>
+                            Label
+                          </label>
                           <input
                             type="text"
                             value={priceBreak.label}
                             onChange={(e) => updatePriceBreak(idx, 'label', e.target.value)}
-                            className="w-full bg-black/20 border border-white/10 text-white px-3 py-2 rounded-lg focus:outline-none focus:border-white/30 transition-all text-sm"
+                            className={cn(
+                              "w-full px-3 py-2 text-sm",
+                              ds.colors.bg.input,
+                              ds.colors.border.default,
+                              ds.colors.text.primary,
+                              "border",
+                              ds.effects.radius.md,
+                              "focus:outline-none",
+                              "focus:border-white/[0.12]",
+                              ds.effects.transition.normal
+                            )}
                             placeholder="e.g., 1g"
                           />
                         </div>
                         <div className="col-span-2">
-                          <label className="block text-white/40 text-[8px] uppercase tracking-wider mb-2">Quantity</label>
+                          <label className={cn(
+                            "block mb-2",
+                            ds.typography.size.micro,
+                            ds.typography.transform.uppercase,
+                            ds.typography.tracking.wide,
+                            ds.colors.text.quaternary
+                          )}>
+                            Quantity
+                          </label>
                           <input
                             type="number"
                             step="0.1"
                             value={priceBreak.qty}
                             onChange={(e) => updatePriceBreak(idx, 'qty', parseFloat(e.target.value) || 0)}
-                            className="w-full bg-black/20 border border-white/10 text-white px-3 py-2 rounded-lg focus:outline-none focus:border-white/30 transition-all text-sm"
+                            className={cn(
+                              "w-full px-3 py-2 text-sm",
+                              ds.colors.bg.input,
+                              ds.colors.border.default,
+                              ds.colors.text.primary,
+                              "border",
+                              ds.effects.radius.md,
+                              "focus:outline-none",
+                              "focus:border-white/[0.12]",
+                              ds.effects.transition.normal
+                            )}
                           />
                         </div>
                         <div className="col-span-2">
-                          <label className="block text-white/40 text-[8px] uppercase tracking-wider mb-2">
+                          <label className={cn(
+                            "block mb-2",
+                            ds.typography.size.micro,
+                            ds.typography.transform.uppercase,
+                            ds.typography.tracking.wide,
+                            ds.colors.text.quaternary
+                          )}>
                             Price ($)
                             {!priceBreak.price && (
-                              <span className="ml-1 text-white/30">• Auto-calc</span>
+                              <span className={cn("ml-1", ds.colors.text.ghost)}>• Auto-calc</span>
                             )}
                           </label>
                           <input
@@ -505,16 +703,44 @@ export function PricingBlueprintModal({
                                 updatePriceBreak(idx, 'price', isNaN(numValue) ? undefined : numValue);
                               }
                             }}
-                            className="w-full bg-black/20 border border-white/10 text-white px-3 py-2 rounded-lg focus:outline-none focus:border-white/30 transition-all text-sm"
+                            className={cn(
+                              "w-full px-3 py-2 text-sm",
+                              ds.colors.bg.input,
+                              ds.colors.border.default,
+                              ds.colors.text.primary,
+                              "border",
+                              ds.effects.radius.md,
+                              "focus:outline-none",
+                              "focus:border-white/[0.12]",
+                              ds.effects.transition.normal
+                            )}
                             placeholder="Auto (base price × qty)"
                           />
                         </div>
                         <div className="col-span-2">
-                          <label className="block text-white/40 text-[8px] uppercase tracking-wider mb-2">Unit</label>
+                          <label className={cn(
+                            "block mb-2",
+                            ds.typography.size.micro,
+                            ds.typography.transform.uppercase,
+                            ds.typography.tracking.wide,
+                            ds.colors.text.quaternary
+                          )}>
+                            Unit
+                          </label>
                           <select
                             value={priceBreak.unit}
                             onChange={(e) => updatePriceBreak(idx, 'unit', e.target.value)}
-                            className="w-full bg-black/20 border border-white/10 text-white px-3 py-2 rounded-lg focus:outline-none focus:border-white/30 transition-all text-sm"
+                            className={cn(
+                              "w-full px-3 py-2 text-sm",
+                              ds.colors.bg.input,
+                              ds.colors.border.default,
+                              ds.colors.text.primary,
+                              "border",
+                              ds.effects.radius.md,
+                              "focus:outline-none",
+                              "focus:border-white/[0.12]",
+                              ds.effects.transition.normal
+                            )}
                           >
                             <option value="g">g</option>
                             <option value="oz">oz</option>
@@ -523,18 +749,44 @@ export function PricingBlueprintModal({
                           </select>
                         </div>
                         <div className="col-span-2">
-                          <label className="block text-white/40 text-[8px] uppercase tracking-wider mb-2">Order</label>
+                          <label className={cn(
+                            "block mb-2",
+                            ds.typography.size.micro,
+                            ds.typography.transform.uppercase,
+                            ds.typography.tracking.wide,
+                            ds.colors.text.quaternary
+                          )}>
+                            Order
+                          </label>
                           <input
                             type="number"
                             value={priceBreak.sort_order}
                             onChange={(e) => updatePriceBreak(idx, 'sort_order', parseInt(e.target.value) || 0)}
-                            className="w-full bg-black/20 border border-white/10 text-white px-3 py-2 rounded-lg focus:outline-none focus:border-white/30 transition-all text-sm"
+                            className={cn(
+                              "w-full px-3 py-2 text-sm",
+                              ds.colors.bg.input,
+                              ds.colors.border.default,
+                              ds.colors.text.primary,
+                              "border",
+                              ds.effects.radius.md,
+                              "focus:outline-none",
+                              "focus:border-white/[0.12]",
+                              ds.effects.transition.normal
+                            )}
                           />
                         </div>
                         <div className="col-span-1 flex justify-end">
                           <button
                             onClick={() => removePriceBreak(idx)}
-                            className="p-2 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 hover:bg-red-500/20 hover:text-red-300 transition-all"
+                            className={cn(
+                              "p-2",
+                              "bg-red-500/10",
+                              "border border-red-500/20",
+                              ds.effects.radius.md,
+                              ds.colors.status.error,
+                              "hover:bg-red-500/20 hover:text-red-300",
+                              ds.effects.transition.normal
+                            )}
                           >
                             <Trash2 size={16} strokeWidth={1.5} />
                           </button>
@@ -548,21 +800,35 @@ export function PricingBlueprintModal({
               {/* Category Restrictions */}
               {categories.length > 0 && (
                 <div>
-                  <h3 className="text-white/60 text-[10px] uppercase tracking-wider font-medium mb-4">
+                  <h3 className={cn(
+                    ds.typography.size.xs,
+                    ds.typography.transform.uppercase,
+                    ds.typography.tracking.wide,
+                    ds.colors.text.tertiary,
+                    ds.typography.weight.medium,
+                    "mb-4"
+                  )}>
                     Apply to Categories (Optional)
                   </h3>
-                  <p className="text-white/40 text-[9px] mb-3">
+                  <p className={cn(
+                    ds.typography.size.micro,
+                    ds.colors.text.quaternary,
+                    "mb-3"
+                  )}>
                     Leave empty to apply to all categories, or select specific ones
                   </p>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                     {categories.map((category) => (
                       <label
                         key={category.id}
-                        className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-all ${
+                        className={cn(
+                          "flex items-center gap-2 p-3 border cursor-pointer",
+                          ds.effects.radius.md,
+                          ds.effects.transition.normal,
                           formData.applicable_to_categories.includes(category.id)
-                            ? 'bg-white/10 border-white/30'
-                            : 'bg-white/5 border-white/10 hover:bg-white/8'
-                        }`}
+                            ? cn(ds.colors.bg.active, "border-white/[0.12]")
+                            : cn(ds.colors.bg.elevated, ds.colors.border.default, "hover:bg-white/[0.06]")
+                        )}
                       >
                         <input
                           type="checkbox"
@@ -570,7 +836,12 @@ export function PricingBlueprintModal({
                           onChange={() => toggleCategory(category.id)}
                           className="w-4 h-4 cursor-pointer"
                         />
-                        <span className="text-white text-xs">{category.name}</span>
+                        <span className={cn(
+                          ds.typography.size.xs,
+                          ds.colors.text.primary
+                        )}>
+                          {category.name}
+                        </span>
                       </label>
                     ))}
                   </div>
@@ -580,17 +851,36 @@ export function PricingBlueprintModal({
           </div>
 
           {/* Footer */}
-          <div className="border-t border-white/5 p-6 bg-black flex items-center justify-between">
-            <div className="text-white/40 text-[9px] uppercase tracking-wider">
+          <div className={cn(
+            "p-6 flex items-center justify-between",
+            ds.colors.bg.secondary,
+            ds.colors.border.subtle,
+            "border-t"
+          )}>
+            <div className={cn(
+              ds.typography.size.micro,
+              ds.typography.transform.uppercase,
+              ds.typography.tracking.wide,
+              ds.colors.text.quaternary
+            )}>
               {priceBreaks.length} price break{priceBreaks.length !== 1 ? 's' : ''} configured
             </div>
             <div className="flex items-center gap-3">
-              <Button
+              <button
                 onClick={onClose}
-                variant="ghost"
+                className={cn(
+                  "px-4 py-2 rounded-lg",
+                  ds.typography.size.xs,
+                  ds.typography.transform.uppercase,
+                  ds.typography.tracking.wide,
+                  ds.colors.text.tertiary,
+                  "hover:text-white/80",
+                  ds.effects.transition.normal,
+                  "focus:outline-none focus:ring-2 focus:ring-white/20"
+                )}
               >
                 Cancel
-              </Button>
+              </button>
               <Button
                 onClick={handleSave}
                 disabled={saving}
