@@ -207,7 +207,7 @@ export default function NewProductClient() {
   // ===========================
 
   return (
-    <div className={cn("min-h-screen p-6", ds.colors.bg.base)}>
+    <div className={cn("min-h-screen p-6", ds.colors.bg.primary)}>
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="mb-6">
