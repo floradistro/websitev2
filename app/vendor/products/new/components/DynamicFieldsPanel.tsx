@@ -24,8 +24,8 @@ interface DynamicField {
 
 interface DynamicFieldsPanelProps {
   dynamicFields: DynamicField[];
-  customFieldValues: Record<string, any>;
-  onFieldChange: (fieldName: string, value: any) => void;
+  customFieldValues: Record<string, unknown>;
+  onFieldChange: (fieldName: string, value: string | string[] | boolean | number) => void;
   fieldVisibility?: Record<string, boolean>;
   onFieldVisibilityChange?: (fieldName: string, visible: boolean) => void;
 }
@@ -94,7 +94,7 @@ export default function DynamicFieldsPanel({
 
   const renderField = (field: DynamicField, index: number) => {
     const fieldValue = customFieldValues[field.name] || '';
-    const handleChange = (value: any) => {
+    const handleChange = (value: string | string[] | boolean | number) => {
       onFieldChange(field.name, value);
     };
 

@@ -2,9 +2,10 @@ import { ProductCard } from './ProductCard';
 import { ProductsListSkeleton } from '@/components/skeletons/ProductsListSkeleton';
 import { AlertCircle } from 'lucide-react';
 import { ds, cn } from '@/components/ds';
+import { Product } from '@/lib/types/product';
 
 interface ProductsListProps {
-  products: any[];
+  products: Product[];
   isLoading: boolean;
   error: Error | null;
   onViewProduct: (productId: string) => void;

@@ -10,9 +10,16 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import { showNotification } from '@/components/NotificationToast';
-import type { BulkProduct, PricingTier } from '@/lib/types/product';
+import type {
+  BulkProduct,
+  PricingTier,
+  ProductSubmissionData,
+  APIErrorResponse,
+  ValidationErrorDetail,
+  BulkAIResult
+} from '@/lib/types/product';
 
 /**
  * Interface for bulk image handling with file matching capability
@@ -317,7 +324,7 @@ export function useBulkImportForm({
       if (!reader) throw new Error('No response stream available');
 
       let buffer = '';
-      let allResults: any[] = [];
+      let allResults: BulkAIResult[] = [];
 
       // Read stream chunks
       while (true) {
@@ -378,12 +385,11 @@ export function useBulkImportForm({
         title: 'AI Enrichment Complete',
         message: `Enriched ${Object.keys(enrichedData).length}/${lines.length} products`,
       });
-    } catch (error: any) {
-      console.error('Bulk AI error:', error);
+    } catch (error) {
       showNotification({
         type: 'error',
         title: 'AI Processing Failed',
-        message: error.message || 'Failed to enrich products',
+        message: error instanceof Error ? error.message : 'Failed to enrich products',
       });
     } finally {
       setLoadingAI(false);
@@ -451,7 +457,7 @@ export function useBulkImportForm({
           const description = enrichedData.description || `Bulk imported product: ${product.name}`;
 
           // Build product data object
-          const productData: any = {
+          const productData: ProductSubmissionData = {
             name: product.name,
             category_id: bulkCategory,
             product_type: 'simple',
@@ -488,25 +494,20 @@ export function useBulkImportForm({
           } else {
             failCount++;
           }
-        } catch (err: any) {
+        } catch (err) {
           failCount++;
-          console.error(`❌ Failed to create product: ${product.name}`);
-          console.error('Full error object:', err);
-          console.error('Error response:', err.response);
-          console.error('Error response data:', err.response?.data);
 
           // Show specific error for first failed product only
           if (failCount === 1) {
-            const errorData = err.response?.data;
+            const axiosError = err as AxiosError<APIErrorResponse>;
+            const errorData = axiosError.response?.data;
             let errorMessage = 'Unknown error';
 
             if (errorData?.details && Array.isArray(errorData.details)) {
-              errorMessage = errorData.details.map((d: any) => `${d.field}: ${d.message}`).join('\n');
+              errorMessage = errorData.details.map((d: ValidationErrorDetail) => `${d.field}: ${d.message}`).join('\n');
             } else if (errorData?.error) {
               errorMessage = errorData.error;
             }
-
-            console.error('📛 Detailed error for notification:', errorMessage);
 
             showNotification({
               type: 'error',
@@ -528,8 +529,7 @@ export function useBulkImportForm({
       if (successCount > 0) {
         setTimeout(() => router.push('/vendor/products'), 1500);
       }
-    } catch (err: any) {
-      console.error('Bulk import error:', err);
+    } catch (err) {
       showNotification({
         type: 'error',
         title: 'Import Failed',

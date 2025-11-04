@@ -4,6 +4,7 @@ import { CheckCircle, AlertCircle, Loader } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import AIAutofillPanel from './AIAutofillPanel';
 import SectionHeader from '@/components/ui/SectionHeader';
+import { DynamicField, EnrichedProductData } from '@/lib/types/product';
 
 interface Category {
   id: string;
@@ -23,11 +24,16 @@ interface ProductBasicInfoProps {
   productType: 'simple' | 'variable';
   categories: Category[];
   loadingFields: boolean;
-  dynamicFields: any[];
+  dynamicFields: DynamicField[];
   loadingAI: boolean;
-  aiSuggestions: any;
+  aiSuggestions: EnrichedProductData | null;
   showSuggestions: boolean;
-  onFormDataChange: (formData: any) => void;
+  onFormDataChange: (formData: {
+    name: string;
+    description: string;
+    category: string;
+    product_visibility: 'internal' | 'marketplace';
+  }) => void;
   onCategoryChange: (categoryId: string) => void;
   onProductTypeChange: (type: 'simple' | 'variable') => void;
   onAIAutofill: (selectedFields: string[], customPrompt: string) => Promise<void>;

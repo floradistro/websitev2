@@ -94,10 +94,10 @@ export default function NewProductClient() {
         });
 
         if (response.data.success) {
-          const fields = (response.data.merged || []).map((field: any) => ({
+          const fields = (response.data.merged || []).map((field: Record<string, unknown>) => ({
             ...field,
-            label: field.label || field.name,
-            name: field.slug || field.name
+            label: (field.label || field.name) as string,
+            name: (field.slug || field.name) as string
           }));
           setDynamicFields(fields);
         }

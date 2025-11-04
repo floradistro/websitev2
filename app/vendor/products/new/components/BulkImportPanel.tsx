@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Upload, Loader, ChevronLeft, ChevronRight, X, Sparkles, CheckCircle } from 'lucide-react';
 import SectionHeader from '@/components/ui/SectionHeader';
 import { POSInput, POSLabel, POSSelect, POSTextarea } from '@/components/ui';
+import { PricingBlueprint } from '@/lib/types/product';
 
 interface Category {
   id: string;
@@ -17,7 +18,7 @@ interface BulkProduct {
   cost_price: string;
   pricing_mode: 'single' | 'tiered';
   pricing_tiers: Array<{weight: string, qty: number, price: string}>;
-  custom_fields: Record<string, any>;
+  custom_fields: Record<string, unknown>;
   matched_image_url?: string | null;
 }
 
@@ -25,6 +26,11 @@ interface BulkImage {
   file: File;
   url: string;
   matchedTo: string | null;
+}
+
+interface PricingConfig {
+  id: string;
+  blueprint: PricingBlueprint;
 }
 
 interface BulkImportPanelProps {
@@ -53,8 +59,8 @@ interface BulkImportPanelProps {
   uploadingImages: boolean;
 
   // Pricing templates
-  pricingConfigs: any[];
-  onApplyPricingTemplate: (config: any) => void;
+  pricingConfigs: PricingConfig[];
+  onApplyPricingTemplate: (config: PricingConfig) => void;
 
   // Submission
   bulkProcessing: boolean;
@@ -114,13 +120,13 @@ export default function BulkImportPanel({
     setSelectedFields(newSelected);
   };
 
-  const handleProductFieldChange = (index: number, field: string, value: any) => {
+  const handleProductFieldChange = (index: number, field: string, value: string | number) => {
     const updated = [...bulkProducts];
     if (field.startsWith('custom_fields.')) {
       const blueprintField = field.replace('custom_fields.', '');
       updated[index].custom_fields[blueprintField] = value;
     } else {
-      (updated[index] as any)[field] = value;
+      (updated[index] as Record<string, unknown>)[field] = value;
     }
     onBulkProductsChange(updated);
   };
@@ -431,7 +437,7 @@ export default function BulkImportPanel({
                   {(() => {
                     const currentCategory = categories.find(c => c.id === bulkCategory);
 
-                    return pricingConfigs.filter((config: any) => {
+                    return pricingConfigs.filter((config: PricingConfig) => {
                       const blueprint = config.blueprint;
                       if (!blueprint) return false;
 
@@ -446,7 +452,7 @@ export default function BulkImportPanel({
                       // Check if current category is in applicable list
                       return applicableCategories.includes(currentCategory.id);
                     });
-                  })().map((config: any) => (
+                  })().map((config: PricingConfig) => (
                     <button
                       key={config.id}
                       type="button"

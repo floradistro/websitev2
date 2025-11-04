@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useProducts, useProductCategories } from '@/lib/hooks/useProducts';
 import { useProductFilters } from '@/lib/contexts/ProductFiltersContext';
 import { useAppAuth } from '@/context/AppAuthContext';
@@ -55,10 +55,16 @@ export default function ProductsClient() {
 
     return {
       total: products.length,
-      approved: products.filter((p: any) => p.status === 'published' || p.status === 'approved').length,
-      pending: products.filter((p: any) => p.status === 'pending').length,
-      rejected: products.filter((p: any) => p.status === 'rejected').length,
+      approved: products.filter((p) => p.status === 'published' || p.status === 'approved').length,
+      pending: products.filter((p) => p.status === 'pending').length,
+      rejected: products.filter((p) => p.status === 'rejected').length,
     };
+  }, [products]);
+
+  // Memoize event handlers
+  const handleViewProduct = useCallback((productId: string) => {
+    const product = products.find((p) => p.id === productId);
+    setSelectedProduct(product || null);
   }, [products]);
 
   return (
@@ -136,10 +142,7 @@ export default function ProductsClient() {
               products={products}
               isLoading={isLoading}
               error={error}
-              onViewProduct={(productId) => {
-                const product = products.find((p: any) => p.id === productId);
-                setSelectedProduct(product);
-              }}
+              onViewProduct={handleViewProduct}
             />
 
             {/* Pagination */}

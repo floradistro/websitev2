@@ -187,3 +187,58 @@ export interface FieldGroup {
   is_active: boolean;
   category_id?: string;
 }
+
+// API Response Types
+export interface ValidationErrorDetail {
+  field: string;
+  message: string;
+}
+
+export interface APIErrorResponse {
+  error?: string;
+  details?: ValidationErrorDetail[];
+}
+
+export interface EnrichedProductData {
+  strain_type?: string;
+  lineage?: string;
+  nose?: string[];
+  effects?: string[];
+  terpene_profile?: string[];
+  description?: string;
+}
+
+export interface BulkAIResult {
+  product_name: string;
+  strain_type?: string;
+  lineage?: string;
+  nose?: string[];
+  effects?: string[];
+  terpene_profile?: string[];
+  description?: string;
+}
+
+// Form Data Types
+export interface ProductFormData {
+  name: string;
+  description: string;
+  category_id: string;
+  price: string;
+  cost_price: string;
+  initial_quantity: string;
+}
+
+export interface ProductSubmissionData {
+  name: string;
+  description?: string;
+  category_id: string;
+  product_type?: ProductType;
+  product_visibility?: ProductVisibility;
+  pricing_mode: PricingMode;
+  price?: number;
+  cost_price?: number;
+  pricing_tiers?: PricingTier[];
+  image_urls?: string[];
+  custom_fields?: CustomFields;
+  initial_quantity?: number;
+}

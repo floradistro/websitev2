@@ -3,14 +3,15 @@
 import { useState } from 'react';
 import { Sparkles, X, CheckCircle, Loader } from 'lucide-react';
 import SectionHeader from '@/components/ui/SectionHeader';
+import { DynamicField, EnrichedProductData } from '@/lib/types/product';
 
 interface AIAutofillPanelProps {
   productName: string;
   category: string;
-  dynamicFields: any[];
+  dynamicFields: DynamicField[];
   onAutofill: (selectedFields: string[], customPrompt: string) => Promise<void>;
   loading: boolean;
-  aiSuggestions: any;
+  aiSuggestions: EnrichedProductData | null;
   showSuggestions: boolean;
   onClose: () => void;
   onApply: (selectedFields: string[]) => void;

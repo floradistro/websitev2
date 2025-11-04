@@ -33,9 +33,15 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import { showNotification } from '@/components/NotificationToast';
-import type { PricingMode, PricingTier, CustomFields } from '@/lib/types/product';
+import type {
+  PricingMode,
+  PricingTier,
+  CustomFields,
+  ProductSubmissionData,
+  APIErrorResponse
+} from '@/lib/types/product';
 
 /**
  * Form data structure for single product creation
@@ -286,12 +292,12 @@ export function useSingleProductForm({
         title: 'Images Uploaded',
         message: `${urls.length} image(s) uploaded`,
       });
-    } catch (err: any) {
+    } catch (err) {
       console.error('Failed to upload images:', err);
       showNotification({
         type: 'error',
         title: 'Upload Failed',
-        message: err.message || 'Failed to upload images',
+        message: err instanceof Error ? err.message : 'Failed to upload images',
       });
     } finally {
       setUploadingImages(false);
@@ -473,7 +479,7 @@ export function useSingleProductForm({
           message: `${Object.keys(updates).length} fields populated`,
         });
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error('AI autofill error:', error);
       showNotification({
         type: 'error',
@@ -573,7 +579,7 @@ export function useSingleProductForm({
 
     try {
       // Build product data object
-      const productData: any = {
+      const productData: ProductSubmissionData = {
         name: formData.name,
         description: formData.description,
         category_id: formData.category_id,
@@ -612,12 +618,13 @@ export function useSingleProductForm({
         // Redirect after short delay
         setTimeout(() => router.push('/vendor/products'), 1500);
       }
-    } catch (err: any) {
+    } catch (err) {
       console.error('Error submitting product:', err);
+      const axiosError = err as AxiosError<APIErrorResponse>;
       showNotification({
         type: 'error',
         title: 'Submission Error',
-        message: err.response?.data?.error || 'Failed to create product',
+        message: axiosError.response?.data?.error || 'Failed to create product',
       });
     } finally {
       setLoading(false);

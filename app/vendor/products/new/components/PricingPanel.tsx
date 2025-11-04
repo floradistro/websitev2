@@ -21,7 +21,10 @@ interface PricingPanelProps {
   newTierQty: string;
   newTierPrice: string;
   onPricingModeChange: (mode: 'single' | 'tiered') => void;
-  onFormDataChange: (formData: any) => void;
+  onFormDataChange: (formData: {
+    price: string;
+    cost_price: string;
+  }) => void;
   onNewTierChange: (field: 'weight' | 'qty' | 'price', value: string) => void;
   onAddTier: () => void;
   onUpdateTier: (index: number, field: string, value: string) => void;
