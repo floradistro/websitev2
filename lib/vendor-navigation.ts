@@ -111,18 +111,18 @@ export const vendorNavItems: NavItem[] = [
   },
   {
     href: '/vendor/marketing',
-    icon: Megaphone,
+    icon: Wallet,
     label: 'Marketing',
-    description: 'Campaigns & loyalty',
+    description: 'Digital loyalty & wallet',
     isCore: false,
     group: 'sales',
     appKey: 'marketing'
   },
   {
-    href: '/vendor/apple-wallet',
-    icon: Wallet,
-    label: 'Apple Wallet',
-    description: 'Digital loyalty cards',
+    href: '/vendor/legacy-marketing',
+    icon: Megaphone,
+    label: 'Legacy Marketing',
+    description: 'Campaigns & segments',
     isCore: false,
     group: 'sales',
     appKey: 'marketing'

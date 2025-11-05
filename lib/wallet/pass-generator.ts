@@ -160,28 +160,43 @@ export class WalletPassGenerator {
     // Template folder path
     const templatePath = path.join(process.cwd(), 'lib/wallet/pass-template.pass');
 
-    // Create pass instance from template folder
-    const pass = await PKPass.from({
-      model: templatePath,
-      certificates: {
-        wwdr,
-        signerCert,
-        signerKey,
-        signerKeyPassphrase: this.certPassword,
+    // Create pass instance from template folder with overrides
+    const pass = await PKPass.from(
+      {
+        model: templatePath,
+        certificates: {
+          wwdr,
+          signerCert,
+          signerKey,
+          signerKeyPassphrase: this.certPassword,
+        },
       },
+      {
+        // Pass identification
+        serialNumber: passRecord.serial_number,
+        authenticationToken: passRecord.authentication_token,
+
+        // Branding
+        organizationName: vendorSettings?.organization_name || branding.organizationName,
+        description: vendorSettings?.description || `${vendor.store_name} Loyalty Card`,
+        logoText: vendorSettings?.logo_text || branding.logoText,
+        foregroundColor: vendorSettings?.foreground_color || branding.foregroundColor,
+        backgroundColor: vendorSettings?.background_color || branding.backgroundColor,
+
+        // Web service for updates
+        webServiceURL: `${WALLET_CONFIG.webServiceURL}/api/wallet/v1`,
+      }
+    );
+
+    // Update barcodes after creation
+    pass.setBarcodes({
+      message: passRecord.pass_data.barcode_message,
+      format: 'PKBarcodeFormatQR',
+      messageEncoding: 'iso-8859-1',
     });
 
-    // Set pass properties
-    pass.serialNumber = passRecord.serial_number;
-    pass.authenticationToken = passRecord.authentication_token;
-    pass.organizationName = vendorSettings?.organization_name || branding.organizationName;
-    pass.description = vendorSettings?.description || `${vendor.store_name} Loyalty Card`;
-    pass.logoText = vendorSettings?.logo_text || branding.logoText;
-    pass.foregroundColor = vendorSettings?.foreground_color || branding.foregroundColor;
-    pass.backgroundColor = vendorSettings?.background_color || branding.backgroundColor;
-    pass.webServiceURL = `${WALLET_CONFIG.webServiceURL}/api/wallet/v1`;
-
-    // Update primary field (points)
+    // Update store card fields
+    pass.primaryFields.pop(); // Remove template placeholder
     pass.primaryFields.push({
       key: 'points',
       label: 'Points',
@@ -189,7 +204,10 @@ export class WalletPassGenerator {
       changeMessage: 'Your points balance is now %@',
     });
 
-    // Update secondary fields
+    // Clear and update secondary fields
+    while (pass.secondaryFields.length > 0) {
+      pass.secondaryFields.pop();
+    }
     pass.secondaryFields.push(
       {
         key: 'tier',
@@ -202,13 +220,6 @@ export class WalletPassGenerator {
         value: passRecord.pass_data.member_name,
       }
     );
-
-    // Update barcode
-    pass.barcodes = {
-      format: 'PKBarcodeFormatQR',
-      message: passRecord.pass_data.barcode_message,
-      messageEncoding: 'iso-8859-1',
-    };
 
     // Add logo and icon images
     if (logoBuffer) {
