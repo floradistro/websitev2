@@ -26,19 +26,40 @@ export async function createRepositoryFromTemplate(options: CreateRepoOptions) {
   try {
     const octokit = getVendorOctokit(vendorAccessToken)
 
-    // Create repo from template in VENDOR's account
-    const { data: repo } = await octokit.repos.createUsingTemplate({
-      template_owner: TEMPLATE_OWNER,
-      template_repo: TEMPLATE_REPO,
-      owner: vendorUsername,
-      name,
-      description,
-      private: isPrivate,
-      include_all_branches: false
-    })
+    // Try to create repo from template in VENDOR's account
+    try {
+      const { data: repo } = await octokit.repos.createUsingTemplate({
+        template_owner: TEMPLATE_OWNER,
+        template_repo: TEMPLATE_REPO,
+        owner: vendorUsername,
+        name,
+        description,
+        private: isPrivate,
+        include_all_branches: false
+      })
 
-    console.log(`Created repo: ${repo.full_name}`)
-    return repo
+      console.log(`Created repo from template: ${repo.full_name}`)
+      return repo
+    } catch (templateError: any) {
+      // If template doesn't exist (404), create a simple empty repo
+      if (templateError.status === 404) {
+        console.log(`Template not found, creating empty repository: ${name}`)
+
+        const { data: repo } = await octokit.repos.createForAuthenticatedUser({
+          name,
+          description,
+          private: isPrivate,
+          auto_init: true,
+          gitignore_template: 'Node'
+        })
+
+        console.log(`Created empty repo: ${repo.full_name}`)
+        return repo
+      }
+
+      // If it's not a 404, throw the error
+      throw templateError
+    }
   } catch (error: any) {
     console.error('Error creating GitHub repo:', error)
     throw new Error(`Failed to create repository: ${error.message}`)

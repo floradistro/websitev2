@@ -334,7 +334,8 @@ export class AlpineIQClient {
       start: params?.start?.toString() || '0',
       limit: params?.limit?.toString() || '100',
     });
-    return this.request('GET', `/api/v1.1/audiences/${this.config.userId}?${query}`);
+    const result = await this.request<any>('GET', `/api/v1.1/audiences/${this.config.userId}?${query}`);
+    return result.data || result;
   }
 
   /**
@@ -352,6 +353,90 @@ export class AlpineIQClient {
    */
   async getAudienceMembers(audienceId: string): Promise<string[]> {
     return this.request('GET', `/api/v2/audience/members/${audienceId}`);
+  }
+
+  /**
+   * Create a custom audience from contact IDs
+   * This is required before creating campaigns
+   */
+  async createAudience(params: {
+    name: string;
+    contactIDs: string[];
+  }): Promise<{ audienceId: string }> {
+    const result = await this.request<{ id: string; audienceId: string }>(
+      'POST',
+      `/api/v1.1/audience/${this.config.userId}`,
+      {
+        name: params.name,
+        contactIDs: params.contactIDs,
+      }
+    );
+    return { audienceId: result.id || result.audienceId };
+  }
+
+  /**
+   * Create audience from phone numbers
+   * Looks up contact IDs first, then creates audience
+   */
+  async createAudienceFromPhones(params: {
+    name: string;
+    phoneNumbers: string[];
+  }): Promise<{ audienceId: string; matchedCount: number }> {
+    // Lookup contact IDs for each phone number
+    const contactIDs: string[] = [];
+
+    for (const phone of params.phoneNumbers) {
+      const contactId = await this.lookupCustomerByPhone(phone);
+      if (contactId) {
+        contactIDs.push(contactId);
+      }
+    }
+
+    // Create audience with matched contacts
+    if (contactIDs.length === 0) {
+      throw new Error('No contacts found for provided phone numbers');
+    }
+
+    const result = await this.createAudience({
+      name: params.name,
+      contactIDs,
+    });
+
+    return {
+      audienceId: result.audienceId,
+      matchedCount: contactIDs.length,
+    };
+  }
+
+  /**
+   * Create audience from email addresses
+   */
+  async createAudienceFromEmails(params: {
+    name: string;
+    emails: string[];
+  }): Promise<{ audienceId: string; matchedCount: number }> {
+    const contactIDs: string[] = [];
+
+    for (const email of params.emails) {
+      const contactId = await this.lookupCustomerByEmail(email);
+      if (contactId) {
+        contactIDs.push(contactId);
+      }
+    }
+
+    if (contactIDs.length === 0) {
+      throw new Error('No contacts found for provided emails');
+    }
+
+    const result = await this.createAudience({
+      name: params.name,
+      contactIDs,
+    });
+
+    return {
+      audienceId: result.audienceId,
+      matchedCount: contactIDs.length,
+    };
   }
 
   // ----------------------------------------------------------------------------
@@ -568,6 +653,162 @@ export class AlpineIQClient {
       console.error(`Failed to lookup customer ${emailOrPhone}:`, error);
       return null;
     }
+  }
+
+  // ----------------------------------------------------------------------------
+  // CAMPAIGNS - CREATE & SEND (NEW)
+  // ----------------------------------------------------------------------------
+
+  /**
+   * Create SMS campaign with optional landing page
+   *
+   * NOTE: Message content must use pre-approved templates due to 10DLC compliance
+   *
+   * How it works:
+   * 1. messageContent must be an approved template from Alpine IQ dashboard
+   * 2. Template can include {link} placeholder for landing page
+   * 3. If landingHTML provided, Alpine IQ generates short link and replaces {link}
+   * 4. Customer receives SMS with link to your landing page
+   *
+   * Example:
+   *   messageContent: "Special offer! {link}"  (approved template)
+   *   landingHTML: "<h1>25% Off Today!</h1>"
+   *   Customer gets: "Special offer! https://aiq.co/abc123"
+   *
+   * Contact Alpine IQ support to get list of approved message templates
+   */
+  async createSMSCampaign(params: {
+    campaignName: string;
+    messageContent: string;  // Must be approved template (e.g., "Special offer! {link}")
+    landingHTML?: string;    // Optional: HTML for landing page (if template has {link})
+    landingType?: string;    // Optional: 'custom' | 'template'
+    phoneList?: string[];    // Array of phone numbers
+    emailList?: string[];    // Or array of emails
+    contactIDs?: string[];   // Or array of contact IDs
+    audienceId?: string;     // Or use audience
+    startDate?: Date;        // When to send (default: now + 1 hour)
+    sendNow?: boolean;       // Send immediately
+  }): Promise<{ campaignId: string }> {
+    const startDate = params.startDate || new Date(Date.now() + 3600000);
+    const startTimestamp = Math.floor(startDate.getTime() / 1000);
+
+    const payload: any = {
+      campaignName: params.campaignName,
+      campaignType: 'TEXT',
+      messageContent: params.messageContent,
+      userId: this.config.userId,
+      startDate: startTimestamp,
+    };
+
+    // Add landing page if provided
+    if (params.landingHTML) {
+      payload.landingHTML = params.landingHTML;
+      payload.landingType = params.landingType || 'custom';
+    }
+
+    // Add targeting (at least one required)
+    if (params.phoneList) payload.phoneList = params.phoneList;
+    if (params.emailList) payload.emailList = params.emailList;
+    if (params.contactIDs) payload.contactIDs = params.contactIDs;
+    if (params.audienceId) payload.audienceId = params.audienceId;
+
+    const result = await this.request<{ id: string; campaignId: string }>(
+      'POST',
+      '/api/v2/campaign',
+      payload
+    );
+
+    return { campaignId: result.id || result.campaignId };
+  }
+
+  /**
+   * Create email campaign
+   */
+  async createEmailCampaign(params: {
+    campaignName: string;
+    subject: string;
+    messageContent: string; // HTML content
+    emailList?: string[];
+    contactIDs?: string[];
+    audienceId?: string;
+    startDate?: Date;
+  }): Promise<{ campaignId: string }> {
+    const startDate = params.startDate || new Date(Date.now() + 3600000);
+    const startTimestamp = Math.floor(startDate.getTime() / 1000);
+
+    const payload: any = {
+      campaignName: params.campaignName,
+      campaignType: 'EMAIL',
+      messageContent: params.messageContent,
+      subject: params.subject,
+      userId: this.config.userId,
+      startDate: startTimestamp,
+    };
+
+    if (params.emailList) payload.emailList = params.emailList;
+    if (params.contactIDs) payload.contactIDs = params.contactIDs;
+    if (params.audienceId) payload.audienceId = params.audienceId;
+
+    const result = await this.request<{ id: string; campaignId: string }>(
+      'POST',
+      '/api/v2/campaign',
+      payload
+    );
+
+    return { campaignId: result.id || result.campaignId };
+  }
+
+  /**
+   * Send SMS to a list of customers using your database
+   * This wraps createSMSCampaign with a simpler interface
+   */
+  async sendBulkSMS(params: {
+    customers: Array<{ phone: string }>;
+    message: string;           // Approved template (e.g., "Special offer! {link}")
+    landingHTML?: string;      // Optional: Landing page HTML
+    campaignName?: string;
+    sendAt?: Date;
+  }): Promise<{ campaignId: string; recipientCount: number }> {
+    const phoneList = params.customers.map(c => c.phone).filter(Boolean);
+
+    const result = await this.createSMSCampaign({
+      campaignName: params.campaignName || `SMS ${new Date().toLocaleDateString()}`,
+      messageContent: params.message,
+      landingHTML: params.landingHTML,
+      phoneList,
+      startDate: params.sendAt,
+    });
+
+    return {
+      campaignId: result.campaignId,
+      recipientCount: phoneList.length,
+    };
+  }
+
+  /**
+   * Send email to a list of customers
+   */
+  async sendBulkEmail(params: {
+    customers: Array<{ email: string }>;
+    subject: string;
+    htmlContent: string;
+    campaignName?: string;
+    sendAt?: Date;
+  }): Promise<{ campaignId: string; recipientCount: number }> {
+    const emailList = params.customers.map(c => c.email).filter(Boolean);
+
+    const result = await this.createEmailCampaign({
+      campaignName: params.campaignName || `Email ${new Date().toLocaleDateString()}`,
+      subject: params.subject,
+      messageContent: params.htmlContent,
+      emailList,
+      startDate: params.sendAt,
+    });
+
+    return {
+      campaignId: result.campaignId,
+      recipientCount: emailList.length,
+    };
   }
 
   // ----------------------------------------------------------------------------

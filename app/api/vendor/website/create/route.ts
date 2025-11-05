@@ -5,23 +5,28 @@ import { createRepositoryFromTemplate } from '@/lib/deployment/github';
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('🔍 Create website repository endpoint called');
+
     // Verify vendor authentication
     const authResult = await requireVendor(request);
     if (authResult instanceof NextResponse) {
+      console.log('❌ Auth failed - returning error response');
       return authResult;
     }
     const { vendorId } = authResult;
+    console.log('✅ Auth success - vendorId:', vendorId);
 
     const supabase = getServiceSupabase();
 
     // Get vendor info
     const { data: vendor, error: vendorError } = await supabase
       .from('vendors')
-      .select('store_name, store_slug, github_access_token, github_username')
+      .select('store_name, slug, github_access_token, github_username')
       .eq('id', vendorId)
       .single();
 
     if (vendorError || !vendor) {
+      console.error('Vendor not found:', vendorError);
       return NextResponse.json(
         { error: 'Vendor not found' },
         { status: 404 }
@@ -29,6 +34,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (!vendor.github_access_token || !vendor.github_username) {
+      console.error('GitHub not connected for vendor');
       return NextResponse.json(
         { error: 'Please connect your GitHub account first' },
         { status: 400 }
@@ -36,8 +42,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Create repository in vendor's GitHub account
-    const repoName = `${vendor.store_slug}-storefront`;
+    const repoName = `${vendor.slug}-storefront`;
     const description = `${vendor.store_name} - Cannabis Storefront`;
+    console.log('Creating repo:', repoName);
 
     const repo = await createRepositoryFromTemplate({
       vendorAccessToken: vendor.github_access_token,

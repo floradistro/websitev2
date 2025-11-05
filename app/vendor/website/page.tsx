@@ -21,6 +21,20 @@ export default function VendorWebsitePage() {
 
   useEffect(() => {
     fetchStatus();
+
+    // Check for success/error params in URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const success = urlParams.get('success');
+    const error = urlParams.get('error');
+
+    if (success === 'github_connected') {
+      console.log('✅ GitHub connected successfully!');
+      // Refetch status to show updated connection
+      setTimeout(() => fetchStatus(), 500);
+    } else if (error) {
+      console.error('❌ GitHub connection error:', error);
+      alert(`GitHub connection failed: ${error}`);
+    }
   }, []);
 
   const fetchStatus = async () => {
@@ -47,16 +61,36 @@ export default function VendorWebsitePage() {
     const clientId = process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID;
 
     // Get vendor ID from localStorage (set during login)
-    const floraUserStr = localStorage.getItem('flora-user');
+    // Try multiple sources: app_user (vendor login), flora-user (customer login), or direct vendor_id key
     let vendorId = null;
 
-    if (floraUserStr) {
+    // Try app_user first (vendor dashboard login)
+    const appUserStr = localStorage.getItem('app_user');
+    if (appUserStr) {
       try {
-        const floraUser = JSON.parse(floraUserStr);
-        vendorId = floraUser.vendor_id || floraUser.vendorId;
+        const appUser = JSON.parse(appUserStr);
+        vendorId = appUser.vendor_id;
       } catch (e) {
-        console.error('Failed to parse flora-user from localStorage:', e);
+        console.error('Failed to parse app_user:', e);
       }
+    }
+
+    // Fallback to flora-user (customer login)
+    if (!vendorId) {
+      const floraUserStr = localStorage.getItem('flora-user');
+      if (floraUserStr) {
+        try {
+          const floraUser = JSON.parse(floraUserStr);
+          vendorId = floraUser.vendor_id || floraUser.vendorId;
+        } catch (e) {
+          console.error('Failed to parse flora-user:', e);
+        }
+      }
+    }
+
+    // Fallback to direct vendor_id key
+    if (!vendorId) {
+      vendorId = localStorage.getItem('vendor_id');
     }
 
     if (!vendorId) {
