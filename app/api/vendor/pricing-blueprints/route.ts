@@ -38,7 +38,9 @@ export async function GET(request: NextRequest) {
         label: tier.label,
         qty: tier.quantity,
         unit: tier.unit,
-        sort_order: tier.sort_order
+        sort_order: tier.sort_order,
+        default_price: tier.default_price, // Include configured price
+        price: tier.default_price // Also include as 'price' for compatibility
       })),
       // Map category_id to applicable_to_categories array for frontend
       applicable_to_categories: template.category_id ? [template.category_id] : []
