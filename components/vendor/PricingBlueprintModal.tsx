@@ -198,10 +198,10 @@ export function PricingBlueprintModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-      <div className={cn(ds.components.card, "w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-2xl flex flex-col")}>
+      <div className={cn(ds.components.card, "w-full max-w-2xl max-h-[80vh] overflow-y-auto rounded-2xl flex flex-col")}>
         {/* Header */}
         <div className="flex items-center justify-between mb-6 flex-shrink-0">
-          <h2 className={cn(ds.typography.size.h3, ds.typography.weight.semibold, ds.colors.text.primary)}>
+          <h2 className={cn(ds.typography.size.xl, ds.typography.weight.semibold, ds.colors.text.primary)}>
             {isEditMode ? 'Edit Pricing Template' : 'New Pricing Template'}
           </h2>
           <button

@@ -43,6 +43,8 @@ export async function GET(request: NextRequest) {
         stock_status,
         status,
         primary_category_id,
+        pricing_data,
+        custom_fields,
         categories:primary_category_id(
           id,
           name,
@@ -91,11 +93,26 @@ export async function GET(request: NextRequest) {
       `)
       .eq('product_id', product.id);
 
+    // Extract pricing tiers from pricing_data
+    const pricingData = product.pricing_data || {};
+    const pricingTiers: any[] = (pricingData.tiers || [])
+      .filter((tier: any) => tier.enabled !== false && tier.price)
+      .map((tier: any) => ({
+        break_id: tier.id,
+        label: tier.label,
+        qty: tier.quantity || 1,
+        unit: tier.unit || '',
+        price: parseFloat(tier.price),
+        sort_order: tier.sort_order || 0
+      }))
+      .sort((a: any, b: any) => a.sort_order - b.sort_order);
+
     // Build response
     const response = {
       success: true,
       product: {
         ...product,
+        pricing_tiers: pricingTiers,
         inventory: inventory || {
           quantity: 0,
           available_quantity: 0,
@@ -153,7 +170,9 @@ export async function POST(request: NextRequest) {
         featured_image,
         cost_price,
         stock_status,
-        status
+        status,
+        pricing_data,
+        custom_fields
       `)
       .in('sku', skus)
       .eq('status', 'published');
@@ -176,15 +195,32 @@ export async function POST(request: NextRequest) {
       inventoryMap.set(inv.product_id, inv);
     });
 
-    // Combine products with inventory
-    const productsWithInventory = products?.map(product => ({
-      ...product,
-      inventory: inventoryMap.get(product.id) || {
-        quantity: 0,
-        available_quantity: 0,
-        stock_status: 'out_of_stock'
-      }
-    }));
+    // Combine products with inventory and pricing tiers
+    const productsWithInventory = products?.map(product => {
+      // Extract pricing tiers from pricing_data
+      const pricingData = product.pricing_data || {};
+      const pricingTiers: any[] = (pricingData.tiers || [])
+        .filter((tier: any) => tier.enabled !== false && tier.price)
+        .map((tier: any) => ({
+          break_id: tier.id,
+          label: tier.label,
+          qty: tier.quantity || 1,
+          unit: tier.unit || '',
+          price: parseFloat(tier.price),
+          sort_order: tier.sort_order || 0
+        }))
+        .sort((a: any, b: any) => a.sort_order - b.sort_order);
+
+      return {
+        ...product,
+        pricing_tiers: pricingTiers,
+        inventory: inventoryMap.get(product.id) || {
+          quantity: 0,
+          available_quantity: 0,
+          stock_status: 'out_of_stock'
+        }
+      };
+    });
 
     return NextResponse.json({
       success: true,

@@ -420,12 +420,7 @@ function TVDisplayContent() {
         });
       }
 
-      // Check if pricing configs are loaded yet
-      console.log('💵 Pricing config map size:', configMap.size, 'entries');
-      if (configMap.size === 0) {
-        console.log('⚠️  WARNING: No vendor pricing configs loaded yet! Products will show "No pricing".');
-        console.log('   This usually means vendorConfigs is still loading or empty.');
-      }
+      // Pricing is now embedded in products.pricing_data - no separate config needed
 
       // Enrich products with actual prices and promotions
       let isFirstProduct = true;
@@ -438,52 +433,14 @@ function TVDisplayContent() {
           custom_fields: product.custom_fields || []
         };
 
-        if (product.pricing_assignments && product.pricing_assignments.length > 0) {
-          let assignment;
-
-          // Priority 1: If device is in a display group, use that group's pricing tier
-          if (displayGroup?.pricing_tier_id) {
-            assignment = product.pricing_assignments.find(
-              (a: any) => a.blueprint_id === displayGroup.pricing_tier_id && a.is_active
-            );
-            if (assignment) {
-              console.log(`💰 Using display group pricing tier for ${product.name}:`, displayGroup.name);
-            }
-          }
-
-          // Priority 2: Fall back to first active assignment
-          if (!assignment) {
-            assignment = product.pricing_assignments[0];
-          }
-
-          if (assignment) {
-            const blueprint = assignment.blueprint;
-            const vendorPrices = configMap.get(assignment.blueprint_id) || {};
-            const productOverrides = assignment.price_overrides || {};
-
-            // Merge vendor prices with product overrides (product overrides take priority)
-            const finalPrices = { ...vendorPrices, ...productOverrides };
-
-            // Debug first product's pricing
-            if (isFirstProduct) {
-              console.log('💰 First product pricing:', {
-                product: productWithPricing.name,
-                blueprint_id: assignment.blueprint_id,
-                has_vendor_prices: Object.keys(vendorPrices).length > 0,
-                vendor_prices: vendorPrices,
-                has_product_overrides: Object.keys(productOverrides).length > 0,
-                product_overrides: productOverrides,
-                final_prices: finalPrices
-              });
-              isFirstProduct = false;
-            }
-
-            productWithPricing = {
-              ...productWithPricing,  // Keep the mapped fields (image_url, metadata)
-              pricing_blueprint: blueprint,
-              pricing_tiers: finalPrices
-            };
-          }
+        // Pricing tiers are already embedded in product.pricing_tiers from the API
+        // No need to fetch separate configs - the TV display API already transformed pricing_data
+        if (isFirstProduct && product.pricing_tiers) {
+          console.log('💰 First product pricing:', {
+            product: productWithPricing.name,
+            pricing_tiers: product.pricing_tiers
+          });
+          isFirstProduct = false;
         }
 
         // Apply promotions if any

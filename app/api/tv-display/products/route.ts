@@ -106,7 +106,7 @@ export async function GET(request: NextRequest) {
             enabled: tier.enabled !== false
           }
         }))
-        .reduce((acc, tier) => ({ ...acc, ...tier }), {});
+        .reduce((acc: any, tier: any) => ({ ...acc, ...tier }), {});
 
       // If no tiers, fall back to single price
       const pricing_tiers = Object.keys(pricingTiers).length > 0

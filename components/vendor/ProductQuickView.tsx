@@ -146,7 +146,7 @@ export function ProductQuickView({ product, vendorId, isOpen, onClose, onSave, o
               return applicableCategories.includes(product.category_id);
             });
 
-            console.log('[ProductQuickView] Filtered blueprints:', filteredBlueprints.length, filteredBlueprints.map(b => b.name));
+            console.log('[ProductQuickView] Filtered blueprints:', filteredBlueprints.length, filteredBlueprints.map((b: any) => b.name));
             setAvailableBlueprints(filteredBlueprints);
           }
         })
@@ -281,7 +281,7 @@ export function ProductQuickView({ product, vendorId, isOpen, onClose, onSave, o
         .map(priceBreak => ({
           weight: priceBreak.label,
           qty: priceBreak.qty,
-          price: priceBreak.default_price?.toString() || '' // Use template's configured price
+          price: priceBreak.price?.toString() || '' // Use template's configured price
         }));
 
       setPricingTiers(tiers);
