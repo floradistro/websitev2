@@ -19,15 +19,30 @@ export async function GET(request: NextRequest) {
 
     const supabase = getServiceSupabase();
 
-    // Get only vendor-specific blueprints
-    const { data: blueprints, error } = await supabase
-      .from('pricing_tier_blueprints')
+    // Get only vendor-specific templates (renamed from blueprints)
+    const { data: templates, error } = await supabase
+      .from('pricing_tier_templates')
       .select('*')
       .eq('vendor_id', vendorId)
       .eq('is_active', true)
       .order('display_order', { ascending: true });
 
     if (error) throw error;
+
+    // Transform templates to match old blueprint format for frontend compatibility
+    const blueprints = (templates || []).map((template: any) => ({
+      ...template,
+      // Map default_tiers to price_breaks for frontend
+      price_breaks: (template.default_tiers || []).map((tier: any) => ({
+        break_id: tier.id,
+        label: tier.label,
+        qty: tier.quantity,
+        unit: tier.unit,
+        sort_order: tier.sort_order
+      })),
+      // Map category_id to applicable_to_categories array for frontend
+      applicable_to_categories: template.category_id ? [template.category_id] : []
+    }));
 
     return NextResponse.json({
       success: true,
@@ -81,7 +96,7 @@ export async function POST(request: NextRequest) {
 
     let finalSlug = baseSlug;
     const { data: existing } = await supabase
-      .from('pricing_tier_blueprints')
+      .from('pricing_tier_templates')
       .select('slug')
       .eq('slug', baseSlug)
       .eq('vendor_id', vendorId)
@@ -93,7 +108,7 @@ export async function POST(request: NextRequest) {
 
     // Get next display order for this vendor
     const { data: lastBlueprint } = await supabase
-      .from('pricing_tier_blueprints')
+      .from('pricing_tier_templates')
       .select('display_order')
       .eq('vendor_id', vendorId)
       .order('display_order', { ascending: false })
@@ -102,20 +117,28 @@ export async function POST(request: NextRequest) {
 
     const displayOrder = lastBlueprint ? lastBlueprint.display_order + 1 : 100;
 
+    // Convert price_breaks to default_tiers format (templates store structure, not prices)
+    const default_tiers = price_breaks.map((pb: any) => ({
+      id: pb.break_id,
+      label: pb.label,
+      quantity: pb.qty,
+      unit: pb.unit,
+      default_price: null, // Templates don't store prices
+      sort_order: pb.sort_order
+    }));
+
     const { data: blueprint, error } = await supabase
-      .from('pricing_tier_blueprints')
+      .from('pricing_tier_templates')
       .insert({
         name,
         slug: finalSlug,
         description: description || null,
-        tier_type: tier_type || 'weight', // Default to weight-based pricing
         quality_tier: quality_tier || null, // Optional quality level
-        context,
-        price_breaks,
-        applicable_to_categories: applicable_to_categories || [],
+        default_tiers, // Store tier structure
+        category_id: applicable_to_categories && applicable_to_categories.length > 0 ? applicable_to_categories[0] : null, // Single category
         display_order: displayOrder,
         is_active: true,
-        vendor_id: vendorId // TRUE MULTI-TENANT: Vendor owns this blueprint
+        vendor_id: vendorId // TRUE MULTI-TENANT: Vendor owns this template
       })
       .select()
       .single();
@@ -161,9 +184,9 @@ export async function PUT(request: NextRequest) {
 
     const supabase = getServiceSupabase();
 
-    // Verify vendor owns this blueprint
+    // Verify vendor owns this template
     const { data: existing, error: fetchError } = await supabase
-      .from('pricing_tier_blueprints')
+      .from('pricing_tier_templates')
       .select('vendor_id')
       .eq('id', id)
       .single();
@@ -184,15 +207,26 @@ export async function PUT(request: NextRequest) {
     const updateData: any = {};
     if (name) updateData.name = name;
     if (description !== undefined) updateData.description = description;
-    if (tier_type) updateData.tier_type = tier_type;
     if (quality_tier !== undefined) updateData.quality_tier = quality_tier;
-    if (price_breaks) updateData.price_breaks = price_breaks;
-    if (applicable_to_categories !== undefined) updateData.applicable_to_categories = applicable_to_categories;
+    if (price_breaks) {
+      // Convert price_breaks to default_tiers format
+      updateData.default_tiers = price_breaks.map((pb: any) => ({
+        id: pb.break_id,
+        label: pb.label,
+        quantity: pb.qty,
+        unit: pb.unit,
+        default_price: null,
+        sort_order: pb.sort_order
+      }));
+    }
+    if (applicable_to_categories !== undefined) {
+      updateData.category_id = applicable_to_categories && applicable_to_categories.length > 0 ? applicable_to_categories[0] : null;
+    }
 
     console.log('📝 Update data:', JSON.stringify(updateData, null, 2));
 
     const { data: blueprint, error } = await supabase
-      .from('pricing_tier_blueprints')
+      .from('pricing_tier_templates')
       .update(updateData)
       .eq('id', id)
       .select()
@@ -243,9 +277,9 @@ export async function DELETE(request: NextRequest) {
 
     const supabase = getServiceSupabase();
 
-    // Verify vendor owns this blueprint
+    // Verify vendor owns this template
     const { data: existing, error: fetchError } = await supabase
-      .from('pricing_tier_blueprints')
+      .from('pricing_tier_templates')
       .select('vendor_id')
       .eq('id', blueprintId)
       .single();
@@ -259,23 +293,24 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    // Check if blueprint is being used by any vendor configs
-    const { data: configs } = await supabase
-      .from('vendor_pricing_configs')
+    // Check if template is being used by any products (check pricing_data for template_id)
+    const { data: products } = await supabase
+      .from('products')
       .select('id')
-      .eq('blueprint_id', blueprintId)
+      .eq('vendor_id', vendorId)
+      .contains('pricing_data', { template_id: blueprintId })
       .limit(1);
 
-    if (configs && configs.length > 0) {
+    if (products && products.length > 0) {
       return NextResponse.json(
-        { error: 'Cannot delete pricing blueprint that is in use' },
+        { error: 'Cannot delete pricing template that is in use by products' },
         { status: 400 }
       );
     }
 
     // Soft delete by setting is_active = false
     const { error } = await supabase
-      .from('pricing_tier_blueprints')
+      .from('pricing_tier_templates')
       .update({ is_active: false })
       .eq('id', blueprintId);
 
