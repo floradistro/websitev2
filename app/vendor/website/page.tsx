@@ -25,7 +25,9 @@ export default function VendorWebsitePage() {
 
   const fetchStatus = async () => {
     try {
-      const { data } = await axios.get('/api/vendor/website/status');
+      const { data } = await axios.get('/api/vendor/website/status', {
+        withCredentials: true,
+      });
       setStatus(data);
     } catch (error) {
       console.error('Error fetching website status:', error);
@@ -47,7 +49,9 @@ export default function VendorWebsitePage() {
   const createWebsite = async () => {
     setCreating(true);
     try {
-      const { data } = await axios.post('/api/vendor/website/create');
+      const { data } = await axios.post('/api/vendor/website/create', {}, {
+        withCredentials: true,
+      });
       await fetchStatus();
       alert('Website repository created successfully!');
     } catch (error: any) {
