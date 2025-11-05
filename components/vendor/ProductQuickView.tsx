@@ -274,26 +274,15 @@ export function ProductQuickView({ product, vendorId, isOpen, onClose, onSave, o
     }
 
     try {
-      // Fetch vendor's pricing config for this blueprint
-      const response = await axios.get(`/api/vendor/pricing-config?blueprint_id=${selectedBlueprintId}`, {
-        headers: { 'x-vendor-id': vendorId }
-      });
-
-      const pricingValues = response.data.config?.pricing_values || {};
-
-      // Convert price_breaks to pricing tiers with vendor prices
+      // Templates now store the configured prices in default_tiers
+      // The API transforms default_tiers to price_breaks format with prices included
       const tiers: PricingTier[] = blueprint.price_breaks
         .sort((a, b) => a.sort_order - b.sort_order)
-        .map(priceBreak => {
-          const breakId = priceBreak.break_id;
-          const vendorPrice = pricingValues[breakId]?.price || '0';
-
-          return {
-            weight: priceBreak.label,
-            qty: priceBreak.qty,
-            price: vendorPrice
-          };
-        });
+        .map(priceBreak => ({
+          weight: priceBreak.label,
+          qty: priceBreak.qty,
+          price: priceBreak.default_price?.toString() || '' // Use template's configured price
+        }));
 
       setPricingTiers(tiers);
       setPricingMode('tiered');
