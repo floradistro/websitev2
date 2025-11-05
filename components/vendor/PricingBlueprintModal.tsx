@@ -197,10 +197,10 @@ export function PricingBlueprintModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 overflow-y-auto">
-      <div className={cn(ds.components.card, "w-full max-w-3xl my-8 rounded-2xl")}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+      <div className={cn(ds.components.card, "w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-2xl flex flex-col")}>
         {/* Header */}
-        <div className="flex items-center justify-between mb-6 sticky top-0 bg-inherit z-10 pb-4 border-b border-white/10">
+        <div className="flex items-center justify-between mb-6 flex-shrink-0">
           <h2 className={cn(ds.typography.size.h3, ds.typography.weight.semibold, ds.colors.text.primary)}>
             {isEditMode ? 'Edit Pricing Template' : 'New Pricing Template'}
           </h2>
@@ -328,7 +328,7 @@ export function PricingBlueprintModal({
               </button>
             </div>
 
-            <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
+            <div className="space-y-3">
               {priceBreaks.map((tier, index) => (
                 <div key={tier.break_id} className={cn(ds.colors.bg.secondary, "p-4 rounded-xl border border-white/10")}>
                   <div className="grid grid-cols-12 gap-3 items-end">
@@ -424,7 +424,7 @@ export function PricingBlueprintModal({
           </div>
 
           {/* Actions */}
-          <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
+          <div className="flex justify-end gap-3 pt-4 mt-6 border-t border-white/10 flex-shrink-0 sticky bottom-0 bg-inherit">
             <button
               type="button"
               onClick={onClose}
