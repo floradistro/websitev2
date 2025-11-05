@@ -13,6 +13,7 @@ import { useAppAuth } from '@/context/AppAuthContext';
 import { Button, Input, Textarea, ds, cn } from '@/components/ds';
 import { useSingleProductForm } from './hooks/useSingleProductForm';
 import { useBulkImportForm } from './hooks/useBulkImportForm';
+import PricingPanel from './components/PricingPanel';
 import axios from 'axios';
 
 interface Category {
@@ -44,6 +45,11 @@ export default function NewProductClient() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [dynamicFields, setDynamicFields] = useState<DynamicField[]>([]);
   const [loadingFields, setLoadingFields] = useState(false);
+
+  // New tier state for PricingPanel
+  const [newTierWeight, setNewTierWeight] = useState('');
+  const [newTierQty, setNewTierQty] = useState('');
+  const [newTierPrice, setNewTierPrice] = useState('');
 
   // ===========================
   // HOOKS - FORM LOGIC
@@ -203,6 +209,33 @@ export default function NewProductClient() {
   }, {} as Record<string, DynamicField[]>);
 
   // ===========================
+  // PRICING HANDLERS
+  // ===========================
+
+  const handleNewTierChange = (field: 'weight' | 'qty' | 'price', value: string) => {
+    if (field === 'weight') setNewTierWeight(value);
+    else if (field === 'qty') setNewTierQty(value);
+    else if (field === 'price') setNewTierPrice(value);
+  };
+
+  const handleAddTier = () => {
+    if (!newTierQty || !newTierPrice) return;
+
+    singleForm.setPricingTiers([
+      ...singleForm.pricingTiers,
+      {
+        weight: newTierWeight,
+        qty: parseInt(newTierQty) || 1,
+        price: newTierPrice
+      }
+    ]);
+
+    setNewTierWeight('');
+    setNewTierQty('');
+    setNewTierPrice('');
+  };
+
+  // ===========================
   // RENDER
   // ===========================
 
@@ -332,104 +365,28 @@ export default function NewProductClient() {
             </div>
 
             {/* Pricing */}
-            <div className={cn("p-6 rounded-lg border", ds.colors.bg.elevated, ds.colors.border.default)}>
-              <div className="flex items-center justify-between mb-4">
-                <h2 className={cn(ds.typography.size.sm, ds.typography.weight.medium, ds.colors.text.secondary)}>
-                  Pricing
-                </h2>
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    onClick={() => singleForm.setPricingMode('single')}
-                    className={cn(
-                      "px-3 py-1.5 rounded-lg border transition-all",
-                      ds.typography.size.micro,
-                      singleForm.pricingMode === 'single'
-                        ? 'bg-white/10 border-white/30 text-white'
-                        : cn(ds.colors.bg.primary, ds.colors.border.default, ds.colors.text.tertiary, "hover:border-white/20")
-                    )}
-                  >
-                    <DollarSign className="w-3 h-3 inline mr-1" strokeWidth={1.5} />
-                    Single Price
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => singleForm.setPricingMode('tiered')}
-                    className={cn(
-                      "px-3 py-1.5 rounded-lg border transition-all",
-                      ds.typography.size.micro,
-                      singleForm.pricingMode === 'tiered'
-                        ? 'bg-white/10 border-white/30 text-white'
-                        : cn(ds.colors.bg.primary, ds.colors.border.default, ds.colors.text.tertiary, "hover:border-white/20")
-                    )}
-                  >
-                    <Layers className="w-3 h-3 inline mr-1" strokeWidth={1.5} />
-                    Tiered Pricing
-                  </button>
-                </div>
-              </div>
-
-              {singleForm.pricingMode === 'single' ? (
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className={cn(ds.typography.size.xs, ds.colors.text.tertiary, "block mb-1.5")}>
-                      Price *
-                    </label>
-                    <Input
-                      type="number"
-                      step="0.01"
-                      value={singleForm.formData.price}
-                      onChange={(e) => singleForm.setFormData({ ...singleForm.formData, price: e.target.value })}
-                      placeholder="0.00"
-                    />
-                  </div>
-                  <div>
-                    <label className={cn(ds.typography.size.xs, ds.colors.text.tertiary, "block mb-1.5")}>
-                      Cost Price
-                    </label>
-                    <Input
-                      type="number"
-                      step="0.01"
-                      value={singleForm.formData.cost_price}
-                      onChange={(e) => singleForm.setFormData({ ...singleForm.formData, cost_price: e.target.value })}
-                      placeholder="0.00"
-                    />
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {singleForm.pricingTiers.map((tier, index) => (
-                    <div key={index} className={cn("flex gap-2 p-3 rounded-lg", ds.colors.bg.primary)}>
-                      <Input
-                        placeholder="Weight (e.g., 1g)"
-                        value={tier.weight}
-                        onChange={(e) => singleForm.updatePricingTier(index, 'weight', e.target.value)}
-                        className="flex-1"
-                      />
-                      <Input
-                        type="number"
-                        step="0.01"
-                        placeholder="Price"
-                        value={tier.price}
-                        onChange={(e) => singleForm.updatePricingTier(index, 'price', e.target.value)}
-                        className="flex-1"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => singleForm.removePricingTier(index)}
-                        className="p-2 rounded-lg text-red-400/70 hover:bg-red-500/10 transition-colors"
-                      >
-                        <Minus className="w-4 h-4" strokeWidth={1.5} />
-                      </button>
-                    </div>
-                  ))}
-                  <Button type="button" onClick={singleForm.addPricingTier} variant="secondary" size="sm">
-                    <Plus className="w-3 h-3 mr-1.5" strokeWidth={1.5} />
-                    Add Tier
-                  </Button>
-                </div>
-              )}
-            </div>
+            <PricingPanel
+              productType="simple"
+              pricingMode={singleForm.pricingMode}
+              formData={{
+                price: singleForm.formData.price,
+                cost_price: singleForm.formData.cost_price
+              }}
+              pricingTiers={singleForm.pricingTiers}
+              newTierWeight={newTierWeight}
+              newTierQty={newTierQty}
+              newTierPrice={newTierPrice}
+              selectedBlueprintId={singleForm.selectedBlueprintId}
+              availableBlueprints={singleForm.availableBlueprints}
+              onPricingModeChange={singleForm.setPricingMode}
+              onFormDataChange={(data) => singleForm.setFormData({ ...singleForm.formData, ...data })}
+              onNewTierChange={handleNewTierChange}
+              onAddTier={handleAddTier}
+              onUpdateTier={singleForm.updatePricingTier}
+              onRemoveTier={singleForm.removePricingTier}
+              onBlueprintSelect={singleForm.setSelectedBlueprintId}
+              onApplyBlueprint={singleForm.handleApplyBlueprint}
+            />
 
             {/* Images */}
             <div className={cn("p-6 rounded-lg border", ds.colors.bg.elevated, ds.colors.border.default)}>
@@ -588,6 +545,49 @@ export default function NewProductClient() {
                     ))}
                   </select>
                 </div>
+
+                {/* Pricing Blueprint Selection */}
+                {bulkForm.availableBlueprints.length > 0 && (
+                  <div className={cn("p-6 rounded-lg border", ds.colors.bg.elevated, ds.colors.border.default)}>
+                    <h2 className={cn(ds.typography.size.sm, ds.typography.weight.medium, ds.colors.text.secondary, "mb-2")}>
+                      Pricing Blueprint (Optional)
+                    </h2>
+                    <p className={cn(ds.typography.size.xs, ds.colors.text.quaternary, "mb-4")}>
+                      Apply a pricing template to all products
+                    </p>
+                    <div className="flex gap-2">
+                      <select
+                        value={bulkForm.selectedBulkBlueprintId}
+                        onChange={(e) => bulkForm.setSelectedBulkBlueprintId(e.target.value)}
+                        className={cn(
+                          "flex-1 px-3 py-2 rounded-lg border transition-colors",
+                          ds.typography.size.xs,
+                          ds.colors.bg.primary,
+                          ds.colors.border.default,
+                          ds.colors.text.primary,
+                          "focus:outline-none focus:ring-2 focus:ring-white/10"
+                        )}
+                      >
+                        <option value="">Select a pricing blueprint...</option>
+                        {bulkForm.availableBlueprints.map(blueprint => (
+                          <option key={blueprint.id} value={blueprint.id}>
+                            {blueprint.name}{blueprint.quality_tier && ` (${blueprint.quality_tier})`}
+                          </option>
+                        ))}
+                      </select>
+                      {bulkForm.selectedBulkBlueprintId && (
+                        <Button
+                          type="button"
+                          onClick={bulkForm.handleApplyBulkBlueprint}
+                          variant="secondary"
+                          size="sm"
+                        >
+                          Apply
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                )}
 
                 <div className={cn("p-6 rounded-lg border", ds.colors.bg.elevated, ds.colors.border.default)}>
                   <h2 className={cn(ds.typography.size.sm, ds.typography.weight.medium, ds.colors.text.secondary, "mb-2")}>

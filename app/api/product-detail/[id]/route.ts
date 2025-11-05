@@ -45,6 +45,25 @@ export async function GET(
     );
     const reviewsData = await reviewsResponse.json();
     
+    // Extract pricing tiers from embedded pricing_data
+    const pricingData = product.pricing_data || {};
+    const pricingTiers: any[] = [];
+
+    (pricingData.tiers || []).forEach((tier: any) => {
+      if (tier.enabled !== false && tier.price) {
+        pricingTiers.push({
+          break_id: tier.id,
+          label: tier.label,
+          quantity: tier.quantity || 1,
+          unit: tier.unit || 'g',
+          price: parseFloat(tier.price),
+          sort_order: tier.sort_order || 0,
+        });
+      }
+    });
+
+    pricingTiers.sort((a, b) => a.sort_order - b.sort_order);
+
     // Format response to match expected structure
     const response = {
       success: true,
@@ -61,7 +80,7 @@ export async function GET(
       },
       inventory: inventoryData.inventory || [],
       locations: locationsData.locations || [],
-      pricingTiers: product.meta_data?._product_price_tiers || [],
+      pricingTiers: pricingTiers,
       fields: product.custom_fields || []
     };
     

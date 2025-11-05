@@ -22,25 +22,13 @@ export async function GET(request: NextRequest) {
 
     const supabase = getServiceSupabase();
 
-    // Fetch products with all necessary relationships
+    // Fetch products with all necessary relationships (simplified pricing)
     // NOTE: We fetch ALL inventory records and filter in JavaScript below
     // Using .eq('inventory.location_id') would exclude products without inventory records entirely
     const query = supabase
       .from('products')
       .select(`
         *,
-        pricing_assignments:product_pricing_assignments(
-          blueprint_id,
-          price_overrides,
-          is_active,
-          blueprint:pricing_tier_blueprints(
-            id,
-            name,
-            slug,
-            price_breaks,
-            display_unit
-          )
-        ),
         primary_category:categories!primary_category_id(
           id,
           name,
@@ -101,36 +89,29 @@ export async function GET(request: NextRequest) {
       return product;
     });
 
-    // Fetch vendor pricing configs for this vendor
-    const { data: vendorConfigs, error: pricingError } = await supabase
-      .from('vendor_pricing_configs')
-      .select('blueprint_id, pricing_values')
-      .eq('vendor_id', vendorId)
-      .eq('is_active', true);
-
-    if (pricingError) {
-      console.error('❌ Error fetching vendor pricing configs:', pricingError);
-    }
-
-    // Build a map of blueprint_id -> pricing_values for quick lookup
-    const vendorPricingMap = new Map(
-      (vendorConfigs || []).map((config: any) => [config.blueprint_id, config.pricing_values])
-    );
-
-    // Transform products to add pricing_tiers field
+    // Transform products to add pricing_tiers field from embedded pricing_data
     const productsWithPricing = (productsWithParents || []).map((product: any) => {
-      // Get the product's pricing assignment
-      const assignment = product.pricing_assignments?.[0];
-      if (!assignment || !assignment.blueprint) {
-        return product;
-      }
+      // Get pricing from embedded pricing_data (new simplified system)
+      const pricingData = product.pricing_data || {};
 
-      const blueprintId = assignment.blueprint_id;
-      const vendorPricing = vendorPricingMap.get(blueprintId) || {};
-      const productOverrides = assignment.price_overrides || {};
+      // Convert tiers to the format expected by TV display
+      const pricingTiers: any[] = (pricingData.tiers || [])
+        .filter((tier: any) => tier.enabled !== false && tier.price) // Only enabled tiers with prices
+        .map((tier: any) => ({
+          [tier.id]: {
+            price: parseFloat(tier.price),
+            label: tier.label,
+            quantity: tier.quantity || 1,
+            unit: tier.unit || 'g',
+            enabled: tier.enabled !== false
+          }
+        }))
+        .reduce((acc, tier) => ({ ...acc, ...tier }), {});
 
-      // Merge vendor pricing with product-specific overrides
-      const pricing_tiers = { ...vendorPricing, ...productOverrides };
+      // If no tiers, fall back to single price
+      const pricing_tiers = Object.keys(pricingTiers).length > 0
+        ? pricingTiers
+        : (product.regular_price ? { single: { price: parseFloat(product.regular_price), label: 'Single Price', quantity: 1, enabled: true } } : {});
 
       return {
         ...product,

@@ -288,6 +288,21 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
       );
     }
 
+    // Handle pricing blueprint assignment if provided
+    if (productData.pricing_blueprint_id) {
+      const { error: assignmentError } = await supabase
+        .from('product_pricing_assignments')
+        .insert({
+          product_id: product.id,
+          blueprint_id: productData.pricing_blueprint_id,
+          is_active: true
+        });
+
+      if (assignmentError) {
+        console.error('Blueprint assignment error:', assignmentError);
+      }
+    }
+
     return NextResponse.json({
       success: true,
       product,

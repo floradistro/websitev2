@@ -154,12 +154,28 @@ export async function GET(request: NextRequest) {
         sum + parseFloat(inv.quantity || 0), 0
       );
       
-      // Extract pricing tiers from custom_fields (ensure it's an array)
+      // Extract pricing tiers from embedded pricing_data
+      const pricingData = p.pricing_data || {};
+      const pricingTiers: any[] = [];
+
+      (pricingData.tiers || []).forEach((tier: any) => {
+        if (tier.enabled !== false && tier.price) {
+          pricingTiers.push({
+            break_id: tier.id,
+            label: tier.label,
+            quantity: tier.quantity || 1,
+            unit: tier.unit || 'g',
+            price: parseFloat(tier.price),
+            sort_order: tier.sort_order || 0,
+          });
+        }
+      });
+
+      pricingTiers.sort((a, b) => a.sort_order - b.sort_order);
+
+      // Ensure custom_fields is an array
       const blueprintFieldsArray = Array.isArray(p.custom_fields) ? p.custom_fields : [];
-      const pricingTiers = blueprintFieldsArray.find((f: any) => 
-        f.key === '_product_price_tiers'
-      )?.value || [];
-      
+
       return {
         id: p.id,
         name: p.name,

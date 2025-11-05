@@ -8,7 +8,7 @@
  * @module useBulkImportForm
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import axios, { AxiosError } from 'axios';
 import { showNotification } from '@/components/NotificationToast';
@@ -18,7 +18,8 @@ import type {
   ProductSubmissionData,
   APIErrorResponse,
   ValidationErrorDetail,
-  BulkAIResult
+  BulkAIResult,
+  PricingBlueprint
 } from '@/lib/types/product';
 
 /**
@@ -89,6 +90,12 @@ interface UseBulkImportFormReturn {
   setBulkEnrichedData: (value: Record<string, EnrichedData>) => void;
   handleBulkAIEnrich: () => Promise<void>;
 
+  // Pricing Blueprint
+  availableBlueprints: PricingBlueprint[];
+  selectedBulkBlueprintId: string;
+  setSelectedBulkBlueprintId: (value: string) => void;
+  handleApplyBulkBlueprint: () => void;
+
   // Submission
   handleBulkSubmit: () => Promise<void>;
 
@@ -102,6 +109,7 @@ interface UseBulkImportFormReturn {
     failCount: number;
   };
   loadingAI: boolean;
+  loadingBlueprints: boolean;
 
   // Reset function
   resetBulkForm: () => void;
@@ -204,6 +212,52 @@ export function useBulkImportForm({
     failCount: 0,
   });
 
+  /**
+   * Blueprints loading state
+   */
+  const [loadingBlueprints, setLoadingBlueprints] = useState(false);
+
+  /**
+   * Available pricing blueprints for vendor
+   */
+  const [availableBlueprints, setAvailableBlueprints] = useState<PricingBlueprint[]>([]);
+
+  /**
+   * Selected pricing blueprint ID for bulk products
+   */
+  const [selectedBulkBlueprintId, setSelectedBulkBlueprintId] = useState('');
+
+  // ==========================================
+  // FETCH PRICING BLUEPRINTS
+  // ==========================================
+
+  /**
+   * Fetches available pricing blueprints for the vendor
+   * Runs once on component mount
+   */
+  useEffect(() => {
+    const fetchBlueprints = async () => {
+      if (!vendorId) return;
+
+      try {
+        setLoadingBlueprints(true);
+        const response = await axios.get('/api/vendor/pricing-blueprints', {
+          headers: { 'x-vendor-id': vendorId }
+        });
+
+        if (response.data.success && response.data.blueprints) {
+          setAvailableBlueprints(response.data.blueprints);
+        }
+      } catch (error) {
+        console.error('Failed to fetch pricing blueprints:', error);
+      } finally {
+        setLoadingBlueprints(false);
+      }
+    };
+
+    fetchBlueprints();
+  }, [vendorId]);
+
   // ==========================================
   // COMPUTED VALUES
   // ==========================================
@@ -238,6 +292,66 @@ export function useBulkImportForm({
    */
   const goToPreviousProduct = () => {
     setCurrentReviewIndex(prev => Math.max(0, prev - 1));
+  };
+
+  // ==========================================
+  // PRICING BLUEPRINT
+  // ==========================================
+
+  /**
+   * Applies selected pricing blueprint to all bulk products
+   *
+   * @remarks
+   * Converts blueprint's price_breaks to pricing tiers
+   * Updates all products with:
+   * - pricing_mode: 'tiered'
+   * - pricing_tiers: array from blueprint
+   * - pricing_blueprint_id: selected blueprint ID
+   */
+  const handleApplyBulkBlueprint = () => {
+    if (!selectedBulkBlueprintId) {
+      showNotification({
+        type: 'warning',
+        title: 'No Blueprint Selected',
+        message: 'Please select a pricing blueprint first'
+      });
+      return;
+    }
+
+    const blueprint = availableBlueprints.find(b => b.id === selectedBulkBlueprintId);
+    if (!blueprint) {
+      showNotification({
+        type: 'error',
+        title: 'Blueprint Not Found',
+        message: 'Selected blueprint could not be found'
+      });
+      return;
+    }
+
+    // Convert price_breaks to pricing tiers
+    const tiers: PricingTier[] = blueprint.price_breaks
+      .sort((a, b) => a.sort_order - b.sort_order)
+      .map(priceBreak => ({
+        weight: priceBreak.label,
+        qty: priceBreak.qty,
+        price: priceBreak.price?.toString() || ''
+      }));
+
+    // Apply to all bulk products
+    const updatedProducts = bulkProducts.map(product => ({
+      ...product,
+      pricing_mode: 'tiered' as const,
+      pricing_tiers: tiers,
+      pricing_blueprint_id: selectedBulkBlueprintId
+    }));
+
+    setBulkProducts(updatedProducts);
+
+    showNotification({
+      type: 'success',
+      title: 'Blueprint Applied',
+      message: `${blueprint.name} applied to ${bulkProducts.length} products`
+    });
   };
 
   // ==========================================
@@ -525,7 +639,8 @@ export function useBulkImportForm({
             product_visibility: 'internal',
             pricing_mode: product.pricing_mode,
             custom_fields: product.custom_fields || {},
-            description
+            description,
+            pricing_blueprint_id: product.pricing_blueprint_id || undefined
           };
 
           // Add pricing fields based on mode
@@ -679,6 +794,12 @@ export function useBulkImportForm({
     setBulkEnrichedData,
     handleBulkAIEnrich,
 
+    // Pricing Blueprint
+    availableBlueprints,
+    selectedBulkBlueprintId,
+    setSelectedBulkBlueprintId,
+    handleApplyBulkBlueprint,
+
     // Submission
     handleBulkSubmit,
 
@@ -686,6 +807,7 @@ export function useBulkImportForm({
     bulkProcessing,
     bulkProgress,
     loadingAI,
+    loadingBlueprints,
 
     // Utility
     resetBulkForm,

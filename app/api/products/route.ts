@@ -10,10 +10,6 @@ import { getServiceSupabase } from '@/lib/supabase/client';
 // Cache for 60 seconds, stale-while-revalidate for 120 seconds
 export const revalidate = 60;
 
-// In-memory cache for pricing configs (per vendor)
-const pricingCache = new Map<string, { data: any; timestamp: number }>();
-const CACHE_TTL = 60000; // 60 seconds
-
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
@@ -33,108 +29,65 @@ export async function GET(request: NextRequest) {
     
     const supabase = getServiceSupabase();
     
-    // Fetch products and pricing config in parallel for better performance
-    const [productsResult, pricingTiers] = await Promise.all([
-      // Products query
-      (async () => {
-        let query = supabase
-          .from('products')
-          .select(`
-            *,
-            inventory(id, quantity, location_id, stock_status)
-          `)
-          .eq('vendor_id', vendorId)
-          .eq('status', 'published');
-        
-        // Filter by specific product IDs
-        if (productIds && productIds.length > 0) {
-          query = query.in('id', productIds);
-        }
-        
-        // Filter by categories
-        if (categoryIds && categoryIds.length > 0) {
-          query = query.in('category_id', categoryIds);
-        }
-        
-        // Apply sorting
-        query = query.order(sort, { ascending: order === 'asc' });
-        
-        // Apply limit
-        query = query.limit(limit);
-        
-        return query;
-      })(),
-      // Pricing config query (with caching)
-      (async () => {
-        // Check cache first
-        const cached = pricingCache.get(vendorId);
-        if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
-          return cached.data;
-        }
-        
-        const { data: vendorPricingConfigs } = await supabase
-          .from('vendor_pricing_configs')
-          .select(`
-            vendor_id,
-            pricing_values,
-            blueprint:pricing_tier_blueprints(
-              id,
-              name,
-              slug,
-              tier_type,
-              price_breaks
-            )
-          `)
-          .eq('vendor_id', vendorId)
-          .eq('is_active', true);
-        
-        // Build pricing tiers from vendor config
-        let pricingTiers: any[] = [];
-        if (vendorPricingConfigs && vendorPricingConfigs.length > 0) {
-          const config: any = vendorPricingConfigs[0];
-          if (config.blueprint?.price_breaks) {
-            const pricingValues = config.pricing_values || {};
-            
-            config.blueprint.price_breaks.forEach((priceBreak: any) => {
-              const breakId = priceBreak.break_id;
-              const breakData = pricingValues[breakId];
-              
-              if (breakData?.enabled) {
-                pricingTiers.push({
-                  break_id: breakId,
-                  label: priceBreak.label,
-                  quantity: priceBreak.qty,
-                  unit: priceBreak.unit,
-                  price: parseFloat(breakData.price),
-                  price_per_gram: parseFloat(breakData.price) / priceBreak.qty,
-                  sort_order: priceBreak.sort_order || 0,
-                });
-              }
-            });
-            
-            pricingTiers.sort((a, b) => a.sort_order - b.sort_order);
-          }
-        }
-        
-        // Cache the result
-        pricingCache.set(vendorId, {
-          data: pricingTiers,
-          timestamp: Date.now(),
-        });
-        
-        return pricingTiers;
-      })(),
-    ]);
-    
+    // Fetch products with embedded pricing
+    let query = supabase
+      .from('products')
+      .select(`
+        *,
+        inventory(id, quantity, location_id, stock_status)
+      `)
+      .eq('vendor_id', vendorId)
+      .eq('status', 'published');
+
+    // Filter by specific product IDs
+    if (productIds && productIds.length > 0) {
+      query = query.in('id', productIds);
+    }
+
+    // Filter by categories
+    if (categoryIds && categoryIds.length > 0) {
+      query = query.in('category_id', categoryIds);
+    }
+
+    // Apply sorting
+    query = query.order(sort, { ascending: order === 'asc' });
+
+    // Apply limit
+    query = query.limit(limit);
+
+    const productsResult = await query;
+
     if (productsResult.error) {
       throw productsResult.error;
     }
-    
-    // Add pricing tiers to all products
-    const productsWithPricing = (productsResult.data || []).map((product: any) => ({
-      ...product,
-      pricing_tiers: pricingTiers,
-    }));
+
+    // Extract pricing tiers from embedded pricing_data
+    const productsWithPricing = (productsResult.data || []).map((product: any) => {
+      const pricingData = product.pricing_data || {};
+      const pricingTiers: any[] = [];
+
+      // Extract tiers from embedded pricing_data
+      (pricingData.tiers || []).forEach((tier: any) => {
+        if (tier.enabled !== false && tier.price) {
+          pricingTiers.push({
+            break_id: tier.id,
+            label: tier.label,
+            quantity: tier.quantity || 1,
+            unit: tier.unit || 'g',
+            price: parseFloat(tier.price),
+            price_per_gram: parseFloat(tier.price) / (tier.quantity || 1),
+            sort_order: tier.sort_order || 0,
+          });
+        }
+      });
+
+      pricingTiers.sort((a, b) => a.sort_order - b.sort_order);
+
+      return {
+        ...product,
+        pricing_tiers: pricingTiers,
+      };
+    });
     
     return NextResponse.json(
       {

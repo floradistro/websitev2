@@ -32,6 +32,7 @@ export async function GET(
         status,
         stock_quantity,
         custom_fields,
+        meta_data,
         featured_image_storage,
         image_gallery_storage,
         primary_category_id,
@@ -55,55 +56,18 @@ export async function GET(
       .eq('product_id', productId)
       .eq('vendor_id', vendorId);
 
-    // Get vendor pricing config (same as POS)
-    const { data: vendorPricingConfig, error: pricingError } = await supabase
-      .from('vendor_pricing_configs')
-      .select(`
-        pricing_values,
-        blueprint:pricing_tier_blueprints(
-          id,
-          name,
-          price_breaks
-        )
-      `)
-      .eq('vendor_id', vendorId)
-      .eq('is_active', true)
-      .single();
+    // Get pricing from embedded pricing_data (new simplified system)
+    const pricingData = product.pricing_data || {};
+    const pricingMode: 'single' | 'tiered' = pricingData.mode || 'single';
+    const pricingBlueprintId: string | null = pricingData.template_id || null;
+    const pricing: any[] = (pricingData.tiers || []).map((tier: any) => ({
+      label: tier.label,
+      qty: tier.quantity || 1,
+      unit: tier.unit || 'g',
+      price: tier.price || 0,
+    }));
 
-    console.log(`[Product API] Vendor pricing config:`, vendorPricingConfig);
-    if (pricingError) console.error('[Product API] Pricing error:', pricingError);
-
-    // Extract pricing tiers from vendor config (same logic as POS)
-    const pricing: any[] = [];
-    const blueprint = Array.isArray(vendorPricingConfig?.blueprint)
-      ? vendorPricingConfig.blueprint[0]
-      : vendorPricingConfig?.blueprint;
-
-    if (blueprint?.price_breaks && vendorPricingConfig) {
-      const pricingValues = vendorPricingConfig.pricing_values || {};
-
-      blueprint.price_breaks.forEach((priceBreak: any) => {
-        const breakId = priceBreak.break_id;
-        const vendorPrice = pricingValues[breakId];
-
-        // Only add if tier is ENABLED and has a price
-        if (vendorPrice && vendorPrice.enabled !== false && vendorPrice.price) {
-          pricing.push({
-            label: priceBreak.label || `${priceBreak.qty}${priceBreak.unit || ''}`,
-            qty: priceBreak.qty || 1,
-            unit: priceBreak.unit || 'g',
-            price: parseFloat(vendorPrice.price),
-            break_id: breakId,
-            sort_order: priceBreak.sort_order || 0,
-          });
-        }
-      });
-
-      // Sort by sort_order
-      pricing.sort((a, b) => a.sort_order - b.sort_order);
-    }
-
-    console.log(`[Product API] Extracted pricing tiers:`, pricing);
+    console.log(`[Product API] Pricing mode: ${pricingMode}, Template:`, pricingData.template_name, 'Tiers:', pricing.length);
 
     // Get images
     const images: string[] = [];
@@ -132,6 +96,8 @@ export async function GET(
         stock_quantity: parseFloat(product.stock_quantity) || 0,
         total_stock: parseFloat(product.stock_quantity) || 0,
         custom_fields: product.custom_fields || {}, // Vendors have full autonomy over custom fields
+        pricing_mode: pricingMode,
+        pricing_blueprint_id: pricingBlueprintId || null,
         coas: (coas || []).map(coa => ({
           id: coa.id,
           file_name: coa.file_name,
@@ -249,13 +215,57 @@ export async function PUT(
       .eq('id', productId)
       .select()
       .single();
-    
+
     if (updateError) {
       console.error('Update error:', updateError);
       return NextResponse.json(
         { success: false, error: updateError.message },
         { status: 500 }
       );
+    }
+
+    // Handle pricing blueprint assignment
+    if (body.pricing_blueprint_id) {
+      // Check if assignment already exists
+      const { data: existingAssignment } = await supabase
+        .from('product_pricing_assignments')
+        .select('id')
+        .eq('product_id', productId)
+        .eq('blueprint_id', body.pricing_blueprint_id)
+        .single();
+
+      if (!existingAssignment) {
+        // Deactivate any existing assignments for this product
+        await supabase
+          .from('product_pricing_assignments')
+          .update({ is_active: false })
+          .eq('product_id', productId);
+
+        // Create new assignment
+        const { error: assignmentError } = await supabase
+          .from('product_pricing_assignments')
+          .insert({
+            product_id: productId,
+            blueprint_id: body.pricing_blueprint_id,
+            is_active: true
+          });
+
+        if (assignmentError) {
+          console.error('Blueprint assignment error:', assignmentError);
+        }
+      } else {
+        // Reactivate existing assignment and deactivate others
+        await supabase
+          .from('product_pricing_assignments')
+          .update({ is_active: false })
+          .eq('product_id', productId)
+          .neq('id', existingAssignment.id);
+
+        await supabase
+          .from('product_pricing_assignments')
+          .update({ is_active: true })
+          .eq('id', existingAssignment.id);
+      }
     }
 
     return NextResponse.json({

@@ -118,6 +118,7 @@ export interface BulkProduct {
   cost_price?: string;
   pricing_mode: PricingMode;
   pricing_tiers?: PricingTier[];
+  pricing_blueprint_id?: string;
   description?: string;
   category_id?: string;
   custom_fields?: CustomFields;
@@ -238,6 +239,7 @@ export interface ProductSubmissionData {
   price?: number;
   cost_price?: number;
   pricing_tiers?: PricingTier[];
+  pricing_blueprint_id?: string;
   image_urls?: string[];
   custom_fields?: CustomFields;
   initial_quantity?: number;

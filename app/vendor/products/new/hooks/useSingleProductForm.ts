@@ -31,7 +31,7 @@
  * ```
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import axios, { AxiosError } from 'axios';
 import { showNotification } from '@/components/NotificationToast';
@@ -40,7 +40,8 @@ import type {
   PricingTier,
   CustomFields,
   ProductSubmissionData,
-  APIErrorResponse
+  APIErrorResponse,
+  PricingBlueprint
 } from '@/lib/types/product';
 
 /**
@@ -104,6 +105,12 @@ interface UseSingleProductFormReturn {
   updatePricingTier: (index: number, field: string, value: string) => void;
   removePricingTier: (index: number) => void;
 
+  // Pricing Blueprint
+  availableBlueprints: PricingBlueprint[];
+  selectedBlueprintId: string;
+  setSelectedBlueprintId: React.Dispatch<React.SetStateAction<string>>;
+  handleApplyBlueprint: () => void;
+
   // AI & Submission
   handleAIAutofill: () => Promise<void>;
   handleSubmit: (e: React.FormEvent) => Promise<void>;
@@ -112,6 +119,7 @@ interface UseSingleProductFormReturn {
   loading: boolean;
   uploadingImages: boolean;
   loadingAI: boolean;
+  loadingBlueprints: boolean;
 }
 
 /**
@@ -215,6 +223,52 @@ export function useSingleProductForm({
    * AI autofill processing state
    */
   const [loadingAI, setLoadingAI] = useState(false);
+
+  /**
+   * Blueprints loading state
+   */
+  const [loadingBlueprints, setLoadingBlueprints] = useState(false);
+
+  /**
+   * Available pricing blueprints for vendor
+   */
+  const [availableBlueprints, setAvailableBlueprints] = useState<PricingBlueprint[]>([]);
+
+  /**
+   * Selected pricing blueprint ID
+   */
+  const [selectedBlueprintId, setSelectedBlueprintId] = useState('');
+
+  // ===========================
+  // FETCH PRICING BLUEPRINTS
+  // ===========================
+
+  /**
+   * Fetches available pricing blueprints for the vendor
+   * Runs once on component mount
+   */
+  useEffect(() => {
+    const fetchBlueprints = async () => {
+      if (!vendorId) return;
+
+      try {
+        setLoadingBlueprints(true);
+        const response = await axios.get('/api/vendor/pricing-blueprints', {
+          headers: { 'x-vendor-id': vendorId }
+        });
+
+        if (response.data.success && response.data.blueprints) {
+          setAvailableBlueprints(response.data.blueprints);
+        }
+      } catch (error) {
+        console.error('Failed to fetch pricing blueprints:', error);
+      } finally {
+        setLoadingBlueprints(false);
+      }
+    };
+
+    fetchBlueprints();
+  }, [vendorId]);
 
   // ===========================
   // IMAGE HANDLERS
@@ -377,6 +431,57 @@ export function useSingleProductForm({
    */
   const removePricingTier = (index: number) => {
     setPricingTiers(pricingTiers.filter((_, i) => i !== index));
+  };
+
+  // ===========================
+  // PRICING BLUEPRINT HANDLERS
+  // ===========================
+
+  /**
+   * Applies selected pricing blueprint to pricing tiers
+   *
+   * @remarks
+   * Converts blueprint's price_breaks to pricing tiers format
+   * Sets pricing mode to 'tiered' automatically
+   * Shows success notification
+   */
+  const handleApplyBlueprint = () => {
+    if (!selectedBlueprintId) {
+      showNotification({
+        type: 'warning',
+        title: 'No Blueprint Selected',
+        message: 'Please select a pricing blueprint first'
+      });
+      return;
+    }
+
+    const blueprint = availableBlueprints.find(b => b.id === selectedBlueprintId);
+    if (!blueprint) {
+      showNotification({
+        type: 'error',
+        title: 'Blueprint Not Found',
+        message: 'Selected blueprint could not be found'
+      });
+      return;
+    }
+
+    // Convert price_breaks to pricing tiers
+    const tiers: PricingTier[] = blueprint.price_breaks
+      .sort((a, b) => a.sort_order - b.sort_order)
+      .map(priceBreak => ({
+        weight: priceBreak.label,
+        qty: priceBreak.qty,
+        price: priceBreak.price?.toString() || ''
+      }));
+
+    setPricingTiers(tiers);
+    setPricingMode('tiered');
+
+    showNotification({
+      type: 'success',
+      title: 'Blueprint Applied',
+      message: `${blueprint.name} pricing tiers loaded`
+    });
   };
 
   // ===========================
@@ -590,6 +695,7 @@ export function useSingleProductForm({
         custom_fields: customFieldValues,
         cost_price: formData.cost_price ? parseFloat(formData.cost_price) : undefined,
         initial_quantity: formData.initial_quantity ? parseFloat(formData.initial_quantity) : undefined,
+        pricing_blueprint_id: selectedBlueprintId || undefined,
       };
 
       // Add pricing data based on mode
@@ -662,6 +768,12 @@ export function useSingleProductForm({
     updatePricingTier,
     removePricingTier,
 
+    // Pricing Blueprint
+    availableBlueprints,
+    selectedBlueprintId,
+    setSelectedBlueprintId,
+    handleApplyBlueprint,
+
     // AI & Submission
     handleAIAutofill,
     handleSubmit,
@@ -670,5 +782,6 @@ export function useSingleProductForm({
     loading,
     uploadingImages,
     loadingAI,
+    loadingBlueprints,
   };
 }

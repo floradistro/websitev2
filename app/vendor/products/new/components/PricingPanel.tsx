@@ -1,8 +1,9 @@
 "use client";
 
-import { Plus, X, Zap } from 'lucide-react';
+import { Plus, X, Zap, Sparkles } from 'lucide-react';
 import SectionHeader from '@/components/ui/SectionHeader';
 import { ds, cn } from '@/components/ds';
+import type { PricingBlueprint } from '@/lib/types/product';
 
 interface PricingTier {
   weight?: string;
@@ -21,6 +22,8 @@ interface PricingPanelProps {
   newTierWeight: string;
   newTierQty: string;
   newTierPrice: string;
+  selectedBlueprintId?: string;
+  availableBlueprints?: PricingBlueprint[];
   onPricingModeChange: (mode: 'single' | 'tiered') => void;
   onFormDataChange: (formData: {
     price: string;
@@ -30,7 +33,8 @@ interface PricingPanelProps {
   onAddTier: () => void;
   onUpdateTier: (index: number, field: string, value: string) => void;
   onRemoveTier: (index: number) => void;
-  onApplyTemplate: (template: 'budget' | 'mid' | 'premium' | 'exotic') => void;
+  onBlueprintSelect?: (blueprintId: string) => void;
+  onApplyBlueprint?: () => void;
 }
 
 export default function PricingPanel({
@@ -41,14 +45,24 @@ export default function PricingPanel({
   newTierWeight,
   newTierQty,
   newTierPrice,
+  selectedBlueprintId,
+  availableBlueprints = [],
   onPricingModeChange,
   onFormDataChange,
   onNewTierChange,
   onAddTier,
   onUpdateTier,
   onRemoveTier,
-  onApplyTemplate
+  onBlueprintSelect,
+  onApplyBlueprint
 }: PricingPanelProps) {
+  console.log('[PricingPanel] Rendering with:', {
+    pricingMode,
+    availableBlueprints: availableBlueprints.length,
+    pricingTiers: pricingTiers.length,
+    selectedBlueprintId
+  });
+
   if (productType !== 'simple') return null;
 
   const costPrice = parseFloat(formData.cost_price);
@@ -64,7 +78,7 @@ export default function PricingPanel({
       <div className="space-y-4">
         {/* Pricing Mode */}
         <div>
-          <label className="block text-white/40 text-[10px] uppercase tracking-[0.15em] mb-2 font-black" style={{ fontWeight: 900 }}>
+          <label className={cn("block mb-2", ds.typography.size.micro, ds.typography.transform.uppercase, ds.typography.tracking.wide, ds.colors.text.quaternary)}>
             Pricing Mode <span className="text-red-400">*</span>
           </label>
           <div className="grid grid-cols-2 gap-2">
@@ -72,12 +86,14 @@ export default function PricingPanel({
               type="button"
               onClick={() => onPricingModeChange('single')}
               className={cn(
-                "px-3 py-2.5 rounded-xl border transition-all text-[10px] uppercase tracking-[0.15em] font-black",
+                "px-3 py-2.5 rounded-xl border transition-all",
+                ds.typography.size.micro,
+                ds.typography.transform.uppercase,
+                ds.typography.tracking.wide,
                 pricingMode === 'single'
                   ? 'bg-white/10 border-white/20 text-white'
                   : cn(ds.colors.bg.primary, 'border-white/10 text-white/60 hover:border-white/20')
               )}
-              style={{ fontWeight: 900 }}
             >
               Single
             </button>
@@ -85,12 +101,14 @@ export default function PricingPanel({
               type="button"
               onClick={() => onPricingModeChange('tiered')}
               className={cn(
-                "px-3 py-2.5 rounded-xl border transition-all text-[10px] uppercase tracking-[0.15em] font-black",
+                "px-3 py-2.5 rounded-xl border transition-all",
+                ds.typography.size.micro,
+                ds.typography.transform.uppercase,
+                ds.typography.tracking.wide,
                 pricingMode === 'tiered'
                   ? 'bg-white/10 border-white/20 text-white'
                   : cn(ds.colors.bg.primary, 'border-white/10 text-white/60 hover:border-white/20')
               )}
-              style={{ fontWeight: 900 }}
             >
               Tiered
             </button>
@@ -102,12 +120,12 @@ export default function PricingPanel({
           <>
             {/* COST PRICE (Private - Vendor Only) */}
             <div>
-              <label className="block text-white/40 text-[10px] uppercase tracking-[0.15em] mb-2 font-black" style={{ fontWeight: 900 }}>
+              <label className={cn("block mb-2", ds.typography.size.micro, ds.typography.transform.uppercase, ds.typography.tracking.wide, ds.colors.text.quaternary)}>
                 Cost Price
                 <span className="ml-1.5 text-emerald-400 text-[9px]">🔒</span>
               </label>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40 text-[10px] font-black" style={{ fontWeight: 900 }}>$</span>
+                <span className={cn("absolute left-3 top-1/2 -translate-y-1/2", ds.typography.size.micro, ds.colors.text.quaternary)}>$</span>
                 <input
                   type="number"
                   step="0.01"
@@ -117,16 +135,16 @@ export default function PricingPanel({
                   className={cn(ds.colors.bg.primary, "w-full border border-white/10 rounded-xl text-white placeholder-white/20 pl-7 pr-3 py-2.5 focus:outline-none focus:border-white/20 transition-all text-xs")}
                 />
               </div>
-              <p className="text-white/40 text-[10px] mt-1.5">Private</p>
+              <p className={cn(ds.typography.size.micro, ds.colors.text.quaternary, "mt-1.5")}>Private</p>
             </div>
 
             {/* SELLING PRICE */}
             <div>
-              <label className="block text-white/40 text-[10px] uppercase tracking-[0.15em] mb-2 font-black" style={{ fontWeight: 900 }}>
+              <label className={cn("block mb-2", ds.typography.size.micro, ds.typography.transform.uppercase, ds.typography.tracking.wide, ds.colors.text.quaternary)}>
                 Selling Price <span className="text-red-400">*</span>
               </label>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40 text-[10px] font-black" style={{ fontWeight: 900 }}>$</span>
+                <span className={cn("absolute left-3 top-1/2 -translate-y-1/2", ds.typography.size.micro, ds.colors.text.quaternary)}>$</span>
                 <input
                   type="number"
                   step="0.01"
@@ -141,13 +159,16 @@ export default function PricingPanel({
               {/* SHOW MARGIN CALCULATION */}
               {hasValidPrices && (
                 <div className={cn(ds.colors.bg.primary, "mt-2 flex items-center gap-2 border border-white/10 rounded-xl px-3 py-2")}>
-                  <div className={`font-black text-[10px] uppercase tracking-[0.15em] ${
+                  <div className={cn(
+                    ds.typography.size.micro,
+                    ds.typography.transform.uppercase,
+                    ds.typography.tracking.wide,
                     margin >= 40 ? 'text-green-400' : margin >= 25 ? 'text-yellow-400' : 'text-red-400'
-                  }`} style={{ fontWeight: 900 }}>
+                  )}>
                     {margin.toFixed(1)}%
                   </div>
                   <div className="w-px h-3 bg-white/20" />
-                  <div className="text-emerald-400 font-black text-[10px] uppercase tracking-[0.15em]" style={{ fontWeight: 900 }}>
+                  <div className={cn("text-emerald-400", ds.typography.size.micro, ds.typography.transform.uppercase, ds.typography.tracking.wide)}>
                     ${profit.toFixed(2)}
                   </div>
                 </div>
@@ -164,153 +185,69 @@ export default function PricingPanel({
             as="h3"
             withMargin={false}
             className="mb-3"
-            rightContent={
-              <div className="flex items-center gap-1.5">
-                <Zap size={11} strokeWidth={1.5} className="text-yellow-400" />
-                <span className="text-yellow-400 text-[9px] uppercase tracking-[0.15em] font-black" style={{ fontWeight: 900 }}>
-                  Quick Pick
-                </span>
-              </div>
-            }
           >
             Pricing Tiers
           </SectionHeader>
 
-          {/* Quick-Pick Pricing Templates */}
-          <div className="grid grid-cols-4 gap-2 mb-4">
-            <button
-              type="button"
-              onClick={() => onApplyTemplate('budget')}
-              className={cn(ds.components.card, "rounded-xl px-2.5 py-2 text-[9px] uppercase tracking-[0.15em] text-white/60 hover:text-white hover:border-white/20 hover:bg-white/5 font-black transition-all")}
-              style={{ fontWeight: 900 }}
-            >
-              Budget
-            </button>
-            <button
-              type="button"
-              onClick={() => onApplyTemplate('mid')}
-              className={cn(ds.components.card, "rounded-xl px-2.5 py-2 text-[9px] uppercase tracking-[0.15em] text-white/60 hover:text-white hover:border-white/20 hover:bg-white/5 font-black transition-all")}
-              style={{ fontWeight: 900 }}
-            >
-              Mid-Shelf
-            </button>
-            <button
-              type="button"
-              onClick={() => onApplyTemplate('premium')}
-              className={cn(ds.components.card, "rounded-xl px-2.5 py-2 text-[9px] uppercase tracking-[0.15em] text-white/60 hover:text-white hover:border-white/20 hover:bg-white/5 font-black transition-all")}
-              style={{ fontWeight: 900 }}
-            >
-              Premium
-            </button>
-            <button
-              type="button"
-              onClick={() => onApplyTemplate('exotic')}
-              className={cn(ds.components.card, "rounded-xl px-2.5 py-2 text-[9px] uppercase tracking-[0.15em] text-white/60 hover:text-white hover:border-white/20 hover:bg-white/5 font-black transition-all")}
-              style={{ fontWeight: 900 }}
-            >
-              Exotic
-            </button>
-          </div>
-
-          <p className="text-white/40 text-[10px] mb-4 uppercase tracking-[0.15em]">
-            Or add custom tiers below
-          </p>
-
-          {/* Add Pricing Tier */}
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-3 mb-4">
-            <div>
-              <label className="block text-white/40 text-[10px] uppercase tracking-[0.15em] mb-2 font-black" style={{ fontWeight: 900 }}>Weight</label>
-              <input
-                type="text"
-                value={newTierWeight}
-                onChange={(e) => onNewTierChange('weight', e.target.value)}
-                placeholder="1g"
-                className={cn(ds.components.card, "w-full rounded-xl text-white placeholder-white/20 px-3 py-2.5 text-xs focus:outline-none focus:border-white/20 transition-all")}
-              />
-            </div>
-            <div>
-              <label className="block text-white/40 text-[10px] uppercase tracking-[0.15em] mb-2 font-black" style={{ fontWeight: 900 }}>Qty <span className="text-red-400">*</span></label>
-              <input
-                type="number"
-                value={newTierQty}
-                onChange={(e) => onNewTierChange('qty', e.target.value)}
-                placeholder="1"
-                className={cn(ds.components.card, "w-full rounded-xl text-white placeholder-white/20 px-3 py-2.5 text-xs focus:outline-none focus:border-white/20 transition-all")}
-              />
-            </div>
-            <div>
-              <label className="block text-white/40 text-[10px] uppercase tracking-[0.15em] mb-2 font-black" style={{ fontWeight: 900 }}>Price <span className="text-red-400">*</span></label>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40 text-[10px] font-black" style={{ fontWeight: 900 }}>$</span>
-                <input
-                  type="number"
-                  step="0.01"
-                  value={newTierPrice}
-                  onChange={(e) => onNewTierChange('price', e.target.value)}
-                  placeholder="14.99"
-                  className={cn(ds.components.card, "w-full rounded-xl text-white placeholder-white/20 pl-7 pr-3 py-2.5 text-xs focus:outline-none focus:border-white/20 transition-all")}
-                />
+          {/* Pricing Blueprint Selector */}
+          {availableBlueprints.length > 0 && (
+            <div className="mb-4">
+              <label className={cn("block mb-2", ds.typography.size.micro, ds.typography.transform.uppercase, ds.typography.tracking.wide, ds.colors.text.quaternary)}>
+                <Sparkles size={10} className="inline mr-1.5 text-purple-400" />
+                Pricing Blueprint <span className="text-red-400">*</span>
+              </label>
+              <div className="flex gap-2">
+                <select
+                  value={selectedBlueprintId || ''}
+                  onChange={(e) => onBlueprintSelect?.(e.target.value)}
+                  className={cn(ds.components.card, "flex-1 rounded-xl text-white text-xs px-3 py-2.5 focus:outline-none focus:border-white/20 transition-all")}
+                >
+                  <option value="">Select a pricing blueprint...</option>
+                  {availableBlueprints.map((blueprint) => (
+                    <option key={blueprint.id} value={blueprint.id}>
+                      {blueprint.name}
+                      {blueprint.quality_tier && ` (${blueprint.quality_tier})`}
+                    </option>
+                  ))}
+                </select>
+                {selectedBlueprintId && onApplyBlueprint && (
+                  <button
+                    type="button"
+                    onClick={onApplyBlueprint}
+                    className={cn(
+                      "px-3 py-2.5 bg-purple-500/20 border border-purple-400/30 rounded-xl text-purple-300 hover:bg-purple-500/30 hover:border-purple-400/50 transition-all",
+                      ds.typography.size.micro,
+                      ds.typography.transform.uppercase,
+                      ds.typography.tracking.wide
+                    )}
+                  >
+                    Apply
+                  </button>
+                )}
               </div>
+              {selectedBlueprintId && (
+                <p className={cn("text-purple-400/60 mt-1.5", ds.typography.size.micro)}>
+                  {availableBlueprints.find(b => b.id === selectedBlueprintId)?.description || 'Blueprint selected'}
+                </p>
+              )}
             </div>
-            <div className="flex items-end">
-              <button
-                type="button"
-                onClick={onAddTier}
-                className="w-full px-3 py-2.5 bg-white/10 border border-white/20 rounded-xl text-white hover:bg-white/20 hover:border-white/30 font-black transition-all flex items-center justify-center gap-1.5 text-[10px] uppercase tracking-[0.15em]"
-                style={{ fontWeight: 900 }}
-              >
-                <Plus size={11} strokeWidth={1.5} />
-                Add
-              </button>
-            </div>
-          </div>
+          )}
 
-          {/* Pricing Tiers List */}
+          {/* Pricing Tiers Preview (Read-Only) */}
           {pricingTiers.length > 0 && (
             <div className="space-y-2">
-              <h4 className="text-white/40 text-[10px] uppercase tracking-[0.15em] font-black" style={{ fontWeight: 900 }}>
-                Current ({pricingTiers.length})
+              <h4 className={cn(ds.typography.size.micro, ds.typography.transform.uppercase, ds.typography.tracking.wide, ds.colors.text.quaternary)}>
+                Pricing Tiers from Blueprint ({pricingTiers.length})
               </h4>
               <div className="space-y-2">
                 {pricingTiers.map((tier, index) => (
-                  <div key={index} className={cn(ds.components.card, "rounded-xl p-3 flex items-center gap-3")}>
-                    <div className="flex-1 grid grid-cols-3 gap-2">
-                      <input
-                        type="text"
-                        value={tier.weight || ''}
-                        onChange={(e) => onUpdateTier(index, 'weight', e.target.value)}
-                        placeholder="Weight"
-                        className="w-full bg-black border border-white/10 rounded-xl text-white placeholder-white/20 px-2.5 py-2 text-xs focus:outline-none focus:border-white/20"
-                      />
-                      <input
-                        type="number"
-                        value={tier.qty}
-                        onChange={(e) => onUpdateTier(index, 'qty', e.target.value)}
-                        placeholder="Qty"
-                        className="w-full bg-black border border-white/10 rounded-xl text-white placeholder-white/20 px-2.5 py-2 text-xs focus:outline-none focus:border-white/20"
-                      />
-                      <div className="relative">
-                        <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-white/40 text-[10px] font-black" style={{ fontWeight: 900 }}>$</span>
-                        <input
-                          type="number"
-                          step="0.01"
-                          value={tier.price}
-                          onChange={(e) => onUpdateTier(index, 'price', e.target.value)}
-                          placeholder="Price"
-                          className="w-full bg-black border border-white/10 rounded-xl text-white placeholder-white/20 pl-6 pr-2.5 py-2 text-xs focus:outline-none focus:border-white/20"
-                        />
-                      </div>
+                  <div key={index} className={cn(ds.components.card, "rounded-xl px-4 py-3 flex items-center justify-between")}>
+                    <div className="text-white/60 text-xs">
+                      {tier.weight || `${tier.qty}x`}
                     </div>
-                    <div className="text-white text-[10px] font-black uppercase tracking-[0.15em] min-w-[80px]" style={{ fontWeight: 900 }}>
-                      {tier.weight || `${tier.qty}x`} ${parseFloat(tier.price.toString()).toFixed(2)}
+                    <div className={cn("text-white", ds.typography.size.sm)}>
+                      ${tier.price && !isNaN(parseFloat(tier.price.toString())) ? parseFloat(tier.price.toString()).toFixed(2) : 'N/A'}
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => onRemoveTier(index)}
-                      className="text-red-400 hover:text-red-300 p-1.5 rounded-xl hover:bg-red-500/10 transition-all"
-                    >
-                      <X size={14} strokeWidth={1.5} />
-                    </button>
                   </div>
                 ))}
               </div>

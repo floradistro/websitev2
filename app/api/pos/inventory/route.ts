@@ -17,66 +17,42 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Fetch vendor pricing configs and inventory in parallel
-    const [inventoryResult, vendorPricingResult] = await Promise.all([
-      // Fetch inventory with product details
-      supabase
-        .from('inventory')
-        .select(`
+    // Fetch inventory with product details (simplified - no multi-table pricing joins)
+    const { data: inventoryData, error: inventoryError } = await supabase
+      .from('inventory')
+      .select(`
+        id,
+        product_id,
+        quantity,
+        reserved_quantity,
+        available_quantity,
+        products (
           id,
-          product_id,
-          quantity,
-          reserved_quantity,
-          available_quantity,
-          products (
-            id,
-            name,
-            price,
-            featured_image,
-            vendor_id,
-            description,
-            short_description,
-            custom_fields,
-            primary_category:categories!primary_category_id(id, name),
-            product_categories (
-              categories (
-                name
-              )
-            ),
-            product_pricing_assignments!product_id(
-              blueprint_id,
-              is_active,
-              price_overrides,
-              blueprint:pricing_tier_blueprints(
-                id,
-                name,
-                price_breaks
-              )
-            ),
-            vendors (
-              id,
-              store_name,
-              logo_url
-            )
-          )
-        `)
-        .eq('location_id', locationId)
-        .gt('quantity', 0),
-      
-      // Fetch vendor pricing configs
-      supabase
-        .from('vendor_pricing_configs')
-        .select(`
+          name,
+          price,
+          featured_image,
           vendor_id,
-          pricing_values,
-          blueprint:pricing_tier_blueprints(
+          description,
+          short_description,
+          custom_fields,
+          pricing_data,
+          primary_category:categories!primary_category_id(id, name),
+          product_categories (
+            categories (
+              name
+            )
+          ),
+          vendors (
             id,
-            name,
-            price_breaks
+            store_name,
+            logo_url
           )
-        `)
-        .eq('is_active', true)
-    ]);
+        )
+      `)
+      .eq('location_id', locationId)
+      .gt('quantity', 0);
+
+    const inventoryResult = { data: inventoryData, error: inventoryError };
 
     if (inventoryResult.error) {
       console.error('Error fetching inventory:', inventoryResult.error);
@@ -86,80 +62,34 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Build pricing map by vendor_id + blueprint_id
-    const vendorPricingMap = new Map();
-
-    (vendorPricingResult.data || []).forEach((config: any) => {
-      if (!config.blueprint?.price_breaks || !config.vendor_id) return;
-
-      const pricingValues = config.pricing_values || {};
-      const tiers: any[] = [];
-
-      config.blueprint.price_breaks.forEach((priceBreak: any) => {
-        const breakId = priceBreak.break_id;
-        const vendorPrice = pricingValues[breakId];
-
-        // Only add if tier is ENABLED and has a price
-        if (vendorPrice && vendorPrice.enabled !== false && vendorPrice.price) {
-          tiers.push({
-            weight: priceBreak.label || `${priceBreak.qty}${priceBreak.unit || ''}`,
-            qty: priceBreak.qty || 1,
-            price: parseFloat(vendorPrice.price),
-            label: priceBreak.label,
-            break_id: breakId,
-            sort_order: priceBreak.sort_order || 0,
-          });
-        }
-      });
-
-      // Sort by sort_order
-      tiers.sort((a, b) => a.sort_order - b.sort_order);
-
-      // Use composite key: vendor_id + blueprint_id
-      const key = `${config.vendor_id}::${config.blueprint.id}`;
-      vendorPricingMap.set(key, tiers);
-    });
-
-    // Transform data
+    // Transform data - simplified pricing from embedded pricing_data
     const products = (inventoryResult.data || [])
       .filter((inv: any) => inv.products) // Filter out null products
       .map((inv: any) => {
-        // Get pricing tiers from product's product_pricing_assignments
-        const pricingAssignments = inv.products.product_pricing_assignments || [];
-        const pricingTiers: any[] = [];
+        // Get pricing from embedded pricing_data (new system)
+        const pricingData = inv.products.pricing_data || {};
+        const pricingTiers: any[] = (pricingData.tiers || [])
+          .filter((tier: any) => tier.enabled !== false && tier.price) // Only enabled tiers with prices
+          .map((tier: any) => ({
+            weight: tier.label,
+            qty: tier.quantity || 1,
+            price: parseFloat(tier.price),
+            label: tier.label,
+            break_id: tier.id,
+            sort_order: tier.sort_order || 0
+          }))
+          .sort((a: any, b: any) => a.sort_order - b.sort_order);
 
-        // Use the first active pricing assignment
-        const activeAssignment = pricingAssignments.find((a: any) => a.is_active) || pricingAssignments[0];
-
-        if (activeAssignment && activeAssignment.blueprint) {
-          const blueprint = activeAssignment.blueprint;
-          const priceBreaks = blueprint.price_breaks || [];
-          const productOverrides = activeAssignment.price_overrides || {};
-          // Use composite key to get vendor pricing for this specific blueprint
-          const vendorPricingKey = `${inv.products.vendor_id}::${blueprint.id}`;
-          const vendorPricing = vendorPricingMap.get(vendorPricingKey);
-
-          priceBreaks.forEach((priceBreak: any) => {
-            const breakId = priceBreak.break_id;
-            // Product overrides take priority, then vendor pricing
-            const productPrice = productOverrides[breakId]?.price;
-            const vendorPrice = vendorPricing?.find((t: any) => t.break_id === breakId)?.price;
-            const price = productPrice || vendorPrice;
-
-            if (price) {
-              pricingTiers.push({
-                break_id: breakId,
-                label: priceBreak.label || `${priceBreak.qty}${priceBreak.unit || ''}`,
-                qty: priceBreak.qty || 1,
-                unit: priceBreak.unit || '',
-                price: parseFloat(price),
-                sort_order: priceBreak.sort_order || 0,
-              });
-            }
+        // If no tiers, fall back to single price
+        if (pricingTiers.length === 0 && inv.products.price) {
+          pricingTiers.push({
+            break_id: 'single',
+            label: 'Single Price',
+            qty: 1,
+            unit: '',
+            price: parseFloat(inv.products.price),
+            sort_order: 1
           });
-
-          // Sort by sort_order
-          pricingTiers.sort((a, b) => a.sort_order - b.sort_order);
         }
 
         // Get category - try primary_category first, then fall back to product_categories
