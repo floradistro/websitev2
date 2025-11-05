@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { X, Save, DollarSign, Plus, Trash2 } from 'lucide-react';
+import { X, Save, Plus, Trash2, DollarSign } from 'lucide-react';
 import { showNotification } from '@/components/NotificationToast';
-import { Button, Input, Textarea, Select, ds, cn } from '@/components/ds';
+import SectionHeader from '@/components/ui/SectionHeader';
+import { ds, cn } from '@/components/ds';
 import axios from 'axios';
 
 interface PriceBreak {
@@ -20,7 +21,7 @@ interface PricingBlueprintModalProps {
   onClose: () => void;
   onSave: () => void;
   vendorId: string;
-  blueprint?: any; // If provided, edit mode; otherwise, create mode
+  blueprint?: any;
   categories: any[];
 }
 
@@ -37,15 +38,13 @@ export function PricingBlueprintModal({
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    context: 'retail' as 'retail' | 'wholesale' | 'distributor' | 'delivery',
-    tier_type: 'weight' as 'weight' | 'quantity' | 'percentage' | 'flat' | 'custom',
-    quality_tier: '' as '' | 'exotic' | 'top-shelf' | 'mid-shelf' | 'value', // Empty string will be converted to null before saving
+    quality_tier: '' as '' | 'exotic' | 'top-shelf' | 'mid-shelf' | 'value',
     applicable_to_categories: [] as string[]
   });
 
   const [priceBreaks, setPriceBreaks] = useState<PriceBreak[]>([
-    { break_id: '1g', label: '1g', qty: 1, unit: 'g', sort_order: 1 },
-    { break_id: '3.5g', label: '3.5g (⅛oz)', qty: 3.5, unit: 'g', sort_order: 2 },
+    { break_id: '1g', label: '1 gram', qty: 1, unit: 'g', sort_order: 1 },
+    { break_id: '3_5g', label: '3.5g (⅛oz)', qty: 3.5, unit: 'g', sort_order: 2 },
     { break_id: '7g', label: '7g (¼oz)', qty: 7, unit: 'g', sort_order: 3 },
     { break_id: '14g', label: '14g (½oz)', qty: 14, unit: 'g', sort_order: 4 },
     { break_id: '28g', label: '28g (1oz)', qty: 28, unit: 'g', sort_order: 5 }
@@ -56,24 +55,21 @@ export function PricingBlueprintModal({
   // Load pricing template when editing
   useEffect(() => {
     if (isOpen && blueprint) {
-      // Load the blueprint data
       setFormData({
         name: blueprint.name || '',
         description: blueprint.description || '',
-        context: blueprint.context || 'retail',
-        tier_type: blueprint.tier_type || 'weight',
         quality_tier: blueprint.quality_tier || '',
         applicable_to_categories: blueprint.applicable_to_categories || []
       });
 
-      // Load price_breaks with default_price from template (new architecture)
+      // Load price_breaks with prices from template
       const priceBreaksWithPrices = (blueprint.price_breaks || []).map((pb: any) => ({
         break_id: pb.break_id,
         label: pb.label,
         qty: pb.qty,
         unit: pb.unit,
         sort_order: pb.sort_order,
-        price: pb.default_price // Prices are now stored in the template itself
+        price: pb.default_price || pb.price
       }));
       setPriceBreaks(priceBreaksWithPrices);
     } else if (isOpen && !blueprint) {
@@ -81,20 +77,18 @@ export function PricingBlueprintModal({
       setFormData({
         name: '',
         description: '',
-        context: 'retail',
-        tier_type: 'weight',
         quality_tier: '',
         applicable_to_categories: []
       });
       setPriceBreaks([
-        { break_id: '1g', label: '1g', qty: 1, unit: 'g', sort_order: 1 },
-        { break_id: '3.5g', label: '3.5g (⅛oz)', qty: 3.5, unit: 'g', sort_order: 2 },
+        { break_id: '1g', label: '1 gram', qty: 1, unit: 'g', sort_order: 1 },
+        { break_id: '3_5g', label: '3.5g (⅛oz)', qty: 3.5, unit: 'g', sort_order: 2 },
         { break_id: '7g', label: '7g (¼oz)', qty: 7, unit: 'g', sort_order: 3 },
         { break_id: '14g', label: '14g (½oz)', qty: 14, unit: 'g', sort_order: 4 },
         { break_id: '28g', label: '28g (1oz)', qty: 28, unit: 'g', sort_order: 5 }
       ]);
     }
-  }, [isOpen, blueprint, vendorId]);
+  }, [isOpen, blueprint]);
 
   const addPriceBreak = () => {
     const nextOrder = priceBreaks.length + 1;
@@ -125,7 +119,7 @@ export function PricingBlueprintModal({
       showNotification({
         type: 'error',
         title: 'Validation Error',
-        message: 'Please provide a name and at least one price break'
+        message: 'Please provide a name and at least one price tier'
       });
       return;
     }
@@ -139,11 +133,10 @@ export function PricingBlueprintModal({
       return;
     }
 
-    // Include prices directly in price_breaks (new architecture)
+    // Include prices directly in price_breaks
     const blueprintData = {
       id: blueprint?.id,
       ...formData,
-      // Convert empty string to null for quality_tier (database constraint requires null, not '')
       quality_tier: formData.quality_tier || null,
       price_breaks: priceBreaks.map((pb: any) => ({
         break_id: pb.break_id,
@@ -151,23 +144,15 @@ export function PricingBlueprintModal({
         qty: pb.qty,
         unit: pb.unit,
         sort_order: pb.sort_order,
-        default_price: pb.price || null // Include configured price in template
-      }))
+        default_price: pb.price || null
+      })),
+      context: 'retail',
+      tier_type: 'weight'
     };
-
-    console.log('💾 Saving pricing blueprint...', {
-      isEditMode,
-      vendorId,
-      blueprintId: blueprint?.id,
-      formData,
-      priceBreaks,
-      blueprintData
-    });
 
     setSaving(true);
     try {
       if (isEditMode) {
-        // Update existing blueprint with prices included
         const response = await axios.put('/api/vendor/pricing-blueprints', blueprintData, {
           headers: { 'x-vendor-id': vendorId }
         });
@@ -182,7 +167,6 @@ export function PricingBlueprintModal({
           onClose();
         }
       } else {
-        // Create new blueprint with prices included
         const response = await axios.post('/api/vendor/pricing-blueprints', blueprintData, {
           headers: { 'x-vendor-id': vendorId }
         });
@@ -198,15 +182,8 @@ export function PricingBlueprintModal({
         }
       }
     } catch (error: any) {
-      console.error('❌ Error saving pricing blueprint:', error);
-      console.error('Response data:', error.response?.data);
-      console.error('Response status:', error.response?.status);
-
-      const errorMessage = error.response?.data?.error
-        || error.response?.data?.message
-        || error.message
-        || 'Failed to save pricing blueprint';
-
+      console.error('Error saving pricing template:', error);
+      const errorMessage = error.response?.data?.error || error.message || 'Failed to save pricing template';
       showNotification({
         type: 'error',
         title: 'Save Failed',
@@ -217,608 +194,276 @@ export function PricingBlueprintModal({
     }
   };
 
-  const toggleCategory = (categoryId: string) => {
-    if (formData.applicable_to_categories.includes(categoryId)) {
-      setFormData({
-        ...formData,
-        applicable_to_categories: formData.applicable_to_categories.filter(id => id !== categoryId)
-      });
-    } else {
-      setFormData({
-        ...formData,
-        applicable_to_categories: [...formData.applicable_to_categories, categoryId]
-      });
-    }
-  };
-
   if (!isOpen) return null;
 
   return (
-    <>
-      {/* Backdrop */}
-      <div
-        className={cn(
-          "fixed inset-0 backdrop-blur-sm z-50",
-          "bg-black/80"
-        )}
-        onClick={onClose}
-        style={{ animation: 'fade-in 0.2s ease-out' }}
-      />
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+      <div className={cn(ds.components.card, "w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-2xl")}>
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
+          <h2 className={cn(ds.typography.size.h3, ds.typography.weight.semibold, ds.colors.text.primary)}>
+            {isEditMode ? 'Edit Pricing Template' : 'New Pricing Template'}
+          </h2>
+          <button
+            onClick={onClose}
+            className={cn(
+              "p-2 rounded-lg transition-colors",
+              ds.colors.bg.secondary,
+              "hover:bg-white/20"
+            )}
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
 
-      {/* Modal */}
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
-        <div
-          className={cn(
-            "w-full max-w-4xl backdrop-blur-xl pointer-events-auto overflow-hidden",
-            ds.colors.bg.secondary,
-            ds.colors.border.default,
-            "border",
-            ds.effects.radius.xl,
-            ds.effects.shadow.xl
-          )}
-          style={{
-            animation: 'fade-in 0.3s ease-out',
-            boxShadow: '0 0 60px rgba(255,255,255,0.05)'
-          }}
-          onClick={(e) => e.stopPropagation()}
-        >
-          {/* Header */}
-          <div className={cn(
-            "p-6",
-            ds.colors.bg.secondary,
-            ds.colors.border.subtle,
-            "border-b"
-          )}>
-            <div className="flex items-start justify-between">
+        {/* Form */}
+        <div className="space-y-6">
+          {/* Basic Info */}
+          <div>
+            <SectionHeader>Template Details</SectionHeader>
+            <div className="space-y-4">
               <div>
-                <h2 className={cn(
-                  ds.typography.size.xs,
-                  ds.typography.transform.uppercase,
-                  ds.typography.tracking.wide,
-                  ds.colors.text.primary,
-                  ds.typography.weight.light,
-                  'mb-2'
-                )}>
-                  {isEditMode ? 'Edit Pricing Blueprint' : 'Create Pricing Blueprint'}
-                </h2>
-                <p className={cn(
-                  ds.colors.text.quaternary,
-                  ds.typography.size.xs,
-                  ds.typography.transform.uppercase,
-                  ds.typography.tracking.wide,
-                  ds.typography.weight.light
-                )}>
-                  {isEditMode ? 'Update pricing structure' : 'Configure a new pricing structure'}
+                <label className={cn("block mb-2", ds.typography.size.micro, ds.typography.transform.uppercase, ds.typography.tracking.wide, ds.colors.text.quaternary)}>
+                  Template Name <span className="text-red-400">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  placeholder="e.g., Top-Shelf Flower"
+                  className={cn(
+                    ds.components.input,
+                    "w-full px-3 py-2.5 rounded-xl border transition-colors",
+                    ds.colors.bg.secondary,
+                    "border-white/10 focus:border-white/30"
+                  )}
+                />
+              </div>
+
+              <div>
+                <label className={cn("block mb-2", ds.typography.size.micro, ds.typography.transform.uppercase, ds.typography.tracking.wide, ds.colors.text.quaternary)}>
+                  Description
+                </label>
+                <textarea
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  placeholder="Optional description"
+                  rows={2}
+                  className={cn(
+                    ds.components.input,
+                    "w-full px-3 py-2.5 rounded-xl border transition-colors resize-none",
+                    ds.colors.bg.secondary,
+                    "border-white/10 focus:border-white/30"
+                  )}
+                />
+              </div>
+
+              <div>
+                <label className={cn("block mb-2", ds.typography.size.micro, ds.typography.transform.uppercase, ds.typography.tracking.wide, ds.colors.text.quaternary)}>
+                  Quality Tier
+                </label>
+                <select
+                  value={formData.quality_tier}
+                  onChange={(e) => setFormData({ ...formData, quality_tier: e.target.value as any })}
+                  className={cn(
+                    ds.components.input,
+                    "w-full px-3 py-2.5 rounded-xl border transition-colors",
+                    ds.colors.bg.secondary,
+                    "border-white/10 focus:border-white/30"
+                  )}
+                >
+                  <option value="">None</option>
+                  <option value="exotic">Exotic</option>
+                  <option value="top-shelf">Top-Shelf</option>
+                  <option value="mid-shelf">Mid-Shelf</option>
+                  <option value="value">Value</option>
+                </select>
+              </div>
+
+              <div>
+                <label className={cn("block mb-2", ds.typography.size.micro, ds.typography.transform.uppercase, ds.typography.tracking.wide, ds.colors.text.quaternary)}>
+                  Applicable Categories
+                </label>
+                <select
+                  multiple
+                  value={formData.applicable_to_categories}
+                  onChange={(e) => {
+                    const selected = Array.from(e.target.selectedOptions, option => option.value);
+                    setFormData({ ...formData, applicable_to_categories: selected });
+                  }}
+                  className={cn(
+                    ds.components.input,
+                    "w-full px-3 py-2.5 rounded-xl border transition-colors",
+                    ds.colors.bg.secondary,
+                    "border-white/10 focus:border-white/30 min-h-[100px]"
+                  )}
+                >
+                  {categories.map(cat => (
+                    <option key={cat.id} value={cat.id}>{cat.name}</option>
+                  ))}
+                </select>
+                <p className={cn("mt-1", ds.typography.size.micro, ds.colors.text.quaternary)}>
+                  Hold Cmd/Ctrl to select multiple categories
                 </p>
               </div>
-              <button
-                onClick={onClose}
-                className={cn(
-                  ds.colors.text.quaternary,
-                  "hover:text-white",
-                  ds.effects.transition.normal,
-                  "p-2"
-                )}
-              >
-                <X size={20} strokeWidth={1.5} />
-              </button>
             </div>
           </div>
 
-          {/* Content */}
-          <div className="p-6 max-h-[70vh] overflow-y-auto">
-            <div className="space-y-6">
-              {/* Basic Info */}
-              <div>
-                <h3 className={cn(
-                  ds.typography.size.xs,
-                  ds.typography.transform.uppercase,
-                  ds.typography.tracking.wide,
-                  ds.colors.text.tertiary,
-                  ds.typography.weight.medium,
-                  "mb-4"
-                )}>
-                  Basic Information
-                </h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className={cn(
-                      "block mb-2",
-                      ds.typography.size.xs,
-                      ds.typography.transform.uppercase,
-                      ds.typography.tracking.wide,
-                      ds.colors.text.quaternary
-                    )}>
-                      Blueprint Name
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className={cn(
-                        "w-full px-4 py-3",
-                        ds.colors.bg.input,
-                        ds.colors.border.default,
-                        ds.colors.text.primary,
-                        "border",
-                        ds.effects.radius.lg,
-                        "focus:outline-none",
-                        "focus:border-white/[0.12]",
-                        ds.effects.transition.normal
-                      )}
-                      placeholder="e.g., Top Shelf Flower"
-                    />
-                  </div>
-                  <div>
-                    <label className={cn(
-                      "block mb-2",
-                      ds.typography.size.xs,
-                      ds.typography.transform.uppercase,
-                      ds.typography.tracking.wide,
-                      ds.colors.text.quaternary
-                    )}>
-                      Context
-                    </label>
-                    <select
-                      value={formData.context}
-                      onChange={(e) => setFormData({ ...formData, context: e.target.value as any })}
-                      className={cn(
-                        "w-full px-4 py-3",
-                        ds.colors.bg.input,
-                        ds.colors.border.default,
-                        ds.colors.text.primary,
-                        "border",
-                        ds.effects.radius.lg,
-                        "focus:outline-none",
-                        "focus:border-white/[0.12]",
-                        ds.effects.transition.normal
-                      )}
-                    >
-                      <option value="retail">Retail</option>
-                      <option value="wholesale">Wholesale</option>
-                      <option value="distributor">Distributor</option>
-                      <option value="delivery">Delivery</option>
-                    </select>
-                  </div>
-                </div>
+          {/* Price Tiers */}
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <SectionHeader>Price Tiers</SectionHeader>
+              <button
+                type="button"
+                onClick={addPriceBreak}
+                className={cn(
+                  "flex items-center gap-2 px-3 py-1.5 rounded-lg transition-colors",
+                  ds.typography.size.micro,
+                  ds.colors.bg.secondary,
+                  "hover:bg-white/20"
+                )}
+              >
+                <Plus className="w-4 h-4" />
+                Add Tier
+              </button>
+            </div>
 
-                <div className="mt-4">
-                  <label className={cn(
-                    "block mb-2",
-                    ds.typography.size.xs,
-                    ds.typography.transform.uppercase,
-                    ds.typography.tracking.wide,
-                    ds.colors.text.quaternary
-                  )}>
-                    Description (Optional)
-                  </label>
-                  <textarea
-                    value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    rows={2}
-                    className={cn(
-                      "w-full px-4 py-3 resize-none",
-                      ds.colors.bg.input,
-                      ds.colors.border.default,
-                      ds.colors.text.primary,
-                      "border",
-                      ds.effects.radius.lg,
-                      "focus:outline-none",
-                      "focus:border-white/[0.12]",
-                      ds.effects.transition.normal
-                    )}
-                    placeholder="Describe this pricing structure..."
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4 mt-4">
-                  <div>
-                    <label className={cn(
-                      "block mb-2",
-                      ds.typography.size.xs,
-                      ds.typography.transform.uppercase,
-                      ds.typography.tracking.wide,
-                      ds.colors.text.quaternary
-                    )}>
-                      Pricing Type
-                    </label>
-                    <select
-                      value={formData.tier_type}
-                      onChange={(e) => setFormData({ ...formData, tier_type: e.target.value as any })}
-                      className={cn(
-                        "w-full px-4 py-3",
-                        ds.colors.bg.input,
-                        ds.colors.border.default,
-                        ds.colors.text.primary,
-                        "border",
-                        ds.effects.radius.lg,
-                        "focus:outline-none",
-                        "focus:border-white/[0.12]",
-                        ds.effects.transition.normal
-                      )}
-                    >
-                      <option value="weight">Weight-Based</option>
-                      <option value="quantity">Quantity-Based</option>
-                      <option value="percentage">Percentage Discount</option>
-                      <option value="flat">Flat Price</option>
-                      <option value="custom">Custom</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className={cn(
-                      "block mb-2",
-                      ds.typography.size.xs,
-                      ds.typography.transform.uppercase,
-                      ds.typography.tracking.wide,
-                      ds.colors.text.quaternary
-                    )}>
-                      Quality Tier (Optional)
-                    </label>
-                    <select
-                      value={formData.quality_tier}
-                      onChange={(e) => setFormData({ ...formData, quality_tier: e.target.value as any })}
-                      className={cn(
-                        "w-full px-4 py-3",
-                        ds.colors.bg.input,
-                        ds.colors.border.default,
-                        ds.colors.text.primary,
-                        "border",
-                        ds.effects.radius.lg,
-                        "focus:outline-none",
-                        "focus:border-white/[0.12]",
-                        ds.effects.transition.normal
-                      )}
-                    >
-                      <option value="">None</option>
-                      <option value="exotic">Exotic</option>
-                      <option value="top-shelf">Top Shelf</option>
-                      <option value="mid-shelf">Mid Shelf</option>
-                      <option value="value">Value</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-
-              {/* Price Breaks */}
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className={cn(
-                    ds.typography.size.xs,
-                    ds.typography.transform.uppercase,
-                    ds.typography.tracking.wide,
-                    ds.colors.text.tertiary,
-                    ds.typography.weight.medium
-                  )}>
-                    Price Breaks
-                  </h3>
-                  <Button
-                    onClick={addPriceBreak}
-                    variant="ghost"
-                    icon={Plus}
-                    size="xs"
-                  >
-                    Add Tier
-                  </Button>
-                </div>
-                <div className={cn(
-                  "p-3 mb-4",
-                  "bg-blue-500/10",
-                  "border border-blue-500/20",
-                  ds.effects.radius.lg
-                )}>
-                  <div className="flex items-start gap-2">
-                    <div className={cn(
-                      ds.typography.size.xs,
-                      ds.colors.icon.blue
-                    )}>
-                      ℹ️
-                    </div>
-                    <div>
-                      <div className={cn(
-                        ds.typography.size.micro,
-                        ds.typography.weight.semibold,
-                        ds.typography.transform.uppercase,
-                        ds.typography.tracking.wide,
-                        ds.colors.icon.blue,
-                        "mb-1"
-                      )}>
-                        Pricing Mode
-                      </div>
-                      <div className={cn(
-                        ds.typography.size.micro,
-                        ds.colors.text.tertiary,
-                        "leading-relaxed"
-                      )}>
-                        <strong>With Price:</strong> Use your custom price (e.g., 1g = $12)<br/>
-                        <strong>Without Price (Optional):</strong> Auto-calculate from product base price × quantity
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-3">
-                  {priceBreaks.map((priceBreak, idx) => (
-                    <div key={idx} className={cn(
-                      "p-4",
-                      ds.colors.bg.primary,
-                      ds.colors.border.subtle,
-                      "border",
-                      ds.effects.radius.lg
-                    )}>
-                      <div className="grid grid-cols-12 gap-3 items-end">
-                        <div className="col-span-3">
-                          <label className={cn(
-                            "block mb-2",
-                            ds.typography.size.micro,
-                            ds.typography.transform.uppercase,
-                            ds.typography.tracking.wide,
-                            ds.colors.text.quaternary
-                          )}>
-                            Label
-                          </label>
-                          <input
-                            type="text"
-                            value={priceBreak.label}
-                            onChange={(e) => updatePriceBreak(idx, 'label', e.target.value)}
-                            className={cn(
-                              "w-full px-3 py-2 text-sm",
-                              ds.colors.bg.input,
-                              ds.colors.border.default,
-                              ds.colors.text.primary,
-                              "border",
-                              ds.effects.radius.md,
-                              "focus:outline-none",
-                              "focus:border-white/[0.12]",
-                              ds.effects.transition.normal
-                            )}
-                            placeholder="e.g., 1g"
-                          />
-                        </div>
-                        <div className="col-span-2">
-                          <label className={cn(
-                            "block mb-2",
-                            ds.typography.size.micro,
-                            ds.typography.transform.uppercase,
-                            ds.typography.tracking.wide,
-                            ds.colors.text.quaternary
-                          )}>
-                            Quantity
-                          </label>
-                          <input
-                            type="number"
-                            step="0.1"
-                            value={priceBreak.qty}
-                            onChange={(e) => updatePriceBreak(idx, 'qty', parseFloat(e.target.value) || 0)}
-                            className={cn(
-                              "w-full px-3 py-2 text-sm",
-                              ds.colors.bg.input,
-                              ds.colors.border.default,
-                              ds.colors.text.primary,
-                              "border",
-                              ds.effects.radius.md,
-                              "focus:outline-none",
-                              "focus:border-white/[0.12]",
-                              ds.effects.transition.normal
-                            )}
-                          />
-                        </div>
-                        <div className="col-span-2">
-                          <label className={cn(
-                            "block mb-2",
-                            ds.typography.size.micro,
-                            ds.typography.transform.uppercase,
-                            ds.typography.tracking.wide,
-                            ds.colors.text.quaternary
-                          )}>
-                            Price ($)
-                            {!priceBreak.price && (
-                              <span className={cn("ml-1", ds.colors.text.ghost)}>• Auto-calc</span>
-                            )}
-                          </label>
-                          <input
-                            type="number"
-                            step="0.01"
-                            min="0"
-                            value={priceBreak.price ?? ''}
-                            onChange={(e) => {
-                              const value = e.target.value;
-                              if (value === '' || value === null) {
-                                updatePriceBreak(idx, 'price', undefined);
-                              } else {
-                                const numValue = parseFloat(value);
-                                updatePriceBreak(idx, 'price', isNaN(numValue) ? undefined : numValue);
-                              }
-                            }}
-                            className={cn(
-                              "w-full px-3 py-2 text-sm",
-                              ds.colors.bg.input,
-                              ds.colors.border.default,
-                              ds.colors.text.primary,
-                              "border",
-                              ds.effects.radius.md,
-                              "focus:outline-none",
-                              "focus:border-white/[0.12]",
-                              ds.effects.transition.normal
-                            )}
-                            placeholder="Auto (base price × qty)"
-                          />
-                        </div>
-                        <div className="col-span-2">
-                          <label className={cn(
-                            "block mb-2",
-                            ds.typography.size.micro,
-                            ds.typography.transform.uppercase,
-                            ds.typography.tracking.wide,
-                            ds.colors.text.quaternary
-                          )}>
-                            Unit
-                          </label>
-                          <select
-                            value={priceBreak.unit}
-                            onChange={(e) => updatePriceBreak(idx, 'unit', e.target.value)}
-                            className={cn(
-                              "w-full px-3 py-2 text-sm",
-                              ds.colors.bg.input,
-                              ds.colors.border.default,
-                              ds.colors.text.primary,
-                              "border",
-                              ds.effects.radius.md,
-                              "focus:outline-none",
-                              "focus:border-white/[0.12]",
-                              ds.effects.transition.normal
-                            )}
-                          >
-                            <option value="g">g</option>
-                            <option value="oz">oz</option>
-                            <option value="lb">lb</option>
-                            <option value="unit">unit</option>
-                          </select>
-                        </div>
-                        <div className="col-span-2">
-                          <label className={cn(
-                            "block mb-2",
-                            ds.typography.size.micro,
-                            ds.typography.transform.uppercase,
-                            ds.typography.tracking.wide,
-                            ds.colors.text.quaternary
-                          )}>
-                            Order
-                          </label>
-                          <input
-                            type="number"
-                            value={priceBreak.sort_order}
-                            onChange={(e) => updatePriceBreak(idx, 'sort_order', parseInt(e.target.value) || 0)}
-                            className={cn(
-                              "w-full px-3 py-2 text-sm",
-                              ds.colors.bg.input,
-                              ds.colors.border.default,
-                              ds.colors.text.primary,
-                              "border",
-                              ds.effects.radius.md,
-                              "focus:outline-none",
-                              "focus:border-white/[0.12]",
-                              ds.effects.transition.normal
-                            )}
-                          />
-                        </div>
-                        <div className="col-span-1 flex justify-end">
-                          <button
-                            onClick={() => removePriceBreak(idx)}
-                            className={cn(
-                              "p-2",
-                              "bg-red-500/10",
-                              "border border-red-500/20",
-                              ds.effects.radius.md,
-                              ds.colors.status.error,
-                              "hover:bg-red-500/20 hover:text-red-300",
-                              ds.effects.transition.normal
-                            )}
-                          >
-                            <Trash2 size={16} strokeWidth={1.5} />
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Category Restrictions */}
-              {categories.length > 0 && (
-                <div>
-                  <h3 className={cn(
-                    ds.typography.size.xs,
-                    ds.typography.transform.uppercase,
-                    ds.typography.tracking.wide,
-                    ds.colors.text.tertiary,
-                    ds.typography.weight.medium,
-                    "mb-4"
-                  )}>
-                    Apply to Categories (Optional)
-                  </h3>
-                  <p className={cn(
-                    ds.typography.size.micro,
-                    ds.colors.text.quaternary,
-                    "mb-3"
-                  )}>
-                    Leave empty to apply to all categories, or select specific ones
-                  </p>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                    {categories.map((category) => (
-                      <label
-                        key={category.id}
+            <div className="space-y-3">
+              {priceBreaks.map((tier, index) => (
+                <div key={tier.break_id} className={cn(ds.colors.bg.secondary, "p-4 rounded-xl border border-white/10")}>
+                  <div className="grid grid-cols-12 gap-3 items-end">
+                    <div className="col-span-4">
+                      <label className={cn("block mb-1.5", ds.typography.size.micro, ds.typography.transform.uppercase, ds.typography.tracking.wide, ds.colors.text.quaternary)}>
+                        Label
+                      </label>
+                      <input
+                        type="text"
+                        value={tier.label}
+                        onChange={(e) => updatePriceBreak(index, 'label', e.target.value)}
                         className={cn(
-                          "flex items-center gap-2 p-3 border cursor-pointer",
-                          ds.effects.radius.md,
-                          ds.effects.transition.normal,
-                          formData.applicable_to_categories.includes(category.id)
-                            ? cn(ds.colors.bg.active, "border-white/[0.12]")
-                            : cn(ds.colors.bg.elevated, ds.colors.border.default, "hover:bg-white/[0.06]")
+                          ds.components.input,
+                          "w-full px-2.5 py-2 rounded-lg border text-sm",
+                          ds.colors.bg.primary,
+                          "border-white/10 focus:border-white/30"
+                        )}
+                      />
+                    </div>
+                    <div className="col-span-2">
+                      <label className={cn("block mb-1.5", ds.typography.size.micro, ds.typography.transform.uppercase, ds.typography.tracking.wide, ds.colors.text.quaternary)}>
+                        Qty
+                      </label>
+                      <input
+                        type="number"
+                        step="0.1"
+                        value={tier.qty}
+                        onChange={(e) => updatePriceBreak(index, 'qty', parseFloat(e.target.value))}
+                        className={cn(
+                          ds.components.input,
+                          "w-full px-2.5 py-2 rounded-lg border text-sm",
+                          ds.colors.bg.primary,
+                          "border-white/10 focus:border-white/30"
+                        )}
+                      />
+                    </div>
+                    <div className="col-span-2">
+                      <label className={cn("block mb-1.5", ds.typography.size.micro, ds.typography.transform.uppercase, ds.typography.tracking.wide, ds.colors.text.quaternary)}>
+                        Unit
+                      </label>
+                      <input
+                        type="text"
+                        value={tier.unit}
+                        onChange={(e) => updatePriceBreak(index, 'unit', e.target.value)}
+                        className={cn(
+                          ds.components.input,
+                          "w-full px-2.5 py-2 rounded-lg border text-sm",
+                          ds.colors.bg.primary,
+                          "border-white/10 focus:border-white/30"
+                        )}
+                      />
+                    </div>
+                    <div className="col-span-3">
+                      <label className={cn("block mb-1.5", ds.typography.size.micro, ds.typography.transform.uppercase, ds.typography.tracking.wide, ds.colors.text.quaternary)}>
+                        Price
+                      </label>
+                      <div className="relative">
+                        <DollarSign className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
+                        <input
+                          type="number"
+                          step="0.01"
+                          value={tier.price || ''}
+                          onChange={(e) => updatePriceBreak(index, 'price', parseFloat(e.target.value))}
+                          placeholder="0.00"
+                          className={cn(
+                            ds.components.input,
+                            "w-full pl-8 pr-2.5 py-2 rounded-lg border text-sm",
+                            ds.colors.bg.primary,
+                            "border-white/10 focus:border-white/30"
+                          )}
+                        />
+                      </div>
+                    </div>
+                    <div className="col-span-1 flex justify-end">
+                      <button
+                        type="button"
+                        onClick={() => removePriceBreak(index)}
+                        disabled={priceBreaks.length === 1}
+                        className={cn(
+                          "p-2 rounded-lg transition-colors",
+                          priceBreaks.length === 1
+                            ? "text-white/20 cursor-not-allowed"
+                            : "text-red-400 hover:bg-red-500/10"
                         )}
                       >
-                        <input
-                          type="checkbox"
-                          checked={formData.applicable_to_categories.includes(category.id)}
-                          onChange={() => toggleCategory(category.id)}
-                          className="w-4 h-4 cursor-pointer"
-                        />
-                        <span className={cn(
-                          ds.typography.size.xs,
-                          ds.colors.text.primary
-                        )}>
-                          {category.name}
-                        </span>
-                      </label>
-                    ))}
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
                 </div>
-              )}
+              ))}
             </div>
           </div>
 
-          {/* Footer */}
-          <div className={cn(
-            "p-6 flex items-center justify-between",
-            ds.colors.bg.secondary,
-            ds.colors.border.subtle,
-            "border-t"
-          )}>
-            <div className={cn(
-              ds.typography.size.micro,
-              ds.typography.transform.uppercase,
-              ds.typography.tracking.wide,
-              ds.colors.text.quaternary
-            )}>
-              {priceBreaks.length} price break{priceBreaks.length !== 1 ? 's' : ''} configured
-            </div>
-            <div className="flex items-center gap-3">
-              <button
-                onClick={onClose}
-                className={cn(
-                  "px-4 py-2 rounded-lg",
-                  ds.typography.size.xs,
-                  ds.typography.transform.uppercase,
-                  ds.typography.tracking.wide,
-                  ds.colors.text.tertiary,
-                  "hover:text-white/80",
-                  ds.effects.transition.normal,
-                  "focus:outline-none focus:ring-2 focus:ring-white/20"
-                )}
-              >
-                Cancel
-              </button>
-              <Button
-                onClick={handleSave}
-                disabled={saving}
-                loading={saving}
-                icon={Save}
-              >
-                {saving ? 'Saving...' : (isEditMode ? 'Save Changes' : 'Create Blueprint')}
-              </Button>
-            </div>
+          {/* Actions */}
+          <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={saving}
+              className={cn(
+                "px-4 py-2.5 rounded-xl transition-colors",
+                ds.typography.size.sm,
+                ds.typography.weight.medium,
+                ds.colors.bg.secondary,
+                "hover:bg-white/20",
+                saving && "opacity-50 cursor-not-allowed"
+              )}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={saving}
+              className={cn(
+                "flex items-center gap-2 px-4 py-2.5 rounded-xl transition-colors",
+                ds.typography.size.sm,
+                ds.typography.weight.medium,
+                "bg-white text-black hover:bg-white/90",
+                saving && "opacity-50 cursor-not-allowed"
+              )}
+            >
+              {saving ? (
+                <>Saving...</>
+              ) : (
+                <>
+                  <Save className="w-4 h-4" />
+                  {isEditMode ? 'Update Template' : 'Create Template'}
+                </>
+              )}
+            </button>
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }
