@@ -46,19 +46,10 @@ function TVDisplayContent() {
   const [promotions, setPromotions] = useState<Promotion[]>([]);
   const [displayGroup, setDisplayGroup] = useState<any>(null);
   const [groupMember, setGroupMember] = useState<any>(null);
-  const [vendorConfigs, setVendorConfigs] = useState<any[]>([]);
+  // REMOVED: vendorConfigs - prices are now embedded in products via pricing_data
   const [isPortrait, setIsPortrait] = useState(false);
 
-  /**
-   * Memoized pricing config map for better performance
-   */
-  const configMap = useMemo(() => {
-    const map = new Map(
-      (vendorConfigs || []).map((config: any) => [config.blueprint_id, config.pricing_values])
-    );
-    console.log('🗺️ Created pricing config map with', map.size, 'entries');
-    return map;
-  }, [vendorConfigs]);
+  // REMOVED: configMap - no longer needed, prices are embedded in products.pricing_data
 
   /**
    * Helper function to group products by their subcategory
@@ -307,38 +298,7 @@ function TVDisplayContent() {
   /**
    * Load Vendor Pricing Configs (once, cached)
    */
-  useEffect(() => {
-    if (!vendorId) return;
-
-    const loadVendorConfigs = async () => {
-      try {
-        console.log('💵 Loading vendor pricing configs (cached)...');
-        const configsResponse = await fetch(`/api/vendor/pricing-configs-for-display?vendor_id=${vendorId}`);
-        const configsData = await configsResponse.json();
-
-        if (configsData.success) {
-          setVendorConfigs(configsData.configs || []);
-          console.log('💵 Cached vendor pricing configs:', configsData.configs?.length || 0);
-        } else {
-          console.error('❌ Error loading vendor pricing configs:', configsData.error);
-        }
-      } catch (err) {
-        console.error('❌ Failed to load vendor configs:', err);
-      }
-    };
-
-    loadVendorConfigs();
-  }, [vendorId]);
-
-  /**
-   * Reload products when vendor pricing configs are loaded
-   */
-  useEffect(() => {
-    if (vendorConfigs.length > 0 && activeMenu) {
-      console.log('🔄 Vendor pricing configs loaded, reloading products with pricing...');
-      loadProducts(activeMenu);
-    }
-  }, [vendorConfigs, activeMenu]);
+  // REMOVED: loadVendorConfigs - no longer needed, prices are embedded in products via pricing_data
 
   /**
    * Load Menu & Products
