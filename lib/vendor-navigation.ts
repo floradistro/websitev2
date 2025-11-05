@@ -21,7 +21,8 @@ import {
   Users,
   Sparkles,
   Smartphone,
-  Wallet
+  Wallet,
+  Globe
 } from 'lucide-react';
 
 export interface NavItem {
@@ -139,7 +140,16 @@ export const vendorNavItems: NavItem[] = [
     appKey: 'inventory'
   },
 
-  // Content & Media (3)
+  // Content & Media (4)
+  {
+    href: '/vendor/website',
+    icon: Globe,
+    label: 'Website',
+    description: 'Your storefront repo',
+    isCore: false,
+    group: 'content'
+    // No appKey - always visible
+  },
   {
     href: '/vendor/media-library',
     icon: Image,

@@ -1,27 +1,36 @@
 import { Octokit } from '@octokit/rest'
 
-const octokit = new Octokit({
-  auth: process.env.GITHUB_BOT_TOKEN
-})
+const TEMPLATE_OWNER = process.env.GITHUB_TEMPLATE_ORG || 'floradistro'
+const TEMPLATE_REPO = process.env.GITHUB_TEMPLATE_REPO || 'cannabis-storefront-template'
 
-const GITHUB_ORG = process.env.GITHUB_ORG || 'yourplatform'
+/**
+ * Create Octokit instance with vendor's access token
+ */
+function getVendorOctokit(accessToken: string) {
+  return new Octokit({
+    auth: accessToken
+  })
+}
 
 export interface CreateRepoOptions {
+  vendorAccessToken: string
+  vendorUsername: string
   name: string
   description: string
-  templateRepo?: string
   isPrivate?: boolean
 }
 
 export async function createRepositoryFromTemplate(options: CreateRepoOptions) {
-  const { name, description, templateRepo = 'template-nextjs-app', isPrivate = true } = options
+  const { vendorAccessToken, vendorUsername, name, description, isPrivate = true } = options
 
   try {
-    // Create repo from template
+    const octokit = getVendorOctokit(vendorAccessToken)
+
+    // Create repo from template in VENDOR's account
     const { data: repo } = await octokit.repos.createUsingTemplate({
-      template_owner: GITHUB_ORG,
-      template_repo: templateRepo,
-      owner: GITHUB_ORG,
+      template_owner: TEMPLATE_OWNER,
+      template_repo: TEMPLATE_REPO,
+      owner: vendorUsername,
       name,
       description,
       private: isPrivate,
@@ -37,6 +46,8 @@ export async function createRepositoryFromTemplate(options: CreateRepoOptions) {
 }
 
 export interface CommitFileOptions {
+  vendorAccessToken: string
+  owner: string
   repo: string
   path: string
   content: string
@@ -45,14 +56,16 @@ export interface CommitFileOptions {
 }
 
 export async function commitFile(options: CommitFileOptions) {
-  const { repo, path, content, message, branch = 'main' } = options
+  const { vendorAccessToken, owner, repo, path, content, message, branch = 'main' } = options
 
   try {
+    const octokit = getVendorOctokit(vendorAccessToken)
+
     // Check if file exists
     let sha: string | undefined
     try {
       const { data: existing } = await octokit.repos.getContent({
-        owner: GITHUB_ORG,
+        owner,
         repo,
         path,
         ref: branch
@@ -67,17 +80,13 @@ export async function commitFile(options: CommitFileOptions) {
 
     // Create or update file
     const { data } = await octokit.repos.createOrUpdateFileContents({
-      owner: GITHUB_ORG,
+      owner,
       repo,
       path,
       message,
       content: Buffer.from(content).toString('base64'),
       branch,
-      sha,
-      committer: {
-        name: 'YourPlatform AI',
-        email: 'ai@yourplatform.com'
-      }
+      sha
     })
 
     console.log(`Committed file: ${path} to ${repo}`)
@@ -89,15 +98,19 @@ export async function commitFile(options: CommitFileOptions) {
 }
 
 export async function commitMultipleFiles(
+  vendorAccessToken: string,
+  owner: string,
   repo: string,
   files: { path: string; content: string }[],
   message: string,
   branch = 'main'
 ) {
   try {
+    const octokit = getVendorOctokit(vendorAccessToken)
+
     // Get current commit SHA
     const { data: ref } = await octokit.git.getRef({
-      owner: GITHUB_ORG,
+      owner,
       repo,
       ref: `heads/${branch}`
     })
@@ -106,7 +119,7 @@ export async function commitMultipleFiles(
 
     // Get current commit tree
     const { data: currentCommit } = await octokit.git.getCommit({
-      owner: GITHUB_ORG,
+      owner,
       repo,
       commit_sha: currentCommitSha
     })
@@ -115,7 +128,7 @@ export async function commitMultipleFiles(
     const blobs = await Promise.all(
       files.map(async (file) => {
         const { data: blob } = await octokit.git.createBlob({
-          owner: GITHUB_ORG,
+          owner,
           repo,
           content: Buffer.from(file.content).toString('base64'),
           encoding: 'base64'
@@ -126,7 +139,7 @@ export async function commitMultipleFiles(
 
     // Create new tree
     const { data: newTree } = await octokit.git.createTree({
-      owner: GITHUB_ORG,
+      owner,
       repo,
       base_tree: currentCommit.tree.sha,
       tree: blobs.map((blob) => ({
@@ -139,20 +152,16 @@ export async function commitMultipleFiles(
 
     // Create new commit
     const { data: newCommit } = await octokit.git.createCommit({
-      owner: GITHUB_ORG,
+      owner,
       repo,
       message,
       tree: newTree.sha,
-      parents: [currentCommitSha],
-      committer: {
-        name: 'YourPlatform AI',
-        email: 'ai@yourplatform.com'
-      }
+      parents: [currentCommitSha]
     })
 
     // Update reference
     await octokit.git.updateRef({
-      owner: GITHUB_ORG,
+      owner,
       repo,
       ref: `heads/${branch}`,
       sha: newCommit.sha
@@ -166,10 +175,17 @@ export async function commitMultipleFiles(
   }
 }
 
-export async function getRepositoryFiles(repo: string, path = '', branch = 'main') {
+export async function getRepositoryFiles(
+  vendorAccessToken: string,
+  owner: string,
+  repo: string,
+  path = '',
+  branch = 'main'
+) {
   try {
+    const octokit = getVendorOctokit(vendorAccessToken)
     const { data } = await octokit.repos.getContent({
-      owner: GITHUB_ORG,
+      owner,
       repo,
       path,
       ref: branch
@@ -182,10 +198,17 @@ export async function getRepositoryFiles(repo: string, path = '', branch = 'main
   }
 }
 
-export async function getFileContent(repo: string, filepath: string, branch = 'main'): Promise<string | null> {
+export async function getFileContent(
+  vendorAccessToken: string,
+  owner: string,
+  repo: string,
+  filepath: string,
+  branch = 'main'
+): Promise<string | null> {
   try {
+    const octokit = getVendorOctokit(vendorAccessToken)
     const { data } = await octokit.repos.getContent({
-      owner: GITHUB_ORG,
+      owner,
       repo,
       path: filepath,
       ref: branch
