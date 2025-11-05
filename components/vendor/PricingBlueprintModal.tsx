@@ -53,7 +53,7 @@ export function PricingBlueprintModal({
 
   const [saving, setSaving] = useState(false);
 
-  // Load vendor pricing config when editing
+  // Load pricing template when editing
   useEffect(() => {
     if (isOpen && blueprint) {
       // Load the blueprint data
@@ -66,36 +66,16 @@ export function PricingBlueprintModal({
         applicable_to_categories: blueprint.applicable_to_categories || []
       });
 
-      // Fetch vendor pricing config to get actual prices
-      const loadPricingConfig = async () => {
-        try {
-          const response = await axios.get('/api/vendor/pricing-config', {
-            headers: { 'x-vendor-id': vendorId },
-            params: { blueprint_id: blueprint.id }
-          });
-
-          if (response.data.success && response.data.config) {
-            // Merge pricing_values into price_breaks
-            const priceBreaksWithValues = (blueprint.price_breaks || []).map((pb: any) => {
-              const priceData = response.data.config.pricing_values[pb.break_id];
-              return {
-                ...pb,
-                price: priceData?.price ? parseFloat(priceData.price) : undefined
-              };
-            });
-            setPriceBreaks(priceBreaksWithValues);
-          } else {
-            // No pricing config yet - just use blueprint structure
-            setPriceBreaks(blueprint.price_breaks || []);
-          }
-        } catch (error) {
-          console.error('Error loading pricing config:', error);
-          // Fallback to blueprint structure
-          setPriceBreaks(blueprint.price_breaks || []);
-        }
-      };
-
-      loadPricingConfig();
+      // Load price_breaks with default_price from template (new architecture)
+      const priceBreaksWithPrices = (blueprint.price_breaks || []).map((pb: any) => ({
+        break_id: pb.break_id,
+        label: pb.label,
+        qty: pb.qty,
+        unit: pb.unit,
+        sort_order: pb.sort_order,
+        price: pb.default_price // Prices are now stored in the template itself
+      }));
+      setPriceBreaks(priceBreaksWithPrices);
     } else if (isOpen && !blueprint) {
       // Reset for create mode
       setFormData({
@@ -159,6 +139,7 @@ export function PricingBlueprintModal({
       return;
     }
 
+    // Include prices directly in price_breaks (new architecture)
     const blueprintData = {
       id: blueprint?.id,
       ...formData,
@@ -169,7 +150,8 @@ export function PricingBlueprintModal({
         label: pb.label,
         qty: pb.qty,
         unit: pb.unit,
-        sort_order: pb.sort_order
+        sort_order: pb.sort_order,
+        default_price: pb.price || null // Include configured price in template
       }))
     };
 
@@ -185,87 +167,31 @@ export function PricingBlueprintModal({
     setSaving(true);
     try {
       if (isEditMode) {
-        // Update existing blueprint structure
+        // Update existing blueprint with prices included
         const response = await axios.put('/api/vendor/pricing-blueprints', blueprintData, {
           headers: { 'x-vendor-id': vendorId }
         });
 
         if (response.data.success) {
-          // Also update/create vendor pricing config with actual prices
-          const pricingValues: any = {};
-          priceBreaks.forEach((pb: any) => {
-            if (pb.price !== undefined && pb.price !== null) {
-              pricingValues[pb.break_id] = {
-                price: pb.price.toString(),
-                enabled: true
-              };
-            }
-          });
-
-          // Save pricing config if there are any prices
-          if (Object.keys(pricingValues).length > 0) {
-            await axios.post('/api/vendor/pricing-config', {
-              blueprint_id: blueprint.id,
-              pricing_values: pricingValues
-            }, {
-              headers: { 'x-vendor-id': vendorId }
-            });
-          }
-
           showNotification({
             type: 'success',
             title: 'Updated',
-            message: 'Pricing blueprint and prices updated successfully'
+            message: 'Pricing template updated successfully'
           });
           onSave();
           onClose();
         }
       } else {
-        // Create new blueprint
-        const createData = {
-          ...formData,
-          // Convert empty string to null for quality_tier (database constraint requires null, not '')
-          quality_tier: formData.quality_tier || null,
-          price_breaks: priceBreaks.map((pb: any) => ({
-            break_id: pb.break_id,
-            label: pb.label,
-            qty: pb.qty,
-            unit: pb.unit,
-            sort_order: pb.sort_order
-            // Don't include price here - it goes to vendor_pricing_configs
-          }))
-        };
-
-        const response = await axios.post('/api/vendor/pricing-blueprints', createData, {
+        // Create new blueprint with prices included
+        const response = await axios.post('/api/vendor/pricing-blueprints', blueprintData, {
           headers: { 'x-vendor-id': vendorId }
         });
 
         if (response.data.success) {
-          // Also create vendor pricing config with actual prices
-          const pricingValues: any = {};
-          priceBreaks.forEach((pb: any) => {
-            if (pb.price !== undefined && pb.price !== null) {
-              pricingValues[pb.break_id] = {
-                price: pb.price.toString(),
-                enabled: true
-              };
-            }
-          });
-
-          // Save pricing config if there are any prices
-          if (Object.keys(pricingValues).length > 0) {
-            await axios.post('/api/vendor/pricing-config', {
-              blueprint_id: response.data.blueprint.id,
-              pricing_values: pricingValues
-            }, {
-              headers: { 'x-vendor-id': vendorId }
-            });
-          }
-
           showNotification({
             type: 'success',
             title: 'Created',
-            message: 'Pricing blueprint created successfully'
+            message: 'Pricing template created successfully'
           });
           onSave();
           onClose();
