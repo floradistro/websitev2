@@ -45,7 +45,24 @@ export default function VendorWebsitePage() {
 
   const connectGithub = () => {
     const clientId = process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID;
-    const vendorId = localStorage.getItem('vendorId'); // Or get from session
+
+    // Get vendor ID from localStorage (set during login)
+    const floraUserStr = localStorage.getItem('flora-user');
+    let vendorId = null;
+
+    if (floraUserStr) {
+      try {
+        const floraUser = JSON.parse(floraUserStr);
+        vendorId = floraUser.vendor_id || floraUser.vendorId;
+      } catch (e) {
+        console.error('Failed to parse flora-user from localStorage:', e);
+      }
+    }
+
+    if (!vendorId) {
+      alert('Please log in first to connect GitHub');
+      return;
+    }
 
     // Use environment variable or default to localhost for development
     const redirectUri = process.env.NEXT_PUBLIC_BASE_URL
