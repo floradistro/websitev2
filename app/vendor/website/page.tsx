@@ -123,6 +123,20 @@ export default function VendorWebsitePage() {
     }
   };
 
+  const pushTemplate = async () => {
+    setCreating(true);
+    try {
+      const { data } = await axios.post('/api/vendor/website/push-template', {}, {
+        withCredentials: true,
+      });
+      alert(`Template pushed successfully! ${data.filesCount} files committed to your repository.`);
+    } catch (error: any) {
+      alert(error.response?.data?.error || 'Failed to push template');
+    } finally {
+      setCreating(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -261,8 +275,25 @@ export default function VendorWebsitePage() {
                 </div>
 
                 <div className={cn("mt-6 p-4 rounded-xl", ds.colors.bg.elevated)}>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className={cn("font-semibold", ds.colors.text.secondary)}>Storefront Template</h3>
+                    <Button
+                      onClick={pushTemplate}
+                      disabled={creating}
+                      size="sm"
+                    >
+                      {creating ? 'Pushing...' : 'Push Template to Repo'}
+                    </Button>
+                  </div>
+                  <p className={cn("text-sm mb-4", ds.colors.text.quaternary)}>
+                    Push the WhaleTools storefront template to your repository. This includes a fully working Next.js storefront with your branding.
+                  </p>
+                </div>
+
+                <div className={cn("mt-6 p-4 rounded-xl", ds.colors.bg.elevated)}>
                   <h3 className={cn("font-semibold mb-2", ds.colors.text.secondary)}>Next Steps</h3>
                   <ol className={cn("list-decimal list-inside space-y-2 text-sm", ds.colors.text.quaternary)}>
+                    <li>Click "Push Template to Repo" to add storefront files</li>
                     <li>Clone your repository using one of the buttons above</li>
                     <li>Customize your storefront using your favorite code editor</li>
                     <li>Push changes to GitHub</li>
