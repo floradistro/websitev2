@@ -7,6 +7,7 @@ export async function GET(request: NextRequest) {
     // Verify vendor authentication
     const authResult = await requireVendor(request);
     if (authResult instanceof NextResponse) {
+      // Return unauthorized error (client will need to ensure user is logged in)
       return authResult;
     }
     const { vendorId } = authResult;
@@ -21,15 +22,16 @@ export async function GET(request: NextRequest) {
       .single();
 
     if (error) {
+      console.error('Error fetching vendor from database:', error);
       return NextResponse.json({ error: 'Vendor not found' }, { status: 404 });
     }
 
     return NextResponse.json({
-      hasGithub: !!vendor.github_username,
-      githubUsername: vendor.github_username,
-      hasRepo: !!vendor.github_repo_name,
-      repoName: vendor.github_repo_name,
-      repoUrl: vendor.github_repo_url,
+      hasGithub: !!vendor?.github_username,
+      githubUsername: vendor?.github_username,
+      hasRepo: !!vendor?.github_repo_name,
+      repoName: vendor?.github_repo_name,
+      repoUrl: vendor?.github_repo_url,
     });
   } catch (error) {
     console.error('Error fetching website status:', error);

@@ -29,8 +29,15 @@ export default function VendorWebsitePage() {
         withCredentials: true,
       });
       setStatus(data);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching website status:', error);
+      console.error('Status code:', error.response?.status);
+      console.error('Error data:', error.response?.data);
+
+      // If unauthorized, user needs to log in first
+      if (error.response?.status === 401 || error.response?.status === 403) {
+        console.error('Authentication required - please log in first');
+      }
     } finally {
       setLoading(false);
     }
