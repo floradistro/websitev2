@@ -24,23 +24,23 @@ export function ProductsList({ products, isLoading, error, onViewProduct, onRetr
   if (error) {
     return (
       <div
-        className={cn("border rounded-lg p-6 text-center", "bg-red-500/10 border-red-500/20")}
+        className={cn("border rounded-lg p-6 text-center", "bg-white/5 border-white/20")}
         role="alert"
         aria-live="assertive"
       >
-        <AlertCircle className={cn("w-12 h-12 mx-auto mb-3", ds.colors.icon.red)} strokeWidth={1.5} aria-hidden="true" />
-        <h3 className={cn(ds.typography.size.base, ds.typography.weight.medium, "text-red-400/90 mb-2")}>Failed to Load Products</h3>
-        <p className={cn(ds.typography.size.xs, "text-red-400/70 mb-4")}>{error.message}</p>
+        <AlertCircle className={cn("w-12 h-12 mx-auto mb-3 text-white/60")} strokeWidth={1} aria-hidden="true" />
+        <h3 className={cn(ds.typography.size.base, ds.typography.weight.medium, "text-white/90 mb-2")}>Failed to Load Products</h3>
+        <p className={cn(ds.typography.size.xs, "text-white/60 mb-4")}>{error.message}</p>
         <button
           onClick={onRetry || (() => window.location.reload())}
           className={cn(
             "px-4 py-2 rounded-lg transition-colors",
-            "bg-red-500/20 hover:bg-red-500/30",
-            "text-red-400/90",
+            "bg-white/10 hover:bg-white/20",
+            "text-white/80",
             ds.typography.size.xs,
             ds.typography.transform.uppercase,
             ds.typography.tracking.wide,
-            "focus:outline-none focus:ring-2 focus:ring-red-500/50"
+            "focus:outline-none focus:ring-2 focus:ring-white/30"
           )}
           aria-label="Retry loading products"
         >

@@ -3,7 +3,7 @@
 import { Plus, X, Zap, Sparkles } from 'lucide-react';
 import SectionHeader from '@/components/ui/SectionHeader';
 import { ds, cn } from '@/components/ds';
-import type { PricingBlueprint } from '@/lib/types/product';
+import type { PricingTemplate } from '@/lib/types/product';
 
 interface PricingTier {
   weight?: string;
@@ -22,8 +22,8 @@ interface PricingPanelProps {
   newTierWeight: string;
   newTierQty: string;
   newTierPrice: string;
-  selectedBlueprintId?: string;
-  availableBlueprints?: PricingBlueprint[];
+  selectedTemplateId?: string;
+  availableTemplates?: PricingTemplate[];
   onPricingModeChange: (mode: 'single' | 'tiered') => void;
   onFormDataChange: (formData: {
     price: string;
@@ -33,8 +33,8 @@ interface PricingPanelProps {
   onAddTier: () => void;
   onUpdateTier: (index: number, field: string, value: string) => void;
   onRemoveTier: (index: number) => void;
-  onBlueprintSelect?: (blueprintId: string) => void;
-  onApplyBlueprint?: () => void;
+  onTemplateSelect?: (templateId: string) => void;
+  onApplyTemplate?: () => void;
 }
 
 export default function PricingPanel({
@@ -45,22 +45,22 @@ export default function PricingPanel({
   newTierWeight,
   newTierQty,
   newTierPrice,
-  selectedBlueprintId,
-  availableBlueprints = [],
+  selectedTemplateId,
+  availableTemplates = [],
   onPricingModeChange,
   onFormDataChange,
   onNewTierChange,
   onAddTier,
   onUpdateTier,
   onRemoveTier,
-  onBlueprintSelect,
-  onApplyBlueprint
+  onTemplateSelect,
+  onApplyTemplate
 }: PricingPanelProps) {
   console.log('[PricingPanel] Rendering with:', {
     pricingMode,
-    availableBlueprints: availableBlueprints.length,
+    availableTemplates: availableTemplates.length,
     pricingTiers: pricingTiers.length,
-    selectedBlueprintId
+    selectedTemplateId
   });
 
   if (productType !== 'simple') return null;
@@ -72,14 +72,14 @@ export default function PricingPanel({
   const profit = hasValidPrices ? (sellingPrice - costPrice) : 0;
 
   return (
-    <div className={cn(ds.components.card, "rounded-2xl")}>
+    <div className={cn(ds.components.card, "rounded-2xl overflow-hidden")}>
       <SectionHeader>Pricing</SectionHeader>
 
       <div className="space-y-4">
         {/* Pricing Mode */}
         <div>
           <label className={cn("block mb-2", ds.typography.size.micro, ds.typography.transform.uppercase, ds.typography.tracking.wide, ds.colors.text.quaternary)}>
-            Pricing Mode <span className="text-red-400">*</span>
+            Pricing Mode <span className="text-white/60">*</span>
           </label>
           <div className="grid grid-cols-2 gap-2">
             <button
@@ -189,33 +189,33 @@ export default function PricingPanel({
             Pricing Tiers
           </SectionHeader>
 
-          {/* Pricing Blueprint Selector */}
-          {availableBlueprints.length > 0 && (
+          {/* Pricing Template Selector */}
+          {availableTemplates.length > 0 && (
             <div className="mb-4">
               <label className={cn("block mb-2", ds.typography.size.micro, ds.typography.transform.uppercase, ds.typography.tracking.wide, ds.colors.text.quaternary)}>
-                <Sparkles size={10} className="inline mr-1.5 text-purple-400" />
-                Pricing Template <span className="text-red-400">*</span>
+                <Sparkles size={10} className="inline mr-1.5 text-white/60" strokeWidth={1} />
+                Pricing Template <span className="text-white/60">*</span>
               </label>
-              <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row gap-2">
                 <select
-                  value={selectedBlueprintId || ''}
-                  onChange={(e) => onBlueprintSelect?.(e.target.value)}
+                  value={selectedTemplateId || ''}
+                  onChange={(e) => onTemplateSelect?.(e.target.value)}
                   className={cn(ds.components.card, "flex-1 rounded-xl text-white text-xs px-3 py-2.5 focus:outline-none focus:border-white/20 transition-all")}
                 >
                   <option value="">Select a pricing template...</option>
-                  {availableBlueprints.map((blueprint) => (
-                    <option key={blueprint.id} value={blueprint.id}>
-                      {blueprint.name}
-                      {blueprint.quality_tier && ` (${blueprint.quality_tier})`}
+                  {availableTemplates.map((template) => (
+                    <option key={template.id} value={template.id}>
+                      {template.name}
+                      {template.quality_tier && ` (${template.quality_tier})`}
                     </option>
                   ))}
                 </select>
-                {selectedBlueprintId && onApplyBlueprint && (
+                {selectedTemplateId && onApplyTemplate && (
                   <button
                     type="button"
-                    onClick={onApplyBlueprint}
+                    onClick={onApplyTemplate}
                     className={cn(
-                      "px-3 py-2.5 bg-purple-500/20 border border-purple-400/30 rounded-xl text-purple-300 hover:bg-purple-500/30 hover:border-purple-400/50 transition-all",
+                      "px-3 py-2.5 bg-white/10 border border-white/20 rounded-xl text-white/80 hover:bg-white/20 hover:border-white/30 transition-all w-full sm:w-auto",
                       ds.typography.size.micro,
                       ds.typography.transform.uppercase,
                       ds.typography.tracking.wide
@@ -225,9 +225,9 @@ export default function PricingPanel({
                   </button>
                 )}
               </div>
-              {selectedBlueprintId && (
-                <p className={cn("text-purple-400/60 mt-1.5", ds.typography.size.micro)}>
-                  {availableBlueprints.find(b => b.id === selectedBlueprintId)?.description || 'Template selected'}
+              {selectedTemplateId && (
+                <p className={cn("text-white/50 mt-1.5", ds.typography.size.micro)}>
+                  {availableTemplates.find(t => t.id === selectedTemplateId)?.description || 'Template selected'}
                 </p>
               )}
             </div>
@@ -241,11 +241,11 @@ export default function PricingPanel({
               </h4>
               <div className="space-y-2">
                 {pricingTiers.map((tier, index) => (
-                  <div key={index} className={cn(ds.components.card, "rounded-xl px-4 py-3 flex items-center justify-between")}>
-                    <div className="text-white/60 text-xs">
+                  <div key={index} className={cn(ds.components.card, "rounded-xl px-3 py-2.5 flex items-center justify-between gap-2 min-w-0")}>
+                    <div className="text-white/60 text-[10px] sm:text-xs truncate flex-shrink min-w-0">
                       {tier.weight || `${tier.qty}x`}
                     </div>
-                    <div className={cn("text-white", ds.typography.size.sm)}>
+                    <div className={cn("text-white text-xs sm:text-sm font-medium flex-shrink-0")}>
                       ${tier.price && !isNaN(parseFloat(tier.price.toString())) ? parseFloat(tier.price.toString()).toFixed(2) : 'N/A'}
                     </div>
                   </div>

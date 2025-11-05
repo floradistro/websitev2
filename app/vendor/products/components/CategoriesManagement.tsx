@@ -4,11 +4,10 @@ import { useState, useEffect } from 'react';
 import { Plus, Edit2, Trash2, ChevronDown, ChevronRight, Layers, DollarSign } from 'lucide-react';
 import { Card, Button, ds, cn } from '@/components/ds';
 import { showNotification, showConfirm } from '@/components/NotificationToast';
-import { PricingBlueprintModal } from '@/components/vendor/PricingBlueprintModal';
 import { FieldVisibilityModal } from '@/components/vendor/FieldVisibilityModal';
 import { CategoryModal } from '@/components/vendor/CategoryModal';
 import { CustomFieldModal } from '@/components/vendor/CustomFieldModal';
-import type { Category, FieldGroup, PricingBlueprint, FieldVisibilityConfig, DynamicField } from '@/lib/types/product';
+import type { Category, FieldGroup, FieldVisibilityConfig, DynamicField } from '@/lib/types/product';
 import axios from 'axios';
 
 interface CategoriesManagementProps {
@@ -18,14 +17,9 @@ interface CategoriesManagementProps {
 export function CategoriesManagement({ vendorId }: CategoriesManagementProps) {
   const [categories, setCategories] = useState<Category[]>([]);
   const [fieldGroups, setFieldGroups] = useState<FieldGroup[]>([]);
-  const [pricingBlueprints, setPricingBlueprints] = useState<PricingBlueprint[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
-  const [expandedSection, setExpandedSection] = useState<{[key: string]: 'fields' | 'pricing' | null}>({});
-
-  // Pricing modal state
-  const [isPricingModalOpen, setIsPricingModalOpen] = useState(false);
-  const [selectedPricingBlueprint, setSelectedPricingBlueprint] = useState<PricingBlueprint | null>(null);
+  const [expandedSection, setExpandedSection] = useState<{[key: string]: 'fields' | null}>({});
 
   // Field visibility modal state
   const [showFieldVisibilityModal, setShowFieldVisibilityModal] = useState(false);
@@ -47,7 +41,6 @@ export function CategoriesManagement({ vendorId }: CategoriesManagementProps) {
     if (vendorId) {
       loadCategories();
       loadFieldGroups();
-      loadPricingBlueprints();
     }
   }, [vendorId]);
 
@@ -96,18 +89,6 @@ export function CategoriesManagement({ vendorId }: CategoriesManagementProps) {
     }
   };
 
-  const loadPricingBlueprints = async () => {
-    try {
-      const response = await axios.get('/api/vendor/pricing-blueprints', {
-        headers: { 'x-vendor-id': vendorId }
-      });
-      if (response.data.success) {
-        setPricingBlueprints(response.data.blueprints || []);
-      }
-    } catch (error) {
-      console.error('Error loading pricing blueprints:', error);
-    }
-  };
 
   const handleDeleteCategory = async (id: string, name: string) => {
     const confirmed = await showConfirm({
@@ -186,63 +167,12 @@ export function CategoriesManagement({ vendorId }: CategoriesManagementProps) {
     }
   };
 
-  const openCreatePricingModal = () => {
-    setSelectedPricingBlueprint(null);
-    setIsPricingModalOpen(true);
-  };
-
-  const openEditPricingModal = (blueprint: PricingBlueprint) => {
-    setSelectedPricingBlueprint(blueprint);
-    setIsPricingModalOpen(true);
-  };
-
-  const handlePricingSave = () => {
-    loadPricingBlueprints();
-    setIsPricingModalOpen(false);
-  };
-
-  const handlePricingDelete = async (blueprint: PricingBlueprint) => {
-    const confirmed = await showConfirm({
-      title: 'Delete Pricing Rule',
-      message: `Delete "${blueprint.name}"? This cannot be undone.`,
-      confirmText: 'Delete',
-      cancelText: 'Cancel'
-    });
-
-    if (confirmed) {
-      try {
-        const response = await fetch(`/api/vendor/pricing-blueprints/${blueprint.id}`, {
-          method: 'DELETE',
-          headers: { 'x-vendor-id': vendorId }
-        });
-        const data = await response.json();
-
-        if (response.ok && data.success) {
-          showNotification({
-            type: 'success',
-            title: 'Rule Deleted',
-            message: 'Pricing rule deleted successfully'
-          });
-          loadPricingBlueprints();
-        } else {
-          throw new Error(data.error || 'Failed to delete');
-        }
-      } catch (error) {
-        const err = error as { message?: string };
-        showNotification({
-          type: 'error',
-          title: 'Delete Failed',
-          message: err.message || 'Failed to delete pricing rule'
-        });
-      }
-    }
-  };
 
   const toggleCategoryExpansion = (categoryId: string) => {
     setExpandedCategory(expandedCategory === categoryId ? null : categoryId);
   };
 
-  const toggleSection = (categoryId: string, section: 'fields' | 'pricing') => {
+  const toggleSection = (categoryId: string, section: 'fields') => {
     setExpandedSection(prev => ({
       ...prev,
       [categoryId]: prev[categoryId] === section ? null : section
@@ -271,7 +201,7 @@ export function CategoriesManagement({ vendorId }: CategoriesManagementProps) {
             Your Categories
           </h3>
           <p className={cn(ds.colors.text.quaternary, ds.typography.size.xs, ds.typography.transform.uppercase, ds.typography.tracking.wide)}>
-            Manage product categories, custom fields, and pricing rules
+            Manage product categories and custom fields
           </p>
         </div>
         <Button onClick={() => { setEditingCategory(null); setShowCategoryModal(true); }}>
@@ -303,11 +233,6 @@ export function CategoriesManagement({ vendorId }: CategoriesManagementProps) {
           {parentCategories.map((category) => {
             const subcategories = getSubcategories(category.id);
             const categoryFields = fieldGroups.filter(fg => fg.category_id === category.id);
-            const categoryPricing = pricingBlueprints.filter(b =>
-              b.vendor_id === vendorId &&
-              b.applicable_to_categories &&
-              b.applicable_to_categories.includes(category.id)
-            );
             const isExpanded = expandedCategory === category.id;
             const currentSection = expandedSection[category.id];
 
@@ -340,17 +265,19 @@ export function CategoriesManagement({ vendorId }: CategoriesManagementProps) {
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => { setEditingCategory(category); setShowCategoryModal(true); }}
-                        className={cn("p-2 rounded-lg transition-colors", ds.colors.icon.blue, "hover:bg-blue-500/10")}
+                        className={cn("p-2 rounded-lg transition-colors text-white/60 hover:text-white/90 hover:bg-white/10")}
                         title="Edit"
+                        aria-label="Edit category"
                       >
-                        <Edit2 size={14} strokeWidth={1.5} />
+                        <Edit2 size={14} strokeWidth={1} />
                       </button>
                       <button
                         onClick={() => handleDeleteCategory(category.id, category.name)}
-                        className={cn("p-2 rounded-lg transition-colors", ds.colors.icon.red, "hover:bg-red-500/10")}
+                        className={cn("p-2 rounded-lg transition-colors text-white/50 hover:text-white/80 hover:bg-white/10")}
                         title="Delete"
+                        aria-label="Delete category"
                       >
-                        <Trash2 size={14} strokeWidth={1.5} />
+                        <Trash2 size={14} strokeWidth={1} />
                       </button>
                     </div>
                   </div>
@@ -383,22 +310,6 @@ export function CategoriesManagement({ vendorId }: CategoriesManagementProps) {
                       >
                         <Layers size={12} className="inline mr-1.5" strokeWidth={1.5} />
                         Fields ({categoryFields.length})
-                      </button>
-                      <button
-                        onClick={() => toggleSection(category.id, 'pricing')}
-                        className={cn(
-                          "px-3 py-1.5 rounded-lg transition-colors",
-                          ds.typography.size.xs,
-                          ds.typography.transform.uppercase,
-                          ds.typography.tracking.wide,
-                          ds.typography.weight.light,
-                          currentSection === 'pricing'
-                            ? cn(ds.colors.bg.active, "text-white/80")
-                            : cn(ds.colors.bg.elevated, ds.colors.text.tertiary, `hover:${ds.colors.bg.hover}`, 'hover:text-white/80')
-                        )}
-                      >
-                        <DollarSign size={12} className="inline mr-1.5" strokeWidth={1.5} />
-                        Pricing ({categoryPricing.length})
                       </button>
                     </div>
 
@@ -467,83 +378,6 @@ export function CategoriesManagement({ vendorId }: CategoriesManagementProps) {
                       </div>
                     )}
 
-                    {/* Pricing Section */}
-                    {currentSection === 'pricing' && (
-                      <div className="px-6 py-4 bg-black/20">
-                        <div className="flex items-center justify-between mb-4">
-                          <h4 className={cn("text-white/60", ds.typography.size.xs, ds.typography.transform.uppercase, ds.typography.tracking.wide, ds.typography.weight.light)}>
-                            Pricing Rules for {category.name}
-                          </h4>
-                          <button
-                            onClick={openCreatePricingModal}
-                            className={cn(
-                              "px-3 py-1.5 rounded-lg transition-colors",
-                              ds.colors.bg.elevated,
-                              "hover:bg-white/10",
-                              "border",
-                              ds.colors.border.default,
-                              "text-white",
-                              ds.typography.size.xs,
-                              ds.typography.transform.uppercase,
-                              ds.typography.tracking.wide,
-                              ds.typography.weight.light,
-                              "flex items-center gap-1.5"
-                            )}
-                          >
-                            <Plus size={12} strokeWidth={1.5} />
-                            Create Rule
-                          </button>
-                        </div>
-                        {categoryPricing.length === 0 ? (
-                          <div className={cn("text-center py-8 rounded-xl border", ds.colors.bg.elevated, ds.colors.border.subtle)}>
-                            <DollarSign size={28} className={cn("mx-auto mb-2", ds.colors.text.whisper)} strokeWidth={1.5} />
-                            <p className={cn(ds.typography.size.xs, ds.colors.text.quaternary, "mb-3")}>
-                              No pricing rules for this category
-                            </p>
-                            <button
-                              onClick={openCreatePricingModal}
-                              className={cn(ds.typography.size.xs, "text-white/60 hover:text-white", ds.typography.transform.uppercase, ds.typography.tracking.wide, ds.typography.weight.light)}
-                            >
-                              Create First Rule
-                            </button>
-                          </div>
-                        ) : (
-                          <div className="space-y-2">
-                            {categoryPricing.map((blueprint) => (
-                              <div
-                                key={blueprint.id}
-                                className={cn("p-3 rounded-lg", ds.colors.bg.elevated, "flex items-center justify-between")}
-                              >
-                                <div>
-                                  <div className={cn(ds.typography.size.xs, "text-white/80")}>{blueprint.name}</div>
-                                  {blueprint.quality_tier && (
-                                    <div className={cn(ds.typography.size.micro, ds.colors.text.quaternary, "mt-0.5")}>
-                                      Tier: {blueprint.quality_tier}
-                                    </div>
-                                  )}
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <button
-                                    onClick={() => openEditPricingModal(blueprint)}
-                                    className={cn("p-1.5 rounded-lg transition-colors", "hover:bg-white/10")}
-                                    title="Edit"
-                                  >
-                                    <Edit2 size={12} className="text-white/60" strokeWidth={1.5} />
-                                  </button>
-                                  <button
-                                    onClick={() => handlePricingDelete(blueprint)}
-                                    className={cn("p-1.5 rounded-lg transition-colors", "hover:bg-red-500/20")}
-                                    title="Delete"
-                                  >
-                                    <Trash2 size={12} className="text-red-400/70" strokeWidth={1.5} />
-                                  </button>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    )}
                   </>
                 )}
               </Card>
@@ -551,16 +385,6 @@ export function CategoriesManagement({ vendorId }: CategoriesManagementProps) {
           })}
         </div>
       )}
-
-      {/* Pricing Blueprint Modal */}
-      <PricingBlueprintModal
-        isOpen={isPricingModalOpen}
-        onClose={() => setIsPricingModalOpen(false)}
-        onSave={handlePricingSave}
-        vendorId={vendorId}
-        blueprint={selectedPricingBlueprint || undefined}
-        categories={categories}
-      />
 
       {/* Field Visibility Modal */}
       <FieldVisibilityModal

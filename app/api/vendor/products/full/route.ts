@@ -30,10 +30,25 @@ export async function GET(request: NextRequest) {
 
     console.log(`[Products API] Fetching for vendor: ${vendorId} (page ${page}, limit ${limit})`);
 
+    // If category filter is provided, get the category ID first
+    let categoryId: string | null = null;
+    if (category && category !== 'all') {
+      const { data: categoryData } = await supabase
+        .from('categories')
+        .select('id')
+        .eq('vendor_id', vendorId)
+        .eq('name', category)
+        .single();
+
+      if (categoryData) {
+        categoryId = categoryData.id;
+      }
+    }
+
     // Build query
     let query = supabase
       .from('products')
-      .select('id, name, sku, regular_price, cost_price, description, status, featured_image_storage, image_gallery_storage, primary_category_id, custom_fields, categories:primary_category_id(name)', { count: 'exact' })
+      .select('id, name, sku, regular_price, cost_price, description, status, featured_image_storage, image_gallery_storage, primary_category_id, custom_fields, meta_data, pricing_data, categories:primary_category_id(name)', { count: 'exact' })
       .eq('vendor_id', vendorId);
 
     // Apply filters
@@ -43,8 +58,8 @@ export async function GET(request: NextRequest) {
     if (status && status !== 'all') {
       query = query.eq('status', status);
     }
-    if (category && category !== 'all') {
-      query = query.eq('categories.name', category);
+    if (categoryId) {
+      query = query.eq('primary_category_id', categoryId);
     }
 
     // Apply pagination
@@ -66,6 +81,11 @@ export async function GET(request: NextRequest) {
         success: true,
         products: [],
         total: count || 0,
+        stats: {
+          inStock: 0,
+          lowStock: 0,
+          outOfStock: 0
+        },
         page,
         limit,
         totalPages: 0,
@@ -85,6 +105,59 @@ export async function GET(request: NextRequest) {
     console.log(`[Products API] Related data fetched in ${Date.now() - relatedStart}ms`);
     console.log(`[Products API] Inventory: ${inventoryRecords?.length || 0} records`);
 
+    // Fetch inventory for ALL products (not just current page) to calculate accurate stats
+    const statsStart = Date.now();
+
+    // Get all product IDs with same filters (but no pagination)
+    let statsQuery = supabase
+      .from('products')
+      .select('id')
+      .eq('vendor_id', vendorId);
+
+    if (search) {
+      statsQuery = statsQuery.or(`name.ilike.%${search}%,sku.ilike.%${search}%,description.ilike.%${search}%`);
+    }
+    if (status && status !== 'all') {
+      statsQuery = statsQuery.eq('status', status);
+    }
+    if (categoryId) {
+      statsQuery = statsQuery.eq('primary_category_id', categoryId);
+    }
+
+    const { data: allProducts } = await statsQuery;
+    const allProductIds = (allProducts || []).map(p => p.id);
+
+    // Get inventory for all products
+    const { data: allInventoryRecords } = await supabase
+      .from('inventory')
+      .select('product_id, quantity')
+      .in('product_id', allProductIds);
+
+    // Calculate aggregated inventory stats
+    const inventoryTotalsMap = new Map<string, number>();
+    (allInventoryRecords || []).forEach((inv: any) => {
+      const currentQty = inventoryTotalsMap.get(inv.product_id) || 0;
+      inventoryTotalsMap.set(inv.product_id, currentQty + parseFloat(inv.quantity || '0'));
+    });
+
+    // Calculate stats based on inventory thresholds
+    let inStock = 0;
+    let lowStock = 0;
+    let outOfStock = 0;
+
+    allProductIds.forEach(productId => {
+      const stock = inventoryTotalsMap.get(productId) || 0;
+      if (stock === 0) {
+        outOfStock++;
+      } else if (stock <= 10) {
+        lowStock++;
+      } else {
+        inStock++;
+      }
+    });
+
+    console.log(`[Products API] Stats calculated in ${Date.now() - statsStart}ms - Total: ${allProductIds.length}, In Stock: ${inStock}, Low: ${lowStock}, Out: ${outOfStock}`);
+
     // Build inventory map - sum quantities across all locations per product
     const inventoryMap = new Map<string, number>();
     (inventoryRecords || []).forEach((inv: any) => {
@@ -92,7 +165,26 @@ export async function GET(request: NextRequest) {
       inventoryMap.set(inv.product_id, currentQty + parseFloat(inv.quantity || '0'));
     });
 
-    // Format products with custom_fields processing
+    // Fetch pricing templates (NEW SYSTEM) if any products use them
+    const templateIds = new Set<string>();
+    (products || []).forEach((p: any) => {
+      // Check both pricing_data and meta_data for template_id
+      const templateId = p.pricing_data?.template_id || p.meta_data?.pricing_template_id;
+      if (templateId) templateIds.add(templateId);
+    });
+
+    let templatesMap = new Map<string, any>();
+    if (templateIds.size > 0) {
+      const { data: templates } = await supabase
+        .from('pricing_tier_templates')
+        .select('id, default_tiers')
+        .in('id', Array.from(templateIds));
+
+      (templates || []).forEach((tmpl: any) => {
+        templatesMap.set(tmpl.id, tmpl);
+      });
+    }
+
     const formattedProducts = (products || []).map((product: any) => {
       // Build images array: featured image first, then gallery images
       const images: string[] = [];
@@ -109,6 +201,23 @@ export async function GET(request: NextRequest) {
         images.push(...additionalImages);
       }
 
+      // Get pricing mode from pricing_data or meta_data
+      const pricingMode = product.pricing_data?.mode || product.meta_data?.pricing_mode || 'single';
+
+      // Get LIVE pricing from NEW template system ONLY - no fallback to stale data
+      let pricingTiers = [];
+      const templateId = product.pricing_data?.template_id || product.meta_data?.pricing_template_id;
+      if (pricingMode === 'tiered' && templateId && templatesMap.has(templateId)) {
+        const template = templatesMap.get(templateId);
+        // Convert template default_tiers to pricing_tiers format
+        pricingTiers = (template.default_tiers || []).map((tier: any) => ({
+          weight: tier.label,
+          qty: tier.quantity,
+          price: String(tier.default_price || 0)
+        }));
+      }
+      // NO FALLBACK - if no template, no pricing tiers returned
+
       return {
         id: product.id,
         name: product.name,
@@ -120,7 +229,8 @@ export async function GET(request: NextRequest) {
         status: product.status || 'pending',
         total_stock: inventoryMap.get(product.id) || 0, // LIVE inventory from all locations
         custom_fields: product.custom_fields || {}, // Vendors have full autonomy over custom fields
-        pricing_tiers: [], // Don't load in list view - load in full editor
+        pricing_mode: pricingMode,
+        pricing_tiers: pricingTiers, // Include tiers for display
         images: images
       };
     });
@@ -134,6 +244,11 @@ export async function GET(request: NextRequest) {
       success: true,
       products: formattedProducts,
       total: count || 0,
+      stats: {
+        inStock,
+        lowStock,
+        outOfStock
+      },
       page,
       limit,
       totalPages,

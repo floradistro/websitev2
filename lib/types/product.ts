@@ -118,7 +118,7 @@ export interface BulkProduct {
   cost_price?: string;
   pricing_mode: PricingMode;
   pricing_tiers?: PricingTier[];
-  pricing_blueprint_id?: string;
+  pricing_template_id?: string;
   description?: string;
   category_id?: string;
   custom_fields?: CustomFields;
@@ -154,7 +154,7 @@ export interface ProductStats {
   rejected: number;
 }
 
-export interface PricingBlueprint {
+export interface PricingTemplate {
   id: string;
   vendor_id: string | null;
   name: string;
@@ -177,6 +177,9 @@ export interface PricingBlueprint {
   created_at?: string;
   updated_at?: string;
 }
+
+// Legacy type alias for backwards compatibility
+export type PricingBlueprint = PricingTemplate;
 
 export interface FieldGroup {
   id: string;
@@ -239,7 +242,7 @@ export interface ProductSubmissionData {
   price?: number;
   cost_price?: number;
   pricing_tiers?: PricingTier[];
-  pricing_blueprint_id?: string;
+  pricing_template_id?: string;
   image_urls?: string[];
   custom_fields?: CustomFields;
   initial_quantity?: number;

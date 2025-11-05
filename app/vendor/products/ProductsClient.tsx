@@ -48,25 +48,8 @@ export default function ProductsClient() {
   const total = productsData?.total || 0;
   const totalPages = productsData?.totalPages || 0;
 
-  // Calculate stats from products data - optimized with single pass
-  const stats = useMemo(() => {
-    if (!products || products.length === 0) {
-      return { total: 0, approved: 0, pending: 0, rejected: 0 };
-    }
-
-    // Single pass through array instead of 3 separate filters (3x faster)
-    return products.reduce((acc: { total: number; approved: number; pending: number; rejected: number }, p: Product) => {
-      acc.total++;
-      if (p.status === 'published') {
-        acc.approved++;
-      } else if (p.status === 'pending') {
-        acc.pending++;
-      } else if (p.status === 'rejected') {
-        acc.rejected++;
-      }
-      return acc;
-    }, { total: 0, approved: 0, pending: 0, rejected: 0 });
-  }, [products]);
+  // Use stats from API response - calculated across ALL products, not just current page
+  const stats = productsData?.stats || { inStock: 0, lowStock: 0, outOfStock: 0 };
 
   // Memoize event handlers
   const handleViewProduct = useCallback((productId: string) => {
@@ -75,8 +58,8 @@ export default function ProductsClient() {
   }, [products]);
 
   return (
-    <main className={cn(ds.colors.bg.primary, "min-h-screen p-6")} role="main" aria-label="Product management">
-      <div className="max-w-7xl mx-auto">
+    <main className={cn(ds.colors.bg.primary, "min-h-screen px-3 py-4 sm:px-4 sm:py-6 md:px-6 md:py-6")} role="main" aria-label="Product management">
+      <div className="w-full mx-auto">
         {/* Header */}
         <ProductsHeader totalProducts={total} isLoading={isLoading} />
 
@@ -88,19 +71,19 @@ export default function ProductsClient() {
             aria-controls="products-panel"
             onClick={() => setActiveTab('products')}
             className={cn(
-              "flex items-center gap-2 px-4 py-3 border-b-2 transition-colors",
+              "flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-3 border-b-2 transition-colors",
               ds.typography.size.xs,
               ds.typography.transform.uppercase,
               ds.typography.tracking.wide,
               ds.typography.weight.light,
               activeTab === 'products'
-                ? 'border-white/60 text-white'
+                ? 'border-white text-white'
                 : cn(ds.colors.text.quaternary, 'hover:text-white/60', 'border-transparent')
             )}
           >
-            <Package size={14} strokeWidth={1.5} />
+            <Package size={14} strokeWidth={1} className="opacity-60" />
             Products
-            <span className={cn("px-2 py-0.5 rounded text-[8px]", ds.colors.bg.hover)}>
+            <span className={cn("px-1.5 sm:px-2 py-0.5 rounded text-[8px]", ds.colors.bg.hover)}>
               {total}
             </span>
           </button>
@@ -111,19 +94,19 @@ export default function ProductsClient() {
             aria-controls="categories-panel"
             onClick={() => setActiveTab('categories')}
             className={cn(
-              "flex items-center gap-2 px-4 py-3 border-b-2 transition-colors",
+              "flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-3 border-b-2 transition-colors",
               ds.typography.size.xs,
               ds.typography.transform.uppercase,
               ds.typography.tracking.wide,
               ds.typography.weight.light,
               activeTab === 'categories'
-                ? 'border-white/60 text-white'
+                ? 'border-white text-white'
                 : cn(ds.colors.text.quaternary, 'hover:text-white/60', 'border-transparent')
             )}
           >
-            <FolderTree size={14} strokeWidth={1.5} />
+            <FolderTree size={14} strokeWidth={1} className="opacity-60" />
             Categories
-            <span className={cn("px-2 py-0.5 rounded text-[8px]", ds.colors.bg.hover)}>
+            <span className={cn("px-1.5 sm:px-2 py-0.5 rounded text-[8px]", ds.colors.bg.hover)}>
               {categoriesData?.length || 0}
             </span>
           </button>
@@ -135,9 +118,9 @@ export default function ProductsClient() {
             {/* Stats Cards */}
             <ProductsStats
               total={total}
-              approved={stats.approved}
-              pending={stats.pending}
-              rejected={stats.rejected}
+              inStock={stats.inStock}
+              lowStock={stats.lowStock}
+              outOfStock={stats.outOfStock}
               isLoading={isLoading}
             />
 

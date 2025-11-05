@@ -98,6 +98,7 @@ export const createProductSchema = z.object({
   pricing_mode: z.enum(['single', 'tiered']).default('single'),
   pricing_tiers: z.array(pricingTierSchema).optional(),
   pricing_blueprint_id: z.string().uuid().optional(),
+  pricing_template_id: z.string().uuid().optional(), // Alias for pricing_blueprint_id
 
   // Custom fields (VENDOR AUTONOMY)
   custom_fields: customFieldsSchema.optional(),

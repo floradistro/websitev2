@@ -34,8 +34,8 @@ export function Modal({
     sm: 'max-w-md',
     md: 'max-w-lg',
     lg: 'max-w-2xl',
-    xl: 'max-w-4xl',
-    full: 'max-w-7xl mx-4',
+    xl: 'max-w-[95vw] sm:max-w-4xl',
+    full: 'max-w-[95vw] sm:max-w-7xl',
   };
 
   return (
@@ -56,7 +56,7 @@ export function Modal({
 
         {/* Modal Container */}
         <div className="fixed inset-0 overflow-y-auto">
-          <div className="flex min-h-full items-center justify-center p-4">
+          <div className="flex min-h-full items-center justify-center p-2 sm:p-4">
             <Transition.Child
               as={Fragment}
               enter="ease-out duration-200"
@@ -107,7 +107,7 @@ export function Modal({
                 )}
 
                 {/* Content - Compact padding */}
-                <div className="p-4 max-h-[calc(100vh-200px)] overflow-y-auto">
+                <div className="p-3 sm:p-4 max-h-[calc(100vh-120px)] sm:max-h-[calc(100vh-200px)] overflow-y-auto">
                   {children}
                 </div>
 

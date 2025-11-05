@@ -1,0 +1,43 @@
+{
+  "formatVersion": 1,
+  "passTypeIdentifier": "pass.com.whaletools.wallet",
+  "teamIdentifier": "Y9Q7L7SGR3",
+  "organizationName": "WhaleTools",
+  "description": "Loyalty Card",
+  "logoText": "Rewards",
+  "foregroundColor": "rgb(255,255,255)",
+  "backgroundColor": "rgb(0,0,0)",
+  "storeCard": {
+    "primaryFields": [
+      {
+        "key": "points",
+        "label": "Points",
+        "value": 0
+      }
+    ],
+    "secondaryFields": [
+      {
+        "key": "tier",
+        "label": "Tier",
+        "value": "Bronze"
+      },
+      {
+        "key": "member",
+        "label": "Member",
+        "value": "Customer"
+      }
+    ]
+  },
+  "barcode": {
+    "format": "PKBarcodeFormatQR",
+    "message": "CUSTOMER-ID",
+    "messageEncoding": "iso-8859-1"
+  },
+  "barcodes": [
+    {
+      "format": "PKBarcodeFormatQR",
+      "message": "CUSTOMER-ID",
+      "messageEncoding": "iso-8859-1"
+    }
+  ]
+}

@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { vendorProductsAPI } from '@/lib/api/vendor-products';
+import { useAppAuth } from '@/context/AppAuthContext';
 import type {
   CreateProductRequest,
   UpdateProductRequest,
@@ -21,6 +22,9 @@ export const productKeys = {
 
 /**
  * Hook to fetch all products for a vendor with pagination and filters
+ *
+ * CRITICAL FIX: Wait for authentication to load before making API calls
+ * to prevent race condition where API is called before auth cookie is set
  */
 export function useProducts(params?: {
   page?: number;
@@ -29,6 +33,8 @@ export function useProducts(params?: {
   status?: string;
   category?: string;
 }) {
+  const { isLoading: isAuthLoading, isAuthenticated } = useAppAuth();
+
   const queryParams = new URLSearchParams();
   if (params?.page) queryParams.set('page', String(params.page));
   if (params?.limit) queryParams.set('limit', String(params.limit));
@@ -54,6 +60,8 @@ export function useProducts(params?: {
     },
     // Keep previous data while fetching new page
     placeholderData: (previousData) => previousData,
+    // CRITICAL: Don't run query until auth is loaded AND user is authenticated
+    enabled: !isAuthLoading && isAuthenticated,
   });
 }
 

@@ -19,7 +19,7 @@ import type {
   APIErrorResponse,
   ValidationErrorDetail,
   BulkAIResult,
-  PricingBlueprint
+  PricingTemplate
 } from '@/lib/types/product';
 
 /**
@@ -90,11 +90,11 @@ interface UseBulkImportFormReturn {
   setBulkEnrichedData: (value: Record<string, EnrichedData>) => void;
   handleBulkAIEnrich: () => Promise<void>;
 
-  // Pricing Blueprint
-  availableBlueprints: PricingBlueprint[];
-  selectedBulkBlueprintId: string;
-  setSelectedBulkBlueprintId: (value: string) => void;
-  handleApplyBulkBlueprint: () => void;
+  // Pricing Template
+  availableTemplates: PricingTemplate[];
+  selectedBulkTemplateId: string;
+  setSelectedBulkTemplateId: (value: string) => void;
+  handleApplyBulkTemplate: () => void;
 
   // Submission
   handleBulkSubmit: () => Promise<void>;
@@ -109,7 +109,7 @@ interface UseBulkImportFormReturn {
     failCount: number;
   };
   loadingAI: boolean;
-  loadingBlueprints: boolean;
+  loadingTemplates: boolean;
 
   // Reset function
   resetBulkForm: () => void;
@@ -213,50 +213,31 @@ export function useBulkImportForm({
   });
 
   /**
-   * Blueprints loading state
+   * Templates loading state
    */
-  const [loadingBlueprints, setLoadingBlueprints] = useState(false);
+  const [loadingTemplates, setLoadingTemplates] = useState(false);
 
   /**
-   * Available pricing blueprints for vendor
+   * Available pricing templates for vendor
    */
-  const [availableBlueprints, setAvailableBlueprints] = useState<PricingBlueprint[]>([]);
+  const [availableTemplates, setAvailableTemplates] = useState<PricingTemplate[]>([]);
 
   /**
-   * Selected pricing blueprint ID for bulk products
+   * Selected pricing template ID for bulk products
    */
-  const [selectedBulkBlueprintId, setSelectedBulkBlueprintId] = useState('');
+  const [selectedBulkTemplateId, setSelectedBulkTemplateId] = useState('');
 
   // ==========================================
-  // FETCH PRICING BLUEPRINTS
+  // NOTE: PRICING TEMPLATES
   // ==========================================
 
   /**
-   * Fetches available pricing blueprints for the vendor
-   * Runs once on component mount
+   * Pricing templates are now loaded directly when needed via the product APIs.
+   * They are fetched from the pricing_tier_templates table.
+   *
+   * The old /api/vendor/pricing-blueprints endpoint has been removed.
+   * Templates are not pre-loaded in this form hook anymore.
    */
-  useEffect(() => {
-    const fetchBlueprints = async () => {
-      if (!vendorId) return;
-
-      try {
-        setLoadingBlueprints(true);
-        const response = await axios.get('/api/vendor/pricing-blueprints', {
-          headers: { 'x-vendor-id': vendorId }
-        });
-
-        if (response.data.success && response.data.blueprints) {
-          setAvailableBlueprints(response.data.blueprints);
-        }
-      } catch (error) {
-        console.error('Failed to fetch pricing blueprints:', error);
-      } finally {
-        setLoadingBlueprints(false);
-      }
-    };
-
-    fetchBlueprints();
-  }, [vendorId]);
 
   // ==========================================
   // COMPUTED VALUES
@@ -295,41 +276,41 @@ export function useBulkImportForm({
   };
 
   // ==========================================
-  // PRICING BLUEPRINT
+  // PRICING TEMPLATE
   // ==========================================
 
   /**
-   * Applies selected pricing blueprint to all bulk products
+   * Applies selected pricing template to all bulk products
    *
    * @remarks
-   * Converts blueprint's price_breaks to pricing tiers
+   * Converts template's price_breaks to pricing tiers
    * Updates all products with:
    * - pricing_mode: 'tiered'
-   * - pricing_tiers: array from blueprint
-   * - pricing_blueprint_id: selected blueprint ID
+   * - pricing_tiers: array from template
+   * - pricing_template_id: selected template ID
    */
-  const handleApplyBulkBlueprint = () => {
-    if (!selectedBulkBlueprintId) {
+  const handleApplyBulkTemplate = () => {
+    if (!selectedBulkTemplateId) {
       showNotification({
         type: 'warning',
-        title: 'No Blueprint Selected',
-        message: 'Please select a pricing blueprint first'
+        title: 'No Template Selected',
+        message: 'Please select a pricing template first'
       });
       return;
     }
 
-    const blueprint = availableBlueprints.find(b => b.id === selectedBulkBlueprintId);
-    if (!blueprint) {
+    const template = availableTemplates.find(t => t.id === selectedBulkTemplateId);
+    if (!template) {
       showNotification({
         type: 'error',
-        title: 'Blueprint Not Found',
-        message: 'Selected blueprint could not be found'
+        title: 'Template Not Found',
+        message: 'Selected template could not be found'
       });
       return;
     }
 
     // Convert price_breaks to pricing tiers
-    const tiers: PricingTier[] = blueprint.price_breaks
+    const tiers: PricingTier[] = template.price_breaks
       .sort((a, b) => a.sort_order - b.sort_order)
       .map(priceBreak => ({
         weight: priceBreak.label,
@@ -342,15 +323,15 @@ export function useBulkImportForm({
       ...product,
       pricing_mode: 'tiered' as const,
       pricing_tiers: tiers,
-      pricing_blueprint_id: selectedBulkBlueprintId
+      pricing_template_id: selectedBulkTemplateId
     }));
 
     setBulkProducts(updatedProducts);
 
     showNotification({
       type: 'success',
-      title: 'Blueprint Applied',
-      message: `${blueprint.name} applied to ${bulkProducts.length} products`
+      title: 'Template Applied',
+      message: `${template.name} applied to ${bulkProducts.length} products`
     });
   };
 
@@ -640,7 +621,7 @@ export function useBulkImportForm({
             pricing_mode: product.pricing_mode,
             custom_fields: product.custom_fields || {},
             description,
-            pricing_blueprint_id: product.pricing_blueprint_id || undefined
+            pricing_template_id: product.pricing_template_id || undefined
           };
 
           // Add pricing fields based on mode
@@ -794,11 +775,11 @@ export function useBulkImportForm({
     setBulkEnrichedData,
     handleBulkAIEnrich,
 
-    // Pricing Blueprint
-    availableBlueprints,
-    selectedBulkBlueprintId,
-    setSelectedBulkBlueprintId,
-    handleApplyBulkBlueprint,
+    // Pricing Template
+    availableTemplates,
+    selectedBulkTemplateId,
+    setSelectedBulkTemplateId,
+    handleApplyBulkTemplate,
 
     // Submission
     handleBulkSubmit,
@@ -807,7 +788,7 @@ export function useBulkImportForm({
     bulkProcessing,
     bulkProgress,
     loadingAI,
-    loadingBlueprints,
+    loadingTemplates,
 
     // Utility
     resetBulkForm,

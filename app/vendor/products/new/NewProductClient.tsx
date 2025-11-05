@@ -376,16 +376,16 @@ export default function NewProductClient() {
               newTierWeight={newTierWeight}
               newTierQty={newTierQty}
               newTierPrice={newTierPrice}
-              selectedBlueprintId={singleForm.selectedBlueprintId}
-              availableBlueprints={singleForm.availableBlueprints}
+              selectedTemplateId={singleForm.selectedTemplateId}
+              availableTemplates={singleForm.availableTemplates}
               onPricingModeChange={singleForm.setPricingMode}
               onFormDataChange={(data) => singleForm.setFormData({ ...singleForm.formData, ...data })}
               onNewTierChange={handleNewTierChange}
               onAddTier={handleAddTier}
               onUpdateTier={singleForm.updatePricingTier}
               onRemoveTier={singleForm.removePricingTier}
-              onBlueprintSelect={singleForm.setSelectedBlueprintId}
-              onApplyBlueprint={singleForm.handleApplyBlueprint}
+              onTemplateSelect={singleForm.setSelectedTemplateId}
+              onApplyTemplate={singleForm.handleApplyTemplate}
             />
 
             {/* Images */}
@@ -546,19 +546,19 @@ export default function NewProductClient() {
                   </select>
                 </div>
 
-                {/* Pricing Blueprint Selection */}
-                {bulkForm.availableBlueprints.length > 0 && (
+                {/* Pricing Template Selection */}
+                {bulkForm.availableTemplates.length > 0 && (
                   <div className={cn("p-6 rounded-lg border", ds.colors.bg.elevated, ds.colors.border.default)}>
                     <h2 className={cn(ds.typography.size.sm, ds.typography.weight.medium, ds.colors.text.secondary, "mb-2")}>
-                      Pricing Blueprint (Optional)
+                      Pricing Template (Optional)
                     </h2>
                     <p className={cn(ds.typography.size.xs, ds.colors.text.quaternary, "mb-4")}>
                       Apply a pricing template to all products
                     </p>
                     <div className="flex gap-2">
                       <select
-                        value={bulkForm.selectedBulkBlueprintId}
-                        onChange={(e) => bulkForm.setSelectedBulkBlueprintId(e.target.value)}
+                        value={bulkForm.selectedBulkTemplateId}
+                        onChange={(e) => bulkForm.setSelectedBulkTemplateId(e.target.value)}
                         className={cn(
                           "flex-1 px-3 py-2 rounded-lg border transition-colors",
                           ds.typography.size.xs,
@@ -568,17 +568,17 @@ export default function NewProductClient() {
                           "focus:outline-none focus:ring-2 focus:ring-white/10"
                         )}
                       >
-                        <option value="">Select a pricing blueprint...</option>
-                        {bulkForm.availableBlueprints.map(blueprint => (
-                          <option key={blueprint.id} value={blueprint.id}>
-                            {blueprint.name}{blueprint.quality_tier && ` (${blueprint.quality_tier})`}
+                        <option value="">Select a pricing template...</option>
+                        {bulkForm.availableTemplates.map(template => (
+                          <option key={template.id} value={template.id}>
+                            {template.name}{template.quality_tier && ` (${template.quality_tier})`}
                           </option>
                         ))}
                       </select>
-                      {bulkForm.selectedBulkBlueprintId && (
+                      {bulkForm.selectedBulkTemplateId && (
                         <Button
                           type="button"
-                          onClick={bulkForm.handleApplyBulkBlueprint}
+                          onClick={bulkForm.handleApplyBulkTemplate}
                           variant="secondary"
                           size="sm"
                         >

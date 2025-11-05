@@ -1,19 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { AlpineIQClient } from '@/lib/marketing/alpineiq-client';
+import { walletPassGenerator } from '@/lib/wallet/pass-generator';
+import { generatePassSerialNumber, generateAuthToken } from '@/lib/wallet/config';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
+
 /**
- * GET /api/customer/wallet-pass?customer_id=xxx
- * Get Apple Wallet and Google Wallet pass links for a customer's loyalty card
+ * GET /api/customer/wallet-pass?customer_id=xxx&vendor_id=xxx
+ * Generate and download Apple Wallet pass for customer
  */
 export async function GET(request: NextRequest) {
   try {
-    console.log('[Wallet Pass] API called');
     const searchParams = request.nextUrl.searchParams;
     const customerId = searchParams.get('customer_id');
+    const vendorId = searchParams.get('vendor_id');
 
     if (!customerId) {
       return NextResponse.json(
@@ -22,23 +28,10 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    console.log('[Wallet Pass] Creating Supabase client');
-    // Create Supabase client directly with service role key
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://uaednwpxursknmwdeejn.supabase.co',
-      process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVhZWRud3B4dXJza25td2RlZWpuIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MDk5NzIzMywiZXhwIjoyMDc2NTczMjMzfQ.l0NvBbS2JQWPObtWeVD2M2LD866A2tgLmModARYNnbI',
-      {
-        auth: {
-          autoRefreshToken: false,
-          persistSession: false
-        }
-      }
-    );
-
-    // Get customer info
+    // Get customer data
     const { data: customer, error: customerError } = await supabase
       .from('customers')
-      .select('id, email, phone, first_name, last_name, loyalty_points, loyalty_tier')
+      .select('*')
       .eq('id', customerId)
       .single();
 
@@ -49,56 +42,138 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Check if customer has Alpine IQ contact ID
-    const { data: mapping } = await supabase
-      .from('alpineiq_customer_mapping')
-      .select('alpineiq_customer_id')
-      .eq('customer_id', customerId)
-      .single();
+    // Get vendor data (use vendor_id if provided, otherwise get default)
+    let vendor;
+    if (vendorId) {
+      const { data: vendorData } = await supabase
+        .from('vendors')
+        .select('*')
+        .eq('id', vendorId)
+        .single();
+      vendor = vendorData;
+    } else {
+      // Get first active vendor (or implement your own logic)
+      const { data: vendorData } = await supabase
+        .from('vendors')
+        .select('*')
+        .eq('status', 'active')
+        .limit(1)
+        .single();
+      vendor = vendorData;
+    }
 
-    if (!mapping) {
-      // Customer not synced to Alpine IQ yet
-      // This typically happens automatically when they make their first purchase
-      // For now, return an error prompting them to make a purchase first
-      console.log('[Wallet Pass] Customer not enrolled in Alpine IQ yet:', customer.email);
-
+    if (!vendor) {
       return NextResponse.json(
-        {
-          success: false,
-          error: 'Please make a purchase first to enroll in our loyalty program',
-          needsEnrollment: true
-        },
-        { status: 400 }
+        { success: false, error: 'Vendor not found' },
+        { status: 404 }
       );
     }
 
-    // Customer already synced - generate web wallet URL
-    // Alpine IQ's web wallet URL auto-generates passes on first visit
-    const alpineUserId = process.env.ALPINE_USER_ID || '3999';
-    const contactId = mapping.alpineiq_customer_id;
-    const webWalletUrl = `https://lab.alpineiq.com/wallet/${alpineUserId}/${contactId}`;
+    // Check if pass already exists for this customer
+    let passRecord;
+    const { data: existingPass } = await supabase
+      .from('wallet_passes')
+      .select('*')
+      .eq('customer_id', customerId)
+      .eq('vendor_id', vendor.id)
+      .eq('status', 'active')
+      .single();
 
-    console.log('[Wallet Pass] Generated web wallet URL for contact:', contactId);
+    if (existingPass) {
+      // Pass exists, return updated version
+      passRecord = existingPass;
 
-    return NextResponse.json({
-      success: true,
-      customer: {
-        name: `${customer.first_name} ${customer.last_name}`,
-        email: customer.email,
-        loyaltyPoints: customer.loyalty_points,
-        loyaltyTier: customer.loyalty_tier
-      },
-      walletPass: {
-        apple: webWalletUrl,
-        google: webWalletUrl
-      },
-      webWalletUrl: webWalletUrl
+      // Update pass data with latest customer info
+      const updatedPassData = {
+        points: customer.loyalty_points || 0,
+        tier: customer.loyalty_tier || 'Bronze',
+        member_name: `${customer.first_name} ${customer.last_name}`,
+        member_since: customer.created_at,
+        barcode_message: `CUSTOMER-${customer.id.substring(0, 8).toUpperCase()}`,
+      };
+
+      await supabase
+        .from('wallet_passes')
+        .update({
+          pass_data: updatedPassData,
+          last_updated_at: new Date().toISOString(),
+        })
+        .eq('id', existingPass.id);
+
+      passRecord = { ...existingPass, pass_data: updatedPassData };
+    } else {
+      // Create new pass record
+      const serialNumber = generatePassSerialNumber();
+      const authToken = generateAuthToken();
+
+      const passData = {
+        points: customer.loyalty_points || 0,
+        tier: customer.loyalty_tier || 'Bronze',
+        member_name: `${customer.first_name} ${customer.last_name}`,
+        member_since: customer.created_at,
+        barcode_message: `CUSTOMER-${customer.id.substring(0, 8).toUpperCase()}`,
+      };
+
+      const { data: newPass, error: insertError } = await supabase
+        .from('wallet_passes')
+        .insert({
+          customer_id: customerId,
+          vendor_id: vendor.id,
+          pass_type: 'loyalty', // Required: loyalty, coupon, event, generic
+          pass_serial_number: serialNumber,
+          serial_number: serialNumber,
+          authentication_token: authToken,
+          pass_type_identifier: process.env.APPLE_PASS_TYPE_ID || 'pass.com.whaletools.wallet',
+          status: 'active',
+          pass_data: passData,
+          is_active: true,
+        })
+        .select()
+        .single();
+
+      if (insertError || !newPass) {
+        console.error('Failed to create pass record:', insertError);
+        return NextResponse.json(
+          { success: false, error: 'Failed to create pass' },
+          { status: 500 }
+        );
+      }
+
+      passRecord = newPass;
+    }
+
+    // Generate the .pkpass file
+    const buffer = await walletPassGenerator.generatePass(
+      customer,
+      vendor,
+      passRecord
+    );
+
+    // Log event
+    await supabase.from('wallet_pass_events').insert({
+      pass_id: passRecord.id,
+      customer_id: customerId,
+      event_type: 'generated',
+      user_agent: request.headers.get('user-agent') || undefined,
     });
 
+    // Return the .pkpass file
+    return new NextResponse(Buffer.from(buffer), {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/vnd.apple.pkpass',
+        'Content-Disposition': `attachment; filename="${vendor.slug}-loyalty-pass.pkpass"`,
+        'Cache-Control': 'no-cache',
+      },
+    });
   } catch (error: any) {
-    console.error('Wallet pass API error:', error);
+    console.error('Wallet pass generation error:', error);
     return NextResponse.json(
-      { success: false, error: error.message || 'Failed to get wallet pass' },
+      {
+        success: false,
+        error: error.message || 'Failed to generate wallet pass',
+        details: process.env.NODE_ENV === 'development' ? error.stack : undefined,
+      },
       { status: 500 }
     );
   }

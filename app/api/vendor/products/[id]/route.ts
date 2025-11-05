@@ -61,7 +61,7 @@ export async function GET(
     // Get pricing from embedded pricing_data (new simplified system)
     const pricingData = product.pricing_data || {};
     const pricingMode: 'single' | 'tiered' = pricingData.mode || 'single';
-    const pricingBlueprintId: string | null = pricingData.template_id || null;
+    const pricingTemplateId: string | null = pricingData.template_id || null;
     const pricing: any[] = (pricingData.tiers || []).map((tier: any) => ({
       label: tier.label,
       qty: tier.quantity || 1,
@@ -99,7 +99,7 @@ export async function GET(
         total_stock: parseFloat(product.stock_quantity) || 0,
         custom_fields: product.custom_fields || {}, // Vendors have full autonomy over custom fields
         pricing_mode: pricingMode,
-        pricing_blueprint_id: pricingBlueprintId || null,
+        pricing_template_id: pricingTemplateId || null,
         coas: (coas || []).map(coa => ({
           id: coa.id,
           file_name: coa.file_name,
@@ -210,6 +210,62 @@ export async function PUT(
       updateData.image_gallery_storage = validatedData.image_gallery_storage;
     }
 
+    // Handle pricing template assignment - store in pricing_data
+    if (body.pricing_template_id || body.pricing_mode || body.pricing_tiers) {
+      // Get current pricing_data
+      const { data: currentProduct } = await supabase
+        .from('products')
+        .select('pricing_data')
+        .eq('id', productId)
+        .single();
+
+      const currentPricingData = currentProduct?.pricing_data || {};
+
+      // Build updated pricing_data
+      const updatedPricingData: any = { ...currentPricingData };
+
+      if (body.pricing_mode) {
+        updatedPricingData.mode = body.pricing_mode;
+      }
+
+      if (body.pricing_template_id) {
+        updatedPricingData.template_id = body.pricing_template_id;
+
+        // Fetch template to get name and tiers
+        const { data: template } = await supabase
+          .from('pricing_tier_templates')
+          .select('name, default_tiers')
+          .eq('id', body.pricing_template_id)
+          .single();
+
+        if (template) {
+          updatedPricingData.template_name = template.name;
+          // Convert default_tiers to tiers format
+          updatedPricingData.tiers = (template.default_tiers || []).map((tier: any) => ({
+            id: tier.id,
+            label: tier.label,
+            quantity: tier.quantity,
+            unit: tier.unit,
+            price: tier.default_price,
+            enabled: true,
+            sort_order: tier.sort_order
+          }));
+        }
+      } else if (body.pricing_tiers) {
+        // Manual tiers (not from template)
+        updatedPricingData.tiers = body.pricing_tiers.map((tier: any, index: number) => ({
+          label: tier.weight || tier.label,
+          quantity: tier.qty || tier.quantity || 1,
+          unit: 'g',
+          price: parseFloat(tier.price),
+          enabled: true,
+          sort_order: index + 1
+        }));
+      }
+
+      updateData.pricing_data = updatedPricingData;
+    }
+
     // Update product
     const { data: updated, error: updateError } = await supabase
       .from('products')
@@ -224,50 +280,6 @@ export async function PUT(
         { success: false, error: updateError.message },
         { status: 500 }
       );
-    }
-
-    // Handle pricing blueprint assignment
-    if (body.pricing_blueprint_id) {
-      // Check if assignment already exists
-      const { data: existingAssignment } = await supabase
-        .from('product_pricing_assignments')
-        .select('id')
-        .eq('product_id', productId)
-        .eq('blueprint_id', body.pricing_blueprint_id)
-        .single();
-
-      if (!existingAssignment) {
-        // Deactivate any existing assignments for this product
-        await supabase
-          .from('product_pricing_assignments')
-          .update({ is_active: false })
-          .eq('product_id', productId);
-
-        // Create new assignment
-        const { error: assignmentError } = await supabase
-          .from('product_pricing_assignments')
-          .insert({
-            product_id: productId,
-            blueprint_id: body.pricing_blueprint_id,
-            is_active: true
-          });
-
-        if (assignmentError) {
-          console.error('Blueprint assignment error:', assignmentError);
-        }
-      } else {
-        // Reactivate existing assignment and deactivate others
-        await supabase
-          .from('product_pricing_assignments')
-          .update({ is_active: false })
-          .eq('product_id', productId)
-          .neq('id', existingAssignment.id);
-
-        await supabase
-          .from('product_pricing_assignments')
-          .update({ is_active: true })
-          .eq('id', existingAssignment.id);
-      }
     }
 
     return NextResponse.json({

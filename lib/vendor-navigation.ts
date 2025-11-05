@@ -20,7 +20,8 @@ import {
   Megaphone,
   Users,
   Sparkles,
-  Smartphone
+  Smartphone,
+  Wallet
 } from 'lucide-react';
 
 export interface NavItem {
@@ -113,6 +114,15 @@ export const vendorNavItems: NavItem[] = [
     icon: Megaphone,
     label: 'Marketing',
     description: 'Campaigns & loyalty',
+    isCore: false,
+    group: 'sales',
+    appKey: 'marketing'
+  },
+  {
+    href: '/vendor/apple-wallet',
+    icon: Wallet,
+    label: 'Apple Wallet',
+    description: 'Digital loyalty cards',
     isCore: false,
     group: 'sales',
     appKey: 'marketing'

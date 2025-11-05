@@ -139,9 +139,10 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
         terpenes: productData.terpenes || '',
         effects: productData.effects || '',
         coa_url: productData.coa_url || '',
-        // Pricing tiers (if applicable)
+        // Pricing configuration
         pricing_mode: productData.pricing_mode || 'single',
-        pricing_tiers: productData.pricing_tiers || []
+        pricing_tiers: productData.pricing_tiers || [],
+        pricing_template_id: productData.pricing_template_id || null
       }
     };
 
@@ -288,18 +289,18 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
       );
     }
 
-    // Handle pricing blueprint assignment if provided
-    if (productData.pricing_blueprint_id) {
+    // Handle pricing template assignment if provided (NEW SYSTEM)
+    if (productData.pricing_template_id) {
       const { error: assignmentError } = await supabase
         .from('product_pricing_assignments')
         .insert({
           product_id: product.id,
-          blueprint_id: productData.pricing_blueprint_id,
+          template_id: productData.pricing_template_id,
           is_active: true
         });
 
       if (assignmentError) {
-        console.error('Blueprint assignment error:', assignmentError);
+        console.error('Template assignment error:', assignmentError);
       }
     }
 

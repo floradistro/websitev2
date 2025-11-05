@@ -3,7 +3,7 @@
 /**
  * ProductQuickView - Comprehensive Product Editor Modal
  * Full-featured inline editing without needing separate page
- * Includes: Basic Info, Pricing Tiers, Blueprints, Images, Custom Fields
+ * Includes: Basic Info, Pricing Tiers, Templates, Images, Custom Fields
  */
 
 import { useState, useEffect } from 'react';
@@ -12,7 +12,7 @@ import { showNotification, showConfirm } from '@/components/NotificationToast';
 import { Button, Input, Textarea, Modal, ds, cn } from '@/components/ds';
 import PricingPanel from '@/app/vendor/products/new/components/PricingPanel';
 import axios from 'axios';
-import type { PricingBlueprint, PricingTier } from '@/lib/types/product';
+import type { PricingTemplate, PricingTier } from '@/lib/types/product';
 
 interface ProductQuickViewProps {
   product: any;
@@ -35,8 +35,8 @@ export function ProductQuickView({ product, vendorId, isOpen, onClose, onSave, o
   const [newTierWeight, setNewTierWeight] = useState('');
   const [newTierQty, setNewTierQty] = useState('');
   const [newTierPrice, setNewTierPrice] = useState('');
-  const [availableBlueprints, setAvailableBlueprints] = useState<PricingBlueprint[]>([]);
-  const [selectedBlueprintId, setSelectedBlueprintId] = useState('');
+  const [availableTemplates, setAvailableTemplates] = useState<PricingTemplate[]>([]);
+  const [selectedTemplateId, setSelectedTemplateId] = useState('');
 
   // Image state
   const [imageFiles, setImageFiles] = useState<File[]>([]);
@@ -75,9 +75,9 @@ export function ProductQuickView({ product, vendorId, isOpen, onClose, onSave, o
             // Set pricing mode from API response
             setPricingMode(p.pricing_mode || 'single');
 
-            // Set pricing blueprint ID if present
-            if (p.pricing_blueprint_id) {
-              setSelectedBlueprintId(p.pricing_blueprint_id);
+            // Set pricing template ID if present
+            if (p.pricing_template_id) {
+              setSelectedTemplateId(p.pricing_template_id);
             }
 
             // Load pricing tiers if applicable
@@ -122,36 +122,35 @@ export function ProductQuickView({ product, vendorId, isOpen, onClose, onSave, o
         })
         .finally(() => setLoading(false));
 
-      // Fetch pricing blueprints
-      axios.get('/api/vendor/pricing-blueprints', {
+      // Fetch pricing templates
+      axios.get('/api/vendor/pricing-templates', {
         headers: { 'x-vendor-id': vendorId }
       })
         .then(response => {
           if (response.data.success) {
-            const blueprints = response.data.blueprints || [];
-            console.log('[ProductQuickView] Fetched blueprints:', blueprints.length);
-            console.log('[ProductQuickView] Product:', product);
+            const templates = response.data.blueprints || [];
+            console.log('[ProductQuickView] Fetched templates:', templates.length);
 
-            // Filter blueprints by product category
-            const filteredBlueprints = blueprints.filter((blueprint: PricingBlueprint) => {
-              const applicableCategories = blueprint.applicable_to_categories || [];
+            // Filter templates by product category
+            const filteredTemplates = templates.filter((template: PricingTemplate) => {
+              const applicableCategories = template.applicable_to_categories || [];
 
               // If no category restrictions, show it
               if (applicableCategories.length === 0) return true;
 
-              // If product has no category, show all blueprints
+              // If product has no category, show all templates
               if (!product.category_id) return true;
 
               // Show if product's category is in the applicable list
               return applicableCategories.includes(product.category_id);
             });
 
-            console.log('[ProductQuickView] Filtered blueprints:', filteredBlueprints.length, filteredBlueprints.map((b: any) => b.name));
-            setAvailableBlueprints(filteredBlueprints);
+            console.log('[ProductQuickView] Filtered templates:', filteredTemplates.length, filteredTemplates.map((t: any) => t.name));
+            setAvailableTemplates(filteredTemplates);
           }
         })
         .catch(error => {
-          console.error('Failed to fetch blueprints:', error);
+          console.error('Failed to fetch templates:', error);
         });
     }
   }, [isOpen, product?.id, vendorId]);
@@ -253,8 +252,8 @@ export function ProductQuickView({ product, vendorId, isOpen, onClose, onSave, o
     setPricingTiers(pricingTiers.filter((_, i) => i !== index));
   };
 
-  const handleApplyBlueprint = async () => {
-    if (!selectedBlueprintId) {
+  const handleApplyTemplate = async () => {
+    if (!selectedTemplateId) {
       showNotification({
         type: 'warning',
         title: 'No Template Selected',
@@ -263,8 +262,8 @@ export function ProductQuickView({ product, vendorId, isOpen, onClose, onSave, o
       return;
     }
 
-    const blueprint = availableBlueprints.find(b => b.id === selectedBlueprintId);
-    if (!blueprint) {
+    const template = availableTemplates.find(t => t.id === selectedTemplateId);
+    if (!template) {
       showNotification({
         type: 'error',
         title: 'Template Not Found',
@@ -276,7 +275,7 @@ export function ProductQuickView({ product, vendorId, isOpen, onClose, onSave, o
     try {
       // Templates now store the configured prices in default_tiers
       // The API transforms default_tiers to price_breaks format with prices included
-      const tiers: PricingTier[] = blueprint.price_breaks
+      const tiers: PricingTier[] = template.price_breaks
         .sort((a, b) => a.sort_order - b.sort_order)
         .map(priceBreak => ({
           weight: priceBreak.label,
@@ -290,7 +289,7 @@ export function ProductQuickView({ product, vendorId, isOpen, onClose, onSave, o
       showNotification({
         type: 'success',
         title: 'Template Applied',
-        message: `${blueprint.name} pricing tiers loaded`
+        message: `${template.name} pricing tiers loaded`
       });
     } catch (error) {
       console.error('Failed to apply pricing template:', error);
@@ -319,9 +318,9 @@ export function ProductQuickView({ product, vendorId, isOpen, onClose, onSave, o
         updateData.pricing_tiers = pricingTiers;
       }
 
-      // Add blueprint ID if selected
-      if (selectedBlueprintId) {
-        updateData.pricing_blueprint_id = selectedBlueprintId;
+      // Add template ID if selected
+      if (selectedTemplateId) {
+        updateData.pricing_template_id = selectedTemplateId;
       }
 
       // Add images if uploaded
@@ -426,11 +425,11 @@ export function ProductQuickView({ product, vendorId, isOpen, onClose, onSave, o
           </div>
 
           {/* Section Tabs */}
-          <div className="flex gap-2 mb-6 border-b border-white/10">
+          <div className="flex flex-wrap gap-2 mb-6 border-b border-white/10">
             <button
               onClick={() => setActiveSection('basic')}
               className={cn(
-                "px-4 py-2",
+                "px-3 sm:px-4 py-2",
                 ds.typography.size.micro,
                 ds.typography.transform.uppercase,
                 ds.typography.tracking.wide,
@@ -445,7 +444,7 @@ export function ProductQuickView({ product, vendorId, isOpen, onClose, onSave, o
             <button
               onClick={() => setActiveSection('pricing')}
               className={cn(
-                "px-4 py-2",
+                "px-3 sm:px-4 py-2",
                 ds.typography.size.micro,
                 ds.typography.transform.uppercase,
                 ds.typography.tracking.wide,
@@ -460,7 +459,7 @@ export function ProductQuickView({ product, vendorId, isOpen, onClose, onSave, o
             <button
               onClick={() => setActiveSection('images')}
               className={cn(
-                "px-4 py-2",
+                "px-3 sm:px-4 py-2",
                 ds.typography.size.micro,
                 ds.typography.transform.uppercase,
                 ds.typography.tracking.wide,
@@ -475,7 +474,7 @@ export function ProductQuickView({ product, vendorId, isOpen, onClose, onSave, o
             <button
               onClick={() => setActiveSection('fields')}
               className={cn(
-                "px-4 py-2",
+                "px-3 sm:px-4 py-2",
                 ds.typography.size.micro,
                 ds.typography.transform.uppercase,
                 ds.typography.tracking.wide,
@@ -556,16 +555,16 @@ export function ProductQuickView({ product, vendorId, isOpen, onClose, onSave, o
                   newTierWeight={newTierWeight}
                   newTierQty={newTierQty}
                   newTierPrice={newTierPrice}
-                  selectedBlueprintId={selectedBlueprintId}
-                  availableBlueprints={availableBlueprints}
+                  selectedTemplateId={selectedTemplateId}
+                  availableTemplates={availableTemplates}
                   onPricingModeChange={setPricingMode}
                   onFormDataChange={(data) => setEditedProduct({ ...editedProduct, ...data })}
                   onNewTierChange={handleNewTierChange}
                   onAddTier={handleAddTier}
                   onUpdateTier={handleUpdateTier}
                   onRemoveTier={handleRemoveTier}
-                  onBlueprintSelect={setSelectedBlueprintId}
-                  onApplyBlueprint={handleApplyBlueprint}
+                  onTemplateSelect={setSelectedTemplateId}
+                  onApplyTemplate={handleApplyTemplate}
                 />
               </div>
             )}
@@ -579,16 +578,17 @@ export function ProductQuickView({ product, vendorId, isOpen, onClose, onSave, o
                   </label>
 
                   {imagePreviews.length > 0 && (
-                    <div className="grid grid-cols-4 gap-3 mb-4">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
                       {imagePreviews.map((preview, index) => (
                         <div key={index} className="relative aspect-square rounded-lg overflow-hidden border border-white/10">
                           <img src={preview} alt={`Preview ${index + 1}`} className="w-full h-full object-cover" />
                           <button
                             type="button"
                             onClick={() => removeImage(index)}
-                            className="absolute top-2 right-2 p-1.5 bg-black/80 rounded-full text-red-400 hover:text-red-300 transition-colors"
+                            className="absolute top-2 right-2 p-1.5 bg-black/80 rounded-full text-white/60 hover:text-white/90 transition-colors"
+                            aria-label="Remove image"
                           >
-                            <X className="w-3 h-3" />
+                            <X className="w-3 h-3" strokeWidth={1.5} />
                           </button>
                         </div>
                       ))}

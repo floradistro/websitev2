@@ -41,7 +41,7 @@ import type {
   CustomFields,
   ProductSubmissionData,
   APIErrorResponse,
-  PricingBlueprint
+  PricingTemplate
 } from '@/lib/types/product';
 
 /**
@@ -105,11 +105,11 @@ interface UseSingleProductFormReturn {
   updatePricingTier: (index: number, field: string, value: string) => void;
   removePricingTier: (index: number) => void;
 
-  // Pricing Blueprint
-  availableBlueprints: PricingBlueprint[];
-  selectedBlueprintId: string;
-  setSelectedBlueprintId: React.Dispatch<React.SetStateAction<string>>;
-  handleApplyBlueprint: () => void;
+  // Pricing Template
+  availableTemplates: PricingTemplate[];
+  selectedTemplateId: string;
+  setSelectedTemplateId: React.Dispatch<React.SetStateAction<string>>;
+  handleApplyTemplate: () => void;
 
   // AI & Submission
   handleAIAutofill: () => Promise<void>;
@@ -119,7 +119,7 @@ interface UseSingleProductFormReturn {
   loading: boolean;
   uploadingImages: boolean;
   loadingAI: boolean;
-  loadingBlueprints: boolean;
+  loadingTemplates: boolean;
 }
 
 /**
@@ -225,50 +225,31 @@ export function useSingleProductForm({
   const [loadingAI, setLoadingAI] = useState(false);
 
   /**
-   * Blueprints loading state
+   * Templates loading state
    */
-  const [loadingBlueprints, setLoadingBlueprints] = useState(false);
+  const [loadingTemplates, setLoadingTemplates] = useState(false);
 
   /**
-   * Available pricing blueprints for vendor
+   * Available pricing templates for vendor
    */
-  const [availableBlueprints, setAvailableBlueprints] = useState<PricingBlueprint[]>([]);
+  const [availableTemplates, setAvailableTemplates] = useState<PricingTemplate[]>([]);
 
   /**
-   * Selected pricing blueprint ID
+   * Selected pricing template ID
    */
-  const [selectedBlueprintId, setSelectedBlueprintId] = useState('');
+  const [selectedTemplateId, setSelectedTemplateId] = useState('');
 
   // ===========================
-  // FETCH PRICING BLUEPRINTS
+  // NOTE: PRICING TEMPLATES
   // ===========================
 
   /**
-   * Fetches available pricing blueprints for the vendor
-   * Runs once on component mount
+   * Pricing templates are now loaded directly when needed via the product APIs.
+   * They are fetched from the pricing_tier_templates table.
+   *
+   * The old /api/vendor/pricing-blueprints endpoint has been removed.
+   * Templates are not pre-loaded in this form hook anymore.
    */
-  useEffect(() => {
-    const fetchBlueprints = async () => {
-      if (!vendorId) return;
-
-      try {
-        setLoadingBlueprints(true);
-        const response = await axios.get('/api/vendor/pricing-blueprints', {
-          headers: { 'x-vendor-id': vendorId }
-        });
-
-        if (response.data.success && response.data.blueprints) {
-          setAvailableBlueprints(response.data.blueprints);
-        }
-      } catch (error) {
-        console.error('Failed to fetch pricing blueprints:', error);
-      } finally {
-        setLoadingBlueprints(false);
-      }
-    };
-
-    fetchBlueprints();
-  }, [vendorId]);
 
   // ===========================
   // IMAGE HANDLERS
@@ -434,39 +415,39 @@ export function useSingleProductForm({
   };
 
   // ===========================
-  // PRICING BLUEPRINT HANDLERS
+  // PRICING TEMPLATE HANDLERS
   // ===========================
 
   /**
-   * Applies selected pricing blueprint to pricing tiers
+   * Applies selected pricing template to pricing tiers
    *
    * @remarks
-   * Converts blueprint's price_breaks to pricing tiers format
+   * Converts template's price_breaks to pricing tiers format
    * Sets pricing mode to 'tiered' automatically
    * Shows success notification
    */
-  const handleApplyBlueprint = () => {
-    if (!selectedBlueprintId) {
+  const handleApplyTemplate = () => {
+    if (!selectedTemplateId) {
       showNotification({
         type: 'warning',
-        title: 'No Blueprint Selected',
-        message: 'Please select a pricing blueprint first'
+        title: 'No Template Selected',
+        message: 'Please select a pricing template first'
       });
       return;
     }
 
-    const blueprint = availableBlueprints.find(b => b.id === selectedBlueprintId);
-    if (!blueprint) {
+    const template = availableTemplates.find(t => t.id === selectedTemplateId);
+    if (!template) {
       showNotification({
         type: 'error',
-        title: 'Blueprint Not Found',
-        message: 'Selected blueprint could not be found'
+        title: 'Template Not Found',
+        message: 'Selected template could not be found'
       });
       return;
     }
 
     // Convert price_breaks to pricing tiers
-    const tiers: PricingTier[] = blueprint.price_breaks
+    const tiers: PricingTier[] = template.price_breaks
       .sort((a, b) => a.sort_order - b.sort_order)
       .map(priceBreak => ({
         weight: priceBreak.label,
@@ -479,8 +460,8 @@ export function useSingleProductForm({
 
     showNotification({
       type: 'success',
-      title: 'Blueprint Applied',
-      message: `${blueprint.name} pricing tiers loaded`
+      title: 'Template Applied',
+      message: `${template.name} pricing tiers loaded`
     });
   };
 
@@ -695,7 +676,7 @@ export function useSingleProductForm({
         custom_fields: customFieldValues,
         cost_price: formData.cost_price ? parseFloat(formData.cost_price) : undefined,
         initial_quantity: formData.initial_quantity ? parseFloat(formData.initial_quantity) : undefined,
-        pricing_blueprint_id: selectedBlueprintId || undefined,
+        pricing_template_id: selectedTemplateId || undefined,
       };
 
       // Add pricing data based on mode
@@ -768,11 +749,11 @@ export function useSingleProductForm({
     updatePricingTier,
     removePricingTier,
 
-    // Pricing Blueprint
-    availableBlueprints,
-    selectedBlueprintId,
-    setSelectedBlueprintId,
-    handleApplyBlueprint,
+    // Pricing Template
+    availableTemplates,
+    selectedTemplateId,
+    setSelectedTemplateId,
+    handleApplyTemplate,
 
     // AI & Submission
     handleAIAutofill,
@@ -782,6 +763,6 @@ export function useSingleProductForm({
     loading,
     uploadingImages,
     loadingAI,
-    loadingBlueprints,
+    loadingTemplates,
   };
 }

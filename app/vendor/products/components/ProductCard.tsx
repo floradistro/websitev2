@@ -59,10 +59,10 @@ export const ProductCard = memo(function ProductCard({ product, onView }: Produc
   };
 
   const statusStyles = {
-    published: { bg: 'bg-green-500/10', text: 'text-green-400/70', border: 'border-green-500/20' },
-    pending: { bg: 'bg-orange-500/10', text: 'text-orange-400/70', border: 'border-orange-500/20' },
-    rejected: { bg: 'bg-red-500/10', text: 'text-red-400/70', border: 'border-red-500/20' },
-    draft: { bg: 'bg-white/5', text: 'text-white/40', border: 'border-white/10' },
+    published: { bg: 'bg-white/10', text: 'text-white/70', border: 'border-white/20' },
+    pending: { bg: 'bg-white/5', text: 'text-white/50', border: 'border-white/10' },
+    rejected: { bg: 'bg-white/5', text: 'text-white/40', border: 'border-white/10' },
+    draft: { bg: 'bg-white/5', text: 'text-white/30', border: 'border-white/10' },
   };
 
   // Memoize image URL to avoid expensive string operations on every render
@@ -76,10 +76,10 @@ export const ProductCard = memo(function ProductCard({ product, onView }: Produc
 
   return (
     <div role="article" aria-label={`Product: ${product.name}`}>
-      <Card className={cn("p-4 transition-all", "hover:bg-white/[0.06]")}>
-        <div className="flex items-start gap-4">
+      <Card className={cn("p-3 sm:p-4 transition-all", "hover:bg-white/[0.06]")}>
+        <div className="flex items-start gap-3 sm:gap-4">
         {/* Product Image */}
-        <div className={cn("w-28 h-28 rounded-lg flex-shrink-0 overflow-hidden", ds.colors.bg.elevated)} role="img" aria-label={imageUrl ? undefined : 'No product image available'}>
+        <div className={cn("w-20 h-20 sm:w-28 sm:h-28 rounded-lg flex-shrink-0 overflow-hidden", ds.colors.bg.elevated)} role="img" aria-label={imageUrl ? undefined : 'No product image available'}>
           {imageUrl ? (
             <Image
               src={imageUrl}
@@ -90,7 +90,7 @@ export const ProductCard = memo(function ProductCard({ product, onView }: Produc
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
-              <Package className={cn("w-8 h-8", ds.colors.text.quaternary)} strokeWidth={1.5} aria-hidden="true" />
+              <Package className={cn("w-8 h-8", ds.colors.text.quaternary)} strokeWidth={1} aria-hidden="true" />
             </div>
           )}
         </div>
@@ -101,10 +101,10 @@ export const ProductCard = memo(function ProductCard({ product, onView }: Produc
           <div className="flex items-start justify-between mb-2">
             <div className="flex-1">
               <h3 className={cn(ds.typography.size.sm, ds.typography.weight.medium, "text-white/90 truncate")}>{product.name}</h3>
-              <div className="flex items-center gap-3 mt-1">
+              <div className="flex flex-wrap items-center gap-2 sm:gap-3 mt-1">
                 <span className={cn(ds.typography.size.xs, ds.colors.text.tertiary)}>SKU: {product.sku}</span>
-                <span className={ds.colors.text.quaternary}>•</span>
-                <span className={cn(ds.typography.size.xs, ds.colors.text.tertiary)}>{product.category}</span>
+                <span className={cn(ds.colors.text.quaternary, "hidden sm:inline")}>•</span>
+                <span className={cn(ds.typography.size.xs, ds.colors.text.tertiary, "hidden sm:inline")}>{product.category}</span>
               </div>
             </div>
             <span
@@ -129,22 +129,37 @@ export const ProductCard = memo(function ProductCard({ product, onView }: Produc
           )}
 
           {/* Price & Stock */}
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <DollarSign className={cn("w-4 h-4", ds.colors.icon.green)} strokeWidth={1.5} />
-              <span className={cn(ds.typography.size.sm, ds.typography.weight.medium, "text-white/90")}>
-                ${product.price?.toFixed(2) || '0.00'}
-              </span>
-              {product.cost_price && (
-                <span className={cn(ds.typography.size.xs, ds.colors.text.quaternary)}>
-                  (Cost: ${product.cost_price.toFixed(2)})
+          <div className="flex flex-wrap items-center gap-3 sm:gap-4">
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <DollarSign className={cn("w-4 h-4 text-white/50")} strokeWidth={1} />
+              {product.pricing_mode === 'tiered' && product.pricing_tiers && product.pricing_tiers.length > 0 ? (
+                <span className={cn(ds.typography.size.xs, "text-white/70")}>
+                  {product.pricing_tiers[0].weight} ${parseFloat(product.pricing_tiers[0].price).toFixed(2)}
+                  {product.pricing_tiers.length > 1 && (
+                    <span className="text-white/50"> - {product.pricing_tiers[product.pricing_tiers.length - 1].weight} ${parseFloat(product.pricing_tiers[product.pricing_tiers.length - 1].price).toFixed(2)}</span>
+                  )}
+                </span>
+              ) : (product.price !== undefined && product.price !== null && product.price > 0) ? (
+                <>
+                  <span className={cn(ds.typography.size.sm, ds.typography.weight.medium, "text-white/90")}>
+                    ${product.price.toFixed(2)}
+                  </span>
+                  {product.cost_price && (
+                    <span className={cn(ds.typography.size.xs, ds.colors.text.quaternary, "hidden sm:inline")}>
+                      (Cost: ${product.cost_price.toFixed(2)})
+                    </span>
+                  )}
+                </>
+              ) : (
+                <span className={cn(ds.typography.size.xs, "text-white/40 italic")}>
+                  No pricing set
                 </span>
               )}
             </div>
-            <div className="flex items-center gap-2">
-              <Package className={cn("w-4 h-4", ds.colors.icon.blue)} strokeWidth={1.5} />
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <Package className={cn("w-4 h-4 text-white/50")} strokeWidth={1} />
               <span className={cn(ds.typography.size.xs, ds.colors.text.tertiary)}>
-                Stock: <span className="font-medium text-white/70">{product.total_stock}</span>
+                <span className="hidden sm:inline">Stock: </span><span className="font-medium text-white/70">{product.total_stock}</span>
               </span>
             </div>
           </div>
@@ -156,27 +171,27 @@ export const ProductCard = memo(function ProductCard({ product, onView }: Produc
             onClick={() => onView(product.id)}
             className={cn(
               "p-2 rounded-lg transition-colors",
-              ds.colors.icon.blue,
-              "hover:bg-blue-500/10",
-              "focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+              "text-white/60 hover:text-white/90",
+              "hover:bg-white/10",
+              "focus:outline-none focus:ring-2 focus:ring-white/20"
             )}
             aria-label={`View and edit ${product.name}`}
           >
-            <Eye className="w-5 h-5" strokeWidth={1.5} aria-hidden="true" />
+            <Eye className="w-5 h-5" strokeWidth={1} aria-hidden="true" />
           </button>
           <button
             onClick={handleDelete}
             disabled={isDeleting}
             className={cn(
               "p-2 rounded-lg transition-colors disabled:opacity-50",
-              ds.colors.icon.red,
-              "hover:bg-red-500/10",
-              "focus:outline-none focus:ring-2 focus:ring-red-500/50"
+              "text-white/40 hover:text-white/60",
+              "hover:bg-white/10",
+              "focus:outline-none focus:ring-2 focus:ring-white/20"
             )}
             aria-label={`Delete ${product.name}`}
             aria-busy={isDeleting}
           >
-            <Trash2 className="w-5 h-5" strokeWidth={1.5} aria-hidden="true" />
+            <Trash2 className="w-5 h-5" strokeWidth={1} aria-hidden="true" />
           </button>
         </div>
       </div>
