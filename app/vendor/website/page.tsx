@@ -46,9 +46,13 @@ export default function VendorWebsitePage() {
   const connectGithub = () => {
     const clientId = process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID;
     const vendorId = localStorage.getItem('vendorId'); // Or get from session
-    const redirectUri = `${window.location.origin}/api/auth/github/callback`;
 
-    const githubAuthUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&state=${vendorId}&scope=repo`;
+    // Use environment variable or default to localhost for development
+    const redirectUri = process.env.NEXT_PUBLIC_BASE_URL
+      ? `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/github/callback`
+      : 'http://localhost:3000/api/auth/github/callback';
+
+    const githubAuthUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&state=${vendorId}&scope=repo`;
 
     window.location.href = githubAuthUrl;
   };

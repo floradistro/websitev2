@@ -4,13 +4,21 @@ import { requireVendor } from '@/lib/auth/middleware';
 
 export async function GET(request: NextRequest) {
   try {
+    console.log('🔍 Website status endpoint called');
+    console.log('📋 Request headers:', {
+      authorization: request.headers.get('authorization'),
+      cookie: request.headers.get('cookie'),
+    });
+
     // Verify vendor authentication
     const authResult = await requireVendor(request);
     if (authResult instanceof NextResponse) {
+      console.log('❌ Auth failed - returning error response');
       // Return unauthorized error (client will need to ensure user is logged in)
       return authResult;
     }
     const { vendorId } = authResult;
+    console.log('✅ Auth success - vendorId:', vendorId);
 
     const supabase = getServiceSupabase();
 
