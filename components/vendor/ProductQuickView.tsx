@@ -257,8 +257,8 @@ export function ProductQuickView({ product, vendorId, isOpen, onClose, onSave, o
     if (!selectedBlueprintId) {
       showNotification({
         type: 'warning',
-        title: 'No Blueprint Selected',
-        message: 'Please select a pricing blueprint first'
+        title: 'No Template Selected',
+        message: 'Please select a pricing template first'
       });
       return;
     }
@@ -267,8 +267,8 @@ export function ProductQuickView({ product, vendorId, isOpen, onClose, onSave, o
     if (!blueprint) {
       showNotification({
         type: 'error',
-        title: 'Blueprint Not Found',
-        message: 'Selected blueprint could not be found'
+        title: 'Template Not Found',
+        message: 'Selected template could not be found'
       });
       return;
     }
@@ -289,14 +289,14 @@ export function ProductQuickView({ product, vendorId, isOpen, onClose, onSave, o
 
       showNotification({
         type: 'success',
-        title: 'Blueprint Applied',
+        title: 'Template Applied',
         message: `${blueprint.name} pricing tiers loaded`
       });
     } catch (error) {
-      console.error('Failed to fetch pricing config:', error);
+      console.error('Failed to apply pricing template:', error);
       showNotification({
         type: 'error',
-        title: 'Failed to Apply Blueprint',
+        title: 'Failed to Apply Template',
         message: 'Could not load pricing configuration'
       });
     }

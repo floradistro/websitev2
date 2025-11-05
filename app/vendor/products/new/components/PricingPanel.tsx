@@ -194,7 +194,7 @@ export default function PricingPanel({
             <div className="mb-4">
               <label className={cn("block mb-2", ds.typography.size.micro, ds.typography.transform.uppercase, ds.typography.tracking.wide, ds.colors.text.quaternary)}>
                 <Sparkles size={10} className="inline mr-1.5 text-purple-400" />
-                Pricing Blueprint <span className="text-red-400">*</span>
+                Pricing Template <span className="text-red-400">*</span>
               </label>
               <div className="flex gap-2">
                 <select
@@ -202,7 +202,7 @@ export default function PricingPanel({
                   onChange={(e) => onBlueprintSelect?.(e.target.value)}
                   className={cn(ds.components.card, "flex-1 rounded-xl text-white text-xs px-3 py-2.5 focus:outline-none focus:border-white/20 transition-all")}
                 >
-                  <option value="">Select a pricing blueprint...</option>
+                  <option value="">Select a pricing template...</option>
                   {availableBlueprints.map((blueprint) => (
                     <option key={blueprint.id} value={blueprint.id}>
                       {blueprint.name}
@@ -227,7 +227,7 @@ export default function PricingPanel({
               </div>
               {selectedBlueprintId && (
                 <p className={cn("text-purple-400/60 mt-1.5", ds.typography.size.micro)}>
-                  {availableBlueprints.find(b => b.id === selectedBlueprintId)?.description || 'Blueprint selected'}
+                  {availableBlueprints.find(b => b.id === selectedBlueprintId)?.description || 'Template selected'}
                 </p>
               )}
             </div>
@@ -237,7 +237,7 @@ export default function PricingPanel({
           {pricingTiers.length > 0 && (
             <div className="space-y-2">
               <h4 className={cn(ds.typography.size.micro, ds.typography.transform.uppercase, ds.typography.tracking.wide, ds.colors.text.quaternary)}>
-                Pricing Tiers from Blueprint ({pricingTiers.length})
+                Pricing Tiers from Template ({pricingTiers.length})
               </h4>
               <div className="space-y-2">
                 {pricingTiers.map((tier, index) => (
