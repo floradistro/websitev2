@@ -28,7 +28,7 @@ export default function ShopPage({ vendorId }: ShopPageProps) {
         setLoading(true);
 
         const { whaletoolsAPI } = await import('@/lib/storefront/api-client');
-        const result = await whaletoolsAPI.getProducts();
+        const result: any = await whaletoolsAPI.getProducts();
 
         if (result.success) {
           const apiProducts = result.data.products || [];
