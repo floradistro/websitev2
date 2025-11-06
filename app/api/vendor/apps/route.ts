@@ -169,10 +169,13 @@ export async function POST(request: NextRequest) {
       const repoName = `${vendor.slug}-${slug}`
 
       // Create GitHub repository
+      // TODO: This needs vendorAccessToken and vendorUsername
       const repo = await createRepositoryFromTemplate({
+        vendorAccessToken: '', // TODO: Get from vendor OAuth
+        vendorUsername: vendor.slug,
         name: repoName,
         description: `${name} - ${app_type} for ${vendor.store_name}`,
-        templateRepo,
+        // templateRepo, // TODO: Add to interface if needed
         isPrivate: true
       })
 
