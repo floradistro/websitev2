@@ -210,12 +210,12 @@ export async function POST(request: NextRequest) {
 
               let fileContent = file?.content
 
-              // Fallback to GitHub if not in DB
-              if (!fileContent && app.github_repo) {
-                const { getFileContent } = await import('@/lib/deployment/github')
-                const repoName = app.github_repo.split('/')[1]
-                fileContent = await getFileContent(repoName, filepath)
-              }
+              // TODO: Fallback to GitHub if not in DB (needs vendor access token)
+              // if (!fileContent && app.github_repo) {
+              //   const { getFileContent } = await import('@/lib/deployment/github')
+              //   const [owner, repo] = app.github_repo.split('/')
+              //   fileContent = await getFileContent(vendorAccessToken, owner, repo, filepath)
+              // }
 
               toolResults.push({
                 type: 'tool_result',
@@ -296,23 +296,25 @@ export async function POST(request: NextRequest) {
                   filesChanged.push(filepath)
                 }
 
-                // Commit to GitHub in background
-                if (app.github_repo) {
-                  (async () => {
-                    try {
-                      const { commitMultipleFiles } = await import('@/lib/deployment/github')
-                      const repoName = app.github_repo.split('/')[1]
-                      await commitMultipleFiles(
-                        repoName,
-                        [{ path: filepath, content: updatedContent }],
-                        `AI: ${instruction.slice(0, 80)}`
-                      )
-                      console.log(`✅ Committed ${filepath} to GitHub`)
-                    } catch (gitError) {
-                      console.error('❌ Git commit error:', gitError)
-                    }
-                  })()
-                }
+                // TODO: Commit to GitHub in background (needs vendor access token)
+                // if (app.github_repo) {
+                //   (async () => {
+                //     try {
+                //       const { commitMultipleFiles } = await import('@/lib/deployment/github')
+                //       const [owner, repo] = app.github_repo.split('/')
+                //       await commitMultipleFiles(
+                //         vendorAccessToken,
+                //         owner,
+                //         repo,
+                //         [{ path: filepath, content: updatedContent }],
+                //         `AI: ${instruction.slice(0, 80)}`
+                //       )
+                //       console.log(`✅ Committed ${filepath} to GitHub`)
+                //     } catch (gitError) {
+                //       console.error('❌ Git commit error:', gitError)
+                //     }
+                //   })()
+                // }
               }
             }
           }
@@ -457,23 +459,25 @@ export async function POST(request: NextRequest) {
           }
         }
 
-        // Commit to GitHub in background
-        if (app.github_repo && codeBlocks.length > 0) {
-          (async () => {
-            try {
-              const { commitMultipleFiles } = await import('@/lib/deployment/github')
-              const repoName = app.github_repo.split('/')[1]
-              await commitMultipleFiles(
-                repoName,
-                codeBlocks.map(block => ({ path: block.filename, content: block.code })),
-                `AI: ${instruction.slice(0, 80)}`
-              )
-              console.log(`✅ Committed to GitHub`)
-            } catch (gitError) {
-              console.error('❌ Git error:', gitError)
-            }
-          })()
-        }
+        // TODO: Commit to GitHub in background (needs vendor access token)
+        // if (app.github_repo && codeBlocks.length > 0) {
+        //   (async () => {
+        //     try {
+        //       const { commitMultipleFiles } = await import('@/lib/deployment/github')
+        //       const [owner, repo] = app.github_repo.split('/')
+        //       await commitMultipleFiles(
+        //         vendorAccessToken,
+        //         owner,
+        //         repo,
+        //         codeBlocks.map(block => ({ path: block.filename, content: block.code })),
+        //         `AI: ${instruction.slice(0, 80)}`
+        //       )
+        //       console.log(`✅ Committed to GitHub`)
+        //     } catch (gitError) {
+        //       console.error('❌ Git error:', gitError)
+        //     }
+        //   })()
+        // }
 
         // Log AI usage
         await supabase.from('vendor_ai_usage').insert({
