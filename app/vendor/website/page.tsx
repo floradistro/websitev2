@@ -1,7 +1,12 @@
+/**
+ * Vendor Website Deployment Dashboard
+ * Steve Jobs style - clean, simple, powerful
+ */
+
 'use client';
 
 import { useState, useEffect } from 'react';
-import { ExternalLink, Github, Code2, Globe } from 'lucide-react';
+import { ExternalLink, Github, Code2, Globe, Rocket, Clock, CheckCircle, XCircle } from 'lucide-react';
 import { ds, cn } from '@/components/ds';
 import { Button } from '@/components/ui/Button';
 import axios from 'axios';
@@ -12,15 +17,35 @@ interface WebsiteStatus {
   hasRepo: boolean;
   repoName?: string;
   repoUrl?: string;
+  deploymentStatus?: string;
+  deploymentUrl?: string;
+  lastDeploymentAt?: string;
+  vercelProjectId?: string;
+}
+
+interface Deployment {
+  id: string;
+  status: string;
+  deployment_url: string;
+  vercel_deployment_id: string;
+  commit_sha?: string;
+  commit_message?: string;
+  started_at: string;
+  completed_at?: string;
 }
 
 export default function VendorWebsitePage() {
   const [status, setStatus] = useState<WebsiteStatus | null>(null);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
+  const [deploying, setDeploying] = useState(false);
+  const [recentDeployments, setRecentDeployments] = useState<Deployment[]>([]);
+  const [currentDeployment, setCurrentDeployment] = useState<any>(null);
+  const [logs, setLogs] = useState<any[]>([]);
 
   useEffect(() => {
     fetchStatus();
+    fetchDeployments();
 
     // Check for success/error params in URL
     const urlParams = new URLSearchParams(window.location.search);
@@ -36,6 +61,22 @@ export default function VendorWebsitePage() {
       alert(`GitHub connection failed: ${error}`);
     }
   }, []);
+
+  // Poll for deployment status if one is in progress
+  useEffect(() => {
+    const hasActiveDeployment = recentDeployments.some(
+      d => d.status === 'BUILDING' || d.status === 'QUEUED'
+    );
+
+    if (hasActiveDeployment) {
+      const interval = setInterval(() => {
+        console.log('🔄 Polling Vercel for deployment updates...');
+        fetchDeployments();
+      }, 5000); // Check every 5 seconds
+
+      return () => clearInterval(interval);
+    }
+  }, [recentDeployments]);
 
   const fetchStatus = async () => {
     try {
@@ -54,6 +95,83 @@ export default function VendorWebsitePage() {
       }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchDeployments = async () => {
+    try {
+      // Fetch actual Vercel deployments
+      const { data } = await axios.get('/api/vendor/website/vercel-deployments', {
+        withCredentials: true,
+      });
+      if (data.success) {
+        const vercelDeployments = data.deployments || [];
+        // Map Vercel format to our format
+        const mapped = vercelDeployments.map((d: any) => ({
+          id: d.uid,
+          status: d.state,
+          deployment_url: `https://${d.url}`,
+          vercel_deployment_id: d.uid,
+          commit_sha: d.meta?.githubCommitSha,
+          commit_message: d.meta?.githubCommitMessage,
+          started_at: new Date(d.created).toISOString(),
+          completed_at: d.ready ? new Date(d.ready).toISOString() : null,
+        }));
+        setRecentDeployments(mapped);
+
+        // Check if any are building
+        const building = vercelDeployments.find((d: any) => d.state === 'BUILDING' || d.state === 'QUEUED');
+        if (building) {
+          setStatus(prev => prev ? { ...prev, deploymentStatus: building.state.toLowerCase() } : null);
+        }
+      }
+    } catch (error: any) {
+      console.error('Error fetching deployments:', error);
+    }
+  };
+
+  const fetchDeploymentStatus = async (deploymentId: string) => {
+    try {
+      const { data } = await axios.get(`/api/vendor/website/deploy?deploymentId=${deploymentId}`, {
+        withCredentials: true,
+      });
+
+      if (data.success) {
+        setCurrentDeployment(data);
+        setLogs(data.logs || []);
+
+        // Refresh if deployment completed
+        if (data.status === 'READY' || data.status === 'ERROR') {
+          fetchStatus();
+          fetchDeployments();
+        }
+      }
+    } catch (error: any) {
+      console.error('Error fetching deployment status:', error);
+    }
+  };
+
+  const handleDeploy = async () => {
+    setDeploying(true);
+
+    try {
+      const { data } = await axios.post('/api/vendor/website/sync-and-deploy', {}, {
+        withCredentials: true,
+      });
+
+      if (data.success) {
+        alert(data.message + '\n\nView live deployment logs at:\n' + data.vercelUrl);
+
+        // Refresh deployments to show latest
+        setTimeout(() => fetchDeployments(), 2000);
+      } else {
+        alert(`Sync failed: ${data.error}`);
+      }
+    } catch (error: any) {
+      console.error('Error syncing:', error);
+      alert(`Sync failed: ${error.response?.data?.error || error.message || 'Unknown error'}`);
+    } finally {
+      setDeploying(false);
     }
   };
 
@@ -137,6 +255,41 @@ export default function VendorWebsitePage() {
     }
   };
 
+  const getStatusColor = (status: string) => {
+    switch (status?.toLowerCase()) {
+      case 'ready':
+        return cn('text-white/90', ds.colors.bg.elevated, 'border border-white/10');
+      case 'building':
+      case 'queued':
+        return cn('text-white/70', ds.colors.bg.elevated, 'border border-white/5');
+      case 'error':
+      case 'canceled':
+        return cn('text-red-400/90', ds.colors.bg.elevated, 'border border-red-500/20');
+      default:
+        return cn('text-white/50', ds.colors.bg.elevated, 'border border-white/5');
+    }
+  };
+
+  const getStatusIcon = (status: string) => {
+    switch (status?.toLowerCase()) {
+      case 'ready':
+        return <CheckCircle className="w-4 h-4" />;
+      case 'building':
+      case 'queued':
+        return (
+          <div className="relative w-4 h-4">
+            <div className="absolute inset-0 rounded-full border-2 border-white/20" />
+            <div className="absolute inset-0 rounded-full border-2 border-t-white/90 animate-spin" />
+          </div>
+        );
+      case 'error':
+      case 'canceled':
+        return <XCircle className="w-4 h-4" />;
+      default:
+        return <Clock className="w-4 h-4" />;
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -180,6 +333,146 @@ export default function VendorWebsitePage() {
             )}
           </div>
         </div>
+
+        {/* Deployment Status */}
+        {status?.hasGithub && status.hasRepo && (
+          <div className={cn("rounded-2xl p-6 mb-6", ds.components.card)}>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className={cn("text-xl font-semibold", ds.colors.text.primary)}>
+                <Rocket className="inline mr-2" size={24} />
+                Deployment
+              </h2>
+
+              <Button
+                onClick={handleDeploy}
+                disabled={deploying || status?.deploymentStatus === 'building'}
+                size="sm"
+              >
+                {deploying || status?.deploymentStatus === 'building' ? 'Deploying...' : 'Deploy Now'}
+              </Button>
+            </div>
+
+            {status?.deploymentStatus && (
+              <div className="space-y-4">
+                <div className="flex items-center space-x-3">
+                  <span
+                    className={cn(
+                      'px-3 py-1.5 rounded-lg text-sm font-medium flex items-center gap-2',
+                      getStatusColor(status.deploymentStatus)
+                    )}
+                  >
+                    {getStatusIcon(status.deploymentStatus)}
+                    {status.deploymentStatus.toUpperCase()}
+                  </span>
+
+                  {status.lastDeploymentAt && (
+                    <span className={cn("text-sm", ds.colors.text.quaternary)}>
+                      Last deployed {new Date(status.lastDeploymentAt).toLocaleString()}
+                    </span>
+                  )}
+                </div>
+
+                {status.deploymentUrl && status.deploymentStatus === 'ready' && (
+                  <div>
+                    <p className={cn("text-sm mb-2", ds.colors.text.tertiary)}>Live URL</p>
+                    <a
+                      href={status.deploymentUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={cn("text-blue-400 hover:underline flex items-center gap-2", ds.colors.text.primary)}
+                    >
+                      {status.deploymentUrl}
+                      <ExternalLink className="w-4 h-4" />
+                    </a>
+                  </div>
+                )}
+
+                {/* Build Logs */}
+                {status?.deploymentStatus === 'building' && logs.length > 0 && (
+                  <div>
+                    <p className={cn("text-sm font-medium mb-2", ds.colors.text.tertiary)}>Build Logs</p>
+                    <div className={cn("rounded-xl p-4 font-mono text-xs max-h-96 overflow-y-auto", ds.colors.bg.elevated)}>
+                      {logs.map((log) => (
+                        <div key={log.id} className="mb-1">
+                          <span className={cn(ds.colors.text.quaternary)}>
+                            {new Date(log.timestamp).toLocaleTimeString()}
+                          </span>{' '}
+                          <span className={cn(ds.colors.text.tertiary)}>{log.message}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Deployment History */}
+        {status?.hasGithub && status.hasRepo && recentDeployments.length > 0 && (
+          <div className={cn("rounded-2xl p-6 mb-6", ds.components.card)}>
+            <h2 className={cn("text-xl font-semibold mb-4", ds.colors.text.primary)}>
+              Deployment History
+            </h2>
+
+            <div className="space-y-3">
+              {recentDeployments.slice(0, 10).map((deployment) => (
+                <div
+                  key={deployment.id}
+                  className={cn("flex items-center justify-between py-3 border-b last:border-0", ds.colors.border.default)}
+                >
+                  <div className="flex-1">
+                    <div className="flex items-center space-x-3 mb-1">
+                      <span
+                        className={cn(
+                          'px-2 py-0.5 rounded text-xs font-medium flex items-center gap-1',
+                          getStatusColor(deployment.status)
+                        )}
+                      >
+                        {getStatusIcon(deployment.status)} {deployment.status}
+                      </span>
+
+                      {deployment.commit_message && (
+                        <span className={cn("text-sm truncate max-w-md", ds.colors.text.tertiary)}>
+                          {deployment.commit_message}
+                        </span>
+                      )}
+                    </div>
+
+                    <div className={cn("flex items-center space-x-4 text-xs", ds.colors.text.quaternary)}>
+                      {deployment.commit_sha && (
+                        <span className="font-mono">{deployment.commit_sha.substring(0, 7)}</span>
+                      )}
+                      <span>{new Date(deployment.started_at).toLocaleString()}</span>
+                      {deployment.completed_at && (
+                        <span>
+                          Duration:{' '}
+                          {Math.round(
+                            (new Date(deployment.completed_at).getTime() -
+                              new Date(deployment.started_at).getTime()) /
+                              1000
+                          )}
+                          s
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {deployment.deployment_url && deployment.status === 'ready' && (
+                    <a
+                      href={deployment.deployment_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={cn("text-sm text-blue-400 hover:underline ml-4", ds.colors.text.primary)}
+                    >
+                      View →
+                    </a>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Website Repository */}
         {status?.hasGithub && (

@@ -53,9 +53,9 @@ function StorefrontHeader({ vendor }: StorefrontHeaderProps) {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await fetch('/api/page-data/products');
-        const result = await response.json();
-        
+        const { whaletoolsAPI } = await import('@/lib/storefront/api-client');
+        const result = await whaletoolsAPI.getProducts();
+
         if (result.success) {
           const products = result.data.products || [];
           

@@ -9,7 +9,7 @@ import AIActivityMonitor from '@/components/AIActivityMonitor';
 import { useAppAuth } from '@/context/AppAuthContext';
 import { showConfirm } from '@/components/NotificationToast';
 import { dashboardKeyframes } from '@/lib/dashboard-theme';
-import { vendorNavItems, mobileNavItems } from '@/lib/vendor-navigation';
+import { allNavItems, mobileNavItems, topLevelNavItems, navSections, settingsNavItem } from '@/lib/vendor-navigation';
 import { prefetchVendorData } from '@/hooks/useVendorData';
 import { useAutoHideHeader } from '@/hooks/useAutoHideHeader';
 import { UniversalSearch } from '@/components/UniversalSearch';
@@ -23,6 +23,9 @@ function VendorLayoutContent({
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [vendorLogo, setVendorLogo] = useState<string>('/yacht-club-logo.png');
+  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>(
+    navSections.reduce((acc, section) => ({ ...acc, [section.label]: section.defaultOpen ?? false }), {})
+  );
   const isVisible = useAutoHideHeader(); // ✅ Shared hook - no memory leak
   const pathname = usePathname();
   const router = useRouter();
@@ -61,8 +64,11 @@ function VendorLayoutContent({
     }
   };
 
-  const currentPage = vendorNavItems.find(item => pathname?.startsWith(item.href))?.label || 'Portal';
+  const currentPage = allNavItems.find(item => pathname?.startsWith(item.href))?.label || 'Portal';
   const isActive = (href: string) => pathname?.startsWith(href);
+  const toggleSection = (label: string) => {
+    setExpandedSections(prev => ({ ...prev, [label]: !prev[label] }));
+  };
 
   const vendorName = vendor?.store_name || 'Vendor';
 
@@ -254,7 +260,8 @@ function VendorLayoutContent({
             </div>
 
             <nav className="flex-1 overflow-y-auto px-3 py-3 relative z-10">
-              {vendorNavItems
+              {/* Top level items */}
+              {topLevelNavItems
                 .filter(item => !item.appKey || hasAppAccess(item.appKey))
                 .map((item) => {
                   const Icon = item.icon;
@@ -279,6 +286,88 @@ function VendorLayoutContent({
                     </Link>
                   );
                 })}
+
+              {/* Collapsible sections */}
+              {navSections.map((section) => {
+                const SectionIcon = section.icon;
+                const isExpanded = expandedSections[section.label];
+                const hasActiveItem = section.items.some(item => isActive(item.href));
+
+                return (
+                  <div key={section.label} className="mb-1">
+                    <button
+                      onClick={() => toggleSection(section.label)}
+                      className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition-all duration-200 border ${
+                        hasActiveItem
+                          ? 'bg-white/5 text-white/90 border-white/10'
+                          : 'text-white/40 hover:text-white/70 border-transparent hover:bg-white/5'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <SectionIcon size={16} strokeWidth={hasActiveItem ? 2 : 1.5} />
+                        <span className="text-[10px] uppercase tracking-[0.15em]">{section.label}</span>
+                      </div>
+                      <svg
+                        className={`w-3 h-3 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+
+                    {isExpanded && (
+                      <div className="mt-1 ml-3 space-y-1">
+                        {section.items
+                          .filter(item => !item.appKey || hasAppAccess(item.appKey))
+                          .map((item) => {
+                            const Icon = item.icon;
+                            const active = isActive(item.href);
+                            return (
+                              <Link
+                                key={item.href}
+                                href={item.href}
+                                onClick={() => setMobileMenuOpen(false)}
+                                onMouseEnter={() => handleNavHover(item.href)}
+                                className={`flex items-center justify-between px-3 py-2 rounded-lg transition-all duration-200 ${
+                                  active
+                                    ? 'bg-white/10 text-white'
+                                    : 'text-white/40 hover:text-white/70 hover:bg-white/5'
+                                }`}
+                              >
+                                <div className="flex items-center gap-2.5">
+                                  <Icon size={14} strokeWidth={active ? 2 : 1.5} />
+                                  <span className="text-[9px] uppercase tracking-[0.15em]">{item.label}</span>
+                                </div>
+                                {active && <div className="w-1 h-1 rounded-full bg-white" />}
+                              </Link>
+                            );
+                          })}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+
+              {/* Settings at bottom */}
+              {(!settingsNavItem.appKey || hasAppAccess(settingsNavItem.appKey)) && (
+                <Link
+                  href={settingsNavItem.href}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`flex items-center justify-between px-3 py-2.5 mt-2 rounded-xl transition-all duration-200 border ${
+                    isActive(settingsNavItem.href)
+                      ? 'bg-white/10 text-white border-white/20'
+                      : 'text-white/40 hover:text-white/70 border-transparent hover:bg-white/5'
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <settingsNavItem.icon size={16} strokeWidth={isActive(settingsNavItem.href) ? 2 : 1.5} />
+                    <span className="text-[10px] uppercase tracking-[0.15em]">{settingsNavItem.label}</span>
+                  </div>
+                  {isActive(settingsNavItem.href) && <div className="w-1 h-1 rounded-full bg-white" />}
+                </Link>
+              )}
             </nav>
 
             <div className="px-3 py-3 border-t border-white/5 relative z-10 space-y-2" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 1rem)' }}>
@@ -364,7 +453,8 @@ function VendorLayoutContent({
             }}
           >
           <nav className="px-3 py-4 space-y-1 pb-8">
-            {vendorNavItems
+            {/* Top level items */}
+            {topLevelNavItems
               .filter(item => !item.appKey || hasAppAccess(item.appKey))
               .map((item) => {
                 const Icon = item.icon;
@@ -374,7 +464,7 @@ function VendorLayoutContent({
                     key={item.href}
                     href={item.href}
                     onMouseEnter={() => handleNavHover(item.href)}
-                    className={`group flex items-center justify-between px-3 py-2.5 transition-all duration-200 border rounded-xl ${
+                    className={`group flex items-center justify-between px-3 py-2.5 mb-1 transition-all duration-200 border rounded-xl ${
                       active
                         ? 'text-white bg-white/10 border-white/20'
                         : 'text-white/40 hover:text-white/70 hover:bg-white/5 border-transparent'
@@ -388,6 +478,86 @@ function VendorLayoutContent({
                   </Link>
                 );
               })}
+
+            {/* Collapsible sections */}
+            {navSections.map((section) => {
+              const SectionIcon = section.icon;
+              const isExpanded = expandedSections[section.label];
+              const hasActiveItem = section.items.some(item => isActive(item.href));
+
+              return (
+                <div key={section.label} className="mb-1">
+                  <button
+                    onClick={() => toggleSection(section.label)}
+                    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition-all duration-200 border ${
+                      hasActiveItem
+                        ? 'bg-white/5 text-white/90 border-white/10'
+                        : 'text-white/40 hover:text-white/70 border-transparent hover:bg-white/5'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <SectionIcon size={16} strokeWidth={hasActiveItem ? 2 : 1.5} />
+                      <span className="text-[10px] uppercase tracking-[0.15em]">{section.label}</span>
+                    </div>
+                    <svg
+                      className={`w-3 h-3 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+
+                  {isExpanded && (
+                    <div className="mt-1 ml-3 space-y-1">
+                      {section.items
+                        .filter(item => !item.appKey || hasAppAccess(item.appKey))
+                        .map((item) => {
+                          const Icon = item.icon;
+                          const active = isActive(item.href);
+                          return (
+                            <Link
+                              key={item.href}
+                              href={item.href}
+                              onMouseEnter={() => handleNavHover(item.href)}
+                              className={`group flex items-center justify-between px-3 py-2 rounded-lg transition-all duration-200 ${
+                                active
+                                  ? 'bg-white/10 text-white'
+                                  : 'text-white/40 hover:text-white/70 hover:bg-white/5'
+                              }`}
+                            >
+                              <div className="flex items-center gap-2.5">
+                                <Icon size={14} strokeWidth={active ? 2 : 1.5} />
+                                <span className="text-[9px] uppercase tracking-[0.15em]">{item.label}</span>
+                              </div>
+                              {active && <div className="w-1 h-1 rounded-full bg-white" />}
+                            </Link>
+                          );
+                        })}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+
+            {/* Settings at bottom */}
+            {(!settingsNavItem.appKey || hasAppAccess(settingsNavItem.appKey)) && (
+              <Link
+                href={settingsNavItem.href}
+                className={`group flex items-center justify-between px-3 py-2.5 mt-2 transition-all duration-200 border rounded-xl ${
+                  isActive(settingsNavItem.href)
+                    ? 'text-white bg-white/10 border-white/20'
+                    : 'text-white/40 hover:text-white/70 hover:bg-white/5 border-transparent'
+                }`}
+              >
+                <div className="flex items-center gap-2.5">
+                  <settingsNavItem.icon size={16} strokeWidth={isActive(settingsNavItem.href) ? 2 : 1.5} />
+                  <span className="text-[10px] uppercase tracking-[0.15em]">{settingsNavItem.label}</span>
+                </div>
+                {isActive(settingsNavItem.href) && <div className="w-1 h-1 rounded-full bg-white" />}
+              </Link>
+            )}
           </nav>
         </aside>
         )}

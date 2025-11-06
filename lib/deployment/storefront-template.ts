@@ -1,6 +1,5 @@
 import fs from 'fs';
 import path from 'path';
-import { glob } from 'glob';
 
 export interface VendorBranding {
   storeName: string;
@@ -13,41 +12,65 @@ export interface VendorBranding {
 }
 
 /**
+ * Recursively walk a directory and collect all files
+ */
+function walkDirectory(dir: string, baseDir: string, files: Array<{ path: string; content: string }> = []): void {
+  const entries = fs.readdirSync(dir, { withFileTypes: true });
+
+  for (const entry of entries) {
+    const fullPath = path.join(dir, entry.name);
+    const relativePath = path.relative(baseDir, fullPath);
+
+    if (entry.isDirectory()) {
+      // Skip node_modules and test directories
+      if (entry.name !== 'node_modules' && !entry.name.includes('.test') && !entry.name.includes('.spec')) {
+        walkDirectory(fullPath, baseDir, files);
+      }
+    } else if (entry.isFile()) {
+      // Skip test files
+      if (!entry.name.includes('.test.') && !entry.name.includes('.spec.')) {
+        try {
+          const content = fs.readFileSync(fullPath, 'utf-8');
+          files.push({
+            path: relativePath,
+            content,
+          });
+        } catch (error) {
+          console.error(`Error reading file ${relativePath}:`, error);
+        }
+      }
+    }
+  }
+}
+
+/**
  * Get all storefront template files that should be pushed to vendor repos
  */
 export async function getStorefrontTemplateFiles(): Promise<Array<{ path: string; content: string }>> {
   const files: Array<{ path: string; content: string }> = [];
-
-  // Patterns for files to include in the template
-  const patterns = [
-    'app/(storefront)/**/*',
-    'components/storefront/**/*',
-    'lib/storefront/**/*', // If exists
-  ];
-
   const projectRoot = process.cwd();
 
-  for (const pattern of patterns) {
-    const matches = await glob(pattern, {
-      cwd: projectRoot,
-      nodir: true,
-      ignore: ['**/*.test.*', '**/*.spec.*', '**/node_modules/**'],
-    });
+  // Directories to include in the template
+  const directories = [
+    'app/(storefront)',
+    'components/storefront',
+    'lib/storefront', // If exists
+  ];
 
-    for (const match of matches) {
-      const fullPath = path.join(projectRoot, match);
-      try {
-        const content = fs.readFileSync(fullPath, 'utf-8');
-        files.push({
-          path: match,
-          content,
-        });
-      } catch (error) {
-        console.error(`Error reading file ${match}:`, error);
-      }
+  for (const dir of directories) {
+    const fullDirPath = path.join(projectRoot, dir);
+
+    // Check if directory exists before walking
+    if (fs.existsSync(fullDirPath)) {
+      console.log(`📁 Walking directory: ${dir}`);
+      walkDirectory(fullDirPath, projectRoot, files);
+      console.log(`✅ Found ${files.length} files so far`);
+    } else {
+      console.log(`⚠️  Directory not found: ${dir}`);
     }
   }
 
+  console.log(`📦 Total template files collected: ${files.length}`);
   return files;
 }
 
@@ -111,7 +134,7 @@ export function createVendorConfigFiles(branding: VendorBranding, vendorId: stri
     path: '.env.local.example',
     content: `# WhaleTools API Configuration
 NEXT_PUBLIC_WHALETOOLS_VENDOR_ID=${vendorId}
-NEXT_PUBLIC_WHALETOOLS_API_URL=https://yachtclub.vip/api
+NEXT_PUBLIC_WHALETOOLS_API_URL=https://whaletools.dev/api
 
 # Site Configuration
 NEXT_PUBLIC_SITE_NAME="${branding.storeName}"
@@ -185,7 +208,7 @@ Visit [WhaleTools Documentation](https://docs.whaletools.vip) or contact support
           'react-dom': '^18.3.0',
           axios: '^1.6.0',
           'lucide-react': '^0.400.0',
-          framer-motion': '^11.0.0',
+          'framer-motion': '^11.0.0',
         },
         devDependencies: {
           '@types/node': '^20',

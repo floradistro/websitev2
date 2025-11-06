@@ -4,6 +4,7 @@ import { useState, useMemo, useRef, useEffect } from "react";
 import { MapPin, ChevronDown, Check } from "lucide-react";
 import Link from "next/link";
 import StorefrontProductCard from "./ProductCard";
+import { whaletoolsAPI } from "@/lib/storefront/api-client";
 
 interface StorefrontShopClientProps {
   vendorId: string;
@@ -29,10 +30,9 @@ function StorefrontShopClient({ vendorId }: StorefrontShopClientProps) {
     const fetchData = async () => {
       try {
         setLoading(true);
-        
-        // Use bulk endpoint - same as Yacht Club
-        const response = await fetch('/api/page-data/products');
-        const result = await response.json();
+
+        // Use WhaleTools API
+        const result = await whaletoolsAPI.getProducts();
         
         if (result.success) {
           const apiProducts = result.data.products || [];

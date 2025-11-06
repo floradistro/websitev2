@@ -11,11 +11,13 @@ import { ProductsList } from './components/ProductsList';
 import { ProductsPagination } from './components/ProductsPagination';
 import { ProductQuickView } from '@/components/vendor/ProductQuickView';
 import { CategoriesManagement } from './components/CategoriesManagement';
+import { InventoryTab } from './components/inventory';
+import { PurchaseOrdersTab } from './components/purchase-orders';
 import { ds, cn } from '@/components/ds';
-import { Package, FolderTree } from 'lucide-react';
+import { Package, FolderTree, Warehouse, FileText } from 'lucide-react';
 import type { Product } from '@/lib/types/product';
 
-type TabType = 'products' | 'categories';
+type TabType = 'products' | 'categories' | 'inventory' | 'purchase-orders';
 
 /**
  * Modern ProductsClient - Clean rewrite with React Query + Categories Management
@@ -63,15 +65,15 @@ export default function ProductsClient() {
         {/* Header */}
         <ProductsHeader totalProducts={total} isLoading={isLoading} />
 
-        {/* Tabs */}
-        <div className={cn("flex gap-2 mb-6 border-b", ds.colors.border.default)} role="tablist">
+        {/* Tabs - Horizontal scroll on mobile */}
+        <div className={cn("flex gap-2 mb-6 border-b overflow-x-auto scrollbar-hide", ds.colors.border.default)} role="tablist">
           <button
             role="tab"
             aria-selected={activeTab === 'products'}
             aria-controls="products-panel"
             onClick={() => setActiveTab('products')}
             className={cn(
-              "flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-3 border-b-2 transition-colors",
+              "flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-3 border-b-2 transition-colors whitespace-nowrap",
               ds.typography.size.xs,
               ds.typography.transform.uppercase,
               ds.typography.tracking.wide,
@@ -94,7 +96,7 @@ export default function ProductsClient() {
             aria-controls="categories-panel"
             onClick={() => setActiveTab('categories')}
             className={cn(
-              "flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-3 border-b-2 transition-colors",
+              "flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-3 border-b-2 transition-colors whitespace-nowrap",
               ds.typography.size.xs,
               ds.typography.transform.uppercase,
               ds.typography.tracking.wide,
@@ -109,6 +111,46 @@ export default function ProductsClient() {
             <span className={cn("px-1.5 sm:px-2 py-0.5 rounded text-[8px]", ds.colors.bg.hover)}>
               {categoriesData?.length || 0}
             </span>
+          </button>
+
+          <button
+            role="tab"
+            aria-selected={activeTab === 'inventory'}
+            aria-controls="inventory-panel"
+            onClick={() => setActiveTab('inventory')}
+            className={cn(
+              "flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-3 border-b-2 transition-colors whitespace-nowrap",
+              ds.typography.size.xs,
+              ds.typography.transform.uppercase,
+              ds.typography.tracking.wide,
+              ds.typography.weight.light,
+              activeTab === 'inventory'
+                ? 'border-white text-white'
+                : cn(ds.colors.text.quaternary, 'hover:text-white/60', 'border-transparent')
+            )}
+          >
+            <Warehouse size={14} strokeWidth={1} className="opacity-60" />
+            Inventory
+          </button>
+
+          <button
+            role="tab"
+            aria-selected={activeTab === 'purchase-orders'}
+            aria-controls="purchase-orders-panel"
+            onClick={() => setActiveTab('purchase-orders')}
+            className={cn(
+              "flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-3 border-b-2 transition-colors whitespace-nowrap",
+              ds.typography.size.xs,
+              ds.typography.transform.uppercase,
+              ds.typography.tracking.wide,
+              ds.typography.weight.light,
+              activeTab === 'purchase-orders'
+                ? 'border-white text-white'
+                : cn(ds.colors.text.quaternary, 'hover:text-white/60', 'border-transparent')
+            )}
+          >
+            <FileText size={14} strokeWidth={1} className="opacity-60" />
+            Purchase Orders
           </button>
         </div>
 
@@ -152,6 +194,20 @@ export default function ProductsClient() {
         {activeTab === 'categories' && (
           <div id="categories-panel" role="tabpanel" aria-labelledby="categories-tab">
             <CategoriesManagement vendorId={vendor?.id || ''} />
+          </div>
+        )}
+
+        {/* Inventory Tab */}
+        {activeTab === 'inventory' && (
+          <div id="inventory-panel" role="tabpanel" aria-labelledby="inventory-tab">
+            <InventoryTab />
+          </div>
+        )}
+
+        {/* Purchase Orders Tab */}
+        {activeTab === 'purchase-orders' && (
+          <div id="purchase-orders-panel" role="tabpanel" aria-labelledby="purchase-orders-tab">
+            <PurchaseOrdersTab />
           </div>
         )}
 

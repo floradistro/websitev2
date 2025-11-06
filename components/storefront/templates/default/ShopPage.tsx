@@ -26,10 +26,10 @@ export default function ShopPage({ vendorId }: ShopPageProps) {
     const fetchData = async () => {
       try {
         setLoading(true);
-        
-        const response = await fetch('/api/page-data/products');
-        const result = await response.json();
-        
+
+        const { whaletoolsAPI } = await import('@/lib/storefront/api-client');
+        const result = await whaletoolsAPI.getProducts();
+
         if (result.success) {
           const apiProducts = result.data.products || [];
           const apiVendors = result.data.vendors || [];

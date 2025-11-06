@@ -18,7 +18,10 @@ import ProductReviews from "@/components/ProductReviews";
 import CategorySection from "@/components/CategorySection";
 // import ProductsCarousel from "@/components/ProductsCarousel";
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
+const fetcher = async (url: string) => {
+  const { whaletoolsAPI } = await import('@/lib/storefront/api-client');
+  return whaletoolsAPI.getProducts();
+};
 
 interface StorefrontProductDetailProps {
   productSlug: string;

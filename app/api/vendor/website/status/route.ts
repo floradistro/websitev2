@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
     // Get vendor info
     const { data: vendor, error } = await supabase
       .from('vendors')
-      .select('github_username, github_repo_name, github_repo_url')
+      .select('github_username, github_repo_name, github_repo_url, deployment_status, last_deployment_at, vercel_deployment_url')
       .eq('id', vendorId)
       .single();
 
@@ -40,6 +40,9 @@ export async function GET(request: NextRequest) {
       hasRepo: !!vendor?.github_repo_name,
       repoName: vendor?.github_repo_name,
       repoUrl: vendor?.github_repo_url,
+      deploymentStatus: vendor?.deployment_status,
+      lastDeploymentAt: vendor?.last_deployment_at,
+      deploymentUrl: vendor?.vercel_deployment_url,
     });
   } catch (error) {
     console.error('Error fetching website status:', error);

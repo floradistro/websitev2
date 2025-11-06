@@ -34,8 +34,7 @@ export async function POST(request: NextRequest) {
         github_username,
         github_repo_name,
         logo_url,
-        brand_colors,
-        color_palette
+        brand_colors
       `)
       .eq('id', vendorId)
       .single();
@@ -75,7 +74,7 @@ export async function POST(request: NextRequest) {
       storeName: vendor.store_name,
       slug: vendor.slug,
       logoUrl: vendor.logo_url,
-      brandColors: vendor.brand_colors || vendor.color_palette,
+      brandColors: vendor.brand_colors,
       description: `Premium cannabis products from ${vendor.store_name}`,
     };
 
