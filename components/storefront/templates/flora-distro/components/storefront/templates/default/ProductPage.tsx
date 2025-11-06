@@ -5,7 +5,7 @@
 
 "use client";
 
-import { StorefrontProductDetail } from '@/components/storefront/StorefrontProductDetail';
+import { StorefrontProductDetail } from '@/components/storefront/templates/flora-distro/components/storefront/StorefrontProductDetail';
 
 interface ProductPageProps {
   productSlug: string;

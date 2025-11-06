@@ -79,7 +79,7 @@ export default async function StorefrontLayout({
   // Check if coming soon mode is enabled (blocks ENTIRE site except preview)
   if (comingSoonHeader === 'true') {
     console.log('[Storefront Layout] Rendering coming soon page for:', vendor.store_name);
-    const { ComingSoonPage } = await import('@/components/storefront/ComingSoonPage');
+    const { ComingSoonPage } = await import('@/components/storefront/templates/flora-distro/components/storefront/ComingSoonPage');
     return (
       <ComingSoonPage
         vendorName={vendor.store_name || vendor.slug}

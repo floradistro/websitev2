@@ -4,7 +4,7 @@
  */
 
 import { getServiceSupabase } from '@/lib/supabase/client';
-import { ComponentBasedPageRenderer } from '@/components/storefront/ComponentBasedPageRenderer';
+import { ComponentBasedPageRenderer } from '@/components/storefront/templates/flora-distro/components/storefront/ComponentBasedPageRenderer';
 import { redirect } from 'next/navigation';
 
 interface PageProps {

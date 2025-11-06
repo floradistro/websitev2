@@ -2,7 +2,7 @@ import { getVendorFromHeaders, getVendorStorefront } from '@/lib/storefront/get-
 import { getServiceSupabase } from '@/lib/supabase/client';
 import { notFound } from 'next/navigation';
 import { getVendorSectionsWithInit } from '@/lib/storefront/init-vendor-content';
-import { ComponentBasedPageRenderer } from '@/components/storefront/ComponentBasedPageRenderer';
+import { ComponentBasedPageRenderer } from '@/components/storefront/templates/flora-distro/components/storefront/ComponentBasedPageRenderer';
 
 export default async function StorefrontReturnsPage({ searchParams }: { searchParams: Promise<{ vendor?: string; preview?: string }> }) {
   const params = await searchParams;

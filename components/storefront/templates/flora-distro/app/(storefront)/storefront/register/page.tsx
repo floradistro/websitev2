@@ -2,7 +2,7 @@ import { headers } from 'next/headers';
 import { getVendorFromHeaders, getVendorStorefront } from '@/lib/storefront/get-vendor';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import StorefrontRegisterClient from '@/components/storefront/StorefrontRegisterClient';
+import StorefrontRegisterClient from '@/components/storefront/templates/flora-distro/components/storefront/StorefrontRegisterClient';
 
 export default async function StorefrontRegisterPage() {
   const vendorId = await getVendorFromHeaders();

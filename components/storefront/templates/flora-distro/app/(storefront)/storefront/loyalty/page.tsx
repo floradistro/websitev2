@@ -1,7 +1,7 @@
 import { headers } from 'next/headers';
 import { getVendorFromHeaders, getVendorStorefront } from '@/lib/storefront/get-vendor';
 import { notFound } from 'next/navigation';
-import StorefrontLoyaltyClient from '@/components/storefront/StorefrontLoyaltyClient';
+import StorefrontLoyaltyClient from '@/components/storefront/templates/flora-distro/components/storefront/StorefrontLoyaltyClient';
 
 export const dynamic = 'force-dynamic';
 
