@@ -159,30 +159,15 @@ export async function POST(request: NextRequest) {
           // const fileContent = await getFileContent(vendorAccessToken, owner, repo, filepath)
 
           // For now, return error - files should be in database
-          const fileContent: string | null = null
-
-          if (fileContent) {
-            toolResult = {
-              type: 'tool_result',
-              tool_use_id: toolUseBlock.id,
-              content: JSON.stringify({
-                filepath,
-                content: fileContent,
-                lines: fileContent.split('\n').length
-              })
-            }
-            console.log(`    ✓ Read ${fileContent.split('\n').length} lines`)
-          } else {
-            toolResult = {
-              type: 'tool_result',
-              tool_use_id: toolUseBlock.id,
-              content: JSON.stringify({
-                filepath,
-                error: 'File not found or could not be read'
-              })
-            }
-            console.log(`    ✗ File not found`)
+          toolResult = {
+            type: 'tool_result',
+            tool_use_id: toolUseBlock.id,
+            content: JSON.stringify({
+              filepath,
+              error: 'GitHub integration disabled - files must be in database'
+            })
           }
+          console.log(`    ✗ GitHub file reading not available`)
         }
 
         if (toolResult) {
