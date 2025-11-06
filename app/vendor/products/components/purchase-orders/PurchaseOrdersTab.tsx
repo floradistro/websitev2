@@ -67,15 +67,14 @@ export function PurchaseOrdersTab() {
       if (search) {
         const searchLower = search.toLowerCase();
         const poNumber = po.po_number?.toLowerCase() || '';
-        const partner = activeType === 'inbound'
-          ? po.supplier?.external_name?.toLowerCase() || ''
-          : po.wholesale_customer?.external_company_name?.toLowerCase() || '';
+        // Only inbound orders, so only check supplier
+        const partner = po.supplier?.external_name?.toLowerCase() || '';
         return poNumber.includes(searchLower) || partner.includes(searchLower);
       }
 
       return true;
     });
-  }, [orders, statusFilter, search, activeType]);
+  }, [orders, statusFilter, search]);
 
   // Calculate stats
   const stats = useMemo(() => {
