@@ -77,7 +77,7 @@ export const navSections: NavSection[] = [
     ],
   },
 
-  // COMMERCE - Orders, POS, Customers, Payouts
+  // COMMERCE - Orders, POS, Customers, Payouts, Purchase Orders
   {
     label: 'Commerce',
     icon: ShoppingBag,
@@ -87,9 +87,16 @@ export const navSections: NavSection[] = [
         href: '/vendor/orders',
         icon: ShoppingBag,
         label: 'Orders',
-        description: 'All transactions',
+        description: 'Customer orders',
         appKey: 'orders',
         isCore: true,
+      },
+      {
+        href: '/vendor/purchase-orders',
+        icon: Boxes,
+        label: 'Purchase Orders',
+        description: 'B2B & supplier orders',
+        appKey: 'products',
       },
       {
         href: '/pos/register',
