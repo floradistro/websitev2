@@ -153,9 +153,13 @@ export async function POST(request: NextRequest) {
           const { filepath } = toolUseBlock.input as { filepath: string }
           console.log(`    Reading: ${filepath}`)
 
-          const { getFileContent } = await import('@/lib/deployment/github')
-          const repoName = app.github_repo.split('/')[1]
-          const fileContent = await getFileContent(repoName, filepath)
+          // TODO: GitHub integration needs vendor access token
+          // const { getFileContent } = await import('@/lib/deployment/github')
+          // const [owner, repo] = app.github_repo.split('/')
+          // const fileContent = await getFileContent(vendorAccessToken, owner, repo, filepath)
+
+          // For now, return error - files should be in database
+          const fileContent = null
 
           if (fileContent) {
             toolResult = {
@@ -255,29 +259,32 @@ export async function POST(request: NextRequest) {
     }
 
     // STEP 2: Commit to GitHub in background (for production deployment)
-    if (app.github_repo && codeBlocks.length > 0) {
-      // Don't await - let this happen in background
-      (async () => {
-        try {
-          const { commitMultipleFiles } = await import('@/lib/deployment/github')
-          const repoName = app.github_repo.split('/')[1]
-
-          await commitMultipleFiles(
-            repoName,
-            codeBlocks.map(block => ({
-              path: block.filename,
-              content: block.code
-            })),
-            `AI: ${instruction.slice(0, 80)}`
-          )
-
-          console.log(`✅ Committed to GitHub: ${filesChanged.join(', ')}`)
-
-        } catch (gitError: any) {
-          console.error('❌ Git error:', gitError)
-        }
-      })()
-    }
+    // TODO: GitHub integration needs vendor access token
+    // if (app.github_repo && codeBlocks.length > 0) {
+    //   // Don't await - let this happen in background
+    //   (async () => {
+    //     try {
+    //       const { commitMultipleFiles } = await import('@/lib/deployment/github')
+    //       const [owner, repo] = app.github_repo.split('/')
+    //
+    //       await commitMultipleFiles(
+    //         vendorAccessToken,
+    //         owner,
+    //         repo,
+    //         codeBlocks.map(block => ({
+    //           path: block.filename,
+    //           content: block.code
+    //         })),
+    //         `AI: ${instruction.slice(0, 80)}`
+    //       )
+    //
+    //       console.log(`✅ Committed to GitHub: ${filesChanged.join(', ')}`)
+    //
+    //     } catch (gitError: any) {
+    //       console.error('❌ Git error:', gitError)
+    //     }
+    //   })()
+    // }
 
     // Log AI usage
     await supabase.from('vendor_ai_usage').insert({
