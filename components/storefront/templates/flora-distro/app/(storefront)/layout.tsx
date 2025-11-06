@@ -1,7 +1,7 @@
 import { headers } from 'next/headers';
 import { getVendorFromHeaders, getVendorStorefront } from '@/lib/storefront/get-vendor';
-import { StorefrontThemeProvider } from '@/components/storefront/ThemeProvider';
-import { PreservePreviewMode } from '@/components/storefront/PreservePreviewMode';
+import { StorefrontThemeProvider } from '@/components/storefront/templates/flora-distro/components/storefront/ThemeProvider';
+import { PreservePreviewMode } from '@/components/storefront/templates/flora-distro/components/storefront/PreservePreviewMode';
 import { CartProvider } from "@/context/CartContext";
 import { AuthProvider } from "@/context/AuthContext";
 import { WishlistProvider } from "@/context/WishlistContext";
@@ -9,7 +9,7 @@ import LoadingBar from "@/components/LoadingBar";
 import NotificationToast from "@/components/NotificationToast";
 import { notFound } from 'next/navigation';
 import { getServiceSupabase } from '@/lib/supabase/client';
-import { ComponentBasedPageRenderer } from '@/components/storefront/ComponentBasedPageRenderer';
+import { ComponentBasedPageRenderer } from '@/components/storefront/templates/flora-distro/components/storefront/ComponentBasedPageRenderer';
 import '@/app/globals.css';
 import './storefront.css';
 import Script from 'next/script';
