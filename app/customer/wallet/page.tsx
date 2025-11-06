@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { createClient } from '@supabase/supabase-js';
 import { Wallet, Download, Smartphone, CheckCircle2, AlertCircle } from 'lucide-react';
@@ -10,7 +10,7 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
-export default function CustomerWalletPage() {
+function CustomerWalletContent() {
   const searchParams = useSearchParams();
   const vendorSlug = searchParams.get('vendor');
   const customerId = searchParams.get('customer');
@@ -272,5 +272,20 @@ export default function CustomerWalletPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function CustomerWalletPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-screen bg-black">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-8 h-8 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+          <p className="text-xs text-white/40">Loading...</p>
+        </div>
+      </div>
+    }>
+      <CustomerWalletContent />
+    </Suspense>
   );
 }

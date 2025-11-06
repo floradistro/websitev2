@@ -55,3 +55,6 @@ backups/*.sql
 *.backup
 
 playwright/.auth/
+
+# Vendor storefront templates (synced from vendor GitHub repos)
+components/storefront/templates/*/

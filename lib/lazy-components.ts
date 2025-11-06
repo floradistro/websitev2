@@ -27,14 +27,3 @@ export const SearchModal = dynamic(() => import('@/components/SearchModal'), {
   loading: () => null,
 });
 
-// 3D/Canvas components - load on demand
-export const HeroAnimation = dynamic(() => import('@/components/storefront/HeroAnimation'), {
-  ssr: false,
-  loading: () => null,
-});
-
-export const FlowerAnimation = dynamic(() => import('@/components/storefront/FlowerAnimation'), {
-  ssr: false,
-  loading: () => null,
-});
-
