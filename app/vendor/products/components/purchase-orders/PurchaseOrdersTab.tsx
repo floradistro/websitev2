@@ -94,10 +94,10 @@ export function PurchaseOrdersTab() {
         <Package size={16} className={cn(ds.colors.text.quaternary, "mt-0.5")} strokeWidth={1} />
         <div>
           <p className={cn(ds.typography.size.xs, "text-white/80 mb-1")}>
-            Inbound purchase orders for buying inventory from suppliers
+            Purchase orders for buying inventory from suppliers
           </p>
           <p className={cn(ds.typography.size.xs, ds.colors.text.quaternary)}>
-            For wholesale sales (outbound), create orders for your wholesale customers separately
+            For B2B sales, manage wholesale customers in Commerce → Wholesale
           </p>
         </div>
       </div>

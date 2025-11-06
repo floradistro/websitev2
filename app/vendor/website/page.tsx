@@ -9,6 +9,7 @@ import { useState, useEffect } from 'react';
 import { ExternalLink, Github, Code2, Globe, Rocket, Clock, CheckCircle, XCircle } from 'lucide-react';
 import { ds, cn } from '@/components/ds';
 import { Button } from '@/components/ui/Button';
+import { DomainSetup } from './components/DomainSetup';
 import axios from 'axios';
 
 interface WebsiteStatus {
@@ -21,6 +22,8 @@ interface WebsiteStatus {
   deploymentUrl?: string;
   lastDeploymentAt?: string;
   vercelProjectId?: string;
+  hasCustomDomain?: boolean;
+  customDomain?: string;
 }
 
 interface Deployment {
@@ -155,21 +158,36 @@ export default function VendorWebsitePage() {
     setDeploying(true);
 
     try {
-      const { data } = await axios.post('/api/vendor/website/sync-and-deploy', {}, {
-        withCredentials: true,
-      });
+      // First check if vendor has a Vercel project
+      if (!status?.vercelProjectId) {
+        // No project yet - create one
+        console.log('📦 No Vercel project - creating one...');
+        const { data } = await axios.post('/api/vendor/website/create-vercel-project', {}, {
+          withCredentials: true,
+        });
 
-      if (data.success) {
-        alert(data.message + '\n\nView live deployment logs at:\n' + data.vercelUrl);
+        if (data.success) {
+          alert(
+            `🎉 Storefront Created!\n\n` +
+            `Your site is deploying now...\n` +
+            `URL: ${data.project.url}\n\n` +
+            (data.customDomain ? `Custom domain: ${data.customDomain}\n` : '') +
+            `Push to your GitHub repo to update!`
+          );
 
-        // Refresh deployments to show latest
-        setTimeout(() => fetchDeployments(), 2000);
+          setTimeout(() => {
+            fetchStatus();
+            fetchDeployments();
+          }, 2000);
+        }
       } else {
-        alert(`Sync failed: ${data.error}`);
+        // Project exists - just trigger a redeploy
+        alert('✨ Your Vercel project already exists!\n\nPush to your GitHub repo to deploy updates.');
       }
     } catch (error: any) {
-      console.error('Error syncing:', error);
-      alert(`Sync failed: ${error.response?.data?.error || error.message || 'Unknown error'}`);
+      console.error('Error deploying:', error);
+      const errorMsg = error.response?.data?.error || error.message || 'Unknown error';
+      alert(`Deploy failed: ${errorMsg}`);
     } finally {
       setDeploying(false);
     }
@@ -345,10 +363,10 @@ export default function VendorWebsitePage() {
 
               <Button
                 onClick={handleDeploy}
-                disabled={deploying || status?.deploymentStatus === 'building'}
+                disabled={deploying}
                 size="sm"
               >
-                {deploying || status?.deploymentStatus === 'building' ? 'Deploying...' : 'Deploy Now'}
+                {deploying ? 'Deploying...' : status?.vercelProjectId ? 'Redeploy' : 'Deploy Now'}
               </Button>
             </div>
 
@@ -405,6 +423,37 @@ export default function VendorWebsitePage() {
                 )}
               </div>
             )}
+          </div>
+        )}
+
+        {/* Domain Setup - Only show if they have a Vercel project but no verified custom domain */}
+        {status?.hasGithub && status.hasRepo && status?.vercelProjectId && !status?.hasCustomDomain && (
+          <div className="mb-6">
+            <DomainSetup onDomainVerified={() => fetchStatus()} />
+          </div>
+        )}
+
+        {/* Show Custom Domain if configured */}
+        {status?.hasCustomDomain && status?.customDomain && (
+          <div className={cn("rounded-2xl p-6 mb-6 border-2 border-green-500/20", ds.components.card)}>
+            <div className="flex items-center gap-3">
+              <Globe className="w-6 h-6 text-green-500" />
+              <div className="flex-1">
+                <h3 className={cn("font-semibold", ds.colors.text.primary)}>
+                  Custom Domain Active
+                </h3>
+                <a
+                  href={`https://${status.customDomain}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={cn("text-green-400 hover:underline flex items-center gap-2 mt-1")}
+                >
+                  {status.customDomain}
+                  <ExternalLink className="w-4 h-4" />
+                </a>
+              </div>
+              <CheckCircle className="w-6 h-6 text-green-500" />
+            </div>
           </div>
         )}
 

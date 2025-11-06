@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
     // Get vendor info
     const { data: vendor, error } = await supabase
       .from('vendors')
-      .select('github_username, github_repo_name, github_repo_url, deployment_status, last_deployment_at, vercel_deployment_url')
+      .select('github_username, github_repo_name, github_repo_url, deployment_status, last_deployment_at, vercel_deployment_url, vercel_project_id')
       .eq('id', vendorId)
       .single();
 
@@ -33,6 +33,16 @@ export async function GET(request: NextRequest) {
       console.error('Error fetching vendor from database:', error);
       return NextResponse.json({ error: 'Vendor not found' }, { status: 404 });
     }
+
+    // Check for custom domains
+    const { data: domains } = await supabase
+      .from('vendor_domains')
+      .select('domain, verified, is_primary')
+      .eq('vendor_id', vendorId)
+      .eq('verified', true)
+      .eq('is_active', true);
+
+    const primaryDomain = domains?.find(d => d.is_primary) || domains?.[0];
 
     return NextResponse.json({
       hasGithub: !!vendor?.github_username,
@@ -43,6 +53,9 @@ export async function GET(request: NextRequest) {
       deploymentStatus: vendor?.deployment_status,
       lastDeploymentAt: vendor?.last_deployment_at,
       deploymentUrl: vendor?.vercel_deployment_url,
+      vercelProjectId: vendor?.vercel_project_id,
+      hasCustomDomain: !!primaryDomain,
+      customDomain: primaryDomain?.domain,
     });
   } catch (error) {
     console.error('Error fetching website status:', error);

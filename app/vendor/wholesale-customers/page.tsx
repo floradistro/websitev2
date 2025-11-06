@@ -49,12 +49,12 @@ export default function WholesaleCustomersPage() {
     billing_address_line1: '',
     billing_city: '',
     billing_state: '',
-    billing_zip: '',
+    billing_postal_code: '',
     billing_country: 'US',
     shipping_address_line1: '',
     shipping_city: '',
     shipping_state: '',
-    shipping_zip: '',
+    shipping_postal_code: '',
     shipping_country: 'US',
     pricing_tier: 'wholesale',
     discount_percent: 0,
@@ -92,12 +92,12 @@ export default function WholesaleCustomersPage() {
       billing_address_line1: '',
       billing_city: '',
       billing_state: '',
-      billing_zip: '',
+      billing_postal_code: '',
       billing_country: 'US',
       shipping_address_line1: '',
       shipping_city: '',
       shipping_state: '',
-      shipping_zip: '',
+      shipping_postal_code: '',
       shipping_country: 'US',
       pricing_tier: 'wholesale',
       discount_percent: 0,
@@ -119,12 +119,12 @@ export default function WholesaleCustomersPage() {
       billing_address_line1: '',
       billing_city: customer.billing_city || '',
       billing_state: customer.billing_state || '',
-      billing_zip: customer.billing_zip || '',
+      billing_postal_code: customer.billing_zip || '',
       billing_country: 'US',
       shipping_address_line1: '',
       shipping_city: '',
       shipping_state: '',
-      shipping_zip: '',
+      shipping_postal_code: '',
       shipping_country: 'US',
       pricing_tier: customer.pricing_tier || 'wholesale',
       discount_percent: customer.discount_percent || 0,
@@ -546,8 +546,8 @@ export default function WholesaleCustomersPage() {
                     <input
                       type="text"
                       placeholder="ZIP"
-                      value={formData.billing_zip}
-                      onChange={(e) => setFormData({...formData, billing_zip: e.target.value})}
+                      value={formData.billing_postal_code}
+                      onChange={(e) => setFormData({...formData, billing_postal_code: e.target.value})}
                       className="w-full bg-black border border-white/10 text-white px-4 py-3 rounded-lg focus:outline-none focus:border-white/20 transition-colors"
                     />
                   </div>

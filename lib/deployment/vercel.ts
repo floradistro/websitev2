@@ -261,3 +261,107 @@ export async function getRecentDeployments(projectId: string, limit: number = 10
     throw new Error(`Failed to get deployments: ${error.message}`)
   }
 }
+
+/**
+ * Remove a domain from a Vercel project
+ */
+export async function removeDomainFromProject(projectId: string, domain: string) {
+  const vercelToken = process.env.VERCEL_TOKEN
+
+  if (!vercelToken) {
+    throw new Error('VERCEL_TOKEN environment variable is not set')
+  }
+
+  try {
+    const response = await fetch(
+      `https://api.vercel.com/v9/projects/${projectId}/domains/${domain}`,
+      {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${vercelToken}`
+        }
+      }
+    )
+
+    if (!response.ok) {
+      const error = await response.text()
+      // Don't throw if domain doesn't exist - that's what we want anyway
+      if (!error.includes('not found') && !error.includes('does not exist')) {
+        throw new Error(`Vercel API error: ${error}`)
+      }
+    }
+
+    console.log(`Removed domain ${domain} from project ${projectId}`)
+    return true
+  } catch (error: any) {
+    console.error('Error removing domain:', error)
+    throw new Error(`Failed to remove domain: ${error.message}`)
+  }
+}
+
+/**
+ * Check which project owns a domain (if any)
+ * Returns the project ID or null
+ */
+export async function checkDomainOwnership(domain: string): Promise<string | null> {
+  const vercelToken = process.env.VERCEL_TOKEN
+
+  if (!vercelToken) {
+    throw new Error('VERCEL_TOKEN environment variable is not set')
+  }
+
+  try {
+    const response = await fetch(
+      `https://api.vercel.com/v9/projects?limit=100`,
+      {
+        headers: {
+          'Authorization': `Bearer ${vercelToken}`
+        }
+      }
+    )
+
+    if (!response.ok) {
+      const error = await response.text()
+      throw new Error(`Vercel API error: ${error}`)
+    }
+
+    const data = await response.json()
+    const projects = data.projects || []
+
+    // Check each project for the domain
+    for (const project of projects) {
+      if (project.alias?.includes(domain)) {
+        console.log(`Domain ${domain} found on project ${project.id}`)
+        return project.id
+      }
+    }
+
+    return null
+  } catch (error: any) {
+    console.error('Error checking domain ownership:', error)
+    return null
+  }
+}
+
+/**
+ * Transfer domain from one project to another
+ * Removes from old project and adds to new project atomically
+ */
+export async function transferDomain(
+  domain: string,
+  fromProjectId: string,
+  toProjectId: string
+): Promise<void> {
+  console.log(`🔄 Transferring ${domain} from ${fromProjectId} to ${toProjectId}`)
+
+  // Remove from old project
+  await removeDomainFromProject(fromProjectId, domain)
+
+  // Small delay to let Vercel process the removal
+  await new Promise(resolve => setTimeout(resolve, 500))
+
+  // Add to new project
+  await addCustomDomain(toProjectId, domain)
+
+  console.log(`✅ Successfully transferred ${domain}`)
+}

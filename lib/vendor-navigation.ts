@@ -77,7 +77,7 @@ export const navSections: NavSection[] = [
     ],
   },
 
-  // COMMERCE - Orders, POS, Customers, Payouts, Purchase Orders
+  // COMMERCE - Orders, POS, Customers, Wholesale, Payouts
   {
     label: 'Commerce',
     icon: ShoppingBag,
@@ -90,13 +90,6 @@ export const navSections: NavSection[] = [
         description: 'Customer orders',
         appKey: 'orders',
         isCore: true,
-      },
-      {
-        href: '/vendor/purchase-orders',
-        icon: Boxes,
-        label: 'Purchase Orders',
-        description: 'B2B & supplier orders',
-        appKey: 'products',
       },
       {
         href: '/pos/register',
@@ -112,6 +105,13 @@ export const navSections: NavSection[] = [
         label: 'Customers',
         description: 'Customer database',
         appKey: 'customers',
+      },
+      {
+        href: '/vendor/wholesale-customers',
+        icon: Boxes,
+        label: 'Wholesale',
+        description: 'B2B customers',
+        appKey: 'products',
       },
       {
         href: '/vendor/payouts',
@@ -210,7 +210,6 @@ export const secondaryFeatures = [
   { href: '/vendor/payment-processors', parent: '/vendor/settings', label: 'Payment Processors' },
   { href: '/vendor/domains', parent: '/vendor/branding', label: 'Custom Domains' },
   { href: '/vendor/suppliers', parent: '/vendor/products', label: 'Suppliers' },
-  { href: '/vendor/wholesale-customers', parent: '/vendor/products', label: 'Wholesale Customers' },
   { href: '/vendor/reviews', parent: '/vendor/products', label: 'Reviews' },
   { href: '/vendor/component-editor', parent: '/vendor/branding', label: 'Visual Editor' },
 ];
