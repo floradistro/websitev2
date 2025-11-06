@@ -159,7 +159,7 @@ export async function POST(request: NextRequest) {
           // const fileContent = await getFileContent(vendorAccessToken, owner, repo, filepath)
 
           // For now, return error - files should be in database
-          const fileContent = null
+          const fileContent: string | null = null
 
           if (fileContent) {
             toolResult = {
