@@ -158,22 +158,38 @@ export function AppAuthProvider({ children }: { children: React.ReactNode }) {
         credentials: 'include' // Include cookies in request
       });
 
-      let data = await response.json();
+      console.log('📡 Login response status:', response.status, response.statusText);
+
+      let data;
+      try {
+        data = await response.json();
+      } catch (parseError) {
+        console.error('❌ Failed to parse login response:', parseError);
+        throw new Error('Invalid response from server');
+      }
 
       console.log('📥 Login response received:', {
+        status: response.status,
         success: data.success,
         hasUser: !!data.user,
         hasVendor: !!data.user?.vendor,
         locationsCount: data.locations?.length || 0,
         appsCount: data.apps?.length || 0,
         role: data.user?.role,
-        error: data.error
+        error: data.error,
+        message: data.message
       });
 
-      // No more legacy fallback - new unified endpoint only
+      // Check for HTTP error
+      if (!response.ok) {
+        console.error('❌ HTTP Error:', response.status, data.error);
+        throw new Error(data.error || `Login failed with status ${response.status}`);
+      }
+
+      // Check for unsuccessful response
       if (!data.success || !data.user) {
-        console.error('Login failed:', data.error || 'No user data');
-        return false;
+        console.error('❌ Login failed:', data.error || 'No user data');
+        throw new Error(data.error || 'Login failed. Please check your credentials.');
       }
 
       // Store user data
