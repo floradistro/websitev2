@@ -1,17 +1,6 @@
-import { Package, Calendar, Building2, Users, PackageCheck } from 'lucide-react';
+import { Package, Calendar, Building2, Users, PackageCheck, MapPin } from 'lucide-react';
 import { ds, cn, Button } from '@/components/ds';
-
-interface PurchaseOrder {
-  id: string;
-  po_number: string;
-  po_type: 'inbound' | 'outbound';
-  status: string;
-  total: number;
-  created_at: string;
-  supplier?: { external_name: string };
-  wholesale_customer?: { external_company_name: string };
-  items?: any[];
-}
+import type { PurchaseOrder } from './types';
 
 interface POListProps {
   orders: PurchaseOrder[];
@@ -48,10 +37,15 @@ export function POList({ orders, isLoading, type, onReceive }: POListProps) {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'fulfilled':
       case 'received':
         return 'text-green-400';
-      case 'draft':
+      case 'ordered':
+        return 'text-blue-400';
+      case 'confirmed':
+        return 'text-cyan-400';
+      case 'shipped':
+        return 'text-purple-400';
+      case 'receiving':
         return 'text-yellow-400';
       case 'cancelled':
         return 'text-red-400';
@@ -85,10 +79,12 @@ export function POList({ orders, isLoading, type, onReceive }: POListProps) {
               </div>
 
               <div className={cn("flex items-center gap-3", ds.typography.size.xs, ds.colors.text.tertiary, "flex-wrap")}>
-                <span className="flex items-center gap-1">
-                  <Calendar size={10} />
-                  {new Date(po.created_at).toLocaleDateString()}
-                </span>
+                {po.created_at && (
+                  <span className="flex items-center gap-1">
+                    <Calendar size={10} />
+                    {new Date(po.created_at).toLocaleDateString()}
+                  </span>
+                )}
 
                 {type === 'inbound' && po.supplier && (
                   <span className="flex items-center gap-1">
@@ -101,6 +97,13 @@ export function POList({ orders, isLoading, type, onReceive }: POListProps) {
                   <span className="flex items-center gap-1">
                     <Users size={10} />
                     {po.wholesale_customer.external_company_name}
+                  </span>
+                )}
+
+                {po.location && (
+                  <span className="flex items-center gap-1">
+                    <MapPin size={10} />
+                    {po.location.name}
                   </span>
                 )}
 
@@ -121,17 +124,17 @@ export function POList({ orders, isLoading, type, onReceive }: POListProps) {
                 </div>
               </div>
 
-              {/* Receive Button for inbound POs */}
+              {/* Action Button - Only "Receive Items" */}
               {type === 'inbound' &&
                onReceive &&
-               ['confirmed', 'in_transit', 'partial'].includes(po.status) && (
+               ['ordered', 'confirmed', 'shipped', 'receiving'].includes(po.status) && (
                 <Button
                   variant="primary"
                   size="xs"
                   onClick={() => onReceive(po)}
                 >
                   <PackageCheck size={12} />
-                  Receive
+                  {po.status === 'receiving' ? 'Continue Receiving' : 'Receive Items'}
                 </Button>
               )}
             </div>

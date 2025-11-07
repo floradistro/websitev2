@@ -48,6 +48,7 @@ function TVDisplayContent() {
   const [groupMember, setGroupMember] = useState<any>(null);
   // REMOVED: vendorConfigs - prices are now embedded in products via pricing_data
   const [isPortrait, setIsPortrait] = useState(false);
+  const [viewportWidth, setViewportWidth] = useState(0);
 
   // REMOVED: configMap - no longer needed, prices are embedded in products.pricing_data
 
@@ -87,13 +88,15 @@ function TVDisplayContent() {
   };
 
   /**
-   * Orientation Detection
+   * Orientation & Viewport Detection
    */
   useEffect(() => {
     const checkOrientation = () => {
       const portrait = window.innerHeight > window.innerWidth;
+      const width = window.innerWidth;
       setIsPortrait(portrait);
-      console.log(`📱 Orientation: ${portrait ? 'Portrait' : 'Landscape'} (${window.innerWidth}x${window.innerHeight})`);
+      setViewportWidth(width);
+      console.log(`📱 Orientation: ${portrait ? 'Portrait' : 'Landscape'} (${width}x${window.innerHeight})`);
     };
 
     // Check on mount
@@ -391,7 +394,14 @@ function TVDisplayContent() {
       console.log('📦 Loading products for vendor:', vendorId);
 
       // Load promotions first
-      const promosRes = await fetch(`/api/vendor/promotions?vendor_id=${vendorId}`);
+      // CRITICAL: Disable caching - TV menus must be LIVE
+      const promosRes = await fetch(`/api/vendor/promotions?vendor_id=${vendorId}&_t=${Date.now()}`, {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache'
+        }
+      });
       const promosData = await promosRes.json();
       const activePromotions = promosData.success ? (promosData.promotions || []) : [];
       setPromotions(activePromotions);
@@ -399,7 +409,14 @@ function TVDisplayContent() {
 
       // Load products via API (bypasses RLS) - filtered by location inventory
       console.log('🔍 Fetching products for vendor:', vendorId, 'location:', locationId);
-      const productsResponse = await fetch(`/api/tv-display/products?vendor_id=${vendorId}&location_id=${locationId}`);
+      // CRITICAL: Disable caching - TV menus must be LIVE and reflect inventory instantly
+      const productsResponse = await fetch(`/api/tv-display/products?vendor_id=${vendorId}&location_id=${locationId}&_t=${Date.now()}`, {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache'
+        }
+      });
       const productsData = await productsResponse.json();
 
       if (!productsData.success) {
@@ -568,6 +585,29 @@ function TVDisplayContent() {
   useEffect(() => {
     loadMenuAndProducts();
   }, [loadMenuAndProducts]);
+
+  /**
+   * AUTO-REFRESH: Reload products periodically to show live inventory changes
+   * CRITICAL: TV menus must reflect inventory instantly - this is mission critical
+   */
+  useEffect(() => {
+    if (!activeMenu || !vendorId) return;
+
+    // Get auto-refresh interval from menu (in seconds, default 5s for INSTANT updates)
+    const refreshInterval = (activeMenu.auto_refresh_interval || 5) * 1000;
+
+    console.log(`🔄 AUTO-REFRESH enabled: reloading products every ${refreshInterval / 1000} seconds`);
+
+    const interval = setInterval(() => {
+      console.log('🔄 AUTO-REFRESH: Reloading products for live inventory...');
+      loadProducts(activeMenu);
+    }, refreshInterval);
+
+    return () => {
+      console.log('🔄 AUTO-REFRESH: Cleaning up interval');
+      clearInterval(interval);
+    };
+  }, [activeMenu?.id, activeMenu?.auto_refresh_interval, vendorId]);
 
   /**
    * Real-time subscription for device changes (menu assignment)
@@ -1060,9 +1100,17 @@ function TVDisplayContent() {
             const useCompactCards = isBulkMode && menuDisplayMode === 'list';
 
             // For list mode: use 2-column layout to fit more content without scrolling
-            // Use 2 columns when: not split view AND product count > 12 (prevents scrolling/carousel)
+            // RESPONSIVE: Use 2 columns only when:
+            // - NOT split view
+            // - Viewport is wide enough (>= 1200px)
+            // - NOT portrait orientation
+            // - Product count > 12 (prevents scrolling/carousel)
             // Max capacity: 15 items per column = 30 total with compact cards
-            const listColumns = isSplitView ? 1 : (totalProducts > 12 ? 2 : 1);
+            const isNarrowViewport = viewportWidth > 0 && viewportWidth < 1200;
+            const shouldStack = isSplitView || isPortrait || isNarrowViewport;
+            const listColumns = shouldStack ? 1 : (totalProducts > 12 ? 2 : 1);
+
+            console.log(`📐 Responsive layout: viewport ${viewportWidth}px, portrait: ${isPortrait}, narrow: ${isNarrowViewport}, columns: ${listColumns}`);
 
             console.log(`📊 Products: ${totalProducts}, Bulk Mode: ${isBulkMode}, Compact Cards: ${useCompactCards}, List Columns: ${listColumns}`);
 
@@ -1160,7 +1208,12 @@ function TVDisplayContent() {
               });
 
               // Apply independent pagination for each side
-              const productsPerPage = adjustedGridColumns * adjustedGridRows;
+              // CRITICAL FIX: List mode shows ALL products vertically (no pagination needed)
+              // Only paginate in grid mode where space is limited
+              const isListMode = menuDisplayMode === 'list';
+              const productsPerPage = isListMode ? 999 : (adjustedGridColumns * adjustedGridRows);
+
+              console.log(`📄 Display mode: ${menuDisplayMode}, Products per page: ${productsPerPage}`);
 
               // Left side pagination
               const leftStart = carouselPageLeft * productsPerPage;
@@ -1201,14 +1254,19 @@ function TVDisplayContent() {
 
               return (
                 <>
-                  <div className="w-full h-full flex flex-col lg:flex-row gap-4" style={{ flex: '1 1 0', minHeight: 0 }}>
+                  <div
+                    className={`w-full h-full flex gap-4 ${isPortrait ? 'flex-col' : 'flex-col lg:flex-row'}`}
+                    style={{ flex: '1 1 0', minHeight: 0 }}
+                  >
                     {/* Left Side */}
                     <div
                       className="flex-1 flex flex-col"
                       style={{
                         minHeight: 0,
-                        paddingRight: '0.75%',
-                        borderRight: `1px solid ${theme.styles.productName.color}15`,
+                        paddingRight: isPortrait ? '0' : '0.75%',
+                        borderRight: isPortrait ? 'none' : `1px solid ${theme.styles.productName.color}15`,
+                        borderBottom: isPortrait ? `1px solid ${theme.styles.productName.color}15` : 'none',
+                        paddingBottom: isPortrait ? '0.75%' : '0',
                       }}
                     >
                       {(splitLeftTitle || splitLeftCategory) && (

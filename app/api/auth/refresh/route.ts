@@ -1,38 +1,61 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServiceSupabase } from '@/lib/supabase/client';
+import { createAuthCookie } from '@/lib/auth/middleware';
 import { cookies } from 'next/headers';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 /**
- * Refresh user data endpoint
- * Uses existing auth token from HTTP-only cookie
- * Does NOT require password - just refreshes permissions/data
+ * Refresh session token and user data
+ * CRITICAL: This refreshes the Supabase auth session to prevent timeouts
  */
 export async function POST(request: NextRequest) {
   try {
-    // Get auth token from HTTP-only cookie
+    // Get both tokens from HTTP-only cookies
     const cookieStore = await cookies();
-    const authToken = cookieStore.get('auth-token')?.value; // Fixed: Use 'auth-token' (matches createAuthCookie)
+    const authToken = cookieStore.get('auth-token')?.value;
+    const refreshToken = cookieStore.get('refresh-token')?.value;
 
-    if (!authToken) {
+    if (!authToken || !refreshToken) {
       return NextResponse.json(
-        { success: false, error: 'Not authenticated' },
+        { success: false, error: 'Not authenticated', expired: true },
         { status: 401 }
       );
     }
 
     const supabase = getServiceSupabase();
 
-    // Verify token and get user
-    const { data: { user: authUser }, error: authError } = await supabase.auth.getUser(authToken);
+    // CRITICAL FIX: Refresh the Supabase session using refresh token
+    // This prevents session timeout by extending the session
+    const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession({
+      refresh_token: refreshToken
+    });
 
-    if (authError || !authUser) {
-      return NextResponse.json(
-        { success: false, error: 'Invalid or expired session' },
-        { status: 401 }
-      );
+    let authUser;
+    let newAccessToken = authToken;
+    let newRefreshToken = refreshToken;
+    let sessionRefreshed = false;
+
+    if (refreshError || !refreshData.session) {
+      // Token can't be refreshed - try to get user with existing token
+      const { data: { user }, error: userError } = await supabase.auth.getUser(authToken);
+
+      if (userError || !user) {
+        return NextResponse.json(
+          { success: false, error: 'Session expired', expired: true },
+          { status: 401 }
+        );
+      }
+
+      authUser = user;
+    } else {
+      // Successfully refreshed - use new tokens
+      authUser = refreshData.user;
+      newAccessToken = refreshData.session.access_token;
+      newRefreshToken = refreshData.session.refresh_token;
+      sessionRefreshed = true;
+      console.log('✅ Session tokens refreshed successfully');
     }
 
     // Get user record with all permissions
@@ -50,7 +73,7 @@ export async function POST(request: NextRequest) {
           pos_enabled
         )
       `)
-      .eq('email', authUser.email)
+      .eq('email', authUser?.email || '')
       .single();
 
     if (userError || !user) {
@@ -111,8 +134,9 @@ export async function POST(request: NextRequest) {
       })) || [];
     }
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
+      refreshed: sessionRefreshed,
       user: {
         id: user.id,
         email: user.email,
@@ -133,6 +157,29 @@ export async function POST(request: NextRequest) {
       apps: accessibleApps,
       locations: locations
     });
+
+    // Update cookies with new tokens if session was refreshed
+    if (sessionRefreshed) {
+      const accessCookie = createAuthCookie(newAccessToken);
+      response.cookies.set(accessCookie.name, accessCookie.value, accessCookie.options);
+
+      const refreshCookie = {
+        name: 'refresh-token',
+        value: newRefreshToken,
+        options: {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax' as const,
+          maxAge: 60 * 60 * 24 * 30, // 30 days
+          path: '/'
+        }
+      };
+      response.cookies.set(refreshCookie.name, refreshCookie.value, refreshCookie.options);
+
+      console.log('🍪 Updated auth cookies with refreshed tokens');
+    }
+
+    return response;
 
   } catch (error: any) {
     console.error('Auth refresh error:', error);

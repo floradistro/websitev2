@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Modal, Button, Input, Select } from '@/components/ds';
+import { useState, useEffect, useRef } from 'react';
+import { Modal, Button, Input } from '@/components/ds';
 import { ds, cn } from '@/components/ds';
-import { Plus, Trash2, Package, Building2, CheckCircle2, XCircle } from 'lucide-react';
+import { Trash2, Package, Building2, CheckCircle2, XCircle, Search, X } from 'lucide-react';
 import { useAppAuth } from '@/context/AppAuthContext';
 
 interface Supplier {
@@ -20,6 +20,11 @@ interface Product {
   name: string;
   sku?: string;
   regular_price?: number;
+  created_at?: string;
+  primary_category?: {
+    name: string;
+    slug: string;
+  };
 }
 
 interface POLineItem {
@@ -37,25 +42,28 @@ interface CreatePOModalProps {
 }
 
 export function CreatePOModal({ isOpen, onClose, onSuccess }: CreatePOModalProps) {
-  const { vendor, primaryLocation } = useAppAuth();
+  const { vendor, locations } = useAppAuth();
 
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
-  const [products, setProducts] = useState<Product[]>([]);
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [loadingSuppliers, setLoadingSuppliers] = useState(false);
   const [loadingProducts, setLoadingProducts] = useState(false);
 
   const [selectedSupplier, setSelectedSupplier] = useState('');
+  const [selectedLocation, setSelectedLocation] = useState('');
   const [expectedDeliveryDate, setExpectedDeliveryDate] = useState('');
   const [internalNotes, setInternalNotes] = useState('');
-  const [lineItems, setLineItems] = useState<POLineItem[]>([
-    { product_id: '', product_name: '', product_sku: '', quantity: 0, unit_price: 0 },
-  ]);
+  const [lineItems, setLineItems] = useState<POLineItem[]>([]);
+
+  const [productSearch, setProductSearch] = useState('');
+  const [showDropdown, setShowDropdown] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  // Load suppliers
+  // Load data when modal opens
   useEffect(() => {
     if (isOpen && vendor?.id) {
       loadSuppliers();
@@ -72,7 +80,7 @@ export function CreatePOModal({ isOpen, onClose, onSuccess }: CreatePOModalProps
       });
       const data = await response.json();
       if (data.success) {
-        setSuppliers(data.suppliers || []);
+        setSuppliers(data.data || []);
       }
     } catch (err) {
       console.error('Failed to load suppliers:', err);
@@ -85,12 +93,12 @@ export function CreatePOModal({ isOpen, onClose, onSuccess }: CreatePOModalProps
     if (!vendor?.id) return;
     setLoadingProducts(true);
     try {
-      const response = await fetch(`/api/vendor/products/full?vendor_id=${vendor.id}&limit=1000`, {
+      const response = await fetch(`/api/vendor/products/full?vendor_id=${vendor.id}&limit=all`, {
         credentials: 'include',
       });
       const data = await response.json();
       if (data.success) {
-        setProducts(data.products || []);
+        setAllProducts(data.products || []);
       }
     } catch (err) {
       console.error('Failed to load products:', err);
@@ -99,32 +107,51 @@ export function CreatePOModal({ isOpen, onClose, onSuccess }: CreatePOModalProps
     }
   };
 
-  const addLineItem = () => {
-    setLineItems([
-      ...lineItems,
-      { product_id: '', product_name: '', product_sku: '', quantity: 0, unit_price: 0 },
-    ]);
+  // Filter products based on search
+  const getFilteredProducts = () => {
+    if (!productSearch.trim()) {
+      // No search - show all products
+      return allProducts;
+    }
+
+    // Search across name, SKU, and category
+    const searchLower = productSearch.toLowerCase();
+    return allProducts.filter(
+      (p) =>
+        p.name.toLowerCase().includes(searchLower) ||
+        p.sku?.toLowerCase().includes(searchLower) ||
+        p.primary_category?.name.toLowerCase().includes(searchLower)
+    );
+  };
+
+  const filteredProducts = getFilteredProducts();
+
+  const addProduct = (product: Product) => {
+    // Check if already added
+    if (lineItems.some((item) => item.product_id === product.id)) {
+      return;
+    }
+
+    const newItem: POLineItem = {
+      product_id: product.id,
+      product_name: product.name,
+      product_sku: product.sku || '',
+      quantity: 1,
+      unit_price: parseFloat(product.regular_price?.toString() || '0'),
+    };
+
+    setLineItems([...lineItems, newItem]);
+    setProductSearch('');
+    setShowDropdown(false);
   };
 
   const removeLineItem = (index: number) => {
-    if (lineItems.length === 1) return; // Keep at least one
     setLineItems(lineItems.filter((_, i) => i !== index));
   };
 
   const updateLineItem = (index: number, field: keyof POLineItem, value: any) => {
     const updated = [...lineItems];
     updated[index] = { ...updated[index], [field]: value };
-
-    // If product_id changed, auto-fill product details
-    if (field === 'product_id' && value) {
-      const product = products.find((p) => p.id === value);
-      if (product) {
-        updated[index].product_name = product.name;
-        updated[index].product_sku = product.sku || '';
-        updated[index].unit_price = parseFloat(product.regular_price?.toString() || '0');
-      }
-    }
-
     setLineItems(updated);
   };
 
@@ -138,12 +165,22 @@ export function CreatePOModal({ isOpen, onClose, onSuccess }: CreatePOModalProps
       return false;
     }
 
+    if (!selectedLocation) {
+      setError('Please select a location');
+      return false;
+    }
+
+    if (lineItems.length === 0) {
+      setError('Please add at least one product');
+      return false;
+    }
+
     const validItems = lineItems.filter(
       (item) => item.product_id && item.quantity > 0 && item.unit_price >= 0
     );
 
     if (validItems.length === 0) {
-      setError('Please add at least one valid item');
+      setError('Please add valid quantities and prices');
       return false;
     }
 
@@ -151,8 +188,8 @@ export function CreatePOModal({ isOpen, onClose, onSuccess }: CreatePOModalProps
   };
 
   const handleSubmit = async () => {
-    if (!vendor?.id || !primaryLocation?.id) {
-      setError('Vendor or location not found');
+    if (!vendor?.id) {
+      setError('Vendor not found');
       return;
     }
 
@@ -162,7 +199,6 @@ export function CreatePOModal({ isOpen, onClose, onSuccess }: CreatePOModalProps
     setError(null);
 
     try {
-      // Prepare items
       const validItems = lineItems
         .filter((item) => item.product_id && item.quantity > 0)
         .map((item) => ({
@@ -181,7 +217,7 @@ export function CreatePOModal({ isOpen, onClose, onSuccess }: CreatePOModalProps
           vendor_id: vendor.id,
           po_type: 'inbound',
           supplier_id: selectedSupplier,
-          location_id: primaryLocation.id,
+          location_id: selectedLocation,
           expected_delivery_date: expectedDeliveryDate || null,
           internal_notes: internalNotes || null,
           items: validItems,
@@ -209,9 +245,12 @@ export function CreatePOModal({ isOpen, onClose, onSuccess }: CreatePOModalProps
 
   const resetForm = () => {
     setSelectedSupplier('');
+    setSelectedLocation('');
     setExpectedDeliveryDate('');
     setInternalNotes('');
-    setLineItems([{ product_id: '', product_name: '', product_sku: '', quantity: 0, unit_price: 0 }]);
+    setLineItems([]);
+    setProductSearch('');
+    setShowDropdown(false);
     setError(null);
     setSuccess(false);
   };
@@ -274,11 +313,17 @@ export function CreatePOModal({ isOpen, onClose, onSuccess }: CreatePOModalProps
           <Building2 size={12} />
           Supplier *
         </label>
-        <Select
+        <select
           value={selectedSupplier}
           onChange={(e) => setSelectedSupplier(e.target.value)}
-          size="sm"
           disabled={loadingSuppliers}
+          className={cn(
+            'w-full rounded-lg px-3 py-2 text-sm',
+            'bg-white/5 border border-white/10',
+            'text-white placeholder:text-white/30',
+            'focus:outline-none focus:ring-2 focus:ring-primary-500/50',
+            'disabled:opacity-50 disabled:cursor-not-allowed'
+          )}
         >
           <option value="">
             {loadingSuppliers ? 'Loading suppliers...' : 'Select supplier'}
@@ -289,12 +334,38 @@ export function CreatePOModal({ isOpen, onClose, onSuccess }: CreatePOModalProps
               {supplier.supplier_vendor && ` (${supplier.supplier_vendor.store_name})`}
             </option>
           ))}
-        </Select>
+        </select>
         {suppliers.length === 0 && !loadingSuppliers && (
           <p className={cn(ds.typography.size.xs, ds.colors.text.quaternary, 'mt-1')}>
             No suppliers found. Create a supplier first.
           </p>
         )}
+      </div>
+
+      {/* Location Selection */}
+      <div className="mb-4">
+        <label className={cn(ds.typography.size.xs, ds.colors.text.quaternary, 'mb-2 block flex items-center gap-1')}>
+          <Package size={12} />
+          Receiving Location *
+        </label>
+        <select
+          value={selectedLocation}
+          onChange={(e) => setSelectedLocation(e.target.value)}
+          className={cn(
+            'w-full rounded-lg px-3 py-2 text-sm',
+            'bg-white/5 border border-white/10',
+            'text-white placeholder:text-white/30',
+            'focus:outline-none focus:ring-2 focus:ring-primary-500/50',
+            'disabled:opacity-50 disabled:cursor-not-allowed'
+          )}
+        >
+          <option value="">Select location</option>
+          {locations.map((location) => (
+            <option key={location.id} value={location.id}>
+              {location.name}
+            </option>
+          ))}
+        </select>
       </div>
 
       {/* Expected Delivery Date */}
@@ -306,105 +377,199 @@ export function CreatePOModal({ isOpen, onClose, onSuccess }: CreatePOModalProps
           type="date"
           value={expectedDeliveryDate}
           onChange={(e) => setExpectedDeliveryDate(e.target.value)}
-          size="sm"
         />
       </div>
 
-      {/* Line Items */}
+      {/* Product Search */}
       <div className="mb-4">
         <div className="flex items-center justify-between mb-3">
           <label className={cn(ds.typography.size.xs, ds.colors.text.quaternary, 'flex items-center gap-1')}>
             <Package size={12} />
-            Items *
+            Products *
           </label>
-          <Button variant="ghost" size="xs" onClick={addLineItem}>
-            <Plus size={12} />
-            Add Item
-          </Button>
+          <span className={cn(ds.typography.size.xs, ds.colors.text.quaternary)}>
+            {lineItems.length} items
+          </span>
         </div>
 
-        <div className="space-y-3 max-h-[400px] overflow-y-auto">
-          {lineItems.map((item, index) => (
+        {/* Search Input */}
+        <div className="relative mb-3">
+          <Search size={16} className={cn('absolute left-3 top-1/2 -translate-y-1/2', ds.colors.text.quaternary)} />
+          <input
+            ref={searchInputRef}
+            type="text"
+            value={productSearch}
+            onChange={(e) => {
+              setProductSearch(e.target.value);
+              setShowDropdown(true);
+            }}
+            onFocus={() => setShowDropdown(true)}
+            onBlur={() => {
+              // Delay to allow clicking on dropdown items
+              setTimeout(() => setShowDropdown(false), 200);
+            }}
+            placeholder="Search products..."
+            className={cn(
+              'w-full rounded-lg pl-10 pr-10 py-2.5 text-sm',
+              'bg-white/5 border border-white/10',
+              'text-white placeholder:text-white/30',
+              'focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/50'
+            )}
+          />
+          {productSearch && (
+            <button
+              onClick={() => {
+                setProductSearch('');
+                searchInputRef.current?.focus();
+              }}
+              className={cn('absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-white/10')}
+            >
+              <X size={14} className={ds.colors.text.quaternary} />
+            </button>
+          )}
+
+          {/* Dropdown Results */}
+          {showDropdown && (
             <div
-              key={index}
               className={cn(
-                'rounded-lg border p-3',
-                ds.colors.bg.secondary,
-                ds.colors.border.default
+                'absolute z-10 w-full mt-2 rounded-lg border max-h-80 overflow-y-auto',
+                'bg-black/95 backdrop-blur-xl',
+                ds.colors.border.default,
+                'shadow-2xl'
               )}
             >
-              <div className="flex items-start gap-2 mb-2">
-                <div className="flex-1">
-                  <label className={cn(ds.typography.size.xs, ds.colors.text.quaternary, 'mb-1 block')}>
-                    Product
-                  </label>
-                  <Select
-                    value={item.product_id}
-                    onChange={(e) => updateLineItem(index, 'product_id', e.target.value)}
-                    size="sm"
-                    disabled={loadingProducts}
-                  >
-                    <option value="">
-                      {loadingProducts ? 'Loading...' : 'Select product'}
-                    </option>
-                    {products.map((product) => (
-                      <option key={product.id} value={product.id}>
-                        {product.name} {product.sku && `(${product.sku})`}
-                      </option>
-                    ))}
-                  </Select>
-                </div>
-                {lineItems.length > 1 && (
-                  <Button
-                    variant="ghost"
-                    size="xs"
-                    onClick={() => removeLineItem(index)}
-                    className="mt-5"
-                  >
-                    <Trash2 size={12} />
-                  </Button>
+              <div className="p-2">
+                {loadingProducts ? (
+                  <div className={cn('px-3 py-4 text-center', ds.colors.text.quaternary, ds.typography.size.sm)}>
+                    Loading products...
+                  </div>
+                ) : filteredProducts.length === 0 ? (
+                  <div className={cn('px-3 py-4 text-center', ds.colors.text.quaternary, ds.typography.size.sm)}>
+                    {productSearch.trim() ? 'No products found' : 'No products available'}
+                  </div>
+                ) : (
+                  <>
+                    <div className={cn(ds.typography.size.xs, ds.colors.text.quaternary, 'px-2 py-1 mb-1')}>
+                      {filteredProducts.length} product{filteredProducts.length === 1 ? '' : 's'}
+                    </div>
+                    {filteredProducts.map((product) => {
+                      const isAdded = lineItems.some((item) => item.product_id === product.id);
+                      return (
+                        <button
+                          key={product.id}
+                          onClick={() => addProduct(product)}
+                          disabled={isAdded}
+                          className={cn(
+                            'w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg text-left',
+                            'hover:bg-white/10 transition-colors',
+                            'disabled:opacity-40 disabled:cursor-not-allowed'
+                          )}
+                        >
+                          <div className="flex-1 min-w-0">
+                            <div className={cn(ds.typography.size.sm, 'text-white/90 truncate')}>{product.name}</div>
+                            <div className={cn(ds.typography.size.xs, ds.colors.text.quaternary, 'flex items-center gap-2')}>
+                              {product.sku && <span>SKU: {product.sku}</span>}
+                              {product.primary_category && (
+                                <>
+                                  <span>•</span>
+                                  <span>{product.primary_category.name}</span>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                          {product.regular_price && (
+                            <div className={cn(ds.typography.size.sm, ds.colors.text.secondary)}>
+                              ${parseFloat(product.regular_price.toString()).toFixed(2)}
+                            </div>
+                          )}
+                          {isAdded && (
+                            <div className={cn(ds.typography.size.xs, 'text-green-400')}>Added</div>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </>
                 )}
               </div>
-
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className={cn(ds.typography.size.xs, ds.colors.text.quaternary, 'mb-1 block')}>
-                    Quantity
-                  </label>
-                  <Input
-                    type="number"
-                    value={item.quantity || ''}
-                    onChange={(e) => updateLineItem(index, 'quantity', parseFloat(e.target.value) || 0)}
-                    min={0}
-                    step={0.01}
-                    size="sm"
-                    placeholder="0.00"
-                  />
-                </div>
-                <div>
-                  <label className={cn(ds.typography.size.xs, ds.colors.text.quaternary, 'mb-1 block')}>
-                    Unit Price
-                  </label>
-                  <Input
-                    type="number"
-                    value={item.unit_price || ''}
-                    onChange={(e) => updateLineItem(index, 'unit_price', parseFloat(e.target.value) || 0)}
-                    min={0}
-                    step={0.01}
-                    size="sm"
-                    placeholder="0.00"
-                  />
-                </div>
-              </div>
-
-              {item.quantity > 0 && item.unit_price > 0 && (
-                <div className={cn('text-right mt-2', ds.typography.size.xs, ds.colors.text.tertiary)}>
-                  Line Total: ${(item.quantity * item.unit_price).toFixed(2)}
-                </div>
-              )}
             </div>
-          ))}
+          )}
         </div>
+
+        {/* Selected Products List */}
+        {lineItems.length > 0 ? (
+          <div className="space-y-2 max-h-[400px] overflow-y-auto">
+            {lineItems.map((item, index) => (
+              <div
+                key={index}
+                className={cn(
+                  'rounded-lg border p-3',
+                  ds.colors.bg.secondary,
+                  ds.colors.border.default
+                )}
+              >
+                <div className="flex items-start gap-2 mb-2">
+                  <div className="flex-1 min-w-0">
+                    <div className={cn(ds.typography.size.sm, 'text-white/90 truncate')}>{item.product_name}</div>
+                    {item.product_sku && (
+                      <div className={cn(ds.typography.size.xs, ds.colors.text.quaternary)}>SKU: {item.product_sku}</div>
+                    )}
+                  </div>
+                  <Button variant="ghost" size="xs" onClick={() => removeLineItem(index)}>
+                    <Trash2 size={12} />
+                  </Button>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className={cn(ds.typography.size.xs, ds.colors.text.quaternary, 'mb-1 block')}>
+                      Quantity
+                    </label>
+                    <Input
+                      type="number"
+                      value={item.quantity || ''}
+                      onChange={(e) => updateLineItem(index, 'quantity', parseFloat(e.target.value) || 0)}
+                      min={0}
+                      step={0.01}
+                      placeholder="0.00"
+                    />
+                  </div>
+                  <div>
+                    <label className={cn(ds.typography.size.xs, ds.colors.text.quaternary, 'mb-1 block')}>
+                      Unit Price
+                    </label>
+                    <Input
+                      type="number"
+                      value={item.unit_price || ''}
+                      onChange={(e) => updateLineItem(index, 'unit_price', parseFloat(e.target.value) || 0)}
+                      min={0}
+                      step={0.01}
+                      placeholder="0.00"
+                    />
+                  </div>
+                </div>
+
+                {item.quantity > 0 && item.unit_price > 0 && (
+                  <div className={cn('text-right mt-2', ds.typography.size.xs, ds.colors.text.tertiary)}>
+                    Line Total: ${(item.quantity * item.unit_price).toFixed(2)}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div
+            className={cn(
+              'rounded-lg border-2 border-dashed p-8 text-center',
+              ds.colors.border.default,
+              'bg-white/[0.02]'
+            )}
+          >
+            <Search size={32} className={cn('mx-auto mb-2 opacity-20', ds.colors.text.quaternary)} />
+            <p className={cn(ds.typography.size.sm, ds.colors.text.tertiary)}>
+              Search and add products to your purchase order
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Internal Notes */}
@@ -415,7 +580,6 @@ export function CreatePOModal({ isOpen, onClose, onSuccess }: CreatePOModalProps
         <Input
           value={internalNotes}
           onChange={(e) => setInternalNotes(e.target.value)}
-          size="sm"
           placeholder="Optional internal notes..."
         />
       </div>
@@ -430,7 +594,7 @@ export function CreatePOModal({ isOpen, onClose, onSuccess }: CreatePOModalProps
             </span>
           </div>
           <div className={cn(ds.typography.size.xs, ds.colors.text.quaternary, 'mt-1')}>
-            Tax and shipping can be added after PO is created
+            {lineItems.length} items • Tax and shipping can be added after PO is created
           </div>
         </div>
       )}

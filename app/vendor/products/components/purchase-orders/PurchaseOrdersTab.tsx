@@ -10,18 +10,7 @@ import { POList } from './POList';
 import { ReceiveModal } from './ReceiveModal';
 import { CreatePOModal } from './CreatePOModal';
 import axios from 'axios';
-
-interface PurchaseOrder {
-  id: string;
-  po_number: string;
-  po_type: 'inbound' | 'outbound';
-  status: string;
-  total: number;
-  created_at: string;
-  supplier?: { external_name: string };
-  wholesale_customer?: { external_company_name: string };
-  items?: any[];
-}
+import type { PurchaseOrder } from './types';
 
 /**
  * PurchaseOrdersTab - Inbound purchase orders only
@@ -29,11 +18,12 @@ interface PurchaseOrder {
  * (Outbound wholesale sales are in Commerce → Orders)
  */
 export function PurchaseOrdersTab() {
-  const { vendor } = useAppAuth();
+  const { vendor, locations } = useAppAuth();
   const [orders, setOrders] = useState<PurchaseOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [locationFilter, setLocationFilter] = useState('all');
 
   // Modal states
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -70,6 +60,9 @@ export function PurchaseOrdersTab() {
       // Status filter
       if (statusFilter !== 'all' && po.status !== statusFilter) return false;
 
+      // Location filter
+      if (locationFilter !== 'all' && (po as any).location_id !== locationFilter) return false;
+
       // Search filter
       if (search) {
         const searchLower = search.toLowerCase();
@@ -81,14 +74,14 @@ export function PurchaseOrdersTab() {
 
       return true;
     });
-  }, [orders, statusFilter, search]);
+  }, [orders, statusFilter, locationFilter, search]);
 
   // Calculate stats
   const stats = useMemo(() => {
     const total = orders.length;
-    const draft = orders.filter(po => po.status === 'draft').length;
-    const active = orders.filter(po => ['sent', 'confirmed'].includes(po.status)).length;
-    const completed = orders.filter(po => ['fulfilled', 'received'].includes(po.status)).length;
+    const draft = 0; // No more draft status
+    const active = orders.filter(po => ['ordered', 'confirmed', 'shipped', 'receiving'].includes(po.status)).length;
+    const completed = orders.filter(po => po.status === 'received').length;
     const totalValue = orders.reduce((sum, po) => sum + (parseFloat(po.total?.toString() || '0')), 0);
 
     return { total, draft, active, completed, totalValue };
@@ -149,8 +142,11 @@ export function PurchaseOrdersTab() {
       <POFilters
         search={search}
         statusFilter={statusFilter}
+        locationFilter={locationFilter}
+        locations={locations}
         onSearchChange={setSearch}
         onStatusFilterChange={setStatusFilter}
+        onLocationFilterChange={setLocationFilter}
       />
 
       {/* Orders List */}

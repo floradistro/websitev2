@@ -1,36 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Modal, Button, Input, Select } from '@/components/ds';
+import { Modal, Button, Input } from '@/components/ds';
 import { ds, cn } from '@/components/ds';
 import { Package, AlertCircle, CheckCircle2, XCircle } from 'lucide-react';
 import { useAppAuth } from '@/context/AppAuthContext';
-
-interface POItem {
-  id: string;
-  product_id: string;
-  quantity: number;
-  quantity_received: number;
-  quantity_remaining: number;
-  unit_price: number;
-  line_total: number;
-  receive_status: string;
-  product?: {
-    id: string;
-    name: string;
-    sku?: string;
-  };
-}
-
-interface PurchaseOrder {
-  id: string;
-  po_number: string;
-  status: string;
-  supplier?: {
-    external_name: string;
-  };
-  items: POItem[];
-}
+import type { PurchaseOrder, POItem } from './types';
 
 interface ReceiveModalProps {
   isOpen: boolean;
@@ -66,7 +41,7 @@ export function ReceiveModal({ isOpen, onClose, purchaseOrder, onSuccess }: Rece
     if (purchaseOrder?.items) {
       const initialData: Record<string, ReceiveItemData> = {};
       purchaseOrder.items.forEach((item) => {
-        if (item.quantity_remaining > 0) {
+        if (item.quantity_remaining && item.quantity_remaining > 0) {
           initialData[item.id] = {
             po_item_id: item.id,
             quantity_received: item.quantity_remaining, // Default to full remaining
@@ -88,7 +63,7 @@ export function ReceiveModal({ isOpen, onClose, purchaseOrder, onSuccess }: Rece
     if (!item) return;
 
     // Prevent receiving more than remaining
-    const maxReceive = item.quantity_remaining;
+    const maxReceive = item.quantity_remaining || item.quantity;
     const actualValue = Math.min(Math.max(0, numValue), maxReceive);
 
     setReceiveData((prev) => ({
@@ -165,7 +140,7 @@ export function ReceiveModal({ isOpen, onClose, purchaseOrder, onSuccess }: Rece
     }
   };
 
-  const receivableItems = purchaseOrder?.items.filter((item) => item.quantity_remaining > 0) || [];
+  const receivableItems = purchaseOrder?.items.filter((item) => (item.quantity_remaining || 0) > 0) || [];
   const totalReceiving = Object.values(receiveData).reduce(
     (sum, item) => sum + item.quantity_received,
     0
@@ -300,7 +275,7 @@ export function ReceiveModal({ isOpen, onClose, purchaseOrder, onSuccess }: Rece
                       min={0}
                       max={item.quantity_remaining}
                       step={0.01}
-                      size="sm"
+                      
                       placeholder="0.00"
                     />
                   </div>
@@ -309,17 +284,22 @@ export function ReceiveModal({ isOpen, onClose, purchaseOrder, onSuccess }: Rece
                     <label className={cn(ds.typography.size.xs, ds.colors.text.quaternary, 'mb-1 block')}>
                       Condition *
                     </label>
-                    <Select
+                    <select
                       value={data.condition}
                       onChange={(e) => handleConditionChange(item.id, e.target.value)}
-                      size="sm"
+                      className={cn(
+                        'w-full rounded-lg px-3 py-2 text-sm',
+                        'bg-white/5 border border-white/10',
+                        'text-white',
+                        'focus:outline-none focus:ring-2 focus:ring-primary-500/50'
+                      )}
                     >
                       {CONDITION_OPTIONS.map((option) => (
                         <option key={option.value} value={option.value}>
                           {option.label}
                         </option>
                       ))}
-                    </Select>
+                    </select>
                   </div>
                 </div>
 
@@ -347,7 +327,6 @@ export function ReceiveModal({ isOpen, onClose, purchaseOrder, onSuccess }: Rece
                     <Input
                       value={data.quality_notes}
                       onChange={(e) => handleNotesChange(item.id, 'quality_notes', e.target.value)}
-                      size="sm"
                       placeholder="Describe the issue..."
                     />
                   </div>
@@ -361,7 +340,6 @@ export function ReceiveModal({ isOpen, onClose, purchaseOrder, onSuccess }: Rece
                   <Input
                     value={data.notes}
                     onChange={(e) => handleNotesChange(item.id, 'notes', e.target.value)}
-                    size="sm"
                     placeholder="Optional notes..."
                   />
                 </div>
