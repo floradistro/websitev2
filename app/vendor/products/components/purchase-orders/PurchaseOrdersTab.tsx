@@ -1,12 +1,14 @@
 'use client';
 
 import { useEffect, useState, useMemo } from 'react';
-import { Package } from 'lucide-react';
+import { Package, Plus } from 'lucide-react';
 import { useAppAuth } from '@/context/AppAuthContext';
-import { ds, cn } from '@/components/ds';
+import { ds, cn, Button } from '@/components/ds';
 import { POStats } from './POStats';
 import { POFilters } from './POFilters';
 import { POList } from './POList';
+import { ReceiveModal } from './ReceiveModal';
+import { CreatePOModal } from './CreatePOModal';
 import axios from 'axios';
 
 interface PurchaseOrder {
@@ -32,6 +34,11 @@ export function PurchaseOrdersTab() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+
+  // Modal states
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showReceiveModal, setShowReceiveModal] = useState(false);
+  const [selectedPO, setSelectedPO] = useState<PurchaseOrder | null>(null);
 
   // Load INBOUND orders only
   const loadOrders = async () => {
@@ -87,19 +94,45 @@ export function PurchaseOrdersTab() {
     return { total, draft, active, completed, totalValue };
   }, [orders]);
 
+  const handleReceive = (po: PurchaseOrder) => {
+    setSelectedPO(po);
+    setShowReceiveModal(true);
+  };
+
+  const handleReceiveSuccess = () => {
+    loadOrders(); // Refresh list
+    setShowReceiveModal(false);
+    setSelectedPO(null);
+  };
+
+  const handleCreateSuccess = () => {
+    loadOrders(); // Refresh list
+    setShowCreateModal(false);
+  };
+
   return (
     <div>
-      {/* Header Note */}
-      <div className={cn("rounded-2xl border p-4 mb-6 flex items-start gap-3", ds.colors.bg.secondary, ds.colors.border.default)}>
-        <Package size={16} className={cn(ds.colors.text.quaternary, "mt-0.5")} strokeWidth={1} />
-        <div>
-          <p className={cn(ds.typography.size.xs, "text-white/80 mb-1")}>
-            Purchase orders for buying inventory from suppliers
-          </p>
-          <p className={cn(ds.typography.size.xs, ds.colors.text.quaternary)}>
-            For B2B sales, manage wholesale customers in Commerce → Wholesale
-          </p>
+      {/* Header Note with Create Button */}
+      <div className={cn("rounded-2xl border p-4 mb-6 flex items-start justify-between gap-3", ds.colors.bg.secondary, ds.colors.border.default)}>
+        <div className="flex items-start gap-3">
+          <Package size={16} className={cn(ds.colors.text.quaternary, "mt-0.5")} strokeWidth={1} />
+          <div>
+            <p className={cn(ds.typography.size.xs, "text-white/80 mb-1")}>
+              Purchase orders for buying inventory from suppliers
+            </p>
+            <p className={cn(ds.typography.size.xs, ds.colors.text.quaternary)}>
+              For B2B sales, manage wholesale customers in Commerce → Wholesale
+            </p>
+          </div>
         </div>
+        <Button
+          variant="primary"
+          size="sm"
+          onClick={() => setShowCreateModal(true)}
+        >
+          <Plus size={14} />
+          Create PO
+        </Button>
       </div>
 
       {/* Stats */}
@@ -125,6 +158,24 @@ export function PurchaseOrdersTab() {
         orders={filteredOrders}
         isLoading={loading}
         type="inbound"
+        onReceive={handleReceive}
+      />
+
+      {/* Modals */}
+      <CreatePOModal
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        onSuccess={handleCreateSuccess}
+      />
+
+      <ReceiveModal
+        isOpen={showReceiveModal}
+        onClose={() => {
+          setShowReceiveModal(false);
+          setSelectedPO(null);
+        }}
+        purchaseOrder={selectedPO}
+        onSuccess={handleReceiveSuccess}
       />
     </div>
   );

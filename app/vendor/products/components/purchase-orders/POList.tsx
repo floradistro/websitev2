@@ -1,5 +1,5 @@
-import { Package, Calendar, Building2, Users } from 'lucide-react';
-import { ds, cn } from '@/components/ds';
+import { Package, Calendar, Building2, Users, PackageCheck } from 'lucide-react';
+import { ds, cn, Button } from '@/components/ds';
 
 interface PurchaseOrder {
   id: string;
@@ -17,9 +17,10 @@ interface POListProps {
   orders: PurchaseOrder[];
   isLoading: boolean;
   type: 'inbound' | 'outbound';
+  onReceive?: (po: PurchaseOrder) => void;
 }
 
-export function POList({ orders, isLoading, type }: POListProps) {
+export function POList({ orders, isLoading, type, onReceive }: POListProps) {
   if (isLoading) {
     return (
       <div className={cn("rounded-2xl border p-12 text-center", ds.colors.bg.secondary, ds.colors.border.default)}>
@@ -71,7 +72,7 @@ export function POList({ orders, isLoading, type }: POListProps) {
             "hover:border-white/20"
           )}
         >
-          <div className="flex items-start justify-between">
+          <div className="flex items-start justify-between gap-4">
             {/* Left Side */}
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-2">
@@ -109,14 +110,30 @@ export function POList({ orders, isLoading, type }: POListProps) {
               </div>
             </div>
 
-            {/* Right Side - Total */}
-            <div className="text-right">
-              <div className={cn(ds.typography.size.xs, ds.colors.text.quaternary, ds.typography.transform.uppercase, ds.typography.tracking.wide, "mb-1")}>
-                Total
+            {/* Right Side - Total & Actions */}
+            <div className="text-right flex flex-col items-end gap-2">
+              <div>
+                <div className={cn(ds.typography.size.xs, ds.colors.text.quaternary, ds.typography.transform.uppercase, ds.typography.tracking.wide, "mb-1")}>
+                  Total
+                </div>
+                <div className="text-xl font-light text-white">
+                  ${parseFloat(po.total?.toString() || '0').toFixed(2)}
+                </div>
               </div>
-              <div className="text-xl font-light text-white">
-                ${parseFloat(po.total?.toString() || '0').toFixed(2)}
-              </div>
+
+              {/* Receive Button for inbound POs */}
+              {type === 'inbound' &&
+               onReceive &&
+               ['confirmed', 'in_transit', 'partial'].includes(po.status) && (
+                <Button
+                  variant="primary"
+                  size="xs"
+                  onClick={() => onReceive(po)}
+                >
+                  <PackageCheck size={12} />
+                  Receive
+                </Button>
+              )}
             </div>
           </div>
         </div>
