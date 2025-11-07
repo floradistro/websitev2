@@ -17,6 +17,10 @@ function createSupabaseClient() {
     return supabaseInstance;
   }
 
+  if (!supabaseUrl || !supabaseAnonKey) {
+    throw new Error('Supabase configuration is missing');
+  }
+
   supabaseInstance = createClient(supabaseUrl, supabaseAnonKey, {
     auth: {
       autoRefreshToken: true, // Enable auto-refresh to maintain sessions
@@ -108,16 +112,6 @@ export function getServiceSupabase() {
   });
   
   return serviceSupabaseInstance;
-}
-
-// Cleanup on process termination (Node.js runtime only, not Edge)
-if (typeof process !== 'undefined' && typeof process.on === 'function') {
-  process.on('SIGTERM', () => {
-    serviceSupabaseInstance = null;
-  });
-  process.on('SIGINT', () => {
-    serviceSupabaseInstance = null;
-  });
 }
 
 export type Vendor = {
