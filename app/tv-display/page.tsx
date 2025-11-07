@@ -88,28 +88,67 @@ function TVDisplayContent() {
   };
 
   /**
-   * Helper function to sort products by strain type for Flower category
-   * Simple ordering: Sativa → Sativa Hybrid → Hybrid → Indica Hybrid → Indica
+   * Universal Smart Grouping - "It Just Works"™
+   * Automatically groups products by their primary type field (*_type pattern)
+   * Works for ALL categories: flower (strain_type), beverages (beverage_type), etc.
+   *
+   * Apple-simple: Zero configuration, uses existing category field_visibility
    */
-  const sortProductsByStrainType = (products: any[]) => {
-    const strainOrder: Record<string, number> = {
-      'Sativa': 1,
-      'Sativa Hybrid': 2,
-      'Hybrid': 3,
-      'Indica Hybrid': 4,
-      'Indica': 5,
-    };
+  const smartGroupProducts = (products: any[], category?: any) => {
+    if (!products.length) return products;
 
+    // Step 1: Find the grouping field (first *_type field that exists)
+    let groupField: string | null = null;
+
+    // Check category field_visibility if available
+    if (category?.field_visibility) {
+      const typeFields = Object.keys(category.field_visibility)
+        .filter(f => f.endsWith('_type') && category.field_visibility[f]?.enabled);
+      groupField = typeFields[0] || null;
+    }
+
+    // Fallback: scan products for any *_type field with data
+    if (!groupField) {
+      const sample = products[0]?.custom_fields || {};
+      groupField = Object.keys(sample).find(k => k.endsWith('_type')) || null;
+    }
+
+    // No grouping field? Return alphabetically sorted
+    if (!groupField) {
+      console.log('📋 No grouping field found, sorting alphabetically');
+      return products.slice().sort((a, b) => a.name.localeCompare(b.name));
+    }
+
+    console.log(`🎯 Smart grouping by: ${groupField}`);
+
+    // Step 2: Special handling for strain_type (preserve logical order)
+    if (groupField === 'strain_type') {
+      const strainOrder: Record<string, number> = {
+        'Sativa': 1,
+        'Sativa Hybrid': 2,
+        'Hybrid': 3,
+        'Indica Hybrid': 4,
+        'Indica': 5,
+      };
+
+      return products.slice().sort((a, b) => {
+        const valA = a.custom_fields?.[groupField] || 'zzz';
+        const valB = b.custom_fields?.[groupField] || 'zzz';
+
+        const orderA = strainOrder[valA] || 999;
+        const orderB = strainOrder[valB] || 999;
+
+        if (orderA !== orderB) return orderA - orderB;
+        return a.name.localeCompare(b.name);
+      });
+    }
+
+    // Step 3: Default grouping (alphabetical by type value, then by name)
     return products.slice().sort((a, b) => {
-      const strainA = a.custom_fields?.strain_type || '';
-      const strainB = b.custom_fields?.strain_type || '';
+      const valA = a.custom_fields?.[groupField] || 'zzz';
+      const valB = b.custom_fields?.[groupField] || 'zzz';
 
-      const orderA = strainOrder[strainA] || 999;
-      const orderB = strainOrder[strainB] || 999;
-
-      if (orderA !== orderB) return orderA - orderB;
-
-      // Same strain type, sort alphabetically by name
+      if (valA !== valB) return valA.localeCompare(valB);
       return a.name.localeCompare(b.name);
     });
   };
@@ -1112,13 +1151,9 @@ function TVDisplayContent() {
               console.log(`📦 Grid Static: Showing all ${products.length} products`);
             }
 
-            // SMART SORTING: Group products by strain type for Flower category
-            // Check if this is a Flower menu (by category name or product strain types)
-            const hasStrainTypes = productsToShow.some((p: any) => p.custom_fields?.strain_type);
-            if (hasStrainTypes) {
-              productsToShow = sortProductsByStrainType(productsToShow);
-              console.log('🌿 Sorted products by strain type for easier customer navigation');
-            }
+            // UNIVERSAL SMART GROUPING: Works for ALL categories automatically
+            // Finds and groups by *_type fields (strain_type, beverage_type, etc.)
+            productsToShow = smartGroupProducts(productsToShow, activeMenu?.primary_category);
 
             console.log('🎨 Layout style:', layoutStyle, '(defined at top level)');
 
@@ -1242,18 +1277,13 @@ function TVDisplayContent() {
                 return categoryName === targetCategory || parentCategoryName === targetCategory;
               });
 
-              // SMART SORTING: Apply strain type sorting to each side if applicable
-              const leftHasStrainTypes = allLeftProducts.some((p: any) => p.custom_fields?.strain_type);
-              const rightHasStrainTypes = allRightProducts.some((p: any) => p.custom_fields?.strain_type);
+              // UNIVERSAL SMART GROUPING: Apply to both sides independently
+              // Automatically detects and groups by category-appropriate *_type fields
+              console.log('🔍 Left category:', splitLeftCategory);
+              console.log('🔍 Right category:', splitRightCategory);
 
-              if (leftHasStrainTypes) {
-                allLeftProducts = sortProductsByStrainType(allLeftProducts);
-                console.log('🌿 Left side sorted by strain type');
-              }
-              if (rightHasStrainTypes) {
-                allRightProducts = sortProductsByStrainType(allRightProducts);
-                console.log('🌿 Right side sorted by strain type');
-              }
+              allLeftProducts = smartGroupProducts(allLeftProducts);
+              allRightProducts = smartGroupProducts(allRightProducts);
 
               // Apply independent pagination for each side
               // CRITICAL FIX: List mode shows ALL products vertically (no pagination needed)
