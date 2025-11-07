@@ -29,6 +29,14 @@ export async function POST(request: NextRequest) {
   const corsHeaders = getCorsHeaders(request);
   try {
     const body = await request.json();
+    
+    console.log('🔐 LOGIN ATTEMPT:', {
+      email: body.email,
+      hasPassword: !!body.password,
+      passwordLength: body.password?.length,
+      origin: request.headers.get('origin'),
+      userAgent: request.headers.get('user-agent')?.substring(0, 50)
+    });
 
     // Validate input
     const validation = validateData(LoginSchema, body);
