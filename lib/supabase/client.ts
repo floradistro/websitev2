@@ -9,14 +9,23 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Missing required Supabase environment variables: NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY must be set');
 }
 
-// Optimized client configuration with connection pooling and performance tuning
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    autoRefreshToken: false, // Disable auto-refresh to prevent token errors
-    persistSession: false, // We handle persistence manually via localStorage
-    detectSessionInUrl: false,
-    flowType: 'pkce'
-  },
+// Singleton instance to prevent multiple GoTrueClient warnings
+let supabaseInstance: SupabaseClient | null = null;
+
+function createSupabaseClient() {
+  if (supabaseInstance) {
+    return supabaseInstance;
+  }
+
+  supabaseInstance = createClient(supabaseUrl, supabaseAnonKey, {
+    auth: {
+      autoRefreshToken: true, // Enable auto-refresh to maintain sessions
+      persistSession: true, // Enable session persistence to prevent 401 errors
+      detectSessionInUrl: true,
+      flowType: 'pkce',
+      storage: typeof window !== 'undefined' ? window.localStorage : undefined,
+      storageKey: 'whaletools-auth-token',
+    },
   db: {
     schema: 'public'
   },
@@ -38,13 +47,19 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
       }).finally(() => clearTimeout(timeoutId));
     }
   },
-  // Performance settings - reduced realtime to save resources
-  realtime: {
-    params: {
-      eventsPerSecond: 5
+    // Performance settings - reduced realtime to save resources
+    realtime: {
+      params: {
+        eventsPerSecond: 5
+      }
     }
-  }
-});
+  });
+
+  return supabaseInstance;
+}
+
+// Export singleton instance
+export const supabase = createSupabaseClient();
 
 // Singleton for service role client (server-side only)
 let serviceSupabaseInstance: SupabaseClient | null = null;

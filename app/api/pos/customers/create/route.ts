@@ -17,15 +17,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Generate customer number
+    // Generate customer number for this vendor
     const { count } = await supabase
-      .from('vendor_customers')
+      .from('customers')
       .select('*', { count: 'exact', head: true })
       .eq('vendor_id', vendorId);
 
     const customerNumber = `FLORA-${String((count || 0) + 1).padStart(4, '0')}`;
 
-    // Create customer
+    // Create customer with vendor_id and loyalty fields
     const customerData: any = {
       first_name: firstName,
       last_name: lastName,
@@ -36,6 +36,11 @@ export async function POST(request: NextRequest) {
         : `${firstName} ${lastName.charAt(0)}.`,
       role: 'customer',
       is_active: true,
+      vendor_id: vendorId,
+      loyalty_points: 0,
+      loyalty_tier: 'bronze',
+      total_orders: 0,
+      total_spent: 0,
     };
 
     // Add date of birth if provided
@@ -76,29 +81,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Link to vendor
-    const { data: vendorCustomer, error: vcError } = await supabase
-      .from('vendor_customers')
-      .insert({
-        vendor_id: vendorId,
-        customer_id: customer.id,
-        vendor_customer_number: customerNumber,
-        loyalty_points: 0,
-        loyalty_tier: 'bronze',
-        total_orders: 0,
-        total_spent: 0,
-      })
-      .select()
-      .single();
-
-    if (vcError) {
-      console.error('Error linking customer to vendor:', vcError);
-      return NextResponse.json(
-        { error: vcError.message },
-        { status: 500 }
-      );
-    }
-
     // Return formatted customer
     return NextResponse.json({
       success: true,
@@ -109,11 +91,11 @@ export async function POST(request: NextRequest) {
         email: customer.email,
         phone: customer.phone,
         display_name: customer.display_name,
-        loyalty_points: 0,
-        loyalty_tier: 'bronze',
+        loyalty_points: customer.loyalty_points || 0,
+        loyalty_tier: customer.loyalty_tier || 'bronze',
         vendor_customer_number: customerNumber,
-        total_orders: 0,
-        total_spent: 0,
+        total_orders: customer.total_orders || 0,
+        total_spent: customer.total_spent || 0,
       },
     });
   } catch (error: any) {
@@ -124,4 +106,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-

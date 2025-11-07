@@ -48,9 +48,17 @@ export function CartProvider({ children }: { children: ReactNode }) {
     const savedCart = localStorage.getItem("flora-cart");
     if (savedCart) {
       try {
-        setItems(JSON.parse(savedCart));
+        const parsed = JSON.parse(savedCart);
+        // Ensure it's an array before setting
+        if (Array.isArray(parsed)) {
+          setItems(parsed);
+        } else {
+          console.warn("Cart data in localStorage is not an array, clearing it");
+          localStorage.removeItem("flora-cart");
+        }
       } catch (error) {
         console.error("Failed to load cart:", error);
+        localStorage.removeItem("flora-cart");
       }
     }
   }, []);
@@ -149,13 +157,20 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, []);
 
   // Memoize calculations to prevent re-computation on every render
-  const itemCount = useMemo(() => items.reduce((total, item) => total + item.quantity, 0), [items]);
-  const total = useMemo(() => items.reduce((sum, item) => sum + item.price * item.quantity, 0), [items]);
+  const itemCount = useMemo(() => {
+    if (!Array.isArray(items)) return 0;
+    return items.reduce((total, item) => total + item.quantity, 0);
+  }, [items]);
+  
+  const total = useMemo(() => {
+    if (!Array.isArray(items)) return 0;
+    return items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  }, [items]);
 
   // Memoize context value to prevent unnecessary re-renders
   const contextValue = useMemo(
     () => ({
-      items,
+      items: Array.isArray(items) ? items : [],
       addToCart,
       removeFromCart,
       updateQuantity,

@@ -4,10 +4,27 @@ import { LoginSchema, validateData } from '@/lib/validation/schemas';
 import { createAuthCookie } from '@/lib/auth/middleware';
 import { rateLimiter, RateLimitConfigs, getIdentifier } from '@/lib/rate-limiter';
 
+// Get CORS headers with proper origin (not wildcard when using credentials)
+function getCorsHeaders(request: NextRequest) {
+  const origin = request.headers.get('origin') || '*';
+  return {
+    'Access-Control-Allow-Origin': origin,
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    'Access-Control-Allow-Credentials': 'true',
+  };
+}
+
+export async function OPTIONS(request: NextRequest) {
+  return NextResponse.json({}, { headers: getCorsHeaders(request) });
+}
+
 /**
  * Customer login endpoint
  */
 export async function POST(request: NextRequest) {
+  const corsHeaders = getCorsHeaders(request);
+  
   try {
     // SECURITY: Apply rate limiting to prevent brute force attacks
     const identifier = getIdentifier(request);
@@ -24,6 +41,7 @@ export async function POST(request: NextRequest) {
         {
           status: 429,
           headers: {
+            ...corsHeaders,
             'Retry-After': resetTime.toString()
           }
         }
@@ -37,7 +55,7 @@ export async function POST(request: NextRequest) {
     if (!validation.success) {
       return NextResponse.json(
         { success: false, error: validation.error },
-        { status: 400 }
+        { status: 400, headers: corsHeaders }
       );
     }
 
@@ -54,7 +72,7 @@ export async function POST(request: NextRequest) {
     if (authError || !authData.user) {
       return NextResponse.json(
         { success: false, error: 'Invalid email or password' },
-        { status: 401 }
+        { status: 401, headers: corsHeaders }
       );
     }
     
@@ -68,7 +86,7 @@ export async function POST(request: NextRequest) {
     if (customerError || !customer) {
       return NextResponse.json(
         { success: false, error: 'Customer account not found' },
-        { status: 404 }
+        { status: 404, headers: corsHeaders }
       );
     }
     
@@ -82,7 +100,12 @@ export async function POST(request: NextRequest) {
       billing: customer.billing_address || {},
       shipping: customer.shipping_address || {},
       avatar_url: customer.avatar_url || null,
-      isWholesaleApproved: customer.is_wholesale_approved || false
+      isWholesaleApproved: customer.is_wholesale_approved || false,
+      loyaltyPoints: customer.loyalty_points || 0,
+      loyaltyTier: customer.loyalty_tier || 'bronze',
+      totalOrders: customer.total_orders || 0,
+      totalSpent: customer.total_spent || 0,
+      phone: customer.phone || null
     };
 
     // Create response with HTTP-only cookie (secure)
@@ -91,7 +114,7 @@ export async function POST(request: NextRequest) {
       user
       // NOTE: Session token no longer returned in JSON for security
       // Token is now in HTTP-only cookie, preventing XSS attacks
-    });
+    }, { headers: corsHeaders });
 
     // Set HTTP-only cookie with auth token
     const cookie = createAuthCookie(authData.session.access_token);
@@ -103,7 +126,7 @@ export async function POST(request: NextRequest) {
     console.error('Login error:', error);
     return NextResponse.json(
       { success: false, error: 'Login failed. Please try again.' },
-      { status: 500 }
+      { status: 500, headers: corsHeaders }
     );
   }
 }
