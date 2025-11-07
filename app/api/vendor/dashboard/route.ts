@@ -1,19 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServiceSupabase } from '@/lib/supabase/client';
+import { requireVendor } from '@/lib/auth/middleware';
 import { getVendorDashboardData } from '@/lib/parallel-queries';
 import { vendorCache, generateCacheKey } from '@/lib/cache-manager';
+
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 export async function GET(request: NextRequest) {
   const startTime = performance.now();
   
   try {
-    const vendorId = request.headers.get('x-vendor-id');
+    // Use secure middleware to get vendor_id from session
+    const authResult = await requireVendor(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
+    }
+    const { vendorId } = authResult;
     
     console.log('🔵 Dashboard request for vendor:', vendorId);
-    
-    if (!vendorId) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
-    }
     
     // Try optimized parallel queries with caching first
     try {

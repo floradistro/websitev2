@@ -1,19 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServiceSupabase } from '@/lib/supabase/client';
+import { requireVendor } from '@/lib/auth/middleware';
 import { withErrorHandler } from '@/lib/api-handler';
 
 export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 export const GET = withErrorHandler(async (request: NextRequest) => {
   try {
-    const vendorId = request.headers.get('x-vendor-id');
-    
-    if (!vendorId) {
-      return NextResponse.json(
-        { success: false, error: 'Vendor ID required' },
-        { status: 401 }
-      );
+    // Use secure middleware to get vendor_id from session
+    const authResult = await requireVendor(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
+    const { vendorId } = authResult;
     
     const supabase = getServiceSupabase();
     

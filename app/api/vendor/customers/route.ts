@@ -1,21 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServiceSupabase } from '@/lib/supabase/client';
+import { requireVendor } from '@/lib/auth/middleware';
 import { withErrorHandler } from '@/lib/api-handler';
+
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 export const GET = withErrorHandler(async (request: NextRequest) => {
   try {
+    // Use secure middleware to get vendor_id from session
+    const authResult = await requireVendor(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
+    }
+    const { vendorId } = authResult;
+
     const searchParams = request.nextUrl.searchParams;
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '1000');
     const search = searchParams.get('search') || '';
     const tier = searchParams.get('tier') || 'all';
-
-    // Get vendor ID from request header
-    const vendorId = request.headers.get('x-vendor-id');
-
-    if (!vendorId) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
-    }
 
     const supabase = getServiceSupabase();
 

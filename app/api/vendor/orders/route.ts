@@ -1,11 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServiceSupabase } from '@/lib/supabase/client';
+import { requireVendor } from '@/lib/auth/middleware';
 
 /**
  * Vendor Orders API
  * Provides aggregated order data across all locations for a vendor
  * Supports filtering by location, order type, status, and date range
  */
+
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 interface OrderStats {
   total_orders: number;
@@ -27,14 +31,12 @@ export async function GET(request: NextRequest) {
   const startTime = performance.now();
 
   try {
-    const vendorId = request.headers.get('x-vendor-id');
-
-    if (!vendorId) {
-      return NextResponse.json(
-        { error: 'Vendor authentication required' },
-        { status: 401 }
-      );
+    // Use secure middleware to get vendor_id from session
+    const authResult = await requireVendor(request);
+    if (authResult instanceof NextResponse) {
+      return authResult; // Return 401 if not authenticated
     }
+    const { vendorId } = authResult;
 
     const { searchParams } = new URL(request.url);
 
