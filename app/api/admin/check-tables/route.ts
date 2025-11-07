@@ -1,9 +1,9 @@
-import { createClient } from '@/lib/supabase/server';
+import { getServiceSupabase } from '@/lib/supabase/client';
 import { NextResponse } from 'next/server';
 
 export async function GET() {
   try {
-    const supabase = await createClient();
+    const supabase = getServiceSupabase();
 
     // Check if wholesale tables exist by trying to query them
     const tables = [

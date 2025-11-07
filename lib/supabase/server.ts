@@ -1,24 +1,13 @@
-import { createClient as createSupabaseClient } from '@supabase/supabase-js';
-import { cookies } from 'next/headers';
+import { getServiceSupabase } from './client';
 
+/**
+ * DEPRECATED: This function now returns the singleton service client.
+ * All new code should directly import getServiceSupabase from './client'
+ *
+ * This wrapper is kept for backwards compatibility only.
+ */
 export async function createClient() {
-  const cookieStore = await cookies();
-
-  return createSupabaseClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      auth: {
-        persistSession: false,
-        autoRefreshToken: false,
-        detectSessionInUrl: false
-      },
-      global: {
-        headers: {
-          'x-application-name': 'whaletools-server'
-        }
-      }
-    }
-  );
+  // Return singleton instance instead of creating new client
+  return getServiceSupabase();
 }
 

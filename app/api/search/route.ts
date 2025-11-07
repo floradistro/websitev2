@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { getServiceSupabase } from '@/lib/supabase/client';
 
 export async function GET(request: NextRequest) {
   try {
@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ success: true, results: [] });
     }
 
-    const supabase = await createClient();
+    const supabase = getServiceSupabase();
     const searchTerm = `%${query.toLowerCase()}%`;
 
     // Search products (only if vendorId provided)

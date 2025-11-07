@@ -11,10 +11,19 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 // Singleton instance to prevent multiple GoTrueClient warnings
 let supabaseInstance: SupabaseClient | null = null;
+let clientInstanceCount = 0;
 
 function createSupabaseClient() {
   if (supabaseInstance) {
+    console.log('✅ Returning existing Supabase client instance');
     return supabaseInstance;
+  }
+
+  clientInstanceCount++;
+  console.log('🔵 Creating Supabase client instance #', clientInstanceCount);
+
+  if (clientInstanceCount > 1) {
+    console.error('❌ MULTIPLE CLIENT INSTANCES DETECTED!', new Error().stack);
   }
 
   if (!supabaseUrl || !supabaseAnonKey) {
@@ -67,10 +76,18 @@ export const supabase = createSupabaseClient();
 
 // Singleton for service role client (server-side only)
 let serviceSupabaseInstance: SupabaseClient | null = null;
+let serviceInstanceCount = 0;
 
 export function getServiceSupabase() {
   if (serviceSupabaseInstance) {
     return serviceSupabaseInstance;
+  }
+
+  serviceInstanceCount++;
+  console.log('🟢 Creating Supabase SERVICE instance #', serviceInstanceCount);
+
+  if (serviceInstanceCount > 1) {
+    console.error('❌ MULTIPLE SERVICE INSTANCES DETECTED!', new Error().stack);
   }
 
   const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;

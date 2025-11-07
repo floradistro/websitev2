@@ -1,10 +1,10 @@
-import { createClient } from '@/lib/supabase/server';
+import { getServiceSupabase } from '@/lib/supabase/client';
 import { NextRequest, NextResponse } from 'next/server';
 
 // GET /api/vendor/wholesale-customers - List all wholesale customers for vendor
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createClient();
+    const supabase = getServiceSupabase();
     const { searchParams } = new URL(request.url);
 
     const vendorId = searchParams.get('vendor_id');
@@ -97,7 +97,7 @@ export async function GET(request: NextRequest) {
 // POST /api/vendor/wholesale-customers - Create, update, or delete wholesale customer
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient();
+    const supabase = getServiceSupabase();
     const body = await request.json();
     const { action, vendor_id, ...customerData } = body;
 

@@ -48,20 +48,44 @@ export function useProducts(params?: {
     queryKey: productKeys.list(filterKey),
     queryFn: async () => {
       const url = `/api/vendor/products/full?${queryParams.toString()}`;
-      const response = await fetch(url, {
-        credentials: 'include',
-      });
 
-      if (!response.ok) {
-        throw new Error('Failed to fetch products');
+      // CRITICAL FIX: Retry logic for 401 errors (cookie propagation delay)
+      let retries = 0;
+      const maxRetries = 2;
+
+      while (retries <= maxRetries) {
+        const response = await fetch(url, {
+          credentials: 'include',
+        });
+
+        if (response.ok) {
+          return response.json();
+        }
+
+        // If 401 and we have retries left, wait and retry
+        if (response.status === 401 && retries < maxRetries) {
+          console.warn(`⚠️  401 on attempt ${retries + 1}, retrying...`);
+          // Wait 300ms for cookie to propagate
+          await new Promise(resolve => setTimeout(resolve, 300));
+          retries++;
+          continue;
+        }
+
+        // Out of retries or different error
+        const errorText = await response.text();
+        console.error('Failed to fetch products:', response.status, errorText);
+        throw new Error(`Failed to fetch products: ${response.status}`);
       }
 
-      return response.json();
+      throw new Error('Failed to fetch products after retries');
     },
     // Keep previous data while fetching new page
     placeholderData: (previousData) => previousData,
     // CRITICAL: Don't run query until auth is loaded AND user is authenticated
     enabled: !isAuthLoading && isAuthenticated,
+    // Retry on failure (network issues, etc.)
+    retry: 1,
+    retryDelay: 500,
   });
 }
 

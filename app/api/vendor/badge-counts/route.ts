@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { getServiceSupabase } from '@/lib/supabase/client';
 
 export async function GET(request: NextRequest) {
   try {
@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Missing vendorId' }, { status: 400 });
     }
 
-    const supabase = await createClient();
+    const supabase = getServiceSupabase();
 
     // Count pending orders
     const { count: ordersCount } = await supabase

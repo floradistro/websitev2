@@ -75,56 +75,87 @@ export function AppAuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     let mounted = true;
 
-    const savedUser = localStorage.getItem('app_user');
-    const savedApps = localStorage.getItem('app_accessible_apps');
-    const savedLocations = localStorage.getItem('app_locations');
+    async function initAuth() {
+      const savedUser = localStorage.getItem('app_user');
+      const savedApps = localStorage.getItem('app_accessible_apps');
+      const savedLocations = localStorage.getItem('app_locations');
 
-    if (savedUser && mounted) {
-      try {
-        const userData = JSON.parse(savedUser);
-        setUser(userData);
-        setVendor(userData.vendor);
-        setIsAuthenticated(true);
+      if (savedUser && mounted) {
+        try {
+          const userData = JSON.parse(savedUser);
 
-        // Default apps available to all users: POS, Customers, Digital Menus
-        const defaultApps = ['pos', 'customers', 'tv_menus'];
-        const isAdmin = userData.role === 'vendor_owner' || userData.role === 'vendor_manager' || userData.role === 'admin';
-        if (savedApps) {
-          const parsedApps = JSON.parse(savedApps);
-          // If empty array and not admin, use default apps
-          setAccessibleApps(parsedApps.length === 0 && !isAdmin ? defaultApps : parsedApps);
-        } else {
-          // No saved apps - use defaults for non-admins
-          setAccessibleApps(isAdmin ? [] : defaultApps);
+          // CRITICAL FIX: Verify auth cookie exists before setting authenticated
+          // BUT: Skip verification within 10 seconds of login to allow cookie propagation
+          const loginTimestamp = localStorage.getItem('app_login_timestamp');
+          const now = Date.now();
+          const isRecentLogin = loginTimestamp && (now - parseInt(loginTimestamp)) < 10000; // 10 seconds
+
+          const hasCookie = document.cookie.split(';').some(cookie => cookie.trim().startsWith('auth-token='));
+
+          if (!hasCookie && !isRecentLogin) {
+            console.warn('⚠️  Auth cookie missing - clearing stale session');
+            // Cookie missing - clear stale localStorage
+            localStorage.removeItem('app_user');
+            localStorage.removeItem('app_accessible_apps');
+            localStorage.removeItem('app_locations');
+            localStorage.removeItem('vendor_id');
+            localStorage.removeItem('vendor_email');
+            localStorage.removeItem('app_login_timestamp');
+            setIsLoading(false);
+            return;
+          }
+
+          if (isRecentLogin) {
+            console.log('✅ Recent login detected - skipping cookie verification');
+          }
+
+          // Cookie exists or recent login - safe to set authenticated state
+          setUser(userData);
+          setVendor(userData.vendor);
+          setIsAuthenticated(true);
+
+          // Default apps available to all users: POS, Customers, Digital Menus
+          const defaultApps = ['pos', 'customers', 'tv_menus'];
+          const isAdmin = userData.role === 'vendor_owner' || userData.role === 'vendor_manager' || userData.role === 'admin';
+          if (savedApps) {
+            const parsedApps = JSON.parse(savedApps);
+            // If empty array and not admin, use default apps
+            setAccessibleApps(parsedApps.length === 0 && !isAdmin ? defaultApps : parsedApps);
+          } else {
+            // No saved apps - use defaults for non-admins
+            setAccessibleApps(isAdmin ? [] : defaultApps);
+          }
+
+          if (savedLocations) {
+            const parsedLocations = JSON.parse(savedLocations);
+            setLocations(parsedLocations);
+            console.log('📍 Loaded locations from localStorage:', parsedLocations.length, 'locations');
+          } else {
+            console.warn('⚠️  No locations found in localStorage');
+            setLocations([]);
+          }
+
+          // Ensure legacy keys are set for backwards compatibility
+          if (userData.vendor_id && !localStorage.getItem('vendor_id')) {
+            localStorage.setItem('vendor_id', userData.vendor_id);
+          }
+          if (userData.vendor?.email && !localStorage.getItem('vendor_email')) {
+            localStorage.setItem('vendor_email', userData.vendor.email);
+          }
+
+          console.log('✅ Loaded user from localStorage:', userData.name, `(${userData.role})`, 'Cookie verified');
+        } catch (error) {
+          console.error('Failed to load user from localStorage:', error);
+          localStorage.removeItem('app_user');
+          localStorage.removeItem('app_accessible_apps');
+          localStorage.removeItem('app_locations');
         }
-
-        if (savedLocations) {
-          const parsedLocations = JSON.parse(savedLocations);
-          setLocations(parsedLocations);
-          console.log('📍 Loaded locations from localStorage:', parsedLocations.length, 'locations');
-        } else {
-          console.warn('⚠️  No locations found in localStorage');
-          setLocations([]);
-        }
-
-        // Ensure legacy keys are set for backwards compatibility
-        if (userData.vendor_id && !localStorage.getItem('vendor_id')) {
-          localStorage.setItem('vendor_id', userData.vendor_id);
-        }
-        if (userData.vendor?.email && !localStorage.getItem('vendor_email')) {
-          localStorage.setItem('vendor_email', userData.vendor.email);
-        }
-
-        console.log('✅ Loaded user from localStorage:', userData.name, `(${userData.role})`);
-      } catch (error) {
-        console.error('Failed to load user from localStorage:', error);
-        localStorage.removeItem('app_user');
-        localStorage.removeItem('app_accessible_apps');
-        localStorage.removeItem('app_locations');
       }
+
+      setIsLoading(false);
     }
 
-    setIsLoading(false);
+    initAuth();
 
     return () => {
       mounted = false;
@@ -138,6 +169,7 @@ export function AppAuthProvider({ children }: { children: React.ReactNode }) {
       localStorage.removeItem('app_user');
       localStorage.removeItem('app_accessible_apps');
       localStorage.removeItem('app_locations');
+      localStorage.removeItem('app_login_timestamp');
       localStorage.removeItem('vendor_id');
       localStorage.removeItem('vendor_email');
       localStorage.removeItem('supabase_session');
@@ -224,6 +256,7 @@ export function AppAuthProvider({ children }: { children: React.ReactNode }) {
       localStorage.setItem('app_user', JSON.stringify(userData));
       localStorage.setItem('app_accessible_apps', JSON.stringify(apps));
       localStorage.setItem('app_locations', JSON.stringify(userLocations));
+      localStorage.setItem('app_login_timestamp', Date.now().toString()); // Track login time for cookie verification grace period
       console.log('💾 Saved to localStorage - locations count:', userLocations.length);
       // Also set legacy keys for backwards compatibility
       localStorage.setItem('vendor_id', userData.vendor_id);
@@ -257,6 +290,7 @@ export function AppAuthProvider({ children }: { children: React.ReactNode }) {
       localStorage.removeItem('app_user');
       localStorage.removeItem('app_accessible_apps');
       localStorage.removeItem('app_locations');
+      localStorage.removeItem('app_login_timestamp');
       // Also clear old vendor auth data for backwards compatibility
       localStorage.removeItem('vendor_id');
       localStorage.removeItem('vendor_email');

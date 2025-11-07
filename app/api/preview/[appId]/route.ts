@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { getServiceSupabase } from '@/lib/supabase/client'
 
 /**
  * GET /api/preview/[appId] - Serve live preview of app files
@@ -11,7 +11,7 @@ export async function GET(
 ) {
   try {
     const { appId } = await params
-    const supabase = await createClient()
+    const supabase = getServiceSupabase()
 
     // Get all files for this app
     const { data: files, error } = await supabase

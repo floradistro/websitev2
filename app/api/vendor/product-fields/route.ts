@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServiceSupabase } from '@/lib/supabase/client';
+import { requireVendor } from '@/lib/auth/middleware';
 
 /**
  * GET /api/vendor/product-fields
@@ -12,7 +13,9 @@ import { getServiceSupabase } from '@/lib/supabase/client';
  */
 export async function GET(request: NextRequest) {
   try {
-    const vendorId = request.headers.get('x-vendor-id');
+    const authResult = await requireVendor(request);
+    if (authResult instanceof NextResponse) return authResult;
+    const { vendorId } = authResult;
     const { searchParams } = new URL(request.url);
     const categoryId = searchParams.get('category_id');
 
@@ -179,11 +182,11 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
-    const vendorId = request.headers.get('x-vendor-id');
-    
-    if (!vendorId) {
-      return NextResponse.json({ error: 'Vendor ID required' }, { status: 401 });
+    const authResult = await requireVendor(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
+    const { vendorId } = authResult;
 
     const { field_id, field_definition, category_id } = await request.json();
 
@@ -239,11 +242,11 @@ export async function POST(request: NextRequest) {
  */
 export async function PUT(request: NextRequest) {
   try {
-    const vendorId = request.headers.get('x-vendor-id');
-    
-    if (!vendorId) {
-      return NextResponse.json({ error: 'Vendor ID required' }, { status: 401 });
+    const authResult = await requireVendor(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
+    const { vendorId } = authResult;
 
     const { id, field_definition, category_id, is_active, sort_order } = await request.json();
 
@@ -293,7 +296,9 @@ export async function PUT(request: NextRequest) {
  */
 export async function DELETE(request: NextRequest) {
   try {
-    const vendorId = request.headers.get('x-vendor-id');
+    const authResult = await requireVendor(request);
+    if (authResult instanceof NextResponse) return authResult;
+    const { vendorId } = authResult;
     const { searchParams } = new URL(request.url);
     const fieldId = searchParams.get('id');
     

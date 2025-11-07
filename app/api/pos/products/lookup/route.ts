@@ -1,10 +1,10 @@
-import { createClient } from '@/lib/supabase/server';
+import { getServiceSupabase } from '@/lib/supabase/client';
 import { NextRequest, NextResponse } from 'next/server';
 
 // GET /api/pos/products/lookup?sku=ABC-123&location_id=xxx
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createClient();
+    const supabase = getServiceSupabase();
     const { searchParams } = new URL(request.url);
 
     const sku = searchParams.get('sku');
@@ -138,7 +138,7 @@ export async function GET(request: NextRequest) {
 // POST /api/pos/products/lookup - Batch lookup by multiple SKUs
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient();
+    const supabase = getServiceSupabase();
     const body = await request.json();
     const { skus, location_id } = body;
 

@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServiceSupabase } from '@/lib/supabase/client';
+import { requireVendor } from '@/lib/auth/middleware';
 
 export async function GET(request: NextRequest) {
   try {
     // Support both header and query parameter
-    const vendorId = request.headers.get('x-vendor-id') ||
-                     request.nextUrl.searchParams.get('vendor_id');
+    const authResult = await requireVendor(request);
+    if (authResult instanceof NextResponse) return authResult;
+    const { vendorId } = authResult;
 
     if (!vendorId) {
       return NextResponse.json({ success: false, error: 'Vendor ID required' }, { status: 400 });
@@ -35,7 +37,9 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const vendorId = request.headers.get('x-vendor-id');
+    const authResult = await requireVendor(request);
+    if (authResult instanceof NextResponse) return authResult;
+    const { vendorId } = authResult;
     const body = await request.json();
     const { action, location_id, ...data } = body;
     

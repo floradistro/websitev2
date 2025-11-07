@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { getServiceSupabase } from '@/lib/supabase/client';
 
 export const runtime = 'edge';
 
@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
 
     const parentCategories = parentCategoriesParam.split(',').map(c => c.trim());
 
-    const supabase = await createClient();
+    const supabase = getServiceSupabase();
 
     // First, fetch the parent category IDs by name
     const { data: parentCats, error: parentError } = await supabase

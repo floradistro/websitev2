@@ -321,11 +321,12 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
 
 export const DELETE = withErrorHandler(async (request: NextRequest) => {
   try {
-    const vendorId = request.headers.get('x-vendor-id');
-    
-    if (!vendorId) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+    // SECURITY FIX: Use authenticated session instead of spoofable headers
+    const authResult = await requireVendor(request);
+    if (authResult instanceof NextResponse) {
+      return authResult; // Return auth error
     }
+    const { vendorId } = authResult;
 
     const { searchParams } = new URL(request.url);
     const productId = searchParams.get('product_id');

@@ -1,14 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServiceSupabase } from '@/lib/supabase/client';
+import { requireVendor } from '@/lib/auth/middleware';
 
 // GET - List all domains for a vendor
 export async function GET(request: NextRequest) {
   try {
-    const vendorId = request.headers.get('x-vendor-id');
-    
-    if (!vendorId) {
-      return NextResponse.json({ error: 'Vendor ID required' }, { status: 401 });
+    const authResult = await requireVendor(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
+    const { vendorId } = authResult;
 
     const supabase = getServiceSupabase();
     
@@ -31,11 +32,11 @@ export async function GET(request: NextRequest) {
 // POST - Add a new custom domain
 export async function POST(request: NextRequest) {
   try {
-    const vendorId = request.headers.get('x-vendor-id');
-    
-    if (!vendorId) {
-      return NextResponse.json({ error: 'Vendor ID required' }, { status: 401 });
+    const authResult = await requireVendor(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
+    const { vendorId } = authResult;
 
     const body = await request.json();
     const { domain } = body;
@@ -99,11 +100,11 @@ export async function POST(request: NextRequest) {
 // DELETE - Remove a custom domain
 export async function DELETE(request: NextRequest) {
   try {
-    const vendorId = request.headers.get('x-vendor-id');
-    
-    if (!vendorId) {
-      return NextResponse.json({ error: 'Vendor ID required' }, { status: 401 });
+    const authResult = await requireVendor(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
+    const { vendorId } = authResult;
 
     const { searchParams } = new URL(request.url);
     const domainId = searchParams.get('id');

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServiceSupabase } from '@/lib/supabase/client';
+import { requireVendor } from '@/lib/auth/middleware';
 
 const VERCEL_TOKEN = process.env.VERCEL_TOKEN;
 const VERCEL_PROJECT_ID = process.env.VERCEL_PROJECT_ID;
@@ -7,11 +8,11 @@ const VERCEL_TEAM_ID = process.env.VERCEL_TEAM_ID;
 
 export async function POST(request: NextRequest) {
   try {
-    const vendorId = request.headers.get('x-vendor-id');
-    
-    if (!vendorId) {
-      return NextResponse.json({ error: 'Vendor ID required' }, { status: 401 });
+    const authResult = await requireVendor(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
+    const { vendorId } = authResult;
 
     const body = await request.json();
     const { domainId } = body;
@@ -110,7 +111,9 @@ export async function POST(request: NextRequest) {
 // Remove domain from Vercel
 export async function DELETE(request: NextRequest) {
   try {
-    const vendorId = request.headers.get('x-vendor-id');
+    const authResult = await requireVendor(request);
+    if (authResult instanceof NextResponse) return authResult;
+    const { vendorId } = authResult;
     const domainName = request.nextUrl.searchParams.get('domain');
     
     if (!vendorId || !domainName) {

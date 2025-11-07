@@ -1,5 +1,13 @@
 "use client";
 
+/**
+ * @deprecated This file is DEPRECATED and should NOT be used.
+ * Use AppAuthContext instead: import { useAppAuth } from '@/context/AppAuthContext'
+ *
+ * This file is kept only for backwards compatibility and will be removed in a future version.
+ * All authentication should use the unified AppAuthContext.
+ */
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase/client';
 
@@ -209,7 +217,11 @@ export function VendorAuthProvider({ children }: { children: React.ReactNode }) 
   );
 }
 
+/**
+ * @deprecated Use useAppAuth from AppAuthContext instead
+ */
 export function useVendorAuth() {
+  console.warn('⚠️  useVendorAuth is DEPRECATED. Use useAppAuth from AppAuthContext instead.');
   return useContext(VendorAuthContext);
 }
 

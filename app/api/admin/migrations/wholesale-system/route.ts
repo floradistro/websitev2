@@ -1,11 +1,11 @@
-import { createClient } from '@/lib/supabase/server';
+import { getServiceSupabase } from '@/lib/supabase/client';
 import { NextRequest, NextResponse } from 'next/server';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient();
+    const supabase = getServiceSupabase();
 
     // Read the migration file
     const migrationPath = join(process.cwd(), 'supabase', 'migrations', '20251027_wholesale_system.sql');

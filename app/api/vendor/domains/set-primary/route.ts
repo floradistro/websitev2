@@ -1,14 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServiceSupabase } from '@/lib/supabase/client';
+import { requireVendor } from '@/lib/auth/middleware';
 
 // POST - Set a domain as primary
 export async function POST(request: NextRequest) {
   try {
-    const vendorId = request.headers.get('x-vendor-id');
-    
-    if (!vendorId) {
-      return NextResponse.json({ error: 'Vendor ID required' }, { status: 401 });
+    const authResult = await requireVendor(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
+    const { vendorId } = authResult;
 
     const body = await request.json();
     const { domainId } = body;

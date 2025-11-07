@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server';
+import { getServiceSupabase } from '@/lib/supabase/client';
 import { NextRequest, NextResponse } from 'next/server';
 
 /**
@@ -12,7 +12,7 @@ import { NextRequest, NextResponse } from 'next/server';
  */
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createClient();
+    const supabase = getServiceSupabase();
     const { searchParams } = new URL(request.url);
 
     const vendorId = searchParams.get('vendor_id');
@@ -142,7 +142,7 @@ export async function GET(request: NextRequest) {
  */
 export async function PATCH(request: NextRequest) {
   try {
-    const supabase = await createClient();
+    const supabase = getServiceSupabase();
     const body = await request.json();
 
     const { inventory_id, reorder_point } = body;
