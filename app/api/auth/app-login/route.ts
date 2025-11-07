@@ -10,7 +10,23 @@ import { createAuthCookie } from '@/lib/auth/middleware';
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
+// Get CORS headers with proper origin (not wildcard when using credentials)
+function getCorsHeaders(request: NextRequest) {
+  const origin = request.headers.get('origin') || '*';
+  return {
+    'Access-Control-Allow-Origin': origin,
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    'Access-Control-Allow-Credentials': 'true',
+  };
+}
+
+export async function OPTIONS(request: NextRequest) {
+  return NextResponse.json({}, { headers: getCorsHeaders(request) });
+}
+
 export async function POST(request: NextRequest) {
+  const corsHeaders = getCorsHeaders(request);
   try {
     const body = await request.json();
 
@@ -23,7 +39,7 @@ export async function POST(request: NextRequest) {
       });
       return NextResponse.json(
         { success: false, error: validation.error },
-        { status: 400 }
+        { status: 400, headers: corsHeaders }
       );
     }
 
@@ -38,6 +54,8 @@ export async function POST(request: NextRequest) {
     });
 
     if (authError) {
+      console.log('🔍 Supabase auth failed, checking for legacy vendor:', email);
+      
       // Fallback: Check if vendor exists (for legacy vendors without auth accounts)
       const { data: vendor, error: vendorError } = await supabase
         .from('vendors')
@@ -46,10 +64,18 @@ export async function POST(request: NextRequest) {
         .eq('status', 'active')
         .single();
 
+      console.log('📊 Legacy vendor lookup result:', { 
+        found: !!vendor, 
+        vendorId: vendor?.id,
+        storeName: vendor?.store_name,
+        error: vendorError?.message 
+      });
+
       if (vendorError || !vendor) {
+        console.error('❌ Legacy vendor not found:', vendorError);
         return NextResponse.json(
           { success: false, error: 'Invalid email or password' },
-          { status: 401 }
+          { status: 401, headers: corsHeaders }
         );
       }
 
@@ -84,7 +110,7 @@ export async function POST(request: NextRequest) {
           console.error('Failed to create vendor admin user:', createError);
           return NextResponse.json(
             { success: false, error: 'Failed to create user account' },
-            { status: 500 }
+            { status: 500, headers: corsHeaders }
           );
         }
 
@@ -136,7 +162,7 @@ export async function POST(request: NextRequest) {
           return NextResponse.json({
             success: false,
             error: 'Authentication failed. Please contact support to activate your account.'
-          }, { status: 401 });
+          }, { status: 401, headers: corsHeaders });
         }
 
         // Sign in successful - use this session
@@ -161,7 +187,7 @@ export async function POST(request: NextRequest) {
           apps: [],
           locations: locations,
           message: 'Logged in as vendor admin (legacy - existing auth)'
-        });
+        }, { headers: corsHeaders });
 
         const cookie = createAuthCookie(signInData.session.access_token);
         response.cookies.set(cookie.name, cookie.value, cookie.options);
@@ -180,7 +206,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({
           success: false,
           error: 'Failed to create session. Please try logging in again.'
-        }, { status: 500 });
+        }, { status: 500, headers: corsHeaders });
       }
 
       // Return success with auth token cookie
@@ -205,7 +231,7 @@ export async function POST(request: NextRequest) {
         apps: [],
         locations: locations,
         message: 'Logged in as vendor admin (migrated from legacy with new auth)'
-      });
+      }, { headers: corsHeaders });
 
       const cookie = createAuthCookie(newSessionData.session.access_token);
       response.cookies.set(cookie.name, cookie.value, cookie.options);
@@ -344,7 +370,7 @@ export async function POST(request: NextRequest) {
         apps: accessibleApps,
         locations: locations
         // NOTE: Session token no longer in JSON - now in HTTP-only cookie
-      });
+      }, { headers: corsHeaders });
 
       // Set HTTP-only cookie with auth token
       const cookie = createAuthCookie(authData.session.access_token);
@@ -381,7 +407,7 @@ export async function POST(request: NextRequest) {
         console.error('Failed to create vendor admin user:', createError);
         return NextResponse.json(
           { success: false, error: 'Failed to create user account' },
-          { status: 500 }
+          { status: 500, headers: corsHeaders }
         );
       }
 
@@ -431,7 +457,7 @@ export async function POST(request: NextRequest) {
         apps: [], // Vendor admins have access to all apps
         locations: locations
         // NOTE: Session token no longer in JSON - now in HTTP-only cookie
-      });
+      }, { headers: corsHeaders });
 
       // Set HTTP-only cookie with auth token
       const cookie = createAuthCookie(authData.session.access_token);
@@ -450,7 +476,7 @@ export async function POST(request: NextRequest) {
     console.error('App login error:', error);
     return NextResponse.json(
       { success: false, error: 'Login failed. Please try again.' },
-      { status: 500 }
+      { status: 500, headers: corsHeaders }
     );
   }
 }
