@@ -105,26 +105,49 @@ export async function POST(request: NextRequest) {
     }
 
     // Step 4: Get user's locations
-    const { data: userLocations } = await supabase
-      .from('user_locations')
-      .select('location_id')
-      .eq('user_id', user.id);
-
-    const locationIds = userLocations?.map(ul => ul.location_id) || [];
-
     let locations: any[] = [];
-    if (locationIds.length > 0) {
-      const { data: locs } = await supabase
+    
+    // Vendor owners and managers get ALL vendor locations
+    if (user.role === 'vendor_owner' || user.role === 'vendor_manager') {
+      const { data: allVendorLocs } = await supabase
         .from('locations')
-        .select('id, name, address_line1, city, state')
-        .in('id', locationIds);
+        .select('id, name, address_line1, city, state, is_primary')
+        .eq('vendor_id', user.vendor_id)
+        .eq('is_active', true);
       
-      locations = locs?.map(l => ({
+      locations = allVendorLocs?.map(l => ({
         id: l.id,
         name: l.name,
         address: `${l.address_line1 || ''} ${l.city || ''}, ${l.state || ''}`.trim(),
-        is_primary: false
+        is_primary: l.is_primary || false
       })) || [];
+      
+      console.log('✅ Vendor owner - loaded ALL locations:', locations.length);
+    } else {
+      // Employees only get assigned locations from user_locations
+      const { data: userLocations } = await supabase
+        .from('user_locations')
+        .select('location_id')
+        .eq('user_id', user.id);
+
+      const locationIds = userLocations?.map(ul => ul.location_id) || [];
+
+      if (locationIds.length > 0) {
+        const { data: locs } = await supabase
+          .from('locations')
+          .select('id, name, address_line1, city, state, is_primary')
+          .in('id', locationIds)
+          .eq('is_active', true);
+        
+        locations = locs?.map(l => ({
+          id: l.id,
+          name: l.name,
+          address: `${l.address_line1 || ''} ${l.city || ''}, ${l.state || ''}`.trim(),
+          is_primary: l.is_primary || false
+        })) || [];
+        
+        console.log('✅ Employee - loaded assigned locations:', locations.length);
+      }
     }
 
     // Step 5: Get accessible apps (based on role)
