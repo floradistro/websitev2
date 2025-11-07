@@ -49,8 +49,8 @@ export async function POST(request: NextRequest) {
 
     // Step 1: Check if customer exists in database (by email OR phone)
     // If BOTH email and phone are provided, prioritize phone (existing identifier)
-    let customers;
-    let customerError;
+    let customers: any[] | null = null;
+    let customerError: any = null;
 
     if (phone) {
       // If phone is provided, search by phone (even if email is also provided)
