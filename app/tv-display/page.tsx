@@ -88,6 +88,33 @@ function TVDisplayContent() {
   };
 
   /**
+   * Helper function to sort products by strain type for Flower category
+   * Simple ordering: Sativa → Sativa Hybrid → Hybrid → Indica Hybrid → Indica
+   */
+  const sortProductsByStrainType = (products: any[]) => {
+    const strainOrder: Record<string, number> = {
+      'Sativa': 1,
+      'Sativa Hybrid': 2,
+      'Hybrid': 3,
+      'Indica Hybrid': 4,
+      'Indica': 5,
+    };
+
+    return products.slice().sort((a, b) => {
+      const strainA = a.custom_fields?.strain_type || '';
+      const strainB = b.custom_fields?.strain_type || '';
+
+      const orderA = strainOrder[strainA] || 999;
+      const orderB = strainOrder[strainB] || 999;
+
+      if (orderA !== orderB) return orderA - orderB;
+
+      // Same strain type, sort alphabetically by name
+      return a.name.localeCompare(b.name);
+    });
+  };
+
+  /**
    * Orientation & Viewport Detection
    */
   useEffect(() => {
@@ -1085,6 +1112,14 @@ function TVDisplayContent() {
               console.log(`📦 Grid Static: Showing all ${products.length} products`);
             }
 
+            // SMART SORTING: Group products by strain type for Flower category
+            // Check if this is a Flower menu (by category name or product strain types)
+            const hasStrainTypes = productsToShow.some((p: any) => p.custom_fields?.strain_type);
+            if (hasStrainTypes) {
+              productsToShow = sortProductsByStrainType(productsToShow);
+              console.log('🌿 Sorted products by strain type for easier customer navigation');
+            }
+
             console.log('🎨 Layout style:', layoutStyle, '(defined at top level)');
 
             // Adjust grid for split view - reduce columns to prevent squashing
@@ -1194,18 +1229,31 @@ function TVDisplayContent() {
               // Filter products for each side from ALL products (not productsToShow)
               // Use case-insensitive matching for category names
               // Support both direct category match AND parent category match (for nested categories)
-              const allLeftProducts = products.filter((p: any) => {
+              let allLeftProducts = products.filter((p: any) => {
                 const categoryName = p.primary_category?.name?.toLowerCase();
                 const parentCategoryName = p.primary_category?.parent_category?.name?.toLowerCase();
                 const targetCategory = splitLeftCategory?.toLowerCase();
                 return categoryName === targetCategory || parentCategoryName === targetCategory;
               });
-              const allRightProducts = products.filter((p: any) => {
+              let allRightProducts = products.filter((p: any) => {
                 const categoryName = p.primary_category?.name?.toLowerCase();
                 const parentCategoryName = p.primary_category?.parent_category?.name?.toLowerCase();
                 const targetCategory = splitRightCategory?.toLowerCase();
                 return categoryName === targetCategory || parentCategoryName === targetCategory;
               });
+
+              // SMART SORTING: Apply strain type sorting to each side if applicable
+              const leftHasStrainTypes = allLeftProducts.some((p: any) => p.custom_fields?.strain_type);
+              const rightHasStrainTypes = allRightProducts.some((p: any) => p.custom_fields?.strain_type);
+
+              if (leftHasStrainTypes) {
+                allLeftProducts = sortProductsByStrainType(allLeftProducts);
+                console.log('🌿 Left side sorted by strain type');
+              }
+              if (rightHasStrainTypes) {
+                allRightProducts = sortProductsByStrainType(allRightProducts);
+                console.log('🌿 Right side sorted by strain type');
+              }
 
               // Apply independent pagination for each side
               // CRITICAL FIX: List mode shows ALL products vertically (no pagination needed)
