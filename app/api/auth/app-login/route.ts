@@ -110,14 +110,87 @@ export async function POST(request: NextRequest) {
       console.log('✅ Mapped locations (legacy mode):', locations.length);
       console.log('📍 Returning locations:', JSON.stringify(locations, null, 2));
 
-      // Return vendor admin data (legacy mode)
-      return NextResponse.json({
+      // CRITICAL FIX: Legacy vendors don't have Supabase auth - create it now
+      // Use the password they just provided to create their auth account
+      const { data: newAuthData, error: createAuthError } = await supabase.auth.admin.createUser({
+        email: vendor.email,
+        password: password, // Use the password they just entered
+        email_confirm: true,
+        user_metadata: {
+          vendor_id: vendor.id,
+          role: 'vendor_owner',
+          legacy_migration: true,
+          migrated_at: new Date().toISOString()
+        }
+      });
+
+      if (createAuthError) {
+        // If user already exists but password was wrong, try signing in
+        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+          email: vendor.email,
+          password: password
+        });
+
+        if (signInError || !signInData.session) {
+          console.error('Legacy vendor auth failed:', createAuthError, signInError);
+          return NextResponse.json({
+            success: false,
+            error: 'Authentication failed. Please contact support to activate your account.'
+          }, { status: 401 });
+        }
+
+        // Sign in successful - use this session
+        const response = NextResponse.json({
+          success: true,
+          user: {
+            id: userId,
+            email: vendor.email,
+            name: vendor.store_name,
+            role: 'vendor_owner',
+            vendor_id: vendor.id,
+            vendor: {
+              id: vendor.id,
+              store_name: vendor.store_name,
+              slug: vendor.slug,
+              logo_url: vendor.logo_url,
+              vendor_type: vendor.vendor_type || 'standard',
+              wholesale_enabled: vendor.wholesale_enabled || false,
+              pos_enabled: vendor.pos_enabled || false
+            }
+          },
+          apps: [],
+          locations: locations,
+          message: 'Logged in as vendor admin (legacy - existing auth)'
+        });
+
+        const cookie = createAuthCookie(signInData.session.access_token);
+        response.cookies.set(cookie.name, cookie.value, cookie.options);
+        console.log('✅ Auth cookie set for legacy vendor (existing auth)');
+        return response;
+      }
+
+      // Auth user created successfully - now sign them in to get a session
+      const { data: newSessionData, error: newSessionError } = await supabase.auth.signInWithPassword({
+        email: vendor.email,
+        password: password
+      });
+
+      if (newSessionError || !newSessionData.session) {
+        console.error('Failed to create session for new auth user:', newSessionError);
+        return NextResponse.json({
+          success: false,
+          error: 'Failed to create session. Please try logging in again.'
+        }, { status: 500 });
+      }
+
+      // Return success with auth token cookie
+      const response = NextResponse.json({
         success: true,
         user: {
           id: userId,
           email: vendor.email,
           name: vendor.store_name,
-          role: 'vendor_owner', // SCHEMA FIX: Use vendor_owner to match enum
+          role: 'vendor_owner',
           vendor_id: vendor.id,
           vendor: {
             id: vendor.id,
@@ -129,10 +202,16 @@ export async function POST(request: NextRequest) {
             pos_enabled: vendor.pos_enabled || false
           }
         },
-        apps: [], // Vendor admins have access to all apps
-        locations: locations, // CRITICAL FIX: Load locations from database
-        message: 'Logged in as vendor admin (legacy mode)'
+        apps: [],
+        locations: locations,
+        message: 'Logged in as vendor admin (migrated from legacy with new auth)'
       });
+
+      const cookie = createAuthCookie(newSessionData.session.access_token);
+      response.cookies.set(cookie.name, cookie.value, cookie.options);
+      console.log('✅ Auth cookie set for newly migrated legacy vendor');
+
+      return response;
     }
 
     // Supabase auth successful - determine if vendor or employee
