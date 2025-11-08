@@ -575,23 +575,40 @@ export default function POSRegisterPage() {
 
   // Show location selector if not selected (for admins or multi-location staff)
   if (!selectedLocation) {
-    console.log('📍 POS showing location selector - locations available:', locations.length);
+    console.log('📍 POS showing location selector - locations available:', locations.length, 'isLoading:', isLoading);
 
-    // CRITICAL: If context has no locations but user/vendor exists, force reload
-    if (locations.length === 0 && vendor?.id) {
-      console.error('🚨 CRITICAL: Context lost locations! Vendor:', vendor.id, 'User:', user?.email);
-      console.error('This should NEVER happen for logged-in users. Forcing page reload...');
-
-      // Clear possibly corrupted state
-      localStorage.removeItem('pos_selected_location');
-
-      // Force reload to re-initialize context
-      window.location.reload();
-
+    // If still loading context, show loading state
+    if (isLoading) {
       return (
         <div className="min-h-screen bg-black text-white flex items-center justify-center">
-          <div className="text-white/40 text-xs uppercase tracking-[0.15em]">
-            Reloading... (Context lost location data)
+          <div className="text-white/40 text-xs uppercase tracking-[0.15em]">Loading locations...</div>
+        </div>
+      );
+    }
+
+    // If context finished loading but has no locations (and user is logged in), show error
+    // DO NOT auto-reload - this causes bootloop when switching locations with active session
+    if (locations.length === 0 && vendor?.id) {
+      console.error('🚨 CRITICAL: Context has no locations! Vendor:', vendor.id, 'User:', user?.email);
+
+      return (
+        <div className="min-h-screen bg-black text-white flex items-center justify-center p-6">
+          <div className="max-w-md text-center">
+            <div className="text-red-400 text-sm uppercase tracking-[0.15em] mb-4">
+              No Locations Available
+            </div>
+            <p className="text-white/60 text-xs mb-6">
+              Your account doesn't have access to any locations. Please contact your administrator.
+            </p>
+            <button
+              onClick={() => {
+                localStorage.removeItem('pos_selected_location');
+                window.location.href = '/vendor/apps';
+              }}
+              className="px-6 py-3 bg-white/10 border border-white/20 rounded-xl hover:bg-white/20 transition-all text-xs uppercase tracking-[0.15em]"
+            >
+              Back to Dashboard
+            </button>
           </div>
         </div>
       );
