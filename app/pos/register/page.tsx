@@ -456,17 +456,22 @@ export default function POSRegisterPage() {
     setShowPayment(true);
   };
 
-  // Process payment
+  // Process payment - CLEAN VERSION WITH PROPER ERROR RECOVERY
   const handlePaymentComplete = async (paymentData: PaymentData) => {
+    // Set processing AFTER modal validates and calls this
     setProcessing(true);
 
     try {
+      // Validation
       if (taxRate === null) {
-        alert('Tax configuration not loaded. Please refresh the page.');
-        setProcessing(false);
-        return;
+        throw new Error('Tax configuration not loaded. Please refresh the page.');
       }
 
+      if (!selectedLocation?.id || !vendor?.id) {
+        throw new Error('Location or vendor information missing. Please refresh.');
+      }
+
+      // Calculate totals
       const subtotal = cart.reduce((sum, item) => sum + item.lineTotal, 0);
       const taxAmount = subtotal * taxRate;
       const total = subtotal + taxAmount;
@@ -477,12 +482,19 @@ export default function POSRegisterPage() {
         ? `${selectedCustomer.first_name} ${selectedCustomer.last_name}`
         : 'Walk-In';
 
+      console.log('🛒 Creating sale:', {
+        items: cart.length,
+        total: `$${total.toFixed(2)}`,
+        payment: paymentData.paymentMethod
+      });
+
+      // Call sales API
       const response = await fetch('/api/pos/sales/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          locationId: selectedLocation?.id,
-          vendorId: vendor?.id,
+          locationId: selectedLocation.id,
+          vendorId: vendor.id,
           sessionId,
           userId: user?.id,
           items: cart,
@@ -499,24 +511,48 @@ export default function POSRegisterPage() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to complete sale');
+        throw new Error(errorData.error || errorData.details || 'Failed to complete sale');
       }
 
       const result = await response.json();
 
-      // Show receipt/success
-      alert(`✅ Sale completed!\n\nOrder: ${result.order.order_number}\nTotal: $${total.toFixed(2)}\n\nChange: $${paymentData.changeGiven?.toFixed(2) || '0.00'}`);
+      console.log('✅ Sale completed:', result.order.order_number);
 
-      // Clear cart, customer, and close payment
+      // Clear cart and state FIRST
       setCart([]);
       setSelectedCustomer(null);
+
+      // Close modal
       setShowPayment(false);
-      
-      // Reload session to update totals
-      loadActiveSession();
+
+      // Show success message
+      alert(
+        `✅ Sale Completed!\n\n` +
+        `Order: ${result.order.order_number}\n` +
+        `Total: $${total.toFixed(2)}\n` +
+        `${paymentData.changeGiven ? `Change: $${paymentData.changeGiven.toFixed(2)}` : ''}`
+      );
+
+      // Reload session in background (non-blocking)
+      loadActiveSession().catch(err =>
+        console.error('Failed to reload session:', err)
+      );
+
     } catch (error: any) {
-      alert(`Error: ${error.message}`);
+      console.error('❌ Sale failed:', error);
+
+      // Show user-friendly error
+      alert(
+        `❌ Sale Failed\n\n` +
+        `${error.message}\n\n` +
+        `Your cart has not been cleared. Please try again or contact support.`
+      );
+
+      // Don't close modal on error - let user retry
+      // Modal stays open, processing flag will be cleared in finally
+
     } finally {
+      // ALWAYS clear processing flag
       setProcessing(false);
     }
   };

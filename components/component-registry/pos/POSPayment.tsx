@@ -36,6 +36,25 @@ export function POSPayment({ total, onPaymentComplete, onCancel, locationId, reg
   const [splitMethod, setSplitMethod] = useState<'cash' | 'card'>('cash');
   const [splitAmount, setSplitAmount] = useState('');
 
+  // Clean cancel handler
+  const handleCancel = () => {
+    if (processing) {
+      // Don't allow cancel during processing
+      return;
+    }
+
+    // Reset all state
+    setPaymentMethod('cash');
+    setCashTendered('');
+    setSplitPayments([]);
+    setSplitMethod('cash');
+    setSplitAmount('');
+    setProcessing(false);
+
+    // Call parent cancel
+    onCancel();
+  };
+
   const changeAmount = cashTendered ? parseFloat(cashTendered) - total : 0;
   const totalPaid = splitPayments.reduce((sum, p) => sum + p.amount, 0);
   const remaining = Math.round((total - totalPaid) * 100) / 100;
@@ -408,7 +427,7 @@ export function POSPayment({ total, onPaymentComplete, onCancel, locationId, reg
         {/* Actions */}
         <div className="flex gap-2">
           <button
-            onClick={onCancel}
+            onClick={handleCancel}
             disabled={processing}
             className="flex-1 px-4 py-3 border border-white/10 text-white rounded-2xl hover:bg-white/5 hover:border-white/20 text-[10px] font-bold uppercase tracking-[0.15em] disabled:opacity-50 transition-all"
           >
