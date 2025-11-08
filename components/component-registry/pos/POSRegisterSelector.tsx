@@ -246,7 +246,12 @@ export function POSRegisterSelector({
             {/* Back to Location Selector Button */}
             {onBackToLocationSelector && (
               <button
-                onClick={onBackToLocationSelector}
+                onClick={() => {
+                  console.log('🔙 User clicked Change Location - clearing selection');
+                  // Clear localStorage so location selector shows
+                  localStorage.removeItem('pos_selected_location');
+                  onBackToLocationSelector();
+                }}
                 className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 hover:border-white/20 transition-all text-xs uppercase tracking-[0.15em] text-white/60 hover:text-white"
               >
                 <ArrowLeft size={14} />

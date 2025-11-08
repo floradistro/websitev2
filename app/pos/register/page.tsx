@@ -576,6 +576,27 @@ export default function POSRegisterPage() {
   // Show location selector if not selected (for admins or multi-location staff)
   if (!selectedLocation) {
     console.log('📍 POS showing location selector - locations available:', locations.length);
+
+    // CRITICAL: If context has no locations but user/vendor exists, force reload
+    if (locations.length === 0 && vendor?.id) {
+      console.error('🚨 CRITICAL: Context lost locations! Vendor:', vendor.id, 'User:', user?.email);
+      console.error('This should NEVER happen for logged-in users. Forcing page reload...');
+
+      // Clear possibly corrupted state
+      localStorage.removeItem('pos_selected_location');
+
+      // Force reload to re-initialize context
+      window.location.reload();
+
+      return (
+        <div className="min-h-screen bg-black text-white flex items-center justify-center">
+          <div className="text-white/40 text-xs uppercase tracking-[0.15em]">
+            Reloading... (Context lost location data)
+          </div>
+        </div>
+      );
+    }
+
     return (
       <POSLocationSelector
         locations={locations}

@@ -201,8 +201,26 @@ export async function POST(request: NextRequest) {
 
     if (orderError || !order) {
       console.error('❌ Order creation failed:', orderError);
+
+      // Special handling for RLS errors
+      if (orderError?.code === '42501') {
+        console.error('🚨 RLS POLICY VIOLATION - Service role should bypass this!');
+        console.error('Order data attempted:', {
+          vendor_id: vendorId,
+          customer_id: customerId || null,
+          location_id: locationId
+        });
+      }
+
       return NextResponse.json(
-        { error: 'Failed to create order', details: orderError?.message },
+        {
+          error: 'Failed to create order',
+          details: orderError?.message,
+          code: orderError?.code,
+          hint: orderError?.code === '42501'
+            ? 'Row-level security policy violation - check database permissions'
+            : orderError?.hint
+        },
         { status: 500 }
       );
     }
