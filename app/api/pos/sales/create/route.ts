@@ -48,8 +48,34 @@ interface CreateSaleRequest {
  * - Marketing integrations
  */
 export async function POST(request: NextRequest) {
-  const supabase = getServiceSupabase();
   const startTime = Date.now();
+
+  // DIAGNOSTIC: Check environment and client state BEFORE processing
+  const hasServiceKey = !!process.env.SUPABASE_SERVICE_ROLE_KEY;
+  console.log('🔐 Service key available:', hasServiceKey ? 'YES' : '❌ NO!!!');
+
+  if (!hasServiceKey) {
+    console.error('🚨 CRITICAL: SUPABASE_SERVICE_ROLE_KEY is missing at request time!');
+    return NextResponse.json({
+      error: 'Internal configuration error - service credentials not available',
+      hint: 'Server environment variables are not properly configured'
+    }, { status: 500 });
+  }
+
+  const supabase = getServiceSupabase();
+
+  // DIAGNOSTIC: Verify the client is using service role
+  // @ts-ignore - accessing internal state for debugging
+  const clientHeaders = supabase.rest?.headers || {};
+  const authHeader = clientHeaders.Authorization || '';
+  const isUsingServiceKey = authHeader.includes('eyJhbGciOiJIUzI1NiIs'); // Service keys start with this
+
+  console.log('🔑 Client auth header present:', !!authHeader, '| Using service key:', isUsingServiceKey);
+
+  if (!isUsingServiceKey) {
+    console.error('🚨 CRITICAL: Supabase client is NOT using service role key!');
+    console.error('Auth header:', authHeader.substring(0, 50));
+  }
 
   try {
     // ============================================================================
@@ -77,7 +103,9 @@ export async function POST(request: NextRequest) {
       location: locationId,
       items: items.length,
       total: `$${total.toFixed(2)}`,
-      payment: paymentMethod
+      payment: paymentMethod,
+      hasServiceKey,
+      isUsingServiceKey
     });
 
     // Validate required fields
