@@ -109,6 +109,9 @@ export function AppAuthProvider({ children }: { children: React.ReactNode }) {
       }
     } catch (err) {
       console.error('Failed to fetch locations:', err);
+    } finally {
+      // CRITICAL: Always set loading to false, even if fetch fails
+      setIsLoading(false);
     }
   };
 
@@ -148,12 +151,17 @@ export function AppAuthProvider({ children }: { children: React.ReactNode }) {
             console.warn('⚠️  No locations or empty array - fetching immediately!');
             setLocations([]);
             if (mounted && userData) {
-              fetchLocationsFromServer();
+              // CRITICAL FIX: Keep isLoading=true while fetching locations
+              // The fetchLocationsFromServer() will set isLoading=false when done
+              await fetchLocationsFromServer();
+            } else {
+              setIsLoading(false);
             }
           } else {
             const parsedLocations = JSON.parse(savedLocations);
             setLocations(parsedLocations);
             console.log('📍 Loaded locations from localStorage:', parsedLocations.length, 'locations');
+            setIsLoading(false);
           }
 
           // Ensure legacy keys are set for backwards compatibility
@@ -170,10 +178,11 @@ export function AppAuthProvider({ children }: { children: React.ReactNode }) {
           localStorage.removeItem('app_user');
           localStorage.removeItem('app_accessible_apps');
           localStorage.removeItem('app_locations');
+          setIsLoading(false);
         }
+      } else {
+        setIsLoading(false);
       }
-
-      setIsLoading(false);
     }
 
     initAuth();
