@@ -41,6 +41,9 @@ export default function POSRegisterPage() {
   const [productsCache, setProductsCache] = useState<Map<string, any>>(new Map());
   const [showSessionModal, setShowSessionModal] = useState(false);
   const [existingSessionInfo, setExistingSessionInfo] = useState<any>(null);
+  const [taxRate, setTaxRate] = useState<number | null>(null);
+  const [taxBreakdown, setTaxBreakdown] = useState<Array<{name: string; rate: number; type: string}>>([]);
+  const [taxError, setTaxError] = useState<string | null>(null);
 
   // Auto-select location for single-location staff
   useEffect(() => {
@@ -48,11 +51,66 @@ export default function POSRegisterPage() {
       const singleLocation = locations[0];
       const location = { id: singleLocation.id, name: singleLocation.name };
       setSelectedLocation(location);
-      // CRITICAL FIX: Persist to localStorage
       localStorage.setItem('pos_selected_location', JSON.stringify(location));
       console.log('🎯 Auto-selected single location:', singleLocation.name);
     }
   }, [locations, selectedLocation]);
+
+  // FRESH TAX DATA - NO FALLBACKS, NO HARDCODED VALUES
+  useEffect(() => {
+    async function loadTaxRate() {
+      if (!selectedLocation?.id || !vendor?.id) {
+        setTaxRate(null);
+        return;
+      }
+
+      console.log('💰 Fetching tax rate from API for:', selectedLocation.name);
+      setTaxError(null);
+
+      try {
+        const response = await fetch(`/api/vendor/locations`, {
+          headers: { 'x-vendor-id': vendor.id }
+        });
+
+        if (!response.ok) {
+          throw new Error(`API returned ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        if (!data.success) {
+          throw new Error('API returned success: false');
+        }
+
+        const location = data.locations?.find((l: any) => l.id === selectedLocation.id);
+
+        if (!location) {
+          throw new Error(`Location ${selectedLocation.name} not found in API response`);
+        }
+
+        const rate = location.settings?.tax_config?.sales_tax_rate;
+        const taxes = location.settings?.tax_config?.taxes || [];
+
+        if (!rate || typeof rate !== 'number' || rate <= 0) {
+          throw new Error(`NO TAX CONFIGURED FOR ${selectedLocation.name}! Go to Settings > Locations to configure taxes.`);
+        }
+
+        setTaxRate(rate);
+        setTaxBreakdown(taxes);
+        console.log(`✅ Tax rate loaded from API: ${(rate * 100)}%`);
+        console.log(`   Tax breakdown (${taxes.length} items):`, taxes);
+        console.log(`   Full location data:`, location.settings?.tax_config);
+
+      } catch (error: any) {
+        console.error('❌ TAX LOAD FAILED:', error.message);
+        setTaxError(error.message);
+        setTaxRate(null);
+        alert(`TAX CONFIGURATION ERROR:\n\n${error.message}\n\nPOS cannot operate without tax configuration.`);
+      }
+    }
+
+    loadTaxRate();
+  }, [selectedLocation?.id, vendor?.id]);
 
   // Check for existing session on mount
   useEffect(() => {
@@ -403,7 +461,7 @@ export default function POSRegisterPage() {
 
     try {
       const subtotal = cart.reduce((sum, item) => sum + item.lineTotal, 0);
-      const taxAmount = subtotal * 0.08;
+      const taxAmount = subtotal * taxRate;
       const total = subtotal + taxAmount;
 
       // Get customer info
@@ -456,9 +514,9 @@ export default function POSRegisterPage() {
     }
   };
 
-  // Calculate totals for cart
+  // Calculate totals for cart - REQUIRES VALID TAX RATE
   const subtotal = cart.reduce((sum, item) => sum + item.lineTotal, 0);
-  const taxAmount = subtotal * 0.08;
+  const taxAmount = taxRate !== null ? subtotal * taxRate : 0;
   const total = subtotal + taxAmount;
 
   // CRITICAL FIX: Wait for context to load before showing location selector
@@ -547,7 +605,9 @@ export default function POSRegisterPage() {
             onRemoveItem={handleRemoveItem}
             onClearCart={handleClearCart}
             onCheckout={handleCheckout}
-            taxRate={0.08}
+            taxRate={taxRate || 0}
+            taxBreakdown={taxBreakdown}
+            taxError={taxError}
             isProcessing={processing}
           />
         </div>

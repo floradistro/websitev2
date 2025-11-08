@@ -33,6 +33,12 @@ export interface CartItem {
   badgeColor?: string; // Badge color
 }
 
+interface TaxBreakdown {
+  name: string;
+  rate: number;
+  type: string;
+}
+
 interface POSCartProps {
   items: CartItem[];
   vendorId: string;
@@ -40,7 +46,9 @@ interface POSCartProps {
   onRemoveItem: (productId: string) => void;
   onClearCart: () => void;
   onCheckout: (customer: Customer | null) => void;
-  taxRate?: number;
+  taxRate: number;
+  taxBreakdown?: TaxBreakdown[];
+  taxError?: string | null;
   isProcessing?: boolean;
 }
 
@@ -51,7 +59,9 @@ export function POSCart({
   onRemoveItem,
   onClearCart,
   onCheckout,
-  taxRate = 0.08,
+  taxRate,
+  taxBreakdown,
+  taxError,
   isProcessing = false,
 }: POSCartProps) {
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
@@ -232,14 +242,41 @@ export function POSCart({
       {/* Totals */}
       {items.length > 0 && (
         <div className="flex-shrink-0 border-t border-white/5 px-4 py-3 space-y-2 bg-black">
+          {taxError && (
+            <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-3 mb-3">
+              <div className="text-red-400 text-[10px] uppercase tracking-wider font-bold mb-1">TAX ERROR</div>
+              <div className="text-red-300 text-[9px]">{taxError}</div>
+            </div>
+          )}
           <div className="flex justify-between text-white/60 text-[10px] uppercase tracking-[0.15em]">
             <span>Subtotal</span>
             <span>${subtotal.toFixed(2)}</span>
           </div>
-          <div className="flex justify-between text-white/60 text-[10px] uppercase tracking-[0.15em]">
-            <span>Tax ({(taxRate * 100).toFixed(0)}%)</span>
-            <span>${taxAmount.toFixed(2)}</span>
-          </div>
+
+          {/* Tax Breakdown */}
+          {taxBreakdown && taxBreakdown.length > 0 ? (
+            <>
+              {taxBreakdown.map((tax, idx) => {
+                const taxAmt = subtotal * (tax.rate / 100);
+                return (
+                  <div key={idx} className="flex justify-between text-white/50 text-[9px] uppercase tracking-[0.15em] pl-2">
+                    <span>{tax.name} ({tax.rate}%)</span>
+                    <span>${taxAmt.toFixed(2)}</span>
+                  </div>
+                );
+              })}
+              <div className="flex justify-between text-white/60 text-[10px] uppercase tracking-[0.15em] font-bold pt-1 border-t border-white/5">
+                <span>Total Tax</span>
+                <span>${taxAmount.toFixed(2)}</span>
+              </div>
+            </>
+          ) : (
+            <div className="flex justify-between text-white/60 text-[10px] uppercase tracking-[0.15em]">
+              <span>Tax ({(taxRate * 100).toString()}%)</span>
+              <span>${taxAmount.toFixed(2)}</span>
+            </div>
+          )}
+
           <div className="flex justify-between text-white font-black text-lg pt-2 border-t border-white/5 tracking-tight" style={{ fontWeight: 900 }}>
             <span>TOTAL</span>
             <span>${total.toFixed(2)}</span>
@@ -252,12 +289,13 @@ export function POSCart({
         {items.length > 0 && (
           <>
             <button
-              onClick={() => onCheckout(selectedCustomer)}
-              disabled={isProcessing}
+              onClick={() => taxError ? alert(taxError) : onCheckout(selectedCustomer)}
+              disabled={isProcessing || !!taxError}
               className="w-full bg-white/10 text-white border-2 border-white/20 rounded-2xl px-4 py-4 text-xs uppercase tracking-[0.15em] hover:bg-white/20 hover:border-white/30 font-black transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               style={{ fontWeight: 900 }}
+              title={taxError || undefined}
             >
-              {isProcessing ? 'Processing...' : `Charge $${total.toFixed(2)}`}
+              {isProcessing ? 'Processing...' : taxError ? 'TAX ERROR' : `Charge $${total.toFixed(2)}`}
             </button>
 
             <div className="flex gap-2">

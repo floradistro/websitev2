@@ -21,6 +21,16 @@ interface Location {
   name: string;
   address?: string;
   is_primary: boolean;
+  settings?: {
+    tax_config?: {
+      sales_tax_rate?: number;
+      taxes?: Array<{
+        name: string;
+        rate: number;
+        type: string;
+      }>;
+    };
+  };
 }
 
 export interface AppUser {

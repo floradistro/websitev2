@@ -1,9 +1,21 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { MapPin, Phone, Mail, Edit2 } from 'lucide-react';
+import { MapPin, Phone, Mail, Edit2, Receipt } from 'lucide-react';
 import { useAppAuth } from '@/context/AppAuthContext';
 import axios from 'axios';
+
+interface TaxConfig {
+  state?: string;
+  sales_tax_rate?: number;
+  enabled?: boolean;
+  taxes?: Array<{
+    name: string;
+    rate: number;
+    type: string;
+    status: string;
+  }>;
+}
 
 interface Location {
   id: string;
@@ -15,6 +27,9 @@ interface Location {
   zip: string | null;
   phone: string | null;
   email: string | null;
+  settings?: {
+    tax_config?: TaxConfig;
+  };
 }
 
 export default function LocationsPage() {
@@ -113,6 +128,40 @@ export default function LocationsPage() {
                   </span>
                 </div>
               </div>
+
+              {/* Tax Configuration */}
+              {loc.settings?.tax_config && (
+                <div className="mt-4 pt-4 border-t border-white/[0.06]">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Receipt size={12} className="text-white/30" strokeWidth={1.5} />
+                    <span className="text-white/40 text-[10px] uppercase tracking-[0.15em] font-light">
+                      Tax Configuration
+                    </span>
+                  </div>
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between">
+                      <span className="text-white/50 text-[11px] font-light">Total Tax Rate</span>
+                      <span className="text-white/70 text-sm font-medium">
+                        {((loc.settings.tax_config.sales_tax_rate || 0) * 100).toFixed(2)}%
+                      </span>
+                    </div>
+                    {loc.settings.tax_config.taxes && loc.settings.tax_config.taxes.length > 0 && (
+                      <div className="mt-2 space-y-1">
+                        {loc.settings.tax_config.taxes.map((tax, idx) => (
+                          <div key={idx} className="flex items-center justify-between pl-3">
+                            <span className="text-white/40 text-[10px] font-light">
+                              {tax.name}
+                            </span>
+                            <span className="text-white/50 text-[10px] font-light">
+                              {tax.rate.toFixed(2)}%
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           ))}
         </div>

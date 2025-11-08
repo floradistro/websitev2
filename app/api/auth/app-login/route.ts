@@ -104,24 +104,25 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Step 4: Get user's locations
+    // Step 4: Get user's locations (including tax settings)
     let locations: any[] = [];
-    
+
     // Vendor owners and managers get ALL vendor locations
     if (user.role === 'vendor_owner' || user.role === 'vendor_manager') {
       const { data: allVendorLocs } = await supabase
         .from('locations')
-        .select('id, name, address_line1, city, state, is_primary')
+        .select('id, name, address_line1, city, state, is_primary, settings')
         .eq('vendor_id', user.vendor_id)
         .eq('is_active', true);
-      
+
       locations = allVendorLocs?.map(l => ({
         id: l.id,
         name: l.name,
         address: `${l.address_line1 || ''} ${l.city || ''}, ${l.state || ''}`.trim(),
-        is_primary: l.is_primary || false
+        is_primary: l.is_primary || false,
+        settings: l.settings
       })) || [];
-      
+
       console.log('✅ Vendor owner - loaded ALL locations:', locations.length);
     } else {
       // Employees only get assigned locations from user_locations
@@ -135,17 +136,18 @@ export async function POST(request: NextRequest) {
       if (locationIds.length > 0) {
         const { data: locs } = await supabase
           .from('locations')
-          .select('id, name, address_line1, city, state, is_primary')
+          .select('id, name, address_line1, city, state, is_primary, settings')
           .in('id', locationIds)
           .eq('is_active', true);
-        
+
         locations = locs?.map(l => ({
           id: l.id,
           name: l.name,
           address: `${l.address_line1 || ''} ${l.city || ''}, ${l.state || ''}`.trim(),
-          is_primary: l.is_primary || false
+          is_primary: l.is_primary || false,
+          settings: l.settings
         })) || [];
-        
+
         console.log('✅ Employee - loaded assigned locations:', locations.length);
       }
     }

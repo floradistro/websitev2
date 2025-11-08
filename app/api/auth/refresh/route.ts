@@ -97,7 +97,7 @@ export async function POST(request: NextRequest) {
       accessibleApps = permissions?.map(p => p.app_key) || [];
     }
 
-    // Load accessible locations
+    // Load accessible locations (including tax settings)
     let locations: any[] = [];
     if (user.role === 'employee' || user.role === 'manager') {
       const { data: employeeLocations } = await supabase
@@ -108,7 +108,8 @@ export async function POST(request: NextRequest) {
           locations (
             id,
             name,
-            address
+            address,
+            settings
           )
         `)
         .eq('user_id', user.id)
@@ -118,18 +119,20 @@ export async function POST(request: NextRequest) {
         id: el.locations.id,
         name: el.locations.name,
         address: el.locations.address,
+        settings: el.locations.settings,
         is_primary: el.is_primary
       })) || [];
     } else if (user.role === 'vendor_admin') {
       const { data: allLocations } = await supabase
         .from('locations')
-        .select('id, name, address')
+        .select('id, name, address, settings')
         .eq('vendor_id', user.vendor_id);
 
       locations = allLocations?.map(l => ({
         id: l.id,
         name: l.name,
         address: l.address,
+        settings: l.settings,
         is_primary: false
       })) || [];
     }

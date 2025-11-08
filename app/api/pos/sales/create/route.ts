@@ -177,9 +177,57 @@ export async function POST(request: NextRequest) {
     console.log('✅ Inventory validation passed');
 
     // ============================================================================
-    // STEP 2: PREVENT DUPLICATE SALES
+    // STEP 2: VERIFY TAX CALCULATION (SECURITY)
     // ============================================================================
-    console.log('🔒 Step 2: Checking for duplicate sales...');
+    console.log('💰 Step 2: Verifying tax calculation...');
+
+    // Load location's tax configuration
+    const { data: location, error: locationError } = await supabase
+      .from('locations')
+      .select('settings')
+      .eq('id', locationId)
+      .single();
+
+    if (locationError || !location) {
+      console.error('❌ Failed to load location for tax verification:', locationError);
+      return NextResponse.json(
+        { error: 'Failed to verify tax calculation' },
+        { status: 500 }
+      );
+    }
+
+    // Get tax rate from location settings
+    const taxRate = location.settings?.tax_config?.sales_tax_rate || 0.08; // Default 8% fallback
+    const expectedTaxAmount = subtotal * taxRate;
+
+    // Allow small rounding differences (within 1 cent)
+    const taxDifference = Math.abs(expectedTaxAmount - taxAmount);
+    if (taxDifference > 0.01) {
+      console.error('❌ Tax calculation mismatch:', {
+        expected: expectedTaxAmount,
+        received: taxAmount,
+        difference: taxDifference,
+        taxRate,
+        subtotal
+      });
+      return NextResponse.json(
+        {
+          error: 'Tax calculation error',
+          details: `Expected tax: $${expectedTaxAmount.toFixed(2)}, received: $${taxAmount.toFixed(2)}`
+        },
+        { status: 400 }
+      );
+    }
+
+    console.log('✅ Tax verification passed:', {
+      taxRate: `${(taxRate * 100).toFixed(2)}%`,
+      taxAmount: `$${taxAmount.toFixed(2)}`
+    });
+
+    // ============================================================================
+    // STEP 3: PREVENT DUPLICATE SALES
+    // ============================================================================
+    console.log('🔒 Step 3: Checking for duplicate sales...');
 
     // Check for recent identical sale (within last 5 seconds)
     const fiveSecondsAgo = new Date(Date.now() - 5000).toISOString();
@@ -195,9 +243,9 @@ export async function POST(request: NextRequest) {
     }
 
     // ============================================================================
-    // STEP 3: GET CUSTOMER DATA
+    // STEP 4: GET CUSTOMER DATA
     // ============================================================================
-    console.log('👤 Step 3: Getting customer data...');
+    console.log('👤 Step 4: Getting customer data...');
 
     let finalCustomerId = customerId;
     let customerData: any = null;
@@ -257,7 +305,7 @@ export async function POST(request: NextRequest) {
     }
 
     // ============================================================================
-    // STEP 4: GENERATE ORDER NUMBER
+    // STEP 5: GENERATE ORDER NUMBER
     // ============================================================================
     const locationCode = (await supabase
       .from('locations')
@@ -272,9 +320,9 @@ export async function POST(request: NextRequest) {
     console.log('🔢 Order number generated:', orderNumber);
 
     // ============================================================================
-    // STEP 5: CREATE ORDER (ATOMIC TRANSACTION)
+    // STEP 6: CREATE ORDER (ATOMIC TRANSACTION)
     // ============================================================================
-    console.log('💾 Step 4: Creating order...');
+    console.log('💾 Step 6: Creating order...');
 
     const { data: order, error: orderError } = await supabase
       .from('orders')
@@ -315,7 +363,7 @@ export async function POST(request: NextRequest) {
     console.log('✅ Order created:', order.id);
 
     // ============================================================================
-    // STEP 6: CREATE ORDER ITEMS
+    // STEP 7: CREATE ORDER ITEMS
     // ============================================================================
     const orderItems = items.map(item => ({
       order_id: order.id,
@@ -352,7 +400,7 @@ export async function POST(request: NextRequest) {
     order.order_items = createdItems;
 
     // ============================================================================
-    // STEP 7: CREATE POS TRANSACTION
+    // STEP 8: CREATE POS TRANSACTION
     // ============================================================================
     const transactionNumber = `TXN-${orderNumber}`;
 
@@ -389,9 +437,9 @@ export async function POST(request: NextRequest) {
     }
 
     // ============================================================================
-    // STEP 8: DEDUCT INVENTORY (ATOMIC DECREMENT - RACE CONDITION SAFE)
+    // STEP 9: DEDUCT INVENTORY (ATOMIC DECREMENT - RACE CONDITION SAFE)
     // ============================================================================
-    console.log('📦 Step 5: Deducting inventory...');
+    console.log('📦 Step 9: Deducting inventory...');
 
     for (const item of items) {
       // Use PostgreSQL atomic decrement to prevent race conditions
@@ -418,13 +466,13 @@ export async function POST(request: NextRequest) {
     console.log('✅ Inventory deducted');
 
     // ============================================================================
-    // STEP 9: AWARD LOYALTY POINTS (CRITICAL FIX)
+    // STEP 10: AWARD LOYALTY POINTS (CRITICAL FIX)
     // ============================================================================
     let pointsEarned = 0;
     let newTier: string | null = null;
 
     if (customerId && loyaltyData) {
-      console.log('🎁 Step 6: Awarding loyalty points...');
+      console.log('🎁 Step 10: Awarding loyalty points...');
 
       // Calculate points earned (round down)
       pointsEarned = Math.floor(total * POINTS_PER_DOLLAR);
@@ -503,13 +551,13 @@ export async function POST(request: NextRequest) {
     }
 
     // ============================================================================
-    // STEP 10: SYNC TO ALPINE IQ (CRITICAL FIX - ASYNC)
+    // STEP 11: SYNC TO ALPINE IQ (CRITICAL FIX - ASYNC)
     // ============================================================================
     let alpineIQSynced = false;
     let alpineIQError: string | null = null;
 
     if (customerId && customerData) {
-      console.log('🔄 Step 7: Syncing sale to Alpine IQ...');
+      console.log('🔄 Step 11: Syncing sale to Alpine IQ...');
 
       try {
         const alpineClient = await getAlpineIQClient(supabase, vendorId);
