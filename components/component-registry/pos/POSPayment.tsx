@@ -92,13 +92,21 @@ export function POSPayment({ total, onPaymentComplete, onCancel, locationId, reg
             cardLast4: 'XXXX',
           });
         } else {
+          // CRITICAL FIX: Validate IDs exist before API call
+          if (!locationId || !registerId) {
+            throw new Error(
+              'Location or Register ID missing. Cannot process payment. ' +
+              'Please refresh the page and select your register again.'
+            );
+          }
+
           // Process card payment through payment terminal
           const response = await fetch('/api/pos/payment/process', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              locationId: locationId || localStorage.getItem('pos_selected_location_id'),
-              registerId: registerId || localStorage.getItem('pos_register_id'),
+              locationId,
+              registerId,
               amount: total,
               paymentMethod: 'credit',
               referenceId: `POS-${Date.now()}`,

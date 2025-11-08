@@ -97,6 +97,14 @@ async function getPaymentProcessorForRegister(
  * Create processor instance based on type
  */
 function createProcessorInstance(config: PaymentProcessor): IPaymentProcessor {
+  // CRITICAL: Validate processor_type exists before switch
+  if (!config.processor_type) {
+    throw new Error(
+      `Payment processor configuration is incomplete. Missing processor_type. ` +
+      `Processor ID: ${config.id}, Name: ${config.processor_name || 'Unknown'}`
+    );
+  }
+
   switch (config.processor_type) {
     case 'dejavoo':
       return new DejavooPaymentProcessor(config);
@@ -114,7 +122,10 @@ function createProcessorInstance(config: PaymentProcessor): IPaymentProcessor {
       throw new Error('Clover integration not yet implemented');
 
     default:
-      throw new Error(`Unsupported processor type: ${config.processor_type}`);
+      throw new Error(
+        `Unsupported processor type: "${config.processor_type}". ` +
+        `Supported types: dejavoo, authorize_net, stripe, square, clover`
+      );
   }
 }
 
