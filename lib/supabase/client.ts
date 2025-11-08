@@ -113,6 +113,10 @@ export function getServiceSupabase() {
         'x-application-name': 'yachtclub-service',
         'x-client-info': 'yachtclub-service/2.0.0',
         'Connection': 'keep-alive',
+        // CRITICAL FIX: Explicitly set Authorization header with service role key
+        // This ensures it's not lost during custom fetch wrapping
+        'Authorization': `Bearer ${supabaseServiceKey}`,
+        'apikey': supabaseServiceKey,
       },
       fetch: (url, options = {}) => {
         // Add timeout to all server requests with connection reuse
