@@ -42,11 +42,19 @@ export async function GET(
       `)
       .eq('id', productId)
       .eq('vendor_id', vendorId)
-      .single();
+      .maybeSingle();
 
-    if (productError || !product) {
+    if (productError) {
+      console.error('❌ Database error fetching product:', productError);
       return NextResponse.json(
-        { success: false, error: 'Product not found' },
+        { success: false, error: 'Database error' },
+        { status: 500 }
+      );
+    }
+
+    if (!product) {
+      return NextResponse.json(
+        { success: false, error: 'Product not found or access denied' },
         { status: 404 }
       );
     }
@@ -169,11 +177,19 @@ export async function PUT(
       .from('products')
       .select('id, vendor_id')
       .eq('id', productId)
-      .single();
+      .maybeSingle();
 
-    if (fetchError || !existing || existing.vendor_id !== vendorId) {
+    if (fetchError) {
+      console.error('❌ Database error verifying product ownership:', fetchError);
       return NextResponse.json(
-        { success: false, error: 'Product not found or unauthorized' },
+        { success: false, error: 'Database error' },
+        { status: 500 }
+      );
+    }
+
+    if (!existing || existing.vendor_id !== vendorId) {
+      return NextResponse.json(
+        { success: false, error: 'Product not found or access denied. Please refresh the page.' },
         { status: 404 }
       );
     }
@@ -217,7 +233,7 @@ export async function PUT(
         .from('products')
         .select('pricing_data')
         .eq('id', productId)
-        .single();
+        .maybeSingle();
 
       const currentPricingData = currentProduct?.pricing_data || {};
 
@@ -236,7 +252,7 @@ export async function PUT(
           .from('pricing_tier_templates')
           .select('name, default_tiers')
           .eq('id', body.pricing_template_id)
-          .single();
+          .maybeSingle();
 
         if (template) {
           updatedPricingData.template_name = template.name;
@@ -272,14 +288,23 @@ export async function PUT(
       .update(updateData)
       .eq('id', productId)
       .select()
-      .single();
+      .maybeSingle();
 
     if (updateError) {
-      console.error('Update error:', updateError);
+      console.error('❌ Update error:', updateError);
       return NextResponse.json(
         { success: false, error: updateError.message },
         { status: 500 }
       );
+    }
+
+    if (!updated) {
+      console.error('❌ Product update affected 0 rows - record may have been deleted');
+      return NextResponse.json({
+        success: false,
+        error: 'Product not found or was deleted during update. Please refresh the page.',
+        product_id: productId
+      }, { status: 404 });
     }
 
     return NextResponse.json({
@@ -314,11 +339,19 @@ export async function DELETE(
       .from('products')
       .select('id, vendor_id, name')
       .eq('id', productId)
-      .single();
+      .maybeSingle();
 
-    if (fetchError || !existing) {
+    if (fetchError) {
+      console.error('❌ Database error fetching product for deletion:', fetchError);
       return NextResponse.json(
-        { success: false, error: 'Product not found' },
+        { success: false, error: 'Database error' },
+        { status: 500 }
+      );
+    }
+
+    if (!existing) {
+      return NextResponse.json(
+        { success: false, error: 'Product not found or already deleted' },
         { status: 404 }
       );
     }

@@ -42,12 +42,14 @@ interface CreatePOModalProps {
 }
 
 export function CreatePOModal({ isOpen, onClose, onSuccess }: CreatePOModalProps) {
-  const { vendor, locations } = useAppAuth();
+  const { vendor, locations: contextLocations } = useAppAuth();
 
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [allProducts, setAllProducts] = useState<Product[]>([]);
+  const [locations, setLocations] = useState<any[]>([]);
   const [loadingSuppliers, setLoadingSuppliers] = useState(false);
   const [loadingProducts, setLoadingProducts] = useState(false);
+  const [loadingLocations, setLoadingLocations] = useState(false);
 
   const [selectedSupplier, setSelectedSupplier] = useState('');
   const [selectedLocation, setSelectedLocation] = useState('');
@@ -68,8 +70,14 @@ export function CreatePOModal({ isOpen, onClose, onSuccess }: CreatePOModalProps
     if (isOpen && vendor?.id) {
       loadSuppliers();
       loadProducts();
+      // Load locations if not in context
+      if (!contextLocations || contextLocations.length === 0) {
+        loadLocations();
+      } else {
+        setLocations(contextLocations);
+      }
     }
-  }, [isOpen, vendor?.id]);
+  }, [isOpen, vendor?.id, contextLocations]);
 
   const loadSuppliers = async () => {
     if (!vendor?.id) return;
@@ -104,6 +112,24 @@ export function CreatePOModal({ isOpen, onClose, onSuccess }: CreatePOModalProps
       console.error('Failed to load products:', err);
     } finally {
       setLoadingProducts(false);
+    }
+  };
+
+  const loadLocations = async () => {
+    if (!vendor?.id) return;
+    setLoadingLocations(true);
+    try {
+      const response = await fetch(`/api/vendor/locations?vendor_id=${vendor.id}`, {
+        credentials: 'include',
+      });
+      const data = await response.json();
+      if (data.success) {
+        setLocations(data.locations || []);
+      }
+    } catch (err) {
+      console.error('Failed to load locations:', err);
+    } finally {
+      setLoadingLocations(false);
     }
   };
 
@@ -351,6 +377,7 @@ export function CreatePOModal({ isOpen, onClose, onSuccess }: CreatePOModalProps
         <select
           value={selectedLocation}
           onChange={(e) => setSelectedLocation(e.target.value)}
+          disabled={loadingLocations}
           className={cn(
             'w-full rounded-lg px-3 py-2 text-sm',
             'bg-white/5 border border-white/10',
@@ -359,13 +386,20 @@ export function CreatePOModal({ isOpen, onClose, onSuccess }: CreatePOModalProps
             'disabled:opacity-50 disabled:cursor-not-allowed'
           )}
         >
-          <option value="">Select location</option>
+          <option value="">
+            {loadingLocations ? 'Loading locations...' : 'Select location'}
+          </option>
           {locations.map((location) => (
             <option key={location.id} value={location.id}>
               {location.name}
             </option>
           ))}
         </select>
+        {locations.length === 0 && !loadingLocations && (
+          <p className={cn(ds.typography.size.xs, ds.colors.text.quaternary, 'mt-1')}>
+            No locations found. Create a location first.
+          </p>
+        )}
       </div>
 
       {/* Expected Delivery Date */}

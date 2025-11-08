@@ -28,10 +28,15 @@ export async function POST(request: NextRequest) {
       .select('*, location:location_id(id)')
       .eq('id', po_id)
       .eq('vendor_id', vendorId)
-      .single();
+      .maybeSingle();
 
-    if (verifyError || !po) {
-      return NextResponse.json({ success: false, error: 'Purchase order not found' }, { status: 404 });
+    if (verifyError) {
+      console.error('❌ Error fetching purchase order:', verifyError);
+      return NextResponse.json({ success: false, error: 'Database error' }, { status: 500 });
+    }
+
+    if (!po) {
+      return NextResponse.json({ success: false, error: 'Purchase order not found or access denied' }, { status: 404 });
     }
 
     // Process each item
@@ -47,10 +52,15 @@ export async function POST(request: NextRequest) {
         .from('purchase_order_items')
         .select('*')
         .eq('id', po_item_id)
-        .single();
+        .maybeSingle();
 
-      if (itemError || !poItem) {
-        console.error('PO item not found:', po_item_id);
+      if (itemError) {
+        console.error('❌ Error fetching PO item:', itemError);
+        continue;
+      }
+
+      if (!poItem) {
+        console.error('❌ PO item not found:', po_item_id);
         continue;
       }
 
@@ -61,7 +71,7 @@ export async function POST(request: NextRequest) {
         .eq('product_id', poItem.product_id)
         .eq('location_id', po.location_id)
         .eq('vendor_id', vendorId)
-        .single();
+        .maybeSingle();
 
       let inventoryId: string;
 
@@ -78,10 +88,15 @@ export async function POST(request: NextRequest) {
             average_cost: poItem.unit_cost
           })
           .select('id')
-          .single();
+          .maybeSingle();
 
         if (createError) {
-          console.error('Error creating inventory:', createError);
+          console.error('❌ Error creating inventory:', createError);
+          continue;
+        }
+
+        if (!newInv) {
+          console.error('❌ Inventory creation returned null');
           continue;
         }
 
@@ -150,7 +165,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get updated PO
-    const { data: updatedPO } = await supabase
+    const { data: updatedPO, error: fetchError } = await supabase
       .from('purchase_orders')
       .select(`
         *,
@@ -158,7 +173,12 @@ export async function POST(request: NextRequest) {
         items:purchase_order_items(*)
       `)
       .eq('id', po_id)
-      .single();
+      .maybeSingle();
+
+    if (fetchError) {
+      console.error('❌ Error fetching updated PO:', fetchError);
+      // Don't fail here - items were received successfully
+    }
 
     return NextResponse.json({
       success: true,

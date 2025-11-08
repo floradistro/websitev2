@@ -26,11 +26,19 @@ export async function PATCH(request: NextRequest) {
       .from('products')
       .select('id, vendor_id')
       .eq('id', product_id)
-      .single();
-    
-    if (fetchError || !product) {
+      .maybeSingle();
+
+    if (fetchError) {
+      console.error('Error fetching product:', fetchError);
       return NextResponse.json(
-        { success: false, error: 'Product not found' },
+        { success: false, error: 'Database error' },
+        { status: 500 }
+      );
+    }
+
+    if (!product) {
+      return NextResponse.json(
+        { success: false, error: 'Product not found or already deleted' },
         { status: 404 }
       );
     }
@@ -89,20 +97,29 @@ export async function PATCH(request: NextRequest) {
     }
     
     console.log('Updating product with data:', updateData);
-    
+
     const { data: updated, error: updateError } = await supabase
       .from('products')
       .update(updateData)
       .eq('id', product_id)
       .select()
-      .single();
-    
+      .maybeSingle();
+
     if (updateError) {
-      console.error('Error updating product:', updateError);
+      console.error('Update error:', updateError);
       return NextResponse.json(
         { success: false, error: updateError.message },
         { status: 500 }
       );
+    }
+
+    if (!updated) {
+      console.error('❌ Product update affected 0 rows - product may have been deleted');
+      return NextResponse.json({
+        success: false,
+        error: 'Product not found or was deleted during update. Please refresh the page.',
+        product_id
+      }, { status: 404 });
     }
     
     return NextResponse.json({

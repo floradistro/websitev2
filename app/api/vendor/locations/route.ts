@@ -67,12 +67,20 @@ export async function POST(request: NextRequest) {
         .from('locations')
         .select('vendor_id')
         .eq('id', location_id)
-        .single();
-      
-      if (verifyError || location?.vendor_id !== vendorId) {
-        return NextResponse.json({ 
-          success: false, 
-          error: 'Location not found or access denied' 
+        .maybeSingle();
+
+      if (verifyError) {
+        console.error('❌ Error fetching location:', verifyError);
+        return NextResponse.json({
+          success: false,
+          error: 'Database error'
+        }, { status: 500 });
+      }
+
+      if (!location || location.vendor_id !== vendorId) {
+        return NextResponse.json({
+          success: false,
+          error: 'Location not found or access denied'
         }, { status: 403 });
       }
       

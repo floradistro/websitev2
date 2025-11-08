@@ -142,12 +142,20 @@ export async function POST(request: NextRequest) {
             is_active: supplierData.is_active !== undefined ? supplierData.is_active : true
           })
           .select()
-          .single();
+          .maybeSingle();
 
         if (error) {
-          console.error('Error creating supplier:', error);
+          console.error('❌ Error creating supplier:', error);
           return NextResponse.json(
             { success: false, error: error.message },
+            { status: 500 }
+          );
+        }
+
+        if (!newSupplier) {
+          console.error('❌ Supplier creation returned null');
+          return NextResponse.json(
+            { success: false, error: 'Failed to create supplier' },
             { status: 500 }
           );
         }
@@ -200,13 +208,21 @@ export async function POST(request: NextRequest) {
           .eq('id', id)
           .eq('vendor_id', vendor_id) // Ensure vendor owns this supplier
           .select()
-          .single();
+          .maybeSingle();
 
         if (error) {
-          console.error('Error updating supplier:', error);
+          console.error('❌ Error updating supplier:', error);
           return NextResponse.json(
             { success: false, error: error.message },
             { status: 500 }
+          );
+        }
+
+        if (!updatedSupplier) {
+          console.error('❌ Supplier update affected 0 rows - supplier may have been deleted');
+          return NextResponse.json(
+            { success: false, error: 'Supplier not found or was deleted. Please refresh the page.' },
+            { status: 404 }
           );
         }
 
@@ -237,13 +253,21 @@ export async function POST(request: NextRequest) {
           .eq('id', id)
           .eq('vendor_id', vendor_id) // Ensure vendor owns this supplier
           .select()
-          .single();
+          .maybeSingle();
 
         if (error) {
-          console.error('Error deleting supplier:', error);
+          console.error('❌ Error deleting supplier:', error);
           return NextResponse.json(
             { success: false, error: error.message },
             { status: 500 }
+          );
+        }
+
+        if (!deletedSupplier) {
+          console.error('❌ Supplier delete affected 0 rows - supplier may have been deleted');
+          return NextResponse.json(
+            { success: false, error: 'Supplier not found or was already deleted. Please refresh the page.' },
+            { status: 404 }
           );
         }
 

@@ -125,13 +125,16 @@ export async function POST(request: NextRequest) {
               { status: 400 }
             );
           }
-          if (!item.quantity || item.quantity <= 0) {
+          const qty = parseFloat(item.quantity);
+          const price = parseFloat(item.unit_price);
+
+          if (!qty || isNaN(qty) || qty <= 0) {
             return NextResponse.json(
               { success: false, error: 'Quantity must be greater than 0' },
               { status: 400 }
             );
           }
-          if (item.unit_price === undefined || item.unit_price < 0) {
+          if (price === undefined || isNaN(price) || price < 0) {
             return NextResponse.json(
               { success: false, error: 'Valid unit price is required' },
               { status: 400 }
@@ -154,10 +157,10 @@ export async function POST(request: NextRequest) {
           );
         }
 
-        // Calculate totals from items
-        const subtotal = items.reduce((sum, item) => sum + (item.quantity * item.unit_price), 0);
-        const tax = orderData.tax || (subtotal * (orderData.tax_rate || 0));
-        const shipping = orderData.shipping_cost || 0;
+        // Calculate totals from items (parse all numeric values)
+        const subtotal = items.reduce((sum, item) => sum + (parseFloat(item.quantity) * parseFloat(item.unit_price)), 0);
+        const tax = parseFloat(orderData.tax) || (subtotal * (parseFloat(orderData.tax_rate) || 0));
+        const shipping = parseFloat(orderData.shipping_cost) || 0;
         const total = subtotal + tax + shipping;
 
         // Generate PO number using database function
@@ -197,12 +200,20 @@ export async function POST(request: NextRequest) {
             internal_notes: orderData.internal_notes || null
           })
           .select()
-          .single();
+          .maybeSingle();
 
         if (poError) {
-          console.error('Error creating purchase order:', poError);
+          console.error('❌ Error creating purchase order:', poError);
           return NextResponse.json(
             { success: false, error: poError.message },
+            { status: 500 }
+          );
+        }
+
+        if (!newPO) {
+          console.error('❌ Purchase order creation returned null');
+          return NextResponse.json(
+            { success: false, error: 'Failed to create purchase order' },
             { status: 500 }
           );
         }
@@ -222,6 +233,7 @@ export async function POST(request: NextRequest) {
               .replace(/^-+|-+$/g, '');
             const slug = `${baseSlug}-${Date.now()}`;
 
+            const unitPrice = parseFloat(item.unit_price);
             const { data: newProduct, error: productError} = await supabase
               .from('products')
               .insert({
@@ -229,8 +241,8 @@ export async function POST(request: NextRequest) {
                 name: item.product_name,
                 slug,
                 sku: item.sku || `AUTO-${Date.now()}-${Math.random().toString(36).substring(7)}`,
-                cost_price: item.unit_price,
-                regular_price: item.unit_price * 2, // Default 100% markup
+                cost_price: unitPrice,
+                regular_price: unitPrice * 2, // Default 100% markup
                 status: 'draft', // Use draft status for now (po_only requires migration)
                 description: `Product added from PO ${newPO.po_number || newPO.id}`,
                 short_description: item.category ? `Category: ${item.category}` : null,
@@ -244,11 +256,16 @@ export async function POST(request: NextRequest) {
                 }
               })
               .select()
-              .single();
+              .maybeSingle();
 
             if (productError) {
-              console.error('Error creating new product:', productError);
+              console.error('❌ Error creating new product:', productError);
               throw new Error(`Failed to create product ${item.product_name}: ${productError.message || JSON.stringify(productError)}`);
+            }
+
+            if (!newProduct) {
+              console.error('❌ Product creation returned null for:', item.product_name);
+              throw new Error(`Failed to create product ${item.product_name}: No data returned`);
             }
 
             productId = newProduct.id;
@@ -258,9 +275,9 @@ export async function POST(request: NextRequest) {
             purchase_order_id: newPO.id,
             product_id: productId,
             variant_id: item.variant_id || null,
-            quantity: item.quantity,
-            unit_price: item.unit_price,
-            line_total: item.quantity * item.unit_price,
+            quantity: parseFloat(item.quantity),
+            unit_price: parseFloat(item.unit_price),
+            line_total: parseFloat(item.quantity) * parseFloat(item.unit_price),
             notes: item.is_new_product ? `New product from supplier. Supplier SKU: ${item.supplier_sku || 'N/A'}` : null
           });
         }
@@ -301,7 +318,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Fetch the complete PO with items
-        const { data: completePO } = await supabase
+        const { data: completePO, error: fetchError } = await supabase
           .from('purchase_orders')
           .select(`
             *,
@@ -311,7 +328,12 @@ export async function POST(request: NextRequest) {
             )
           `)
           .eq('id', newPO.id)
-          .single();
+          .maybeSingle();
+
+        if (fetchError) {
+          console.error('❌ Error fetching complete PO:', fetchError);
+          // Don't fail here - we already created the PO successfully
+        }
 
         // Count new products
         const newProductCount = items.filter(i => i.is_new_product).length;
@@ -353,13 +375,21 @@ export async function POST(request: NextRequest) {
           .eq('id', id)
           .eq('vendor_id', vendor_id)
           .select()
-          .single();
+          .maybeSingle();
 
         if (error) {
-          console.error('Error updating purchase order status:', error);
+          console.error('❌ Error updating purchase order status:', error);
           return NextResponse.json(
             { success: false, error: error.message },
             { status: 500 }
+          );
+        }
+
+        if (!updatedPO) {
+          console.error('❌ PO update affected 0 rows - PO may have been deleted');
+          return NextResponse.json(
+            { success: false, error: 'Purchase order not found or was deleted. Please refresh the page.' },
+            { status: 404 }
           );
         }
 
@@ -386,11 +416,19 @@ export async function POST(request: NextRequest) {
           .select('id, total')
           .eq('id', purchase_order_id)
           .eq('vendor_id', vendor_id)
-          .single();
+          .maybeSingle();
 
-        if (poError || !po) {
+        if (poError) {
+          console.error('❌ Error fetching purchase order:', poError);
           return NextResponse.json(
-            { success: false, error: 'Purchase order not found' },
+            { success: false, error: 'Database error' },
+            { status: 500 }
+          );
+        }
+
+        if (!po) {
+          return NextResponse.json(
+            { success: false, error: 'Purchase order not found or access denied' },
             { status: 404 }
           );
         }
@@ -405,12 +443,20 @@ export async function POST(request: NextRequest) {
             notes: notes || null
           })
           .select()
-          .single();
+          .maybeSingle();
 
         if (error) {
-          console.error('Error adding payment:', error);
+          console.error('❌ Error adding payment:', error);
           return NextResponse.json(
             { success: false, error: error.message },
+            { status: 500 }
+          );
+        }
+
+        if (!newPayment) {
+          console.error('❌ Payment creation returned null');
+          return NextResponse.json(
+            { success: false, error: 'Failed to create payment record' },
             { status: 500 }
           );
         }
@@ -442,11 +488,19 @@ export async function POST(request: NextRequest) {
           .eq('id', id)
           .eq('vendor_id', vendor_id)
           .eq('po_type', 'inbound')
-          .single();
+          .maybeSingle();
 
-        if (poError || !po) {
+        if (poError) {
+          console.error('❌ Error fetching inbound PO:', poError);
           return NextResponse.json(
-            { success: false, error: 'Inbound purchase order not found' },
+            { success: false, error: 'Database error' },
+            { status: 500 }
+          );
+        }
+
+        if (!po) {
+          return NextResponse.json(
+            { success: false, error: 'Inbound purchase order not found or access denied' },
             { status: 404 }
           );
         }
@@ -510,13 +564,21 @@ export async function POST(request: NextRequest) {
           })
           .eq('id', id)
           .select()
-          .single();
+          .maybeSingle();
 
         if (updateError) {
-          console.error('Error updating PO status:', updateError);
+          console.error('❌ Error updating PO status:', updateError);
           return NextResponse.json(
             { success: false, error: updateError.message },
             { status: 500 }
+          );
+        }
+
+        if (!updatedPO) {
+          console.error('❌ PO update affected 0 rows - PO may have been deleted');
+          return NextResponse.json(
+            { success: false, error: 'Purchase order not found or was deleted. Please refresh the page.' },
+            { status: 404 }
           );
         }
 
@@ -547,11 +609,19 @@ export async function POST(request: NextRequest) {
           .eq('id', id)
           .eq('vendor_id', vendor_id)
           .eq('po_type', 'outbound')
-          .single();
+          .maybeSingle();
 
-        if (poError || !po) {
+        if (poError) {
+          console.error('❌ Error fetching outbound PO:', poError);
           return NextResponse.json(
-            { success: false, error: 'Outbound purchase order not found' },
+            { success: false, error: 'Database error' },
+            { status: 500 }
+          );
+        }
+
+        if (!po) {
+          return NextResponse.json(
+            { success: false, error: 'Outbound purchase order not found or access denied' },
             { status: 404 }
           );
         }
@@ -565,12 +635,20 @@ export async function POST(request: NextRequest) {
 
         // Deduct inventory for each item
         for (const item of po.items) {
-          const { data: inventory } = await supabase
+          const { data: inventory, error: invError } = await supabase
             .from('inventory')
             .select('*')
             .eq('product_id', item.product_id)
             .eq('location_id', poData.location_id)
-            .single();
+            .maybeSingle();
+
+          if (invError) {
+            console.error('❌ Error fetching inventory:', invError);
+            return NextResponse.json(
+              { success: false, error: 'Error checking inventory' },
+              { status: 500 }
+            );
+          }
 
           if (!inventory || inventory.quantity < item.quantity) {
             return NextResponse.json(
@@ -613,13 +691,21 @@ export async function POST(request: NextRequest) {
           })
           .eq('id', id)
           .select()
-          .single();
+          .maybeSingle();
 
         if (updateError) {
-          console.error('Error updating PO status:', updateError);
+          console.error('❌ Error updating PO status:', updateError);
           return NextResponse.json(
             { success: false, error: updateError.message },
             { status: 500 }
+          );
+        }
+
+        if (!updatedPO) {
+          console.error('❌ PO update affected 0 rows - PO may have been deleted');
+          return NextResponse.json(
+            { success: false, error: 'Purchase order not found or was deleted. Please refresh the page.' },
+            { status: 404 }
           );
         }
 
@@ -653,13 +739,21 @@ export async function POST(request: NextRequest) {
           .eq('id', po_id)
           .eq('vendor_id', vendor_id)
           .select()
-          .single();
+          .maybeSingle();
 
         if (error) {
-          console.error('Error updating PO status:', error);
+          console.error('❌ Error updating PO status:', error);
           return NextResponse.json(
             { success: false, error: error.message },
             { status: 500 }
+          );
+        }
+
+        if (!updatedPO) {
+          console.error('❌ PO update affected 0 rows - PO may have been deleted');
+          return NextResponse.json(
+            { success: false, error: 'Purchase order not found or was deleted. Please refresh the page.' },
+            { status: 404 }
           );
         }
 

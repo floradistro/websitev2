@@ -252,7 +252,73 @@ export async function POST(request: NextRequest) {
         message: 'Locations assigned successfully'
       });
     }
-    
+
+    if (action === 'set_password') {
+      const { employee_id, password } = data;
+
+      if (!employee_id || !password) {
+        return NextResponse.json({
+          success: false,
+          error: 'employee_id and password are required'
+        }, { status: 400 });
+      }
+
+      if (password.length < 8) {
+        return NextResponse.json({
+          success: false,
+          error: 'Password must be at least 8 characters'
+        }, { status: 400 });
+      }
+
+      // Verify employee belongs to vendor and get auth_user_id
+      const { data: emp, error: verifyError } = await supabase
+        .from('users')
+        .select('vendor_id, auth_user_id')
+        .eq('id', employee_id)
+        .maybeSingle();
+
+      if (verifyError) {
+        console.error('Error fetching employee:', verifyError);
+        return NextResponse.json({
+          success: false,
+          error: 'Database error'
+        }, { status: 500 });
+      }
+
+      if (!emp || emp.vendor_id !== vendorId) {
+        return NextResponse.json({
+          success: false,
+          error: 'Employee not found or access denied'
+        }, { status: 403 });
+      }
+
+      if (!emp.auth_user_id) {
+        return NextResponse.json({
+          success: false,
+          error: 'Employee has no auth account'
+        }, { status: 400 });
+      }
+
+      // Update password using Supabase Admin API
+      const { error: passwordError } = await supabase.auth.admin.updateUserById(
+        emp.auth_user_id,
+        { password }
+      );
+
+      if (passwordError) {
+        console.error('Error updating password:', passwordError);
+        return NextResponse.json({
+          success: false,
+          error: passwordError.message || 'Failed to update password'
+        }, { status: 400 });
+      }
+
+      return NextResponse.json({
+        success: true,
+        message: 'Password updated successfully'
+      });
+    }
+
     if (action === 'delete') {
       const { employee_id } = data;
       
