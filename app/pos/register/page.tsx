@@ -460,6 +460,12 @@ export default function POSRegisterPage() {
     setProcessing(true);
 
     try {
+      if (taxRate === null) {
+        alert('Tax configuration not loaded. Please refresh the page.');
+        setProcessing(false);
+        return;
+      }
+
       const subtotal = cart.reduce((sum, item) => sum + item.lineTotal, 0);
       const taxAmount = subtotal * taxRate;
       const total = subtotal + taxAmount;
