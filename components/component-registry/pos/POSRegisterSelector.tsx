@@ -10,6 +10,15 @@ interface Register {
   register_name: string;
   device_name: string;
   status: string;
+  processor_type?: string;
+  allow_card: boolean;
+  payment_processor_id?: string;
+  payment_processor?: {
+    id: string;
+    processor_name: string;
+    processor_type: string;
+    is_active: boolean;
+  };
   current_session?: {
     id: string;
     session_number: string;
@@ -22,7 +31,7 @@ interface Register {
 interface POSRegisterSelectorProps {
   locationId: string;
   locationName: string;
-  onRegisterSelected: (registerId: string, sessionId?: string) => void;
+  onRegisterSelected: (registerId: string, sessionId?: string, hasPaymentProcessor?: boolean) => void;
   onBackToLocationSelector?: () => void;
 }
 
@@ -92,8 +101,14 @@ export function POSRegisterSelector({
         const data = await response.json();
         console.log('✅ Atomic session result:', data.method, data.session?.id);
 
+        // Check if register has active payment processor
+        const hasPaymentProcessor = !!(
+          register.payment_processor_id &&
+          register.payment_processor?.is_active === true
+        );
+
         // Either joined existing or created new - database guarantees no duplicates
-        onRegisterSelected(register.id, data.session?.id);
+        onRegisterSelected(register.id, data.session?.id, hasPaymentProcessor);
         loadRegisters(); // Refresh UI
       } else {
         const error = await response.json();

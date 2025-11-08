@@ -14,6 +14,7 @@ interface POSPaymentProps {
   onCancel: () => void;
   locationId?: string;
   registerId?: string;
+  hasPaymentProcessor?: boolean;
 }
 
 export interface PaymentData {
@@ -27,7 +28,7 @@ export interface PaymentData {
   splitPayments?: SplitPayment[];
 }
 
-export function POSPayment({ total, onPaymentComplete, onCancel, locationId, registerId }: POSPaymentProps) {
+export function POSPayment({ total, onPaymentComplete, onCancel, locationId, registerId, hasPaymentProcessor = false }: POSPaymentProps) {
   const [paymentMethod, setPaymentMethod] = useState<'cash' | 'card' | 'split'>('cash');
   const [cashTendered, setCashTendered] = useState('');
   const [processing, setProcessing] = useState(false);
@@ -80,34 +81,46 @@ export function POSPayment({ total, onPaymentComplete, onCancel, locationId, reg
           splitPayments,
         });
       } else if (paymentMethod === 'card') {
-        // Process card payment through DejaVoo terminal
-        const response = await fetch('/api/pos/payment/process', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            locationId: locationId || localStorage.getItem('pos_selected_location_id'),
-            registerId: registerId || localStorage.getItem('pos_register_id'),
-            amount: total,
-            paymentMethod: 'credit',
-            referenceId: `POS-${Date.now()}`,
-          }),
-        });
+        // If no processor, allow manual entry
+        if (!hasPaymentProcessor) {
+          // Manual card entry - mark as manual for later processing
+          onPaymentComplete({
+            paymentMethod: 'card',
+            authorizationCode: 'MANUAL-ENTRY',
+            transactionId: `MANUAL-${Date.now()}`,
+            cardType: 'Manual Entry',
+            cardLast4: 'XXXX',
+          });
+        } else {
+          // Process card payment through payment terminal
+          const response = await fetch('/api/pos/payment/process', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              locationId: locationId || localStorage.getItem('pos_selected_location_id'),
+              registerId: registerId || localStorage.getItem('pos_register_id'),
+              amount: total,
+              paymentMethod: 'credit',
+              referenceId: `POS-${Date.now()}`,
+            }),
+          });
 
-        const result = await response.json();
+          const result = await response.json();
 
-        console.log('Payment API response:', result);
+          console.log('Payment API response:', result);
 
-        if (!result.success) {
-          throw new Error(result.error || 'Payment failed');
+          if (!result.success) {
+            throw new Error(result.error || 'Payment failed');
+          }
+
+          onPaymentComplete({
+            paymentMethod: 'card',
+            authorizationCode: result.authorizationCode,
+            transactionId: result.transactionId,
+            cardType: result.cardType,
+            cardLast4: result.cardLast4,
+          });
         }
-
-        onPaymentComplete({
-          paymentMethod: 'card',
-          authorizationCode: result.authorizationCode,
-          transactionId: result.transactionId,
-          cardType: result.cardType,
-          cardLast4: result.cardLast4,
-        });
       }
     } catch (error: any) {
       console.error('Payment error:', error);
@@ -174,6 +187,15 @@ export function POSPayment({ total, onPaymentComplete, onCancel, locationId, reg
           </button>
         </div>
 
+        {/* Manual Entry Notice */}
+        {!hasPaymentProcessor && paymentMethod === 'card' && (
+          <div className="mb-6 -mt-3 text-center">
+            <p className="text-[10px] text-blue-400/80 uppercase tracking-[0.15em]">
+              Manual Card Entry - No Terminal Connected
+            </p>
+          </div>
+        )}
+
         {/* Cash Payment */}
         {paymentMethod === 'cash' && (
           <div className="space-y-4 mb-6">
@@ -236,19 +258,23 @@ export function POSPayment({ total, onPaymentComplete, onCancel, locationId, reg
             {processing ? (
               <>
                 <div className="text-white text-sm font-bold uppercase tracking-wider mb-2">
-                  Processing on terminal...
+                  {hasPaymentProcessor ? 'Processing on terminal...' : 'Processing manual entry...'}
                 </div>
                 <div className="text-white/60 text-[10px]">
-                  Please follow prompts on DejaVoo terminal
+                  {hasPaymentProcessor
+                    ? 'Please follow prompts on payment terminal'
+                    : 'Manual card entry in progress'}
                 </div>
               </>
             ) : (
               <>
                 <div className="text-white text-sm font-bold uppercase tracking-wider mb-2">
-                  Ready to process
+                  {hasPaymentProcessor ? 'Ready to process' : 'Manual card entry'}
                 </div>
                 <div className="text-white/60 text-[10px]">
-                  Click Complete to send to DejaVoo terminal
+                  {hasPaymentProcessor
+                    ? 'Click Complete to send to payment terminal'
+                    : 'Click Complete for manual card entry (enter card details after completion)'}
                 </div>
               </>
             )}

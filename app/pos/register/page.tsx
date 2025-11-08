@@ -17,6 +17,7 @@ export default function POSRegisterPage() {
   const [processing, setProcessing] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [registerId, setRegisterId] = useState<string | null>(null);
+  const [hasPaymentProcessor, setHasPaymentProcessor] = useState<boolean>(false);
 
   // CRITICAL FIX: Persist selected location in localStorage to survive navigation
   const [selectedLocation, setSelectedLocation] = useState<{ id: string; name: string } | null>(() => {
@@ -559,11 +560,13 @@ export default function POSRegisterPage() {
       <POSRegisterSelector
         locationId={selectedLocation.id}
         locationName={selectedLocation.name}
-        onRegisterSelected={(id, sessionId) => {
+        onRegisterSelected={(id, sessionId, hasProcessor) => {
           setRegisterId(id);
+          setHasPaymentProcessor(hasProcessor || false);
           if (sessionId) {
             setSessionId(sessionId);
           }
+          console.log('🔐 Register selected:', id, 'Has processor:', hasProcessor);
         }}
         onBackToLocationSelector={() => {
           // Clear location selection to go back to location selector
@@ -627,6 +630,7 @@ export default function POSRegisterPage() {
           onCancel={() => setShowPayment(false)}
           locationId={selectedLocation?.id}
           registerId={registerId || undefined}
+          hasPaymentProcessor={hasPaymentProcessor}
         />
       )}
 

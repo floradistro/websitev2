@@ -19,10 +19,18 @@ export async function GET(request: NextRequest) {
 
     const supabase = getServiceSupabase();
 
-    // Get all registers for location
+    // Get all registers for location WITH payment processor info
     const { data: registers, error } = await supabase
       .from('pos_registers')
-      .select('*')
+      .select(`
+        *,
+        payment_processor:payment_processors(
+          id,
+          processor_name,
+          processor_type,
+          is_active
+        )
+      `)
       .eq('location_id', locationId)
       .eq('status', 'active')
       .order('register_number');
