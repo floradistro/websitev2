@@ -86,7 +86,7 @@ export function InventoryItem({
               Total Stock
             </div>
             <div className="text-2xl font-light text-white">
-              {totalQuantity.toFixed(1)}g
+              {totalQuantity.toFixed(2)}g
             </div>
             {margin !== null && (
               <div className={cn(ds.typography.size.xs, ds.colors.text.tertiary)}>

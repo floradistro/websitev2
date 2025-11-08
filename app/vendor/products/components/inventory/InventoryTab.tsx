@@ -51,6 +51,7 @@ export function InventoryTab() {
   const [search, setSearch] = useState('');
   const [stockFilter, setStockFilter] = useState<'all' | 'in_stock' | 'low_stock' | 'out_of_stock'>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
+  const [locationFilter, setLocationFilter] = useState<string>('all');
 
   // Pagination state
   const [page, setPage] = useState(1);
@@ -115,8 +116,14 @@ export function InventoryTab() {
       items = items.filter(p => p.category === categoryFilter);
     }
 
+    if (locationFilter !== 'all') {
+      items = items.filter(p =>
+        p.locations.some(loc => loc.location_id === locationFilter)
+      );
+    }
+
     return items;
-  }, [products, search, stockFilter, categoryFilter]);
+  }, [products, search, stockFilter, categoryFilter, locationFilter]);
 
   // Paginate
   const paginatedProducts = useMemo(() => {
@@ -217,10 +224,13 @@ export function InventoryTab() {
         search={search}
         stockFilter={stockFilter}
         categoryFilter={categoryFilter}
+        locationFilter={locationFilter}
         categories={categories}
+        locations={locations}
         onSearchChange={setSearch}
         onStockFilterChange={setStockFilter}
         onCategoryFilterChange={setCategoryFilter}
+        onLocationFilterChange={setLocationFilter}
       />
 
       {/* Inventory List */}

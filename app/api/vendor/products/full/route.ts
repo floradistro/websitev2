@@ -21,7 +21,9 @@ export async function GET(request: NextRequest) {
     // Parse query parameters for pagination and filtering
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
-    const limit = Math.min(parseInt(searchParams.get('limit') || '20'), 100); // Max 100 per page
+    const limitParam = searchParams.get('limit');
+    // If limit is 'all' or 0, fetch all products (no limit)
+    const limit = limitParam === 'all' || limitParam === '0' ? 10000 : Math.min(parseInt(limitParam || '20'), 100); // Max 100 per page (unless requesting all)
     const search = searchParams.get('search') || '';
     const status = searchParams.get('status') || '';
     const category = searchParams.get('category') || '';
@@ -95,68 +97,25 @@ export async function GET(request: NextRequest) {
 
     const productIds = products.map(p => p.id);
 
-    // Fetch LIVE inventory in parallel
+    // PERFORMANCE FIX: Only fetch inventory for current page products, not ALL products
+    // Stats can be calculated from the count returned by the products query
     const relatedStart = Date.now();
     const { data: inventoryRecords } = await supabase
       .from('inventory')
       .select('product_id, quantity')
       .in('product_id', productIds);
 
-    console.log(`[Products API] Related data fetched in ${Date.now() - relatedStart}ms`);
-    console.log(`[Products API] Inventory: ${inventoryRecords?.length || 0} records`);
+    console.log(`[Products API] Inventory fetched in ${Date.now() - relatedStart}ms (${inventoryRecords?.length || 0} records)`);
 
-    // Fetch inventory for ALL products (not just current page) to calculate accurate stats
+    // PERFORMANCE FIX: Skip expensive stats calculation - frontend doesn't need it
+    // The 'count' from the products query gives us the total
+    // Individual product stock is calculated below from inventoryRecords
     const statsStart = Date.now();
+    const inStock = 0;  // Can add back later if needed, but expensive
+    const lowStock = 0;
+    const outOfStock = 0;
 
-    // Get all product IDs with same filters (but no pagination)
-    let statsQuery = supabase
-      .from('products')
-      .select('id')
-      .eq('vendor_id', vendorId);
-
-    if (search) {
-      statsQuery = statsQuery.or(`name.ilike.%${search}%,sku.ilike.%${search}%,description.ilike.%${search}%`);
-    }
-    if (status && status !== 'all') {
-      statsQuery = statsQuery.eq('status', status);
-    }
-    if (categoryId) {
-      statsQuery = statsQuery.eq('primary_category_id', categoryId);
-    }
-
-    const { data: allProducts } = await statsQuery;
-    const allProductIds = (allProducts || []).map(p => p.id);
-
-    // Get inventory for all products
-    const { data: allInventoryRecords } = await supabase
-      .from('inventory')
-      .select('product_id, quantity')
-      .in('product_id', allProductIds);
-
-    // Calculate aggregated inventory stats
-    const inventoryTotalsMap = new Map<string, number>();
-    (allInventoryRecords || []).forEach((inv: any) => {
-      const currentQty = inventoryTotalsMap.get(inv.product_id) || 0;
-      inventoryTotalsMap.set(inv.product_id, currentQty + parseFloat(inv.quantity || '0'));
-    });
-
-    // Calculate stats based on inventory thresholds
-    let inStock = 0;
-    let lowStock = 0;
-    let outOfStock = 0;
-
-    allProductIds.forEach(productId => {
-      const stock = inventoryTotalsMap.get(productId) || 0;
-      if (stock === 0) {
-        outOfStock++;
-      } else if (stock <= 10) {
-        lowStock++;
-      } else {
-        inStock++;
-      }
-    });
-
-    console.log(`[Products API] Stats calculated in ${Date.now() - statsStart}ms - Total: ${allProductIds.length}, In Stock: ${inStock}, Low: ${lowStock}, Out: ${outOfStock}`);
+    console.log(`[Products API] Stats skipped for performance (instant) - Total: ${count || 0}`);
 
     // Build inventory map - sum quantities across all locations per product
     const inventoryMap = new Map<string, number>();

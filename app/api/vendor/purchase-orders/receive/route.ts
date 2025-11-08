@@ -142,6 +142,11 @@ export async function POST(request: NextRequest) {
           notes: `Received from PO ${po.po_number || po_id}`,
           vendor_id: vendorId
         });
+
+      // Note: PO item status and quantities are automatically updated by the
+      // update_item_receive_status trigger on purchase_order_receives table.
+      // PO status is automatically updated by the update_po_receiving_status
+      // trigger on purchase_order_items table.
     }
 
     // Get updated PO
@@ -155,8 +160,8 @@ export async function POST(request: NextRequest) {
       .eq('id', po_id)
       .single();
 
-    return NextResponse.json({ 
-      success: true, 
+    return NextResponse.json({
+      success: true,
       purchase_order: updatedPO,
       message: 'Items received successfully'
     });

@@ -189,9 +189,23 @@ export async function POST(request: NextRequest) {
       locations: locations
     }, { headers: corsHeaders });
 
-    // Set HTTP-only cookie with auth token
-    const cookie = createAuthCookie(authData.session.access_token);
-    response.cookies.set(cookie.name, cookie.value, cookie.options);
+    // Set HTTP-only cookies with both access and refresh tokens
+    const accessCookie = createAuthCookie(authData.session.access_token);
+    response.cookies.set(accessCookie.name, accessCookie.value, accessCookie.options);
+
+    // Also store refresh token (needed for session refresh)
+    const refreshCookie = {
+      name: 'refresh-token',
+      value: authData.session.refresh_token,
+      options: {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax' as const,
+        maxAge: 60 * 60 * 24 * 30, // 30 days
+        path: '/'
+      }
+    };
+    response.cookies.set(refreshCookie.name, refreshCookie.value, refreshCookie.options);
 
     return response;
 

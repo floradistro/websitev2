@@ -54,7 +54,7 @@ export function LocationStock({
         </div>
         <div className="text-right">
           <div className="text-2xl font-light text-white">
-            {quantity.toFixed(1)}
+            {quantity.toFixed(2)}
           </div>
           <div className={cn(ds.typography.size.xs, ds.colors.text.quaternary)}>
             grams

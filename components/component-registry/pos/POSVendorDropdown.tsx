@@ -3,7 +3,8 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useAppAuth } from '@/context/AppAuthContext';
 import Image from 'next/image';
-import { DollarSign, ChevronDown, MapPin, User, CreditCard, ShoppingBag, Clock, LogOut, Package } from 'lucide-react';
+import { DollarSign, ChevronDown, MapPin, User, CreditCard, ShoppingBag, Clock, LogOut, Package, PackageCheck } from 'lucide-react';
+import Link from 'next/link';
 import { POSModal } from './POSModal';
 import { POSCashDrawer } from './POSCashDrawer';
 
@@ -57,6 +58,7 @@ export function POSVendorDropdown({
   const [modal, setModal] = useState<{isOpen: boolean; title: string; message: string; type: 'success'|'error'|'info'; onConfirm?: () => void; confirmText?: string; cancelText?: string}>({
     isOpen: false, title: '', message: '', type: 'info'
   });
+  const [pendingPOCount, setPendingPOCount] = useState<number>(0);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Close dropdown when clicking outside
@@ -120,6 +122,18 @@ export function POSVendorDropdown({
     }
   };
 
+  const loadPendingPOs = useCallback(async () => {
+    try {
+      const response = await fetch(`/api/pos/receiving?location_id=${locationId}`);
+      if (response.ok) {
+        const data = await response.json();
+        setPendingPOCount(data.count || 0);
+      }
+    } catch (error) {
+      console.error('Error loading pending POs:', error);
+    }
+  }, [locationId]);
+
   useEffect(() => {
     if (!registerId) return;
 
@@ -133,6 +147,13 @@ export function POSVendorDropdown({
       clearInterval(interval);
     };
   }, [loadActiveSession, registerId]);
+
+  // Poll for pending POs every 10 seconds
+  useEffect(() => {
+    loadPendingPOs();
+    const interval = setInterval(loadPendingPOs, 10000);
+    return () => clearInterval(interval);
+  }, [loadPendingPOs]);
 
   const getSessionDuration = () => {
     if (!session) return '--';
@@ -252,7 +273,7 @@ export function POSVendorDropdown({
         {/* Vendor Logo Button */}
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="flex items-center gap-2 bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 rounded-2xl px-3 py-2 transition-all group"
+          className="relative flex items-center gap-2 bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 rounded-2xl px-3 py-2 transition-all group"
         >
           {vendor?.logo_url ? (
             <div className="relative w-8 h-8 flex-shrink-0 bg-white/10 rounded-lg overflow-hidden">
@@ -270,6 +291,13 @@ export function POSVendorDropdown({
             </div>
           )}
           <ChevronDown size={14} className={`text-white/60 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+
+          {/* Notification Badge */}
+          {pendingPOCount > 0 && (
+            <div className="absolute -top-1 -right-1 bg-emerald-500 text-black text-[10px] font-black rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 animate-pulse">
+              {pendingPOCount}
+            </div>
+          )}
         </button>
 
         {/* Dropdown Menu */}
@@ -371,6 +399,22 @@ export function POSVendorDropdown({
                       Orders
                     </a>
                   )}
+                  <Link
+                    href="/pos/receiving"
+                    onClick={() => setIsOpen(false)}
+                    className="relative block w-full px-4 py-2.5 border border-emerald-500/20 bg-emerald-500/10 text-emerald-400 text-center rounded-xl hover:bg-emerald-500/20 hover:border-emerald-500/30 text-[10px] font-black uppercase tracking-[0.15em] transition-all"
+                    style={{ fontWeight: 900 }}
+                  >
+                    <div className="flex items-center justify-center gap-2">
+                      <PackageCheck size={12} />
+                      Receive Inventory
+                      {pendingPOCount > 0 && (
+                        <span className="ml-1 bg-emerald-500 text-black text-[9px] font-black rounded-full min-w-[16px] h-[16px] flex items-center justify-center px-1">
+                          {pendingPOCount}
+                        </span>
+                      )}
+                    </div>
+                  </Link>
                   <a
                     href="/vendor/dashboard"
                     className="block w-full px-4 py-2.5 border border-white/10 text-white text-center rounded-xl hover:bg-white/5 hover:border-white/20 text-[10px] font-black uppercase tracking-[0.15em] transition-all"
@@ -397,6 +441,22 @@ export function POSVendorDropdown({
                 >
                   Open Session
                 </button>
+                <Link
+                  href="/pos/receiving"
+                  onClick={() => setIsOpen(false)}
+                  className="relative block w-full px-4 py-2.5 border border-emerald-500/20 bg-emerald-500/10 text-emerald-400 text-center rounded-xl hover:bg-emerald-500/20 hover:border-emerald-500/30 text-[10px] font-black uppercase tracking-[0.15em] transition-all"
+                  style={{ fontWeight: 900 }}
+                >
+                  <div className="flex items-center justify-center gap-2">
+                    <PackageCheck size={12} />
+                    Receive Inventory
+                    {pendingPOCount > 0 && (
+                      <span className="ml-1 bg-emerald-500 text-black text-[9px] font-black rounded-full min-w-[16px] h-[16px] flex items-center justify-center px-1">
+                        {pendingPOCount}
+                      </span>
+                    )}
+                  </div>
+                </Link>
                 <a
                   href="/vendor/dashboard"
                   className="block w-full px-4 py-2.5 border border-white/10 text-white text-center rounded-xl hover:bg-white/5 hover:border-white/20 text-[10px] font-black uppercase tracking-[0.15em] transition-all"

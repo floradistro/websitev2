@@ -4,7 +4,11 @@ import { getServiceSupabase } from '@/lib/supabase/client';
 /**
  * Public API endpoint for TV displays to fetch products
  * Uses service role to bypass RLS
+ * CRITICAL: NO CACHING - TV menus must be live and instant
  */
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -136,10 +140,17 @@ export async function GET(request: NextRequest) {
       console.log(`✅ TV Display: Fetched ${productsWithParents?.length || 0} products (no location filter)`);
     }
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       products: filteredProducts
     });
+
+    // CRITICAL: Disable ALL caching - TV menus must be live
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+    response.headers.set('Pragma', 'no-cache');
+    response.headers.set('Expires', '0');
+
+    return response;
 
   } catch (error: any) {
     console.error('❌ TV Display products API error:', error);

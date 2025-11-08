@@ -70,12 +70,15 @@ export async function GET(request: NextRequest) {
         0
       );
 
-      const locationInventory = productInventory.map(inv => ({
-        inventory_id: inv.id.toString(),
-        location_id: inv.location_id,
-        location_name: locationMap.get(inv.location_id) || 'Unknown',
-        quantity: parseFloat(inv.quantity) || 0
-      }));
+      // CRITICAL FIX: Only include locations with quantity > 0
+      const locationInventory = productInventory
+        .filter(inv => parseFloat(inv.quantity) > 0)
+        .map(inv => ({
+          inventory_id: inv.id.toString(),
+          location_id: inv.location_id,
+          location_name: locationMap.get(inv.location_id) || 'Unknown',
+          quantity: parseFloat(inv.quantity) || 0
+        }));
 
       return {
         product_id: product.id,

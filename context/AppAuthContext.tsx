@@ -71,6 +71,37 @@ export function AppAuthProvider({ children }: { children: React.ReactNode }) {
   const [accessibleApps, setAccessibleApps] = useState<string[]>([]);
   const [locations, setLocations] = useState<Location[]>([]);
 
+  // Helper: Check if user has admin privileges (DRY - Don't Repeat Yourself)
+  const isAdminRole = (role: UserRole) => {
+    return role === 'vendor_owner' || role === 'vendor_manager' || role === 'admin';
+  };
+
+  // Helper: Get accessible apps for user (DRY - Don't Repeat Yourself)
+  const getAccessibleApps = (role: UserRole, serverApps?: string[]) => {
+    const defaultApps = ['pos', 'customers', 'tv_menus'];
+    return isAdminRole(role) ? [] : (serverApps || defaultApps);
+  };
+
+  // Helper function to fetch locations from server (DRY - Don't Repeat Yourself)
+  const fetchLocationsFromServer = async () => {
+    try {
+      console.log('🔄 Fetching locations from server...');
+      const response = await fetch('/api/auth/refresh', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+      });
+      const data = await response.json();
+      if (data.success && data.locations) {
+        console.log('✅ Got locations from server:', data.locations.length);
+        setLocations(data.locations);
+        localStorage.setItem('app_locations', JSON.stringify(data.locations));
+      }
+    } catch (err) {
+      console.error('Failed to fetch locations:', err);
+    }
+  };
+
   // Load user from localStorage on mount
   useEffect(() => {
     let mounted = true;
@@ -84,55 +115,35 @@ export function AppAuthProvider({ children }: { children: React.ReactNode }) {
         try {
           const userData = JSON.parse(savedUser);
 
-          // CRITICAL FIX: Verify auth cookie exists before setting authenticated
-          // BUT: Skip verification within 10 seconds of login to allow cookie propagation
-          const loginTimestamp = localStorage.getItem('app_login_timestamp');
-          const now = Date.now();
-          const isRecentLogin = loginTimestamp && (now - parseInt(loginTimestamp)) < 10000; // 10 seconds
-
-          const hasCookie = document.cookie.split(';').some(cookie => cookie.trim().startsWith('auth-token='));
-
-          if (!hasCookie && !isRecentLogin) {
-            console.warn('⚠️  Auth cookie missing - clearing stale session');
-            // Cookie missing - clear stale localStorage
-            localStorage.removeItem('app_user');
-            localStorage.removeItem('app_accessible_apps');
-            localStorage.removeItem('app_locations');
-            localStorage.removeItem('vendor_id');
-            localStorage.removeItem('vendor_email');
-            localStorage.removeItem('app_login_timestamp');
-            setIsLoading(false);
-            return;
-          }
-
-          if (isRecentLogin) {
-            console.log('✅ Recent login detected - skipping cookie verification');
-          }
-
-          // Cookie exists or recent login - safe to set authenticated state
+          // IMPORTANT: We CANNOT verify HTTP-only cookies from JavaScript!
+          // The refresh endpoint will validate the session and log out if expired.
+          // Just trust localStorage for initial load, refresh will validate.
           setUser(userData);
           setVendor(userData.vendor);
           setIsAuthenticated(true);
 
-          // Default apps available to all users: POS, Customers, Digital Menus
-          const defaultApps = ['pos', 'customers', 'tv_menus'];
-          const isAdmin = userData.role === 'vendor_owner' || userData.role === 'vendor_manager' || userData.role === 'admin';
+          // Set accessible apps
           if (savedApps) {
             const parsedApps = JSON.parse(savedApps);
             // If empty array and not admin, use default apps
-            setAccessibleApps(parsedApps.length === 0 && !isAdmin ? defaultApps : parsedApps);
+            const defaultApps = ['pos', 'customers', 'tv_menus'];
+            setAccessibleApps(parsedApps.length === 0 && !isAdminRole(userData.role) ? defaultApps : parsedApps);
           } else {
-            // No saved apps - use defaults for non-admins
-            setAccessibleApps(isAdmin ? [] : defaultApps);
+            // No saved apps - get defaults based on role
+            setAccessibleApps(getAccessibleApps(userData.role));
           }
 
-          if (savedLocations) {
+          // Handle locations - fetch from server if missing or empty
+          if (!savedLocations || JSON.parse(savedLocations).length === 0) {
+            console.warn('⚠️  No locations or empty array - fetching immediately!');
+            setLocations([]);
+            if (mounted && userData) {
+              fetchLocationsFromServer();
+            }
+          } else {
             const parsedLocations = JSON.parse(savedLocations);
             setLocations(parsedLocations);
             console.log('📍 Loaded locations from localStorage:', parsedLocations.length, 'locations');
-          } else {
-            console.warn('⚠️  No locations found in localStorage');
-            setLocations([]);
           }
 
           // Ensure legacy keys are set for backwards compatibility
@@ -143,7 +154,7 @@ export function AppAuthProvider({ children }: { children: React.ReactNode }) {
             localStorage.setItem('vendor_email', userData.vendor.email);
           }
 
-          console.log('✅ Loaded user from localStorage:', userData.name, `(${userData.role})`, 'Cookie verified');
+          console.log('✅ Loaded user from localStorage:', userData.name, `(${userData.role})`, '- session will be validated on refresh');
         } catch (error) {
           console.error('Failed to load user from localStorage:', error);
           localStorage.removeItem('app_user');
@@ -161,6 +172,37 @@ export function AppAuthProvider({ children }: { children: React.ReactNode }) {
       mounted = false;
     };
   }, []);
+
+  // Auto-refresh session token to prevent expiration
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    // CRITICAL FIX: Don't refresh immediately on page load - trust localStorage
+    // Only refresh periodically and when tab becomes visible
+    // This prevents logout on every page refresh
+    console.log('🔐 Session refresh scheduled - will refresh in 5 minutes');
+
+    // Refresh every 5 minutes to keep session alive (more frequent = better UX)
+    const refreshInterval = setInterval(() => {
+      console.log('🔄 Auto-refreshing session...');
+      refreshUserData();
+    }, 5 * 60 * 1000); // 5 minutes
+
+    // Refresh when tab becomes visible (user comes back)
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && isAuthenticated) {
+        console.log('👁️  Tab visible - refreshing session...');
+        refreshUserData();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      clearInterval(refreshInterval);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [isAuthenticated]);
 
   async function login(email: string, password: string): Promise<boolean> {
     try {
@@ -240,10 +282,7 @@ export function AppAuthProvider({ children }: { children: React.ReactNode }) {
       setIsAuthenticated(true);
 
       // Store accessible apps (vendor owners/managers have access to all)
-      // Default apps available to all users: POS, Customers, Digital Menus
-      const defaultApps = ['pos', 'customers', 'tv_menus'];
-      const isAdmin = data.user.role === 'vendor_owner' || data.user.role === 'vendor_manager' || data.user.role === 'admin';
-      const apps = isAdmin ? [] : (data.apps || defaultApps);
+      const apps = getAccessibleApps(data.user.role, data.apps);
       setAccessibleApps(apps);
 
       // Store locations
@@ -311,16 +350,39 @@ export function AppAuthProvider({ children }: { children: React.ReactNode }) {
     if (!user) return;
 
     try {
-      // Re-fetch user data using the refresh endpoint (not login)
+      // Re-fetch user data AND refresh session token
       const response = await fetch('/api/auth/refresh', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include', // Include cookies with session token
       });
 
+      // CRITICAL FIX: Only logout on ACTUAL session expiration, not network errors
+      if (!response.ok) {
+        // Check if it's specifically a 401 Unauthorized (session expired)
+        if (response.status === 401) {
+          console.warn('⚠️  Session expired (401) - logging out');
+          logout();
+          return;
+        }
+        // For other errors (500, network issues), just log and keep user logged in
+        console.error('⚠️  Session refresh failed with status', response.status, '- keeping user logged in');
+        return;
+      }
+
       const data = await response.json();
 
+      // Check for explicit expiration flag
+      if (data.expired) {
+        console.warn('⚠️  Session expired (expired flag) - logging out');
+        logout();
+        return;
+      }
+
       if (data.success && data.user) {
+        if (data.refreshed) {
+          console.log('🔄 Session token refreshed successfully');
+        }
         const updatedUser: AppUser = {
           id: data.user.id,
           email: data.user.email,
@@ -334,10 +396,8 @@ export function AppAuthProvider({ children }: { children: React.ReactNode }) {
         setUser(updatedUser);
         setVendor(data.user.vendor);
 
-        // Default apps available to all users: POS, Customers, Digital Menus
-        const defaultApps = ['pos', 'customers', 'tv_menus'];
-        const isAdmin = data.user.role === 'vendor_owner' || data.user.role === 'vendor_manager' || data.user.role === 'admin';
-        const apps = isAdmin ? [] : (data.apps || defaultApps);
+        // Set accessible apps based on role
+        const apps = getAccessibleApps(data.user.role, data.apps);
         setAccessibleApps(apps);
 
         const userLocations = data.locations || [];
@@ -353,15 +413,19 @@ export function AppAuthProvider({ children }: { children: React.ReactNode }) {
         }
 
         console.log('✅ User data refreshed:', updatedUser.name);
+      } else {
+        console.warn('⚠️  Refresh returned success=false - keeping user logged in with cached data');
       }
     } catch (error) {
-      console.error('Failed to refresh user data:', error);
+      // CRITICAL FIX: Network errors should NOT log user out
+      console.error('⚠️  Network error during refresh - keeping user logged in:', error);
+      // Don't logout on network errors - keep user logged in with cached localStorage data
     }
   }
 
   function hasAppAccess(appKey: string): boolean {
     // Vendor owners/managers/admins have access to everything
-    if (user?.role === 'vendor_owner' || user?.role === 'vendor_manager' || user?.role === 'admin') {
+    if (user && isAdminRole(user.role)) {
       return true;
     }
 

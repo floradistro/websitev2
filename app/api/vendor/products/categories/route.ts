@@ -13,29 +13,8 @@ export async function GET(request: NextRequest) {
 
     console.log('📂 Fetching categories for vendor:', vendorId);
 
-    // Method 1: Fetch categories used by vendor's products (any status)
-    const { data: products, error: productsError } = await supabase
-      .from('products')
-      .select(`
-        primary_category:categories!primary_category_id(name)
-      `)
-      .eq('vendor_id', vendorId);
-
-    if (productsError) {
-      console.error('❌ Error fetching products for categories:', productsError);
-    }
-
-    // Extract unique categories from products
-    const categorySet = new Set<string>();
-    products?.forEach((product: any) => {
-      if (product.primary_category?.name) {
-        categorySet.add(product.primary_category.name);
-      }
-    });
-
-    console.log('✅ Found categories from products:', [...categorySet]);
-
-    // Method 2: Also fetch ALL vendor-specific categories (not just used ones)
+    // PERFORMANCE FIX: Fetch ONLY vendor categories (active ones) in a single query
+    // No need to scan all products - categories table is the source of truth
     const { data: allCategories, error: categoriesError } = await supabase
       .from('categories')
       .select('name')
@@ -45,18 +24,13 @@ export async function GET(request: NextRequest) {
 
     if (categoriesError) {
       console.error('❌ Error fetching vendor categories:', categoriesError);
-    } else {
-      console.log('📋 Vendor-specific categories:', allCategories?.map(c => c.name));
-
-      // Add all vendor categories to the set (so all available categories show up)
-      allCategories?.forEach((cat: any) => {
-        if (cat.name) {
-          categorySet.add(cat.name);
-        }
-      });
+      return NextResponse.json(
+        { success: false, error: categoriesError.message },
+        { status: 500 }
+      );
     }
 
-    const categories = [...categorySet].sort();
+    const categories = (allCategories || []).map(c => c.name).filter(Boolean);
 
     console.log('✅ Returning categories:', categories);
 

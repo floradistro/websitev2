@@ -22,21 +22,22 @@ export async function GET(request: NextRequest) {
       .from('purchase_orders')
       .select(`
         *,
-        supplier:supplier_id(
+        supplier:suppliers!supplier_id(
           id,
-          external_name,
-          supplier_vendor:supplier_vendor_id(store_name)
+          external_name
         ),
-        wholesale_customer:wholesale_customer_id(
+        wholesale_customer:wholesale_customers!wholesale_customer_id(
           id,
-          external_company_name,
-          customer_vendor:customer_vendor_id(store_name)
+          external_company_name
         ),
-        items:purchase_order_items(
+        location:locations!purchase_orders_location_id_fkey(
+          id,
+          name
+        ),
+        items:purchase_order_items!purchase_order_items_purchase_order_id_fkey(
           *,
-          product:product_id(id, name, sku)
-        ),
-        payments:purchase_order_payments(*)
+          product:products!purchase_order_items_product_id_fkey(id, name, sku)
+        )
       `)
       .eq('vendor_id', vendorId)
       .order('created_at', { ascending: false });
@@ -91,6 +92,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (!action) {
+      console.error('❌ PO Creation failed: missing action parameter', { body });
       return NextResponse.json(
         { success: false, error: 'action is required' },
         { status: 400 }
@@ -175,7 +177,7 @@ export async function POST(request: NextRequest) {
 
         const po_number = poNumberData;
 
-        // Create PO with generated number
+        // Create PO with generated number - auto-set to 'ordered' status
         const { data: newPO, error: poError } = await supabase
           .from('purchase_orders')
           .insert({
@@ -184,13 +186,15 @@ export async function POST(request: NextRequest) {
             po_number,
             supplier_id: orderData.supplier_id || null,
             wholesale_customer_id: orderData.wholesale_customer_id || null,
-            status: 'draft',
+            location_id: orderData.location_id || null,
+            status: 'ordered', // Auto-set to ordered (supplier will be notified in future)
             subtotal,
             tax,
             shipping,
             total,
             payment_terms: orderData.payment_terms || null,
-            expected_delivery_date: orderData.expected_delivery_date || null
+            expected_delivery_date: orderData.expected_delivery_date || null,
+            internal_notes: orderData.internal_notes || null
           })
           .select()
           .single();
@@ -623,6 +627,46 @@ export async function POST(request: NextRequest) {
           success: true,
           data: updatedPO,
           message: 'Purchase order fulfilled and inventory deducted'
+        });
+      }
+
+      case 'update_status': {
+        const { po_id, status } = poData;
+
+        if (!po_id) {
+          return NextResponse.json(
+            { success: false, error: 'po_id is required' },
+            { status: 400 }
+          );
+        }
+
+        if (!status) {
+          return NextResponse.json(
+            { success: false, error: 'status is required' },
+            { status: 400 }
+          );
+        }
+
+        const { data: updatedPO, error } = await supabase
+          .from('purchase_orders')
+          .update({ status, updated_at: new Date().toISOString() })
+          .eq('id', po_id)
+          .eq('vendor_id', vendor_id)
+          .select()
+          .single();
+
+        if (error) {
+          console.error('Error updating PO status:', error);
+          return NextResponse.json(
+            { success: false, error: error.message },
+            { status: 500 }
+          );
+        }
+
+        return NextResponse.json({
+          success: true,
+          data: updatedPO,
+          message: `Purchase order status updated to ${status}`
         });
       }
 

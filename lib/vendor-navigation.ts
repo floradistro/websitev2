@@ -53,7 +53,7 @@ export const topLevelNavItems: NavItem[] = [
 
 // Collapsible sections
 export const navSections: NavSection[] = [
-  // CATALOG - Products + Lab Results
+  // CATALOG - Products + Suppliers + Lab Results
   {
     label: 'Catalog',
     icon: Package,
@@ -66,6 +66,13 @@ export const navSections: NavSection[] = [
         description: 'Manage catalog & inventory',
         appKey: 'products',
         isCore: true,
+      },
+      {
+        href: '/vendor/suppliers',
+        icon: Boxes,
+        label: 'Suppliers',
+        description: 'Manage vendors & procurement',
+        appKey: 'products',
       },
       {
         href: '/vendor/lab-results',

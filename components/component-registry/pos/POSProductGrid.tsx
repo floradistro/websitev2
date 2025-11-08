@@ -2,7 +2,8 @@
 
 import { useEffect, useState, useMemo, useRef, useCallback } from 'react';
 import Image from 'next/image';
-import { ShoppingBag, Eye, Package, ArrowDownAZ } from 'lucide-react';
+import { ShoppingBag, Eye, Package, ArrowDownAZ, PackageCheck } from 'lucide-react';
+import Link from 'next/link';
 import { POSQuickView } from './POSQuickView';
 import { POSVendorDropdown } from './POSVendorDropdown';
 import { useAppAuth } from '@/context/AppAuthContext';

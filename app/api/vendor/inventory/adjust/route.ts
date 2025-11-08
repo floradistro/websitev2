@@ -134,41 +134,56 @@ export async function POST(request: NextRequest) {
     const currentQty = parseFloat(inventory.quantity || 0);
     const adjustmentAmount = parseFloat(adjustment);
     const newQty = currentQty + adjustmentAmount;
-    
-    if (newQty < 0) {
-      return NextResponse.json({ 
-        error: 'Cannot reduce inventory below 0' 
+
+    // Use a small epsilon to handle floating point precision issues
+    // e.g., 0.8 - 0.8 might be -0.0000000001 instead of exactly 0
+    if (newQty < -0.001) {
+      return NextResponse.json({
+        error: 'Cannot reduce inventory below 0'
       }, { status: 400 });
     }
+
+    // Clamp to 0 if we're within epsilon of 0 (handles floating point errors)
+    const finalQty = newQty < 0 ? 0 : newQty;
     
     // Update inventory
     const { data: updated, error: updateError } = await supabase
       .from('inventory')
-      .update({ 
-        quantity: newQty,
+      .update({
+        quantity: finalQty,
         updated_at: new Date().toISOString()
       })
       .eq('id', inventory.id)
       .select()
-      .single();
-    
+      .maybeSingle();
+
     if (updateError) {
       console.error('❌ Error updating inventory:', updateError);
-      return NextResponse.json({ error: updateError.message }, { status: 500 });
+      return NextResponse.json({ error: updateError.message, details: updateError }, { status: 500 });
     }
-    
-    console.log(`✅ Updated inventory: ${currentQty} → ${newQty}`);
+
+    if (!updated) {
+      console.error('❌ Inventory update affected 0 rows');
+      return NextResponse.json({
+        error: 'Failed to update inventory - record may have been deleted or modified',
+        inventory_id: inventory.id
+      }, { status: 500 });
+    }
+
+    console.log(`✅ Updated inventory: ${currentQty} → ${finalQty}`);
     
     // Sync product's stock_quantity with inventory total
     const { data: product, error: productFetchError } = await supabase
       .from('products')
       .select('id, name')
       .eq('id', inventory.product_id)
-      .single();
-    
+      .maybeSingle();
+
     if (productFetchError) {
-      console.error('❌ Could not find product with ID:', inventory.product_id, productFetchError);
-    } else if (product) {
+      console.error('❌ Error fetching product with ID:', inventory.product_id, productFetchError);
+    } else if (!product) {
+      console.error('❌ Product not found with ID:', inventory.product_id);
+    } else {
       // Get total stock across all locations for this product
       const { data: allInventory, error: invFetchError } = await supabase
         .from('inventory')
@@ -184,9 +199,9 @@ export async function POST(request: NextRequest) {
         
         const { error: productUpdateError } = await supabase
           .from('products')
-          .update({ 
+          .update({
             stock_quantity: totalStock,
-            stock_status: totalStock > 0 ? 'in_stock' : 'out_of_stock',
+            stock_status: totalStock > 0 ? 'instock' : 'outofstock',
             updated_at: new Date().toISOString()
           })
           .eq('id', product.id);
@@ -194,14 +209,14 @@ export async function POST(request: NextRequest) {
         if (productUpdateError) {
           console.error('❌ Error updating product stock:', productUpdateError);
         } else {
-          console.log(`✅ Product stock_quantity synced: ${totalStock}, status: ${totalStock > 0 ? 'in_stock' : 'out_of_stock'}`);
+          console.log(`✅ Product stock_quantity synced: ${totalStock}, status: ${totalStock > 0 ? 'instock' : 'outofstock'}`);
         }
       }
     }
     
     // Create stock movement record
     const movementType = adjustmentAmount > 0 ? 'purchase' : 'adjustment';
-    
+
     await supabase
       .from('stock_movements')
       .insert({
@@ -210,7 +225,7 @@ export async function POST(request: NextRequest) {
         movement_type: movementType,
         quantity: Math.abs(adjustmentAmount),
         quantity_before: currentQty,
-        quantity_after: newQty,
+        quantity_after: finalQty,
         to_location_id: adjustmentAmount > 0 ? inventory.location_id : null,
         from_location_id: adjustmentAmount < 0 ? inventory.location_id : null,
         reason: reason || 'Vendor inventory adjustment',
@@ -218,12 +233,12 @@ export async function POST(request: NextRequest) {
       })
       .select()
       .single();
-    
+
     return NextResponse.json({
       success: true,
       inventory: updated,
       previous_quantity: currentQty,
-      new_quantity: newQty,
+      new_quantity: finalQty,
       was_created: isNew
     });
     

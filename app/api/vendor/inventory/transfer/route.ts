@@ -184,9 +184,9 @@ export async function POST(request: NextRequest) {
     
     await supabase
       .from('products')
-      .update({ 
+      .update({
         stock_quantity: totalStock,
-        stock_status: totalStock > 0 ? 'in_stock' : 'out_of_stock'
+        stock_status: totalStock > 0 ? 'instock' : 'outofstock'
       })
       .eq('id', productId);
     
