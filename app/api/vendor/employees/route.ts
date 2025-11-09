@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServiceSupabase } from '@/lib/supabase/client';
+import { requireVendor } from '@/lib/auth/middleware';
 
 export async function GET(request: NextRequest) {
   try {
-    const vendorId = request.headers.get('x-vendor-id');
-    
-    if (!vendorId) {
-      return NextResponse.json({ success: false, error: 'Vendor ID required' }, { status: 400 });
-    }
+    // SECURITY: Use requireVendor to get vendor_id from authenticated session
+    const authResult = await requireVendor(request);
+    if (authResult instanceof NextResponse) return authResult;
+
+    const { vendorId } = authResult;
 
     const supabase = getServiceSupabase();
     
@@ -32,13 +33,14 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const vendorId = request.headers.get('x-vendor-id');
+    // SECURITY: Use requireVendor to get vendor_id from authenticated session
+    const authResult = await requireVendor(request);
+    if (authResult instanceof NextResponse) return authResult;
+
+    const { vendorId } = authResult;
+
     const body = await request.json();
     const { action, ...data } = body;
-    
-    if (!vendorId) {
-      return NextResponse.json({ success: false, error: 'Vendor ID required' }, { status: 400 });
-    }
 
     const supabase = getServiceSupabase();
     

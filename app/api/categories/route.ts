@@ -8,6 +8,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getServiceSupabase } from '@/lib/supabase/client';
+import { requireVendor } from '@/lib/auth/middleware';
 
 export async function GET(request: NextRequest) {
   try {
@@ -50,11 +51,11 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const vendorId = request.headers.get('x-vendor-id');
+    // SECURITY: Use requireVendor to get vendor_id from authenticated session
+    const authResult = await requireVendor(request);
+    if (authResult instanceof NextResponse) return authResult;
 
-    if (!vendorId) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
-    }
+    const { vendorId } = authResult;
 
     const body = await request.json();
     const { name, slug, description, icon, image_url, parent_id } = body;
@@ -114,11 +115,11 @@ export async function POST(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    const vendorId = request.headers.get('x-vendor-id');
+    // SECURITY: Use requireVendor to get vendor_id from authenticated session
+    const authResult = await requireVendor(request);
+    if (authResult instanceof NextResponse) return authResult;
 
-    if (!vendorId) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
-    }
+    const { vendorId } = authResult;
 
     const body = await request.json();
     const { id, name, description, icon, image_url, field_visibility } = body;
@@ -190,11 +191,11 @@ export async function PUT(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
-    const vendorId = request.headers.get('x-vendor-id');
+    // SECURITY: Use requireVendor to get vendor_id from authenticated session
+    const authResult = await requireVendor(request);
+    if (authResult instanceof NextResponse) return authResult;
 
-    if (!vendorId) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
-    }
+    const { vendorId } = authResult;
 
     const { searchParams } = new URL(request.url);
     const categoryId = searchParams.get('id');

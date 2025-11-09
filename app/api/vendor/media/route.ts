@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServiceSupabase } from '@/lib/supabase/client';
 import { withErrorHandler } from '@/lib/api-handler';
+import { requireVendor } from '@/lib/auth/middleware';
 import OpenAI from 'openai';
 
 // Lazy-load OpenAI client to avoid build-time errors
@@ -27,7 +28,7 @@ async function analyzeImageWithAI(imageUrl: string) {
               type: 'text',
               text: `Analyze this image and return ONLY a JSON object with this exact structure:
 {
-  "category": "product_photos" | "marketing" | "menus" | "brand",
+  "category": "product_photos" | "social_media" | "print_marketing" | "promotional" | "brand_assets" | "menus",
   "tags": ["tag1", "tag2", "tag3"],
   "description": "Brief description",
   "colors": ["#hex1", "#hex2", "#hex3"],
@@ -42,10 +43,12 @@ async function analyzeImageWithAI(imageUrl: string) {
 }
 
 Categories:
-- "product_photos": Product photography, cannabis flowers, edibles, etc.
-- "marketing": Promotional graphics, social media content, flyers
-- "menus": Menu boards, price lists, category headers
-- "brand": Logos, brand elements, templates
+- "product_photos": Product photography, cannabis flowers, edibles, product shots
+- "social_media": Instagram posts, Facebook ads, Stories, social media graphics
+- "print_marketing": Flyers, posters, print ads, physical marketing materials
+- "promotional": Promotional graphics, deals, event materials, special offers
+- "brand_assets": Logos, brand elements, templates, style guides
+- "menus": Menu boards, price lists, category headers, digital menus
 
 Respond with ONLY the JSON, no other text.`
             },
@@ -82,11 +85,10 @@ Respond with ONLY the JSON, no other text.`
 // GET - List all vendor images with metadata
 export const GET = withErrorHandler(async (request: NextRequest) => {
   try {
-    const vendorId = request.headers.get('x-vendor-id');
-
-    if (!vendorId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    // SECURITY: Require vendor authentication (Phase 2)
+    const authResult = await requireVendor(request);
+    if (authResult instanceof NextResponse) return authResult;
+    const { vendorId } = authResult;
 
     const { searchParams } = new URL(request.url);
     const category = searchParams.get('category');
@@ -150,11 +152,10 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
 // POST - Upload new image with AI auto-tagging
 export const POST = withErrorHandler(async (request: NextRequest) => {
   try {
-    const vendorId = request.headers.get('x-vendor-id');
-
-    if (!vendorId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    // SECURITY: Require vendor authentication (Phase 2)
+    const authResult = await requireVendor(request);
+    if (authResult instanceof NextResponse) return authResult;
+    const { vendorId } = authResult;
 
     const formData = await request.formData();
     const file = formData.get('file') as File;
@@ -291,11 +292,10 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
 // PATCH - Update media metadata
 export const PATCH = withErrorHandler(async (request: NextRequest) => {
   try {
-    const vendorId = request.headers.get('x-vendor-id');
-
-    if (!vendorId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    // SECURITY: Require vendor authentication (Phase 2)
+    const authResult = await requireVendor(request);
+    if (authResult instanceof NextResponse) return authResult;
+    const { vendorId } = authResult;
 
     const body = await request.json();
     const { id, category, custom_tags, title, alt_text, notes, linked_product_ids } = body;
@@ -341,11 +341,10 @@ export const PATCH = withErrorHandler(async (request: NextRequest) => {
 // DELETE - Delete image
 export const DELETE = withErrorHandler(async (request: NextRequest) => {
   try {
-    const vendorId = request.headers.get('x-vendor-id');
-
-    if (!vendorId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    // SECURITY: Require vendor authentication (Phase 2)
+    const authResult = await requireVendor(request);
+    if (authResult instanceof NextResponse) return authResult;
+    const { vendorId } = authResult;
 
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');

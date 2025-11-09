@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Exa from 'exa-js';
+import { requireVendor } from '@/lib/auth/middleware';
 
 const exa = new Exa('c6064aa5-e664-4bb7-9de9-d09ff153aa53');
 
@@ -9,10 +10,10 @@ const exa = new Exa('c6064aa5-e664-4bb7-9de9-d09ff153aa53');
  */
 export async function POST(request: NextRequest) {
   try {
-    const vendorId = request.headers.get('x-vendor-id');
-    if (!vendorId) {
-      return NextResponse.json({ error: 'Vendor ID required' }, { status: 401 });
-    }
+    // SECURITY: Require vendor authentication (Phase 2)
+    const authResult = await requireVendor(request);
+    if (authResult instanceof NextResponse) return authResult;
+    const { vendorId } = authResult;
 
     const body = await request.json();
     const { query, numResults = 5 } = body;

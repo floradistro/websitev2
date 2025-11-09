@@ -1,13 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServiceSupabase } from '@/lib/supabase/client';
+import { requireVendor } from '@/lib/auth/middleware';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 export async function POST(request: NextRequest) {
   try {
+    // SECURITY: Require vendor authentication (Phase 4)
+    const authResult = await requireVendor(request);
+    if (authResult instanceof NextResponse) return authResult;
+    const { vendorId } = authResult;
+
     const supabase = getServiceSupabase();
-    const { locationId, userId, openingCash = 0, vendorId, registerId } = await request.json();
+    const { locationId, userId, openingCash = 0, registerId } = await request.json();
+    // SECURITY: vendorId from JWT, request param ignored (Phase 4)
 
     if (!locationId) {
       return NextResponse.json(
@@ -87,7 +94,7 @@ export async function POST(request: NextRequest) {
       .from('pos_sessions')
       .insert({
         location_id: locationId,
-        vendor_id: vendorId || location.vendor_id,
+        vendor_id: vendorId,
         user_id: finalUserId,
         register_id: registerId || null,
         session_number: sessionNumber,

@@ -128,34 +128,45 @@ export default function MegaDashboard() {
     <div className="absolute inset-0 bg-[#0a0a0a] overflow-hidden flex flex-col">
       {/* Subtle ambient glow */}
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-white/[0.01] rounded-full blur-3xl" />
+        <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-white/[0.008] rounded-full blur-3xl" />
       </div>
 
-      <div className="flex-1 flex flex-col items-center justify-center w-full relative z-10 px-6">
-        {/* Vendor Logo */}
-        <div className="mb-8">
-          <div className="w-20 h-20 rounded-3xl bg-white/[0.04] border border-white/[0.06] flex items-center justify-center overflow-hidden shadow-lg shadow-black/30 transition-all duration-400">
-            <img
-              src={vendor?.logo_url || '/yacht-club-logo.png'}
-              alt={vendor?.store_name || 'Logo'}
-              className="w-full h-full object-contain p-3"
-            />
+      <div className="flex-1 overflow-y-auto w-full relative z-10">
+        {/* Left-aligned content container */}
+        <div className="max-w-5xl mx-auto px-8 pt-16">
+          {/* Greeting Header - Left aligned */}
+          <div className="mb-10">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-2xl bg-white/[0.04] border border-white/[0.06] flex items-center justify-center overflow-hidden shadow-lg shadow-black/40">
+                <img
+                  src={vendor?.logo_url || '/yacht-club-logo.png'}
+                  alt={vendor?.store_name || 'Logo'}
+                  className="w-full h-full object-contain p-2"
+                />
+              </div>
+              <div>
+                <h1 className="text-white text-xl tracking-tight font-medium">
+                  {getGreeting()}
+                </h1>
+                <p className="text-white/40 text-[10px] uppercase tracking-[0.15em] font-medium">
+                  {vendor?.store_name || 'Your Store'}
+                </p>
+              </div>
+            </div>
           </div>
-        </div>
 
-        {/* Greeting Header */}
-        <div className="mb-12 text-center">
-          <h1 className="text-white/70 text-2xl tracking-tight mb-1 font-light">
-            {getGreeting()}
-          </h1>
-          <p className="text-white/25 text-[11px] uppercase tracking-[0.2em] font-light">
-            Select an app to continue
-          </p>
-        </div>
+          {/* Section divider */}
+          <div className="mb-8">
+            <div className="flex items-center gap-3">
+              <h2 className="text-white/90 text-sm uppercase tracking-[0.15em] font-medium">Apps</h2>
+              <div className="flex-1 h-px bg-white/[0.06]" />
+            </div>
+          </div>
 
-        {/* App Grid - Full Width */}
-        <div className="w-full max-w-7xl">
-          <AppsGrid badgeCounts={badgeCounts} />
+          {/* App Grid - Left aligned, constrained width */}
+          <div className="max-w-3xl pb-16">
+            <AppsGrid badgeCounts={badgeCounts} />
+          </div>
         </div>
       </div>
 

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
+import { requireVendor } from '@/lib/auth/middleware';
 import { getServiceSupabase } from '@/lib/supabase/client';
 
 // Lazy-load OpenAI client to avoid build-time errors
@@ -19,10 +20,10 @@ function getOpenAI() {
  */
 export async function POST(request: NextRequest) {
   try {
-    const vendorId = request.headers.get('x-vendor-id');
-    if (!vendorId) {
-      return NextResponse.json({ error: 'Vendor ID required' }, { status: 401 });
-    }
+    // SECURITY: Require vendor authentication (Phase 2)
+    const authResult = await requireVendor(request);
+    if (authResult instanceof NextResponse) return authResult;
+    const { vendorId } = authResult;
 
     const body = await request.json();
     const { prompt, size = '1024x1024', quality = 'standard', style = 'vivid' } = body;

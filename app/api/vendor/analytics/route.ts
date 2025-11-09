@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { requireVendor } from '@/lib/auth/middleware';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -8,15 +9,14 @@ const supabase = createClient(
 
 export async function GET(request: NextRequest) {
   try {
+    // SECURITY: Use requireVendor to get vendor_id from authenticated session
+    const authResult = await requireVendor(request);
+    if (authResult instanceof NextResponse) return authResult;
+
+    const { vendorId } = authResult;
+
     const { searchParams } = new URL(request.url);
     const range = searchParams.get('range') || '30d';
-    
-    // Get vendor ID from header (consistent with other endpoints)
-    const vendorId = request.headers.get('x-vendor-id');
-
-    if (!vendorId) {
-      return NextResponse.json({ success: false, error: 'Vendor ID required' }, { status: 400 });
-    }
 
     // Calculate date range
     const daysMap: { [key: string]: number } = { '7d': 7, '30d': 30, '90d': 90, '1y': 365 };

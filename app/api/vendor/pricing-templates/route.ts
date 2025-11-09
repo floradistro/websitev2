@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServiceSupabase } from '@/lib/supabase/client';
+import { requireVendor } from '@/lib/auth/middleware';
 
 /**
  * GET /api/vendor/pricing-templates
@@ -7,14 +8,11 @@ import { getServiceSupabase } from '@/lib/supabase/client';
  */
 export async function GET(request: NextRequest) {
   try {
-    const vendorId = request.headers.get('x-vendor-id');
+    // SECURITY: Use requireVendor to get vendor_id from authenticated session
+    const authResult = await requireVendor(request);
+    if (authResult instanceof NextResponse) return authResult;
 
-    if (!vendorId) {
-      return NextResponse.json(
-        { error: 'Vendor ID is required' },
-        { status: 400 }
-      );
-    }
+    const { vendorId } = authResult;
 
     const supabase = getServiceSupabase();
 

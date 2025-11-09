@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServiceSupabase } from '@/lib/supabase/client';
+import { requireVendor } from '@/lib/auth/middleware';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -7,6 +8,11 @@ export const runtime = 'nodejs';
 // GET /api/pos/registers - Get registers for a location
 export async function GET(request: NextRequest) {
   try {
+    // SECURITY: Require vendor authentication (Phase 4)
+    const authResult = await requireVendor(request);
+    if (authResult instanceof NextResponse) return authResult;
+    const { vendorId } = authResult;
+
     const { searchParams } = new URL(request.url);
     const locationId = searchParams.get('locationId');
 
@@ -96,12 +102,18 @@ export async function GET(request: NextRequest) {
 // POST /api/pos/registers - Create new register
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { locationId, vendorId, registerName, deviceName, deviceId } = body;
+    // SECURITY: Require vendor authentication (Phase 4)
+    const authResult = await requireVendor(request);
+    if (authResult instanceof NextResponse) return authResult;
+    const { vendorId } = authResult;
 
-    if (!locationId || !vendorId || !registerName) {
+    const body = await request.json();
+    const { locationId, registerName, deviceName, deviceId } = body;
+    // SECURITY: vendorId from JWT, request param ignored (Phase 4)
+
+    if (!locationId || !registerName) {
       return NextResponse.json(
-        { error: 'locationId, vendorId, and registerName are required' },
+        { error: 'locationId and registerName are required' },
         { status: 400 }
       );
     }

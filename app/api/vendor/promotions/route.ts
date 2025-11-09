@@ -1,20 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServiceSupabase } from '@/lib/supabase/client';
+import { requireVendor } from '@/lib/auth/middleware';
 
 /**
  * GET - List all promotions for a vendor
  */
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
-    const vendorId = searchParams.get('vendor_id');
+    // SECURITY: Require vendor authentication (Phase 4)
+    const authResult = await requireVendor(request);
+    if (authResult instanceof NextResponse) return authResult;
+    const { vendorId } = authResult;
 
-    if (!vendorId) {
-      return NextResponse.json(
-        { success: false, error: 'Vendor ID required' },
-        { status: 400 }
-      );
-    }
+    // SECURITY: vendorId from JWT, query param ignored (Phase 4)
 
     const supabase = getServiceSupabase();
 
@@ -47,6 +45,11 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
+    // SECURITY: Require vendor authentication (Phase 4)
+    const authResult = await requireVendor(request);
+    if (authResult instanceof NextResponse) return authResult;
+    const { vendorId } = authResult;
+
     const body = await request.json();
     const {
       vendor_id,
@@ -70,7 +73,8 @@ export async function POST(request: NextRequest) {
       is_active,
     } = body;
 
-    if (!vendor_id || !name || !promotion_type || !discount_type || discount_value === undefined) {
+    // SECURITY: vendorId from JWT, query param ignored (Phase 4)
+    if (!name || !promotion_type || !discount_type || discount_value === undefined) {
       return NextResponse.json(
         { success: false, error: 'Missing required fields' },
         { status: 400 }
@@ -82,7 +86,7 @@ export async function POST(request: NextRequest) {
     const { data: promotion, error } = await supabase
       .from('promotions')
       .insert({
-        vendor_id,
+        vendor_id: vendorId,
         name,
         description: description || null,
         promotion_type,
@@ -128,6 +132,11 @@ export async function POST(request: NextRequest) {
  */
 export async function PATCH(request: NextRequest) {
   try {
+    // SECURITY: Require vendor authentication (Phase 4)
+    const authResult = await requireVendor(request);
+    if (authResult instanceof NextResponse) return authResult;
+    const { vendorId } = authResult;
+
     const body = await request.json();
     const { id, ...updates } = body;
 
@@ -170,6 +179,11 @@ export async function PATCH(request: NextRequest) {
  */
 export async function DELETE(request: NextRequest) {
   try {
+    // SECURITY: Require vendor authentication (Phase 4)
+    const authResult = await requireVendor(request);
+    if (authResult instanceof NextResponse) return authResult;
+    const { vendorId } = authResult;
+
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
 

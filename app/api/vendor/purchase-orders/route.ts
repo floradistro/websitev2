@@ -1,22 +1,21 @@
 import { getServiceSupabase } from '@/lib/supabase/client';
 import { NextRequest, NextResponse } from 'next/server';
+import { requireVendor } from '@/lib/auth/middleware';
 
 // GET /api/vendor/purchase-orders - List all purchase orders for vendor
 export async function GET(request: NextRequest) {
   try {
+    // SECURITY: Require vendor authentication (Phase 4)
+    const authResult = await requireVendor(request);
+    if (authResult instanceof NextResponse) return authResult;
+    const { vendorId } = authResult;
+
     const supabase = getServiceSupabase();
     const { searchParams } = new URL(request.url);
 
-    const vendorId = searchParams.get('vendor_id');
+    // SECURITY: vendorId from JWT, query param ignored (Phase 4)
     const poType = searchParams.get('po_type'); // 'inbound' or 'outbound'
     const status = searchParams.get('status'); // draft, sent, confirmed, etc.
-
-    if (!vendorId) {
-      return NextResponse.json(
-        { success: false, error: 'vendor_id is required' },
-        { status: 400 }
-      );
-    }
 
     let query = supabase
       .from('purchase_orders')
@@ -80,16 +79,16 @@ export async function GET(request: NextRequest) {
 // POST /api/vendor/purchase-orders - Create or manage purchase orders
 export async function POST(request: NextRequest) {
   try {
+    // SECURITY: Require vendor authentication (Phase 4)
+    const authResult = await requireVendor(request);
+    if (authResult instanceof NextResponse) return authResult;
+    const { vendorId } = authResult;
+
     const supabase = getServiceSupabase();
     const body = await request.json();
     const { action, vendor_id, ...poData } = body;
 
-    if (!vendor_id) {
-      return NextResponse.json(
-        { success: false, error: 'vendor_id is required' },
-        { status: 400 }
-      );
-    }
+    // SECURITY: vendorId from JWT, query param ignored (Phase 4)
 
     if (!action) {
       console.error('❌ PO Creation failed: missing action parameter', { body });
@@ -166,7 +165,7 @@ export async function POST(request: NextRequest) {
         // Generate PO number using database function
         const { data: poNumberData, error: poNumberError } = await supabase
           .rpc('generate_po_number', {
-            v_vendor_id: vendor_id,
+            v_vendor_id: vendorId,
             po_type: po_type
           });
 
@@ -184,7 +183,7 @@ export async function POST(request: NextRequest) {
         const { data: newPO, error: poError } = await supabase
           .from('purchase_orders')
           .insert({
-            vendor_id,
+            vendor_id: vendorId,
             po_type,
             po_number,
             supplier_id: orderData.supplier_id || null,
@@ -237,7 +236,7 @@ export async function POST(request: NextRequest) {
             const { data: newProduct, error: productError} = await supabase
               .from('products')
               .insert({
-                vendor_id,
+                vendor_id: vendorId,
                 name: item.product_name,
                 slug,
                 sku: item.sku || `AUTO-${Date.now()}-${Math.random().toString(36).substring(7)}`,
@@ -373,7 +372,7 @@ export async function POST(request: NextRequest) {
             updated_at: new Date().toISOString()
           })
           .eq('id', id)
-          .eq('vendor_id', vendor_id)
+          .eq('vendor_id', vendorId)
           .select()
           .maybeSingle();
 
@@ -415,7 +414,7 @@ export async function POST(request: NextRequest) {
           .from('purchase_orders')
           .select('id, total')
           .eq('id', purchase_order_id)
-          .eq('vendor_id', vendor_id)
+          .eq('vendor_id', vendorId)
           .maybeSingle();
 
         if (poError) {
@@ -486,7 +485,7 @@ export async function POST(request: NextRequest) {
             items:purchase_order_items(*)
           `)
           .eq('id', id)
-          .eq('vendor_id', vendor_id)
+          .eq('vendor_id', vendorId)
           .eq('po_type', 'inbound')
           .maybeSingle();
 
@@ -540,7 +539,7 @@ export async function POST(request: NextRequest) {
                 product_id: item.product_id,
                 variant_id: item.variant_id,
                 location_id: poData.location_id,
-                vendor_id,
+                vendor_id: vendorId,
                 quantity: quantityReceived
               });
           }
@@ -607,7 +606,7 @@ export async function POST(request: NextRequest) {
             items:purchase_order_items(*)
           `)
           .eq('id', id)
-          .eq('vendor_id', vendor_id)
+          .eq('vendor_id', vendorId)
           .eq('po_type', 'outbound')
           .maybeSingle();
 
@@ -737,7 +736,7 @@ export async function POST(request: NextRequest) {
           .from('purchase_orders')
           .update({ status, updated_at: new Date().toISOString() })
           .eq('id', po_id)
-          .eq('vendor_id', vendor_id)
+          .eq('vendor_id', vendorId)
           .select()
           .maybeSingle();
 

@@ -5,12 +5,15 @@ import { monitor } from '@/lib/performance-monitor';
 
 export async function GET(request: NextRequest) {
   const endTimer = monitor.startTimer('Locations API');
-  
+
   try {
     const { searchParams } = new URL(request.url);
     const type = searchParams.get('type');
     const activeOnly = searchParams.get('active') === 'true';
-    const vendorId = request.headers.get('x-vendor-id');
+
+    // SECURITY: Get vendor_id from query param (for public access) or null for all retail locations
+    // This endpoint is meant to be public for retail locations, but vendor locations require vendorId
+    const vendorId = searchParams.get('vendor_id');
     
     // Generate cache key
     const cacheKey = generateCacheKey('locations', {
@@ -39,20 +42,23 @@ export async function GET(request: NextRequest) {
     let query = supabase
       .from('locations')
       .select('*');
-    
+
     // Filter by type if specified
     if (type) {
       query = query.eq('type', type);
     }
-    
+
     // Filter active only
     if (activeOnly) {
       query = query.eq('is_active', true);
     }
-    
-    // Filter by vendor if specified
+
+    // SECURITY: Filter by vendor if specified, otherwise only return retail locations
     if (vendorId) {
       query = query.or(`vendor_id.eq.${vendorId},type.eq.retail`);
+    } else {
+      // No vendorId provided - only return public retail locations
+      query = query.eq('type', 'retail');
     }
     
     const { data, error } = await query.order('name', { ascending: true });
@@ -87,8 +93,8 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const vendorId = request.headers.get('x-vendor-id');
     const body = await request.json();
+    const vendorId = body.vendor_id; // Get vendor_id from request body
     
     const {
       name,

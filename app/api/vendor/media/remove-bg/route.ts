@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServiceSupabase } from '@/lib/supabase/client';
+import { requireVendor } from '@/lib/auth/middleware';
 import FormData from 'form-data';
 import axios from 'axios';
 import { removeBgRateLimiter } from '@/lib/rate-limiter-advanced';
@@ -8,11 +9,10 @@ const REMOVE_BG_API_KEY = process.env.REMOVE_BG_API_KEY || '';
 
 export async function POST(request: NextRequest) {
   try {
-    const vendorId = request.headers.get('x-vendor-id');
-    
-    if (!vendorId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    // SECURITY: Require vendor authentication (Phase 2)
+    const authResult = await requireVendor(request);
+    if (authResult instanceof NextResponse) return authResult;
+    const { vendorId } = authResult;
     
     const body = await request.json();
     const { imageUrl, fileName } = body;
@@ -300,11 +300,10 @@ async function processInParallel(
 // Bulk background removal with parallel processing
 export async function PUT(request: NextRequest) {
   try {
-    const vendorId = request.headers.get('x-vendor-id');
-    
-    if (!vendorId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    // SECURITY: Require vendor authentication (Phase 2)
+    const authResult = await requireVendor(request);
+    if (authResult instanceof NextResponse) return authResult;
+    const { vendorId } = authResult;
     
     const body = await request.json();
     const { files, concurrency = 5 } = body; // Array of { url, name } + optional concurrency

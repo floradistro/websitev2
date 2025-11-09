@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServiceSupabase } from '@/lib/supabase/client';
+import { requireVendor } from '@/lib/auth/middleware';
 
 export async function GET(
   request: NextRequest,
@@ -44,10 +45,11 @@ export async function PUT(
 ) {
   try {
     const { id } = await params;
-    const vendorId = request.headers.get('x-vendor-id');
-    if (!vendorId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+
+    // SECURITY: Require vendor authentication (Phase 2)
+    const authResult = await requireVendor(request);
+    if (authResult instanceof NextResponse) return authResult;
+    const { vendorId } = authResult;
     
     const body = await request.json();
     const { quantity, unit_cost, low_stock_threshold, notes } = body;
@@ -102,10 +104,11 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
-    const vendorId = request.headers.get('x-vendor-id');
-    if (!vendorId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+
+    // SECURITY: Require vendor authentication (Phase 2)
+    const authResult = await requireVendor(request);
+    if (authResult instanceof NextResponse) return authResult;
+    const { vendorId } = authResult;
     
     const supabase = getServiceSupabase();
     

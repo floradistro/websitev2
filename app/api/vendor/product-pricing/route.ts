@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { requireVendor } from '@/lib/auth/middleware';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -9,20 +10,17 @@ const supabase = createClient(
 // GET - Get product pricing assignments for a vendor
 export async function GET(request: NextRequest) {
   try {
+    // SECURITY: Require vendor authentication (Phase 4)
+    const authResult = await requireVendor(request);
+    if (authResult instanceof NextResponse) return authResult;
+    const { vendorId } = authResult;
+
     const { searchParams } = new URL(request.url);
-    const vendorId = searchParams.get('vendor_id');
+    // SECURITY: vendorId from JWT, query param ignored (Phase 4)
     const productId = searchParams.get('product_id');
 
     console.log('🔍 GET /api/vendor/product-pricing');
     console.log('📦 Query params:', { vendorId, productId });
-
-    if (!vendorId && !productId) {
-      console.log('❌ Missing required params');
-      return NextResponse.json(
-        { success: false, error: 'vendor_id or product_id is required' },
-        { status: 400 }
-      );
-    }
 
     // Build query based on filter type
     let assignments: any[] | null | undefined = [];
@@ -57,7 +55,7 @@ export async function GET(request: NextRequest) {
 
       assignments = result.data;
       error = result.error;
-    } else if (vendorId) {
+    } else {
       console.log('🔍 Filtering by vendor_id:', vendorId);
       // For vendor filter, get all products first, then join
       const result = await supabase
@@ -118,16 +116,22 @@ export async function GET(request: NextRequest) {
 // POST - Assign pricing tier to specific products
 export async function POST(request: NextRequest) {
   try {
+    // SECURITY: Require vendor authentication (Phase 4)
+    const authResult = await requireVendor(request);
+    if (authResult instanceof NextResponse) return authResult;
+    const { vendorId } = authResult;
+
     const body = await request.json();
     const { vendor_id, product_ids, blueprint_id, price_overrides = {} } = body;
 
+    // SECURITY: vendorId from JWT, query param ignored (Phase 4)
     console.log('💾 POST /api/vendor/product-pricing');
-    console.log('📦 Request body:', JSON.stringify({ vendor_id, product_ids, blueprint_id, price_overrides }, null, 2));
+    console.log('📦 Request body:', JSON.stringify({ vendorId, product_ids, blueprint_id, price_overrides }, null, 2));
 
-    if (!vendor_id || !product_ids || !blueprint_id) {
+    if (!product_ids || !blueprint_id) {
       console.log('❌ Missing required fields');
       return NextResponse.json(
-        { success: false, error: 'vendor_id, product_ids, and blueprint_id are required' },
+        { success: false, error: 'product_ids and blueprint_id are required' },
         { status: 400 }
       );
     }
@@ -137,7 +141,7 @@ export async function POST(request: NextRequest) {
       .from('products')
       .select('id')
       .in('id', product_ids)
-      .eq('vendor_id', vendor_id);
+      .eq('vendor_id', vendorId);
 
     if (verifyError) throw verifyError;
 
@@ -224,6 +228,11 @@ export async function POST(request: NextRequest) {
 // PUT - Update product pricing assignment (e.g., price overrides)
 export async function PUT(request: NextRequest) {
   try {
+    // SECURITY: Require vendor authentication (Phase 4)
+    const authResult = await requireVendor(request);
+    if (authResult instanceof NextResponse) return authResult;
+    const { vendorId } = authResult;
+
     const body = await request.json();
     const { assignment_id, price_overrides, is_active } = body;
 
@@ -263,6 +272,11 @@ export async function PUT(request: NextRequest) {
 // DELETE - Remove product pricing assignment
 export async function DELETE(request: NextRequest) {
   try {
+    // SECURITY: Require vendor authentication (Phase 4)
+    const authResult = await requireVendor(request);
+    if (authResult instanceof NextResponse) return authResult;
+    const { vendorId } = authResult;
+
     const { searchParams } = new URL(request.url);
     const assignmentId = searchParams.get('assignment_id');
     const productId = searchParams.get('product_id');

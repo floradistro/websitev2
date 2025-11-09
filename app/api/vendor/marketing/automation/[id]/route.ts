@@ -5,6 +5,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { requireVendor } from '@/lib/auth/middleware';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -16,13 +17,12 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // SECURITY: Require vendor authentication (Phase 2)
+    const authResult = await requireVendor(request);
+    if (authResult instanceof NextResponse) return authResult;
+    const { vendorId } = authResult;
+
     const { id } = await params;
-    const vendorId = request.headers.get('x-vendor-id');
-
-    if (!vendorId) {
-      return NextResponse.json({ error: 'Vendor ID required' }, { status: 400 });
-    }
-
     const body = await request.json();
     const { is_active, name, trigger_config, action_config } = body;
 
@@ -68,12 +68,12 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = await params;
-    const vendorId = request.headers.get('x-vendor-id');
+    // SECURITY: Require vendor authentication (Phase 2)
+    const authResult = await requireVendor(request);
+    if (authResult instanceof NextResponse) return authResult;
+    const { vendorId } = authResult;
 
-    if (!vendorId) {
-      return NextResponse.json({ error: 'Vendor ID required' }, { status: 400 });
-    }
+    const { id } = await params;
 
     // Delete rule
     const { error: deleteError } = await supabase

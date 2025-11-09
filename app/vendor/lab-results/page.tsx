@@ -301,7 +301,7 @@ export default function VendorLabResults() {
         {/* Page Header */}
         <div className="px-4 pt-4 pb-3 border-b border-white/5">
           <div className="flex items-center justify-between gap-4">
-            <h1 className="text-[10px] uppercase tracking-[0.15em] text-white font-black flex-1" style={{ fontWeight: 900 }}>
+            <h1 className="text-[10px] uppercase tracking-[0.15em] text-white font-medium flex-1">
               Lab Results & COAs
             </h1>
             <div className="flex items-center gap-1 md:gap-2 text-white/40 text-[10px] uppercase tracking-[0.15em] flex-shrink-0">
@@ -315,21 +315,21 @@ export default function VendorLabResults() {
         <div className="p-4">
           {/* Stats Cards */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-4 mb-4">
-            <div className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-3 md:p-4">
-              <div className="text-[10px] uppercase tracking-[0.15em] mb-1" style={{ color: 'rgba(255, 255, 255, 0.4)' }}>Total</div>
-              <div className="text-xl md:text-2xl font-black text-white" style={{ fontWeight: 900 }}>{stats.total}</div>
+            <div className="bg-[#0a0a0a] border border-white/[0.06] rounded-2xl p-3 md:p-4">
+              <div className="text-[10px] uppercase tracking-[0.15em] mb-1 text-white/40">Total</div>
+              <div className="text-xl md:text-2xl font-medium text-white">{stats.total}</div>
             </div>
-            <div className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-3 md:p-4">
-              <div className="text-[10px] uppercase tracking-[0.15em] mb-1" style={{ color: 'rgba(255, 255, 255, 0.4)' }}>Linked</div>
-              <div className="text-xl md:text-2xl font-black" style={{ fontWeight: 900, color: '#22c55e' }}>{stats.withProducts}</div>
+            <div className="bg-[#0a0a0a] border border-white/[0.06] rounded-2xl p-3 md:p-4">
+              <div className="text-[10px] uppercase tracking-[0.15em] mb-1 text-white/40">Linked</div>
+              <div className="text-xl md:text-2xl font-medium" style={{ color: '#22c55e' }}>{stats.withProducts}</div>
             </div>
-            <div className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-3 md:p-4">
-              <div className="text-[10px] uppercase tracking-[0.15em] mb-1" style={{ color: 'rgba(255, 255, 255, 0.4)' }}>Recent</div>
-              <div className="text-xl md:text-2xl font-black" style={{ fontWeight: 900, color: '#3b82f6' }}>{stats.recent}</div>
+            <div className="bg-[#0a0a0a] border border-white/[0.06] rounded-2xl p-3 md:p-4">
+              <div className="text-[10px] uppercase tracking-[0.15em] mb-1 text-white/40">Recent</div>
+              <div className="text-xl md:text-2xl font-medium" style={{ color: '#3b82f6' }}>{stats.recent}</div>
             </div>
-            <div className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-3 md:p-4">
-              <div className="text-[10px] uppercase tracking-[0.15em] mb-1" style={{ color: 'rgba(255, 255, 255, 0.4)' }}>Expired</div>
-              <div className="text-xl md:text-2xl font-black" style={{ fontWeight: 900, color: '#ef4444' }}>{stats.expired}</div>
+            <div className="bg-[#0a0a0a] border border-white/[0.06] rounded-2xl p-3 md:p-4">
+              <div className="text-[10px] uppercase tracking-[0.15em] mb-1 text-white/40">Expired</div>
+              <div className="text-xl md:text-2xl font-medium" style={{ color: '#ef4444' }}>{stats.expired}</div>
             </div>
           </div>
 
@@ -354,8 +354,7 @@ export default function VendorLabResults() {
               <button
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploading}
-                className="flex-shrink-0 bg-white/10 text-white border border-white/20 rounded-2xl px-4 py-2.5 text-[10px] uppercase tracking-[0.15em] hover:bg-white/20 hover:border-white/30 font-black transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                style={{ fontWeight: 900 }}
+                className="flex-shrink-0 bg-white/[0.08] text-white border border-white/[0.12] rounded-2xl px-4 py-2.5 text-[10px] uppercase tracking-[0.15em] hover:bg-white/[0.12] hover:border-white/[0.2] font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               >
                 {uploading ? (
                   <>
@@ -498,7 +497,7 @@ export default function VendorLabResults() {
                 {coas.length === 0 ? (
                   <>
                     <FileText className="w-12 h-12 text-white/20 mx-auto mb-3" />
-                    <h2 className="text-white/60 mb-2 font-black uppercase tracking-tight text-xs" style={{ fontWeight: 900 }}>
+                    <h2 className="text-white/60 mb-2 font-medium uppercase tracking-tight text-xs">
                       No COAs Yet
                     </h2>
                     <p className="text-white/40 mb-4 text-[10px] uppercase tracking-[0.15em]">
@@ -506,8 +505,7 @@ export default function VendorLabResults() {
                     </p>
                     <button
                       onClick={() => fileInputRef.current?.click()}
-                      className="bg-white/10 text-white border border-white/20 rounded-2xl px-4 py-2.5 text-[10px] uppercase tracking-[0.15em] hover:bg-white/20 hover:border-white/30 font-black transition-all inline-flex items-center gap-2"
-                      style={{ fontWeight: 900 }}
+                      className="bg-white/[0.08] text-white border border-white/[0.12] rounded-2xl px-4 py-2.5 text-[10px] uppercase tracking-[0.15em] hover:bg-white/[0.12] hover:border-white/[0.2] font-medium transition-all inline-flex items-center gap-2"
                     >
                       <Upload className="w-3.5 h-3.5" />
                       Upload First COA
@@ -516,7 +514,7 @@ export default function VendorLabResults() {
                 ) : (
                   <>
                     <Search className="w-12 h-12 text-white/20 mx-auto mb-3" />
-                    <h2 className="text-white/60 mb-2 font-black uppercase tracking-tight text-xs" style={{ fontWeight: 900 }}>
+                    <h2 className="text-white/60 mb-2 font-medium uppercase tracking-tight text-xs">
                       No Results
                     </h2>
                     <p className="text-white/40 text-[10px] uppercase tracking-[0.15em]">
@@ -604,8 +602,8 @@ interface COACardProps {
 function COACard({ coa, selected, onToggleSelect, onDownload, onQuickView }: COACardProps) {
   return (
     <div
-      className={`group relative flex flex-col bg-[#0a0a0a] hover:bg-[#141414] border rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1 ${
-        selected ? 'border-white/20' : 'border-white/5 hover:border-white/10'
+      className={`group relative flex flex-col bg-[#0a0a0a] hover:bg-white/[0.02] border rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1 ${
+        selected ? 'border-white/[0.12]' : 'border-white/[0.06] hover:border-white/[0.12]'
       }`}
     >
       {/* Selection Checkbox */}
@@ -628,7 +626,7 @@ function COACard({ coa, selected, onToggleSelect, onDownload, onQuickView }: COA
         <div className="absolute top-2 right-2 z-10">
           <div className="flex items-center gap-1 px-2 py-1 rounded-xl bg-red-500/20 backdrop-blur-sm border border-red-500/30">
             <AlertTriangle className="w-3 h-3 text-red-500" />
-            <span className="text-[9px] uppercase tracking-[0.15em] font-black text-red-500" style={{ fontWeight: 900 }}>Expired</span>
+            <span className="text-[9px] uppercase tracking-[0.15em] font-medium text-red-500">Expired</span>
           </div>
         </div>
       )}
@@ -646,6 +644,8 @@ function COACard({ coa, selected, onToggleSelect, onDownload, onQuickView }: COA
               className="w-full h-full border-0 scale-110 origin-top-left"
               title={`COA Preview: ${coa.coaNumber}`}
             />
+            {/* Dark overlay - dims PDF, reveals on hover */}
+            <div className="absolute inset-0 bg-black/70 group-hover:bg-black/40 transition-all duration-300" />
             <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/60" />
           </div>
         ) : coa.productImage ? (
@@ -664,8 +664,8 @@ function COACard({ coa, selected, onToggleSelect, onDownload, onQuickView }: COA
         )}
 
         {/* Quick View Hint */}
-        <div className="hidden lg:flex absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-all items-center justify-center pointer-events-none">
-          <div className="text-white text-[10px] uppercase tracking-[0.15em] flex items-center gap-2">
+        <div className="hidden lg:flex absolute inset-0 opacity-0 group-hover:opacity-100 transition-all items-center justify-center pointer-events-none z-10">
+          <div className="text-white text-[10px] uppercase tracking-[0.15em] flex items-center gap-2 font-medium bg-black/40 backdrop-blur-sm px-3 py-2 rounded-lg border border-white/[0.12]">
             <Eye className="w-3.5 h-3.5" />
             View
           </div>
@@ -673,9 +673,9 @@ function COACard({ coa, selected, onToggleSelect, onDownload, onQuickView }: COA
       </div>
 
       {/* COA Info */}
-      <div className="flex-1 p-3 border-t border-white/5">
+      <div className="flex-1 p-3 border-t border-white/[0.06]">
         <div className="mb-2">
-          <p className="text-white text-xs font-black uppercase tracking-tight line-clamp-2" style={{ fontWeight: 900 }}>
+          <p className="text-white text-xs font-medium uppercase tracking-tight line-clamp-2">
             {coa.productName || 'Unassigned'}
           </p>
           <p className="text-white/40 text-[10px] uppercase tracking-[0.15em] font-mono">
@@ -684,19 +684,19 @@ function COACard({ coa, selected, onToggleSelect, onDownload, onQuickView }: COA
         </div>
 
         {/* Cannabinoid Quick Info */}
-        <div className="flex items-center gap-3 mb-2 pb-2 border-b border-white/5">
+        <div className="flex items-center gap-3 mb-2 pb-2 border-b border-white/[0.06]">
           <div>
             <div className="text-white/40 text-[9px] uppercase tracking-[0.15em]">THC</div>
-            <div className="text-white text-xs font-black" style={{ fontWeight: 900 }}>{coa.thc}</div>
+            <div className="text-white text-xs font-medium">{coa.thc}</div>
           </div>
           <div>
             <div className="text-white/40 text-[9px] uppercase tracking-[0.15em]">CBD</div>
-            <div className="text-white text-xs font-black" style={{ fontWeight: 900 }}>{coa.cbd}</div>
+            <div className="text-white text-xs font-medium">{coa.cbd}</div>
           </div>
           {coa.totalTerpenes && (
             <div>
               <div className="text-white/40 text-[9px] uppercase tracking-[0.15em]">Terps</div>
-              <div className="text-white text-xs font-black" style={{ fontWeight: 900 }}>{coa.totalTerpenes}</div>
+              <div className="text-white text-xs font-medium">{coa.totalTerpenes}</div>
             </div>
           )}
         </div>
@@ -720,7 +720,7 @@ function COACard({ coa, selected, onToggleSelect, onDownload, onQuickView }: COA
           e.stopPropagation();
           onDownload();
         }}
-        className="w-full py-2.5 bg-white/5 border-t border-white/5 hover:bg-white/10 transition-all flex items-center justify-center gap-2 text-white/60 hover:text-white text-[10px] uppercase tracking-[0.15em]"
+        className="w-full py-2.5 bg-white/[0.04] border-t border-white/[0.06] hover:bg-white/[0.08] transition-all flex items-center justify-center gap-2 text-white/40 hover:text-white text-[10px] uppercase tracking-[0.15em] font-medium"
       >
         <Download className="w-3 h-3" />
         Download
@@ -741,8 +741,8 @@ interface COAListItemProps {
 function COAListItem({ coa, selected, onToggleSelect, onDownload, onQuickView }: COAListItemProps) {
   return (
     <div
-      className={`flex items-center gap-3 bg-[#0a0a0a] hover:bg-[#141414] border rounded-2xl p-3 transition-all ${
-        selected ? 'border-white/20' : 'border-white/5 hover:border-white/10'
+      className={`flex items-center gap-3 bg-[#0a0a0a] hover:bg-white/[0.02] border rounded-2xl p-3 transition-all ${
+        selected ? 'border-white/[0.12]' : 'border-white/[0.06] hover:border-white/[0.12]'
       }`}
     >
       {/* Checkbox */}
@@ -763,7 +763,7 @@ function COAListItem({ coa, selected, onToggleSelect, onDownload, onQuickView }:
       {/* Thumbnail */}
       <div
         onClick={onQuickView}
-        className="flex-shrink-0 w-16 h-16 bg-black rounded-xl overflow-hidden relative cursor-pointer hover:ring-2 ring-white/20 transition-all"
+        className="flex-shrink-0 w-16 h-16 bg-black rounded-xl overflow-hidden relative cursor-pointer hover:ring-2 ring-white/[0.12] transition-all"
       >
         {/* PDF Preview */}
         {coa.fileUrl && coa.fileUrl.toLowerCase().endsWith('.pdf') ? (
@@ -773,6 +773,8 @@ function COAListItem({ coa, selected, onToggleSelect, onDownload, onQuickView }:
               className="w-full h-full border-0 scale-125 origin-top-left"
               title={`COA Preview: ${coa.coaNumber}`}
             />
+            {/* Dark overlay for list view thumbnails */}
+            <div className="absolute inset-0 bg-black/60" />
           </div>
         ) : coa.productImage ? (
           <Image
@@ -793,13 +795,13 @@ function COAListItem({ coa, selected, onToggleSelect, onDownload, onQuickView }:
       {/* Info */}
       <div className="flex-1 min-w-0">
         <div className="flex items-start gap-2 mb-1">
-          <p className="text-white text-xs font-black uppercase tracking-tight truncate flex-1" style={{ fontWeight: 900 }}>
+          <p className="text-white text-xs font-medium uppercase tracking-tight truncate flex-1">
             {coa.productName || 'Unassigned'}
           </p>
           {coa.isExpired && (
             <div className="flex items-center gap-1 flex-shrink-0">
               <AlertTriangle className="w-3 h-3 text-red-500" />
-              <span className="text-[9px] uppercase tracking-[0.15em] font-black text-red-500" style={{ fontWeight: 900 }}>Expired</span>
+              <span className="text-[9px] uppercase tracking-[0.15em] font-medium text-red-500">Expired</span>
             </div>
           )}
         </div>
@@ -856,16 +858,16 @@ function COAQuickViewModal({ coa, onClose, onDownload, onDelete }: COAQuickViewM
     >
       <div className="bg-black lg:bg-[#0a0a0a] lg:border lg:border-white/10 lg:rounded-2xl w-full h-[95vh] lg:h-auto lg:max-w-4xl lg:max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-white/10 flex-shrink-0">
+        <div className="flex items-center justify-between p-4 border-b border-white/[0.08] flex-shrink-0">
           <div className="flex-1 min-w-0 mr-4">
             <div className="flex items-center gap-2 mb-1">
-              <h2 className="text-white font-black uppercase tracking-tight text-[10px]" style={{ fontWeight: 900 }}>
+              <h2 className="text-white font-medium uppercase tracking-tight text-[10px]">
                 Certificate of Analysis
               </h2>
               {coa.isExpired && (
                 <div className="flex items-center gap-1 px-2 py-1 rounded-xl bg-red-500/10 border border-red-500/20">
                   <AlertTriangle className="w-3 h-3 text-red-500" />
-                  <span className="text-[9px] uppercase tracking-[0.15em] font-black text-red-500" style={{ fontWeight: 900 }}>Expired</span>
+                  <span className="text-[9px] uppercase tracking-[0.15em] font-medium text-red-500">Expired</span>
                 </div>
               )}
             </div>
@@ -885,11 +887,11 @@ function COAQuickViewModal({ coa, onClose, onDownload, onDelete }: COAQuickViewM
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {/* PDF Preview */}
           {coa.fileUrl && coa.fileUrl.toLowerCase().endsWith('.pdf') && (
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-4">
+            <div className="bg-white/[0.04] border border-white/[0.08] rounded-2xl p-4">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
                   <FileText className="w-4 h-4 text-white/60" />
-                  <h3 className="text-[10px] uppercase tracking-[0.15em] text-white/80 font-black" style={{ fontWeight: 900 }}>
+                  <h3 className="text-[10px] uppercase tracking-[0.15em] text-white/80 font-medium">
                     Certificate Preview
                   </h3>
                 </div>
@@ -915,10 +917,10 @@ function COAQuickViewModal({ coa, onClose, onDownload, onDelete }: COAQuickViewM
 
           {/* Product Info */}
           {coa.productName && (
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-4">
+            <div className="bg-white/[0.04] border border-white/[0.08] rounded-2xl p-4">
               <div className="flex items-center gap-2 mb-2">
                 <Package className="w-4 h-4 text-white/60" />
-                <h3 className="text-[10px] uppercase tracking-[0.15em] text-white/80 font-black" style={{ fontWeight: 900 }}>
+                <h3 className="text-[10px] uppercase tracking-[0.15em] text-white/80 font-medium">
                   Product
                 </h3>
               </div>
@@ -936,7 +938,7 @@ function COAQuickViewModal({ coa, onClose, onDownload, onDelete }: COAQuickViewM
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
-                  <p className="text-white text-xs font-black uppercase tracking-tight" style={{ fontWeight: 900 }}>{coa.productName}</p>
+                  <p className="text-white text-xs font-medium uppercase tracking-tight">{coa.productName}</p>
                   {coa.productSku && (
                     <p className="text-white/40 text-[10px] uppercase tracking-[0.15em]">SKU: {coa.productSku}</p>
                   )}
@@ -949,30 +951,30 @@ function COAQuickViewModal({ coa, onClose, onDownload, onDelete }: COAQuickViewM
           )}
 
           {/* Test Information */}
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-4">
+          <div className="bg-white/[0.04] border border-white/[0.08] rounded-2xl p-4">
             <div className="flex items-center gap-2 mb-3">
               <Beaker className="w-4 h-4 text-white/60" />
-              <h3 className="text-[10px] uppercase tracking-[0.15em] text-white/80 font-black" style={{ fontWeight: 900 }}>
+              <h3 className="text-[10px] uppercase tracking-[0.15em] text-white/80 font-medium">
                 Test Info
               </h3>
             </div>
             <div className="grid grid-cols-2 gap-3 text-[10px] uppercase tracking-[0.15em]">
               <div>
                 <div className="text-white/40 mb-1">Lab</div>
-                <div className="text-white font-black" style={{ fontWeight: 900 }}>{coa.testingLab}</div>
+                <div className="text-white font-medium">{coa.testingLab}</div>
               </div>
               <div>
                 <div className="text-white/40 mb-1">Batch</div>
-                <div className="text-white font-black font-mono" style={{ fontWeight: 900 }}>{coa.batchNumber}</div>
+                <div className="text-white font-medium font-mono">{coa.batchNumber}</div>
               </div>
               <div>
                 <div className="text-white/40 mb-1">Test Date</div>
-                <div className="text-white font-black" style={{ fontWeight: 900 }}>{new Date(coa.testDate).toLocaleDateString()}</div>
+                <div className="text-white font-medium">{new Date(coa.testDate).toLocaleDateString()}</div>
               </div>
               {coa.expiryDate && (
                 <div>
                   <div className="text-white/40 mb-1">Expiry</div>
-                  <div className={`font-black ${coa.isExpired ? 'text-red-500' : 'text-white'}`} style={{ fontWeight: 900 }}>
+                  <div className={`font-medium ${coa.isExpired ? 'text-red-500' : 'text-white'}`}>
                     {new Date(coa.expiryDate).toLocaleDateString()}
                   </div>
                 </div>
@@ -981,18 +983,18 @@ function COAQuickViewModal({ coa, onClose, onDownload, onDelete }: COAQuickViewM
           </div>
 
           {/* Cannabinoid Profile */}
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-4">
-            <h3 className="text-[10px] uppercase tracking-[0.15em] text-white/80 font-black mb-3" style={{ fontWeight: 900 }}>
+          <div className="bg-white/[0.04] border border-white/[0.08] rounded-2xl p-4">
+            <h3 className="text-[10px] uppercase tracking-[0.15em] text-white/80 font-medium mb-3">
               Cannabinoids
             </h3>
             <div className="grid grid-cols-2 gap-3 mb-3">
-              <div className="bg-black/40 border border-white/10 rounded-xl p-3">
+              <div className="bg-black/40 border border-white/[0.08] rounded-xl p-3">
                 <div className="text-white/40 text-[10px] uppercase tracking-[0.15em] mb-1">THC</div>
-                <div className="text-white text-xl font-black" style={{ fontWeight: 900 }}>{coa.thc}</div>
+                <div className="text-white text-xl font-medium">{coa.thc}</div>
               </div>
-              <div className="bg-black/40 border border-white/10 rounded-xl p-3">
+              <div className="bg-black/40 border border-white/[0.08] rounded-xl p-3">
                 <div className="text-white/40 text-[10px] uppercase tracking-[0.15em] mb-1">CBD</div>
-                <div className="text-white text-xl font-black" style={{ fontWeight: 900 }}>{coa.cbd}</div>
+                <div className="text-white text-xl font-medium">{coa.cbd}</div>
               </div>
             </div>
             {(coa.thca || coa.cbda || coa.cbg || coa.cbn || coa.totalCannabinoids) && (
@@ -1000,31 +1002,31 @@ function COAQuickViewModal({ coa, onClose, onDownload, onDelete }: COAQuickViewM
                 {coa.thca && (
                   <div className="bg-black/20 rounded-xl p-2">
                     <div className="text-white/40 text-[9px] uppercase tracking-[0.15em]">THCa</div>
-                    <div className="text-white text-xs font-black" style={{ fontWeight: 900 }}>{coa.thca}</div>
+                    <div className="text-white text-xs font-medium">{coa.thca}</div>
                   </div>
                 )}
                 {coa.cbda && (
                   <div className="bg-black/20 rounded-xl p-2">
                     <div className="text-white/40 text-[9px] uppercase tracking-[0.15em]">CBDa</div>
-                    <div className="text-white text-xs font-black" style={{ fontWeight: 900 }}>{coa.cbda}</div>
+                    <div className="text-white text-xs font-medium">{coa.cbda}</div>
                   </div>
                 )}
                 {coa.cbg && (
                   <div className="bg-black/20 rounded-xl p-2">
                     <div className="text-white/40 text-[9px] uppercase tracking-[0.15em]">CBG</div>
-                    <div className="text-white text-xs font-black" style={{ fontWeight: 900 }}>{coa.cbg}</div>
+                    <div className="text-white text-xs font-medium">{coa.cbg}</div>
                   </div>
                 )}
                 {coa.cbn && (
                   <div className="bg-black/20 rounded-xl p-2">
                     <div className="text-white/40 text-[9px] uppercase tracking-[0.15em]">CBN</div>
-                    <div className="text-white text-xs font-black" style={{ fontWeight: 900 }}>{coa.cbn}</div>
+                    <div className="text-white text-xs font-medium">{coa.cbn}</div>
                   </div>
                 )}
                 {coa.totalCannabinoids && (
                   <div className="bg-black/20 rounded-xl p-2">
                     <div className="text-white/40 text-[9px] uppercase tracking-[0.15em]">Total</div>
-                    <div className="text-white text-xs font-black" style={{ fontWeight: 900 }}>{coa.totalCannabinoids}</div>
+                    <div className="text-white text-xs font-medium">{coa.totalCannabinoids}</div>
                   </div>
                 )}
               </div>
@@ -1033,20 +1035,20 @@ function COAQuickViewModal({ coa, onClose, onDownload, onDelete }: COAQuickViewM
 
           {/* Terpene Profile */}
           {coa.totalTerpenes && (
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-4">
-              <h3 className="text-[10px] uppercase tracking-[0.15em] text-white/80 font-black mb-3" style={{ fontWeight: 900 }}>
+            <div className="bg-white/[0.04] border border-white/[0.08] rounded-2xl p-4">
+              <h3 className="text-[10px] uppercase tracking-[0.15em] text-white/80 font-medium mb-3">
                 Terpenes
               </h3>
-              <div className="bg-black/40 border border-white/10 rounded-xl p-3 mb-3">
+              <div className="bg-black/40 border border-white/[0.08] rounded-xl p-3 mb-3">
                 <div className="text-white/40 text-[10px] uppercase tracking-[0.15em] mb-1">Total</div>
-                <div className="text-white text-xl font-black" style={{ fontWeight: 900 }}>{coa.totalTerpenes}</div>
+                <div className="text-white text-xl font-medium">{coa.totalTerpenes}</div>
               </div>
               {coa.terpenes && typeof coa.terpenes === 'object' && (
                 <div className="grid grid-cols-3 gap-2">
                   {Object.entries(coa.terpenes).map(([name, value]) => (
                     <div key={name} className="bg-black/20 rounded-xl p-2">
                       <div className="text-white/40 text-[9px] uppercase tracking-[0.15em] capitalize">{name}</div>
-                      <div className="text-white text-xs font-black" style={{ fontWeight: 900 }}>{String(value)}%</div>
+                      <div className="text-white text-xs font-medium">{String(value)}%</div>
                     </div>
                   ))}
                 </div>
@@ -1056,19 +1058,17 @@ function COAQuickViewModal({ coa, onClose, onDownload, onDelete }: COAQuickViewM
         </div>
 
         {/* Footer Actions */}
-        <div className="flex items-center gap-2 p-4 border-t border-white/10 bg-black/40 flex-shrink-0">
+        <div className="flex items-center gap-2 p-4 border-t border-white/[0.08] bg-black/40 flex-shrink-0">
           <button
             onClick={onDownload}
-            className="flex-1 bg-white/10 text-white border border-white/20 rounded-2xl px-4 py-2.5 text-[10px] uppercase tracking-[0.15em] hover:bg-white/20 hover:border-white/30 font-black transition-all flex items-center justify-center gap-2"
-            style={{ fontWeight: 900 }}
+            className="flex-1 bg-white/[0.08] text-white border border-white/[0.12] rounded-2xl px-4 py-2.5 text-[10px] uppercase tracking-[0.15em] hover:bg-white/[0.12] hover:border-white/[0.2] font-medium transition-all flex items-center justify-center gap-2"
           >
             <Download className="w-3.5 h-3.5" />
             Download
           </button>
           <button
             onClick={onDelete}
-            className="flex-1 bg-red-500/10 text-red-500 border border-red-500/20 rounded-2xl px-4 py-2.5 text-[10px] uppercase tracking-[0.15em] hover:bg-red-500/20 hover:border-red-500/30 font-black transition-all flex items-center justify-center gap-2"
-            style={{ fontWeight: 900 }}
+            className="flex-1 bg-red-500/10 text-red-500 border border-red-500/20 rounded-2xl px-4 py-2.5 text-[10px] uppercase tracking-[0.15em] hover:bg-red-500/20 hover:border-red-500/30 font-medium transition-all flex items-center justify-center gap-2"
           >
             <Trash2 className="w-3.5 h-3.5" />
             Delete

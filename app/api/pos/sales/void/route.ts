@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServiceSupabase } from '@/lib/supabase/client';
 import { AlpineIQClient } from '@/lib/marketing/alpineiq-client';
+import { requireVendor } from '@/lib/auth/middleware';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -34,6 +35,11 @@ async function getAlpineIQClient(supabase: any, vendorId: string): Promise<Alpin
 }
 
 export async function POST(request: NextRequest) {
+  // SECURITY: Require vendor authentication (Phase 4)
+  const authResult = await requireVendor(request);
+  if (authResult instanceof NextResponse) return authResult;
+  const { vendorId } = authResult;
+
   const supabase = getServiceSupabase();
 
   try {

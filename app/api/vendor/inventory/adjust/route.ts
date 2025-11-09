@@ -1,15 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServiceSupabase } from '@/lib/supabase/client';
+import { requireVendor } from '@/lib/auth/middleware';
 
 export async function POST(request: NextRequest) {
   try {
-    const vendorId = request.headers.get('x-vendor-id');
-    
+    // SECURITY: Use requireVendor to get vendor_id from authenticated session
+    const authResult = await requireVendor(request);
+    if (authResult instanceof NextResponse) return authResult;
+
+    const { vendorId } = authResult;
+
     console.log('🔵 Inventory adjust - Vendor ID:', vendorId);
-    
-    if (!vendorId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
     
     const body = await request.json();
     const { inventoryId, productId, adjustment, reason, locationId } = body;

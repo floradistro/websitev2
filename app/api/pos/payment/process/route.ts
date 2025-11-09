@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServiceSupabase } from '@/lib/supabase/client';
 import { getPaymentProcessorForRegister, getPaymentProcessor } from '@/lib/payment-processors';
 import type { ProcessPaymentRequest } from '@/lib/payment-processors/types';
+import { requireVendor } from '@/lib/auth/middleware';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -11,6 +12,11 @@ export const runtime = 'nodejs';
  * Process a payment through the configured payment processor
  */
 export async function POST(request: NextRequest) {
+  // SECURITY: Require vendor authentication (Phase 4)
+  const authResult = await requireVendor(request);
+  if (authResult instanceof NextResponse) return authResult;
+  const { vendorId } = authResult;
+
   try {
     const supabase = getServiceSupabase();
 
@@ -137,6 +143,11 @@ export async function POST(request: NextRequest) {
  * Process a refund through the payment processor
  */
 export async function PUT(request: NextRequest) {
+  // SECURITY: Require vendor authentication - Critical fix from Apple Assessment
+  const authResult = await requireVendor(request);
+  if (authResult instanceof NextResponse) return authResult;
+  const { vendorId } = authResult;
+
   try {
     const supabase = getServiceSupabase();
 
@@ -218,6 +229,11 @@ export async function PUT(request: NextRequest) {
  * Void a transaction through the payment processor
  */
 export async function DELETE(request: NextRequest) {
+  // SECURITY: Require vendor authentication - Critical fix from Apple Assessment
+  const authResult = await requireVendor(request);
+  if (authResult instanceof NextResponse) return authResult;
+  const { vendorId } = authResult;
+
   try {
     const supabase = getServiceSupabase();
 

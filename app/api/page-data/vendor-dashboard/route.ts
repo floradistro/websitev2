@@ -1,22 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServiceSupabase } from '@/lib/supabase/client';
+import { requireVendor } from '@/lib/auth/middleware';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 30; // Cache for 30 seconds
 
 export async function GET(request: NextRequest) {
   const startTime = Date.now();
-  
+
   try {
-    const vendorId = request.headers.get('x-vendor-id');
-    
-    if (!vendorId) {
-      return NextResponse.json(
-        { success: false, error: 'Vendor ID required' },
-        { status: 401 }
-      );
-    }
-    
+    // SECURITY: Require vendor authentication (Phase 2)
+    const authResult = await requireVendor(request);
+    if (authResult instanceof NextResponse) return authResult;
+    const { vendorId } = authResult;
+
     const supabase = getServiceSupabase();
     
     console.log(`[Dashboard API] Starting fetch for vendor: ${vendorId}`);

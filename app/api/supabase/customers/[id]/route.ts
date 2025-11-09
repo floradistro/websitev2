@@ -1,14 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServiceSupabase } from '@/lib/supabase/client';
+import { requireVendor } from '@/lib/auth/middleware';
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  // SECURITY: Require vendor authentication - Critical fix from Apple Assessment
+  const authResult = await requireVendor(request);
+  if (authResult instanceof NextResponse) return authResult;
+  const { vendorId } = authResult;
+
   try {
     const { id } = await params;
     const supabase = getServiceSupabase();
-    
+
     const { data, error } = await supabase
       .from('customers')
       .select(`
@@ -18,6 +24,7 @@ export async function GET(
         loyalty:loyalty_transactions(*)
       `)
       .eq('id', id)
+      .eq('vendor_id', vendorId) // SECURITY: Only return if customer belongs to this vendor
       .single();
     
     if (error) {
@@ -43,14 +50,19 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  // SECURITY: Require vendor authentication - Critical fix from Apple Assessment
+  const authResult = await requireVendor(request);
+  if (authResult instanceof NextResponse) return authResult;
+  const { vendorId } = authResult;
+
   try {
     const { id } = await params;
     const body = await request.json();
     const supabase = getServiceSupabase();
-    
+
     // Build update object
     const updates: any = {};
-    
+
     if (body.first_name !== undefined) updates.first_name = body.first_name;
     if (body.last_name !== undefined) updates.last_name = body.last_name;
     if (body.phone !== undefined) updates.phone = body.phone;
@@ -60,11 +72,12 @@ export async function PUT(
     if (body.marketing_opt_in !== undefined) updates.marketing_opt_in = body.marketing_opt_in;
     if (body.email_notifications !== undefined) updates.email_notifications = body.email_notifications;
     if (body.sms_notifications !== undefined) updates.sms_notifications = body.sms_notifications;
-    
+
     const { data: updated, error: updateError } = await supabase
       .from('customers')
       .update(updates)
       .eq('id', id)
+      .eq('vendor_id', vendorId) // SECURITY: Only update if customer belongs to this vendor
       .select()
       .single();
     

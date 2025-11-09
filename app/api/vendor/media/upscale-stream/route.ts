@@ -1,5 +1,6 @@
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getServiceSupabase } from '@/lib/supabase/client';
+import { requireVendor } from '@/lib/auth/middleware';
 import axios from 'axios';
 import sharp from 'sharp';
 
@@ -36,201 +37,206 @@ async function pollPrediction(predictionId: string, maxAttempts = 60): Promise<a
 }
 
 export async function POST(request: NextRequest) {
-  const vendorId = request.headers.get('x-vendor-id');
-  
-  if (!vendorId) {
-    return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
-  }
+  try {
+    // SECURITY: Require vendor authentication (Phase 2)
+    const authResult = await requireVendor(request);
+    if (authResult instanceof NextResponse) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
+    }
+    const { vendorId } = authResult;
 
-  const body = await request.json();
-  const { files, scale = 4, concurrency = 20 } = body;
+    const body = await request.json();
+    const { files, scale = 4, concurrency = 20 } = body;
 
-  const encoder = new TextEncoder();
-  const stream = new ReadableStream({
-    async start(controller) {
-      const send = (data: any) => {
-        controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
-      };
+    const encoder = new TextEncoder();
+    const stream = new ReadableStream({
+      async start(controller) {
+        const send = (data: any) => {
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
+        };
 
-      try {
-        send({ type: 'start', total: files.length });
+        try {
+          send({ type: 'start', total: files.length });
 
-        // Process files with concurrency
-        const chunks = [];
-        for (let i = 0; i < files.length; i += concurrency) {
-          chunks.push(files.slice(i, i + concurrency));
-        }
+          // Process files with concurrency
+          const chunks = [];
+          for (let i = 0; i < files.length; i += concurrency) {
+            chunks.push(files.slice(i, i + concurrency));
+          }
 
-        let completedCount = 0;
+          let completedCount = 0;
 
-        for (const chunk of chunks) {
-          const promises = chunk.map(async (file: any) => {
-            const startTime = Date.now();
-            send({ type: 'processing', fileName: file.name, status: 'processing' });
+          for (const chunk of chunks) {
+            const promises = chunk.map(async (file: any) => {
+              const startTime = Date.now();
+              send({ type: 'processing', fileName: file.name, status: 'processing' });
 
-            try {
-              // Download and check size
-              const originalImageResponse = await axios.get(file.url, {
-                responseType: 'arraybuffer',
-              });
+              try {
+                // Download and check size
+                const originalImageResponse = await axios.get(file.url, {
+                  responseType: 'arraybuffer',
+                });
 
-              const imageBuffer = Buffer.from(originalImageResponse.data);
-              const metadata = await sharp(imageBuffer).metadata();
-              const totalPixels = (metadata.width || 0) * (metadata.height || 0);
+                const imageBuffer = Buffer.from(originalImageResponse.data);
+                const metadata = await sharp(imageBuffer).metadata();
+                const totalPixels = (metadata.width || 0) * (metadata.height || 0);
 
-              let processImageUrl = file.url;
-              let tempPath = null;
+                let processImageUrl = file.url;
+                let tempPath = null;
 
-              // Resize if needed
-              if (totalPixels > MAX_INPUT_PIXELS) {
-                const scaleFactor = Math.sqrt(MAX_INPUT_PIXELS / totalPixels);
-                const newWidth = Math.floor((metadata.width || 0) * scaleFactor);
-                const newHeight = Math.floor((metadata.height || 0) * scaleFactor);
+                // Resize if needed
+                if (totalPixels > MAX_INPUT_PIXELS) {
+                  const scaleFactor = Math.sqrt(MAX_INPUT_PIXELS / totalPixels);
+                  const newWidth = Math.floor((metadata.width || 0) * scaleFactor);
+                  const newHeight = Math.floor((metadata.height || 0) * scaleFactor);
 
-                send({ type: 'info', fileName: file.name, message: `Resizing ${metadata.width}x${metadata.height} → ${newWidth}x${newHeight}` });
+                  send({ type: 'info', fileName: file.name, message: `Resizing ${metadata.width}x${metadata.height} → ${newWidth}x${newHeight}` });
 
-                const resizedBuffer = await sharp(imageBuffer)
-                  .resize(newWidth, newHeight, { fit: 'inside' })
-                  .png()
-                  .toBuffer();
+                  const resizedBuffer = await sharp(imageBuffer)
+                    .resize(newWidth, newHeight, { fit: 'inside' })
+                    .png()
+                    .toBuffer();
+
+                  const supabase = getServiceSupabase();
+                  const tempFileName = `temp-${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+                  tempPath = `${vendorId}/${tempFileName}`;
+
+                  await supabase.storage
+                    .from('vendor-product-images')
+                    .upload(tempPath, resizedBuffer, {
+                      contentType: 'image/png',
+                      cacheControl: '60',
+                      upsert: true
+                    });
+
+                  const { data: { publicUrl } } = supabase.storage
+                    .from('vendor-product-images')
+                    .getPublicUrl(tempPath);
+
+                  processImageUrl = publicUrl;
+                }
+
+                // Start upscaling
+                send({ type: 'info', fileName: file.name, message: 'Starting AI upscale...' });
+
+                const predictionResponse = await axios.post(
+                  'https://api.replicate.com/v1/predictions',
+                  {
+                    version: REAL_ESRGAN_MODEL.split(':')[1],
+                    input: {
+                      image: processImageUrl,
+                      scale: scale,
+                      face_enhance: false,
+                    },
+                  },
+                  {
+                    headers: {
+                      'Authorization': `Token ${REPLICATE_API_KEY}`,
+                      'Content-Type': 'application/json',
+                    },
+                  }
+                );
+
+                // Poll for result
+                const prediction = await pollPrediction(predictionResponse.data.id);
+
+                if (!prediction.output) {
+                  throw new Error('No output');
+                }
+
+                // Download result
+                const upscaledResponse = await axios.get(prediction.output, {
+                  responseType: 'arraybuffer',
+                });
 
                 const supabase = getServiceSupabase();
-                const tempFileName = `temp-${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
-                tempPath = `${vendorId}/${tempFileName}`;
+
+                // Check upscaled dimensions
+                const upscaledBuffer = Buffer.from(upscaledResponse.data);
+                const upscaledMetadata = await sharp(upscaledBuffer).metadata();
+                console.log(`📊 Upscaled result: ${upscaledMetadata.width}x${upscaledMetadata.height} (${(upscaledBuffer.length / 1024 / 1024).toFixed(2)}MB)`);
+
+                // Upload upscaled FIRST (before deleting anything)
+                const fileNameWithoutExt = file.name.replace(/\.[^/.]+$/, '');
+                const newFileName = `${fileNameWithoutExt}.png`;
+                const finalPath = `${vendorId}/${newFileName}`;
 
                 await supabase.storage
                   .from('vendor-product-images')
-                  .upload(tempPath, resizedBuffer, {
+                  .upload(finalPath, upscaledBuffer, {
                     contentType: 'image/png',
-                    cacheControl: '60',
+                    cacheControl: '3600',
                     upsert: true
                   });
 
+                console.log(`✅ Uploaded upscaled: ${newFileName} (${upscaledMetadata.width}x${upscaledMetadata.height})`);
+
+                // Clean temp file AFTER successful upload
+                if (tempPath) {
+                  await supabase.storage.from('vendor-product-images').remove([tempPath]);
+                  console.log(`🗑️ Cleaned temp: ${tempPath}`);
+                }
+
+                // Delete original ONLY if different from new name
+                if (file.name !== newFileName) {
+                  await supabase.storage
+                    .from('vendor-product-images')
+                    .remove([`${vendorId}/${file.name}`]);
+                  console.log(`🗑️ Deleted original: ${file.name}`);
+                }
+
                 const { data: { publicUrl } } = supabase.storage
                   .from('vendor-product-images')
-                  .getPublicUrl(tempPath);
+                  .getPublicUrl(finalPath);
 
-                processImageUrl = publicUrl;
-              }
+                const endTime = Date.now();
+                completedCount++;
 
-              // Start upscaling
-              send({ type: 'info', fileName: file.name, message: 'Starting AI upscale...' });
-
-              const predictionResponse = await axios.post(
-                'https://api.replicate.com/v1/predictions',
-                {
-                  version: REAL_ESRGAN_MODEL.split(':')[1],
-                  input: {
-                    image: processImageUrl,
-                    scale: scale,
-                    face_enhance: false,
-                  },
-                },
-                {
-                  headers: {
-                    'Authorization': `Token ${REPLICATE_API_KEY}`,
-                    'Content-Type': 'application/json',
-                  },
-                }
-              );
-
-              // Poll for result
-              const prediction = await pollPrediction(predictionResponse.data.id);
-
-              if (!prediction.output) {
-                throw new Error('No output');
-              }
-
-              // Download result
-              const upscaledResponse = await axios.get(prediction.output, {
-                responseType: 'arraybuffer',
-              });
-
-              const supabase = getServiceSupabase();
-              
-              // Check upscaled dimensions
-              const upscaledBuffer = Buffer.from(upscaledResponse.data);
-              const upscaledMetadata = await sharp(upscaledBuffer).metadata();
-              console.log(`📊 Upscaled result: ${upscaledMetadata.width}x${upscaledMetadata.height} (${(upscaledBuffer.length / 1024 / 1024).toFixed(2)}MB)`);
-              
-              // Upload upscaled FIRST (before deleting anything)
-              const fileNameWithoutExt = file.name.replace(/\.[^/.]+$/, '');
-              const newFileName = `${fileNameWithoutExt}.png`;
-              const finalPath = `${vendorId}/${newFileName}`;
-
-              await supabase.storage
-                .from('vendor-product-images')
-                .upload(finalPath, upscaledBuffer, {
-                  contentType: 'image/png',
-                  cacheControl: '3600',
-                  upsert: true
+                send({
+                  type: 'success',
+                  fileName: file.name,
+                  status: 'success',
+                  url: publicUrl,
+                  duration: endTime - startTime,
+                  completed: completedCount,
+                  total: files.length
                 });
-              
-              console.log(`✅ Uploaded upscaled: ${newFileName} (${upscaledMetadata.width}x${upscaledMetadata.height})`);
 
-              // Clean temp file AFTER successful upload
-              if (tempPath) {
-                await supabase.storage.from('vendor-product-images').remove([tempPath]);
-                console.log(`🗑️ Cleaned temp: ${tempPath}`);
+              } catch (error: any) {
+                completedCount++;
+                send({
+                  type: 'error',
+                  fileName: file.name,
+                  status: 'error',
+                  error: error.message,
+                  completed: completedCount,
+                  total: files.length
+                });
               }
+            });
 
-              // Delete original ONLY if different from new name
-              if (file.name !== newFileName) {
-                await supabase.storage
-                  .from('vendor-product-images')
-                  .remove([`${vendorId}/${file.name}`]);
-                console.log(`🗑️ Deleted original: ${file.name}`);
-              }
+            await Promise.all(promises);
+          }
 
-              const { data: { publicUrl } } = supabase.storage
-                .from('vendor-product-images')
-                .getPublicUrl(finalPath);
+          send({ type: 'complete', completed: completedCount, total: files.length });
+          controller.close();
 
-              const endTime = Date.now();
-              completedCount++;
-              
-              send({
-                type: 'success',
-                fileName: file.name,
-                status: 'success',
-                url: publicUrl,
-                duration: endTime - startTime,
-                completed: completedCount,
-                total: files.length
-              });
-
-            } catch (error: any) {
-              completedCount++;
-              send({
-                type: 'error',
-                fileName: file.name,
-                status: 'error',
-                error: error.message,
-                completed: completedCount,
-                total: files.length
-              });
-            }
-          });
-
-          await Promise.all(promises);
+        } catch (error: any) {
+          send({ type: 'error', error: error.message });
+          controller.close();
         }
+      },
+    });
 
-        send({ type: 'complete', completed: completedCount, total: files.length });
-        controller.close();
-
-      } catch (error: any) {
-        send({ type: 'error', error: error.message });
-        controller.close();
-      }
-    },
-  });
-
-  return new Response(stream, {
-    headers: {
-      'Content-Type': 'text/event-stream',
-      'Cache-Control': 'no-cache',
-      'Connection': 'keep-alive',
-    },
-  });
+    return new Response(stream, {
+      headers: {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
+      },
+    });
+  } catch (error: any) {
+    return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+  }
 }
 

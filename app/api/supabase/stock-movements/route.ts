@@ -1,10 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServiceSupabase } from '@/lib/supabase/client';
+import { requireVendor } from '@/lib/auth/middleware';
 
 export async function GET(request: NextRequest) {
   try {
+    // SECURITY: Require vendor authentication (Phase 2)
+    const authResult = await requireVendor(request);
+    if (authResult instanceof NextResponse) return authResult;
+    const { vendorId } = authResult;
+
     const { searchParams } = new URL(request.url);
-    const vendorId = request.headers.get('x-vendor-id');
     const productId = searchParams.get('product_id');
     const inventoryId = searchParams.get('inventory_id');
     const movementType = searchParams.get('movement_type');
@@ -20,21 +25,19 @@ export async function GET(request: NextRequest) {
         from_location:from_location_id(name),
         to_location:to_location_id(name)
       `);
-    
-    // Filter by vendor's inventory
-    if (vendorId) {
-      const { data: vendorInventory } = await supabase
-        .from('inventory')
-        .select('id')
-        .eq('vendor_id', vendorId);
-      
-      const inventoryIds = vendorInventory?.map(inv => inv.id) || [];
-      if (inventoryIds.length > 0) {
-        query = query.in('inventory_id', inventoryIds);
-      } else {
-        // No inventory = no movements
-        return NextResponse.json({ success: true, movements: [] });
-      }
+
+    // Filter by vendor's inventory (vendor authentication required)
+    const { data: vendorInventory } = await supabase
+      .from('inventory')
+      .select('id')
+      .eq('vendor_id', vendorId);
+
+    const inventoryIds = vendorInventory?.map(inv => inv.id) || [];
+    if (inventoryIds.length > 0) {
+      query = query.in('inventory_id', inventoryIds);
+    } else {
+      // No inventory = no movements
+      return NextResponse.json({ success: true, movements: [] });
     }
     
     // Filter by product
@@ -74,6 +77,11 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    // SECURITY: Require vendor authentication (Phase 2)
+    const authResult = await requireVendor(request);
+    if (authResult instanceof NextResponse) return authResult;
+    const { vendorId } = authResult;
+
     const body = await request.json();
     const {
       inventory_id,

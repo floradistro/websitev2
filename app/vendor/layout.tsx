@@ -395,20 +395,20 @@ function VendorLayoutContent({
 
       {/* Desktop Header - DESKTOP ONLY (xl breakpoint = 1280px+) */}
       <nav
-        className="hidden xl:block border-b border-white/5 fixed top-0 left-0 right-0 z-[110] bg-[#0a0a0a]"
+        className="hidden xl:block border-b border-white/[0.06] fixed top-0 left-0 right-0 z-[110] bg-[#0a0a0a]"
         style={{
           paddingTop: 'env(safe-area-inset-top, 0px)'
         }}
       >
         <div className="w-full px-6">
-          <div className="flex justify-between items-center h-16">
-            <Link href="/vendor/apps" className="flex items-center gap-3 group">
-              <div className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center overflow-hidden border border-white/10 transition-all duration-200 group-hover:border-white/20">
-                <img src={vendorLogo} alt={vendorName} className="w-full h-full object-contain p-1" />
+          <div className="flex justify-between items-center h-[52px]">
+            <Link href="/vendor/apps" className="flex items-center gap-2.5 group">
+              <div className="w-8 h-8 bg-white/[0.04] rounded-lg flex items-center justify-center overflow-hidden border border-white/[0.08] transition-all duration-200 group-hover:border-white/[0.12]">
+                <img src={vendorLogo} alt={vendorName} className="w-full h-full object-contain p-0.5" />
               </div>
               <div>
-                <div className="text-white text-xs tracking-wide">{vendorName}</div>
-                <div className="text-white/30 text-[9px] tracking-[0.15em] uppercase">Portal</div>
+                <div className="text-white/90 text-[11px] tracking-wide font-medium">{vendorName}</div>
+                <div className="text-white/40 text-[9px] tracking-[0.15em] uppercase">Portal</div>
               </div>
             </Link>
 
@@ -439,20 +439,20 @@ function VendorLayoutContent({
         </div>
       </nav>
 
-      <div className="fixed inset-0 bg-black xl:top-16" style={{
+      <div className="fixed inset-0 bg-black xl:top-[52px]" style={{
         top: 'calc(48px + env(safe-area-inset-top, 0px))',
         paddingBottom: 'env(safe-area-inset-bottom)'
       }}>
         {/* Desktop Sidebar - DESKTOP ONLY (hidden on mobile/tablet and tv-menus page) */}
         {!pathname?.includes('/tv-menus') && (
           <aside
-            className="hidden xl:block w-64 border-r border-white/5 fixed left-0 bottom-0 overflow-y-auto bg-[#0a0a0a]"
+            className="hidden xl:block w-60 border-r border-white/[0.06] fixed left-0 bottom-0 overflow-y-auto bg-[#0a0a0a]"
             style={{
-              top: 'calc(64px + env(safe-area-inset-top, 0px))',
+              top: 'calc(52px + env(safe-area-inset-top, 0px))',
               bottom: 'env(safe-area-inset-bottom)'
             }}
           >
-          <nav className="px-3 py-4 space-y-1 pb-8">
+          <nav className="px-2 py-3 space-y-0.5 pb-8">
             {/* Top level items */}
             {topLevelNavItems
               .filter(item => !item.appKey || hasAppAccess(item.appKey))
@@ -464,17 +464,17 @@ function VendorLayoutContent({
                     key={item.href}
                     href={item.href}
                     onMouseEnter={() => handleNavHover(item.href)}
-                    className={`group flex items-center justify-between px-3 py-2.5 mb-1 transition-all duration-200 border rounded-xl ${
+                    className={`group flex items-center justify-between px-3 py-2 transition-all duration-200 border rounded-lg ${
                       active
-                        ? 'text-white bg-white/10 border-white/20'
-                        : 'text-white/40 hover:text-white/70 hover:bg-white/5 border-transparent'
+                        ? 'text-white bg-white/[0.08] border-white/[0.12]'
+                        : 'text-white/40 hover:text-white border-transparent hover:bg-white/[0.04]'
                     }`}
                   >
                     <div className="flex items-center gap-2.5">
-                      <Icon size={16} strokeWidth={active ? 2 : 1.5} />
-                      <span className="text-[10px] uppercase tracking-[0.15em]">{item.label}</span>
+                      <Icon size={14} strokeWidth={active ? 2 : 1.5} />
+                      <span className="text-[10px] uppercase tracking-[0.15em] font-medium">{item.label}</span>
                     </div>
-                    {active && <div className="w-1 h-1 rounded-full bg-white" />}
+                    {active && <div className="w-1 h-1 rounded-full bg-white/90" />}
                   </Link>
                 );
               })}
@@ -486,18 +486,18 @@ function VendorLayoutContent({
               const hasActiveItem = section.items.some(item => isActive(item.href));
 
               return (
-                <div key={section.label} className="mb-1">
+                <div key={section.label}>
                   <button
                     onClick={() => toggleSection(section.label)}
-                    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition-all duration-200 border ${
+                    className={`w-full flex items-center justify-between px-3 py-2 rounded-lg transition-all duration-200 border ${
                       hasActiveItem
-                        ? 'bg-white/5 text-white/90 border-white/10'
-                        : 'text-white/40 hover:text-white/70 border-transparent hover:bg-white/5'
+                        ? 'bg-white/[0.04] text-white border-white/[0.08]'
+                        : 'text-white/40 hover:text-white border-transparent hover:bg-white/[0.04]'
                     }`}
                   >
                     <div className="flex items-center gap-2.5">
-                      <SectionIcon size={16} strokeWidth={hasActiveItem ? 2 : 1.5} />
-                      <span className="text-[10px] uppercase tracking-[0.15em]">{section.label}</span>
+                      <SectionIcon size={14} strokeWidth={hasActiveItem ? 2 : 1.5} />
+                      <span className="text-[10px] uppercase tracking-[0.15em] font-medium">{section.label}</span>
                     </div>
                     <svg
                       className={`w-3 h-3 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
@@ -510,7 +510,7 @@ function VendorLayoutContent({
                   </button>
 
                   {isExpanded && (
-                    <div className="mt-1 ml-3 space-y-1">
+                    <div className="mt-0.5 ml-2 space-y-0.5">
                       {section.items
                         .filter(item => !item.appKey || hasAppAccess(item.appKey))
                         .map((item) => {
@@ -521,17 +521,17 @@ function VendorLayoutContent({
                               key={item.href}
                               href={item.href}
                               onMouseEnter={() => handleNavHover(item.href)}
-                              className={`group flex items-center justify-between px-3 py-2 rounded-lg transition-all duration-200 ${
+                              className={`group flex items-center justify-between px-3 py-1.5 rounded-lg transition-all duration-200 ${
                                 active
-                                  ? 'bg-white/10 text-white'
-                                  : 'text-white/40 hover:text-white/70 hover:bg-white/5'
+                                  ? 'bg-white/[0.08] text-white'
+                                  : 'text-white/40 hover:text-white hover:bg-white/[0.04]'
                               }`}
                             >
                               <div className="flex items-center gap-2.5">
-                                <Icon size={14} strokeWidth={active ? 2 : 1.5} />
-                                <span className="text-[9px] uppercase tracking-[0.15em]">{item.label}</span>
+                                <Icon size={13} strokeWidth={active ? 2 : 1.5} />
+                                <span className="text-[9px] uppercase tracking-[0.15em] font-medium">{item.label}</span>
                               </div>
-                              {active && <div className="w-1 h-1 rounded-full bg-white" />}
+                              {active && <div className="w-1 h-1 rounded-full bg-white/90" />}
                             </Link>
                           );
                         })}
@@ -545,17 +545,17 @@ function VendorLayoutContent({
             {(!settingsNavItem.appKey || hasAppAccess(settingsNavItem.appKey)) && (
               <Link
                 href={settingsNavItem.href}
-                className={`group flex items-center justify-between px-3 py-2.5 mt-2 transition-all duration-200 border rounded-xl ${
+                className={`group flex items-center justify-between px-3 py-2 mt-1 transition-all duration-200 border rounded-lg ${
                   isActive(settingsNavItem.href)
-                    ? 'text-white bg-white/10 border-white/20'
-                    : 'text-white/40 hover:text-white/70 hover:bg-white/5 border-transparent'
+                    ? 'text-white bg-white/[0.08] border-white/[0.12]'
+                    : 'text-white/40 hover:text-white hover:bg-white/[0.04] border-transparent'
                 }`}
               >
                 <div className="flex items-center gap-2.5">
-                  <settingsNavItem.icon size={16} strokeWidth={isActive(settingsNavItem.href) ? 2 : 1.5} />
-                  <span className="text-[10px] uppercase tracking-[0.15em]">{settingsNavItem.label}</span>
+                  <settingsNavItem.icon size={14} strokeWidth={isActive(settingsNavItem.href) ? 2 : 1.5} />
+                  <span className="text-[10px] uppercase tracking-[0.15em] font-medium">{settingsNavItem.label}</span>
                 </div>
-                {isActive(settingsNavItem.href) && <div className="w-1 h-1 rounded-full bg-white" />}
+                {isActive(settingsNavItem.href) && <div className="w-1 h-1 rounded-full bg-white/90" />}
               </Link>
             )}
           </nav>
@@ -563,7 +563,7 @@ function VendorLayoutContent({
         )}
 
         {/* Main Content - FULL WIDTH on mobile/tablet and tv-menus, with sidebar on desktop */}
-        <main className={`absolute inset-0 overflow-y-auto overflow-x-hidden ${!pathname?.includes('/tv-menus') ? 'xl:left-64' : ''}`}>
+        <main className={`absolute inset-0 overflow-y-auto overflow-x-hidden ${!pathname?.includes('/tv-menus') ? 'xl:left-60' : ''}`}>
           <div className={pathname?.includes('/tv-menus') ? '' : 'px-4 md:px-6 lg:px-8 xl:py-10 xl:px-10 2xl:px-16 pt-4 md:pt-6 pb-10'}>
             {children}
           </div>

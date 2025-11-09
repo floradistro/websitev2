@@ -1,9 +1,15 @@
 import { getServiceSupabase } from '@/lib/supabase/client';
 import { NextRequest, NextResponse } from 'next/server';
+import { requireVendor } from '@/lib/auth/middleware';
 
 // GET /api/pos/receiving - Get purchase orders for a specific location (POS view)
 export async function GET(request: NextRequest) {
   try {
+    // SECURITY: Require vendor authentication (Phase 4)
+    const authResult = await requireVendor(request);
+    if (authResult instanceof NextResponse) return authResult;
+    const { vendorId } = authResult;
+
     const supabase = getServiceSupabase();
     const { searchParams } = new URL(request.url);
 

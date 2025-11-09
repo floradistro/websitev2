@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServiceSupabase } from '@/lib/supabase/client';
 import { productCache, generateCacheKey } from '@/lib/cache-manager';
 import { monitor } from '@/lib/performance-monitor';
+import { requireVendor } from '@/lib/auth/middleware';
 
 export async function GET(
   request: NextRequest,
@@ -101,11 +102,12 @@ export async function PUT(
 ) {
   try {
     const { id } = await params;
-    const vendorId = request.headers.get('x-vendor-id');
-    
-    if (!vendorId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+
+    // SECURITY: Use requireVendor to get vendor_id from authenticated session
+    const authResult = await requireVendor(request);
+    if (authResult instanceof NextResponse) return authResult;
+
+    const { vendorId } = authResult;
     
     const body = await request.json();
     const supabase = getServiceSupabase();
@@ -200,11 +202,12 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
-    const vendorId = request.headers.get('x-vendor-id');
-    
-    if (!vendorId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+
+    // SECURITY: Use requireVendor to get vendor_id from authenticated session
+    const authResult = await requireVendor(request);
+    if (authResult instanceof NextResponse) return authResult;
+
+    const { vendorId } = authResult;
     
     const supabase = getServiceSupabase();
     

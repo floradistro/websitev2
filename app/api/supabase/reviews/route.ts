@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServiceSupabase } from '@/lib/supabase/client';
+import { requireCustomer } from '@/lib/auth/middleware';
 
 export async function GET(request: NextRequest) {
   try {
@@ -69,12 +70,11 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const customerId = request.headers.get('x-customer-id');
-    
-    if (!customerId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-    
+    // SECURITY: Require customer authentication (Phase 3)
+    const authResult = await requireCustomer(request);
+    if (authResult instanceof NextResponse) return authResult;
+    const { customerId } = authResult;
+
     const body = await request.json();
     const { product_id, rating, title, review_text, order_id } = body;
     

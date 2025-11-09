@@ -1,25 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServiceSupabase } from '@/lib/supabase/client';
+import { requireVendor } from '@/lib/auth/middleware';
 
 export async function GET(request: NextRequest) {
+  // SECURITY: Require vendor authentication - Critical fix from Apple Assessment
+  const authResult = await requireVendor(request);
+  if (authResult instanceof NextResponse) return authResult;
+  const { vendorId } = authResult;
+
   try {
     const { searchParams } = new URL(request.url);
-    
+
     // Filters
     const search = searchParams.get('search');
     const loyaltyTier = searchParams.get('loyalty_tier');
     const activeOnly = searchParams.get('active') === 'true';
-    
+
     // Pagination
     const page = parseInt(searchParams.get('page') || '1');
     const perPage = parseInt(searchParams.get('per_page') || '20');
     const offset = (page - 1) * perPage;
-    
+
     const supabase = getServiceSupabase();
-    
+
     let query = supabase
       .from('customers')
-      .select('*', { count: 'exact' });
+      .select('*', { count: 'exact' })
+      .eq('vendor_id', vendorId); // SECURITY: Only return this vendor's customers
     
     // Search
     if (search) {
@@ -66,9 +73,14 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  // SECURITY: Require vendor authentication - Critical fix from Apple Assessment
+  const authResult = await requireVendor(request);
+  if (authResult instanceof NextResponse) return authResult;
+  const { vendorId } = authResult;
+
   try {
     const body = await request.json();
-    
+
     const {
       email,
       first_name,
@@ -80,13 +92,13 @@ export async function POST(request: NextRequest) {
       password, // For creating auth user
       marketing_opt_in = false
     } = body;
-    
+
     if (!email) {
-      return NextResponse.json({ 
-        error: 'Email is required' 
+      return NextResponse.json({
+        error: 'Email is required'
       }, { status: 400 });
     }
-    
+
     const supabase = getServiceSupabase();
     
     let authUserId = null;
@@ -116,6 +128,7 @@ export async function POST(request: NextRequest) {
     const { data: customer, error: customerError } = await supabase
       .from('customers')
       .insert({
+        vendor_id: vendorId, // SECURITY: Set vendor_id from JWT
         email,
         first_name,
         last_name,

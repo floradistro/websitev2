@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { requireVendor } from '@/lib/auth/middleware';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -12,16 +13,14 @@ const supabase = createClient(
  */
 export async function GET(request: NextRequest) {
   try {
-    const vendorId = request.headers.get('x-vendor-id');
+    // SECURITY: Use requireVendor to get vendor_id from authenticated session
+    const authResult = await requireVendor(request);
+    if (authResult instanceof NextResponse) return authResult;
+
+    const { vendorId } = authResult;
+
     const { searchParams } = new URL(request.url);
     const days = parseInt(searchParams.get('days') || '30');
-    
-    if (!vendorId) {
-      return NextResponse.json(
-        { error: 'Vendor ID required' },
-        { status: 400 }
-      );
-    }
 
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);

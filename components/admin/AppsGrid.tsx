@@ -167,8 +167,8 @@ export function AppsGrid({ badgeCounts = {} }: { badgeCounts?: BadgeCounts }) {
   };
 
   return (
-    <div className="flex justify-center">
-      <div className="grid grid-cols-3 gap-x-16 gap-y-10">
+    <div className="w-full">
+      <div className="grid grid-cols-4 gap-x-10 gap-y-8">
         {accessibleApps.map((app) => {
           const Icon = app.icon;
           const iconColor = iconColors[app.glowColor] || 'text-white';
@@ -179,19 +179,16 @@ export function AppsGrid({ badgeCounts = {} }: { badgeCounts?: BadgeCounts }) {
               href={app.route}
               prefetch={true}
               onMouseEnter={() => handleMouseEnter(app.route)}
-              className="group flex flex-col items-center gap-3 active:scale-[0.92] transition-transform duration-200 ease-out"
+              className="group flex flex-col items-center gap-2.5 active:scale-[0.96] transition-transform duration-200 ease-out"
             >
               {/* Premium Icon Container */}
-              <div className="relative w-20 h-20">
-                {/* Subtle shadow layer */}
-                <div className="absolute inset-0 bg-gradient-to-b from-white/[0.015] to-transparent rounded-3xl" />
-
+              <div className="relative w-14 h-14">
                 {/* Dark container with premium hover */}
-                <div className="relative w-full h-full bg-[#0a0a0a] group-hover:bg-white/[0.06] rounded-3xl flex items-center justify-center border border-white/[0.04] group-hover:border-white/[0.08] transition-all duration-400 ease-out shadow-lg shadow-black/30">
+                <div className="relative w-full h-full bg-[#0a0a0a] group-hover:bg-white/[0.04] rounded-2xl flex items-center justify-center border border-white/[0.06] group-hover:border-white/[0.12] transition-all duration-300 ease-out shadow-lg shadow-black/40">
                   {/* Colored icon with subtle refinement */}
                   <Icon
-                    size={60}
-                    className={`${iconColor} transition-all duration-400 ease-out group-hover:scale-[1.03] group-hover:opacity-90`}
+                    size={44}
+                    className={`${iconColor} transition-opacity duration-300 ease-out group-hover:opacity-100`}
                     strokeWidth={1.5}
                   />
                 </div>
@@ -207,7 +204,7 @@ export function AppsGrid({ badgeCounts = {} }: { badgeCounts?: BadgeCounts }) {
               </div>
 
               {/* App Name - Premium Typography */}
-              <div className="text-white/60 group-hover:text-white/80 text-[10px] text-center uppercase tracking-[0.2em] leading-tight transition-colors duration-400 ease-out font-light">
+              <div className="text-white/40 group-hover:text-white text-[9px] text-center uppercase tracking-[0.2em] leading-tight transition-colors duration-300 ease-out font-medium">
                 {app.name}
               </div>
             </Link>

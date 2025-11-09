@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServiceSupabase } from '@/lib/supabase/client';
+import { requireVendor } from '@/lib/auth/middleware';
 import axios from 'axios';
 import sharp from 'sharp';
 
@@ -44,11 +45,10 @@ async function pollPrediction(predictionId: string, maxAttempts = 60): Promise<a
 // Single image upscaling
 export async function POST(request: NextRequest) {
   try {
-    const vendorId = request.headers.get('x-vendor-id');
-    
-    if (!vendorId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    // SECURITY: Require vendor authentication (Phase 2)
+    const authResult = await requireVendor(request);
+    if (authResult instanceof NextResponse) return authResult;
+    const { vendorId } = authResult;
     
     const body = await request.json();
     const { imageUrl, fileName, scale = 4 } = body; // Default 4x upscaling
@@ -216,11 +216,10 @@ export async function POST(request: NextRequest) {
 // Bulk upscaling with parallel processing
 export async function PUT(request: NextRequest) {
   try {
-    const vendorId = request.headers.get('x-vendor-id');
-    
-    if (!vendorId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    // SECURITY: Require vendor authentication (Phase 2)
+    const authResult = await requireVendor(request);
+    if (authResult instanceof NextResponse) return authResult;
+    const { vendorId } = authResult;
     
     const body = await request.json();
     const { files, scale = 4, concurrency = 20 } = body;

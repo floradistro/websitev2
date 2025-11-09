@@ -264,3 +264,380 @@ ORDER BY section_order;
 
 **For full details, see: `.cursor/SMART_COMPONENT_GUIDE.md`**
 
+---
+
+## Error Handling & Observability (Sentry)
+
+### Exception Catching
+
+Use `Sentry.captureException(error)` to capture exceptions and log errors in Sentry.
+Use this in try-catch blocks or areas where exceptions are expected.
+
+**Example:**
+```typescript
+try {
+  await processPayment(data);
+} catch (error) {
+  Sentry.captureException(error, {
+    tags: {
+      component: 'payment',
+      severity: 'critical',
+      vendor_id: vendorId
+    },
+    contexts: {
+      payment: {
+        amount: data.amount,
+        vendor_id: vendorId,
+        payment_method: data.method
+      }
+    }
+  });
+  throw error;
+}
+```
+
+### Tracing Examples
+
+Spans should be created for meaningful actions within an application like button clicks, API calls, and function calls.
+Use the `Sentry.startSpan` function to create a span.
+Child spans can exist within a parent span.
+
+#### Custom Span instrumentation in component actions
+
+The `name` and `op` properties should be meaningful for the activities in the call.
+Attach attributes based on relevant information and metrics from the request.
+
+```typescript
+function POSCheckoutButton() {
+  const handleCheckout = () => {
+    // Create a transaction/span to measure performance
+    Sentry.startSpan(
+      {
+        op: "ui.click",
+        name: "POS Checkout Button Click",
+      },
+      (span) => {
+        const cartTotal = calculateTotal();
+        const itemCount = cart.items.length;
+
+        // Metrics can be added to the span
+        span.setAttribute("cart_total", cartTotal);
+        span.setAttribute("item_count", itemCount);
+        span.setAttribute("vendor_id", vendorId);
+
+        processCheckout();
+      },
+    );
+  };
+
+  return (
+    <button type="button" onClick={handleCheckout}>
+      Complete Sale
+    </button>
+  );
+}
+```
+
+#### Custom span instrumentation in API calls
+
+The `name` and `op` properties should be meaningful for the activities in the call.
+Attach attributes based on relevant information and metrics from the request.
+
+```typescript
+async function fetchProducts(vendorId: string) {
+  return Sentry.startSpan(
+    {
+      op: "http.client",
+      name: `GET /api/supabase/products`,
+    },
+    async (span) => {
+      span.setAttribute("vendor_id", vendorId);
+
+      const response = await fetch(`/api/supabase/products`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      const data = await response.json();
+      span.setAttribute("product_count", data.products.length);
+
+      return data;
+    },
+  );
+}
+```
+
+### Logs
+
+Where logs are used, ensure Sentry is imported using `import * as Sentry from "@sentry/nextjs"`.
+Enable logging in Sentry using `Sentry.init({ _experiments: { enableLogs: true } })`.
+Reference the logger using `const { logger } = Sentry`.
+Sentry offers a consoleLoggingIntegration that can be used to log specific console error types automatically without instrumenting the individual logger calls.
+
+#### Configuration
+
+In Next.js the client side Sentry initialization is in `instrumentation-client.ts`, the server initialization is in `sentry.server.config.ts` and the edge initialization is in `sentry.edge.config.ts`.
+
+Initialization does not need to be repeated in other files, it only needs to happen in the files mentioned above. You should use `import * as Sentry from "@sentry/nextjs"` to reference Sentry functionality.
+
+##### Baseline Configuration
+
+```typescript
+import * as Sentry from "@sentry/nextjs";
+
+Sentry.init({
+  dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
+  environment: process.env.NODE_ENV,
+
+  // Enable structured logging
+  _experiments: {
+    enableLogs: true,
+  },
+
+  // Sample rate for performance monitoring
+  tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
+
+  // Don't send PII
+  beforeSend(event) {
+    // Strip sensitive data
+    if (event.request) {
+      delete event.request.cookies;
+      delete event.request.headers?.['authorization'];
+    }
+    return event;
+  },
+
+  // Tag errors by vendor
+  beforeSendTransaction(event) {
+    const vendorId = event.contexts?.vendor?.id;
+    if (vendorId) {
+      event.tags = { ...event.tags, vendor_id: vendorId };
+    }
+    return event;
+  },
+});
+```
+
+##### Logger Integration
+
+```typescript
+Sentry.init({
+  dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
+  integrations: [
+    // Send console.log, console.warn, and console.error calls as logs to Sentry
+    Sentry.consoleLoggingIntegration({ levels: ["log", "warn", "error"] }),
+  ],
+  _experiments: {
+    enableLogs: true,
+  },
+});
+```
+
+#### Logger Examples
+
+`logger.fmt` is a template literal function that should be used to bring variables into the structured logs.
+
+```typescript
+import * as Sentry from "@sentry/nextjs";
+const { logger } = Sentry;
+
+// In API routes or components:
+logger.trace("Starting database connection", { database: "users" });
+logger.debug(logger.fmt`Cache miss for product: ${productId}`);
+logger.info("Order fulfilled", { orderId: "order_123", vendor_id: vendorId });
+logger.warn("Rate limit reached for endpoint", {
+  endpoint: "/api/vendor/products",
+  vendor_id: vendorId,
+});
+logger.error("Failed to process payment", {
+  orderId: "order_123",
+  amount: 99.99,
+  payment_method: "card",
+});
+logger.fatal("Database connection pool exhausted", {
+  database: "postgres",
+  activeConnections: 100,
+});
+```
+
+### Critical Operations to Monitor
+
+**ALWAYS add Sentry tracking for:**
+
+#### 1. Payment Processing
+```typescript
+Sentry.startSpan({
+  op: "payment.process",
+  name: "Process Payment"
+}, async (span) => {
+  try {
+    span.setAttribute("amount", amount);
+    span.setAttribute("payment_method", method);
+    span.setAttribute("vendor_id", vendorId);
+
+    const result = await processPayment(data);
+    return result;
+  } catch (error) {
+    Sentry.captureException(error, {
+      tags: { component: 'payment', severity: 'critical' }
+    });
+    throw error;
+  }
+});
+```
+
+#### 2. Order Fulfillment
+```typescript
+Sentry.startSpan({
+  op: "order.fulfill",
+  name: "Fulfill Order"
+}, async (span) => {
+  span.setAttribute("order_id", orderId);
+  span.setAttribute("vendor_id", vendorId);
+  span.setAttribute("location_id", locationId);
+
+  // ... fulfillment logic
+});
+```
+
+#### 3. Inventory Updates
+```typescript
+logger.info("Inventory adjusted", {
+  product_id: productId,
+  location_id: locationId,
+  old_quantity: oldQty,
+  new_quantity: newQty,
+  adjustment_type: type,
+  vendor_id: vendorId,
+});
+```
+
+#### 4. Failed Authentication Attempts
+```typescript
+logger.warn("Authentication failed", {
+  email: email,
+  reason: "invalid_credentials",
+  ip_address: request.ip,
+});
+```
+
+#### 5. API Errors
+```typescript
+// In API routes
+try {
+  // ... logic
+} catch (error) {
+  logger.error("API request failed", {
+    endpoint: request.url,
+    method: request.method,
+    vendor_id: vendorId,
+    error: error.message,
+  });
+
+  Sentry.captureException(error);
+
+  return NextResponse.json(
+    { error: "Internal server error" },
+    { status: 500 }
+  );
+}
+```
+
+### Performance Monitoring
+
+Track performance for:
+- API route handlers
+- Database queries
+- External API calls
+- Complex calculations (pricing engine)
+
+```typescript
+// Example: Track pricing calculation performance
+async function calculatePriceWithTracking(product, promotions) {
+  return Sentry.startSpan({
+    op: "pricing.calculate",
+    name: "Calculate Product Price"
+  }, async (span) => {
+    span.setAttribute("product_id", product.id);
+    span.setAttribute("promotion_count", promotions.length);
+
+    const result = calculatePrice(product, promotions);
+
+    span.setAttribute("final_price", result.finalPrice);
+    span.setAttribute("discount_applied", result.savings > 0);
+
+    return result;
+  });
+}
+```
+
+---
+
+## Security Best Practices
+
+### Authentication & Authorization
+
+**CRITICAL:** NEVER use header-based authentication (`x-vendor-id`).
+
+#### ✅ CORRECT:
+```typescript
+import { requireVendor } from '@/lib/auth/middleware';
+
+export async function GET(request: NextRequest) {
+  // Extract vendor_id from authenticated session
+  const authResult = await requireVendor(request);
+  if (authResult instanceof NextResponse) return authResult;
+
+  const { user, vendorId } = authResult;
+
+  // Use vendorId for queries...
+}
+```
+
+#### ❌ WRONG:
+```typescript
+// NEVER DO THIS - Vulnerable to header spoofing!
+const vendorId = request.headers.get('x-vendor-id');
+```
+
+### Row Level Security (RLS)
+
+All vendor-scoped database queries MUST be protected by RLS policies:
+
+```sql
+-- ✅ CORRECT: RLS policy enforces vendor isolation
+CREATE POLICY "Vendors can manage their own promotions"
+  ON public.promotions FOR ALL
+  USING (vendor_id = (auth.jwt() ->> 'vendor_id')::uuid);
+
+-- ❌ WRONG: Allows all access
+CREATE POLICY "Vendors can manage their own promotions"
+  ON public.promotions FOR ALL
+  USING (true); -- NO! This bypasses security
+```
+
+### Input Validation
+
+Always validate inputs with Zod schemas:
+
+```typescript
+import { z } from 'zod';
+
+const CreateProductSchema = z.object({
+  name: z.string().min(1).max(255),
+  price: z.number().positive(),
+  vendor_id: z.string().uuid(),
+  category_id: z.string().uuid(),
+});
+
+export async function POST(request: NextRequest) {
+  const body = await request.json();
+
+  // Validate and type-safe
+  const validatedData = CreateProductSchema.parse(body);
+
+  // ... use validatedData
+}
+```
+
+---
+

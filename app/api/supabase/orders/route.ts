@@ -1,12 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServiceSupabase } from '@/lib/supabase/client';
+import { requireCustomer } from '@/lib/auth/middleware';
 
 export async function GET(request: NextRequest) {
   try {
+    // SECURITY: Require customer authentication (Phase 3)
+    const authResult = await requireCustomer(request);
+    if (authResult instanceof NextResponse) return authResult;
+    const { customerId } = authResult;
+
     const { searchParams } = new URL(request.url);
-    
-    // Customer authentication
-    const customerId = request.headers.get('x-customer-id');
     
     // Filters
     const status = searchParams.get('status');
@@ -32,11 +35,10 @@ export async function GET(request: NextRequest) {
         ),
         order_notes(*)
       `, { count: 'exact' });
-    
-    // Customer filter
-    if (customerId) {
-      query = query.eq('customer_id', customerId);
-    }
+
+    // SECURITY: Always filter by authenticated customer (Phase 3)
+    // customerId comes from verified JWT token, not from headers
+    query = query.eq('customer_id', customerId);
     
     // Status filters
     if (status) {
@@ -80,10 +82,14 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    // SECURITY: Require customer authentication (Phase 3)
+    const authResult = await requireCustomer(request);
+    if (authResult instanceof NextResponse) return authResult;
+    const { customerId } = authResult;
+
     const body = await request.json();
-    
+
     const {
-      customer_id,
       order_number,
       status = 'pending',
       payment_status = 'pending',
@@ -95,10 +101,11 @@ export async function POST(request: NextRequest) {
       customer_note,
       delivery_type
     } = body;
-    
-    if (!customer_id || !order_number || items.length === 0) {
-      return NextResponse.json({ 
-        error: 'Missing required fields: customer_id, order_number, items' 
+
+    // SECURITY: Use authenticated customer_id, not from request body (Phase 3)
+    if (!order_number || items.length === 0) {
+      return NextResponse.json({
+        error: 'Missing required fields: order_number, items'
       }, { status: 400 });
     }
     
@@ -118,10 +125,11 @@ export async function POST(request: NextRequest) {
     const totalAmount = subtotal + taxAmount + shippingAmount - discountAmount;
     
     // Create order
+    // SECURITY: Use verified customerId from JWT token (Phase 3)
     const { data: order, error: orderError } = await supabase
       .from('orders')
       .insert({
-        customer_id,
+        customer_id: customerId, // From authenticated session, not request body
         order_number,
         status,
         payment_status,

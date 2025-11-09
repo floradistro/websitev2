@@ -215,7 +215,6 @@ export const secondaryFeatures = [
   { href: '/vendor/employees', parent: '/vendor/settings', label: 'Team' },
   { href: '/vendor/terminals', parent: '/vendor/settings', label: 'Terminals' },
   { href: '/vendor/payment-processors', parent: '/vendor/settings', label: 'Payment Processors' },
-  { href: '/vendor/domains', parent: '/vendor/branding', label: 'Custom Domains' },
   { href: '/vendor/suppliers', parent: '/vendor/products', label: 'Suppliers' },
   { href: '/vendor/reviews', parent: '/vendor/products', label: 'Reviews' },
   { href: '/vendor/component-editor', parent: '/vendor/branding', label: 'Visual Editor' },

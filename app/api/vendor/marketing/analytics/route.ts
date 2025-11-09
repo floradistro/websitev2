@@ -20,6 +20,7 @@ import {
   isValidTimeRange,
   isValidVendorId,
 } from '@/lib/analytics-utils';
+import { requireVendor } from '@/lib/auth/middleware';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -50,14 +51,10 @@ interface CampaignData {
 
 export async function GET(request: NextRequest) {
   try {
-    // Validate inputs
-    const vendorId = request.headers.get('x-vendor-id');
-    if (!isValidVendorId(vendorId)) {
-      return NextResponse.json(
-        { error: 'Valid vendor ID required' },
-        { status: 400 }
-      );
-    }
+    // SECURITY: Require vendor authentication (Phase 2)
+    const authResult = await requireVendor(request);
+    if (authResult instanceof NextResponse) return authResult;
+    const { vendorId } = authResult;
 
     const { searchParams } = new URL(request.url);
     const range = searchParams.get('range') || '30d';

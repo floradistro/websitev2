@@ -136,6 +136,47 @@ export async function requireVendor(request: NextRequest): Promise<{ user: AuthU
 }
 
 /**
+ * Middleware to require customer access and verify customer_id from session (not headers)
+ */
+export async function requireCustomer(
+  request: NextRequest
+): Promise<{ user: AuthUser; customerId: string } | NextResponse> {
+  const authResult = await requireAuth(request);
+
+  if (authResult instanceof NextResponse) {
+    return authResult; // Return error response
+  }
+
+  const { user } = authResult;
+
+  if (user.role !== 'customer') {
+    return NextResponse.json(
+      { error: 'Forbidden - Customer access required' },
+      { status: 403 }
+    );
+  }
+
+  // Get customer ID from database using authenticated user
+  const supabase = getServiceSupabase();
+  const { data: customer } = await supabase
+    .from('customers')
+    .select('id')
+    .eq('email', user.email)
+    .single();
+
+  if (!customer) {
+    return NextResponse.json(
+      { error: 'Customer not found' },
+      { status: 404 }
+    );
+  }
+
+  // SECURITY: Use customer_id from authenticated session, not from headers
+  // This prevents header spoofing attacks (Phase 3)
+  return { user, customerId: customer.id };
+}
+
+/**
  * Helper to create secure cookie response with auth token
  */
 export function createAuthCookie(token: string): {

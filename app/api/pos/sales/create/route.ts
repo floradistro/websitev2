@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServiceSupabase } from '@/lib/supabase/client';
+import { requireVendor } from '@/lib/auth/middleware';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -50,6 +51,11 @@ interface CreateSaleRequest {
 export async function POST(request: NextRequest) {
   const startTime = Date.now();
 
+  // SECURITY: Require vendor authentication (Phase 4)
+  const authResult = await requireVendor(request);
+  if (authResult instanceof NextResponse) return authResult;
+  const { vendorId } = authResult;
+
   // DIAGNOSTIC: Check environment and client state BEFORE processing
   const hasServiceKey = !!process.env.SUPABASE_SERVICE_ROLE_KEY;
   console.log('🔐 Service key available:', hasServiceKey ? 'YES' : '❌ NO!!!');
@@ -86,7 +92,8 @@ export async function POST(request: NextRequest) {
 
     const {
       locationId,
-      vendorId,
+      // SECURITY: vendorId comes from JWT (line 57), not from body (Phase 4)
+      vendorId: _ignoredVendorId, // Ignore body.vendorId
       sessionId,
       userId,
       items,

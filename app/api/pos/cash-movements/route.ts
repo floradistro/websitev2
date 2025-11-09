@@ -1,9 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServiceSupabase } from '@/lib/supabase/client';
+import { requireVendor } from '@/lib/auth/middleware';
 
 // GET /api/pos/cash-movements - Get cash movements for a session
 export async function GET(request: NextRequest) {
   try {
+    // SECURITY: Require vendor authentication (Phase 4)
+    const authResult = await requireVendor(request);
+    if (authResult instanceof NextResponse) return authResult;
+    const { vendorId } = authResult;
+
     const { searchParams } = new URL(request.url);
     const sessionId = searchParams.get('sessionId');
 
@@ -83,23 +89,28 @@ export async function GET(request: NextRequest) {
 // POST /api/pos/cash-movements - Create new cash movement
 export async function POST(request: NextRequest) {
   try {
+    // SECURITY: Require vendor authentication (Phase 4)
+    const authResult = await requireVendor(request);
+    if (authResult instanceof NextResponse) return authResult;
+    const { vendorId } = authResult;
+
     const body = await request.json();
     const {
       sessionId,
       registerId,
       userId,
       locationId,
-      vendorId,
       movementType,
       amount,
       reason,
       notes,
     } = body;
+    // SECURITY: vendorId from JWT, request param ignored (Phase 4)
 
     // Validate required fields
-    if (!sessionId || !userId || !locationId || !vendorId || !movementType || amount === undefined || !reason) {
+    if (!sessionId || !userId || !locationId || !movementType || amount === undefined || !reason) {
       return NextResponse.json(
-        { error: 'Missing required fields: sessionId, userId, locationId, vendorId, movementType, amount, reason' },
+        { error: 'Missing required fields: sessionId, userId, locationId, movementType, amount, reason' },
         { status: 400 }
       );
     }

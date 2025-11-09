@@ -1,5 +1,6 @@
 import { getServiceSupabase } from '@/lib/supabase/client';
 import { NextRequest, NextResponse } from 'next/server';
+import { requireVendor } from '@/lib/auth/middleware';
 
 // Match image filename to product name using fuzzy matching
 // Same algorithm as NewProductClient.tsx
@@ -47,11 +48,10 @@ const matchImageToProduct = (filename: string, products: Array<{id: string, name
 
 export async function POST(request: NextRequest) {
   try {
-    const vendorId = request.headers.get('x-vendor-id');
-
-    if (!vendorId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    // SECURITY: Require vendor authentication (Phase 2)
+    const authResult = await requireVendor(request);
+    if (authResult instanceof NextResponse) return authResult;
+    const { vendorId } = authResult;
 
     const supabase = getServiceSupabase();
 
