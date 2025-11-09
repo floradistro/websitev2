@@ -150,7 +150,7 @@ export default function BulkImportPanel({
           label="Category for All Products"
           required
           value={bulkCategory}
-          onChange={(e) => onBulkCategoryChange(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLSelectElement>) => onBulkCategoryChange(e.target.value)}
           containerClassName="mb-4"
         >
           <option value="">Select category...</option>
@@ -167,7 +167,7 @@ export default function BulkImportPanel({
         </p>
         <POSTextarea
           value={bulkInput}
-          onChange={(e) => onBulkInputChange(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => onBulkInputChange(e.target.value)}
           placeholder="Blue Dream, 45&#10;OG Kush, 50, 35&#10;Wedding Cake, 55, 40&#10;White Widow&#10;Gelato, 60"
           rows={10}
           disabled={!bulkCategory}
@@ -201,7 +201,7 @@ export default function BulkImportPanel({
               id="bulk-image-upload"
               multiple
               accept="image/*"
-              onChange={(e) => {
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                 if (e.target.files && e.target.files.length > 0) {
                   onBulkImageUpload(e.target.files);
                 }
@@ -268,7 +268,7 @@ export default function BulkImportPanel({
               </label>
               <textarea
                 value={customPrompt}
-                onChange={(e) => setCustomPrompt(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setCustomPrompt(e.target.value)}
                 placeholder="e.g., 'Focus on fruity flavors' or 'Emphasize relaxing effects'"
                 rows={2}
                 className={cn(ds.colors.bg.primary, "w-full border border-white/10 rounded-xl text-white placeholder-white/20 px-3 py-2.5 focus:outline-none focus:border-white/20 transition-all resize-none text-[10px]")}
@@ -370,7 +370,7 @@ export default function BulkImportPanel({
                   label="Product Name"
                   type="text"
                   value={bulkProducts[currentReviewIndex].name}
-                  onChange={(e) => handleProductFieldChange(currentReviewIndex, 'name', e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleProductFieldChange(currentReviewIndex, 'name', e.target.value)}
                   className={ds.components.card}
                 />
 
@@ -398,7 +398,7 @@ export default function BulkImportPanel({
                         type="number"
                         step="0.01"
                         value={bulkProducts[currentReviewIndex].price}
-                        onChange={(e) => handleProductFieldChange(currentReviewIndex, 'price', e.target.value)}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleProductFieldChange(currentReviewIndex, 'price', e.target.value)}
                         className={cn(ds.components.card, "w-full rounded-xl text-white pl-6 pr-3 py-2 text-[10px]")}
                       />
                     </div>
@@ -411,7 +411,7 @@ export default function BulkImportPanel({
                         type="number"
                         step="0.01"
                         value={bulkProducts[currentReviewIndex].cost_price || ''}
-                        onChange={(e) => handleProductFieldChange(currentReviewIndex, 'cost_price', e.target.value)}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleProductFieldChange(currentReviewIndex, 'cost_price', e.target.value)}
                         className={cn(ds.components.card, "w-full rounded-xl text-white pl-6 pr-3 py-2 text-[10px]")}
                       />
                     </div>
@@ -428,7 +428,7 @@ export default function BulkImportPanel({
                       <input
                         type="text"
                         value={String(bulkProducts[currentReviewIndex].custom_fields[fieldKey] || '')}
-                        onChange={(e) => handleProductFieldChange(currentReviewIndex, `custom_fields.${fieldKey}`, e.target.value)}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleProductFieldChange(currentReviewIndex, `custom_fields.${fieldKey}`, e.target.value)}
                         className={cn(ds.components.card, "w-full rounded-xl text-white px-3 py-2 text-[10px]")}
                       />
                     </div>
