@@ -58,7 +58,6 @@ export async function POST(request: NextRequest) {
 
   // DIAGNOSTIC: Check environment and client state BEFORE processing
   const hasServiceKey = !!process.env.SUPABASE_SERVICE_ROLE_KEY;
-  console.log('🔐 Service key available:', hasServiceKey ? 'YES' : '❌ NO!!!');
 
   if (!hasServiceKey) {
     console.error('🚨 CRITICAL: SUPABASE_SERVICE_ROLE_KEY is missing at request time!');
@@ -77,7 +76,6 @@ export async function POST(request: NextRequest) {
   const authHeader = clientHeaders.Authorization || '';
   const isUsingServiceKey = authHeader.includes('eyJhbGciOiJIUzI1NiIs'); // Service keys start with this
 
-  console.log('🔑 Client auth header present:', !!authHeader, '| Using service key:', isUsingServiceKey);
 
   if (!isUsingServiceKey) {
     console.error('🚨 CRITICAL: Supabase client is NOT using service role key!');
@@ -142,7 +140,6 @@ export async function POST(request: NextRequest) {
     // ============================================================================
     // STEP 2: VERIFY INVENTORY AVAILABILITY
     // ============================================================================
-    console.log('📦 Checking inventory...');
 
     const inventoryIds = items.map(item => item.inventoryId);
     const { data: inventoryRecords, error: invError } = await supabase
@@ -185,7 +182,6 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    console.log('✅ Inventory verified');
 
     // ============================================================================
     // STEP 3: GENERATE ORDER NUMBER
@@ -201,12 +197,10 @@ export async function POST(request: NextRequest) {
     const sequence = Date.now().toString().slice(-6);
     const orderNumber = `${locationCode}-${dateCode}-${sequence}`;
 
-    console.log('🔢 Order:', orderNumber);
 
     // ============================================================================
     // STEP 4: CREATE ORDER (ATOMIC)
     // ============================================================================
-    console.log('💾 Creating order...');
 
     const { data: order, error: orderError } = await supabase
       .from('orders')
@@ -261,7 +255,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log('✅ Order created:', order.id);
 
     // ============================================================================
     // STEP 5: CREATE ORDER ITEMS (ATOMIC)
@@ -296,12 +289,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log('✅ Items created:', items.length);
 
     // ============================================================================
     // STEP 6: DEDUCT INVENTORY (ATOMIC - RACE CONDITION SAFE)
     // ============================================================================
-    console.log('📦 Deducting inventory...');
 
     for (const item of items) {
       const { data: result, error: deductError } = await supabase.rpc(
@@ -334,7 +325,6 @@ export async function POST(request: NextRequest) {
 
         console.error('🚨 INVENTORY ERROR - Order flagged:', order.id);
       } else {
-        console.log(`  ✓ ${item.productName}: ${result.old_quantity} → ${result.new_quantity}`);
       }
     }
 
@@ -373,7 +363,6 @@ export async function POST(request: NextRequest) {
       console.error('⚠️  Transaction record failed:', txnError);
       // Non-critical - order is still valid
     } else {
-      console.log('✅ Transaction logged:', transaction.id);
     }
 
     // ============================================================================
@@ -393,7 +382,6 @@ export async function POST(request: NextRequest) {
         console.error('⚠️  Session update failed:', sessionError);
         // Non-critical - session will be reconciled on close
       } else {
-        console.log('✅ Session updated');
       }
     }
 
@@ -429,7 +417,6 @@ export async function POST(request: NextRequest) {
     // SUCCESS RESPONSE
     // ============================================================================
     const duration = Date.now() - startTime;
-    console.log(`✅ Sale completed in ${duration}ms:`, orderNumber);
 
     return NextResponse.json({
       success: true,
@@ -512,7 +499,6 @@ async function processLoyaltyPoints(
         description: `Purchase - ${data.orderNumber}`,
       });
 
-    console.log('✅ Loyalty points awarded:', pointsEarned);
   }
 }
 
@@ -549,5 +535,4 @@ async function syncToMarketing(
       retry_count: 0,
     });
 
-  console.log('✅ Marketing sync queued');
 }

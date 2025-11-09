@@ -38,18 +38,11 @@ export class VisualAnalyzer {
     const onProgress = options?.onProgress || ((status: string) => console.log(status));
     const manualMode = options?.manualMode || false;
     
-    console.log('🔍 VisualAnalyzer.analyzeWebsite called with manualMode:', manualMode);
     
     if (manualMode) {
       onProgress('👁️ Opening visible browser - YOU interact with it!');
-      console.log('┌──────────────────────────────────────┐');
-      console.log('│  👁️  MANUAL MODE: Browser Launching  │');
-      console.log('│  ✅ Browser window will be VISIBLE   │');
-      console.log('│  ✅ YOU control the interaction      │');
-      console.log('└──────────────────────────────────────┘');
     } else {
       onProgress('🚀 Launching Chromium browser...');
-      console.log(`📸 Taking screenshot of ${url}...`);
     }
     
     const launchOptions = { 
@@ -57,7 +50,6 @@ export class VisualAnalyzer {
       slowMo: manualMode ? 100 : 0 // Slow down actions in manual mode for visibility
     };
     
-    console.log('🚀 Launching browser with options:', launchOptions);
     const browser = await chromium.launch(launchOptions);
     const context = await browser.newContext({
       viewport,
@@ -78,18 +70,7 @@ export class VisualAnalyzer {
       
       // MANUAL MODE: Let user interact with the page themselves
       if (manualMode) {
-        console.log('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-        console.log('👁️  MANUAL MODE ACTIVE');
-        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-        console.log('The browser window is now VISIBLE.');
-        console.log('YOU can:');
-        console.log('  1. Dismiss any age gates');
-        console.log('  2. Scroll to the section you want');
-        console.log('  3. Wait for lazy content to load');
-        console.log('');
-        console.log('Screenshot will be taken in 30 seconds...');
         console.log('(Extend the wait time if you need more)');
-        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
         
         onProgress('⏳ Waiting 30s for YOU to manually interact with the page...');
         
@@ -100,16 +81,13 @@ export class VisualAnalyzer {
           const remaining = 30 - i - 5;
           if (remaining > 0) {
             onProgress(`⏳ ${remaining}s remaining - interact with the browser now...`);
-            console.log(`⏳ ${remaining}s remaining for manual interaction...`);
           }
         }
         
         onProgress('✅ Manual interaction time complete - taking screenshot now!');
-        console.log('✅ 30 seconds elapsed - capturing screenshot now!');
       } else {
         // AUTO MODE: Try to bypass age gates automatically
         onProgress('🔍 Checking for age gates and pop-ups...');
-        console.log('🔄 Checking for age gates and pop-ups...');
         
         // Try multiple times with different strategies
         let dismissed = false;
@@ -125,12 +103,10 @@ export class VisualAnalyzer {
                          bodyText.includes('enter') || bodyText.includes('confirm');
         
         if (isAgeGate) {
-          console.log('🔍 Detected potential age gate, trying all buttons...');
           onProgress('🔍 Age verification detected, attempting to bypass...');
           
           // Get all buttons and try clicking each one
           const buttons = await page.locator('button, a[role="button"], input[type="submit"]').all();
-          console.log(`📊 Found ${buttons.length} clickable elements`);
           
           for (let i = 0; i < buttons.length && !dismissed; i++) {
             try {
@@ -138,7 +114,6 @@ export class VisualAnalyzer {
               const isVisible = await btn.isVisible({ timeout: 500 });
               
               if (isVisible) {
-                console.log(`🎯 Attempting to click button ${i + 1}/${buttons.length}...`);
                 
                 // Try clicking
                 await btn.click({ timeout: 2000, force: true });
@@ -149,7 +124,6 @@ export class VisualAnalyzer {
                 // Check if we're past the age gate (page changed significantly)
                 const newBodyText = await page.evaluate(() => document.body.innerText.toLowerCase());
                 if (newBodyText !== bodyText && !newBodyText.includes('age') && !newBodyText.includes('verify')) {
-                  console.log(`✅ Successfully bypassed age gate with button ${i + 1}`);
                   dismissed = true;
                   break;
                 }
@@ -161,15 +135,12 @@ export class VisualAnalyzer {
           }
         }
       } catch (e: any) {
-        console.log(`⚠️ Age gate bypass failed: ${e.message}`);
       }
       
         if (dismissed) {
-          console.log('✅ Age gate dismissed, waiting for content to load...');
           onProgress('✅ Age gate bypassed, loading full site...');
           await page.waitForTimeout(5000); // Extra wait for content to fully load
         } else {
-          console.log('⚠️ No age gate found or unable to dismiss - proceeding anyway');
           onProgress('⏩ Proceeding (age gate may still be visible)...');
           // Take screenshot anyway - might still be useful or user can remove reference URL
         }
@@ -191,7 +162,6 @@ export class VisualAnalyzer {
       
       // Scroll through page to load lazy images and content (viewport will capture hero)
       onProgress('📜 Scrolling to load content...');
-      console.log('📜 Scrolling to load content...');
       await page.evaluate(async () => {
         await new Promise<void>((resolve) => {
           let totalHeight = 0;
@@ -212,7 +182,6 @@ export class VisualAnalyzer {
       
       // DEEP page structure analysis - Extract EVERYTHING (do this before screenshot)
       onProgress('📊 Analyzing page structure and design...');
-      console.log('📊 Analyzing page structure...');
       const analysis = await page.evaluate(() => {
         // Extract ALL colors (background, text, borders)
         const colors: string[] = [];
@@ -340,7 +309,6 @@ export class VisualAnalyzer {
       });
       
       onProgress('📸 Taking screenshot (viewport-only for speed)...');
-      console.log('📸 Taking viewport screenshot...');
       
       // CURSOR AI APPROACH: Viewport-only screenshot (never fullPage for reliability)
       // This avoids dimension issues and is faster
@@ -404,7 +372,6 @@ export class VisualAnalyzer {
    * Analyze multiple sites in parallel
    */
   async analyzeMultipleSites(urls: string[]): Promise<ScreenshotAnalysis[]> {
-    console.log(`📸 Analyzing ${urls.length} sites in parallel...`);
     
     const results = await Promise.all(
       urls.map(url => this.analyzeWebsite(url).catch(err => {

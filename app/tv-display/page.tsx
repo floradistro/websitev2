@@ -115,11 +115,9 @@ function TVDisplayContent() {
 
     // No grouping field? Return alphabetically sorted
     if (!groupField) {
-      console.log('📋 No grouping field found, sorting alphabetically');
       return products.slice().sort((a, b) => a.name.localeCompare(b.name));
     }
 
-    console.log(`🎯 Smart grouping by: ${groupField}`);
 
     // Step 2: Special handling for strain_type (preserve logical order)
     if (groupField === 'strain_type') {
@@ -184,7 +182,6 @@ function TVDisplayContent() {
   useEffect(() => {
     // In preview mode, use the provided device_id instead of registering
     if (isPreview && deviceIdParam) {
-      console.log('👁️ Preview mode - using provided device ID:', deviceIdParam);
       setDeviceId(deviceIdParam);
       setConnectionStatus('online'); // Show as online for preview
       return;
@@ -192,7 +189,6 @@ function TVDisplayContent() {
 
     // Skip device registration if no vendor/tv_number
     if (isPreview) {
-      console.log('👁️ Preview mode but no device_id - skipping registration');
       setConnectionStatus('online');
       return;
     }
@@ -250,7 +246,6 @@ function TVDisplayContent() {
 
           setDeviceId(device.id);
           setConnectionStatus('online');
-          console.log('✅ Device reconnected:', device.id);
         } else {
           // New device, create it
           const deviceData: any = {
@@ -279,7 +274,6 @@ function TVDisplayContent() {
           if (error) {
             // If duplicate key error, device was created between check and insert - just fetch it
             if (error.message?.includes('duplicate key')) {
-              console.log('⚠️ Device already exists, fetching...');
               const { data: existingDevice } = await supabase
                 .from('tv_devices')
                 .select('*')
@@ -300,7 +294,6 @@ function TVDisplayContent() {
 
           setDeviceId(device.id);
           setConnectionStatus('online');
-          console.log('✅ Device registered:', device.id);
         }
       } catch (err: any) {
         console.error('❌ Device registration failed:', err);
@@ -336,7 +329,6 @@ function TVDisplayContent() {
 
     const checkGroupMembership = async () => {
       try {
-        console.log('🎯 Checking for display group membership:', deviceId);
 
         // Use API endpoint to bypass RLS
         const response = await fetch(`/api/display-groups/membership?device_id=${deviceId}`);
@@ -348,11 +340,9 @@ function TVDisplayContent() {
         }
 
         if (data.isMember) {
-          console.log('✅ Device is part of group:', data.group.name);
           setDisplayGroup(data.group);
           setGroupMember(data.member);
         } else {
-          console.log('📺 Device not part of any display group');
           setDisplayGroup(null);
           setGroupMember(null);
         }
@@ -376,14 +366,12 @@ function TVDisplayContent() {
     try {
       // Load vendor info first via API (bypasses RLS)
       if (vendorId && !vendor) {
-        console.log('📦 Loading vendor info:', vendorId);
         try {
           const vendorResponse = await fetch(`/api/tv-display/vendor?vendor_id=${vendorId}`);
           const vendorData = await vendorResponse.json();
 
           if (vendorData.success && vendorData.vendor) {
             setVendor(vendorData.vendor);
-            console.log('✅ Vendor loaded:', vendorData.vendor.store_name);
           } else {
             console.error('❌ Error loading vendor:', vendorData.error);
           }
@@ -395,7 +383,6 @@ function TVDisplayContent() {
 
       // Preview mode - load specific menu
       if (menuIdParam) {
-        console.log('🎬 Preview mode - loading menu:', menuIdParam);
         const { data: menu, error } = await supabase
           .from('tv_menus')
           .select('*')
@@ -420,7 +407,6 @@ function TVDisplayContent() {
           .single();
 
         if (device?.active_menu_id) {
-          console.log('📺 Device has active menu:', device.active_menu_id);
           const { data: menu } = await supabase
             .from('tv_menus')
             .select('*')
@@ -431,12 +417,10 @@ function TVDisplayContent() {
             setActiveMenu(menu);
             await loadProducts(menu);
           } else {
-            console.log('⚠️ Menu not found, clearing');
             setActiveMenu(null);
             setProducts([]);
           }
         } else {
-          console.log('📺 Device has no active menu, clearing');
           setActiveMenu(null);
           setProducts([]);
         }
@@ -457,7 +441,6 @@ function TVDisplayContent() {
     if (!vendorId) return;
 
     try {
-      console.log('📦 Loading products for vendor:', vendorId);
 
       // Load promotions first
       // CRITICAL: Disable caching - TV menus must be LIVE
@@ -471,10 +454,8 @@ function TVDisplayContent() {
       const promosData = await promosRes.json();
       const activePromotions = promosData.success ? (promosData.promotions || []) : [];
       setPromotions(activePromotions);
-      console.log('🎉 Loaded promotions:', activePromotions.length);
 
       // Load products via API (bypasses RLS) - filtered by location inventory
-      console.log('🔍 Fetching products for vendor:', vendorId, 'location:', locationId);
       // CRITICAL: Disable caching - TV menus must be LIVE and reflect inventory instantly
       const productsResponse = await fetch(`/api/tv-display/products?vendor_id=${vendorId}&location_id=${locationId}&_t=${Date.now()}`, {
         cache: 'no-store',
@@ -491,7 +472,6 @@ function TVDisplayContent() {
       }
 
       const productData = productsData.products || [];
-      console.log(`✅ Fetched ${productData.length} published products from API`);
 
       // Debug first product's raw data
       if (productData.length > 0) {
@@ -552,10 +532,6 @@ function TVDisplayContent() {
       let selectedCategories = menu?.config_data?.categories;
       let filterSource = 'menu';
 
-      console.log('🎯 Category filtering logic:');
-      console.log('   - Menu config categories:', menu?.config_data?.categories);
-      console.log('   - Display group member:', groupMember ? groupMember.id : 'none');
-      console.log('   - Group member categories:', groupMember?.assigned_categories);
 
       // Priority 2: Fall back to display group categories if menu doesn't specify
       if (!selectedCategories || selectedCategories.length === 0) {
@@ -563,15 +539,12 @@ function TVDisplayContent() {
         filterSource = 'group';
         console.log('   - Using GROUP categories (fallback):', selectedCategories);
       } else {
-        console.log('   - Using MENU categories:', selectedCategories);
       }
 
       if (selectedCategories && selectedCategories.length > 0) {
-        console.log(`🔍 Filtering ${enrichedProducts.length} products by ${filterSource} categories:`, selectedCategories);
 
         // Debug: show what categories each product has
         if (enrichedProducts.length > 0) {
-          console.log('📦 Sample product categories:');
           enrichedProducts.slice(0, 5).forEach((p: any) => {
             const categoryName = p.primary_category?.name || null;
             const parentCategoryName = p.primary_category?.parent_category?.name || null;
@@ -596,7 +569,6 @@ function TVDisplayContent() {
         });
         console.log(`🎯 Filtered to ${filteredProducts.length} products from ${enrichedProducts.length} (${filterSource} categories: ${selectedCategories.join(', ')})`);
       } else {
-        console.log('📋 No category filter - showing all products');
       }
 
       // Filter by pricing tier if configured
@@ -610,7 +582,6 @@ function TVDisplayContent() {
           p.pricing_blueprint?.id === displayGroup.pricing_tier_id
         );
 
-        console.log(`💰 Filtered by pricing tier: ${filteredProducts.length}/${beforeFilterCount} products match tier`);
 
         if (filteredProducts.length === 0) {
           console.warn(`⚠️ No products match pricing tier "${displayGroup.pricing_tier_id}"`);
@@ -618,7 +589,6 @@ function TVDisplayContent() {
       }
 
       setProducts(filteredProducts);
-      console.log(`✅ Loaded ${filteredProducts.length} products with pricing`);
 
       console.log('📊 Sample product data:', filteredProducts[0] ? {
         name: filteredProducts[0].name,
@@ -662,15 +632,12 @@ function TVDisplayContent() {
     // Get auto-refresh interval from menu (in seconds, default 5s for INSTANT updates)
     const refreshInterval = (activeMenu.auto_refresh_interval || 5) * 1000;
 
-    console.log(`🔄 AUTO-REFRESH enabled: reloading products every ${refreshInterval / 1000} seconds`);
 
     const interval = setInterval(() => {
-      console.log('🔄 AUTO-REFRESH: Reloading products for live inventory...');
       loadProducts(activeMenu);
     }, refreshInterval);
 
     return () => {
-      console.log('🔄 AUTO-REFRESH: Cleaning up interval');
       clearInterval(interval);
     };
   }, [activeMenu?.id, activeMenu?.auto_refresh_interval, vendorId]);
@@ -683,7 +650,6 @@ function TVDisplayContent() {
     if (isPreview) return;
     if (!deviceId) return;
 
-    console.log('🔴 Setting up real-time subscription for device:', deviceId);
 
     const channel = supabase
       .channel(`device-${deviceId}`)
@@ -696,23 +662,19 @@ function TVDisplayContent() {
           filter: `id=eq.${deviceId}`,
         },
         (payload) => {
-          console.log('🔴 Device updated:', payload);
           const newMenuId = payload.new.active_menu_id;
           const currentMenuId = activeMenu?.id || null;
 
           // If menu changed (including to/from null), reload immediately
           if (newMenuId !== currentMenuId) {
-            console.log('🔄 INSTANT MENU UPDATE: from', currentMenuId, 'to', newMenuId);
             loadMenuAndProducts();
           }
         }
       )
       .subscribe((status) => {
-        console.log('🔴 Subscription status:', status);
       });
 
     return () => {
-      console.log('🔴 Cleaning up subscription');
       supabase.removeChannel(channel);
     };
   }, [deviceId, activeMenu?.id, loadMenuAndProducts, isPreview]);
@@ -723,7 +685,6 @@ function TVDisplayContent() {
   useEffect(() => {
     if (!activeMenu?.id) return;
 
-    console.log('🎨 Setting up real-time subscription for menu:', activeMenu.id, 'Preview mode:', isPreview);
 
     const channel = supabase
       .channel(`menu-${activeMenu.id}`)
@@ -736,9 +697,6 @@ function TVDisplayContent() {
           filter: `id=eq.${activeMenu.id}`,
         },
         (payload) => {
-          console.log('🎨 MENU UPDATED - Theme changed!', payload);
-          console.log('   Old theme:', activeMenu.theme);
-          console.log('   New theme:', payload.new.theme);
 
           // Force immediate reload
           setActiveMenu(payload.new);
@@ -746,11 +704,9 @@ function TVDisplayContent() {
         }
       )
       .subscribe((status) => {
-        console.log('🎨 Menu subscription status:', status);
       });
 
     return () => {
-      console.log('🎨 Cleaning up menu subscription');
       supabase.removeChannel(channel);
     };
   }, [activeMenu?.id, isPreview]);
@@ -761,7 +717,6 @@ function TVDisplayContent() {
   useEffect(() => {
     if (!displayGroup?.id) return;
 
-    console.log('🎯 Setting up real-time subscription for display group:', displayGroup.id);
 
     const channel = supabase
       .channel(`display-group-${displayGroup.id}`)
@@ -774,26 +729,20 @@ function TVDisplayContent() {
           filter: `id=eq.${displayGroup.id}`,
         },
         (payload) => {
-          console.log('🎯 DISPLAY GROUP UPDATED!', payload);
-          console.log('   Old config:', displayGroup);
-          console.log('   New config:', payload.new);
 
           // Update display group immediately
           setDisplayGroup(payload.new);
 
           // Force products reload with new configuration
           if (activeMenu) {
-            console.log('🔄 Reloading products with new display group config...');
             loadProducts(activeMenu);
           }
         }
       )
       .subscribe((status) => {
-        console.log('🎯 Display group subscription status:', status);
       });
 
     return () => {
-      console.log('🎯 Cleaning up display group subscription');
       supabase.removeChannel(channel);
     };
   }, [displayGroup?.id, activeMenu]);
@@ -812,7 +761,6 @@ function TVDisplayContent() {
 
     // If carousel is disabled, don't set up any intervals
     if (!enableCarousel) {
-      console.log('🎠 Carousel DISABLED by menu configuration');
       return;
     }
 
@@ -854,12 +802,10 @@ function TVDisplayContent() {
         leftInterval = setInterval(() => {
           setCarouselPageLeft((prev) => {
             const next = (prev + 1) % leftPages;
-            console.log(`🎠 LEFT Page ${next + 1}/${leftPages}`);
             return next;
           });
         }, carouselInterval);
       } else {
-        console.log(`✅ LEFT side fits on one page - no carousel`);
         setCarouselPageLeft(0);
       }
 
@@ -870,12 +816,10 @@ function TVDisplayContent() {
         rightInterval = setInterval(() => {
           setCarouselPageRight((prev) => {
             const next = (prev + 1) % rightPages;
-            console.log(`🎠 RIGHT Page ${next + 1}/${rightPages}`);
             return next;
           });
         }, carouselInterval);
       } else {
-        console.log(`✅ RIGHT side fits on one page - no carousel`);
         setCarouselPageRight(0);
       }
 
@@ -894,12 +838,10 @@ function TVDisplayContent() {
         return;
       }
 
-      console.log(`🎠 AUTO CAROUSEL: ${totalPages} pages, rotating every ${carouselInterval / 1000} seconds`);
 
       const interval = setInterval(() => {
         setCarouselPage((prev) => {
           const next = (prev + 1) % totalPages;
-          console.log(`🎠 Page ${next + 1}/${totalPages}`);
           return next;
         });
       }, carouselInterval); // Using configured interval instead of hardcoded 5000
@@ -1085,7 +1027,6 @@ function TVDisplayContent() {
               // User manual configuration - respect it exactly
               gridColumns = displayGroup.shared_grid_columns;
               gridRows = displayGroup.shared_grid_rows;
-              console.log('📐 Using manual grid configuration:', { gridColumns, gridRows, capacity: gridColumns * gridRows });
             } else {
               // Smart auto-optimization for default 30 products
               const productsToFit = Math.min(totalProducts, maxProductsToShow);
@@ -1114,7 +1055,6 @@ function TVDisplayContent() {
 
             // Get display mode (grid or list)
             const menuDisplayMode = activeMenu?.config_data?.displayMode || 'grid';
-            console.log('📺 Display Mode:', menuDisplayMode);
 
             const productsPerPage = gridColumns * gridRows;
 
@@ -1138,7 +1078,6 @@ function TVDisplayContent() {
             if (menuDisplayMode === 'list') {
               // List mode: ALWAYS show all products (no carousel)
               productsToShow = products;
-              console.log(`📋 List Mode: Showing all ${products.length} products in flowing layout`);
             } else if (needsCarousel) {
               // Grid carousel mode - rotate through pages every 5 seconds
               const start = carouselPage * productsPerPage;
@@ -1148,7 +1087,6 @@ function TVDisplayContent() {
             } else {
               // Grid mode: All products fit - show them all
               productsToShow = products;
-              console.log(`📦 Grid Static: Showing all ${products.length} products`);
             }
 
             // UNIVERSAL SMART GROUPING: Works for ALL categories automatically
@@ -1180,9 +1118,7 @@ function TVDisplayContent() {
             const shouldStack = isSplitView || isPortrait || isNarrowViewport;
             const listColumns = shouldStack ? 1 : (totalProducts > 12 ? 2 : 1);
 
-            console.log(`📐 Responsive layout: viewport ${viewportWidth}px, portrait: ${isPortrait}, narrow: ${isNarrowViewport}, columns: ${listColumns}`);
 
-            console.log(`📊 Products: ${totalProducts}, Bulk Mode: ${isBulkMode}, Compact Cards: ${useCompactCards}, List Columns: ${listColumns}`);
 
             // Dynamic grid classes based on display mode
             const gridClasses = menuDisplayMode === 'list'
@@ -1256,10 +1192,6 @@ function TVDisplayContent() {
                 right: { category: splitRightCategory, title: splitRightTitle }
               });
 
-              console.log('🔍 Split view product filtering:');
-              console.log('   Total products available:', products.length);
-              console.log('   Split left category:', splitLeftCategory);
-              console.log('   Split right category:', splitRightCategory);
 
               // Filter products for each side from ALL products (not productsToShow)
               // Use case-insensitive matching for category names
@@ -1279,8 +1211,6 @@ function TVDisplayContent() {
 
               // UNIVERSAL SMART GROUPING: Apply to both sides independently
               // Automatically detects and groups by category-appropriate *_type fields
-              console.log('🔍 Left category:', splitLeftCategory);
-              console.log('🔍 Right category:', splitRightCategory);
 
               allLeftProducts = smartGroupProducts(allLeftProducts);
               allRightProducts = smartGroupProducts(allRightProducts);
@@ -1291,7 +1221,6 @@ function TVDisplayContent() {
               const isListMode = menuDisplayMode === 'list';
               const productsPerPage = isListMode ? 999 : (adjustedGridColumns * adjustedGridRows);
 
-              console.log(`📄 Display mode: ${menuDisplayMode}, Products per page: ${productsPerPage}`);
 
               // Left side pagination
               const leftStart = carouselPageLeft * productsPerPage;

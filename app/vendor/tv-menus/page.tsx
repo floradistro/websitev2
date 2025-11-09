@@ -105,13 +105,11 @@ export default function SimpleTVMenusPage() {
 
   // Reset location filter on mount to prevent React Fast Refresh from preserving stale state
   useEffect(() => {
-    console.log('🔄 Component mounted, ensuring location is reset');
     setSelectedLocation(null);
   }, []);
 
   // Debug: Track when selectedLocation changes
   useEffect(() => {
-    console.log('🔄 selectedLocation changed to:', selectedLocation);
   }, [selectedLocation]);
 
   // Load user location permissions
@@ -123,14 +121,12 @@ export default function SimpleTVMenusPage() {
       const isAdmin = role === 'vendor_owner' || role === 'vendor_manager' || role === 'admin';
 
       if (isAdmin) {
-        console.log('👑 Admin user - access to all locations');
         setAccessibleLocationIds([]); // Empty array means "all locations"
         setPermissionsLoaded(true);
         return;
       }
 
       // For staff users, fetch their assigned locations
-      console.log('👤 Staff user - fetching location assignments...');
       const { data, error } = await supabase
         .from('user_locations')
         .select('location_id')
@@ -144,13 +140,11 @@ export default function SimpleTVMenusPage() {
       }
 
       const locationIds = data?.map(ul => ul.location_id) || [];
-      console.log(`✅ User has access to ${locationIds.length} locations:`, locationIds);
       setAccessibleLocationIds(locationIds);
       setPermissionsLoaded(true);
 
       // If user has only 1 location, auto-select it and lock them to it
       if (locationIds.length === 1) {
-        console.log(`🔒 Auto-selecting single location: ${locationIds[0]}`);
         setSelectedLocation(locationIds[0]);
       }
     };
@@ -161,28 +155,18 @@ export default function SimpleTVMenusPage() {
   // Load everything
   const loadData = useCallback(async () => {
     if (!vendor) {
-      console.log('⏸️ loadData: No vendor, skipping');
       return;
     }
 
     if (!permissionsLoaded) {
-      console.log('⏸️ loadData: Permissions not loaded yet, skipping');
       return;
     }
 
-    console.log('🔄 loadData: Starting...');
-    console.log('   vendorId:', vendor.id);
-    console.log('   selectedLocation:', selectedLocation);
-    console.log('   selectedLocation type:', typeof selectedLocation);
-    console.log('   selectedLocation === null:', selectedLocation === null);
-    console.log('   selectedLocation === "":', selectedLocation === '');
 
     try {
       // Load locations
-      console.log('📍 Loading locations...');
       const locRes = await fetch(`/api/vendor/locations?vendor_id=${vendor.id}`);
       const locData = await locRes.json();
-      console.log(`   Response:`, locData.success ? `${locData.locations?.length || 0} locations` : 'failed');
 
       if (locData.success) {
         let allLocations = locData.locations || [];
@@ -192,9 +176,7 @@ export default function SimpleTVMenusPage() {
         // Otherwise, filter to only accessible locations
         if (accessibleLocationIds.length > 0) {
           allLocations = allLocations.filter((loc: Location) => accessibleLocationIds.includes(loc.id));
-          console.log(`   🔒 Filtered to ${allLocations.length} accessible locations`);
         } else {
-          console.log(`   👑 Admin access - showing all ${allLocations.length} locations`);
         }
 
         setLocations(allLocations);
@@ -202,7 +184,6 @@ export default function SimpleTVMenusPage() {
       }
 
       // Load devices
-      console.log('📺 Building device query...');
       let devQuery = supabase
         .from('tv_devices')
         .select('*')
@@ -211,7 +192,6 @@ export default function SimpleTVMenusPage() {
 
       // Apply location filter if specific location is selected
       if (selectedLocation && selectedLocation !== '') {
-        console.log(`   ⚠️ Filtering by location: ${selectedLocation}`);
         devQuery = devQuery.eq('location_id', selectedLocation);
       } else {
         console.log(`   ✅ No location filter (showing all accessible)`);
@@ -233,10 +213,7 @@ export default function SimpleTVMenusPage() {
           // Device is offline if no heartbeat in last 60 seconds
           const actualStatus = secondsSinceHeartbeat > 60 ? 'offline' : device.connection_status;
 
-          console.log(`   - TV ${device.tv_number}: ${device.device_name}`);
-          console.log(`     DB status: ${device.connection_status}`);
           console.log(`     Last heartbeat: ${secondsSinceHeartbeat.toFixed(0)}s ago`);
-          console.log(`     Actual status: ${actualStatus}`);
 
           return {
             ...device,
@@ -249,24 +226,20 @@ export default function SimpleTVMenusPage() {
           devicesWithStatus = devicesWithStatus.filter(device =>
             device.location_id && accessibleLocationIds.includes(device.location_id)
           );
-          console.log(`   🔒 Filtered to ${devicesWithStatus.length} devices in accessible locations`);
         }
 
         setDevices(devicesWithStatus);
       }
 
       // Load menus
-      console.log('📋 Loading menus...');
       const menuRes = await fetch(`/api/vendor/tv-menus?vendor_id=${vendor.id}`);
       const menuData = await menuRes.json();
-      console.log(`   Response:`, menuData.success ? `${menuData.menus?.length || 0} menus` : 'failed');
 
       if (menuData.success) {
         setMenus(menuData.menus || []);
       }
 
       setLoading(false);
-      console.log('✅ loadData: Complete');
     } catch (err) {
       console.error('❌ Error loading data:', err);
       setLoading(false);
@@ -283,7 +256,6 @@ export default function SimpleTVMenusPage() {
   useEffect(() => {
     if (!vendor) return;
 
-    console.log('🔴 Setting up real-time subscriptions for vendor:', vendor.id);
 
     // Subscribe to device changes
     const devicesChannel = supabase
@@ -297,12 +269,10 @@ export default function SimpleTVMenusPage() {
           filter: `vendor_id=eq.${vendor.id}`,
         },
         (payload) => {
-          console.log('🔴 Device change detected:', payload.eventType, payload);
           loadData();
         }
       )
       .subscribe((status) => {
-        console.log('🔴 Devices subscription status:', status);
       });
 
     // Subscribe to menu changes
@@ -317,18 +287,14 @@ export default function SimpleTVMenusPage() {
           filter: `vendor_id=eq.${vendor.id}`,
         },
         (payload) => {
-          console.log('🔴 Menu change detected:', payload.eventType, payload);
-          console.log('🎨 Triggering preview refresh for theme update');
           setPreviewRefresh(Date.now()); // Force iframe remount
           loadData();
         }
       )
       .subscribe((status) => {
-        console.log('🔴 Menus subscription status:', status);
       });
 
     return () => {
-      console.log('🔴 Cleaning up subscriptions');
       supabase.removeChannel(devicesChannel);
       supabase.removeChannel(menusChannel);
     };
@@ -342,7 +308,6 @@ export default function SimpleTVMenusPage() {
     setError(null);
 
     try {
-      console.log('Creating menu:', { vendor_id: vendor.id, location_id: null, name: newMenuName });
 
       const response = await fetch('/api/vendor/tv-menus', {
         method: 'POST',
@@ -364,12 +329,9 @@ export default function SimpleTVMenusPage() {
         })
       });
 
-      console.log('Response status:', response.status);
       const data = await response.json();
-      console.log('Response data:', data);
 
       if (data.success) {
-        console.log('✅ Menu created successfully:', data.menu);
         setNewMenuName('');
         setShowCreateMenu(false);
 
@@ -390,7 +352,6 @@ export default function SimpleTVMenusPage() {
   // Assign menu to device
   const assignMenu = async (deviceId: string, menuId: string | null) => {
     try {
-      console.log('🔄 Assigning menu:', { deviceId, menuId });
 
       const { data, error } = await supabase
         .from('tv_devices')
@@ -404,7 +365,6 @@ export default function SimpleTVMenusPage() {
         return;
       }
 
-      console.log('✅ Menu assigned successfully:', data);
       // Force preview refresh immediately
       setPreviewRefresh(Date.now());
       await loadData();
@@ -451,12 +411,10 @@ export default function SimpleTVMenusPage() {
     if (vendor) {
       try {
         // Fetch categories
-        console.log('🔍 Fetching categories for vendor:', vendor.id);
         const catResponse = await fetch(`/api/vendor/products/categories?vendor_id=${vendor.id}`);
         const catData = await catResponse.json();
 
         if (catData.success) {
-          console.log('📂 Fetched categories:', catData.categories);
           setAvailableCategories(catData.categories || []);
         } else {
           console.error('❌ Error fetching categories:', catData.error);
@@ -464,12 +422,10 @@ export default function SimpleTVMenusPage() {
         }
 
         // Fetch custom fields
-        console.log('🔍 Fetching custom fields for vendor:', vendor.id);
         const fieldsResponse = await fetch(`/api/vendor/products/custom-fields?vendor_id=${vendor.id}`);
         const fieldsData = await fieldsResponse.json();
 
         if (fieldsData.success) {
-          console.log('📋 Fetched custom fields:', fieldsData.customFields);
           setAvailableCustomFields(fieldsData.customFields || []);
         } else {
           console.error('❌ Error fetching custom fields:', fieldsData.error);
@@ -530,7 +486,6 @@ export default function SimpleTVMenusPage() {
         throw new Error(data.error || 'Failed to update menu');
       }
 
-      console.log('✅ Menu updated successfully:', data.menu);
 
       // Force preview refresh immediately
       setPreviewRefresh(Date.now());

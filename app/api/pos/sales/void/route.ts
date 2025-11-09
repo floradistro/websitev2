@@ -46,7 +46,6 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { transactionId, reason } = body;
 
-    console.log('🚫 Void Transaction Request:', { transactionId, reason });
 
     if (!transactionId || !reason) {
       return NextResponse.json(
@@ -100,7 +99,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log('✅ Transaction is from today, can void');
 
     // ============================================================================
     // STEP 3: GET ORDER AND CUSTOMER DATA
@@ -150,7 +148,6 @@ export async function POST(request: NextRequest) {
     // ============================================================================
     // STEP 4: UPDATE TRANSACTION STATUS TO VOIDED
     // ============================================================================
-    console.log('📝 Step 1: Voiding transaction...');
 
     const { error: updateError } = await supabase
       .from('pos_transactions')
@@ -172,7 +169,6 @@ export async function POST(request: NextRequest) {
       throw updateError;
     }
 
-    console.log('✅ Transaction voided');
 
     // ============================================================================
     // STEP 5: VOID ORDER
@@ -191,13 +187,11 @@ export async function POST(request: NextRequest) {
         })
         .eq('id', order.id);
 
-      console.log('✅ Order voided');
     }
 
     // ============================================================================
     // STEP 6: RESTOCK INVENTORY
     // ============================================================================
-    console.log('📦 Step 2: Restocking inventory...');
 
     if (transaction.order_id) {
       const { data: orderItems } = await supabase
@@ -217,11 +211,9 @@ export async function POST(request: NextRequest) {
             if (incrementError) {
               console.error(`⚠️  Failed to restock ${item.product_name || item.product_id}:`, incrementError);
             } else {
-              console.log(`  ✅ Restocked ${item.product_name || item.product_id}: ${result.old_quantity} → ${result.new_quantity}`);
             }
           }
         }
-        console.log(`✅ Inventory restocked: ${orderItems.length} items`);
       }
     }
 
@@ -229,7 +221,6 @@ export async function POST(request: NextRequest) {
     // STEP 7: REVERSE LOYALTY POINTS (CRITICAL FIX)
     // ============================================================================
     if (customer && pointsToReverse > 0) {
-      console.log(`🎁 Step 3: Reversing ${pointsToReverse} loyalty points...`);
 
       // Get current loyalty record
       const { data: loyalty } = await supabase
@@ -294,7 +285,6 @@ export async function POST(request: NextRequest) {
         });
 
         if (tier.name !== loyalty.tier_name) {
-          console.log(`⬇️  TIER DOWNGRADE: ${loyalty.tier_name} → ${tier.name}`);
 
           // Log tier change
           await supabase
@@ -322,7 +312,6 @@ export async function POST(request: NextRequest) {
     let alpineIQSynced = false;
 
     if (customer && order) {
-      console.log('🔄 Step 4: Syncing void to Alpine IQ...');
 
       try {
         const alpineClient = await getAlpineIQClient(supabase, transaction.vendor_id);
@@ -346,7 +335,6 @@ export async function POST(request: NextRequest) {
             });
 
             alpineIQSynced = true;
-            console.log('✅ Alpine IQ sync successful');
           }
         }
       } catch (error: any) {
@@ -370,7 +358,6 @@ export async function POST(request: NextRequest) {
               retry_count: 0,
               error_message: error.message
             });
-          console.log('📝 Void queued for Alpine IQ retry');
         } catch (queueError) {
           // Ignore queue errors - don't fail the void
           console.error('Failed to queue void for retry:', queueError);
@@ -391,14 +378,12 @@ export async function POST(request: NextRequest) {
       if (sessionError) {
         console.error('⚠️  Failed to update session totals:', sessionError);
       } else {
-        console.log(`✅ Session totals updated: $${sessionResult.old_total} → $${sessionResult.new_total}, voids: ${sessionResult.new_voided_count}`);
       }
     }
 
     // ============================================================================
     // FINAL RESPONSE
     // ============================================================================
-    console.log('✅ Void completed successfully');
 
     return NextResponse.json({
       success: true,

@@ -142,7 +142,6 @@ async function searchStrain(name: string, category: string, exa: Exa, attempt: n
       text: { maxCharacters: CONFIG.MAX_CHARS }
     });
 
-    console.log(`✅ [${name}] Found ${response.results?.length || 0} sources`);
     return response.results || [];
   } catch (error: any) {
     console.error(`❌ [${name}] Search error:`, error.message);
@@ -261,7 +260,6 @@ async function processProduct(
   anthropic: Anthropic
 ): Promise<StrainInfo> {
   console.log(`\n${'='.repeat(70)}`);
-  console.log(`🌿 Processing: ${name}`);
   console.log(`📋 Required fields: ${requestedFields.join(', ')}`);
   console.log(`${'='.repeat(70)}`);
 
@@ -273,7 +271,6 @@ async function processProduct(
     const extracted = await extractData(name, sources, requestedFields, anthropic, attempt);
 
     if (!extracted) {
-      console.log(`❌ [${name}] Attempt ${attempt} failed`);
       continue;
     }
 
@@ -286,7 +283,6 @@ async function processProduct(
     }
 
     if (validation.valid) {
-      console.log(`✅ [${name}] Complete with all requested fields!`);
       return extracted;
     }
 
@@ -360,9 +356,6 @@ export async function POST(request: NextRequest) {
         const fields = requestedFields || ['lineage', 'terpene_profile', 'effects', 'nose', 'description'];
 
         console.log(`\n${'='.repeat(80)}`);
-        console.log(`🚀 BULK AI AUTOFILL - BATCH VERIFICATION MODE`);
-        console.log(`📦 Total products: ${products.length}`);
-        console.log(`🏷️  Category: ${category}`);
         console.log(`📋 Requested fields: ${fields.join(', ')}`);
         console.log(`${'='.repeat(80)}`);
 
@@ -432,7 +425,6 @@ export async function POST(request: NextRequest) {
           const allValid = validations.every(v => v.valid);
           const validCount = validations.filter(v => v.valid).length;
 
-          console.log(`\n📊 BATCH ${batchNum} VALIDATION:`);
           batch.forEach((name, idx) => {
             const val = validations[idx];
             const status = val.valid ? '✅' : '⚠️';
@@ -454,7 +446,6 @@ export async function POST(request: NextRequest) {
             message: `✅ Batch ${batchNum} complete: ${validCount}/${batch.length} products have all requested fields`
           });
 
-          console.log(`${allValid ? '✅' : '⚠️'} Batch ${batchNum}: ${validCount}/${batch.length} complete`);
         }
 
         // Final summary
@@ -463,13 +454,10 @@ export async function POST(request: NextRequest) {
         const completeCount = allValidations.filter(v => v.valid).length;
 
         console.log(`\n${'='.repeat(80)}`);
-        console.log(`✅ ALL BATCHES COMPLETE`);
-        console.log(`📊 ${completeCount}/${names.length} products have ALL requested fields`);
         console.log(`${'='.repeat(80)}`);
 
         names.forEach(name => {
           const val = validateStrainData(results[name], fields);
-          console.log(`  ${val.valid ? '✅' : '⚠️'} ${name}: ${val.score}/10`);
         });
 
         send({

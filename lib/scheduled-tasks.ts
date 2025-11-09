@@ -13,7 +13,6 @@ import { getServiceSupabase } from './supabase/client';
  * Call this from a cron job or interval
  */
 export async function runScheduledTasks(): Promise<void> {
-  console.log('⏰ Running scheduled tasks...');
   const startTime = Date.now();
 
   try {
@@ -26,7 +25,6 @@ export async function runScheduledTasks(): Promise<void> {
     ]);
 
     const duration = Date.now() - startTime;
-    console.log(`✅ Scheduled tasks completed in ${duration}ms`);
   } catch (error) {
     console.error('❌ Error in scheduled tasks:', error);
   }
@@ -37,7 +35,6 @@ export async function runScheduledTasks(): Promise<void> {
  * Runs every hour
  */
 async function cleanupExpiredCache(): Promise<void> {
-  console.log('🧹 Cleaning up expired cache...');
   
   try {
     // Cache automatically expires based on TTL
@@ -57,7 +54,6 @@ async function cleanupExpiredCache(): Promise<void> {
     // Optional: Force clear old caches during off-peak hours
     const hour = new Date().getHours();
     if (hour >= 2 && hour <= 4) {
-      console.log('🌙 Off-peak hours: clearing all caches');
       await jobQueue.enqueue('cleanup-cache', { cacheType: 'all' }, { priority: 5 });
     }
   } catch (error) {
@@ -70,7 +66,6 @@ async function cleanupExpiredCache(): Promise<void> {
  * Runs every 30 minutes
  */
 async function checkLowStockAlerts(): Promise<void> {
-  console.log('📦 Checking low stock alerts...');
   
   try {
     const supabase = getServiceSupabase();
@@ -95,11 +90,9 @@ async function checkLowStockAlerts(): Promise<void> {
     }
 
     if (!lowStock || lowStock.length === 0) {
-      console.log('✅ No low stock items');
       return;
     }
 
-    console.log(`⚠️  Found ${lowStock.length} low stock items`);
 
     // Queue email notifications for vendors
     for (const item of lowStock) {
@@ -127,7 +120,6 @@ async function checkLowStockAlerts(): Promise<void> {
       }
     }
 
-    console.log(`✅ Queued ${lowStock.length} low stock alerts`);
   } catch (error) {
     console.error('❌ Low stock check failed:', error);
   }
@@ -145,7 +137,6 @@ async function generateDailyMetrics(): Promise<void> {
     return;
   }
 
-  console.log('📊 Generating daily metrics...');
   
   try {
     const supabase = getServiceSupabase();
@@ -195,7 +186,6 @@ async function generateDailyMetrics(): Promise<void> {
       { priority: 4 } // Low priority
     );
 
-    console.log('✅ Daily metrics generated');
   } catch (error) {
     console.error('❌ Daily metrics generation failed:', error);
   }
@@ -206,7 +196,6 @@ async function generateDailyMetrics(): Promise<void> {
  * Runs every 6 hours
  */
 async function cleanupOldJobs(): Promise<void> {
-  console.log('🧹 Cleaning up old job history...');
   
   try {
     const stats = jobQueue.getStats();
@@ -214,9 +203,7 @@ async function cleanupOldJobs(): Promise<void> {
     // Clear history if it's getting too large
     if (stats.completed > 500 || stats.failed > 200) {
       jobQueue.clearHistory();
-      console.log('✅ Job history cleared');
     } else {
-      console.log(`📊 Job stats: ${stats.completed} completed, ${stats.failed} failed`);
     }
   } catch (error) {
     console.error('❌ Job cleanup failed:', error);
@@ -229,11 +216,9 @@ async function cleanupOldJobs(): Promise<void> {
  */
 export function setupScheduledTasks(): void {
   if (typeof window !== 'undefined') {
-    console.log('⚠️  Scheduled tasks only run on server side');
     return;
   }
 
-  console.log('⏰ Setting up scheduled tasks...');
 
   // Run immediately on startup
   runScheduledTasks();
@@ -252,7 +237,6 @@ export function setupScheduledTasks(): void {
  * Runs during off-peak hours
  */
 export async function refreshMaterializedViews(): Promise<void> {
-  console.log('🔄 Refreshing materialized views...');
   
   try {
     const supabase = getServiceSupabase();
@@ -265,7 +249,6 @@ export async function refreshMaterializedViews(): Promise<void> {
     //   return;
     // }
     
-    console.log('✅ Materialized views refreshed');
   } catch (error) {
     console.error('❌ Materialized views refresh failed:', error);
   }
