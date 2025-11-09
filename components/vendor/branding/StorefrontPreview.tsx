@@ -24,13 +24,11 @@ export function StorefrontPreview({ vendorSlug }: StorefrontPreviewProps) {
     return (
       <div className={cn('sticky top-8', ds.colors.bg.elevated, 'border', ds.colors.border.default, ds.effects.radius.lg, 'p-8 text-center')}>
         <Monitor size={48} className={cn(ds.colors.text.quaternary, 'mx-auto mb-4')} />
-        <p className={cn(ds.typography.size.sm, ds.colors.text.tertiary, 'mb-2')}>Preview unavailable</p>
-        <p className={cn(ds.typography.size.xs, ds.colors.text.quaternary)}>Save to see live preview</p>
+        <p className={cn(ds.typography.size.sm, ds.colors.text.tertiary)}>Preview unavailable</p>
+        <p className={cn(ds.typography.size.xs, ds.colors.text.quaternary, 'mt-2')}>Save to see live preview</p>
       </div>
     );
   }
-
-  if (typeof window === 'undefined') return null;
 
   // Use subdomain format or preview URL
   const previewUrl = `${window.location.origin}/storefront-preview/${vendorSlug}`;
@@ -39,7 +37,7 @@ export function StorefrontPreview({ vendorSlug }: StorefrontPreviewProps) {
     <div className={cn('sticky top-8', ds.colors.bg.elevated, 'border', ds.colors.border.default, ds.effects.radius.lg, 'overflow-hidden')}>
       {/* Header */}
       <div className={cn('border-b', ds.colors.border.default, 'px-4 py-3 flex items-center justify-between')}>
-        <span className={cn(ds.typography.size.xs, ds.typography.transform.uppercase, ds.typography.tracking.wide, ds.colors.text.tertiary)}>
+        <span className={cn(ds.typography.size.xs, ds.typography.transform.uppercase, ds.colors.text.tertiary)}>
           Preview
         </span>
 
@@ -54,7 +52,8 @@ export function StorefrontPreview({ vendorSlug }: StorefrontPreviewProps) {
                 onClick={() => setViewport(v)}
                 className={cn(
                   'p-1.5 rounded',
-                  viewport === v ? cn(ds.colors.bg.active, ds.colors.text.primary) : cn('hover:bg-white/5', ds.colors.text.quaternary)
+                  viewport === v ? ds.colors.bg.active : 'hover:bg-white/5',
+                  ds.colors.text.quaternary
                 )}
               >
                 <Icon size={14} />
@@ -62,7 +61,7 @@ export function StorefrontPreview({ vendorSlug }: StorefrontPreviewProps) {
             );
           })}
 
-          <button type="button" onClick={() => setKey(k => k + 1)} className={cn('p-1.5 rounded hover:bg-white/5', ds.colors.text.quaternary, 'hover:text-white/60')}>
+          <button type="button" onClick={() => setKey(k => k + 1)} className={cn('p-1.5 rounded hover:bg-white/5', ds.colors.text.quaternary)}>
             <RefreshCw size={14} />
           </button>
 

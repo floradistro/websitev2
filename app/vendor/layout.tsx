@@ -73,7 +73,7 @@ function VendorLayoutContent({
   const vendorName = vendor?.store_name || 'Vendor';
 
   // Special pages without auth/navigation
-  if (pathname === '/vendor/login' || pathname === '/vendor/component-editor') {
+  if (pathname === '/vendor/login') {
     return <>{children}</>;
   }
 

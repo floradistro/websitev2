@@ -5,7 +5,7 @@ import { useAppAuth } from '@/context/AppAuthContext';
 import {
   ImagePlus, Search, Grid3x3, List, Download, Trash2, Eye,
   Link2, X, Check, Loader2, Upload, Image as ImageIcon,
-  Edit3, Copy, Sparkles, Scissors, Brain
+  Edit3, Copy, Sparkles, Wand2, Scissors, Brain
 } from 'lucide-react';
 
 interface MediaFile {
@@ -15,7 +15,7 @@ interface MediaFile {
   file_size: number;
   file_path: string;
   file_type: string;
-  category: 'product_photos' | 'social_media' | 'print_marketing' | 'promotional' | 'brand_assets' | 'menus';
+  category: 'product_photos' | 'marketing' | 'menus' | 'brand';
   ai_tags?: string[];
   ai_description?: string;
   custom_tags?: string[];
@@ -29,7 +29,7 @@ interface MediaFile {
   updated_at?: string;
 }
 
-type MediaCategory = 'product_photos' | 'social_media' | 'print_marketing' | 'promotional' | 'brand_assets' | 'menus' | null;
+type MediaCategory = 'product_photos' | 'marketing' | 'menus' | 'brand' | null;
 
 interface ContextMenu {
   x: number;
@@ -37,7 +37,7 @@ interface ContextMenu {
   file: MediaFile;
 }
 
-// Memoized grid item
+// Memoized grid item for better performance
 const GridItem = memo(({
   file,
   isSelected,
@@ -51,6 +51,7 @@ const GridItem = memo(({
   onContextMenu: (e: React.MouseEvent) => void;
   onQuickView: () => void;
 }) => {
+  // Use Supabase render API for thumbnails
   const thumbnailUrl = file.file_url.includes('supabase.co')
     ? file.file_url.replace('/storage/v1/object/public/', '/storage/v1/render/image/public/') + '?width=400&height=400&quality=75'
     : file.file_url;
@@ -72,7 +73,7 @@ const GridItem = memo(({
         decoding="async"
       />
 
-      {/* Overlay */}
+      {/* Overlay on hover */}
       <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200">
         <div className="absolute bottom-0 left-0 right-0 p-2.5">
           <p className="text-white text-xs font-medium truncate">{file.file_name}</p>
@@ -102,6 +103,8 @@ export default function MediaLibraryClient() {
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [quickViewFile, setQuickViewFile] = useState<MediaFile | null>(null);
+  const [dragOverCategory, setDragOverCategory] = useState<MediaCategory>(null);
+  const [draggingFile, setDraggingFile] = useState<MediaFile | null>(null);
   const [isDraggingOver, setIsDraggingOver] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [autoMatching, setAutoMatching] = useState(false);
@@ -113,6 +116,7 @@ export default function MediaLibraryClient() {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Load media files
   const loadMedia = useCallback(async () => {
     if (!vendor?.id) return;
 
@@ -139,6 +143,7 @@ export default function MediaLibraryClient() {
     loadMedia();
   }, [loadMedia]);
 
+  // Close context menu on click
   useEffect(() => {
     const handleClick = () => setContextMenu(null);
     if (contextMenu) {
@@ -147,6 +152,18 @@ export default function MediaLibraryClient() {
     }
   }, [contextMenu]);
 
+  // Filter files
+  const filteredFiles = files.filter(file => {
+    if (!searchQuery) return true;
+    const query = searchQuery.toLowerCase();
+    return (
+      file.file_name.toLowerCase().includes(query) ||
+      file.ai_description?.toLowerCase().includes(query) ||
+      file.ai_tags?.some(tag => tag.toLowerCase().includes(query))
+    );
+  });
+
+  // Handlers
   const toggleFileSelection = useCallback((fileName: string) => {
     setSelectedFiles(prev => {
       const newSet = new Set(prev);
@@ -159,14 +176,17 @@ export default function MediaLibraryClient() {
     });
   }, []);
 
-  const handleFileUpload = async (fileList: FileList) => {
-    if (!fileList || !vendor?.id) return;
+  const handleFileUpload = async (files: FileList) => {
+    if (!vendor?.id || files.length === 0) return;
 
     setIsUploading(true);
+
     try {
-      for (let i = 0; i < fileList.length; i++) {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
         const formData = new FormData();
-        formData.append('file', fileList[i]);
+        formData.append('file', file);
+        if (selectedCategory) formData.append('category', selectedCategory);
 
         await fetch('/api/vendor/media', {
           method: 'POST',
@@ -174,6 +194,7 @@ export default function MediaLibraryClient() {
           body: formData
         });
       }
+
       await loadMedia();
     } catch (error) {
       console.error('Upload error:', error);
@@ -182,11 +203,111 @@ export default function MediaLibraryClient() {
     }
   };
 
+  const handleChangeCategory = async (file: MediaFile, newCategory: MediaCategory) => {
+    if (!newCategory || file.category === newCategory || !vendor?.id) return;
+
+    try {
+      const response = await fetch('/api/vendor/media', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-vendor-id': vendor.id,
+        },
+        body: JSON.stringify({
+          id: file.id,
+          category: newCategory
+        })
+      });
+
+      if (response.ok) {
+        await loadMedia();
+      }
+    } catch (error) {
+      console.error('Error changing category:', error);
+    }
+  };
+
+  const handleUpdateMetadata = async (file: MediaFile, updates: Partial<MediaFile>) => {
+    if (!vendor?.id) return;
+
+    try {
+      const response = await fetch('/api/vendor/media', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-vendor-id': vendor.id,
+        },
+        body: JSON.stringify({
+          id: file.id,
+          ...updates
+        })
+      });
+
+      if (response.ok) {
+        await loadMedia();
+        setEditingFile(null);
+      }
+    } catch (error) {
+      console.error('Error updating metadata:', error);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!vendor?.id || selectedFiles.size === 0) return;
+    if (!confirm(`Delete ${selectedFiles.size} file(s)?`)) return;
+
+    try {
+      for (const fileName of selectedFiles) {
+        await fetch(`/api/vendor/media?file=${fileName}`, {
+          method: 'DELETE',
+          headers: { 'x-vendor-id': vendor.id }
+        });
+      }
+
+      setSelectedFiles(new Set());
+      await loadMedia();
+    } catch (error) {
+      console.error('Delete error:', error);
+    }
+  };
+
+  const handleDownload = (file: MediaFile) => {
+    window.open(file.file_url, '_blank');
+  };
+
+  const handleCopyUrl = (file: MediaFile) => {
+    navigator.clipboard.writeText(file.file_url);
+  };
+
+  const handleAutoMatch = async () => {
+    if (!vendor?.id) return;
+    setAutoMatching(true);
+
+    try {
+      await fetch('/api/vendor/media/auto-link', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-vendor-id': vendor.id
+        }
+      });
+
+      await loadMedia();
+    } catch (error) {
+      console.error('Auto-match error:', error);
+    } finally {
+      setAutoMatching(false);
+    }
+  };
+
+  // AI Operations
   const handleBulkRetag = async () => {
     if (!vendor?.id || selectedFiles.size === 0) return;
     setAiProcessing(true);
+
     try {
       const selectedFileObjs = files.filter(f => selectedFiles.has(f.file_name));
+
       for (const file of selectedFileObjs) {
         await fetch('/api/vendor/media/ai-retag', {
           method: 'POST',
@@ -197,6 +318,7 @@ export default function MediaLibraryClient() {
           body: JSON.stringify({ fileId: file.id })
         });
       }
+
       await loadMedia();
       setSelectedFiles(new Set());
     } catch (error) {
@@ -209,23 +331,25 @@ export default function MediaLibraryClient() {
   const handleRemoveBackground = async () => {
     if (!vendor?.id || selectedFiles.size === 0) return;
     setAiProcessing(true);
+
     try {
       const selectedFileObjs = files.filter(f => selectedFiles.has(f.file_name));
-      const filesData = selectedFileObjs.map(f => ({ url: f.file_url, name: f.file_name }));
 
-      await fetch('/api/vendor/media/remove-bg', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-vendor-id': vendor.id
-        },
-        body: JSON.stringify({ files: filesData })
-      });
+      for (const file of selectedFileObjs) {
+        await fetch('/api/vendor/media/remove-bg', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-vendor-id': vendor.id
+          },
+          body: JSON.stringify({ fileId: file.id })
+        });
+      }
 
       await loadMedia();
       setSelectedFiles(new Set());
     } catch (error) {
-      console.error('Remove BG error:', error);
+      console.error('Remove background error:', error);
     } finally {
       setAiProcessing(false);
     }
@@ -234,123 +358,45 @@ export default function MediaLibraryClient() {
   const handleGenerateImage = async () => {
     if (!vendor?.id || !generatePrompt.trim()) return;
     setAiProcessing(true);
+
     try {
-      await fetch('/api/vendor/media/ai-generate', {
+      const response = await fetch('/api/vendor/media/ai-generate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'x-vendor-id': vendor.id
         },
-        body: JSON.stringify({ prompt: generatePrompt })
+        body: JSON.stringify({
+          prompt: generatePrompt,
+          category: selectedCategory || 'product_photos'
+        })
       });
 
-      await loadMedia();
-      setGeneratePrompt('');
-      setShowGeneratePanel(false);
+      if (response.ok) {
+        await loadMedia();
+        setGeneratePrompt('');
+        setShowGeneratePanel(false);
+      }
     } catch (error) {
-      console.error('Generate error:', error);
+      console.error('Generate image error:', error);
     } finally {
       setAiProcessing(false);
     }
   };
 
-  const handleAutoMatch = async () => {
-    if (!vendor?.id || selectedFiles.size === 0) return;
-    setAutoMatching(true);
-    try {
-      // Auto-match implementation
-      await loadMedia();
-      setSelectedFiles(new Set());
-    } catch (error) {
-      console.error('Auto-match error:', error);
-    } finally {
-      setAutoMatching(false);
-    }
-  };
-
-  const handleDelete = async () => {
-    if (!vendor?.id || selectedFiles.size === 0) return;
-    if (!confirm(`Delete ${selectedFiles.size} file(s)?`)) return;
-
-    try {
-      for (const fileName of selectedFiles) {
-        await fetch(`/api/vendor/media?file=${encodeURIComponent(fileName)}`, {
-          method: 'DELETE',
-          headers: { 'x-vendor-id': vendor.id }
-        });
-      }
-      await loadMedia();
-      setSelectedFiles(new Set());
-    } catch (error) {
-      console.error('Delete error:', error);
-    }
-  };
-
-  const handleChangeCategory = async (file: MediaFile, category: string) => {
-    if (!vendor?.id) return;
-    try {
-      await fetch('/api/vendor/media', {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-vendor-id': vendor.id
-        },
-        body: JSON.stringify({ id: file.id, category })
-      });
-      await loadMedia();
-    } catch (error) {
-      console.error('Category change error:', error);
-    }
-  };
-
-  const handleUpdateMetadata = async (file: MediaFile, updates: any) => {
-    if (!vendor?.id) return;
-    try {
-      await fetch('/api/vendor/media', {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-vendor-id': vendor.id
-        },
-        body: JSON.stringify({ id: file.id, ...updates })
-      });
-      await loadMedia();
-    } catch (error) {
-      console.error('Update error:', error);
-    }
-  };
-
-  const handleCopyUrl = (file: MediaFile) => {
-    navigator.clipboard.writeText(file.file_url);
-  };
-
-  const handleDownload = (file: MediaFile) => {
-    const a = document.createElement('a');
-    a.href = file.file_url;
-    a.download = file.file_name;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+  const formatFileSize = (bytes: number) => {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
   };
 
   const categories = [
     { value: null, label: 'All Media' },
     { value: 'product_photos' as MediaCategory, label: 'Products' },
-    { value: 'social_media' as MediaCategory, label: 'Social' },
-    { value: 'print_marketing' as MediaCategory, label: 'Print' },
-    { value: 'promotional' as MediaCategory, label: 'Promo' },
-    { value: 'brand_assets' as MediaCategory, label: 'Brand' },
-    { value: 'menus' as MediaCategory, label: 'Menus' }
+    { value: 'marketing' as MediaCategory, label: 'Marketing' },
+    { value: 'menus' as MediaCategory, label: 'Menus' },
+    { value: 'brand' as MediaCategory, label: 'Brand' }
   ];
-
-  const filteredFiles = files.filter(file => {
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      return file.file_name.toLowerCase().includes(query) ||
-             file.ai_description?.toLowerCase().includes(query);
-    }
-    return true;
-  });
 
   if (loading) {
     return (
@@ -495,9 +541,25 @@ export default function MediaLibraryClient() {
           <button
             key={cat.label}
             onClick={() => setSelectedCategory(cat.value)}
+            onDragOver={(e) => {
+              if (!draggingFile) return;
+              e.preventDefault();
+              setDragOverCategory(cat.value);
+            }}
+            onDragLeave={() => setDragOverCategory(null)}
+            onDrop={(e) => {
+              e.preventDefault();
+              if (draggingFile && cat.value) {
+                handleChangeCategory(draggingFile, cat.value);
+              }
+              setDragOverCategory(null);
+              setDraggingFile(null);
+            }}
             className={`flex-shrink-0 px-4 py-1.5 rounded-xl text-xs font-medium transition-colors ${
               selectedCategory === cat.value
                 ? 'bg-white/[0.12] text-white'
+                : dragOverCategory === cat.value
+                ? 'bg-white/[0.08] text-white'
                 : 'text-white/60 hover:text-white hover:bg-white/[0.04]'
             }`}
           >
@@ -600,15 +662,184 @@ export default function MediaLibraryClient() {
         )}
       </div>
 
-      {/* Hidden file input */}
-      <input
-        ref={fileInputRef}
-        type="file"
-        multiple
-        accept="image/*"
-        onChange={(e) => e.target.files && handleFileUpload(e.target.files)}
-        className="hidden"
-      />
+      {/* Context Menu */}
+      {contextMenu && (
+        <div
+          style={{ left: contextMenu.x, top: contextMenu.y }}
+          className="fixed bg-black/90 backdrop-blur-xl border border-white/[0.08] rounded-2xl shadow-2xl z-[200] py-2 min-w-[200px]"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <button
+            onClick={() => {
+              setQuickViewFile(contextMenu.file);
+              setContextMenu(null);
+            }}
+            className="w-full px-4 py-2.5 text-left text-white/80 hover:bg-white/[0.08] hover:text-white transition-colors flex items-center gap-3 text-sm font-medium"
+          >
+            <Eye className="w-4 h-4" />
+            Quick View
+          </button>
+
+          <button
+            onClick={() => {
+              setEditingFile(contextMenu.file);
+              setContextMenu(null);
+            }}
+            className="w-full px-4 py-2.5 text-left text-white/80 hover:bg-white/[0.08] hover:text-white transition-colors flex items-center gap-3 text-sm font-medium"
+          >
+            <Edit3 className="w-4 h-4" />
+            Edit Details
+          </button>
+
+          <div className="h-px bg-white/[0.06] my-2" />
+
+          <div className="px-4 py-1.5">
+            <p className="text-white/40 text-[10px] uppercase tracking-wider font-medium mb-2">Change Category</p>
+            {categories.filter(c => c.value).map((cat) => (
+              <button
+                key={cat.value}
+                onClick={() => {
+                  if (cat.value) handleChangeCategory(contextMenu.file, cat.value);
+                  setContextMenu(null);
+                }}
+                className={`w-full px-2 py-1.5 text-left rounded-lg transition-colors flex items-center gap-2 text-xs ${
+                  contextMenu.file.category === cat.value
+                    ? 'bg-white/[0.08] text-white'
+                    : 'text-white/60 hover:bg-white/[0.04] hover:text-white'
+                }`}
+              >
+                {contextMenu.file.category === cat.value && <Check className="w-3 h-3" />}
+                {cat.label}
+              </button>
+            ))}
+          </div>
+
+          <div className="h-px bg-white/[0.06] my-2" />
+
+          <button
+            onClick={() => {
+              handleCopyUrl(contextMenu.file);
+              setContextMenu(null);
+            }}
+            className="w-full px-4 py-2.5 text-left text-white/80 hover:bg-white/[0.08] hover:text-white transition-colors flex items-center gap-3 text-sm font-medium"
+          >
+            <Copy className="w-4 h-4" />
+            Copy URL
+          </button>
+
+          <button
+            onClick={() => {
+              handleDownload(contextMenu.file);
+              setContextMenu(null);
+            }}
+            className="w-full px-4 py-2.5 text-left text-white/80 hover:bg-white/[0.08] hover:text-white transition-colors flex items-center gap-3 text-sm font-medium"
+          >
+            <Download className="w-4 h-4" />
+            Download
+          </button>
+
+          <div className="h-px bg-white/[0.06] my-2" />
+
+          <button
+            onClick={() => {
+              if (confirm(`Delete ${contextMenu.file.file_name}?`)) {
+                setSelectedFiles(new Set([contextMenu.file.file_name]));
+                handleDelete();
+              }
+              setContextMenu(null);
+            }}
+            className="w-full px-4 py-2.5 text-left text-red-400 hover:bg-red-500/10 transition-colors flex items-center gap-3 text-sm font-medium"
+          >
+            <Trash2 className="w-4 h-4" />
+            Delete
+          </button>
+        </div>
+      )}
+
+      {/* Metadata Edit Modal */}
+      {editingFile && (
+        <div className="fixed inset-0 bg-black/90 backdrop-blur-xl z-[100] flex items-center justify-center p-8">
+          <div className="bg-black/80 backdrop-blur-xl border border-white/[0.08] rounded-3xl p-8 max-w-2xl w-full shadow-2xl">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-white text-lg font-medium">Edit Details</h2>
+              <button
+                onClick={() => setEditingFile(null)}
+                className="p-2 hover:bg-white/[0.08] text-white/60 hover:text-white rounded-xl transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-white/60 text-xs uppercase tracking-wider font-medium mb-2">Title</label>
+                <input
+                  type="text"
+                  defaultValue={editingFile.title || ''}
+                  placeholder="Enter title..."
+                  className="w-full bg-white/[0.04] border border-white/[0.06] rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/30 focus:outline-none focus:bg-white/[0.06] focus:border-white/[0.12] transition-colors"
+                  onBlur={(e) => {
+                    if (e.target.value !== editingFile.title) {
+                      handleUpdateMetadata(editingFile, { title: e.target.value });
+                    }
+                  }}
+                />
+              </div>
+
+              <div>
+                <label className="block text-white/60 text-xs uppercase tracking-wider font-medium mb-2">Alt Text</label>
+                <input
+                  type="text"
+                  defaultValue={editingFile.alt_text || ''}
+                  placeholder="Describe the image..."
+                  className="w-full bg-white/[0.04] border border-white/[0.06] rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/30 focus:outline-none focus:bg-white/[0.06] focus:border-white/[0.12] transition-colors"
+                  onBlur={(e) => {
+                    if (e.target.value !== editingFile.alt_text) {
+                      handleUpdateMetadata(editingFile, { alt_text: e.target.value });
+                    }
+                  }}
+                />
+              </div>
+
+              <div>
+                <label className="block text-white/60 text-xs uppercase tracking-wider font-medium mb-2">Custom Tags</label>
+                <input
+                  type="text"
+                  defaultValue={editingFile.custom_tags?.join(', ') || ''}
+                  placeholder="tag1, tag2, tag3..."
+                  className="w-full bg-white/[0.04] border border-white/[0.06] rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/30 focus:outline-none focus:bg-white/[0.06] focus:border-white/[0.12] transition-colors"
+                  onBlur={(e) => {
+                    const tags = e.target.value.split(',').map(t => t.trim()).filter(Boolean);
+                    handleUpdateMetadata(editingFile, { custom_tags: tags });
+                  }}
+                />
+              </div>
+
+              {editingFile.ai_tags && editingFile.ai_tags.length > 0 && (
+                <div>
+                  <label className="block text-white/60 text-xs uppercase tracking-wider font-medium mb-2">AI Tags</label>
+                  <div className="flex flex-wrap gap-2">
+                    {editingFile.ai_tags.map((tag, i) => (
+                      <span key={i} className="px-3 py-1.5 bg-white/[0.06] border border-white/[0.08] rounded-xl text-xs text-white/80">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="flex items-center justify-end gap-3 mt-8">
+              <button
+                onClick={() => setEditingFile(null)}
+                className="px-5 py-2.5 bg-white/[0.04] hover:bg-white/[0.08] text-white rounded-xl text-sm font-medium transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Drag overlay */}
       {isDraggingOver && (
@@ -621,6 +852,60 @@ export default function MediaLibraryClient() {
           </div>
         </div>
       )}
+
+      {/* Quick View */}
+      {quickViewFile && (
+        <div
+          onClick={() => setQuickViewFile(null)}
+          className="fixed inset-0 bg-black/90 backdrop-blur-xl z-[100] flex items-center justify-center p-8"
+        >
+          <div onClick={(e) => e.stopPropagation()} className="relative max-w-5xl w-full max-h-full flex flex-col items-center">
+            <button
+              onClick={() => setQuickViewFile(null)}
+              className="absolute -top-4 -right-4 p-3 bg-white/10 hover:bg-white/20 rounded-2xl transition-colors backdrop-blur-sm z-10"
+            >
+              <X className="w-5 h-5 text-white" />
+            </button>
+
+            <div className="relative rounded-3xl overflow-hidden shadow-2xl max-h-[calc(100vh-16rem)]">
+              <img
+                src={quickViewFile.file_url}
+                alt={quickViewFile.file_name}
+                className="max-w-full max-h-full object-contain"
+              />
+            </div>
+
+            <div className="w-full bg-white/[0.06] backdrop-blur-xl border border-white/[0.08] rounded-2xl p-6 mt-4">
+              <div className="flex items-center justify-between">
+                <div className="flex-1 min-w-0">
+                  <p className="text-white text-sm font-medium mb-1 truncate">{quickViewFile.file_name}</p>
+                  <div className="flex items-center gap-3 text-xs text-white/60">
+                    <span>{formatFileSize(quickViewFile.file_size)}</span>
+                    <span>•</span>
+                    <span>{quickViewFile.category.replace('_', ' ')}</span>
+                  </div>
+                </div>
+                <button
+                  onClick={() => handleDownload(quickViewFile)}
+                  className="px-4 py-2 bg-white/[0.08] hover:bg-white/[0.12] text-white rounded-xl text-xs font-medium transition-colors flex items-center gap-2 ml-4"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  Download
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <input
+        ref={fileInputRef}
+        type="file"
+        multiple
+        accept="image/*"
+        onChange={(e) => e.target.files && handleFileUpload(e.target.files)}
+        className="hidden"
+      />
     </div>
   );
 }
