@@ -99,7 +99,26 @@ export async function POST(request: NextRequest) {
 
     // Load accessible locations (including tax settings)
     let locations: any[] = [];
-    if (user.role === 'employee' || user.role === 'manager') {
+
+    // CRITICAL FIX: Vendor owners and managers get ALL vendor locations
+    if (user.role === 'vendor_owner' || user.role === 'vendor_manager' || user.role === 'vendor_admin') {
+      const { data: allVendorLocs } = await supabase
+        .from('locations')
+        .select('id, name, address_line1, city, state, is_primary, settings')
+        .eq('vendor_id', user.vendor_id)
+        .eq('is_active', true);
+
+      locations = allVendorLocs?.map(l => ({
+        id: l.id,
+        name: l.name,
+        address: `${l.address_line1 || ''} ${l.city || ''}, ${l.state || ''}`.trim(),
+        is_primary: l.is_primary || false,
+        settings: l.settings
+      })) || [];
+
+      console.log(`✅ ${user.role} - loaded ALL locations:`, locations.length);
+    } else if (user.role === 'employee' || user.role === 'manager') {
+      // Employees only get assigned locations
       const { data: employeeLocations } = await supabase
         .from('employee_locations')
         .select(`
@@ -122,19 +141,8 @@ export async function POST(request: NextRequest) {
         settings: el.locations.settings,
         is_primary: el.is_primary
       })) || [];
-    } else if (user.role === 'vendor_admin') {
-      const { data: allLocations } = await supabase
-        .from('locations')
-        .select('id, name, address, settings')
-        .eq('vendor_id', user.vendor_id);
 
-      locations = allLocations?.map(l => ({
-        id: l.id,
-        name: l.name,
-        address: l.address,
-        settings: l.settings,
-        is_primary: false
-      })) || [];
+      console.log('✅ Employee - loaded assigned locations:', locations.length);
     }
 
     const response = NextResponse.json({

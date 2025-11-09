@@ -104,13 +104,17 @@ export function AppAuthProvider({ children }: { children: React.ReactNode }) {
       const data = await response.json();
       if (data.success && data.locations) {
         console.log('✅ Got locations from server:', data.locations.length);
+        // CRITICAL: Set locations FIRST, then set isLoading to false
+        // This prevents the component from rendering with locations=[] and isLoading=false
         setLocations(data.locations);
         localStorage.setItem('app_locations', JSON.stringify(data.locations));
+        setIsLoading(false); // Move here from finally - only after locations are set
+      } else {
+        console.error('⚠️ Refresh failed or no locations returned:', data);
+        setIsLoading(false);
       }
     } catch (err) {
       console.error('Failed to fetch locations:', err);
-    } finally {
-      // CRITICAL: Always set loading to false, even if fetch fails
       setIsLoading(false);
     }
   };
