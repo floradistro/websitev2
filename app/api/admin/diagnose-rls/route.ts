@@ -45,13 +45,15 @@ export async function POST(request: NextRequest) {
     // Try to read the current auth headers being used
     // @ts-ignore - accessing internal state for debugging
     const clientUrl = supabase.supabaseUrl;
-    // @ts-ignore
+    // @ts-ignore - accessing internal state for debugging
     const clientHeaders = supabase.rest?.headers || {};
+    // @ts-ignore - accessing header properties
+    const authHeader = clientHeaders.Authorization || '';
 
     console.log('🔑 Client config:', {
       url: clientUrl,
-      hasAuthHeader: !!clientHeaders.Authorization,
-      authHeaderPrefix: clientHeaders.Authorization?.substring(0, 30) + '...'
+      hasAuthHeader: !!authHeader,
+      authHeaderPrefix: authHeader ? authHeader.substring(0, 30) + '...' : 'none'
     });
 
     // STEP 3: Check current user/session (service role should have none)
@@ -123,7 +125,7 @@ export async function POST(request: NextRequest) {
         envCheck,
         clientConfig: {
           url: clientUrl,
-          hasAuthHeader: !!clientHeaders.Authorization
+          hasAuthHeader: !!authHeader
         },
         rlsPolicies: policies,
         duration_ms: Date.now() - startTime
@@ -171,8 +173,8 @@ export async function POST(request: NextRequest) {
       envCheck,
       clientConfig: {
         url: clientUrl,
-        hasAuthHeader: !!clientHeaders.Authorization,
-        authHeaderPrefix: clientHeaders.Authorization?.substring(0, 30)
+        hasAuthHeader: !!authHeader,
+        authHeaderPrefix: authHeader ? authHeader.substring(0, 30) : 'none'
       },
       singleTest: {
         success: true,

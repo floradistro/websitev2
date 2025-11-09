@@ -67,6 +67,7 @@ export async function POST(request: NextRequest) {
   // DIAGNOSTIC: Verify the client is using service role
   // @ts-ignore - accessing internal state for debugging
   const clientHeaders = supabase.rest?.headers || {};
+  // @ts-ignore - accessing header properties
   const authHeader = clientHeaders.Authorization || '';
   const isUsingServiceKey = authHeader.includes('eyJhbGciOiJIUzI1NiIs'); // Service keys start with this
 

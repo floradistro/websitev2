@@ -152,6 +152,7 @@ export async function POST(request: NextRequest) {
         });
 
         sessionUpdated = afterWalkIn === beforeWalkIn + 1 &&
+                        beforeTotal !== null &&
                         Math.abs(afterTotal - (beforeTotal + total)) < 0.01;
       }
     }
