@@ -11,7 +11,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<GetBrandin
   try {
     // SECURITY: Require vendor authentication (Phase 2)
     const authResult = await requireVendor(request);
-    if (authResult instanceof NextResponse) return authResult;
+    if (authResult instanceof NextResponse) return authResult as NextResponse<BrandingError>;
     const { vendorId } = authResult;
 
     const supabase = getServiceSupabase();
@@ -42,7 +42,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse<GetBrandin
   try {
     // SECURITY: Require vendor authentication (Phase 2)
     const authResult = await requireVendor(request);
-    if (authResult instanceof NextResponse) return authResult;
+    if (authResult instanceof NextResponse) return authResult as NextResponse<BrandingError>;
     const { vendorId } = authResult;
 
     const body = await request.json();
