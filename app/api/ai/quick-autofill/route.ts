@@ -3,6 +3,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import Exa from "exa-js";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 const SYSTEM_PROMPT = `Extract cannabis product data from web sources. Return ONLY JSON.
 
 RULES:
@@ -143,24 +144,24 @@ export async function POST(request: NextRequest) {
         url: r.url,
       })),
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("❌ Quick autofill error:", error);
+      logger.error("❌ Quick autofill error:", err);
     }
     if (process.env.NODE_ENV === "development") {
       if (process.env.NODE_ENV === "development") {
         logger.error("Error details:", {
-          message: error.message,
-          stack: error.stack,
+          message: err.message,
+          stack: err.stack,
           response: error.response?.data,
         });
       }
     }
     return NextResponse.json(
       {
-        error: error.message || "AI autofill failed",
+        error: err.message || "AI autofill failed",
         suggestions: null,
-        details: process.env.NODE_ENV === "development" ? error.stack : undefined,
+        details: process.env.NODE_ENV === "development" ? err.stack : undefined,
       },
       { status: 500 },
     );

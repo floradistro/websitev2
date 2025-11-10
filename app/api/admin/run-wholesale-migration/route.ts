@@ -4,6 +4,7 @@ import { readFileSync } from "fs";
 import { join } from "path";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 // This endpoint uses service role key to run migrations
 export async function POST() {
   try {
@@ -53,14 +54,14 @@ export async function POST() {
       message: "Migration executed successfully",
       data,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Migration error:", error);
+      logger.error("Migration error:", err);
     }
     return NextResponse.json(
       {
         success: false,
-        error: error.message,
+        error: err.message,
         instructions: [
           "Please run the migration manually:",
           "1. Go to: https://supabase.com/dashboard/project/uaednwpxursknmwdeejn/sql",

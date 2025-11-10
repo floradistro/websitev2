@@ -3,6 +3,7 @@ import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireVendor } from "@/lib/auth/middleware";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 /**
  * Vendor Orders API
  * Provides aggregated order data across all locations for a vendor
@@ -321,14 +322,14 @@ export async function GET(request: NextRequest) {
         },
       },
     );
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("❌ Vendor orders API error:", error);
+      logger.error("❌ Vendor orders API error:", err);
     }
     return NextResponse.json(
       {
         success: false,
-        error: error.message || "Failed to fetch vendor orders",
+        error: err.message || "Failed to fetch vendor orders",
         orders: [],
         stats: {
           total_orders: 0,

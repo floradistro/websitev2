@@ -3,6 +3,7 @@ import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireVendor } from "@/lib/auth/middleware";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 export async function PATCH(request: NextRequest) {
   try {
     // Use secure middleware to get vendor_id from session
@@ -129,12 +130,12 @@ export async function PATCH(request: NextRequest) {
       success: true,
       product: updated,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Product update error:", error);
+      logger.error("Product update error:", err);
     }
     return NextResponse.json(
-      { success: false, error: error.message || "Internal server error" },
+      { success: false, error: err.message || "Internal server error" },
       { status: 500 },
     );
   }

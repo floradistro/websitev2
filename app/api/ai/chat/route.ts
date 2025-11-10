@@ -11,6 +11,7 @@ import { getServiceSupabase } from "@/lib/supabase/client";
 import { ExaClient } from "@/lib/ai/exa-client";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY!,
 });
@@ -152,13 +153,13 @@ export async function POST(request: NextRequest) {
         });
 
         controller.close();
-      } catch (error: any) {
+      } catch (error) {
         if (process.env.NODE_ENV === "development") {
-          logger.error("Chat API error:", error);
+          logger.error("Chat API error:", err);
         }
         send("error", {
-          message: error.message || "Failed to generate response",
-          details: error.stack,
+          message: err.message || "Failed to generate response",
+          details: err.stack,
         });
         controller.close();
       }

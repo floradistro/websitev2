@@ -3,6 +3,7 @@ import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireVendor } from "@/lib/auth/middleware";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 /**
  * GET - Vendor profit statistics
  * Returns margin analysis, inventory value, and profitability metrics
@@ -27,12 +28,12 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("Error fetching products for profit stats:", error);
+        logger.error("Error fetching products for profit stats:", err);
       }
       return NextResponse.json(
         {
           success: false,
-          error: error.message,
+          error: err.message,
         },
         { status: 500 },
       );
@@ -99,14 +100,14 @@ export async function GET(request: NextRequest) {
       success: true,
       stats,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("❌ Profit stats error:", error);
+      logger.error("❌ Profit stats error:", err);
     }
     return NextResponse.json(
       {
         success: false,
-        error: error.message || "Failed to fetch profit stats",
+        error: err.message || "Failed to fetch profit stats",
       },
       { status: 500 },
     );

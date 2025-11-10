@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 // Get base URL for internal API calls
 const getBaseUrl = () => {
   if (process.env.NEXT_PUBLIC_SITE_URL) {
@@ -81,13 +82,13 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     };
 
     return NextResponse.json(response);
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Product detail error:", error);
+      logger.error("Product detail error:", err);
     }
     return NextResponse.json(
       {
-        error: error.message || "Failed to fetch product",
+        error: err.message || "Failed to fetch product",
       },
       { status: 500 },
     );

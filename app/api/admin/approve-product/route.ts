@@ -5,6 +5,7 @@ import { jobQueue } from "@/lib/job-queue";
 import { withErrorHandler } from "@/lib/api-handler";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 export const POST = withErrorHandler(async (request: NextRequest) => {
   try {
     const body = await request.json();
@@ -131,10 +132,10 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
     }
 
     return NextResponse.json({ error: "Invalid action" }, { status: 400 });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Approve product error:", error);
+      logger.error("Approve product error:", err);
     }
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 });

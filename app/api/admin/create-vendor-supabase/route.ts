@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 export async function POST(request: NextRequest) {
   try {
     const { store_name, email, username, password } = await request.json();
@@ -160,14 +161,14 @@ export async function POST(request: NextRequest) {
       location_id: location?.id,
       login_note: `Vendor can login at /vendor/login with email: ${email}`,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Create vendor error:", error);
+      logger.error("Create vendor error:", err);
     }
     return NextResponse.json(
       {
         success: false,
-        message: error.message || "Failed to create vendor",
+        message: err.message || "Failed to create vendor",
         error: error.toString(),
       },
       { status: 500 },

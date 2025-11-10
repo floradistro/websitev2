@@ -5,6 +5,7 @@ import type { ProcessPaymentRequest } from "@/lib/payment-processors/types";
 import { requireVendor } from "@/lib/auth/middleware";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
@@ -110,9 +111,9 @@ export async function POST(request: NextRequest) {
         receiptData: result.receiptData,
         metadata: result.metadata,
       });
-    } catch (error: any) {
+    } catch (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("Payment processing error:", error);
+        logger.error("Payment processing error:", err);
       }
       // Check if it's a Dejavoo-specific error
       const isDeclined = error.isDeclined?.() || error.statusCode !== "0000";
@@ -122,7 +123,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          error: error.message || "Payment processing failed",
+          error: err.message || "Payment processing failed",
           isDeclined,
           isTerminalError,
           isTimeout,
@@ -131,15 +132,15 @@ export async function POST(request: NextRequest) {
         { status: isTerminalError ? 503 : 400 },
       );
     }
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Payment API error:", error);
+      logger.error("Payment API error:", err);
     }
     return NextResponse.json(
       {
         success: false,
         error: "Internal server error",
-        details: error.message,
+        details: err.message,
       },
       { status: 500 },
     );
@@ -209,27 +210,27 @@ export async function PUT(request: NextRequest) {
         amount: result.amount,
         receiptData: result.receiptData,
       });
-    } catch (error: any) {
+    } catch (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("Refund processing error:", error);
+        logger.error("Refund processing error:", err);
       }
       return NextResponse.json(
         {
           success: false,
-          error: error.message || "Refund processing failed",
+          error: err.message || "Refund processing failed",
         },
         { status: 400 },
       );
     }
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Refund API error:", error);
+      logger.error("Refund API error:", err);
     }
     return NextResponse.json(
       {
         success: false,
         error: "Internal server error",
-        details: error.message,
+        details: err.message,
       },
       { status: 500 },
     );
@@ -293,27 +294,27 @@ export async function DELETE(request: NextRequest) {
         transactionId: result.transactionId,
         message: result.message,
       });
-    } catch (error: any) {
+    } catch (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("Void processing error:", error);
+        logger.error("Void processing error:", err);
       }
       return NextResponse.json(
         {
           success: false,
-          error: error.message || "Void processing failed",
+          error: err.message || "Void processing failed",
         },
         { status: 400 },
       );
     }
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Void API error:", error);
+      logger.error("Void API error:", err);
     }
     return NextResponse.json(
       {
         success: false,
         error: "Internal server error",
-        details: error.message,
+        details: err.message,
       },
       { status: 500 },
     );

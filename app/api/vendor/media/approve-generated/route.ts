@@ -4,6 +4,7 @@ import { withErrorHandler } from "@/lib/api-handler";
 import { requireVendor } from "@/lib/auth/middleware";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 // POST - Approve and save generated image with proper naming and product linking
 export const POST = withErrorHandler(async (request: NextRequest) => {
   try {
@@ -149,11 +150,11 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
       file: mediaRecord,
       message: "Image approved and saved successfully",
     });
-  } catch (error: any) {
-    logger.error("Error:", error);
+  } catch (error) {
+    logger.error("Error:", err);
     return NextResponse.json(
       {
-        error: error.message || "Failed to approve image",
+        error: err.message || "Failed to approve image",
       },
       { status: 500 },
     );

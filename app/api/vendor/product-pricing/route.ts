@@ -3,6 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import { requireVendor } from "@/lib/auth/middleware";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
@@ -88,7 +89,7 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("❌ Supabase error fetching product pricing assignments:", error);
+        logger.error("❌ Supabase error fetching product pricing assignments:", err);
       }
       logger.error("Error details:", JSON.stringify(error, null, 2));
       // Return empty array instead of throwing to prevent modal crashes
@@ -102,12 +103,12 @@ export async function GET(request: NextRequest) {
       success: true,
       assignments: assignments || [],
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("❌ Error fetching product pricing assignments:", error);
+      logger.error("❌ Error fetching product pricing assignments:", err);
     }
     return NextResponse.json(
-      { success: false, error: error.message || "Failed to load pricing" },
+      { success: false, error: err.message || "Failed to load pricing" },
       { status: 500 },
     );
   }
@@ -206,11 +207,11 @@ export async function POST(request: NextRequest) {
       message: `Pricing tier assigned to ${validProductIds.length} product(s)`,
       assigned_count: validProductIds.length,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Error assigning product pricing:", error);
+      logger.error("Error assigning product pricing:", err);
     }
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }
 }
 
@@ -249,11 +250,11 @@ export async function PUT(request: NextRequest) {
       success: true,
       assignment: data,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Error updating product pricing assignment:", error);
+      logger.error("Error updating product pricing assignment:", err);
     }
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }
 }
 
@@ -296,10 +297,10 @@ export async function DELETE(request: NextRequest) {
       success: true,
       message: "Product pricing assignment removed",
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Error removing product pricing assignment:", error);
+      logger.error("Error removing product pricing assignment:", err);
     }
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }
 }

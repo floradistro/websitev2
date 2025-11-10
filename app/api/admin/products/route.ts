@@ -3,6 +3,7 @@ import { getServiceSupabase } from "@/lib/supabase/client";
 import { productCache, vendorCache, inventoryCache } from "@/lib/cache-manager";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 export const dynamic = "force-dynamic";
 export const revalidate = 30; // Cache for 30 seconds
 
@@ -68,10 +69,10 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("❌ Error fetching admin products:", error);
+        logger.error("❌ Error fetching admin products:", err);
       }
       return NextResponse.json(
-        { error: "Failed to fetch products", details: error.message },
+        { error: "Failed to fetch products", details: err.message },
         { status: 500 },
       );
     }
@@ -248,12 +249,12 @@ export async function GET(request: NextRequest) {
         totalVendors: vendors?.length || 0,
       },
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("❌ Admin products GET error:", error);
+      logger.error("❌ Admin products GET error:", err);
     }
     return NextResponse.json(
-      { error: "Failed to fetch products", details: error.message },
+      { error: "Failed to fetch products", details: err.message },
       { status: 500 },
     );
   }
@@ -370,12 +371,12 @@ export async function DELETE(request: NextRequest) {
       success: true,
       message: "Product deleted successfully",
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Delete product error:", error);
+      logger.error("Delete product error:", err);
     }
     return NextResponse.json(
-      { error: error.message || "Failed to delete product" },
+      { error: err.message || "Failed to delete product" },
       { status: 500 },
     );
   }

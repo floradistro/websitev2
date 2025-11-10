@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 /**
  * GET - Fetch single product details for admin
  */
@@ -35,21 +36,21 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("Get product error:", error);
+        logger.error("Get product error:", err);
       }
       return NextResponse.json(
-        { error: "Product not found", details: error.message },
+        { error: "Product not found", details: err.message },
         { status: 404 },
       );
     }
 
     return NextResponse.json({ product });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Get product error:", error);
+      logger.error("Get product error:", err);
     }
     return NextResponse.json(
-      { error: "Failed to get product", details: error.message },
+      { error: "Failed to get product", details: err.message },
       { status: 500 },
     );
   }
@@ -105,12 +106,12 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       success: true,
       product,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Update product error:", error);
+      logger.error("Update product error:", err);
     }
     return NextResponse.json(
-      { error: "Failed to update product", details: error.message },
+      { error: "Failed to update product", details: err.message },
       { status: 500 },
     );
   }

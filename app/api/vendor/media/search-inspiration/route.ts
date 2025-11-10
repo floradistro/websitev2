@@ -3,6 +3,7 @@ import Exa from "exa-js";
 import { requireVendor } from "@/lib/auth/middleware";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 const exa = new Exa("c6064aa5-e664-4bb7-9de9-d09ff153aa53");
 
 /**
@@ -47,12 +48,12 @@ export async function POST(request: NextRequest) {
       results: inspiration,
       count: inspiration.length,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("❌ Exa search error:", error);
+      logger.error("❌ Exa search error:", err);
     }
     return NextResponse.json(
-      { error: error.message || "Failed to search for inspiration" },
+      { error: err.message || "Failed to search for inspiration" },
       { status: 500 },
     );
   }

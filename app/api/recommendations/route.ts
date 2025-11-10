@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 export async function POST(request: NextRequest) {
   try {
     const { orderHistory, currentProduct, wishlist, allProducts } = await request.json();
@@ -83,9 +84,9 @@ Return ONLY a JSON array of product IDs. Example: [707, 786, 798, 773]`;
 
     // Fallback if no matches
     throw new Error("No valid recommendations");
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("AI recommendation error:", error);
+      logger.error("AI recommendation error:", err);
     }
     // Fallback: Return similar category products or popular items
     try {
@@ -122,7 +123,7 @@ Return ONLY a JSON array of product IDs. Example: [707, 786, 798, 773]`;
       return NextResponse.json({
         success: false,
         recommendations: [],
-        error: error.message,
+        error: err.message,
       });
     }
   }

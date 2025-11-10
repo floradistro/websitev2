@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 /**
  * Get admin payouts from real database
  */
@@ -52,12 +53,12 @@ export async function GET(request: NextRequest) {
       success: true,
       payouts: mappedPayouts,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Payouts API error:", error);
+      logger.error("Payouts API error:", err);
     }
     return NextResponse.json(
-      { error: error.message || "Failed to fetch payouts" },
+      { error: err.message || "Failed to fetch payouts" },
       { status: 500 },
     );
   }

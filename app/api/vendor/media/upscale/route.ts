@@ -5,6 +5,7 @@ import axios from "axios";
 import sharp from "sharp";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 const REPLICATE_API_KEY = process.env.REPLICATE_API_KEY || "";
 
 // Real-ESRGAN model for 4x upscaling
@@ -189,13 +190,13 @@ export async function POST(request: NextRequest) {
         originalFileName: fileName,
       },
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("❌ Upscale error:", error.response?.data || error.message);
+      logger.error("❌ Upscale error:", error.response?.data || err.message);
     }
     return NextResponse.json(
       {
-        error: error.message || "Failed to upscale image",
+        error: err.message || "Failed to upscale image",
       },
       { status: 500 },
     );
@@ -310,8 +311,8 @@ export async function PUT(request: NextRequest) {
             tempPath: extractedTempPath,
             wasResized: processImageUrl !== file.url,
           };
-        } catch (error: any) {
-          throw new Error(`Failed to start prediction for ${file.name}: ${error.message}`);
+        } catch (error) {
+          throw new Error(`Failed to start prediction for ${file.name}: ${err.message}`);
         }
       });
 
@@ -378,14 +379,14 @@ export async function PUT(request: NextRequest) {
               url: publicUrl,
             },
           };
-        } catch (error: any) {
+        } catch (error) {
           if (process.env.NODE_ENV === "development") {
-            logger.error(`❌ Upscale failed for ${chunk[index].name}:`, error.message);
+            logger.error(`❌ Upscale failed for ${chunk[index].name}:`, err.message);
           }
           return {
             success: false,
             file: chunk[index],
-            error: error.message,
+            error: err.message,
           };
         }
       });
@@ -422,10 +423,10 @@ export async function PUT(request: NextRequest) {
       results,
       errors,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Error:", error);
+      logger.error("Error:", err);
     }
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }

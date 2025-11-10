@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
@@ -41,11 +42,11 @@ export async function GET(request: NextRequest) {
       success: true,
       assignments: data || [],
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Error fetching assignments:", error);
+      logger.error("Error fetching assignments:", err);
     }
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }
 }
 
@@ -88,11 +89,11 @@ export async function POST(request: NextRequest) {
       success: true,
       assignment: data,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Error creating assignment:", error);
+      logger.error("Error creating assignment:", err);
     }
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }
 }
 
@@ -132,11 +133,11 @@ export async function PUT(request: NextRequest) {
       success: true,
       assignment: data,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Error updating assignment:", error);
+      logger.error("Error updating assignment:", err);
     }
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }
 }
 
@@ -161,10 +162,10 @@ export async function DELETE(request: NextRequest) {
       success: true,
       message: "Assignment removed successfully",
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Error deleting assignment:", error);
+      logger.error("Error deleting assignment:", err);
     }
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }
 }

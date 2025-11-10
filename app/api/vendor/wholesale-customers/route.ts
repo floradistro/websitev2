@@ -2,6 +2,7 @@ import { getServiceSupabase } from "@/lib/supabase/client";
 import { NextRequest, NextResponse } from "next/server";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 // GET /api/vendor/wholesale-customers - List all wholesale customers for vendor
 export async function GET(request: NextRequest) {
   try {
@@ -49,9 +50,9 @@ export async function GET(request: NextRequest) {
 
       if (error) {
         if (process.env.NODE_ENV === "development") {
-          logger.error("Error fetching wholesale customers:", error);
+          logger.error("Error fetching wholesale customers:", err);
         }
-        return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+        return NextResponse.json({ success: false, error: err.message }, { status: 500 });
       }
 
       const filtered = allCustomers?.filter((customer) => {
@@ -72,9 +73,9 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("Error fetching wholesale customers:", error);
+        logger.error("Error fetching wholesale customers:", err);
       }
-      return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+      return NextResponse.json({ success: false, error: err.message }, { status: 500 });
     }
 
     return NextResponse.json({
@@ -82,11 +83,11 @@ export async function GET(request: NextRequest) {
       data: customers || [],
       count: count || customers?.length || 0,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Error in GET /api/vendor/wholesale-customers:", error);
+      logger.error("Error in GET /api/vendor/wholesale-customers:", err);
     }
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }
 }
 
@@ -152,9 +153,9 @@ export async function POST(request: NextRequest) {
 
         if (error) {
           if (process.env.NODE_ENV === "development") {
-            logger.error("Error creating wholesale customer:", error);
+            logger.error("Error creating wholesale customer:", err);
           }
-          return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+          return NextResponse.json({ success: false, error: err.message }, { status: 500 });
         }
 
         return NextResponse.json({
@@ -221,9 +222,9 @@ export async function POST(request: NextRequest) {
 
         if (error) {
           if (process.env.NODE_ENV === "development") {
-            logger.error("Error updating wholesale customer:", error);
+            logger.error("Error updating wholesale customer:", err);
           }
-          return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+          return NextResponse.json({ success: false, error: err.message }, { status: 500 });
         }
 
         return NextResponse.json({
@@ -257,9 +258,9 @@ export async function POST(request: NextRequest) {
 
         if (error) {
           if (process.env.NODE_ENV === "development") {
-            logger.error("Error deleting wholesale customer:", error);
+            logger.error("Error deleting wholesale customer:", err);
           }
-          return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+          return NextResponse.json({ success: false, error: err.message }, { status: 500 });
         }
 
         return NextResponse.json({
@@ -275,10 +276,10 @@ export async function POST(request: NextRequest) {
           { status: 400 },
         );
     }
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Error in POST /api/vendor/wholesale-customers:", error);
+      logger.error("Error in POST /api/vendor/wholesale-customers:", err);
     }
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }
 }

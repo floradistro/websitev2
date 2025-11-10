@@ -4,6 +4,7 @@ import { createAuthCookie } from "@/lib/auth/middleware";
 import { cookies } from "next/headers";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
@@ -197,9 +198,9 @@ export async function POST(request: NextRequest) {
     }
 
     return response;
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Auth refresh error:", error);
+      logger.error("Auth refresh error:", err);
     }
     return NextResponse.json(
       { success: false, error: "Failed to refresh user data" },

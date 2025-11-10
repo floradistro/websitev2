@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
@@ -110,9 +111,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       success: true,
       pricingTiers: pricingTiers,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Error fetching product pricing:", error);
+      logger.error("Error fetching product pricing:", err);
     }
     return NextResponse.json(
       { success: true, pricingTiers: [] }, // Return empty instead of error to not break product page

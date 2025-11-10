@@ -4,6 +4,7 @@ import { isStockAvailable } from "@/lib/unit-conversion";
 import { AlpineIQClient } from "@/lib/marketing/alpineiq-client";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 // Get base URL for internal API calls
 const getBaseUrl = () => {
   if (process.env.NEXT_PUBLIC_SITE_URL) {
@@ -192,15 +193,15 @@ export async function GET(request: NextRequest) {
       orders,
       pagination: data.pagination,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Orders API error:", error);
+      logger.error("Orders API error:", err);
     }
     return NextResponse.json(
       {
         success: false,
         orders: [],
-        error: error.message,
+        error: err.message,
       },
       { status: 500 },
     );
@@ -441,7 +442,7 @@ export async function POST(request: NextRequest) {
     // ============================================================================
     // Push order to Alpine IQ for loyalty points (don't await - let it run in background)
     syncOrderToAlpineIQ(order.id, customer_id).catch((error) => {
-      logger.error("⚠️ Alpine IQ sync failed (order still created):", error.message);
+      logger.error("⚠️ Alpine IQ sync failed (order still created):", err.message);
     });
 
     // ============================================================================
@@ -470,14 +471,14 @@ export async function POST(request: NextRequest) {
         })),
       },
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("❌ Order creation error:", error);
+      logger.error("❌ Order creation error:", err);
     }
     return NextResponse.json(
       {
         success: false,
-        error: error.message || "Failed to create order",
+        error: err.message || "Failed to create order",
       },
       { status: 500 },
     );

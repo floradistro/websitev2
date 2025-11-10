@@ -9,6 +9,7 @@ import { createAlpineIQClient } from "@/lib/marketing/alpineiq-client";
 import { requireVendor } from "@/lib/auth/middleware";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
@@ -113,7 +114,7 @@ export async function POST(request: NextRequest) {
         }
       } catch (error) {
         if (process.env.NODE_ENV === "development") {
-          logger.error(`Failed to lookup ${customer.email}:`, error);
+          logger.error(`Failed to lookup ${customer.email}:`, err);
         }
       }
     }
@@ -162,7 +163,7 @@ export async function POST(request: NextRequest) {
         }
       } catch (error) {
         if (process.env.NODE_ENV === "development") {
-          logger.error("Error processing member:", error);
+          logger.error("Error processing member:", err);
         }
         errors++;
       }
@@ -175,14 +176,14 @@ export async function POST(request: NextRequest) {
       customersChecked: customers.length,
       sample: results.slice(0, 5),
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Loyalty sync error:", error);
+      logger.error("Loyalty sync error:", err);
     }
     return NextResponse.json(
       {
         error: "Failed to sync loyalty data",
-        message: error.message,
+        message: err.message,
       },
       { status: 500 },
     );

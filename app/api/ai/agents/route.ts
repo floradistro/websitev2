@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 export async function GET(request: NextRequest) {
   try {
     const supabase = getServiceSupabase();
@@ -14,11 +15,11 @@ export async function GET(request: NextRequest) {
     if (error) throw error;
 
     return NextResponse.json({ agents });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Error fetching agents:", error);
+      logger.error("Error fetching agents:", err);
     }
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
 
@@ -46,11 +47,11 @@ export async function POST(request: NextRequest) {
     if (error) throw error;
 
     return NextResponse.json({ agent }, { status: 201 });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Error creating agent:", error);
+      logger.error("Error creating agent:", err);
     }
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
 
@@ -70,11 +71,11 @@ export async function PUT(request: NextRequest) {
     if (error) throw error;
 
     return NextResponse.json({ agent });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Error updating agent:", error);
+      logger.error("Error updating agent:", err);
     }
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
 
@@ -93,10 +94,10 @@ export async function DELETE(request: NextRequest) {
     if (error) throw error;
 
     return NextResponse.json({ success: true });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Error deleting agent:", error);
+      logger.error("Error deleting agent:", err);
     }
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }

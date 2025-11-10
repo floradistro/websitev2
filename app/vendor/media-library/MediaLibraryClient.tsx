@@ -196,7 +196,7 @@ export default function MediaLibraryClient() {
   const [fixingImages, setFixingImages] = useState(false);
 
   // Dual-pane view states
-  const [splitViewMode, setSplitViewMode] = useState(false);
+  const [splitViewMode, setSplitViewMode] = useState(true);
   const [draggedMedia, setDraggedMedia] = useState<MediaFile | null>(null);
   const [dropTargetProduct, setDropTargetProduct] = useState<string | null>(null);
   const [autoMatchResults, setAutoMatchResults] = useState<any>(null);
@@ -219,9 +219,12 @@ export default function MediaLibraryClient() {
 
   // DEBUG: Track gallery product changes
   useEffect(() => {
-    logger.debug("🎭 Gallery product changed", {
-      productName: galleryProduct?.name || "null",
-      stack: new Error().stack
+    logger.debug("🎭 GALLERY PRODUCT CHANGED", {
+      productName: galleryProduct?.name || "NULL",
+      productId: galleryProduct?.id || "NULL",
+      hasProduct: !!galleryProduct,
+      timestamp: new Date().toISOString(),
+      stack: new Error().stack?.split('\n').slice(0, 5).join('\n')
     });
   }, [galleryProduct]);
 
@@ -906,8 +909,13 @@ export default function MediaLibraryClient() {
                 vendorId={vendor.id}
                 onDragStart={(product) => setDropTargetProduct(product.id)}
                 onProductSelect={(product) => {
-                  logger.debug("🎬 ProductBrowser: Setting gallery product", { productName: product.name });
+                  logger.debug("🎬 ProductBrowser CLICK ->setGalleryProduct", {
+                    productName: product.name,
+                    productId: product.id,
+                    timestamp: new Date().toISOString()
+                  });
                   setGalleryProduct(product);
+                  logger.debug("✅ setGalleryProduct called successfully");
                 }}
                 onLinkMedia={handleLinkProductToMedia}
                 selectionMode={false}
@@ -952,13 +960,21 @@ export default function MediaLibraryClient() {
             {/* Grid with Drop Zone OR Generation Interface OR Gallery */}
             <div className="flex-1 overflow-hidden">
               {(() => {
-                logger.debug("🎬 Conditional render check:", {
+                const decision = galleryProduct && vendor ? "GALLERY" :
+                                 generationMode && selectedCategory === "product_photos" ? "GENERATION" :
+                                 generationMode ? "COMING_SOON" :
+                                 filteredFiles.length === 0 ? "EMPTY" : "GRID";
+
+                logger.debug("🎬 RENDER DECISION:", {
+                  decision,
                   hasGalleryProduct: !!galleryProduct,
-                  productName: galleryProduct?.name,
+                  productName: galleryProduct?.name || "null",
+                  productId: galleryProduct?.id || "null",
                   hasVendor: !!vendor,
                   generationMode,
                   selectedCategory,
-                  willShowGallery: !!(galleryProduct && vendor)
+                  splitViewMode,
+                  timestamp: new Date().toISOString()
                 });
                 return null;
               })()}
@@ -969,7 +985,11 @@ export default function MediaLibraryClient() {
                     product={galleryProduct}
                     vendorId={vendor.id}
                     onBack={() => {
-                      logger.debug("🔙 onBack called - clearing gallery product");
+                      logger.debug("🔙 onBack called - CLEARING galleryProduct", {
+                        fromProduct: galleryProduct?.name,
+                        timestamp: new Date().toISOString(),
+                        stack: new Error().stack?.split('\n').slice(0, 8).join('\n')
+                      });
                       setGalleryProduct(null);
                     }}
                     onImageUpdate={() => {

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 /**
  * Get admin analytics from real database
  */
@@ -69,12 +70,12 @@ export async function GET(request: NextRequest) {
       revenueData,
       categoryData: [],
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Analytics API error:", error);
+      logger.error("Analytics API error:", err);
     }
     return NextResponse.json(
-      { error: error.message || "Failed to fetch analytics" },
+      { error: err.message || "Failed to fetch analytics" },
       { status: 500 },
     );
   }

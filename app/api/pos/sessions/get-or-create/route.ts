@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
@@ -48,7 +49,7 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("❌ Atomic session error:", error);
+        logger.error("❌ Atomic session error:", err);
       }
       // Fallback: If function doesn't exist, use the old approach
       // (This will happen until SQL is run in Supabase)
@@ -130,12 +131,12 @@ export async function POST(request: NextRequest) {
       method: "atomic",
       message: "Enterprise-grade atomic session management",
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("❌ Session endpoint error:", error);
+      logger.error("❌ Session endpoint error:", err);
     }
     return NextResponse.json(
-      { error: "Internal server error", details: error.message },
+      { error: "Internal server error", details: err.message },
       { status: 500 },
     );
   }

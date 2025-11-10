@@ -3,6 +3,7 @@ import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireVendor } from "@/lib/auth/middleware";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 export const dynamic = "force-dynamic";
 
 /**
@@ -26,7 +27,7 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("Error fetching products for custom fields:", error);
+        logger.error("Error fetching products for custom fields:", err);
       }
       throw error;
     }
@@ -48,14 +49,14 @@ export async function GET(request: NextRequest) {
       success: true,
       customFields,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Custom fields API error:", error);
+      logger.error("Custom fields API error:", err);
     }
     return NextResponse.json(
       {
         success: false,
-        error: error.message || "Failed to fetch custom fields",
+        error: err.message || "Failed to fetch custom fields",
       },
       { status: 500 },
     );

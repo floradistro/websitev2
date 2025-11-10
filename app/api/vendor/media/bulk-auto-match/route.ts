@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireVendor } from "@/lib/auth/middleware";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 // Match image filename to product name using fuzzy matching
 // Same algorithm as NewProductClient.tsx
 const matchImageToProduct = (
@@ -186,12 +187,12 @@ export async function POST(request: NextRequest) {
       total: mediaFiles.length,
       results,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Bulk auto-match error:", error);
+      logger.error("Bulk auto-match error:", err);
     }
     return NextResponse.json(
-      { error: error.message || "Failed to auto-match images" },
+      { error: err.message || "Failed to auto-match images" },
       { status: 500 },
     );
   }

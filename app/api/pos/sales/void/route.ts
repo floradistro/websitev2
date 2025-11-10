@@ -4,6 +4,7 @@ import { AlpineIQClient } from "@/lib/marketing/alpineiq-client";
 import { requireVendor } from "@/lib/auth/middleware";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
@@ -31,7 +32,7 @@ async function getAlpineIQClient(supabase: any, vendorId: string): Promise<Alpin
     return null;
   } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Failed to get AlpineIQ client:", error);
+      logger.error("Failed to get AlpineIQ client:", err);
     }
     return null;
   }
@@ -317,8 +318,8 @@ export async function POST(request: NextRequest) {
             alpineIQSynced = true;
           }
         }
-      } catch (error: any) {
-        logger.error("⚠️  Alpine IQ sync failed (continuing anyway):", error);
+      } catch (error) {
+        logger.error("⚠️  Alpine IQ sync failed (continuing anyway):", err);
 
         // Queue for retry
         try {
@@ -334,7 +335,7 @@ export async function POST(request: NextRequest) {
             },
             status: "pending",
             retry_count: 0,
-            error_message: error.message,
+            error_message: err.message,
           });
         } catch (queueError) {
           // Ignore queue errors - don't fail the void
@@ -376,12 +377,12 @@ export async function POST(request: NextRequest) {
       pointsReversed: pointsToReverse,
       alpineIQSynced,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("💥 Error voiding transaction:", error);
+      logger.error("💥 Error voiding transaction:", err);
     }
     return NextResponse.json(
-      { error: "Internal server error", details: error.message },
+      { error: "Internal server error", details: err.message },
       { status: 500 },
     );
   }

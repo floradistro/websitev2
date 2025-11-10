@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
@@ -99,11 +100,11 @@ export async function GET(request: NextRequest) {
       success: true,
       assignments: formattedAssignments,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Error fetching category pricing assignments:", error);
+      logger.error("Error fetching category pricing assignments:", err);
     }
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }
 }
 
@@ -211,10 +212,10 @@ export async function POST(request: NextRequest) {
       success: true,
       message: `Pricing tier ${assign ? "assigned to" : "removed from"} ${productIds.length} products in ${category}`,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Error updating category pricing assignments:", error);
+      logger.error("Error updating category pricing assignments:", err);
     }
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }
 }

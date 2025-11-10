@@ -3,6 +3,7 @@ import { getServiceSupabase } from "@/lib/supabase/client";
 import crypto from "crypto";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
@@ -243,12 +244,12 @@ export async function POST(request: NextRequest) {
       },
       { headers: corsHeaders },
     );
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Error in claim account:", error);
+      logger.error("Error in claim account:", err);
     }
     return NextResponse.json(
-      { error: "Internal server error", details: error.message },
+      { error: "Internal server error", details: err.message },
       { status: 500, headers: corsHeaders },
     );
   }

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 /**
  * Get distributor vendors
  * Only accessible to vendors and wholesale-approved customers
@@ -42,9 +43,9 @@ export async function GET(request: NextRequest) {
     const { data: distributors, error, count } = await query;
 
     if (error) {
-      logger.error("Get distributors error:", error);
+      logger.error("Get distributors error:", err);
       return NextResponse.json(
-        { error: "Failed to get distributors", details: error.message },
+        { error: "Failed to get distributors", details: err.message },
         { status: 500 },
       );
     }
@@ -56,10 +57,10 @@ export async function GET(request: NextRequest) {
       limit,
       totalPages: Math.ceil((count || 0) / limit),
     });
-  } catch (error: any) {
-    logger.error("Get distributors error:", error);
+  } catch (error) {
+    logger.error("Get distributors error:", err);
     return NextResponse.json(
-      { error: "Failed to get distributors", details: error.message },
+      { error: "Failed to get distributors", details: err.message },
       { status: 500 },
     );
   }

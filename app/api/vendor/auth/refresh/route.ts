@@ -3,6 +3,7 @@ import { getServiceSupabase } from "@/lib/supabase/client";
 import { withErrorHandler } from "@/lib/api-handler";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 /**
  * Refresh vendor data from database (for updating logo, POS status, etc without re-login)
  */
@@ -41,9 +42,9 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
         pos_enabled: vendor.pos_enabled || false,
       },
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Vendor refresh error:", error);
+      logger.error("Vendor refresh error:", err);
     }
     return NextResponse.json(
       { success: false, error: "Failed to refresh vendor data" },

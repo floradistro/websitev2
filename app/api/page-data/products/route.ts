@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
@@ -248,14 +249,14 @@ export async function GET(request: NextRequest) {
         },
       },
     );
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("❌ Error in /api/page-data/products:", error);
+      logger.error("❌ Error in /api/page-data/products:", err);
     }
     return NextResponse.json(
       {
         success: false,
-        error: error.message || "Failed to fetch products data",
+        error: err.message || "Failed to fetch products data",
         data: {
           categories: [],
           locations: [],

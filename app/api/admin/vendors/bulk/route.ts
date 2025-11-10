@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
@@ -23,9 +24,9 @@ export async function DELETE(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("Bulk delete vendors error:", error);
+        logger.error("Bulk delete vendors error:", err);
       }
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json({ error: err.message }, { status: 500 });
     }
 
     const results = data || [];
@@ -41,11 +42,11 @@ export async function DELETE(request: NextRequest) {
         details: results,
       },
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Bulk delete vendors error:", error);
+      logger.error("Bulk delete vendors error:", err);
     }
-    return NextResponse.json({ error: error.message || "Internal server error" }, { status: 500 });
+    return NextResponse.json({ error: err.message || "Internal server error" }, { status: 500 });
   }
 }
 
@@ -70,9 +71,9 @@ export async function PATCH(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("Bulk update vendors error:", error);
+        logger.error("Bulk update vendors error:", err);
       }
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json({ error: err.message }, { status: 500 });
     }
 
     const results = data || [];
@@ -88,10 +89,10 @@ export async function PATCH(request: NextRequest) {
         details: results,
       },
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Bulk update vendors error:", error);
+      logger.error("Bulk update vendors error:", err);
     }
-    return NextResponse.json({ error: error.message || "Internal server error" }, { status: 500 });
+    return NextResponse.json({ error: err.message || "Internal server error" }, { status: 500 });
   }
 }

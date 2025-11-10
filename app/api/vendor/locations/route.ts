@@ -3,6 +3,7 @@ import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireVendor } from "@/lib/auth/middleware";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 export async function GET(request: NextRequest) {
   try {
     // Support both header and query parameter
@@ -26,17 +27,17 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("Error loading vendor locations:", error);
+        logger.error("Error loading vendor locations:", err);
       }
-      return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+      return NextResponse.json({ success: false, error: err.message }, { status: 500 });
     }
 
     return NextResponse.json({ success: true, locations: data || [] });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Error in vendor locations API:", error);
+      logger.error("Error in vendor locations API:", err);
     }
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }
 }
 
@@ -107,7 +108,7 @@ export async function POST(request: NextRequest) {
         .eq("vendor_id", vendorId);
 
       if (error) {
-        return NextResponse.json({ success: false, error: error.message }, { status: 400 });
+        return NextResponse.json({ success: false, error: err.message }, { status: 400 });
       }
 
       return NextResponse.json({
@@ -123,10 +124,10 @@ export async function POST(request: NextRequest) {
       },
       { status: 400 },
     );
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Error in vendor locations API:", error);
+      logger.error("Error in vendor locations API:", err);
     }
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }
 }

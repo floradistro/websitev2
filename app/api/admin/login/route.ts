@@ -3,6 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import * as bcrypt from "bcryptjs";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
@@ -99,10 +100,10 @@ export async function POST(request: NextRequest) {
         role: user.role,
       },
     });
-  } catch (error: any) {
+  } catch (error) {
     // Don't log the actual error details in production for security
     if (process.env.NODE_ENV === "development") {
-      logger.error("Admin login error:", error);
+      logger.error("Admin login error:", err);
     }
     return NextResponse.json({ error: "Login failed" }, { status: 500 });
   }

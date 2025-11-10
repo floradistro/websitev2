@@ -7,6 +7,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -30,12 +31,12 @@ export async function GET(request: NextRequest) {
       success: true,
       imports: imports || [],
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Get template imports error:", error);
+      logger.error("Get template imports error:", err);
     }
     return NextResponse.json(
-      { success: false, error: error.message || "Failed to fetch imports" },
+      { success: false, error: err.message || "Failed to fetch imports" },
       { status: 500 },
     );
   }

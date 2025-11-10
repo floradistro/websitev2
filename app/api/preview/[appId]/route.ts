@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 /**
  * GET /api/preview/[appId] - Serve live preview of app files
  * This returns HTML that loads the app's files from the database and renders them
@@ -22,7 +23,7 @@ export async function GET(
       .order("filepath");
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json({ error: err.message }, { status: 500 });
     }
 
     // Find the page.tsx content
@@ -73,10 +74,10 @@ export async function GET(
     return new NextResponse(previewHtml, {
       headers: { "Content-Type": "text/html" },
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Preview error:", error);
+      logger.error("Preview error:", err);
     }
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
+import { toError } from "@/lib/errors";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -49,7 +50,7 @@ export async function POST(request: NextRequest) {
       success: true,
       message: "Constraint updated successfully",
     });
-  } catch (error: any) {
+  } catch (error) {
     // Return the SQL so it can be run manually
     const sql = `
 ALTER TABLE public.pos_transactions DROP CONSTRAINT IF EXISTS pos_transactions_transaction_type_check;
@@ -60,7 +61,7 @@ ALTER TABLE public.pos_transactions ADD CONSTRAINT pos_transactions_transaction_
     return NextResponse.json(
       {
         success: false,
-        error: error.message,
+        error: err.message,
         message: "Please run this SQL manually in Supabase SQL Editor",
         sql,
       },

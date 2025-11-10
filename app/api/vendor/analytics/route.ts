@@ -3,6 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import { requireVendor } from "@/lib/auth/middleware";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
@@ -163,12 +164,12 @@ export async function GET(request: NextRequest) {
     };
 
     return NextResponse.json({ success: true, analytics });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Analytics API Error:", error);
+      logger.error("Analytics API Error:", err);
     }
     return NextResponse.json(
-      { success: false, error: error.message || "Failed to load analytics" },
+      { success: false, error: err.message || "Failed to load analytics" },
       { status: 500 },
     );
   }

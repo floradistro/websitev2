@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 /**
  * GET - Check vendor generation status
  * Used by polling in "generating" page
@@ -33,12 +34,12 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         storefront_generated_at: vendor.storefront_generated_at,
       },
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Status check error:", error);
+      logger.error("Status check error:", err);
     }
     return NextResponse.json(
-      { success: false, error: error.message || "Internal error" },
+      { success: false, error: err.message || "Internal error" },
       { status: 500 },
     );
   }

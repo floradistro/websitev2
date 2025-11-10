@@ -4,6 +4,7 @@ import { requireVendor } from "@/lib/auth/middleware";
 import { withErrorHandler } from "@/lib/api-handler";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
@@ -62,9 +63,9 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("[Customer API] Error:", error);
+        logger.error("[Customer API] Error:", err);
       }
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json({ error: err.message }, { status: 500 });
     }
 
     // Format customers
@@ -122,12 +123,12 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
         totalPages: Math.ceil((totalCount || 0) / limit),
       },
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("[Customer API] Error:", error);
+      logger.error("[Customer API] Error:", err);
     }
     return NextResponse.json(
-      { error: "Internal server error", message: error.message },
+      { error: "Internal server error", message: err.message },
       { status: 500 },
     );
   }

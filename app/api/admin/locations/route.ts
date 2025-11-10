@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 export const dynamic = "force-dynamic";
 export const revalidate = 30; // Cache for 30 seconds
 
@@ -40,17 +41,17 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("❌ Supabase error loading locations:", error);
+        logger.error("❌ Supabase error loading locations:", err);
       }
-      return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+      return NextResponse.json({ success: false, error: err.message }, { status: 500 });
     }
 
     return NextResponse.json({ success: true, locations: data || [] });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("❌ Error in locations API:", error);
+      logger.error("❌ Error in locations API:", err);
     }
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }
 }
 
@@ -131,9 +132,9 @@ export async function POST(request: NextRequest) {
 
       if (error) {
         if (process.env.NODE_ENV === "development") {
-          logger.error("❌ Error creating location:", error);
+          logger.error("❌ Error creating location:", err);
         }
-        return NextResponse.json({ success: false, error: error.message }, { status: 400 });
+        return NextResponse.json({ success: false, error: err.message }, { status: 400 });
       }
 
       return NextResponse.json({
@@ -204,10 +205,10 @@ export async function POST(request: NextRequest) {
 
       if (error) {
         if (process.env.NODE_ENV === "development") {
-          logger.error("❌ Error updating location:", error);
+          logger.error("❌ Error updating location:", err);
         }
         return NextResponse.json(
-          { success: false, error: error.message, details: error },
+          { success: false, error: err.message, details: error },
           { status: 400 },
         );
       }
@@ -257,9 +258,9 @@ export async function POST(request: NextRequest) {
 
       if (error) {
         if (process.env.NODE_ENV === "development") {
-          logger.error("❌ Error deleting location:", error);
+          logger.error("❌ Error deleting location:", err);
         }
-        return NextResponse.json({ success: false, error: error.message }, { status: 400 });
+        return NextResponse.json({ success: false, error: err.message }, { status: 400 });
       }
 
       return NextResponse.json({
@@ -294,7 +295,7 @@ export async function POST(request: NextRequest) {
         .single();
 
       if (error) {
-        return NextResponse.json({ success: false, error: error.message }, { status: 400 });
+        return NextResponse.json({ success: false, error: err.message }, { status: 400 });
       }
 
       return NextResponse.json({
@@ -330,7 +331,7 @@ export async function POST(request: NextRequest) {
         .single();
 
       if (error) {
-        return NextResponse.json({ success: false, error: error.message }, { status: 400 });
+        return NextResponse.json({ success: false, error: err.message }, { status: 400 });
       }
 
       return NextResponse.json({
@@ -347,10 +348,10 @@ export async function POST(request: NextRequest) {
       },
       { status: 400 },
     );
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("❌ Error in locations API:", error);
+      logger.error("❌ Error in locations API:", err);
     }
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }
 }

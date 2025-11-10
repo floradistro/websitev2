@@ -5,6 +5,7 @@ import { requireVendor } from "@/lib/auth/middleware";
 import OpenAI from "openai";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 // Lazy-load OpenAI client to avoid build-time errors
 let openai: OpenAI | null = null;
 function getOpenAI() {
@@ -77,9 +78,9 @@ Respond with ONLY the JSON, no other text.`,
     const analysis = JSON.parse(jsonMatch[0]);
 
     return analysis;
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("❌ AI analysis error:", error.message);
+      logger.error("❌ AI analysis error:", err.message);
     }
     return null;
   }
@@ -132,9 +133,9 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("❌ Error listing files:", error);
+        logger.error("❌ Error listing files:", err);
       }
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json({ error: err.message }, { status: 500 });
     }
 
     // Get smart collections stats
@@ -149,11 +150,11 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
       count: files?.length || 0,
       smart_collections: stats?.[0] || null,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Error:", error);
+      logger.error("Error:", err);
     }
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 });
 
@@ -300,11 +301,11 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
           }
         : null,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Error:", error);
+      logger.error("Error:", err);
     }
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 });
 
@@ -343,20 +344,20 @@ export const PATCH = withErrorHandler(async (request: NextRequest) => {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("❌ Update error:", error);
+        logger.error("❌ Update error:", err);
       }
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json({ error: err.message }, { status: 500 });
     }
 
     return NextResponse.json({
       success: true,
       file: data,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Error:", error);
+      logger.error("Error:", err);
     }
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 });
 
@@ -418,10 +419,10 @@ export const DELETE = withErrorHandler(async (request: NextRequest) => {
       success: true,
       message: "File deleted successfully",
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Error:", error);
+      logger.error("Error:", err);
     }
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 });

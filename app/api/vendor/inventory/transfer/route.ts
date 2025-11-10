@@ -3,6 +3,7 @@ import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireVendor } from "@/lib/auth/middleware";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 export async function POST(request: NextRequest) {
   try {
     // SECURITY: Use requireVendor to get vendor_id from authenticated session
@@ -220,18 +221,18 @@ export async function POST(request: NextRequest) {
         to_qty_after: newToQty,
       },
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("❌ Transfer error:", error);
+      logger.error("❌ Transfer error:", err);
     }
     if (process.env.NODE_ENV === "development") {
-      logger.error("Error stack:", error.stack);
+      logger.error("Error stack:", err.stack);
     }
     return NextResponse.json(
       {
-        error: error.message || "Failed to transfer inventory",
+        error: err.message || "Failed to transfer inventory",
         details: error.toString(),
-        stack: process.env.NODE_ENV === "development" ? error.stack : undefined,
+        stack: process.env.NODE_ENV === "development" ? err.stack : undefined,
       },
       { status: 500 },
     );

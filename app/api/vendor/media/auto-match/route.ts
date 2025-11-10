@@ -3,6 +3,7 @@ import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireVendor } from "@/lib/auth/middleware";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 // Levenshtein distance for fuzzy matching
 function levenshtein(a: string, b: string): number {
   const matrix = [];
@@ -167,11 +168,11 @@ export async function POST(request: NextRequest) {
         totalMediaFiles: mediaFiles.length,
       },
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Error:", error);
+      logger.error("Error:", err);
     }
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
 
@@ -207,7 +208,7 @@ export async function PUT(request: NextRequest) {
       if (error) {
         failed++;
         if (process.env.NODE_ENV === "development") {
-          logger.error(`Failed to link ${match.productId}:`, error);
+          logger.error(`Failed to link ${match.productId}:`, err);
         }
       } else {
         linked++;
@@ -220,10 +221,10 @@ export async function PUT(request: NextRequest) {
       failed,
       total: matches.length,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Error:", error);
+      logger.error("Error:", err);
     }
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }

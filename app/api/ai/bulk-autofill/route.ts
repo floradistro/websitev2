@@ -3,6 +3,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import Exa from "exa-js";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 // Increase timeout for bulk processing (can take 2-5 minutes for large batches)
 export const maxDuration = 300; // 5 minutes
 export const dynamic = "force-dynamic";
@@ -188,16 +189,16 @@ export async function POST(request: NextRequest) {
             });
           }
         });
-      } catch (error: any) {
+      } catch (error) {
         if (process.env.NODE_ENV === "development") {
-          logger.error(`❌ Error in batch ${batchNum}:`, error.message);
+          logger.error(`❌ Error in batch ${batchNum}:`, err.message);
         }
         // Add error results for this batch
         batch.forEach((product: any) => {
           results.push({
             product_name: product.name,
             success: false,
-            error: error.message || "Processing failed",
+            error: err.message || "Processing failed",
           });
         });
       }
@@ -217,15 +218,15 @@ export async function POST(request: NextRequest) {
       failed: products.length - successCount,
       results,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("❌ Bulk autofill error:", error);
+      logger.error("❌ Bulk autofill error:", err);
     }
     return NextResponse.json(
       {
-        error: error.message || "Bulk autofill failed",
+        error: err.message || "Bulk autofill failed",
         results: [],
-        details: process.env.NODE_ENV === "development" ? error.stack : undefined,
+        details: process.env.NODE_ENV === "development" ? err.stack : undefined,
       },
       { status: 500 },
     );

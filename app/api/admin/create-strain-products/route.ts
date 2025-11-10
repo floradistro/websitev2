@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 // Common strain data (from industry knowledge)
 const STRAIN_DATA: Record<string, any> = {
   "peanut butter breath": {
@@ -444,13 +445,13 @@ export async function POST(request: NextRequest) {
             imageUrl: publicUrl,
           });
         }
-      } catch (error: any) {
+      } catch (error) {
         if (process.env.NODE_ENV === "development") {
-          logger.error(`❌ Error processing ${item.image}:`, error.message);
+          logger.error(`❌ Error processing ${item.image}:`, err.message);
         }
         failed.push({
           image: item.image,
-          error: error.message,
+          error: err.message,
         });
       }
     }
@@ -465,10 +466,10 @@ export async function POST(request: NextRequest) {
       created,
       failed,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Error:", error);
+      logger.error("Error:", err);
     }
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }

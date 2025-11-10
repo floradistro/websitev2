@@ -7,6 +7,7 @@ import path from "path";
 import fs from "fs/promises";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 const execAsync = promisify(exec);
 
 /**
@@ -176,13 +177,13 @@ export async function POST(request: NextRequest) {
 
       throw new Error(`Failed to sync vendor repo: ${syncError.message}`);
     }
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("GitHub webhook error:", error);
+      logger.error("GitHub webhook error:", err);
     }
     return NextResponse.json(
       {
-        error: error.message || "Webhook processing failed",
+        error: err.message || "Webhook processing failed",
         details: error.toString(),
       },
       { status: 500 },

@@ -4,6 +4,7 @@ import { LoginSchema, validateData } from "@/lib/validation/schemas";
 import { createAuthCookie } from "@/lib/auth/middleware";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 /**
  * UNIFIED LOGIN - One clean auth flow
  * No legacy code, no fallbacks, just simple authentication
@@ -206,9 +207,9 @@ export async function POST(request: NextRequest) {
     response.cookies.set(refreshCookie.name, refreshCookie.value, refreshCookie.options);
 
     return response;
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("❌ Login error:", error);
+      logger.error("❌ Login error:", err);
     }
     return NextResponse.json(
       { success: false, error: "Login failed. Please try again." },

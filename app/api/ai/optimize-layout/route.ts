@@ -4,6 +4,7 @@ import { LayoutOptimizer } from "@/lib/ai/layout-optimizer";
 import { LLMLayoutConsultant } from "@/lib/ai/llm-layout-consultant";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 /**
  * AI Layout Optimization API
  *
@@ -207,11 +208,11 @@ export async function POST(request: NextRequest) {
         },
       },
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("AI layout optimization error:", error);
+      logger.error("AI layout optimization error:", err);
     }
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }
 }
 
@@ -243,10 +244,10 @@ export async function GET(request: NextRequest) {
       success: true,
       recommendation,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Error fetching recommendation:", error);
+      logger.error("Error fetching recommendation:", err);
     }
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }
 }

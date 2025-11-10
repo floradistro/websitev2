@@ -7,6 +7,7 @@ import { APIContracts as ApiContracts, APIControllers as ApiControllers } from "
 import { withErrorHandler } from "@/lib/api-handler";
 import { logger } from "@/lib/logger";
 import type { CartItem, AuthorizeNetTransactionResponse } from "@/types/payment";
+import { toError } from "@/lib/errors";
 
 export const POST = withErrorHandler(async (request: NextRequest) => {
   const supabase = getServiceSupabase();
@@ -332,14 +333,14 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
       order_number: orderNumber,
       transaction_id: authResult.getTransId(),
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Payment error:", error);
+      logger.error("Payment error:", err);
     }
     return NextResponse.json(
       {
         success: false,
-        error: error.message || "Payment failed",
+        error: err.message || "Payment failed",
       },
       { status: 500 },
     );

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 /**
  * POST - Trigger AI storefront generation
  * Calls the Agent SDK server to generate complete storefront
@@ -51,14 +52,14 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json(result);
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Generation trigger error:", error);
+      logger.error("Generation trigger error:", err);
     }
     return NextResponse.json(
       {
         success: false,
-        error: error.message || "Failed to trigger generation",
+        error: err.message || "Failed to trigger generation",
       },
       { status: 500 },
     );

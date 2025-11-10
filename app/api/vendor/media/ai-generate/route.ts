@@ -5,6 +5,7 @@ import { requireVendor } from "@/lib/auth/middleware";
 import OpenAI from "openai";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 // Lazy-load OpenAI client
 let openai: OpenAI | null = null;
 function getOpenAI() {
@@ -90,13 +91,13 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
       prompt: prompt,
       message: "Image generated successfully (pending approval)",
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Error:", error);
+      logger.error("Error:", err);
     }
     return NextResponse.json(
       {
-        error: error.message || "Failed to generate image",
+        error: err.message || "Failed to generate image",
       },
       { status: 500 },
     );

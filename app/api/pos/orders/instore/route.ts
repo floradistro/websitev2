@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
@@ -63,9 +64,9 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("❌ Error fetching in-store orders:", error);
+        logger.error("❌ Error fetching in-store orders:", err);
       }
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json({ error: err.message }, { status: 500 });
     }
 
     // Filter to only POS sales (exclude online pickup orders that were fulfilled)
@@ -78,12 +79,12 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.json({ orders: posOrders });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Error in in-store orders endpoint:", error);
+      logger.error("Error in in-store orders endpoint:", err);
     }
     return NextResponse.json(
-      { error: "Internal server error", details: error.message },
+      { error: "Internal server error", details: err.message },
       { status: 500 },
     );
   }

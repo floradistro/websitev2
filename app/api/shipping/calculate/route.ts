@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -65,14 +66,14 @@ export async function POST(request: NextRequest) {
       success: true,
       rates,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Shipping calculation error:", error);
+      logger.error("Shipping calculation error:", err);
     }
     return NextResponse.json(
       {
         success: false,
-        error: error.message,
+        error: err.message,
         rates: [],
       },
       { status: 500 },

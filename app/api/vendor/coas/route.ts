@@ -3,6 +3,7 @@ import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireVendor } from "@/lib/auth/middleware";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 export async function GET(request: NextRequest) {
   try {
     const authResult = await requireVendor(request);
@@ -171,11 +172,11 @@ export async function GET(request: NextRequest) {
       coas: transformedCoas,
       total: transformedCoas.length,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Vendor COAs API error:", error);
+      logger.error("Vendor COAs API error:", err);
     }
-    return NextResponse.json({ error: error.message || "Failed to fetch COAs" }, { status: 500 });
+    return NextResponse.json({ error: err.message || "Failed to fetch COAs" }, { status: 500 });
   }
 }
 
@@ -289,11 +290,11 @@ export async function POST(request: NextRequest) {
       coa: coaData,
       message: "COA uploaded successfully and pending verification",
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("COA upload error:", error);
+      logger.error("COA upload error:", err);
     }
-    return NextResponse.json({ error: error.message || "Failed to upload COA" }, { status: 500 });
+    return NextResponse.json({ error: err.message || "Failed to upload COA" }, { status: 500 });
   }
 }
 
@@ -351,11 +352,11 @@ export async function PUT(request: NextRequest) {
       success: true,
       message: "COA assigned to product successfully",
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("COA update error:", error);
+      logger.error("COA update error:", err);
     }
-    return NextResponse.json({ error: error.message || "Failed to update COA" }, { status: 500 });
+    return NextResponse.json({ error: err.message || "Failed to update COA" }, { status: 500 });
   }
 }
 
@@ -406,10 +407,10 @@ export async function DELETE(request: NextRequest) {
       success: true,
       message: "COA deleted successfully",
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("COA delete error:", error);
+      logger.error("COA delete error:", err);
     }
-    return NextResponse.json({ error: error.message || "Failed to delete COA" }, { status: 500 });
+    return NextResponse.json({ error: err.message || "Failed to delete COA" }, { status: 500 });
   }
 }

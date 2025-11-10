@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 /**
  * DELETE /api/display-groups/[id]
  * Delete a display group
@@ -18,19 +19,19 @@ export async function DELETE(
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("Error deleting display group:", error);
+        logger.error("Error deleting display group:", err);
       }
-      return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+      return NextResponse.json({ success: false, error: err.message }, { status: 500 });
     }
 
     return NextResponse.json({
       success: true,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Display group DELETE error:", error);
+      logger.error("Display group DELETE error:", err);
     }
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }
 }
 
@@ -102,10 +103,10 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       success: true,
       group,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Display group PUT error:", error);
+      logger.error("Display group PUT error:", err);
     }
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }
 }

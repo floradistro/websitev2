@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireAdmin } from "@/lib/auth/middleware";
+import { toError } from "@/lib/errors";
 
 export async function GET(request: NextRequest) {
   try {
@@ -18,11 +19,11 @@ export async function GET(request: NextRequest) {
       .order("store_name");
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 400 });
+      return NextResponse.json({ error: err.message }, { status: 400 });
     }
 
     return NextResponse.json({ success: true, vendors: data });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error) {
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }

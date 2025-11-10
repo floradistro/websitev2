@@ -8,6 +8,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { VisualAnalyzer } from "@/lib/ai/visual-analyzer";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 export async function POST(request: NextRequest) {
   try {
     const { url, viewport } = await request.json();
@@ -29,12 +30,12 @@ export async function POST(request: NextRequest) {
         insights: analysis.insights,
       },
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("❌ Analysis error:", error);
+      logger.error("❌ Analysis error:", err);
     }
     return NextResponse.json(
-      { error: error.message || "Failed to analyze website" },
+      { error: err.message || "Failed to analyze website" },
       { status: 500 },
     );
   }

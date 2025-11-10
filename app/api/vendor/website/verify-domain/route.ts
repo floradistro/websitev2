@@ -6,6 +6,7 @@ import dns from "dns";
 import { promisify } from "util";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 const resolveTxt = promisify(dns.resolveTxt);
 const resolve4 = promisify(dns.resolve4);
 const resolveCname = promisify(dns.resolveCname);
@@ -72,7 +73,7 @@ export async function POST(request: NextRequest) {
       if (flatRecords.includes(domainRecord.verification_token)) {
         verificationResults.txtRecord = true;
       }
-    } catch (error: any) {}
+    } catch (error) {}
 
     // Check A record (points to Vercel)
     try {
@@ -82,7 +83,7 @@ export async function POST(request: NextRequest) {
       if (aRecords.includes("76.76.21.21")) {
         verificationResults.aRecord = true;
       }
-    } catch (error: any) {}
+    } catch (error) {}
 
     // Check CNAME record for www subdomain (optional but recommended)
     try {
@@ -91,7 +92,7 @@ export async function POST(request: NextRequest) {
       if (cnameRecords.some((r) => r.includes("vercel-dns.com"))) {
         verificationResults.cnameRecord = true;
       }
-    } catch (error: any) {
+    } catch (error) {
       // CNAME is optional, don't fail verification
       verificationResults.cnameRecord = true;
     }
@@ -223,13 +224,13 @@ export async function POST(request: NextRequest) {
         `Visit https://${domain} to see your site!`,
       ],
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Error verifying domain:", error);
+      logger.error("Error verifying domain:", err);
     }
     return NextResponse.json(
       {
-        error: error.message || "Failed to verify domain",
+        error: err.message || "Failed to verify domain",
         details: error.toString(),
       },
       { status: 500 },

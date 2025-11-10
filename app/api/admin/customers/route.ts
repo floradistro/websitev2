@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
@@ -107,12 +108,12 @@ export async function GET(request: NextRequest) {
       }) || [];
 
     return NextResponse.json({ customers });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Admin customers error:", error);
+      logger.error("Admin customers error:", err);
     }
     return NextResponse.json(
-      { error: error.message || "Failed to load customers" },
+      { error: err.message || "Failed to load customers" },
       { status: 500 },
     );
   }

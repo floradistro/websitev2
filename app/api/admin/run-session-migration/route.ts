@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
@@ -60,7 +61,7 @@ COMMENT ON FUNCTION increment_session_counter IS
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("❌ Could not execute via RPC:", error);
+        logger.error("❌ Could not execute via RPC:", err);
       }
       return NextResponse.json(
         {
@@ -77,14 +78,14 @@ COMMENT ON FUNCTION increment_session_counter IS
       success: true,
       message: "increment_session_counter function created successfully",
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("❌ Error creating function:", error);
+      logger.error("❌ Error creating function:", err);
     }
     return NextResponse.json(
       {
         success: false,
-        error: error.message,
+        error: err.message,
         details: error.toString(),
       },
       { status: 500 },

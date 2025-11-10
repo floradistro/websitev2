@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
@@ -137,14 +138,14 @@ export async function GET(request: NextRequest) {
         },
       },
     );
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("❌ Error in /api/page-data/vendors:", error);
+      logger.error("❌ Error in /api/page-data/vendors:", err);
     }
     return NextResponse.json(
       {
         success: false,
-        error: error.message || "Failed to fetch vendors data",
+        error: err.message || "Failed to fetch vendors data",
         data: {
           vendors: [],
           regions: [],

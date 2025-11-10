@@ -5,6 +5,7 @@ import { getVendorDashboardData } from "@/lib/parallel-queries";
 import { vendorCache, generateCacheKey } from "@/lib/cache-manager";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
@@ -186,13 +187,13 @@ export async function GET(request: NextRequest) {
         revenue: parseFloat(order.total || 0),
       })),
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("❌ Dashboard error:", error);
+      logger.error("❌ Dashboard error:", err);
     }
     return NextResponse.json(
       {
-        error: error.message,
+        error: err.message,
         stats: {
           live_products: 0,
           pending_review: 0,

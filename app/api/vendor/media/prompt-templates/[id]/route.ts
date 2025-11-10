@@ -3,6 +3,7 @@ import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireVendor } from "@/lib/auth/middleware";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 export const dynamic = "force-dynamic";
 
 // GET - Get single template by ID
@@ -30,9 +31,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       success: true,
       template,
     });
-  } catch (error: any) {
-    logger.error("GET /prompt-templates/[id] error:", error);
-    return NextResponse.json({ error: error.message || "Internal server error" }, { status: 500 });
+  } catch (error) {
+    logger.error("GET /prompt-templates/[id] error:", err);
+    return NextResponse.json({ error: err.message || "Internal server error" }, { status: 500 });
   }
 }
 
@@ -77,7 +78,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       .single();
 
     if (error) {
-      logger.error("Error updating template:", error);
+      logger.error("Error updating template:", err);
       return NextResponse.json({ error: "Failed to update template" }, { status: 500 });
     }
 
@@ -85,9 +86,9 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       success: true,
       template,
     });
-  } catch (error: any) {
-    logger.error("PUT /prompt-templates/[id] error:", error);
-    return NextResponse.json({ error: error.message || "Internal server error" }, { status: 500 });
+  } catch (error) {
+    logger.error("PUT /prompt-templates/[id] error:", err);
+    return NextResponse.json({ error: err.message || "Internal server error" }, { status: 500 });
   }
 }
 
@@ -119,7 +120,7 @@ export async function DELETE(
     const { error } = await supabase.from("prompt_templates").delete().eq("id", id);
 
     if (error) {
-      logger.error("Error deleting template:", error);
+      logger.error("Error deleting template:", err);
       return NextResponse.json({ error: "Failed to delete template" }, { status: 500 });
     }
 
@@ -127,9 +128,9 @@ export async function DELETE(
       success: true,
       message: "Template deleted successfully",
     });
-  } catch (error: any) {
-    logger.error("DELETE /prompt-templates/[id] error:", error);
-    return NextResponse.json({ error: error.message || "Internal server error" }, { status: 500 });
+  } catch (error) {
+    logger.error("DELETE /prompt-templates/[id] error:", err);
+    return NextResponse.json({ error: err.message || "Internal server error" }, { status: 500 });
   }
 }
 
@@ -166,8 +167,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     return NextResponse.json({
       success: true,
     });
-  } catch (error: any) {
-    logger.error("POST /prompt-templates/[id] error:", error);
-    return NextResponse.json({ error: error.message || "Internal server error" }, { status: 500 });
+  } catch (error) {
+    logger.error("POST /prompt-templates/[id] error:", err);
+    return NextResponse.json({ error: err.message || "Internal server error" }, { status: 500 });
   }
 }

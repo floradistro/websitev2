@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -25,14 +26,14 @@ export async function POST(request: NextRequest) {
       },
       { status: 501 },
     );
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Apple Pay validation error:", error);
+      logger.error("Apple Pay validation error:", err);
     }
     return NextResponse.json(
       {
         success: false,
-        error: error.message || "Apple Pay validation failed",
+        error: err.message || "Apple Pay validation failed",
       },
       { status: 500 },
     );

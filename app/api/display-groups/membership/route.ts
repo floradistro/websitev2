@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 /**
  * GET /api/display-groups/membership?device_id=xxx
  * Check if a device is part of a display group
@@ -54,10 +55,10 @@ export async function GET(request: NextRequest) {
       group: membership.group,
       member: membership,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Group membership GET error:", error);
+      logger.error("Group membership GET error:", err);
     }
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }
 }

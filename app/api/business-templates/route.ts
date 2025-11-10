@@ -7,6 +7,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 export async function GET(request: NextRequest) {
   try {
     const supabase = getServiceSupabase();
@@ -46,12 +47,12 @@ export async function GET(request: NextRequest) {
       success: true,
       templates: templatesWithCounts,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Business templates API error:", error);
+      logger.error("Business templates API error:", err);
     }
     return NextResponse.json(
-      { success: false, error: error.message || "Failed to fetch templates" },
+      { success: false, error: err.message || "Failed to fetch templates" },
       { status: 500 },
     );
   }

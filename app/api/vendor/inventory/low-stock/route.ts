@@ -2,6 +2,7 @@ import { getServiceSupabase } from "@/lib/supabase/client";
 import { NextRequest, NextResponse } from "next/server";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 /**
  * GET /api/vendor/inventory/low-stock
  * Returns products with inventory below reorder threshold
@@ -131,14 +132,14 @@ export async function GET(request: NextRequest) {
       stats,
       threshold_used: threshold,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Error fetching low stock items:", error);
+      logger.error("Error fetching low stock items:", err);
     }
     return NextResponse.json(
       {
         success: false,
-        error: error.message || "Failed to fetch low stock items",
+        error: err.message || "Failed to fetch low stock items",
       },
       { status: 500 },
     );
@@ -198,7 +199,7 @@ export async function PATCH(request: NextRequest) {
       .single();
 
     if (error) {
-      throw new Error(error.message);
+      throw new Error(err.message);
     }
 
     return NextResponse.json({
@@ -206,14 +207,14 @@ export async function PATCH(request: NextRequest) {
       inventory: data,
       message: `Reorder point updated to ${reorder_point}`,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Error updating reorder point:", error);
+      logger.error("Error updating reorder point:", err);
     }
     return NextResponse.json(
       {
         success: false,
-        error: error.message || "Failed to update reorder point",
+        error: err.message || "Failed to update reorder point",
       },
       { status: 500 },
     );

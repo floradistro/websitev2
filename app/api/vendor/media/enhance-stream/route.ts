@@ -3,6 +3,7 @@ import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireVendor } from "@/lib/auth/middleware";
 import { v2 as cloudinary } from "cloudinary";
 import axios from "axios";
+import { toError } from "@/lib/errors";
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME || "",
@@ -124,13 +125,13 @@ export async function POST(request: NextRequest) {
                   completed: completedCount,
                   total: files.length,
                 });
-              } catch (error: any) {
+              } catch (error) {
                 completedCount++;
                 send({
                   type: "error",
                   fileName: file.name,
                   status: "error",
-                  error: error.message,
+                  error: err.message,
                   completed: completedCount,
                   total: files.length,
                 });
@@ -150,8 +151,8 @@ export async function POST(request: NextRequest) {
             total: files.length,
           });
           controller.close();
-        } catch (error: any) {
-          send({ type: "error", error: error.message });
+        } catch (error) {
+          send({ type: "error", error: err.message });
           controller.close();
         }
       },
@@ -164,8 +165,8 @@ export async function POST(request: NextRequest) {
         Connection: "keep-alive",
       },
     });
-  } catch (error: any) {
-    return new Response(JSON.stringify({ error: error.message }), {
+  } catch (error) {
+    return new Response(JSON.stringify({ error: err.message }), {
       status: 500,
     });
   }

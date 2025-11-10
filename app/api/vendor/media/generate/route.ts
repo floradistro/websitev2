@@ -4,6 +4,7 @@ import { requireVendor } from "@/lib/auth/middleware";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 // Lazy-load OpenAI client to avoid build-time errors
 let openai: OpenAI | null = null;
 function getOpenAI() {
@@ -99,12 +100,12 @@ export async function POST(request: NextRequest) {
         revised_prompt: imageData?.revised_prompt,
       },
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("❌ DALL-E generation error:", error);
+      logger.error("❌ DALL-E generation error:", err);
     }
     return NextResponse.json(
-      { error: error.message || "Failed to generate image" },
+      { error: err.message || "Failed to generate image" },
       { status: 500 },
     );
   }

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { toError } from "@/lib/errors";
 
 export const dynamic = "force-dynamic";
 
@@ -70,12 +71,12 @@ export async function GET(request: NextRequest) {
         "Cache-Control": "no-store, max-age=0",
       },
     });
-  } catch (error: any) {
+  } catch (error) {
     checks.status = "unhealthy";
     return NextResponse.json(
       {
         ...checks,
-        error: error.message,
+        error: err.message,
       },
       { status: 503 },
     );

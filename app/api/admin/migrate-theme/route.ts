@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 export async function POST(request: NextRequest) {
   try {
     const supabase = createClient(
@@ -80,14 +81,14 @@ export async function POST(request: NextRequest) {
       message: "Migration executed successfully",
       data,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Migration error:", error);
+      logger.error("Migration error:", err);
     }
     return NextResponse.json(
       {
         success: false,
-        error: error.message,
+        error: err.message,
       },
       { status: 500 },
     );

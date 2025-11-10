@@ -3,6 +3,7 @@ import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireVendor } from "@/lib/auth/middleware";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 /**
  * POST /api/vendor/website/setup-domain
  * Zero-friction domain setup
@@ -148,13 +149,13 @@ export async function POST(request: NextRequest) {
         "Your site will be live!",
       ],
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Error setting up domain:", error);
+      logger.error("Error setting up domain:", err);
     }
     return NextResponse.json(
       {
-        error: error.message || "Failed to setup domain",
+        error: err.message || "Failed to setup domain",
         details: error.toString(),
       },
       { status: 500 },
@@ -188,13 +189,13 @@ export async function GET(request: NextRequest) {
       success: true,
       domains: domains || [],
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Error getting domains:", error);
+      logger.error("Error getting domains:", err);
     }
     return NextResponse.json(
       {
-        error: error.message || "Failed to get domains",
+        error: err.message || "Failed to get domains",
       },
       { status: 500 },
     );

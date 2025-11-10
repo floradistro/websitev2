@@ -8,6 +8,7 @@ import { createClient } from "@supabase/supabase-js";
 import { requireVendor } from "@/lib/auth/middleware";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
@@ -29,10 +30,10 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("Automation rules fetch error:", error);
+        logger.error("Automation rules fetch error:", err);
       }
       return NextResponse.json(
-        { error: "Failed to fetch automation rules", message: error.message },
+        { error: "Failed to fetch automation rules", message: err.message },
         { status: 500 },
       );
     }
@@ -55,12 +56,12 @@ export async function GET(request: NextRequest) {
     );
 
     return NextResponse.json(rulesWithStats);
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Automation API error:", error);
+      logger.error("Automation API error:", err);
     }
     return NextResponse.json(
-      { error: "Failed to load automation rules", message: error.message },
+      { error: "Failed to load automation rules", message: err.message },
       { status: 500 },
     );
   }
@@ -117,12 +118,12 @@ export async function POST(request: NextRequest) {
       success: true,
       rule,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Automation rule creation error:", error);
+      logger.error("Automation rule creation error:", err);
     }
     return NextResponse.json(
-      { error: "Failed to create automation rule", message: error.message },
+      { error: "Failed to create automation rule", message: err.message },
       { status: 500 },
     );
   }

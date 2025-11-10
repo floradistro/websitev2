@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 /**
  * Get wholesale products
  * Only accessible to vendors and wholesale-approved customers
@@ -79,10 +80,10 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("Get wholesale products error:", error);
+        logger.error("Get wholesale products error:", err);
       }
       return NextResponse.json(
-        { error: "Failed to get products", details: error.message },
+        { error: "Failed to get products", details: err.message },
         { status: 500 },
       );
     }
@@ -94,12 +95,12 @@ export async function GET(request: NextRequest) {
       limit,
       totalPages: Math.ceil((count || 0) / limit),
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Get wholesale products error:", error);
+      logger.error("Get wholesale products error:", err);
     }
     return NextResponse.json(
-      { error: "Failed to get products", details: error.message },
+      { error: "Failed to get products", details: err.message },
       { status: 500 },
     );
   }

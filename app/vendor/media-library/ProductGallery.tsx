@@ -37,6 +37,23 @@ export default function ProductGallery({
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
 
+  // Track mount/unmount lifecycle
+  useEffect(() => {
+    logger.debug("🎬 ProductGallery MOUNTED", {
+      productName: product?.name,
+      productId: product?.id,
+      timestamp: new Date().toISOString()
+    });
+
+    return () => {
+      logger.debug("💀 ProductGallery UNMOUNTING", {
+        productName: product?.name,
+        productId: product?.id,
+        timestamp: new Date().toISOString()
+      });
+    };
+  }, []);
+
   useEffect(() => {
     loadImages();
     setCurrentIndex(0); // Reset to first image when product changes
@@ -162,8 +179,7 @@ export default function ProductGallery({
   logger.debug("🎨 Render state:", { loading, imageCount: images.length, currentIndex, currentImage: currentImage?.file_name });
 
   return (
-    <div className="h-full flex flex-col bg-red-500 animate-in fade-in duration-300" style={{ border: '10px solid yellow' }}>
-      {/* DEBUG: Bright colors to see if container renders */}
+    <div className="h-full flex flex-col bg-black animate-in fade-in duration-300">
       {/* Header */}
       <div className="flex-shrink-0 px-6 py-4 border-b border-white/10">
         <div className="flex items-center justify-between">

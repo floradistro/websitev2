@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 /**
  * Reject wholesale application
  * Admin only
@@ -56,12 +57,12 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       success: true,
       application,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Reject wholesale application error:", error);
+      logger.error("Reject wholesale application error:", err);
     }
     return NextResponse.json(
-      { error: "Failed to reject application", details: error.message },
+      { error: "Failed to reject application", details: err.message },
       { status: 500 },
     );
   }

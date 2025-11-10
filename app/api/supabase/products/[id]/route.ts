@@ -5,6 +5,7 @@ import { monitor } from "@/lib/performance-monitor";
 import { requireVendor } from "@/lib/auth/middleware";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const endTimer = monitor.startTimer("Product Detail API");
 
@@ -49,7 +50,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     if (error) {
       endTimer();
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json({ error: err.message }, { status: 500 });
     }
 
     if (!data) {
@@ -85,11 +86,11 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         "Cache-Control": "public, s-maxage=300, stale-while-revalidate=60",
       },
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Error:", error);
+      logger.error("Error:", err);
     }
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
 
@@ -179,11 +180,11 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       success: true,
       product: updated,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Error:", error);
+      logger.error("Error:", err);
     }
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
 
@@ -224,10 +225,10 @@ export async function DELETE(
       success: true,
       message: "Product deleted",
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Error:", error);
+      logger.error("Error:", err);
     }
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }

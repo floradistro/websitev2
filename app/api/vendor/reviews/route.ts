@@ -3,6 +3,7 @@ import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireVendor } from "@/lib/auth/middleware";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 /**
  * Get vendor reviews from real database
  */
@@ -39,9 +40,9 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("Error fetching reviews:", error);
+        logger.error("Error fetching reviews:", err);
       }
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json({ error: err.message }, { status: 500 });
     }
 
     // Map to frontend format
@@ -62,12 +63,12 @@ export async function GET(request: NextRequest) {
       success: true,
       reviews: mappedReviews,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Reviews API error:", error);
+      logger.error("Reviews API error:", err);
     }
     return NextResponse.json(
-      { error: error.message || "Failed to fetch reviews" },
+      { error: err.message || "Failed to fetch reviews" },
       { status: 500 },
     );
   }
@@ -104,21 +105,21 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("Error updating review:", error);
+        logger.error("Error updating review:", err);
       }
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json({ error: err.message }, { status: 500 });
     }
 
     return NextResponse.json({
       success: true,
       review,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Review response error:", error);
+      logger.error("Review response error:", err);
     }
     return NextResponse.json(
-      { error: error.message || "Failed to submit response" },
+      { error: err.message || "Failed to submit response" },
       { status: 500 },
     );
   }

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
@@ -173,16 +174,16 @@ export async function POST(request: NextRequest) {
       },
       duration_ms: Date.now() - startTime,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("💥 Diagnostic failed:", error);
+      logger.error("💥 Diagnostic failed:", err);
     }
     return NextResponse.json(
       {
         success: false,
         error: "Diagnostic threw an exception",
-        message: error.message,
-        stack: error.stack,
+        message: err.message,
+        stack: err.stack,
       },
       { status: 500 },
     );
@@ -221,7 +222,7 @@ async function createTestOrder(supabase: any, paymentMethod: string, sequence: n
     error: error
       ? {
           code: error.code,
-          message: error.message,
+          message: err.message,
         }
       : null,
   };

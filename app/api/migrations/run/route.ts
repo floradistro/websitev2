@@ -4,6 +4,7 @@ import { readFileSync } from "fs";
 import { join } from "path";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
@@ -146,12 +147,12 @@ export async function POST(request: NextRequest) {
         "Duplicate sessions now physically impossible",
       ],
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("❌ Migration error:", error);
+      logger.error("❌ Migration error:", err);
     }
     return NextResponse.json(
-      { error: "Migration failed", details: error.message },
+      { error: "Migration failed", details: err.message },
       { status: 500 },
     );
   }

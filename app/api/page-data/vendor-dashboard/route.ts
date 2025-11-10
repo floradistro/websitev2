@@ -3,6 +3,7 @@ import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireVendor } from "@/lib/auth/middleware";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 export const dynamic = "force-dynamic";
 export const revalidate = 30; // Cache for 30 seconds
 
@@ -124,14 +125,14 @@ export async function GET(request: NextRequest) {
         },
       },
     );
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("❌ Error in /api/page-data/vendor-dashboard:", error);
+      logger.error("❌ Error in /api/page-data/vendor-dashboard:", err);
     }
     return NextResponse.json(
       {
         success: false,
-        error: error.message || "Failed to fetch vendor dashboard data",
+        error: err.message || "Failed to fetch vendor dashboard data",
       },
       { status: 500 },
     );

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 /**
  * GET - List all TV menus for a vendor
  */
@@ -47,7 +48,7 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("Error fetching TV menus:", error);
+        logger.error("Error fetching TV menus:", err);
       }
       throw error;
     }
@@ -56,14 +57,14 @@ export async function GET(request: NextRequest) {
       success: true,
       menus: menus || [],
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("TV menus API error:", error);
+      logger.error("TV menus API error:", err);
     }
     return NextResponse.json(
       {
         success: false,
-        error: error.message || "Failed to fetch TV menus",
+        error: err.message || "Failed to fetch TV menus",
       },
       { status: 500 },
     );
@@ -117,7 +118,7 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("Error creating TV menu:", error);
+        logger.error("Error creating TV menu:", err);
       }
       throw error;
     }
@@ -126,14 +127,14 @@ export async function POST(request: NextRequest) {
       success: true,
       menu,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("TV menu creation error:", error);
+      logger.error("TV menu creation error:", err);
     }
     return NextResponse.json(
       {
         success: false,
-        error: error.message || "Failed to create TV menu",
+        error: err.message || "Failed to create TV menu",
       },
       { status: 500 },
     );

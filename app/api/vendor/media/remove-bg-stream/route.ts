@@ -3,6 +3,7 @@ import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireVendor } from "@/lib/auth/middleware";
 import FormData from "form-data";
 import axios from "axios";
+import { toError } from "@/lib/errors";
 
 const REMOVE_BG_API_KEY = process.env.REMOVE_BG_API_KEY || "";
 
@@ -103,13 +104,13 @@ export async function POST(request: NextRequest) {
                   completed: completedCount,
                   total: files.length,
                 });
-              } catch (error: any) {
+              } catch (error) {
                 completedCount++;
                 send({
                   type: "error",
                   fileName: file.name,
                   status: "error",
-                  error: error.message,
+                  error: err.message,
                   completed: completedCount,
                   total: files.length,
                 });
@@ -130,8 +131,8 @@ export async function POST(request: NextRequest) {
             total: files.length,
           });
           controller.close();
-        } catch (error: any) {
-          send({ type: "error", error: error.message });
+        } catch (error) {
+          send({ type: "error", error: err.message });
           controller.close();
         }
       },
@@ -144,8 +145,8 @@ export async function POST(request: NextRequest) {
         Connection: "keep-alive",
       },
     });
-  } catch (error: any) {
-    return new Response(JSON.stringify({ error: error.message }), {
+  } catch (error) {
+    return new Response(JSON.stringify({ error: err.message }), {
       status: 500,
     });
   }

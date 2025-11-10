@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 export const runtime = "edge";
 
 /**
@@ -86,14 +87,14 @@ export async function GET(req: NextRequest) {
       success: true,
       subCategories: subCategoriesByParent,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Error fetching sub-categories:", error);
+      logger.error("Error fetching sub-categories:", err);
     }
     return NextResponse.json(
       {
         success: false,
-        error: error.message || "Failed to fetch sub-categories",
+        error: err.message || "Failed to fetch sub-categories",
       },
       { status: 500 },
     );

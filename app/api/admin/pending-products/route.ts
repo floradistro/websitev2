@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 export async function GET(request: NextRequest) {
   try {
     const supabase = getServiceSupabase();
@@ -15,12 +16,12 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("❌ Error fetching pending products:", error);
+        logger.error("❌ Error fetching pending products:", err);
       }
       return NextResponse.json(
         {
           success: false,
-          error: error.message,
+          error: err.message,
           pending: [],
         },
         { status: 500 },
@@ -106,14 +107,14 @@ export async function GET(request: NextRequest) {
       pending: pendingProducts,
       count: pendingProducts.length,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Get pending products error:", error);
+      logger.error("Get pending products error:", err);
     }
     return NextResponse.json(
       {
         success: false,
-        error: error.message || "Failed to fetch pending products",
+        error: err.message || "Failed to fetch pending products",
         pending: [],
       },
       { status: 500 },

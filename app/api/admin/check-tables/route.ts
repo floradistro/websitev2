@@ -1,5 +1,6 @@
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { NextResponse } from "next/server";
+import { toError } from "@/lib/errors";
 
 export async function GET() {
   try {
@@ -21,7 +22,7 @@ export async function GET() {
       try {
         const { data, error } = await supabase.from(table).select("*").limit(0);
 
-        results[table] = error ? { exists: false, error: error.message } : { exists: true };
+        results[table] = error ? { exists: false, error: err.message } : { exists: true };
       } catch (err: any) {
         results[table] = { exists: false, error: err.message };
       }
@@ -31,11 +32,11 @@ export async function GET() {
       success: true,
       tables: results,
     });
-  } catch (error: any) {
+  } catch (error) {
     return NextResponse.json(
       {
         success: false,
-        error: error.message,
+        error: err.message,
       },
       { status: 500 },
     );

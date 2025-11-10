@@ -4,6 +4,7 @@ import { requireVendor } from "@/lib/auth/middleware";
 import { createVercelProject, addCustomDomain } from "@/lib/deployment/vercel";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 /**
  * POST /api/vendor/website/create-vercel-project
  * Creates a separate Vercel project for the vendor's storefront
@@ -157,13 +158,13 @@ export async function POST(request: NextRequest) {
       customDomainAdded,
       nextSteps,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("❌ Error creating Vercel project:", error);
+      logger.error("❌ Error creating Vercel project:", err);
     }
     return NextResponse.json(
       {
-        error: error.message || "Failed to create Vercel project",
+        error: err.message || "Failed to create Vercel project",
         details: error.toString(),
       },
       { status: 500 },

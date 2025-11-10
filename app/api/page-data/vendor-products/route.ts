@@ -3,6 +3,7 @@ import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireVendor } from "@/lib/auth/middleware";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
@@ -79,14 +80,14 @@ export async function GET(request: NextRequest) {
         },
       },
     );
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("❌ Error in /api/page-data/vendor-products:", error);
+      logger.error("❌ Error in /api/page-data/vendor-products:", err);
     }
     return NextResponse.json(
       {
         success: false,
-        error: error.message || "Failed to fetch vendor products",
+        error: err.message || "Failed to fetch vendor products",
       },
       { status: 500 },
     );

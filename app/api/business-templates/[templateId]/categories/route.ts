@@ -7,6 +7,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ templateId: string }> },
@@ -27,12 +28,12 @@ export async function GET(
       success: true,
       categories: categories || [],
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Template categories API error:", error);
+      logger.error("Template categories API error:", err);
     }
     return NextResponse.json(
-      { success: false, error: error.message || "Failed to fetch categories" },
+      { success: false, error: err.message || "Failed to fetch categories" },
       { status: 500 },
     );
   }

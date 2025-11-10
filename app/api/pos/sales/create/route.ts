@@ -3,6 +3,7 @@ import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireVendor } from "@/lib/auth/middleware";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
@@ -429,15 +430,15 @@ export async function POST(request: NextRequest) {
       message: `Sale completed: ${orderNumber}`,
       duration_ms: duration,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("💥 SALE FAILED:", error);
+      logger.error("💥 SALE FAILED:", err);
     }
     return NextResponse.json(
       {
         error: "Internal server error",
-        details: error.message,
-        stack: process.env.NODE_ENV === "development" ? error.stack : undefined,
+        details: err.message,
+        stack: process.env.NODE_ENV === "development" ? err.stack : undefined,
       },
       { status: 500 },
     );

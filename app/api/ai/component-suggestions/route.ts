@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 /**
  * AI Component Suggestions - Phase 4
  * Analyzes components and provides AI-powered optimization suggestions
@@ -30,14 +31,14 @@ export async function POST(request: NextRequest) {
       success: true,
       suggestions,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("AI suggestions error:", error);
+      logger.error("AI suggestions error:", err);
     }
     return NextResponse.json(
       {
         success: false,
-        error: error.message || "Failed to generate suggestions",
+        error: err.message || "Failed to generate suggestions",
       },
       { status: 500 },
     );

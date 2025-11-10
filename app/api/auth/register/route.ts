@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { logger } from "@/lib/logger";
 import { rateLimiter, RateLimitConfigs, getIdentifier } from "@/lib/rate-limiter";
+import { toError } from "@/lib/errors";
 
 /**
  * Customer registration endpoint
@@ -100,9 +101,9 @@ export async function POST(request: NextRequest) {
       success: true,
       user,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Registration error:", error);
+      logger.error("Registration error:", err);
     }
     return NextResponse.json(
       { success: false, error: "Registration failed. Please try again." },

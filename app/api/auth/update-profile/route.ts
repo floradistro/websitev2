@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { logger } from "@/lib/logger";
 import { rateLimiter, RateLimitConfigs, getIdentifier } from "@/lib/rate-limiter";
+import { toError } from "@/lib/errors";
 
 /**
  * Update customer profile
@@ -81,9 +82,9 @@ export async function PUT(request: NextRequest) {
       success: true,
       user,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Update profile error:", error);
+      logger.error("Update profile error:", err);
     }
     return NextResponse.json(
       { success: false, error: "Update failed. Please try again." },

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 /**
  * POST - Create new vendor
  * Used during onboarding flow
@@ -57,21 +58,21 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("Error creating vendor:", error);
+        logger.error("Error creating vendor:", err);
       }
-      return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+      return NextResponse.json({ success: false, error: err.message }, { status: 500 });
     }
 
     return NextResponse.json({
       success: true,
       vendor,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Vendor creation error:", error);
+      logger.error("Vendor creation error:", err);
     }
     return NextResponse.json(
-      { success: false, error: error.message || "Internal error" },
+      { success: false, error: err.message || "Internal error" },
       { status: 500 },
     );
   }

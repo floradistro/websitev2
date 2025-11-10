@@ -4,6 +4,7 @@ import { getServiceSupabase } from "@/lib/supabase/client";
 import { MCP_TOOLS, executeMCPTool } from "@/lib/ai/mcp-tools";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 /**
  * Claude-Powered Code Generation for Storefronts
  * POST /api/ai/claude-code-gen
@@ -181,12 +182,12 @@ export async function POST(request: NextRequest) {
             );
 
             controller.close();
-          } catch (error: any) {
+          } catch (error) {
             controller.enqueue(
               encoder.encode(
                 `data: ${JSON.stringify({
                   type: "error",
-                  error: error.message,
+                  error: err.message,
                 })}\n\n`,
               ),
             );
@@ -232,12 +233,12 @@ export async function POST(request: NextRequest) {
         output_tokens: message.usage.output_tokens,
       },
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Claude code gen error:", error);
+      logger.error("Claude code gen error:", err);
     }
     return NextResponse.json(
-      { success: false, error: error.message || "AI generation failed" },
+      { success: false, error: err.message || "AI generation failed" },
       { status: 500 },
     );
   }
@@ -610,7 +611,7 @@ export async function GET(request: NextRequest) {
       provider: config.provider,
       model: config.model,
     });
-  } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  } catch (error) {
+    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }
 }

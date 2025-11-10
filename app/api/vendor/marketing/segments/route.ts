@@ -8,6 +8,7 @@ import { createClient } from "@supabase/supabase-js";
 import { requireVendor } from "@/lib/auth/middleware";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
@@ -29,10 +30,10 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("Segments fetch error:", error);
+        logger.error("Segments fetch error:", err);
       }
       return NextResponse.json(
-        { error: "Failed to fetch segments", message: error.message },
+        { error: "Failed to fetch segments", message: err.message },
         { status: 500 },
       );
     }
@@ -49,12 +50,12 @@ export async function GET(request: NextRequest) {
     );
 
     return NextResponse.json(segmentsWithCounts);
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Segments API error:", error);
+      logger.error("Segments API error:", err);
     }
     return NextResponse.json(
-      { error: "Failed to load segments", message: error.message },
+      { error: "Failed to load segments", message: err.message },
       { status: 500 },
     );
   }
@@ -108,12 +109,12 @@ export async function POST(request: NextRequest) {
         customer_count: customerCount,
       },
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Segment creation error:", error);
+      logger.error("Segment creation error:", err);
     }
     return NextResponse.json(
-      { error: "Failed to create segment", message: error.message },
+      { error: "Failed to create segment", message: err.message },
       { status: 500 },
     );
   }

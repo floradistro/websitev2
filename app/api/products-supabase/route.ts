@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 // Get base URL for internal API calls
 const getBaseUrl = () => {
   if (process.env.NEXT_PUBLIC_SITE_URL) {
@@ -52,15 +53,15 @@ export async function GET(request: NextRequest) {
       products,
       total: data.pagination?.total || products.length,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Products cache error:", error);
+      logger.error("Products cache error:", err);
     }
     return NextResponse.json(
       {
         success: false,
         products: [],
-        error: error.message,
+        error: err.message,
       },
       { status: 500 },
     );

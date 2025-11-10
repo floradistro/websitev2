@@ -4,6 +4,7 @@ import { LoginSchema, validateData } from "@/lib/validation/schemas";
 import { createAuthCookie } from "@/lib/auth/middleware";
 import { logger } from "@/lib/logger";
 import { rateLimiter, RateLimitConfigs, getIdentifier } from "@/lib/rate-limiter";
+import { toError } from "@/lib/errors";
 
 // Get CORS headers with proper origin (not wildcard when using credentials)
 function getCorsHeaders(request: NextRequest) {
@@ -125,9 +126,9 @@ export async function POST(request: NextRequest) {
     response.cookies.set(cookie.name, cookie.value, cookie.options);
 
     return response;
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Login error:", error);
+      logger.error("Login error:", err);
     }
     return NextResponse.json(
       { success: false, error: "Login failed. Please try again." },

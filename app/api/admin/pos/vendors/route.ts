@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 /**
  * GET - Get all vendors with their POS status
  */
@@ -16,7 +17,7 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("Error fetching vendors:", error);
+        logger.error("Error fetching vendors:", err);
       }
       return NextResponse.json(
         { success: false, error: "Failed to fetch vendors" },
@@ -28,9 +29,9 @@ export async function GET(request: NextRequest) {
       success: true,
       vendors,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Get vendors error:", error);
+      logger.error("Get vendors error:", err);
     }
     return NextResponse.json({ success: false, error: "Internal server error" }, { status: 500 });
   }
@@ -65,7 +66,7 @@ export async function PATCH(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("Error updating vendor POS status:", error);
+        logger.error("Error updating vendor POS status:", err);
       }
       return NextResponse.json(
         { success: false, error: "Failed to update vendor POS status" },
@@ -78,9 +79,9 @@ export async function PATCH(request: NextRequest) {
       vendor,
       message: `POS ${pos_enabled ? "enabled" : "disabled"} for ${vendor.store_name}`,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Update vendor POS error:", error);
+      logger.error("Update vendor POS error:", err);
     }
     return NextResponse.json({ success: false, error: "Internal server error" }, { status: 500 });
   }

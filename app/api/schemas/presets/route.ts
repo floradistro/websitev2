@@ -3,6 +3,7 @@ import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireVendor } from "@/lib/auth/middleware";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 /**
  * GET /api/schemas/presets
  * Get all style presets
@@ -29,11 +30,11 @@ export async function GET(request: NextRequest) {
     if (error) throw error;
 
     return NextResponse.json({ success: true, presets });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Error fetching style presets:", error);
+      logger.error("Error fetching style presets:", err);
     }
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
 
@@ -103,10 +104,10 @@ export async function POST(request: NextRequest) {
       message: "Style preset applied successfully",
       preset: preset,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Error applying style preset:", error);
+      logger.error("Error applying style preset:", err);
     }
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }

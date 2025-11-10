@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 /**
  * Submit wholesale application
  */
@@ -89,12 +90,12 @@ export async function POST(request: NextRequest) {
       success: true,
       application,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Submit wholesale application error:", error);
+      logger.error("Submit wholesale application error:", err);
     }
     return NextResponse.json(
-      { error: "Failed to submit application", details: error.message },
+      { error: "Failed to submit application", details: err.message },
       { status: 500 },
     );
   }
@@ -138,21 +139,21 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("Get applications error:", error);
+        logger.error("Get applications error:", err);
       }
       return NextResponse.json(
-        { error: "Failed to get applications", details: error.message },
+        { error: "Failed to get applications", details: err.message },
         { status: 500 },
       );
     }
 
     return NextResponse.json({ applications });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Get wholesale applications error:", error);
+      logger.error("Get wholesale applications error:", err);
     }
     return NextResponse.json(
-      { error: "Failed to get applications", details: error.message },
+      { error: "Failed to get applications", details: err.message },
       { status: 500 },
     );
   }

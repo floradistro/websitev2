@@ -2,6 +2,7 @@ import { getServiceSupabase } from "@/lib/supabase/client";
 import { NextRequest, NextResponse } from "next/server";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 // GET /api/pos/products/lookup?sku=ABC-123&location_id=xxx
 export async function GET(request: NextRequest) {
   try {
@@ -135,12 +136,12 @@ export async function GET(request: NextRequest) {
     };
 
     return NextResponse.json(response);
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Error looking up product by SKU:", error);
+      logger.error("Error looking up product by SKU:", err);
     }
     return NextResponse.json(
-      { success: false, error: error.message || "Failed to lookup product" },
+      { success: false, error: err.message || "Failed to lookup product" },
       { status: 500 },
     );
   }
@@ -241,12 +242,12 @@ export async function POST(request: NextRequest) {
       found: productsWithInventory?.length || 0,
       requested: skus.length,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Error batch looking up products:", error);
+      logger.error("Error batch looking up products:", err);
     }
     return NextResponse.json(
-      { success: false, error: error.message || "Failed to lookup products" },
+      { success: false, error: err.message || "Failed to lookup products" },
       { status: 500 },
     );
   }

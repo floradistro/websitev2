@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 /**
  * Public API endpoint for TV displays to fetch products
  * Uses service role to bypass RLS
@@ -51,9 +52,9 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("❌ Error fetching TV display products:", error);
+        logger.error("❌ Error fetching TV display products:", err);
       }
-      return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+      return NextResponse.json({ success: false, error: err.message }, { status: 500 });
     }
 
     // Fetch parent categories for products that have a parent_id
@@ -156,10 +157,10 @@ export async function GET(request: NextRequest) {
     response.headers.set("Expires", "0");
 
     return response;
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("❌ TV Display products API error:", error);
+      logger.error("❌ TV Display products API error:", err);
     }
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }
 }

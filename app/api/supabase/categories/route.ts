@@ -4,6 +4,7 @@ import { productCache, generateCacheKey } from "@/lib/cache-manager";
 import { monitor } from "@/lib/performance-monitor";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 export async function GET(request: NextRequest) {
   const endTimer = monitor.startTimer("Categories API");
 
@@ -66,10 +67,10 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("Error fetching categories:", error);
+        logger.error("Error fetching categories:", err);
       }
       endTimer();
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json({ error: err.message }, { status: 500 });
     }
 
     // Store in cache
@@ -87,11 +88,11 @@ export async function GET(request: NextRequest) {
         "Cache-Control": "public, s-maxage=300, stale-while-revalidate=60",
       },
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Error:", error);
+      logger.error("Error:", err);
     }
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
 
@@ -153,10 +154,10 @@ export async function POST(request: NextRequest) {
       success: true,
       category,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Error:", error);
+      logger.error("Error:", err);
     }
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { jobQueue } from "@/lib/job-queue";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 /**
  * Job Queue Management API
  * GET - Get job statistics and history
@@ -68,11 +69,11 @@ export async function GET(request: NextRequest) {
       success: true,
       stats,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Job API error:", error);
+      logger.error("Job API error:", err);
     }
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
 
@@ -110,10 +111,10 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({ error: "Invalid action" }, { status: 400 });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Job API error:", error);
+      logger.error("Job API error:", err);
     }
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }

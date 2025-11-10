@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 /**
  * Save or update display profile
  * POST /api/ai/display-profile
@@ -99,7 +100,7 @@ export async function POST(request: NextRequest) {
       if (process.env.NODE_ENV === "development") {
         logger.error("Error saving profile:", result.error);
       }
-      return NextResponse.json({ success: false, error: result.error.message }, { status: 500 });
+      return NextResponse.json({ success: false, error: result.err.message }, { status: 500 });
     }
 
     return NextResponse.json({
@@ -107,11 +108,11 @@ export async function POST(request: NextRequest) {
       profileId: result.data.id,
       profile: result.data,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Save profile error:", error);
+      logger.error("Save profile error:", err);
     }
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }
 }
 
@@ -148,10 +149,10 @@ export async function GET(request: NextRequest) {
       profile,
       hasProfile: true,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Get profile error:", error);
+      logger.error("Get profile error:", err);
     }
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }
 }

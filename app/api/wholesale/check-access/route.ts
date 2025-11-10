@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 /**
  * Check if user has wholesale access
  * Only vendors and wholesale-approved customers have access
@@ -67,12 +68,12 @@ export async function GET(request: NextRequest) {
       hasAccess: false,
       reason: "Not a vendor or wholesale-approved customer",
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Check wholesale access error:", error);
+      logger.error("Check wholesale access error:", err);
     }
     return NextResponse.json(
-      { error: "Failed to check access", details: error.message },
+      { error: "Failed to check access", details: err.message },
       { status: 500 },
     );
   }

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { unstable_cache } from "next/cache";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 // Get base URL for internal API calls
 const getBaseUrl = () => {
   if (process.env.NEXT_PUBLIC_SITE_URL) {
@@ -112,7 +113,7 @@ const getCachedProductComplete = unstable_cache(
       };
     } catch (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error(`Error fetching product ${productId}:`, error);
+        logger.error(`Error fetching product ${productId}:`, err);
       }
       return null;
     }
@@ -140,14 +141,14 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       success: true,
       ...data,
     });
-  } catch (error: any) {
-    if (!error.message?.includes("404")) {
+  } catch (error) {
+    if (!err.message?.includes("404")) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("Product API error:", error);
+        logger.error("Product API error:", err);
       }
     }
     return NextResponse.json(
-      { success: false, error: error.message || "Failed to fetch product" },
+      { success: false, error: err.message || "Failed to fetch product" },
       { status: 500 },
     );
   }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 export async function GET(request: NextRequest) {
   try {
     const clientKey = process.env.NEXT_PUBLIC_AUTHORIZENET_CLIENT_KEY;
@@ -18,14 +19,14 @@ export async function GET(request: NextRequest) {
       environment: environment,
       useServerSide: false,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Error fetching Authorize.net keys:", error);
+      logger.error("Error fetching Authorize.net keys:", err);
     }
     return NextResponse.json(
       {
         success: false,
-        error: error.message,
+        error: err.message,
       },
       { status: 500 },
     );

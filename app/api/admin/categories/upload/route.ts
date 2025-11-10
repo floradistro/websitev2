@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 // Force dynamic rendering
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -92,7 +93,7 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("Supabase storage error:", error);
+        logger.error("Supabase storage error:", err);
       }
       throw error;
     }
@@ -107,14 +108,14 @@ export async function POST(request: NextRequest) {
       url: publicUrl,
       path: filePath,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Error uploading category image:", error);
+      logger.error("Error uploading category image:", err);
     }
     return NextResponse.json(
       {
         success: false,
-        error: error.message || "Failed to upload image",
+        error: err.message || "Failed to upload image",
       },
       { status: 500 },
     );
@@ -147,14 +148,14 @@ export async function DELETE(request: NextRequest) {
       success: true,
       message: "Image deleted successfully",
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Error deleting category image:", error);
+      logger.error("Error deleting category image:", err);
     }
     return NextResponse.json(
       {
         success: false,
-        error: error.message || "Failed to delete image",
+        error: err.message || "Failed to delete image",
       },
       { status: 500 },
     );

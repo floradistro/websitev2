@@ -3,6 +3,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import Exa from "exa-js";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 export const maxDuration = 300; // 5 minutes
 export const dynamic = "force-dynamic";
 
@@ -146,9 +147,9 @@ async function searchStrain(name: string, category: string, exa: Exa, attempt: n
     });
 
     return response.results || [];
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error(`❌ [${name}] Search error:`, error.message);
+      logger.error(`❌ [${name}] Search error:`, err.message);
     }
     return [];
   }
@@ -253,9 +254,9 @@ Use extract_strain tool with ALL available data.`;
       nose: Array.isArray(data.nose) ? data.nose : [],
       description: data.description || null,
     };
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error(`❌ [${name}] AI error:`, error.message);
+      logger.error(`❌ [${name}] AI error:`, err.message);
     }
     return null;
   }
@@ -476,11 +477,11 @@ export async function POST(request: NextRequest) {
         });
 
         closeStream();
-      } catch (error: any) {
+      } catch (error) {
         if (process.env.NODE_ENV === "development") {
-          logger.error("❌ Error:", error);
+          logger.error("❌ Error:", err);
         }
-        send({ type: "error", message: error.message || "Processing failed" });
+        send({ type: "error", message: err.message || "Processing failed" });
         closeStream();
       }
     },

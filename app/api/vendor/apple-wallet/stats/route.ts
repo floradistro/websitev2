@@ -3,6 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import { requireVendor } from "@/lib/auth/middleware";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
@@ -129,14 +130,14 @@ export async function GET(request: NextRequest) {
       },
       recent_passes: formattedPasses,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Wallet stats API error:", error);
+      logger.error("Wallet stats API error:", err);
     }
     return NextResponse.json(
       {
         success: false,
-        error: error.message || "Failed to fetch wallet stats",
+        error: err.message || "Failed to fetch wallet stats",
       },
       { status: 500 },
     );

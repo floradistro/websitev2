@@ -3,6 +3,7 @@ import { getServiceSupabase } from "@/lib/supabase/client";
 import { inventoryCache, generateCacheKey } from "@/lib/cache-manager";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 /**
  * Get inventory for a product or vendor
  */
@@ -63,9 +64,9 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("Error fetching inventory:", error);
+        logger.error("Error fetching inventory:", err);
       }
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json({ error: err.message }, { status: 500 });
     }
 
     const response = {
@@ -84,10 +85,10 @@ export async function GET(request: NextRequest) {
         "X-Response-Time": `${duration.toFixed(2)}ms`,
       },
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Inventory API error:", error);
+      logger.error("Inventory API error:", err);
     }
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }

@@ -6,6 +6,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 export async function POST(request: NextRequest) {
   try {
     const { code, props = {} } = await request.json();
@@ -76,14 +77,14 @@ export async function POST(request: NextRequest) {
     `;
 
     return NextResponse.json({ success: true, html: fullHtml });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("❌ Preview render error:", error);
+      logger.error("❌ Preview render error:", err);
     }
     return NextResponse.json(
       {
-        error: error.message,
-        details: error.stack,
+        error: err.message,
+        details: err.stack,
       },
       { status: 500 },
     );

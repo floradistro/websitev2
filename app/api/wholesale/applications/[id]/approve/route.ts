@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 /**
  * Approve wholesale application
  * Admin only
@@ -69,12 +70,12 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       success: true,
       application,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Approve wholesale application error:", error);
+      logger.error("Approve wholesale application error:", err);
     }
     return NextResponse.json(
-      { error: "Failed to approve application", details: error.message },
+      { error: "Failed to approve application", details: err.message },
       { status: 500 },
     );
   }

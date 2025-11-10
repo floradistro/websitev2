@@ -4,6 +4,7 @@ import { readFileSync } from "fs";
 import { join } from "path";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 export async function POST(request: NextRequest) {
   try {
     const supabase = getServiceSupabase();
@@ -39,9 +40,9 @@ export async function POST(request: NextRequest) {
           const directResult = await supabase.from("_raw").select("*").limit(0);
           // If that fails, log and continue
           if (process.env.NODE_ENV === "development") {
-            logger.error(`Statement ${i + 1} error:`, error.message);
+            logger.error(`Statement ${i + 1} error:`, err.message);
           }
-          errors.push({ statement: i + 1, error: error.message });
+          errors.push({ statement: i + 1, error: err.message });
         } else {
           successCount++;
         }
@@ -60,14 +61,14 @@ export async function POST(request: NextRequest) {
       totalStatements: statements.length,
       errors: errors.length > 0 ? errors : undefined,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Migration error:", error);
+      logger.error("Migration error:", err);
     }
     return NextResponse.json(
       {
         success: false,
-        error: error.message,
+        error: err.message,
       },
       { status: 500 },
     );

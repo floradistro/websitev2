@@ -3,6 +3,7 @@ import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireVendor } from "@/lib/auth/middleware";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 // Fix broken image records where .jpg files were converted to .png
 export async function POST(request: NextRequest) {
   try {
@@ -76,8 +77,8 @@ export async function POST(request: NextRequest) {
       fixed,
       total: jpgFiles.length,
     });
-  } catch (error: any) {
-    logger.error("Error fixing filenames:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error) {
+    logger.error("Error fixing filenames:", err);
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }

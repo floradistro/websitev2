@@ -3,6 +3,7 @@ import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireVendor } from "@/lib/auth/middleware";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
 export const revalidate = 60; // Cache for 60 seconds
@@ -233,12 +234,12 @@ export async function GET(request: NextRequest) {
         },
       },
     );
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Full products API error:", error);
+      logger.error("Full products API error:", err);
     }
     return NextResponse.json(
-      { success: false, error: error.message || "Internal server error" },
+      { success: false, error: err.message || "Internal server error" },
       { status: 500 },
     );
   }

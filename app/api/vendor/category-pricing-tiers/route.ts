@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 /**
  * Dynamically fetch available pricing tiers for categories based on actual pricing blueprints.
  * Uses price_breaks from pricing_tier_blueprints to extract available tier names (break_ids).
@@ -125,12 +126,12 @@ export async function GET(request: NextRequest) {
       success: true,
       tiers: result,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("[category-pricing-tiers] Unexpected error:", error);
+      logger.error("[category-pricing-tiers] Unexpected error:", err);
     }
     return NextResponse.json(
-      { success: false, error: error.message || "Internal server error" },
+      { success: false, error: err.message || "Internal server error" },
       { status: 500 },
     );
   }

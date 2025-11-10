@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 /**
  * GET - Get single TV menu by ID
  */
@@ -15,7 +16,7 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("Error fetching TV menu:", error);
+        logger.error("Error fetching TV menu:", err);
       }
       throw error;
     }
@@ -24,14 +25,14 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
       success: true,
       menu,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("TV menu fetch error:", error);
+      logger.error("TV menu fetch error:", err);
     }
     return NextResponse.json(
       {
         success: false,
-        error: error.message || "Failed to fetch TV menu",
+        error: err.message || "Failed to fetch TV menu",
       },
       { status: 500 },
     );
@@ -72,7 +73,7 @@ export async function PUT(request: NextRequest, context: { params: Promise<{ id:
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("Error updating TV menu:", error);
+        logger.error("Error updating TV menu:", err);
       }
       throw error;
     }
@@ -86,14 +87,14 @@ export async function PUT(request: NextRequest, context: { params: Promise<{ id:
       success: true,
       menu,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("TV menu update error:", error);
+      logger.error("TV menu update error:", err);
     }
     return NextResponse.json(
       {
         success: false,
-        error: error.message || "Failed to update TV menu",
+        error: err.message || "Failed to update TV menu",
       },
       { status: 500 },
     );
@@ -113,7 +114,7 @@ export async function DELETE(request: NextRequest, context: { params: Promise<{ 
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("Error deleting TV menu:", error);
+        logger.error("Error deleting TV menu:", err);
       }
       throw error;
     }
@@ -121,14 +122,14 @@ export async function DELETE(request: NextRequest, context: { params: Promise<{ 
     return NextResponse.json({
       success: true,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("TV menu deletion error:", error);
+      logger.error("TV menu deletion error:", err);
     }
     return NextResponse.json(
       {
         success: false,
-        error: error.message || "Failed to delete TV menu",
+        error: err.message || "Failed to delete TV menu",
       },
       { status: 500 },
     );
@@ -160,7 +161,7 @@ async function sendMenuUpdateCommand(menuId: string) {
     await supabase.from("tv_commands").insert(commands);
   } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Error sending menu update commands:", error);
+      logger.error("Error sending menu update commands:", err);
     }
   }
 }

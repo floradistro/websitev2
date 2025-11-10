@@ -3,6 +3,7 @@ import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireVendor } from "@/lib/auth/middleware";
 import { logger } from "@/lib/logger";
 import { updateProductSchema, safeValidateProductData } from "@/lib/validations/product";
+import { toError } from "@/lib/errors";
 
 export const dynamic = "force-dynamic";
 
@@ -128,12 +129,12 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         images,
       },
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Product GET error:", error);
+      logger.error("Product GET error:", err);
     }
     return NextResponse.json(
-      { success: false, error: error.message || "Internal server error" },
+      { success: false, error: err.message || "Internal server error" },
       { status: 500 },
     );
   }
@@ -321,12 +322,12 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       success: true,
       product: updated,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Product PUT error:", error);
+      logger.error("Product PUT error:", err);
     }
     return NextResponse.json(
-      { success: false, error: error.message || "Internal server error" },
+      { success: false, error: err.message || "Internal server error" },
       { status: 500 },
     );
   }
@@ -391,12 +392,12 @@ export async function DELETE(
       success: true,
       message: `Product "${existing.name}" deleted successfully`,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Product DELETE error:", error);
+      logger.error("Product DELETE error:", err);
     }
     return NextResponse.json(
-      { success: false, error: error.message || "Internal server error" },
+      { success: false, error: err.message || "Internal server error" },
       { status: 500 },
     );
   }

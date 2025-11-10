@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 // Get base URL for internal API calls
 const getBaseUrl = () => {
   if (process.env.NEXT_PUBLIC_SITE_URL) {
@@ -73,15 +74,15 @@ export async function GET(request: NextRequest) {
       orders,
       total: data.pagination?.total || orders.length,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Customer orders error:", error);
+      logger.error("Customer orders error:", err);
     }
     return NextResponse.json(
       {
         success: false,
         orders: [],
-        error: error.message,
+        error: err.message,
       },
       { status: 500 },
     );

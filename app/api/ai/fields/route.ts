@@ -15,6 +15,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 /**
  * POST /api/ai/fields/create
  * AI creates a custom field
@@ -80,11 +81,11 @@ export async function POST(request: NextRequest) {
       message: "Field created successfully",
       ai_ready: true,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Error in AI field creation:", error);
+      logger.error("Error in AI field creation:", err);
     }
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
 
@@ -143,11 +144,11 @@ export async function PATCH(request: NextRequest) {
       field: data,
       message: "Field updated successfully",
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Error in AI field update:", error);
+      logger.error("Error in AI field update:", err);
     }
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
 
@@ -185,10 +186,10 @@ export async function DELETE(request: NextRequest) {
       success: true,
       message: "Field removed successfully",
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Error in AI field deletion:", error);
+      logger.error("Error in AI field deletion:", err);
     }
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }

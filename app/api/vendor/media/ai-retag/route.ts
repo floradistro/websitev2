@@ -5,6 +5,7 @@ import { requireVendor } from "@/lib/auth/middleware";
 import OpenAI from "openai";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 // Lazy-load OpenAI client
 let openai: OpenAI | null = null;
 function getOpenAI() {
@@ -76,9 +77,9 @@ Respond with ONLY the JSON, no other text.`,
 
     const analysis = JSON.parse(jsonMatch[0]);
     return analysis;
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("❌ AI analysis error:", error.message);
+      logger.error("❌ AI analysis error:", err.message);
     }
     return null;
   }
@@ -148,10 +149,10 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
       file: updated,
       analysis: aiAnalysis,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Error:", error);
+      logger.error("Error:", err);
     }
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 });

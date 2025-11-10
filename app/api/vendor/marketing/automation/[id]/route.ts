@@ -8,6 +8,7 @@ import { createClient } from "@supabase/supabase-js";
 import { requireVendor } from "@/lib/auth/middleware";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
@@ -57,12 +58,12 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       success: true,
       rule,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Automation rule update error:", error);
+      logger.error("Automation rule update error:", err);
     }
     return NextResponse.json(
-      { error: "Failed to update automation rule", message: error.message },
+      { error: "Failed to update automation rule", message: err.message },
       { status: 500 },
     );
   }
@@ -104,12 +105,12 @@ export async function DELETE(
       success: true,
       message: "Automation rule deleted",
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Automation rule deletion error:", error);
+      logger.error("Automation rule deletion error:", err);
     }
     return NextResponse.json(
-      { error: "Failed to delete automation rule", message: error.message },
+      { error: "Failed to delete automation rule", message: err.message },
       { status: 500 },
     );
   }

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 // Enable ISR caching - reviews don't change frequently
 export const revalidate = 3600; // 1 hour cache
 export const runtime = "nodejs";
@@ -34,7 +35,7 @@ async function findPlaceId(query: string): Promise<string | null> {
     return null;
   } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Error searching place:", error);
+      logger.error("Error searching place:", err);
     }
     return null;
   }
@@ -61,7 +62,7 @@ async function getPlaceDetails(placeId: string) {
     return null;
   } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Error fetching place details:", error);
+      logger.error("Error fetching place details:", err);
     }
     return null;
   }
@@ -137,9 +138,9 @@ export async function GET(request: Request) {
     });
 
     return NextResponse.json(details);
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Error in Google Reviews API:", error);
+      logger.error("Error in Google Reviews API:", err);
     }
     return NextResponse.json(
       {

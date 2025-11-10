@@ -7,6 +7,7 @@ import path from "path";
 import fs from "fs/promises";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 const execAsync = promisify(exec);
 
 /**
@@ -134,13 +135,13 @@ export async function POST(request: NextRequest) {
 
       throw new Error(`Failed to sync vendor repo: ${syncError.message}`);
     }
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Deployment error:", error);
+      logger.error("Deployment error:", err);
     }
     return NextResponse.json(
       {
-        error: error.message || "Failed to deploy",
+        error: err.message || "Failed to deploy",
         details: error.toString(),
       },
       { status: 500 },
@@ -187,13 +188,13 @@ export async function GET(request: NextRequest) {
       completed_at: deployment.completed_at,
       commit_message: deployment.commit_message,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Error getting deployment status:", error);
+      logger.error("Error getting deployment status:", err);
     }
     return NextResponse.json(
       {
-        error: error.message || "Failed to get deployment status",
+        error: err.message || "Failed to get deployment status",
       },
       { status: 500 },
     );

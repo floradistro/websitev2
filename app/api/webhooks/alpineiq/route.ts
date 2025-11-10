@@ -14,6 +14,7 @@ import { createClient } from "@supabase/supabase-js";
 import crypto from "crypto";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
@@ -285,14 +286,14 @@ export async function POST(request: NextRequest) {
       event_type: body.event_type,
       processed_at: new Date().toISOString(),
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Webhook error:", error);
+      logger.error("Webhook error:", err);
     }
     return NextResponse.json(
       {
         error: "Webhook processing failed",
-        message: error.message,
+        message: err.message,
       },
       { status: 500 },
     );

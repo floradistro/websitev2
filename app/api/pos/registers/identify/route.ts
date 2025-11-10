@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 // POST /api/pos/registers/identify - Identify/claim a register for this device
 export async function POST(request: NextRequest) {
   try {
@@ -31,7 +32,7 @@ export async function POST(request: NextRequest) {
 
       if (error) {
         if (process.env.NODE_ENV === "development") {
-          logger.error("Error claiming register:", error);
+          logger.error("Error claiming register:", err);
         }
         return NextResponse.json({ error: "Failed to claim register" }, { status: 500 });
       }
@@ -86,10 +87,10 @@ export async function POST(request: NextRequest) {
       availableRegisters: availableRegisters || [],
       message: "Please select a register for this device",
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Error in POST /api/pos/registers/identify:", error);
+      logger.error("Error in POST /api/pos/registers/identify:", err);
     }
-    return NextResponse.json({ error: error.message || "Internal server error" }, { status: 500 });
+    return NextResponse.json({ error: err.message || "Internal server error" }, { status: 500 });
   }
 }

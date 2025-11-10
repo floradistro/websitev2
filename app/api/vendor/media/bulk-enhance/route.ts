@@ -5,6 +5,7 @@ import FormData from "form-data";
 import axios from "axios";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 const REMOVE_BG_API_KEY = process.env.REMOVE_BG_API_KEY || "";
 
 // Process a single image with enhancements
@@ -86,14 +87,14 @@ async function enhanceImage(
         newName: newFileName,
         url: publicUrl,
       };
-    } catch (error: any) {
+    } catch (error) {
       lastError = error;
 
       if (error.response?.status === 429 && attempt < retries) {
         continue;
       }
 
-      throw new Error(`${file.name}: ${error.message}`);
+      throw new Error(`${file.name}: ${err.message}`);
     }
   }
 
@@ -156,11 +157,11 @@ export async function POST(request: NextRequest) {
       results,
       errors,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Error:", error);
+      logger.error("Error:", err);
     }
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
 

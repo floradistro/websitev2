@@ -4,6 +4,7 @@ import { productCache, generateCacheKey } from "@/lib/cache-manager";
 import { monitor } from "@/lib/performance-monitor";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 export async function GET(request: NextRequest) {
   const startTime = performance.now();
   const endTimer = monitor.startTimer("Product List");
@@ -221,18 +222,18 @@ export async function GET(request: NextRequest) {
         "Cache-Control": "public, s-maxage=300, stale-while-revalidate=60",
       },
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("❌ FATAL ERROR in products API:", error);
+      logger.error("❌ FATAL ERROR in products API:", err);
     }
     if (process.env.NODE_ENV === "development") {
-      logger.error("Stack:", error.stack);
+      logger.error("Stack:", err.stack);
     }
     return NextResponse.json(
       {
-        error: error.message,
+        error: err.message,
         details: error.toString(),
-        stack: error.stack,
+        stack: err.stack,
       },
       { status: 500 },
     );

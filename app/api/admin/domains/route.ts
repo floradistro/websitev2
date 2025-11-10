@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 // GET - List all domains (admin)
 export async function GET(request: NextRequest) {
   try {
@@ -20,11 +21,11 @@ export async function GET(request: NextRequest) {
     if (error) throw error;
 
     return NextResponse.json({ success: true, domains });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Error fetching domains:", error);
+      logger.error("Error fetching domains:", err);
     }
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
 
@@ -48,10 +49,10 @@ export async function DELETE(request: NextRequest) {
       success: true,
       message: "Domain removed successfully",
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Error deleting domain:", error);
+      logger.error("Error deleting domain:", err);
     }
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }

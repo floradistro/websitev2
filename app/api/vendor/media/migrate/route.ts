@@ -4,6 +4,7 @@ import { requireVendor } from "@/lib/auth/middleware";
 import OpenAI from "openai";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 // Lazy-load OpenAI client to avoid build-time errors
 let openai: OpenAI | null = null;
 function getOpenAI() {
@@ -55,9 +56,9 @@ Respond with ONLY the JSON.`,
     if (!jsonMatch) return null;
 
     return JSON.parse(jsonMatch[0]);
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("AI analysis error:", error.message);
+      logger.error("AI analysis error:", err.message);
     }
     return null;
   }
@@ -236,12 +237,12 @@ export async function POST(request: NextRequest) {
             } else {
             }
           }
-        } catch (error: any) {
+        } catch (error) {
           if (process.env.NODE_ENV === "development") {
-            logger.error(`❌ Error migrating ${file.name}:`, error.message);
+            logger.error(`❌ Error migrating ${file.name}:`, err.message);
           }
           results.failed++;
-          results.errors.push(`${file.name}: ${error.message}`);
+          results.errors.push(`${file.name}: ${err.message}`);
         }
       }
     }
@@ -252,10 +253,10 @@ export async function POST(request: NextRequest) {
       total_files: storageFiles.length,
       already_migrated: existingFileNames.size,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Migration error:", error);
+      logger.error("Migration error:", err);
     }
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }

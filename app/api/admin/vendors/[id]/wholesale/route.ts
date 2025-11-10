@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 /**
  * Update vendor wholesale settings
  * Admin only
@@ -56,12 +57,12 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       success: true,
       vendor,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Update vendor wholesale settings error:", error);
+      logger.error("Update vendor wholesale settings error:", err);
     }
     return NextResponse.json(
-      { error: "Failed to update settings", details: error.message },
+      { error: "Failed to update settings", details: err.message },
       { status: 500 },
     );
   }
@@ -88,21 +89,21 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("Get vendor error:", error);
+        logger.error("Get vendor error:", err);
       }
       return NextResponse.json(
-        { error: "Vendor not found", details: error.message },
+        { error: "Vendor not found", details: err.message },
         { status: 404 },
       );
     }
 
     return NextResponse.json({ vendor });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Get vendor wholesale settings error:", error);
+      logger.error("Get vendor wholesale settings error:", err);
     }
     return NextResponse.json(
-      { error: "Failed to get settings", details: error.message },
+      { error: "Failed to get settings", details: err.message },
       { status: 500 },
     );
   }

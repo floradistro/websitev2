@@ -3,6 +3,7 @@ import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireVendor } from "@/lib/auth/middleware";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 export const dynamic = "force-dynamic";
 
 // GET - List all prompt templates (own + public)
@@ -46,7 +47,7 @@ export async function GET(request: NextRequest) {
     const { data: templates, error } = await query;
 
     if (error) {
-      logger.error("Error fetching templates:", error);
+      logger.error("Error fetching templates:", err);
       return NextResponse.json({ error: "Failed to fetch templates" }, { status: 500 });
     }
 
@@ -55,9 +56,9 @@ export async function GET(request: NextRequest) {
       templates,
       count: templates?.length || 0,
     });
-  } catch (error: any) {
-    logger.error("GET /prompt-templates error:", error);
-    return NextResponse.json({ error: error.message || "Internal server error" }, { status: 500 });
+  } catch (error) {
+    logger.error("GET /prompt-templates error:", err);
+    return NextResponse.json({ error: err.message || "Internal server error" }, { status: 500 });
   }
 }
 
@@ -99,7 +100,7 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (error) {
-      logger.error("Error creating template:", error);
+      logger.error("Error creating template:", err);
       return NextResponse.json({ error: "Failed to create template" }, { status: 500 });
     }
 
@@ -107,8 +108,8 @@ export async function POST(request: NextRequest) {
       success: true,
       template,
     });
-  } catch (error: any) {
-    logger.error("POST /prompt-templates error:", error);
-    return NextResponse.json({ error: error.message || "Internal server error" }, { status: 500 });
+  } catch (error) {
+    logger.error("POST /prompt-templates error:", err);
+    return NextResponse.json({ error: err.message || "Internal server error" }, { status: 500 });
   }
 }

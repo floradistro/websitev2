@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
@@ -123,7 +124,7 @@ $function$;
     if (error) {
       // If exec_sql doesn't exist, log the SQL for manual execution
       if (process.env.NODE_ENV === "development") {
-        logger.error("❌ Could not execute via RPC:", error);
+        logger.error("❌ Could not execute via RPC:", err);
       }
       return NextResponse.json(
         {
@@ -141,14 +142,14 @@ $function$;
       message: "get_or_create_session function fixed successfully",
       details: "walk_in_sales type changed from numeric to integer",
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("❌ Error fixing function:", error);
+      logger.error("❌ Error fixing function:", err);
     }
     return NextResponse.json(
       {
         success: false,
-        error: error.message,
+        error: err.message,
         details: error.toString(),
       },
       { status: 500 },

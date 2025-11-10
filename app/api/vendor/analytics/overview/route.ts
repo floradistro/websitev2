@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { requireVendor } from "@/lib/auth/middleware";
-
+import { toError } from "@/lib/errors";
 import { logger } from "@/lib/logger";
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -153,12 +153,13 @@ export async function GET(request: NextRequest) {
         },
       },
     });
-  } catch (error: any) {
+  } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
-      logger.error("Vendor analytics overview error:", error);
+      logger.error("Vendor analytics overview error", err);
     }
     return NextResponse.json(
-      { error: error.message || "Failed to fetch analytics" },
+      { error: err.message || "Failed to fetch analytics" },
       { status: 500 },
     );
   }

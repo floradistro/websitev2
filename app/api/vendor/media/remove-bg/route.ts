@@ -6,6 +6,7 @@ import axios from "axios";
 import { removeBgRateLimiter } from "@/lib/rate-limiter-advanced";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 const REMOVE_BG_API_KEY = process.env.REMOVE_BG_API_KEY || "";
 
 export async function POST(request: NextRequest) {
@@ -101,9 +102,9 @@ export async function POST(request: NextRequest) {
         originalFileName: fileName,
       },
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("❌ Remove.bg error:", error.response?.data || error.message);
+      logger.error("❌ Remove.bg error:", error.response?.data || err.message);
     }
     // Handle remove.bg specific errors
     if (error.response?.status === 402) {
@@ -126,7 +127,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(
       {
-        error: error.response?.data?.errors?.[0]?.title || error.message,
+        error: error.response?.data?.errors?.[0]?.title || err.message,
       },
       { status: 500 },
     );
@@ -221,11 +222,11 @@ async function processImage(file: { url: string; name: string }, vendorId: strin
         newName: newFileName,
         url: cacheBustedUrl,
       };
-    } catch (error: any) {
+    } catch (error) {
       lastError = error;
 
       // Capture detailed error information
-      let errorMessage = error.message || "Unknown error";
+      let errorMessage = err.message || "Unknown error";
       let shouldRetry = false;
 
       if (error.response) {
@@ -255,7 +256,7 @@ async function processImage(file: { url: string; name: string }, vendorId: strin
       } else if (error.code) {
         // Network errors - retry
         shouldRetry = attempt < retries;
-        errorMessage = `${error.code}: ${error.message}`;
+        errorMessage = `${error.code}: ${err.message}`;
       }
 
       // If we should retry and haven't exhausted retries, continue loop
@@ -295,9 +296,9 @@ async function processInParallel(
           const result = await processImage(file, vendorId, 5);
 
           return { success: true, result, file };
-        } catch (error: any) {
+        } catch (error) {
           if (process.env.NODE_ENV === "development") {
-            logger.error(`❌ Failed ${index + 1}/${files.length}: ${file.name} - ${error.message}`);
+            logger.error(`❌ Failed ${index + 1}/${files.length}: ${file.name} - ${err.message}`);
           }
           throw error;
         }
@@ -361,10 +362,10 @@ export async function PUT(request: NextRequest) {
       results,
       errors,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Error:", error);
+      logger.error("Error:", err);
     }
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }

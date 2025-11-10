@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 export const dynamic = "force-dynamic";
 export const revalidate = 30; // Cache for 30 seconds
 
@@ -21,17 +22,17 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("Error loading users:", error);
+        logger.error("Error loading users:", err);
       }
-      return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+      return NextResponse.json({ success: false, error: err.message }, { status: 500 });
     }
 
     return NextResponse.json({ success: true, users: data || [] });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Error in users API:", error);
+      logger.error("Error in users API:", err);
     }
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }
 }
 
@@ -144,14 +145,14 @@ export async function POST(request: NextRequest) {
           user,
           message: `User ${first_name} ${last_name} created successfully. Password reset email sent to ${email}.`,
         });
-      } catch (error: any) {
+      } catch (error) {
         if (process.env.NODE_ENV === "development") {
-          logger.error("Error in user creation:", error);
+          logger.error("Error in user creation:", err);
         }
         return NextResponse.json(
           {
             success: false,
-            error: error.message || "Failed to create user",
+            error: err.message || "Failed to create user",
           },
           { status: 500 },
         );
@@ -183,9 +184,9 @@ export async function POST(request: NextRequest) {
 
       if (error) {
         if (process.env.NODE_ENV === "development") {
-          logger.error("Error updating user:", error);
+          logger.error("Error updating user:", err);
         }
-        return NextResponse.json({ success: false, error: error.message }, { status: 400 });
+        return NextResponse.json({ success: false, error: err.message }, { status: 400 });
       }
 
       return NextResponse.json({
@@ -213,7 +214,7 @@ export async function POST(request: NextRequest) {
         .eq("id", user_id);
 
       if (error) {
-        return NextResponse.json({ success: false, error: error.message }, { status: 400 });
+        return NextResponse.json({ success: false, error: err.message }, { status: 400 });
       }
 
       return NextResponse.json({
@@ -239,9 +240,9 @@ export async function POST(request: NextRequest) {
 
       if (error) {
         if (process.env.NODE_ENV === "development") {
-          logger.error("Error deleting user:", error);
+          logger.error("Error deleting user:", err);
         }
-        return NextResponse.json({ success: false, error: error.message }, { status: 400 });
+        return NextResponse.json({ success: false, error: err.message }, { status: 400 });
       }
 
       return NextResponse.json({
@@ -257,10 +258,10 @@ export async function POST(request: NextRequest) {
       },
       { status: 400 },
     );
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Error in users API:", error);
+      logger.error("Error in users API:", err);
     }
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }
 }

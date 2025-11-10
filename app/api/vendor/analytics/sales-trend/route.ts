@@ -3,6 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import { requireVendor } from "@/lib/auth/middleware";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
@@ -81,12 +82,12 @@ export async function GET(request: NextRequest) {
         days,
       },
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Vendor sales trend error:", error);
+      logger.error("Vendor sales trend error:", err);
     }
     return NextResponse.json(
-      { error: error.message || "Failed to fetch sales trend" },
+      { error: err.message || "Failed to fetch sales trend" },
       { status: 500 },
     );
   }

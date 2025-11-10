@@ -4,6 +4,7 @@ import { requireVendor } from "@/lib/auth/middleware";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 // Lazy-load OpenAI client to avoid build-time errors
 let openai: OpenAI | null = null;
 function getOpenAI() {
@@ -136,12 +137,12 @@ export async function POST(request: NextRequest) {
         revised_prompt: imageData?.revised_prompt,
       },
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("❌ Reimagine error:", error);
+      logger.error("❌ Reimagine error:", err);
     }
     return NextResponse.json(
-      { error: error.message || "Failed to reimagine image" },
+      { error: err.message || "Failed to reimagine image" },
       { status: 500 },
     );
   }
@@ -220,10 +221,10 @@ export async function PUT(request: NextRequest) {
       results,
       errors,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Error:", error);
+      logger.error("Error:", err);
     }
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }

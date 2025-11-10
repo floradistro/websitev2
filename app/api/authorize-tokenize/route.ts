@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 export async function POST(request: NextRequest) {
   try {
     const { cardNumber, expMonth, expYear, cvv, customerEmail, customerName } =
@@ -44,14 +45,14 @@ export async function POST(request: NextRequest) {
       customerProfileId: `customer_${customerEmail.split("@")[0]}`,
       message: "Card tokenized successfully",
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Tokenization error:", error);
+      logger.error("Tokenization error:", err);
     }
     return NextResponse.json(
       {
         success: false,
-        error: error.message || "Failed to tokenize card",
+        error: err.message || "Failed to tokenize card",
       },
       { status: 500 },
     );

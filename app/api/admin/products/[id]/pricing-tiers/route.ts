@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 /**
  * Get pricing tiers for a product
  */
@@ -19,21 +20,21 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("Get tiers error:", error);
+        logger.error("Get tiers error:", err);
       }
       return NextResponse.json(
-        { error: "Failed to get pricing tiers", details: error.message },
+        { error: "Failed to get pricing tiers", details: err.message },
         { status: 500 },
       );
     }
 
     return NextResponse.json({ tiers: tiers || [] });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Get pricing tiers error:", error);
+      logger.error("Get pricing tiers error:", err);
     }
     return NextResponse.json(
-      { error: "Failed to get pricing tiers", details: error.message },
+      { error: "Failed to get pricing tiers", details: err.message },
       { status: 500 },
     );
   }
@@ -100,12 +101,12 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       success: true,
       message: `Updated ${tiers.length} pricing tiers`,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Update pricing tiers error:", error);
+      logger.error("Update pricing tiers error:", err);
     }
     return NextResponse.json(
-      { error: "Failed to update pricing tiers", details: error.message },
+      { error: "Failed to update pricing tiers", details: err.message },
       { status: 500 },
     );
   }

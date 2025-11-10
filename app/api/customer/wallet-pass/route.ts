@@ -3,6 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import { walletPassGenerator } from "@/lib/wallet/pass-generator";
 import { logger } from "@/lib/logger";
 import { generatePassSerialNumber, generateAuthToken } from "@/lib/wallet/config";
+import { toError } from "@/lib/errors";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -159,15 +160,15 @@ export async function GET(request: NextRequest) {
         "Cache-Control": "no-cache",
       },
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Wallet pass generation error:", error);
+      logger.error("Wallet pass generation error:", err);
     }
     return NextResponse.json(
       {
         success: false,
-        error: error.message || "Failed to generate wallet pass",
-        details: process.env.NODE_ENV === "development" ? error.stack : undefined,
+        error: err.message || "Failed to generate wallet pass",
+        details: process.env.NODE_ENV === "development" ? err.stack : undefined,
       },
       { status: 500 },
     );

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 /**
  * GET - Fetch single vendor details for admin
  */
@@ -23,10 +24,10 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("Get vendor error:", error);
+        logger.error("Get vendor error:", err);
       }
       return NextResponse.json(
-        { error: "Vendor not found", details: error.message },
+        { error: "Vendor not found", details: err.message },
         { status: 404 },
       );
     }
@@ -35,12 +36,12 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       success: true,
       vendor,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Get vendor error:", error);
+      logger.error("Get vendor error:", err);
     }
     return NextResponse.json(
-      { error: "Failed to get vendor", details: error.message },
+      { error: "Failed to get vendor", details: err.message },
       { status: 500 },
     );
   }
@@ -90,12 +91,12 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       success: true,
       vendor,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Update vendor error:", error);
+      logger.error("Update vendor error:", err);
     }
     return NextResponse.json(
-      { error: "Failed to update vendor", details: error.message },
+      { error: "Failed to update vendor", details: err.message },
       { status: 500 },
     );
   }

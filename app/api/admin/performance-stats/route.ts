@@ -3,6 +3,7 @@ import { monitor } from "@/lib/performance-monitor";
 import { productCache, vendorCache, inventoryCache } from "@/lib/cache-manager";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 /**
  * Performance monitoring dashboard endpoint
  * Provides real-time system health metrics
@@ -54,10 +55,10 @@ export async function GET(request: NextRequest) {
         },
       },
     );
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Performance stats error:", error);
+      logger.error("Performance stats error:", err);
     }
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }

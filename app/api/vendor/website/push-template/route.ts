@@ -3,6 +3,7 @@ import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireVendor } from "@/lib/auth/middleware";
 import { commitMultipleFiles } from "@/lib/deployment/github";
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 import {
   getStorefrontTemplateFiles,
   rebrandStorefrontFiles,
@@ -100,12 +101,12 @@ export async function POST(request: NextRequest) {
         url: `https://github.com/${vendor.github_username}/${vendor.github_repo_name}`,
       },
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("❌ Error pushing template:", error);
+      logger.error("❌ Error pushing template:", err);
     }
     return NextResponse.json(
-      { error: error.message || "Failed to push template" },
+      { error: err.message || "Failed to push template" },
       { status: 500 },
     );
   }

@@ -3,6 +3,7 @@ import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireVendor } from "@/lib/auth/middleware";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 /**
  * GET /api/vendor/website/deployments
  * Get recent deployments for vendor
@@ -28,7 +29,7 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("Error fetching deployments:", error);
+        logger.error("Error fetching deployments:", err);
       }
       return NextResponse.json(
         { success: false, error: "Failed to fetch deployments" },
@@ -40,14 +41,14 @@ export async function GET(request: NextRequest) {
       success: true,
       data: deployments || [],
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Error in deployments endpoint:", error);
+      logger.error("Error in deployments endpoint:", err);
     }
     return NextResponse.json(
       {
         success: false,
-        error: error.message || "Failed to fetch deployments",
+        error: err.message || "Failed to fetch deployments",
       },
       { status: 500 },
     );

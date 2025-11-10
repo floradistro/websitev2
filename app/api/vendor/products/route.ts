@@ -6,6 +6,7 @@ import { requireVendor } from "@/lib/auth/middleware";
 import { withErrorHandler } from "@/lib/api-handler";
 import { logger } from "@/lib/logger";
 import { createProductSchema, safeValidateProductData } from "@/lib/validations/product";
+import { toError } from "@/lib/errors";
 import {
   cacheGetOrSet,
   CacheTTL,
@@ -38,7 +39,7 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
           .order("created_at", { ascending: false });
 
         if (error) {
-          logger.error("Error fetching vendor products:", error);
+          logger.error("Error fetching vendor products:", err);
           throw error;
         }
 
@@ -51,10 +52,10 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
       success: true,
       products,
     });
-  } catch (error: any) {
-    logger.error("Get vendor products error:", error);
+  } catch (error) {
+    logger.error("Get vendor products error:", err);
     return NextResponse.json(
-      { error: error.message || "Failed to fetch products" },
+      { error: err.message || "Failed to fetch products" },
       { status: 500 },
     );
   }
@@ -342,13 +343,13 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
       product,
       message: "Product submitted for approval",
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("❌ Create product error:", error);
+      logger.error("❌ Create product error:", err);
     }
     return NextResponse.json(
       {
-        error: error.message || "Failed to create product",
+        error: err.message || "Failed to create product",
         details: error.toString(),
       },
       { status: 500 },
@@ -427,12 +428,12 @@ export const DELETE = withErrorHandler(async (request: NextRequest) => {
       success: true,
       message: "Product deleted successfully",
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Delete product error:", error);
+      logger.error("Delete product error:", err);
     }
     return NextResponse.json(
-      { error: error.message || "Failed to delete product" },
+      { error: err.message || "Failed to delete product" },
       { status: 500 },
     );
   }

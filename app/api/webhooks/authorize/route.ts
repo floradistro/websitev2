@@ -3,6 +3,7 @@ import { getServiceSupabase } from "@/lib/supabase/client";
 import crypto from "crypto";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -300,12 +301,12 @@ export async function POST(request: NextRequest) {
       message: "Webhook processed",
       eventType,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Webhook error:", error);
+      logger.error("Webhook error:", err);
     }
     return NextResponse.json(
-      { error: error.message || "Webhook processing failed" },
+      { error: err.message || "Webhook processing failed" },
       { status: 500 },
     );
   }

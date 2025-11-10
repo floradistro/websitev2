@@ -8,6 +8,7 @@ import { createClient } from "@supabase/supabase-js";
 import { requireVendor } from "@/lib/auth/middleware";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
@@ -29,12 +30,12 @@ export async function POST(request: NextRequest) {
       count,
       rules: rules || [],
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Segment estimation error:", error);
+      logger.error("Segment estimation error:", err);
     }
     return NextResponse.json(
-      { error: "Failed to estimate segment size", message: error.message },
+      { error: "Failed to estimate segment size", message: err.message },
       { status: 500 },
     );
   }

@@ -8,6 +8,7 @@ import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireVendor } from "@/lib/auth/middleware";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 export async function POST(request: NextRequest) {
   try {
     // SECURITY: Require vendor authentication (Phase 2)
@@ -203,12 +204,12 @@ export async function POST(request: NextRequest) {
       field_groups_created: fieldGroupsCreated,
       message: "Template imported successfully",
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Import template error:", error);
+      logger.error("Import template error:", err);
     }
     return NextResponse.json(
-      { error: error.message || "Failed to import template" },
+      { error: err.message || "Failed to import template" },
       { status: 500 },
     );
   }

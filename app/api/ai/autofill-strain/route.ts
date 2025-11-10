@@ -4,6 +4,7 @@ import Exa from "exa-js";
 import { createClient } from "@supabase/supabase-js";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
@@ -296,22 +297,22 @@ Return ONLY JSON.`,
 
           await sendProgress(`Saved successfully`);
           await sendComplete(product.id, strainData);
-        } catch (error: any) {
+        } catch (error) {
           if (process.env.NODE_ENV === "development") {
-            logger.error(`Error processing product ${product.id}:`, error);
+            logger.error(`Error processing product ${product.id}:`, err);
           }
-          await sendProgress(`❌ Error: ${error.message}`);
-          await sendError(product.id, error.message);
+          await sendProgress(`❌ Error: ${err.message}`);
+          await sendError(product.id, err.message);
         }
       }
 
       await sendProgress(`\n---\n\n## Batch Complete\n\nProcessed ${products.length} products`);
       await writer.close();
-    } catch (error: any) {
+    } catch (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("Fatal error:", error);
+        logger.error("Fatal error:", err);
       }
-      await sendError("", error.message);
+      await sendError("", err.message);
       await writer.close();
     }
   })();

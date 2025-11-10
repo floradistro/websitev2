@@ -4,6 +4,7 @@ import { requireVendor } from "@/lib/auth/middleware";
 import { createRepositoryFromTemplate } from "@/lib/deployment/github";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 export async function POST(request: NextRequest) {
   try {
     // Verify vendor authentication
@@ -77,12 +78,12 @@ export async function POST(request: NextRequest) {
         defaultBranch: repo.default_branch,
       },
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Error creating website repo:", error);
+      logger.error("Error creating website repo:", err);
     }
     return NextResponse.json(
-      { error: error.message || "Failed to create repository" },
+      { error: err.message || "Failed to create repository" },
       { status: 500 },
     );
   }

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 // POST - Toggle domain active status (admin)
 export async function POST(request: NextRequest) {
   try {
@@ -25,10 +26,10 @@ export async function POST(request: NextRequest) {
       success: true,
       message: `Domain ${isActive ? "activated" : "deactivated"} successfully`,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Error toggling domain:", error);
+      logger.error("Error toggling domain:", err);
     }
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 
@@ -114,14 +115,14 @@ export async function POST(request: NextRequest) {
           { status: 400 },
         );
     }
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Dev tools error:", error);
+      logger.error("Dev tools error:", err);
     }
     return NextResponse.json(
       {
         success: false,
-        message: error.message || "An error occurred",
+        message: err.message || "An error occurred",
       },
       { status: 500 },
     );

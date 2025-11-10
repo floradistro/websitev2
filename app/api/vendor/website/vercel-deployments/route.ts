@@ -3,6 +3,7 @@ import { getRecentDeployments } from "@/lib/deployment/vercel";
 import { requireVendor } from "@/lib/auth/middleware";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 /**
  * GET /api/vendor/website/vercel-deployments
  * Get actual Vercel deployments for the main project
@@ -29,13 +30,13 @@ export async function GET(request: NextRequest) {
       success: true,
       deployments: deployments.deployments || [],
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Error fetching Vercel deployments:", error);
+      logger.error("Error fetching Vercel deployments:", err);
     }
     return NextResponse.json(
       {
-        error: error.message || "Failed to fetch deployments",
+        error: err.message || "Failed to fetch deployments",
       },
       { status: 500 },
     );

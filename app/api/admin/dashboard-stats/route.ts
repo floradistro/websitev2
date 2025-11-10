@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
@@ -115,12 +116,12 @@ export async function GET() {
         },
       },
     );
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Dashboard stats error:", error);
+      logger.error("Dashboard stats error:", err);
     }
     return NextResponse.json(
-      { error: error.message || "Failed to load dashboard stats" },
+      { error: err.message || "Failed to load dashboard stats" },
       { status: 500 },
     );
   }

@@ -11,6 +11,7 @@ import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireVendor } from "@/lib/auth/middleware";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -47,7 +48,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Categories API error:", error);
+      logger.error("Categories API error:", err);
     }
     return NextResponse.json(
       { success: false, error: "Failed to fetch categories" },
@@ -111,12 +112,12 @@ export async function POST(request: NextRequest) {
       success: true,
       category,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Create category error:", error);
+      logger.error("Create category error:", err);
     }
     return NextResponse.json(
-      { error: error.message || "Failed to create category" },
+      { error: err.message || "Failed to create category" },
       { status: 500 },
     );
   }
@@ -184,12 +185,12 @@ export async function PUT(request: NextRequest) {
       success: true,
       category,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Update category error:", error);
+      logger.error("Update category error:", err);
     }
     return NextResponse.json(
-      { error: error.message || "Failed to update category" },
+      { error: err.message || "Failed to update category" },
       { status: 500 },
     );
   }
@@ -250,12 +251,12 @@ export async function DELETE(request: NextRequest) {
       success: true,
       message: "Category deleted successfully",
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Delete category error:", error);
+      logger.error("Delete category error:", err);
     }
     return NextResponse.json(
-      { error: error.message || "Failed to delete category" },
+      { error: err.message || "Failed to delete category" },
       { status: 500 },
     );
   }

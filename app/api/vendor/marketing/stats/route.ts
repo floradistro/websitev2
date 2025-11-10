@@ -8,6 +8,7 @@ import { createClient } from "@supabase/supabase-js";
 import { requireVendor } from "@/lib/auth/middleware";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
@@ -48,12 +49,12 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.json(stats);
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Marketing stats error:", error);
+      logger.error("Marketing stats error:", err);
     }
     return NextResponse.json(
-      { error: "Failed to load marketing stats", message: error.message },
+      { error: "Failed to load marketing stats", message: err.message },
       { status: 500 },
     );
   }

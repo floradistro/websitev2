@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
 import { logger } from "@/lib/logger";
+import { toError } from "@/lib/errors";
 // Force dynamic rendering
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -43,14 +44,14 @@ export async function GET() {
       success: true,
       categories: categories || [],
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Error fetching categories:", error);
+      logger.error("Error fetching categories:", err);
     }
     return NextResponse.json(
       {
         success: false,
-        error: error.message,
+        error: err.message,
       },
       { status: 500 },
     );
@@ -104,14 +105,14 @@ export async function POST(request: NextRequest) {
       success: true,
       category: data,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Error creating category:", error);
+      logger.error("Error creating category:", err);
     }
     return NextResponse.json(
       {
         success: false,
-        error: error.message,
+        error: err.message,
       },
       { status: 500 },
     );
@@ -164,14 +165,14 @@ export async function PATCH(request: NextRequest) {
       success: true,
       category: data,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Error updating category:", error);
+      logger.error("Error updating category:", err);
     }
     return NextResponse.json(
       {
         success: false,
-        error: error.message,
+        error: err.message,
       },
       { status: 500 },
     );
@@ -243,14 +244,14 @@ export async function DELETE(request: NextRequest) {
       success: true,
       message: "Category deleted successfully",
     });
-  } catch (error: any) {
+  } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      logger.error("Error deleting category:", error);
+      logger.error("Error deleting category:", err);
     }
     return NextResponse.json(
       {
         success: false,
-        error: error.message,
+        error: err.message,
       },
       { status: 500 },
     );
