@@ -1045,7 +1045,7 @@ export default function AnalyticsPage() {
   // Fetch filter data
   const { data: locationsData } = useSWR('/api/vendor/locations', fetcher);
   const { data: categoriesData } = useSWR(
-    user?.id ? `/api/categories?vendor_id=${user.id}` : null,
+    user?.vendor_id ? `/api/categories?vendor_id=${user.vendor_id}` : null,
     fetcher
   );
 

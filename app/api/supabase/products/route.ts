@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { redisCache, CacheKeys } from "@/lib/redis-cache";
+import {
+  redisRateLimiter,
+  RateLimitConfigs,
+  getIdentifier,
+  getRateLimitHeaders,
+} from "@/lib/redis-rate-limiter";
 import { monitor } from "@/lib/performance-monitor";
 
 import { logger } from "@/lib/logger";
@@ -10,6 +16,35 @@ export async function GET(request: NextRequest) {
   const endTimer = monitor.startTimer("Product List");
 
   try {
+    // SECURITY: Apply rate limiting to prevent API abuse
+    const identifier = getIdentifier(request);
+    const allowed = await redisRateLimiter.check(identifier, RateLimitConfigs.publicApi);
+
+    if (!allowed) {
+      const resetTime = await redisRateLimiter.getResetTime(
+        identifier,
+        RateLimitConfigs.publicApi,
+      );
+      logger.warn("Products API rate limit exceeded", {
+        ip: identifier,
+        resetTime,
+      });
+      return NextResponse.json(
+        {
+          error: "Too many requests. Please try again later.",
+          retryAfter: resetTime,
+        },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": resetTime.toString(),
+            "X-RateLimit-Limit": RateLimitConfigs.publicApi.maxRequests.toString(),
+            "X-RateLimit-Remaining": "0",
+            "X-RateLimit-Reset": resetTime.toString(),
+          },
+        },
+      );
+    }
     const { searchParams } = new URL(request.url);
     const perPage = parseInt(searchParams.get("per_page") || "200");
     const category = searchParams.get("category");
@@ -25,11 +60,18 @@ export async function GET(request: NextRequest) {
       endTimer(); // Record in performance monitor
       monitor.recordCacheAccess("products", true); // Record cache hit
 
+      // Add rate limit headers to response
+      const rateLimitHeaders = await getRateLimitHeaders(
+        identifier,
+        RateLimitConfigs.publicApi,
+      );
+
       return NextResponse.json(cached, {
         headers: {
           "X-Cache-Status": "HIT",
           "X-Response-Time": `${duration.toFixed(2)}ms`,
           "Cache-Control": "public, s-maxage=300, stale-while-revalidate=60",
+          ...rateLimitHeaders,
         },
       });
     }
@@ -211,11 +253,18 @@ export async function GET(request: NextRequest) {
     const duration = performance.now() - startTime;
     endTimer(); // Record in performance monitor
 
+    // Add rate limit headers to response
+    const rateLimitHeaders = await getRateLimitHeaders(
+      identifier,
+      RateLimitConfigs.publicApi,
+    );
+
     return NextResponse.json(responseData, {
       headers: {
         "X-Cache-Status": "MISS",
         "X-Response-Time": `${duration.toFixed(2)}ms`,
         "Cache-Control": "public, s-maxage=300, stale-while-revalidate=60",
+        ...rateLimitHeaders,
       },
     });
   } catch (error) {

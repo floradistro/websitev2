@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { logger } from "@/lib/logger";
-import { rateLimiter, RateLimitConfigs, getIdentifier } from "@/lib/rate-limiter";
+import {
+  redisRateLimiter,
+  RateLimitConfigs,
+  getIdentifier,
+} from "@/lib/redis-rate-limiter";
 import { toError } from "@/lib/errors";
 import { RegisterSchema, validateData } from "@/lib/validation/schemas";
 
@@ -10,12 +14,19 @@ import { RegisterSchema, validateData } from "@/lib/validation/schemas";
  */
 export async function POST(request: NextRequest) {
   try {
-    // SECURITY: Apply rate limiting to prevent spam registrations
+    // SECURITY: Apply distributed rate limiting to prevent spam registrations
     const identifier = getIdentifier(request);
-    const allowed = rateLimiter.check(identifier, RateLimitConfigs.auth);
+    const allowed = await redisRateLimiter.check(identifier, RateLimitConfigs.auth);
 
     if (!allowed) {
-      const resetTime = rateLimiter.getResetTime(identifier, RateLimitConfigs.auth);
+      const resetTime = await redisRateLimiter.getResetTime(
+        identifier,
+        RateLimitConfigs.auth,
+      );
+      logger.warn("Registration rate limit exceeded", {
+        ip: identifier,
+        resetTime,
+      });
       return NextResponse.json(
         {
           success: false,
@@ -26,6 +37,9 @@ export async function POST(request: NextRequest) {
           status: 429,
           headers: {
             "Retry-After": resetTime.toString(),
+            "X-RateLimit-Limit": RateLimitConfigs.auth.maxRequests.toString(),
+            "X-RateLimit-Remaining": "0",
+            "X-RateLimit-Reset": resetTime.toString(),
           },
         },
       );

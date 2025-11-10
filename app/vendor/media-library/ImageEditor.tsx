@@ -73,6 +73,10 @@ export default function ImageEditor({ image, vendorId, onClose, onSave }: ImageE
   const [isUsingBrush, setIsUsingBrush] = useState(false);
   const [hasUnsavedBrushChanges, setHasUnsavedBrushChanges] = useState(false);
 
+  // Undo/Redo stack for brush edits
+  const [brushHistory, setBrushHistory] = useState<string[]>([]);
+  const [brushHistoryIndex, setBrushHistoryIndex] = useState(-1);
+
   // Quality score (mock for now)
   const [qualityScore] = useState(85);
   const [suggestions] = useState([
@@ -382,7 +386,13 @@ export default function ImageEditor({ image, vendorId, onClose, onSave }: ImageE
 
     setIsUsingBrush(true);
     setHasUnsavedBrushChanges(false);
-    console.log("✓ Brush canvas initialized");
+
+    // Save initial state to history
+    const initialState = canvas.toDataURL();
+    setBrushHistory([initialState]);
+    setBrushHistoryIndex(0);
+
+    console.log("✓ Brush canvas initialized with initial history state");
   };
 
   // Canva-style real-time brush drawing
