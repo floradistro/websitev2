@@ -6,6 +6,7 @@ import { MCP_TOOLS, executeMCPTool } from "@/lib/ai/mcp-tools";
 
 import { logger } from "@/lib/logger";
 import { toError } from "@/lib/errors";
+import { checkAIRateLimit, RateLimitConfigs } from "@/lib/rate-limiter";
 /**
  * Claude-Powered Code Generation for Storefronts
  * POST /api/ai/claude-code-gen
@@ -17,6 +18,12 @@ import { toError } from "@/lib/errors";
  * - Understand Yacht Club architecture
  */
 export async function POST(request: NextRequest) {
+  // RATE LIMIT: AI operation
+  const rateLimitResult = checkAIRateLimit(request, RateLimitConfigs.ai);
+  if (rateLimitResult) {
+    return rateLimitResult;
+  }
+
   // SECURITY: Require vendor authentication
   const authResult = await requireVendor(request);
   if (authResult instanceof NextResponse) {

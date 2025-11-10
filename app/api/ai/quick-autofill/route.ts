@@ -5,6 +5,7 @@ import Exa from "exa-js";
 
 import { logger } from "@/lib/logger";
 import { toError, isAxiosError } from "@/lib/errors";
+import { checkAIRateLimit, RateLimitConfigs } from "@/lib/rate-limiter";
 const SYSTEM_PROMPT = `Extract cannabis product data from web sources. Return ONLY JSON.
 
 RULES:
@@ -31,6 +32,12 @@ JSON format:
 }`;
 
 export async function POST(request: NextRequest) {
+  // RATE LIMIT: AI generation
+  const rateLimitResult = checkAIRateLimit(request, RateLimitConfigs.ai);
+  if (rateLimitResult) {
+    return rateLimitResult;
+  }
+
   // SECURITY: Require vendor authentication
   const authResult = await requireVendor(request);
   if (authResult instanceof NextResponse) {

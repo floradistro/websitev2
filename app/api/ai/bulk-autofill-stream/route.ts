@@ -5,6 +5,7 @@ import Exa from "exa-js";
 
 import { logger } from "@/lib/logger";
 import { toError } from "@/lib/errors";
+import { checkAIRateLimit, RateLimitConfigs } from "@/lib/rate-limiter";
 export const maxDuration = 300; // 5 minutes
 export const dynamic = "force-dynamic";
 
@@ -334,6 +335,12 @@ async function processProduct(
 // ============================================================================
 
 export async function POST(request: NextRequest) {
+  // RATE LIMIT: AI generation
+  const rateLimitResult = checkAIRateLimit(request, RateLimitConfigs.ai);
+  if (rateLimitResult) {
+    return rateLimitResult;
+  }
+
   // SECURITY: Require vendor authentication
   const authResult = await requireVendor(request);
   if (authResult instanceof NextResponse) {

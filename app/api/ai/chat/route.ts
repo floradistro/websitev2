@@ -13,6 +13,7 @@ import { ExaClient } from "@/lib/ai/exa-client";
 
 import { logger } from "@/lib/logger";
 import { toError } from "@/lib/errors";
+import { checkAIRateLimit, RateLimitConfigs } from "@/lib/rate-limiter";
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY!,
 });
@@ -23,6 +24,12 @@ export const runtime = "nodejs";
 export const maxDuration = 300;
 
 export async function POST(request: NextRequest) {
+  // RATE LIMIT: AI chat endpoint
+  const rateLimitResult = checkAIRateLimit(request, RateLimitConfigs.aiChat);
+  if (rateLimitResult) {
+    return rateLimitResult;
+  }
+
   // SECURITY: Require vendor authentication
   const authResult = await requireVendor(request);
   if (authResult instanceof NextResponse) {

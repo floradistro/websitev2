@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { withErrorHandler } from "@/lib/api-handler";
 import { requireVendor } from "@/lib/auth/middleware";
+import { checkAIRateLimit, RateLimitConfigs } from "@/lib/rate-limiter";
 import OpenAI from "openai";
 
 import { logger } from "@/lib/logger";
@@ -89,6 +90,12 @@ Respond with ONLY the JSON, no other text.`,
 // POST - Re-analyze single image with AI
 export const POST = withErrorHandler(async (request: NextRequest) => {
   try {
+    // RATE LIMIT: AI image retagging
+    const rateLimitResult = checkAIRateLimit(request, RateLimitConfigs.ai);
+    if (rateLimitResult) {
+      return rateLimitResult;
+    }
+
     // SECURITY: Require vendor authentication
     const authResult = await requireVendor(request);
     if (authResult instanceof NextResponse) return authResult;
@@ -119,7 +126,10 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
     const aiAnalysis = await analyzeImageWithAI(file.file_url);
 
     if (!aiAnalysis) {
-      return NextResponse.json({ error: "AI analysis failed" }, { status: 500 });
+      return NextResponse.json(
+        { error: "AI analysis failed" },
+        { status: 500 },
+      );
     }
 
     // Update metadata

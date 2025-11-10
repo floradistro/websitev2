@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
 import { logger } from "@/lib/logger";
+import { securityMonitor, getRequestMetadata } from "@/lib/security-monitor";
 export interface AuthUser {
   id: string;
   email: string;
@@ -13,7 +14,9 @@ export interface AuthUser {
  * Extract and verify authentication token from request
  * Supports both Authorization header and HTTP-only cookie
  */
-export async function verifyAuth(request: NextRequest): Promise<AuthUser | null> {
+export async function verifyAuth(
+  request: NextRequest,
+): Promise<AuthUser | null> {
   try {
     // Try Authorization header first (for API calls)
     let token = request.headers.get("authorization")?.replace("Bearer ", "");
@@ -88,7 +91,26 @@ export async function requireAuth(
   const user = await verifyAuth(request);
 
   if (!user) {
-    return NextResponse.json({ error: "Unauthorized - Authentication required" }, { status: 401 });
+    // SECURITY MONITORING: Log unauthorized access attempt
+    securityMonitor.logUnauthorized({
+      ...getRequestMetadata(request),
+      reason: "No valid authentication token provided",
+    });
+
+    return NextResponse.json(
+      { error: "Unauthorized - Authentication required" },
+      { status: 401 },
+    );
+  }
+
+  // SECURITY MONITORING: Log successful auth (only in dev to avoid spam)
+  if (process.env.NODE_ENV === "development") {
+    securityMonitor.logAuthSuccess({
+      ...getRequestMetadata(request),
+      userId: user.id,
+      email: user.email,
+      role: user.role,
+    });
   }
 
   return { user };
@@ -109,7 +131,19 @@ export async function requireAdmin(
   const { user } = authResult;
 
   if (!user.role || !["vendor_admin", "manager"].includes(user.role)) {
-    return NextResponse.json({ error: "Forbidden - Admin access required" }, { status: 403 });
+    // SECURITY MONITORING: Log forbidden access attempt
+    securityMonitor.logForbidden({
+      ...getRequestMetadata(request),
+      userId: user.id,
+      email: user.email,
+      role: user.role,
+      reason: "Admin role required",
+    });
+
+    return NextResponse.json(
+      { error: "Forbidden - Admin access required" },
+      { status: 403 },
+    );
   }
 
   return { user };
@@ -130,7 +164,19 @@ export async function requireVendor(
   const { user } = authResult;
 
   if (!user.vendor_id) {
-    return NextResponse.json({ error: "Forbidden - Vendor access required" }, { status: 403 });
+    // SECURITY MONITORING: Log forbidden access attempt
+    securityMonitor.logForbidden({
+      ...getRequestMetadata(request),
+      userId: user.id,
+      email: user.email,
+      role: user.role,
+      reason: "Vendor access required but user has no vendor_id",
+    });
+
+    return NextResponse.json(
+      { error: "Forbidden - Vendor access required" },
+      { status: 403 },
+    );
   }
 
   // SECURITY: Use vendor_id from authenticated session, not from headers
@@ -153,7 +199,10 @@ export async function requireCustomer(
   const { user } = authResult;
 
   if (user.role !== "customer") {
-    return NextResponse.json({ error: "Forbidden - Customer access required" }, { status: 403 });
+    return NextResponse.json(
+      { error: "Forbidden - Customer access required" },
+      { status: 403 },
+    );
   }
 
   // Get customer ID from database using authenticated user

@@ -31,6 +31,7 @@
     "@headlessui/react": "^2.2.9",
     "@monaco-editor/react": "^4.7.0",
     "@octokit/rest": "^22.0.0",
+    "@react-pdf/renderer": "^4.3.1",
     "@scandit/web-datacapture-core": "^7.6.3",
     "@scandit/web-datacapture-id": "^7.6.3",
     "@sentry/nextjs": "^10.23.0",

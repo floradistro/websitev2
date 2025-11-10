@@ -4,6 +4,7 @@ import { getServiceSupabase } from "@/lib/supabase/client";
 
 import { logger } from "@/lib/logger";
 import { toError } from "@/lib/errors";
+import { checkAIRateLimit, RateLimitConfigs } from "@/lib/rate-limiter";
 export async function GET(request: NextRequest) {
   // SECURITY: Require vendor authentication
   const authResult = await requireVendor(request);
@@ -32,6 +33,12 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  // RATE LIMIT: AI agents
+  const rateLimitResult = checkAIRateLimit(request, RateLimitConfigs.ai);
+  if (rateLimitResult) {
+    return rateLimitResult;
+  }
+
   // SECURITY: Require vendor authentication
   const authResult = await requireVendor(request);
   if (authResult instanceof NextResponse) {

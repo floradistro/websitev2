@@ -3,12 +3,19 @@ import { requireVendor } from "@/lib/auth/middleware";
 
 import { logger } from "@/lib/logger";
 import { toError } from "@/lib/errors";
+import { checkAIRateLimit, RateLimitConfigs } from "@/lib/rate-limiter";
 /**
  * AI Component Suggestions - Phase 4
  * Analyzes components and provides AI-powered optimization suggestions
  * POST /api/ai/component-suggestions
  */
 export async function POST(request: NextRequest) {
+  // RATE LIMIT: AI operation
+  const rateLimitResult = checkAIRateLimit(request, RateLimitConfigs.ai);
+  if (rateLimitResult) {
+    return rateLimitResult;
+  }
+
   // SECURITY: Require vendor authentication
   const authResult = await requireVendor(request);
   if (authResult instanceof NextResponse) {

@@ -4,6 +4,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { createClient } from "@supabase/supabase-js";
 
 import { logger } from "@/lib/logger";
+import { checkAIRateLimit, RateLimitConfigs } from "@/lib/rate-limiter";
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 });
@@ -14,6 +15,12 @@ const supabase = createClient(
 );
 
 export async function POST(request: NextRequest) {
+  // RATE LIMIT: AI generation
+  const rateLimitResult = checkAIRateLimit(request, RateLimitConfigs.ai);
+  if (rateLimitResult) {
+    return rateLimitResult;
+  }
+
   // SECURITY: Require vendor authentication
   const authResult = await requireVendor(request);
   if (authResult instanceof NextResponse) {

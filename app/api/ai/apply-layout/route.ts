@@ -4,6 +4,7 @@ import { getServiceSupabase } from "@/lib/supabase/client";
 
 import { logger } from "@/lib/logger";
 import { toError } from "@/lib/errors";
+import { checkAIRateLimit, RateLimitConfigs } from "@/lib/rate-limiter";
 /**
  * Apply AI Layout Recommendation to Menu
  *
@@ -11,6 +12,12 @@ import { toError } from "@/lib/errors";
  */
 
 export async function POST(request: NextRequest) {
+  // RATE LIMIT: AI operation
+  const rateLimitResult = checkAIRateLimit(request, RateLimitConfigs.ai);
+  if (rateLimitResult) {
+    return rateLimitResult;
+  }
+
   // SECURITY: Require vendor authentication
   const authResult = await requireVendor(request);
   if (authResult instanceof NextResponse) {

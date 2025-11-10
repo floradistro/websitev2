@@ -283,15 +283,39 @@ function ExportModal({
         }),
       });
 
-      const result = await response.json();
-      if (result.success) {
-        alert("Export generated! (Download functionality coming soon)");
+      if (!response.ok) {
+        const error = await response.json();
+        alert("Export failed: " + (error.error || "Unknown error"));
+        return;
+      }
+
+      if (format === "csv") {
+        // Download CSV file
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `${reportType}_${Date.now()}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
         onClose();
-      } else {
-        alert("Export failed: " + result.error);
+      } else if (format === "pdf") {
+        // Open PDF print preview in new window
+        const html = await response.text();
+        const newWindow = window.open("", "_blank");
+        if (newWindow) {
+          newWindow.document.write(html);
+          newWindow.document.close();
+        }
+        onClose();
+      } else if (format === "xlsx") {
+        // For now, use CSV format for Excel
+        alert("Excel format coming soon. Please use CSV for now.");
       }
     } catch (error) {
-      alert("Export failed");
+      alert("Export failed: " + (error instanceof Error ? error.message : "Unknown error"));
     } finally {
       setExporting(false);
     }

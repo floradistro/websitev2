@@ -5,6 +5,7 @@ import Exa from "exa-js";
 
 import { logger } from "@/lib/logger";
 import { toError } from "@/lib/errors";
+import { checkAIRateLimit, RateLimitConfigs } from "@/lib/rate-limiter";
 // Increase timeout for bulk processing (can take 2-5 minutes for large batches)
 export const maxDuration = 300; // 5 minutes
 export const dynamic = "force-dynamic";
@@ -50,6 +51,12 @@ PRIORITY FIELDS (search extra hard for these):
 REMEMBER: Empty/null is better than fake placeholder data. Search THOROUGHLY in sources for lineage, terpenes, effects, and aroma before marking as null.`;
 
 export async function POST(request: NextRequest) {
+  // RATE LIMIT: AI generation
+  const rateLimitResult = checkAIRateLimit(request, RateLimitConfigs.ai);
+  if (rateLimitResult) {
+    return rateLimitResult;
+  }
+
   // SECURITY: Require vendor authentication
   const authResult = await requireVendor(request);
   if (authResult instanceof NextResponse) {

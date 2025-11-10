@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { withErrorHandler } from "@/lib/api-handler";
 import { requireVendor } from "@/lib/auth/middleware";
+import { checkAIRateLimit, RateLimitConfigs } from "@/lib/rate-limiter";
 import OpenAI from "openai";
 
 import { logger } from "@/lib/logger";
@@ -20,6 +21,15 @@ function getOpenAI() {
 // POST - Generate image with DALL-E
 export const POST = withErrorHandler(async (request: NextRequest) => {
   try {
+    // RATE LIMIT: AI image generation (expensive operation ~$0.08 per request)
+    const rateLimitResult = checkAIRateLimit(
+      request,
+      RateLimitConfigs.aiGeneration,
+    );
+    if (rateLimitResult) {
+      return rateLimitResult;
+    }
+
     // SECURITY: Require vendor authentication
     const authResult = await requireVendor(request);
     if (authResult instanceof NextResponse) return authResult;
@@ -29,7 +39,10 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
     const { prompt, category = "product_photos" } = body;
 
     if (!prompt || typeof prompt !== "string" || prompt.trim().length === 0) {
-      return NextResponse.json({ error: "Prompt is required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Prompt is required" },
+        { status: 400 },
+      );
     }
 
     // Generate image with DALL-E 3
@@ -47,14 +60,20 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
 
     const imageUrl = response.data?.[0]?.url;
     if (!imageUrl) {
-      return NextResponse.json({ error: "Image generation failed" }, { status: 500 });
+      return NextResponse.json(
+        { error: "Image generation failed" },
+        { status: 500 },
+      );
     }
 
     // Download and store temporarily in our storage
     // This prevents DALL-E URL expiration issues
     const imageResponse = await fetch(imageUrl);
     if (!imageResponse.ok) {
-      return NextResponse.json({ error: "Failed to download generated image" }, { status: 500 });
+      return NextResponse.json(
+        { error: "Failed to download generated image" },
+        { status: 500 },
+      );
     }
 
     const imageBuffer = Buffer.from(await imageResponse.arrayBuffer());
@@ -81,7 +100,9 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
     // Get public URL for temp file
     const {
       data: { publicUrl },
-    } = supabase.storage.from("vendor-product-images").getPublicUrl(tempFilePath);
+    } = supabase.storage
+      .from("vendor-product-images")
+      .getPublicUrl(tempFilePath);
 
     // Return temp URL for approval workflow
     return NextResponse.json({

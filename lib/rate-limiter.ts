@@ -89,6 +89,22 @@ export const RateLimitConfigs = {
   api: { maxRequests: 10, windowMs: 60 * 1000 },
   general: { maxRequests: 100, windowMs: 60 * 1000 },
   passwordReset: { maxRequests: 3, windowMs: 60 * 60 * 1000 },
+  // AI endpoints - expensive operations, stricter limits
+  ai: {
+    maxRequests: 20,
+    windowMs: 5 * 60 * 1000,
+    message: "AI rate limit exceeded",
+  }, // 20 req/5min
+  aiChat: {
+    maxRequests: 30,
+    windowMs: 5 * 60 * 1000,
+    message: "AI chat rate limit exceeded",
+  }, // 30 req/5min
+  aiGeneration: {
+    maxRequests: 10,
+    windowMs: 5 * 60 * 1000,
+    message: "AI generation rate limit exceeded",
+  }, // 10 req/5min
 } as const;
 
 export function getIdentifier(request: Request): string {
@@ -103,4 +119,56 @@ export function getIdentifier(request: Request): string {
   if (cfConnectingIp) return cfConnectingIp;
 
   return "unknown";
+}
+
+/**
+ * Helper function to check rate limits for AI endpoints
+ * Returns a NextResponse with 429 status if rate limit exceeded
+ */
+export function checkAIRateLimit(
+  request: Request,
+  config: RateLimitConfig = RateLimitConfigs.ai,
+): Response | null {
+  const identifier = getIdentifier(request);
+  const allowed = rateLimiter.check(identifier, config);
+
+  if (!allowed) {
+    const resetTime = rateLimiter.getResetTime(identifier, config);
+
+    // SECURITY MONITORING: Log rate limit exceeded
+    // Import dynamically to avoid circular dependency
+    if (typeof window === "undefined") {
+      // Server-side only
+      import("@/lib/security-monitor").then(({ securityMonitor }) => {
+        const url = new URL(request.url);
+        securityMonitor.logRateLimitExceeded({
+          ip: identifier,
+          endpoint: url.pathname,
+          method: request.method,
+          userAgent: request.headers.get("user-agent") || undefined,
+          limit: config.maxRequests,
+          window: config.windowMs,
+        });
+      });
+    }
+
+    return new Response(
+      JSON.stringify({
+        error: config.message || "Rate limit exceeded",
+        retryAfter: resetTime,
+      }),
+      {
+        status: 429,
+        headers: {
+          "Content-Type": "application/json",
+          "Retry-After": resetTime.toString(),
+          "X-RateLimit-Limit": config.maxRequests.toString(),
+          "X-RateLimit-Remaining": "0",
+          "X-RateLimit-Reset": resetTime.toString(),
+        },
+      },
+    );
+  }
+
+  return null;
 }
