@@ -3,11 +3,11 @@
  * Returns user behavioral data for quantum state testing
  */
 
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth/middleware";
 import { cookies } from "next/headers";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   // SECURITY: Require authentication
   const authResult = await requireAuth(request);
   if (authResult instanceof NextResponse) {

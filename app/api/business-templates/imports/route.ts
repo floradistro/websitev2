@@ -1,10 +1,10 @@
 /**
  * API: Vendor Template Imports
  * GET - Get all templates imported by a vendor
-import { requireAdmin } from "@/lib/auth/middleware";
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { requireAdmin } from "@/lib/auth/middleware";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
 import { logger } from "@/lib/logger";

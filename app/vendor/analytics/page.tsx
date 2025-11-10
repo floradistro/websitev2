@@ -5,6 +5,8 @@ import useSWR from "swr";
 import { useAppAuth } from "@/context/AppAuthContext";
 import { DateRangePicker } from "@/components/ui/DateRangePicker";
 import { SkeletonKPIGrid, SkeletonTable } from "@/components/ui/Skeleton";
+import { AdvancedFiltersPanel, FilterState } from "@/components/analytics/AdvancedFiltersPanel";
+import { ActiveFilterChips } from "@/components/analytics/ActiveFilterChips";
 import {
   DollarSign,
   ShoppingCart,
@@ -1016,6 +1018,7 @@ export default function AnalyticsPage() {
     isOpen: false,
     reportType: "",
   });
+  const [filtersPanelOpen, setFiltersPanelOpen] = useState(false);
 
   // Initialize date range for DateRangePicker
   const getInitialDateRange = () => {
@@ -1029,8 +1032,114 @@ export default function AnalyticsPage() {
 
   const [dateRange, setDateRange] = useState(getInitialDateRange());
 
-  // Build query params with actual date range (API expects start_date and end_date)
-  const queryParams = `?start_date=${dateRange.start.toISOString()}&end_date=${dateRange.end.toISOString()}`;
+  // Initialize filters state
+  const [filters, setFilters] = useState<FilterState>({
+    dateRange: getInitialDateRange(),
+    locationIds: [],
+    categoryIds: [],
+    employeeIds: [],
+    paymentMethods: [],
+    productIds: [],
+    includeRefunds: true,
+    includeDiscounts: true,
+  });
+
+  // Fetch filter data
+  const { data: locationsData } = useSWR('/api/vendor/locations', fetcher);
+  const { data: categoriesData } = useSWR('/api/categories', fetcher);
+
+  const locations = locationsData?.locations || [];
+  const categories = categoriesData?.categories || [];
+  const employees: any[] = []; // TODO: Fetch employees when endpoint is ready
+
+  // Build query params with date range and filters
+  const buildQueryParams = () => {
+    const params = new URLSearchParams();
+    params.append('start_date', dateRange.start.toISOString());
+    params.append('end_date', dateRange.end.toISOString());
+
+    if (filters.locationIds.length > 0) {
+      params.append('location_ids', filters.locationIds.join(','));
+    }
+
+    if (filters.categoryIds.length > 0) {
+      params.append('category_ids', filters.categoryIds.join(','));
+    }
+
+    if (filters.employeeIds.length > 0) {
+      params.append('employee_ids', filters.employeeIds.join(','));
+    }
+
+    if (filters.paymentMethods.length > 0) {
+      params.append('payment_methods', filters.paymentMethods.join(','));
+    }
+
+    params.append('include_refunds', String(filters.includeRefunds));
+    params.append('include_discounts', String(filters.includeDiscounts));
+
+    return `?${params.toString()}`;
+  };
+
+  const queryParams = buildQueryParams();
+
+  // Filter helpers
+  const getActiveFilterCount = () => {
+    return (
+      filters.locationIds.length +
+      filters.categoryIds.length +
+      filters.employeeIds.length +
+      filters.paymentMethods.length +
+      (filters.includeRefunds ? 0 : 1) +
+      (filters.includeDiscounts ? 0 : 1)
+    );
+  };
+
+  const handleRemoveLocation = (id: string) => {
+    setFilters({
+      ...filters,
+      locationIds: filters.locationIds.filter(locId => locId !== id),
+    });
+  };
+
+  const handleRemoveCategory = (id: string) => {
+    setFilters({
+      ...filters,
+      categoryIds: filters.categoryIds.filter(catId => catId !== id),
+    });
+  };
+
+  const handleRemoveEmployee = (id: string) => {
+    setFilters({
+      ...filters,
+      employeeIds: filters.employeeIds.filter(empId => empId !== id),
+    });
+  };
+
+  const handleRemovePaymentMethod = (method: string) => {
+    setFilters({
+      ...filters,
+      paymentMethods: filters.paymentMethods.filter(m => m !== method),
+    });
+  };
+
+  const handleClearAllFilters = () => {
+    setFilters({
+      ...filters,
+      locationIds: [],
+      categoryIds: [],
+      employeeIds: [],
+      paymentMethods: [],
+      productIds: [],
+      includeRefunds: true,
+      includeDiscounts: true,
+    });
+  };
+
+  const handleDateRangeChange = (range: { start: Date; end: Date }) => {
+    setDateRange(range);
+    setFilters({ ...filters, dateRange: range });
+    setTimeRange("30d"); // Keep timeRange in sync for backward compatibility
+  };
 
   // Fetch all reports with date range
   const { data: overview } = useSWR(`/api/vendor/analytics/v2/overview${queryParams}`, fetcher, {
@@ -1046,6 +1155,23 @@ export default function AnalyticsPage() {
   const { data: taxReport } = useSWR(`/api/vendor/analytics/v2/financial/tax-report${queryParams}`, fetcher);
   const { data: itemizedSales } = useSWR(`/api/vendor/analytics/v2/sales/itemized${queryParams}`, fetcher);
   const { data: sessions } = useSWR(`/api/vendor/analytics/v2/sessions/summary${queryParams}`, fetcher);
+
+  // Map tab keys to export report types
+  const getExportReportType = (tabKey: string): string => {
+    const mapping: Record<string, string> = {
+      sales: "sales_by_day",
+      locations: "sales_by_location",
+      employees: "sales_by_employee",
+      products: "products_performance",
+      categories: "sales_by_category",
+      payments: "sales_by_payment",
+      profitloss: "profit_loss",
+      tax: "tax_report",
+      itemized: "itemized_sales",
+      sessions: "sessions",
+    };
+    return mapping[tabKey] || tabKey;
+  };
 
   const handleExportClick = (reportType: string) => {
     setExportModal({ isOpen: true, reportType });
@@ -1080,14 +1206,23 @@ export default function AnalyticsPage() {
               {/* Date Range Picker */}
               <DateRangePicker
                 value={dateRange}
-                onChange={(range) => {
-                  setDateRange(range);
-                  // Keep timeRange in sync for backward compatibility with existing queries
-                  setTimeRange("30d");
-                }}
+                onChange={handleDateRangeChange}
               />
+              {/* Filters Button */}
               <button
-                onClick={() => handleExportClick(activeTab)}
+                onClick={() => setFiltersPanelOpen(true)}
+                className="flex items-center gap-2 px-4 py-2 text-sm text-white bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-all relative"
+              >
+                <Filter className="w-4 h-4" />
+                Filters
+                {getActiveFilterCount() > 0 && (
+                  <span className="absolute -top-1 -right-1 min-w-[20px] h-5 px-1.5 bg-[#007AFF] text-white rounded-full text-xs font-semibold flex items-center justify-center">
+                    {getActiveFilterCount()}
+                  </span>
+                )}
+              </button>
+              <button
+                onClick={() => handleExportClick(getExportReportType(activeTab))}
                 className="flex items-center gap-2 px-4 py-2 text-sm text-white bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-all"
               >
                 <Download className="w-4 h-4" />
@@ -1095,6 +1230,23 @@ export default function AnalyticsPage() {
               </button>
             </div>
           </div>
+
+          {/* Active Filter Chips */}
+          {getActiveFilterCount() > 0 && (
+            <div className="mt-4">
+              <ActiveFilterChips
+                filters={filters}
+                locations={locations}
+                categories={categories}
+                employees={employees}
+                onRemoveLocation={handleRemoveLocation}
+                onRemoveCategory={handleRemoveCategory}
+                onRemoveEmployee={handleRemoveEmployee}
+                onRemovePaymentMethod={handleRemovePaymentMethod}
+                onClearAll={handleClearAllFilters}
+              />
+            </div>
+          )}
         </div>
 
         {/* KPI Section - Sticky */}
@@ -1435,6 +1587,21 @@ export default function AnalyticsPage() {
         onClose={() => setExportModal({ isOpen: false, reportType: "" })}
         reportType={exportModal.reportType}
         filters={{ dateRange }}
+      />
+
+      {/* Advanced Filters Panel */}
+      <AdvancedFiltersPanel
+        isOpen={filtersPanelOpen}
+        onClose={() => setFiltersPanelOpen(false)}
+        filters={filters}
+        onChange={setFilters}
+        locations={locations}
+        categories={categories}
+        employees={employees}
+        onApply={() => {
+          // Filters are already applied via state change
+          // This is just to close the panel and trigger any additional logic
+        }}
       />
     </div>
   );

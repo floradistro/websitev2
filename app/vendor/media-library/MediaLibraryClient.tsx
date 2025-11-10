@@ -1044,8 +1044,8 @@ export default function MediaLibraryClient() {
                         file_path: "",
                         file_type: "image",
                         category: "product_photos",
-                        title: image.title,
-                        alt_text: image.alt_text,
+                        title: image.title || undefined,
+                        alt_text: image.alt_text || undefined,
                         created_at: image.created_at,
                       });
                     }}
@@ -1171,8 +1171,8 @@ export default function MediaLibraryClient() {
                     file_path: "",
                     file_type: "image",
                     category: "product_photos",
-                    title: image.title,
-                    alt_text: image.alt_text,
+                    title: image.title || undefined,
+                    alt_text: image.alt_text || undefined,
                     created_at: image.created_at,
                   });
                 }}

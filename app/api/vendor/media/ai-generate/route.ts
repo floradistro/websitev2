@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
-import { withErrorHandler } from "@/lib/api-handler";
 import { requireVendor } from "@/lib/auth/middleware";
 import { checkAIRateLimit, RateLimitConfigs } from "@/lib/rate-limiter";
 import OpenAI from "openai";
@@ -19,7 +18,7 @@ function getOpenAI() {
 }
 
 // POST - Generate image with DALL-E
-export const POST = withErrorHandler(async (request: NextRequest) => {
+export async function POST(request: NextRequest) {
   try {
     // RATE LIMIT: AI image generation (expensive operation ~$0.08 per request)
     const rateLimitResult = checkAIRateLimit(
@@ -124,4 +123,4 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
       { status: 500 },
     );
   }
-});
+}

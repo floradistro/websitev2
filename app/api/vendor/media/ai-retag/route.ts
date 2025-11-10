@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
-import { withErrorHandler } from "@/lib/api-handler";
 import { requireVendor } from "@/lib/auth/middleware";
 import { checkAIRateLimit, RateLimitConfigs } from "@/lib/rate-limiter";
 import OpenAI from "openai";
@@ -88,7 +87,7 @@ Respond with ONLY the JSON, no other text.`,
 }
 
 // POST - Re-analyze single image with AI
-export const POST = withErrorHandler(async (request: NextRequest) => {
+export async function POST(request: NextRequest) {
   try {
     // RATE LIMIT: AI image retagging
     const rateLimitResult = checkAIRateLimit(request, RateLimitConfigs.ai);
@@ -167,4 +166,4 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
     }
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
-});
+}

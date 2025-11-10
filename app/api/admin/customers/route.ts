@@ -18,7 +18,8 @@ export async function GET(request: NextRequest) {
 
   try {
     const { user } = authResult;
-    const isReadOnly = user.role === "readonly";
+    // Note: "readonly" role doesn't exist in current auth system - removing check
+    // const isReadOnly = user.role === "readonly";
 
     // Get vendors with product counts
     const { data: vendors, error } = await supabase
@@ -71,7 +72,7 @@ export async function GET(request: NextRequest) {
 
         return {
           id: vendor.id,
-          email: isReadOnly ? "•••@•••.•••" : vendor.email, // Hide emails for readonly users
+          email: vendor.email, // TODO: Implement role-based email masking when readonly role is added
           name: vendor.store_name,
           created_at: vendor.created_at,
           last_active: vendor.updated_at || vendor.created_at,
