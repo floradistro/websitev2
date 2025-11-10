@@ -44,11 +44,8 @@ export async function POST(request: NextRequest) {
     const supabase = getServiceSupabase();
 
     // Try to read the current auth headers being used
-    // @ts-ignore - accessing internal state for debugging
-    const clientUrl = supabase.supabaseUrl;
-    // @ts-ignore - accessing internal state for debugging
-    const clientHeaders = supabase.rest?.headers || {};
-    // @ts-ignore - accessing header properties
+    const clientUrl = (supabase as any).supabaseUrl as string | undefined;
+    const clientHeaders = ((supabase as any).rest?.headers || {}) as Record<string, string>;
     const authHeader = clientHeaders.Authorization || "";
 
     // STEP 3: Check current user/session (service role should have none)

@@ -1,0 +1,528 @@
+"use client";
+
+import { useState, useRef, useEffect } from "react";
+import {
+  X,
+  Sparkles,
+  Wand2,
+  Eraser,
+  Sun,
+  Palette,
+  Scissors,
+  Download,
+  RotateCcw,
+  RotateCw,
+  Layers,
+  Zap,
+  Eye,
+  EyeOff,
+  Check,
+  AlertCircle,
+} from "lucide-react";
+
+interface ImageEditorProps {
+  image: {
+    id: string;
+    file_url: string;
+    file_name: string;
+    title?: string | null;
+    alt_text?: string | null;
+  };
+  onClose: () => void;
+  onSave?: (editedImageUrl: string) => void;
+}
+
+type Tool = "perfect" | "background" | "enhance" | "erase" | "color" | "light";
+
+interface EditHistory {
+  url: string;
+  label: string;
+  timestamp: number;
+}
+
+export default function ImageEditor({ image, onClose, onSave }: ImageEditorProps) {
+  const [currentImage, setCurrentImage] = useState(image.file_url);
+  const [originalImage] = useState(image.file_url);
+  const [activeTool, setActiveTool] = useState<Tool | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [showComparison, setShowComparison] = useState(false);
+  const [history, setHistory] = useState<EditHistory[]>([
+    { url: image.file_url, label: "Original", timestamp: Date.now() },
+  ]);
+  const [historyIndex, setHistoryIndex] = useState(0);
+
+  // Enhancement sliders
+  const [brightness, setBrightness] = useState(100);
+  const [contrast, setContrast] = useState(100);
+  const [saturation, setSaturation] = useState(100);
+  const [sharpness, setSharpness] = useState(0);
+
+  // Quality score (mock for now)
+  const [qualityScore] = useState(85);
+  const [suggestions] = useState([
+    { type: "warning", message: "Background could be cleaner", action: "Remove Background" },
+    { type: "info", message: "Colors could pop more", action: "Enhance Colors" },
+  ]);
+
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  // Prevent body scroll when editor is open
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, []);
+
+  // Handle ESC key to close
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onClose();
+      }
+    };
+    window.addEventListener("keydown", handleEscape);
+    return () => window.removeEventListener("keydown", handleEscape);
+  }, [onClose]);
+
+  const addToHistory = (url: string, label: string) => {
+    const newHistory = history.slice(0, historyIndex + 1);
+    newHistory.push({ url, label, timestamp: Date.now() });
+    setHistory(newHistory);
+    setHistoryIndex(newHistory.length - 1);
+  };
+
+  const undo = () => {
+    if (historyIndex > 0) {
+      const newIndex = historyIndex - 1;
+      setHistoryIndex(newIndex);
+      setCurrentImage(history[newIndex].url);
+    }
+  };
+
+  const redo = () => {
+    if (historyIndex < history.length - 1) {
+      const newIndex = historyIndex + 1;
+      setHistoryIndex(newIndex);
+      setCurrentImage(history[newIndex].url);
+    }
+  };
+
+  const handleMakePerfect = async () => {
+    setIsProcessing(true);
+    setActiveTool("perfect");
+
+    try {
+      // TODO: Call AI API to auto-enhance
+      // For now, simulate processing
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
+      // Mock: In reality, this would be the enhanced image URL from API
+      addToHistory(currentImage, "Made Perfect");
+
+      alert("✨ Image enhanced! (API integration pending)");
+    } catch (error) {
+      console.error("Error enhancing image:", error);
+      alert("Failed to enhance image");
+    } finally {
+      setIsProcessing(false);
+      setActiveTool(null);
+    }
+  };
+
+  const handleRemoveBackground = async () => {
+    setIsProcessing(true);
+    setActiveTool("background");
+
+    try {
+      // TODO: Call background removal API
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
+      addToHistory(currentImage, "Background Removed");
+
+      alert("🎨 Background removed! (API integration pending)");
+    } catch (error) {
+      console.error("Error removing background:", error);
+      alert("Failed to remove background");
+    } finally {
+      setIsProcessing(false);
+      setActiveTool(null);
+    }
+  };
+
+  const handleEnhance = async () => {
+    setIsProcessing(true);
+    setActiveTool("enhance");
+
+    try {
+      // TODO: Apply enhancement with current slider values
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      addToHistory(currentImage, "Enhanced");
+
+      alert("⚡ Image enhanced! (API integration pending)");
+    } catch (error) {
+      console.error("Error enhancing:", error);
+      alert("Failed to enhance image");
+    } finally {
+      setIsProcessing(false);
+      setActiveTool(null);
+    }
+  };
+
+  const handleSave = () => {
+    if (onSave) {
+      onSave(currentImage);
+    }
+    onClose();
+  };
+
+  const handleExport = () => {
+    // TODO: Export with multiple sizes
+    const link = document.createElement("a");
+    link.href = currentImage;
+    link.download = `${image.file_name}_edited.jpg`;
+    link.click();
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-[100] bg-black flex"
+      style={{
+        background: "linear-gradient(135deg, #000000 0%, #0a0a0a 100%)",
+      }}
+    >
+      {/* Left Sidebar - Tools */}
+      <div className="w-64 border-r border-white/10 bg-black/40 backdrop-blur-sm flex flex-col">
+        {/* Header */}
+        <div className="p-4 border-b border-white/10">
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-sm font-semibold text-white">Image Editor</h2>
+            <button
+              onClick={onClose}
+              className="p-1.5 text-white/60 hover:text-white hover:bg-white/10 rounded-lg transition-all"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+          <p className="text-xs text-white/40 truncate">{image.file_name}</p>
+        </div>
+
+        {/* Quick Actions */}
+        <div className="p-4 border-b border-white/10">
+          <h3 className="text-xs font-semibold text-white/60 uppercase tracking-wider mb-3">
+            Quick Magic
+          </h3>
+          <div className="space-y-2">
+            <button
+              onClick={handleMakePerfect}
+              disabled={isProcessing}
+              className="w-full px-3 py-2.5 bg-gradient-to-r from-purple-500/20 to-pink-500/20 hover:from-purple-500/30 hover:to-pink-500/30 border border-purple-500/30 rounded-lg text-white text-xs font-medium flex items-center gap-2 transition-all disabled:opacity-50"
+            >
+              <Sparkles className="w-4 h-4" />
+              Make It Perfect
+            </button>
+            <button
+              onClick={handleRemoveBackground}
+              disabled={isProcessing}
+              className="w-full px-3 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-white text-xs font-medium flex items-center gap-2 transition-all disabled:opacity-50"
+            >
+              <Scissors className="w-4 h-4" />
+              Remove Background
+            </button>
+          </div>
+        </div>
+
+        {/* Enhancement Tools */}
+        <div className="flex-1 overflow-y-auto p-4">
+          <h3 className="text-xs font-semibold text-white/60 uppercase tracking-wider mb-3">
+            Enhance
+          </h3>
+
+          <div className="space-y-4">
+            {/* Brightness */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-xs text-white/60 flex items-center gap-1.5">
+                  <Sun className="w-3.5 h-3.5" />
+                  Brightness
+                </label>
+                <span className="text-xs text-white/40">{brightness}%</span>
+              </div>
+              <input
+                type="range"
+                min="0"
+                max="200"
+                value={brightness}
+                onChange={(e) => setBrightness(Number(e.target.value))}
+                className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer"
+              />
+            </div>
+
+            {/* Contrast */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-xs text-white/60 flex items-center gap-1.5">
+                  <Layers className="w-3.5 h-3.5" />
+                  Contrast
+                </label>
+                <span className="text-xs text-white/40">{contrast}%</span>
+              </div>
+              <input
+                type="range"
+                min="0"
+                max="200"
+                value={contrast}
+                onChange={(e) => setContrast(Number(e.target.value))}
+                className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer"
+              />
+            </div>
+
+            {/* Saturation */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-xs text-white/60 flex items-center gap-1.5">
+                  <Palette className="w-3.5 h-3.5" />
+                  Saturation
+                </label>
+                <span className="text-xs text-white/40">{saturation}%</span>
+              </div>
+              <input
+                type="range"
+                min="0"
+                max="200"
+                value={saturation}
+                onChange={(e) => setSaturation(Number(e.target.value))}
+                className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer"
+              />
+            </div>
+
+            {/* Sharpness */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-xs text-white/60 flex items-center gap-1.5">
+                  <Zap className="w-3.5 h-3.5" />
+                  Sharpness
+                </label>
+                <span className="text-xs text-white/40">{sharpness}%</span>
+              </div>
+              <input
+                type="range"
+                min="0"
+                max="100"
+                value={sharpness}
+                onChange={(e) => setSharpness(Number(e.target.value))}
+                className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer"
+              />
+            </div>
+
+            <button
+              onClick={handleEnhance}
+              disabled={isProcessing}
+              className="w-full px-3 py-2 bg-white/10 hover:bg-white/20 border border-white/10 rounded-lg text-white text-xs font-medium transition-all disabled:opacity-50"
+            >
+              Apply Enhancements
+            </button>
+          </div>
+        </div>
+
+        {/* Quality Score */}
+        <div className="p-4 border-t border-white/10">
+          <div className="bg-white/5 rounded-lg p-3">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs text-white/60">Quality Score</span>
+              <span className="text-lg font-bold text-white">{qualityScore}/100</span>
+            </div>
+            <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-green-500 to-emerald-500"
+                style={{ width: `${qualityScore}%` }}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Center - Canvas */}
+      <div className="flex-1 flex flex-col">
+        {/* Top Toolbar */}
+        <div className="h-14 border-b border-white/10 bg-black/40 backdrop-blur-sm flex items-center justify-between px-4">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={undo}
+              disabled={historyIndex === 0}
+              className="p-2 text-white/60 hover:text-white hover:bg-white/10 rounded-lg transition-all disabled:opacity-30"
+              title="Undo"
+            >
+              <RotateCcw className="w-4 h-4" />
+            </button>
+            <button
+              onClick={redo}
+              disabled={historyIndex === history.length - 1}
+              className="p-2 text-white/60 hover:text-white hover:bg-white/10 rounded-lg transition-all disabled:opacity-30"
+              title="Redo"
+            >
+              <RotateCw className="w-4 h-4" />
+            </button>
+
+            <div className="h-6 w-px bg-white/10 mx-2" />
+
+            <button
+              onClick={() => setShowComparison(!showComparison)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 ${
+                showComparison
+                  ? "bg-white/20 text-white border border-white/20"
+                  : "bg-white/5 text-white/60 border border-white/10 hover:bg-white/10"
+              }`}
+            >
+              {showComparison ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+              {showComparison ? "Hide Original" : "Compare"}
+            </button>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleExport}
+              className="px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-white text-xs font-medium flex items-center gap-1.5 transition-all"
+            >
+              <Download className="w-3.5 h-3.5" />
+              Export
+            </button>
+            <button
+              onClick={handleSave}
+              className="px-4 py-1.5 bg-purple-500 hover:bg-purple-600 rounded-lg text-white text-xs font-semibold flex items-center gap-1.5 transition-all"
+            >
+              <Check className="w-3.5 h-3.5" />
+              Save Changes
+            </button>
+          </div>
+        </div>
+
+        {/* Image Canvas */}
+        <div className="flex-1 flex items-center justify-center p-8 relative">
+          {isProcessing && (
+            <div className="absolute inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-10">
+              <div className="text-center">
+                <div className="w-16 h-16 border-4 border-white/20 border-t-purple-500 rounded-full animate-spin mx-auto mb-4"></div>
+                <p className="text-white text-sm font-medium">Processing...</p>
+                <p className="text-white/40 text-xs mt-1">
+                  {activeTool === "perfect" && "Making it perfect"}
+                  {activeTool === "background" && "Removing background"}
+                  {activeTool === "enhance" && "Enhancing image"}
+                </p>
+              </div>
+            </div>
+          )}
+
+          {showComparison ? (
+            <div className="grid grid-cols-2 gap-4 max-w-full max-h-full">
+              <div className="relative">
+                <img
+                  src={originalImage}
+                  alt="Original"
+                  className="max-w-full max-h-[calc(100vh-200px)] object-contain rounded-lg"
+                  style={{
+                    filter: `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%)`,
+                  }}
+                />
+                <div className="absolute bottom-2 left-2 px-2 py-1 bg-black/60 backdrop-blur-sm rounded text-xs text-white">
+                  Original
+                </div>
+              </div>
+              <div className="relative">
+                <img
+                  src={currentImage}
+                  alt="Edited"
+                  className="max-w-full max-h-[calc(100vh-200px)] object-contain rounded-lg"
+                  style={{
+                    filter: `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%)`,
+                  }}
+                />
+                <div className="absolute bottom-2 left-2 px-2 py-1 bg-black/60 backdrop-blur-sm rounded text-xs text-white">
+                  Edited
+                </div>
+              </div>
+            </div>
+          ) : (
+            <img
+              src={currentImage}
+              alt="Editing"
+              className="max-w-full max-h-full object-contain rounded-lg"
+              style={{
+                filter: `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%)`,
+              }}
+            />
+          )}
+        </div>
+
+        {/* Bottom - History Timeline */}
+        <div className="h-20 border-t border-white/10 bg-black/40 backdrop-blur-sm px-4 py-3">
+          <div className="flex items-center gap-2 overflow-x-auto">
+            {history.map((item, index) => (
+              <button
+                key={item.timestamp}
+                onClick={() => {
+                  setHistoryIndex(index);
+                  setCurrentImage(item.url);
+                }}
+                className={`flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                  index === historyIndex
+                    ? "bg-purple-500/20 text-purple-300 border border-purple-500/50"
+                    : "bg-white/5 text-white/60 border border-white/10 hover:bg-white/10"
+                }`}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Right Sidebar - Suggestions */}
+      <div className="w-72 border-l border-white/10 bg-black/40 backdrop-blur-sm p-4">
+        <h3 className="text-sm font-semibold text-white mb-4">Smart Suggestions</h3>
+
+        <div className="space-y-3">
+          {suggestions.map((suggestion, index) => (
+            <div
+              key={index}
+              className="bg-white/5 border border-white/10 rounded-lg p-3"
+            >
+              <div className="flex items-start gap-2 mb-2">
+                <AlertCircle className="w-4 h-4 text-yellow-500 flex-shrink-0 mt-0.5" />
+                <p className="text-xs text-white/80">{suggestion.message}</p>
+              </div>
+              <button className="w-full px-3 py-1.5 bg-white/10 hover:bg-white/20 border border-white/10 rounded text-xs text-white font-medium transition-all">
+                {suggestion.action}
+              </button>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-6">
+          <h4 className="text-xs font-semibold text-white/60 uppercase tracking-wider mb-3">
+            Export Presets
+          </h4>
+          <div className="space-y-2 text-xs">
+            <div className="flex items-center justify-between text-white/60">
+              <span>Original (4000x4000)</span>
+              <Check className="w-3.5 h-3.5 text-green-500" />
+            </div>
+            <div className="flex items-center justify-between text-white/60">
+              <span>Product (2000x2000)</span>
+              <Check className="w-3.5 h-3.5 text-green-500" />
+            </div>
+            <div className="flex items-center justify-between text-white/60">
+              <span>Thumbnail (800x800)</span>
+              <Check className="w-3.5 h-3.5 text-green-500" />
+            </div>
+            <div className="flex items-center justify-between text-white/60">
+              <span>Mobile (600x600)</span>
+              <Check className="w-3.5 h-3.5 text-green-500" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

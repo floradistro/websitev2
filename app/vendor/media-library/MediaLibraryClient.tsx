@@ -741,15 +741,17 @@ export default function MediaLibraryClient() {
         }
       }}
     >
-      {/* Top Toolbar - Professional editing software style */}
-      <div className="h-14 bg-white/[0.02] border-b border-white/[0.06] flex items-center px-4 flex-shrink-0">
-        <div className="flex items-center gap-2.5 flex-1 min-w-0">
-          {/* View Controls - Fixed width */}
-          <div className="flex items-center gap-0.5 bg-white/[0.04] rounded-lg p-0.5 flex-shrink-0">
+      {/* ✨ Magical Toolbar - Effortless & Beautiful */}
+      <div className="h-12 bg-gradient-to-b from-white/[0.03] to-transparent border-b border-white/[0.08] flex items-center px-3 flex-shrink-0 backdrop-blur-sm">
+        <div className="flex items-center gap-2 flex-1 min-w-0">
+          {/* View Mode - Compact pill */}
+          <div className="flex items-center gap-0.5 bg-black/40 rounded-full p-0.5 border border-white/[0.08] flex-shrink-0">
             <button
               onClick={() => setSplitViewMode(!splitViewMode)}
-              className={`p-1.5 rounded transition-colors ${
-                splitViewMode ? "bg-white/[0.12] text-white" : "text-white/40 hover:text-white/60"
+              className={`p-1.5 rounded-full transition-all duration-300 ${
+                splitViewMode
+                  ? "bg-white text-black shadow-lg shadow-white/20"
+                  : "text-white/50 hover:text-white/80 hover:bg-white/10"
               }`}
               title="Split View"
             >
@@ -757,131 +759,162 @@ export default function MediaLibraryClient() {
             </button>
             <button
               onClick={() => setViewMode("grid")}
-              className={`p-1.5 rounded transition-colors ${
+              className={`p-1.5 rounded-full transition-all duration-300 ${
                 viewMode === "grid"
-                  ? "bg-white/[0.12] text-white"
-                  : "text-white/40 hover:text-white/60"
+                  ? "bg-white text-black shadow-lg shadow-white/20"
+                  : "text-white/50 hover:text-white/80 hover:bg-white/10"
               }`}
+              title="Grid View"
             >
               <Grid3x3 className="w-3.5 h-3.5" />
             </button>
             <button
               onClick={() => setViewMode("list")}
-              className={`p-1.5 rounded transition-colors ${
+              className={`p-1.5 rounded-full transition-all duration-300 ${
                 viewMode === "list"
-                  ? "bg-white/[0.12] text-white"
-                  : "text-white/40 hover:text-white/60"
+                  ? "bg-white text-black shadow-lg shadow-white/20"
+                  : "text-white/50 hover:text-white/80 hover:bg-white/10"
               }`}
+              title="List View"
             >
               <List className="w-3.5 h-3.5" />
             </button>
           </div>
 
-          <div className="w-px h-5 bg-white/[0.06] flex-shrink-0" />
-
-          {/* Search Bar - Always visible */}
-          <div className="relative w-64 flex-shrink-0">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/30 pointer-events-none" />
+          {/* Search - Glassmorphic */}
+          <div className="relative w-56 flex-shrink-0">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/40 pointer-events-none" />
             <input
               type="text"
-              placeholder="Search images..."
+              placeholder="Search..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-white/[0.04] border border-white/[0.06] rounded-lg pl-8 pr-3 py-1.5 text-xs text-white placeholder:text-white/30 focus:outline-none focus:bg-white/[0.06] focus:border-white/[0.12] transition-colors"
+              className="w-full bg-black/40 border border-white/[0.08] rounded-full pl-8 pr-3 py-1.5 text-xs text-white placeholder:text-white/40 focus:outline-none focus:bg-black/60 focus:border-white/20 transition-all duration-200 focus:shadow-lg focus:shadow-white/5"
             />
           </div>
 
-          {/* Selection Toolbar - Slides in when files selected */}
+          {/* Selection Actions - Smooth slide-in */}
           {selectedFiles.size > 0 && (
-            <>
-              <div className="w-px h-5 bg-white/[0.06] flex-shrink-0" />
-              <div className="flex items-center gap-2 flex-shrink-0">
-                <span className="text-xs text-white/60 font-medium tabular-nums whitespace-nowrap">
-                  {selectedFiles.size} selected
+            <div
+              className="flex items-center gap-1.5 flex-shrink-0"
+              style={{
+                animation: "slideInRight 0.3s ease-out",
+              }}
+            >
+              <div className="h-5 w-px bg-white/10 mx-1" />
+
+              {/* Selection count badge */}
+              <div className="px-2.5 py-1 bg-purple-500/20 border border-purple-500/30 rounded-full">
+                <span className="text-xs text-purple-300 font-semibold tabular-nums">
+                  {selectedFiles.size}
                 </span>
-                <div className="w-px h-5 bg-white/[0.06]" />
+              </div>
+
+              {/* Quick actions */}
+              <div className="flex items-center gap-1 bg-black/40 border border-white/[0.08] rounded-full p-0.5">
                 <button
                   onClick={handleBulkRetag}
                   disabled={retagging || removingBg}
-                  className="px-2.5 py-1.5 bg-white/[0.06] hover:bg-white/[0.1] text-white/80 hover:text-white rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 disabled:opacity-50 whitespace-nowrap"
+                  className="px-2.5 py-1 hover:bg-white/10 text-white/70 hover:text-white rounded-full text-xs font-medium transition-all flex items-center gap-1.5 disabled:opacity-40"
+                  title="Re-tag with AI"
                 >
                   {retagging ? (
                     <Loader2 className="w-3 h-3 animate-spin" />
                   ) : (
                     <Brain className="w-3 h-3" />
                   )}
-                  {retagging && bulkProgress?.operation === "retag"
-                    ? `${bulkProgress.completed}/${bulkProgress.total}`
-                    : "Re-tag"}
+                  {retagging && bulkProgress?.operation === "retag" ? (
+                    <span className="tabular-nums">{bulkProgress.completed}/{bulkProgress.total}</span>
+                  ) : (
+                    <span>Tag</span>
+                  )}
                 </button>
+
+                <div className="h-4 w-px bg-white/10" />
+
                 <button
                   onClick={handleRemoveBackground}
                   disabled={retagging || removingBg}
-                  className="px-2.5 py-1.5 bg-white/[0.06] hover:bg-white/[0.1] text-white/80 hover:text-white rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 disabled:opacity-50 whitespace-nowrap"
+                  className="px-2.5 py-1 hover:bg-white/10 text-white/70 hover:text-white rounded-full text-xs font-medium transition-all flex items-center gap-1.5 disabled:opacity-40"
+                  title="Remove background"
                 >
                   {removingBg ? (
                     <Loader2 className="w-3 h-3 animate-spin" />
                   ) : (
                     <Scissors className="w-3 h-3" />
                   )}
-                  {removingBg && bulkProgress?.operation === "remove-bg"
-                    ? `${bulkProgress.completed}/${bulkProgress.total}`
-                    : "Remove BG"}
+                  {removingBg && bulkProgress?.operation === "remove-bg" ? (
+                    <span className="tabular-nums">{bulkProgress.completed}/{bulkProgress.total}</span>
+                  ) : (
+                    <span>BG</span>
+                  )}
                 </button>
+
+                <div className="h-4 w-px bg-white/10" />
+
                 <button
                   onClick={handleAutoMatch}
                   disabled={autoMatching}
-                  className="px-2.5 py-1.5 bg-white/[0.06] hover:bg-white/[0.1] text-white/80 hover:text-white rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 disabled:opacity-50 whitespace-nowrap"
+                  className="px-2.5 py-1 hover:bg-white/10 text-white/70 hover:text-white rounded-full text-xs font-medium transition-all flex items-center gap-1.5 disabled:opacity-40"
+                  title="Link to products"
                 >
                   {autoMatching ? (
                     <Loader2 className="w-3 h-3 animate-spin" />
                   ) : (
                     <Link2 className="w-3 h-3" />
                   )}
-                  Link
+                  <span>Link</span>
                 </button>
+
+                <div className="h-4 w-px bg-white/10" />
+
                 <button
                   onClick={handleDelete}
-                  className="px-2.5 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 whitespace-nowrap"
+                  className="px-2.5 py-1 hover:bg-red-500/20 text-red-400/70 hover:text-red-300 rounded-full text-xs font-medium transition-all flex items-center gap-1.5"
+                  title="Delete selected"
                 >
                   <Trash2 className="w-3 h-3" />
-                  Delete
-                </button>
-                <button
-                  onClick={() => setSelectedFiles(new Set())}
-                  className="p-1.5 text-white/40 hover:text-white/60 transition-colors flex-shrink-0"
-                  title="Clear selection"
-                >
-                  <X className="w-3 h-3" />
                 </button>
               </div>
-            </>
+
+              <button
+                onClick={() => setSelectedFiles(new Set())}
+                className="p-1.5 text-white/40 hover:text-white hover:bg-white/10 rounded-full transition-all"
+                title="Clear selection"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            </div>
           )}
 
-          <div className="flex-1 min-w-0" />
+          <div className="flex-1" />
 
-          {/* Tools - Always visible on right */}
-          <div className="flex items-center gap-2 flex-shrink-0">
+          {/* Right Actions - Premium feel */}
+          <div className="flex items-center gap-1.5 flex-shrink-0">
             {splitViewMode && (
               <button
                 onClick={handleAutoMatch}
                 disabled={autoMatching}
-                className="px-3 py-1.5 bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 hover:text-purple-300 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 whitespace-nowrap disabled:opacity-50"
-                title="Auto-match products to images"
+                className="px-3 py-1.5 bg-gradient-to-r from-purple-500/20 to-pink-500/20 hover:from-purple-500/30 hover:to-pink-500/30 border border-purple-500/30 rounded-full text-xs font-semibold text-purple-300 transition-all flex items-center gap-1.5 disabled:opacity-40 shadow-lg shadow-purple-500/10"
               >
                 {autoMatching ? (
-                  <Loader2 className="w-3 h-3 animate-spin" />
+                  <>
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                    <span>Matching...</span>
+                  </>
                 ) : (
-                  <Zap className="w-3 h-3" />
+                  <>
+                    <Zap className="w-3 h-3" />
+                    <span>Auto-Match</span>
+                  </>
                 )}
-                Auto-Match
               </button>
             )}
 
             <button
               onClick={() => fileInputRef.current?.click()}
               disabled={isUploading}
-              className="bg-white text-black px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-white/90 transition-all disabled:opacity-50 flex items-center gap-1.5 whitespace-nowrap"
+              className="px-3 py-1.5 bg-white text-black rounded-full text-xs font-semibold hover:bg-white/90 transition-all disabled:opacity-50 flex items-center gap-1.5 shadow-lg shadow-white/20"
             >
               {isUploading ? (
                 <>
