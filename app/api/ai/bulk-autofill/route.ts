@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { requireVendor } from "@/lib/auth/middleware";
 import Anthropic from "@anthropic-ai/sdk";
 import Exa from "exa-js";
 
@@ -49,6 +50,12 @@ PRIORITY FIELDS (search extra hard for these):
 REMEMBER: Empty/null is better than fake placeholder data. Search THOROUGHLY in sources for lineage, terpenes, effects, and aroma before marking as null.`;
 
 export async function POST(request: NextRequest) {
+  // SECURITY: Require vendor authentication
+  const authResult = await requireVendor(request);
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+
   try {
     // Check for required API keys
     if (!process.env.ANTHROPIC_API_KEY) {

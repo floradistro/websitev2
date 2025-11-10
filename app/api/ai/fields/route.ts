@@ -12,6 +12,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { requireVendor } from "@/lib/auth/middleware";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
 import { logger } from "@/lib/logger";
@@ -21,6 +22,12 @@ import { toError } from "@/lib/errors";
  * AI creates a custom field
  */
 export async function POST(request: NextRequest) {
+  // SECURITY: Require vendor authentication
+  const authResult = await requireVendor(request);
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+
   try {
     const {
       vendor_id,
@@ -95,6 +102,12 @@ export async function POST(request: NextRequest) {
  * AI updates an existing field definition
  */
 export async function PATCH(request: NextRequest) {
+  // SECURITY: Require vendor authentication
+  const authResult = await requireVendor(request);
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+
   try {
     const { field_id, vendor_id, updates, ai_reason } = await request.json();
 
@@ -159,6 +172,12 @@ export async function PATCH(request: NextRequest) {
  * AI removes a field
  */
 export async function DELETE(request: NextRequest) {
+  // SECURITY: Require vendor authentication
+  const authResult = await requireVendor(request);
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+
   try {
     const url = new URL(request.url);
     const field_id = url.searchParams.get("field_id");

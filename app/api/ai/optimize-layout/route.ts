@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { requireVendor } from "@/lib/auth/middleware";
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { LayoutOptimizer } from "@/lib/ai/layout-optimizer";
 import { LLMLayoutConsultant } from "@/lib/ai/llm-layout-consultant";
@@ -15,6 +16,12 @@ import { toError } from "@/lib/errors";
  */
 
 export async function POST(request: NextRequest) {
+  // SECURITY: Require vendor authentication
+  const authResult = await requireVendor(request);
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+
   try {
     const body = await request.json();
     const { deviceId, menuId, vendorId, useLLM = false } = body;
@@ -223,6 +230,12 @@ export async function POST(request: NextRequest) {
  * Get latest recommendation for a device
  */
 export async function GET(request: NextRequest) {
+  // SECURITY: Require vendor authentication
+  const authResult = await requireVendor(request);
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+
   try {
     const { searchParams } = new URL(request.url);
     const deviceId = searchParams.get("deviceId");

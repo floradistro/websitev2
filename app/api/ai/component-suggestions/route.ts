@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { requireVendor } from "@/lib/auth/middleware";
 
 import { logger } from "@/lib/logger";
 import { toError } from "@/lib/errors";
@@ -8,6 +9,12 @@ import { toError } from "@/lib/errors";
  * POST /api/ai/component-suggestions
  */
 export async function POST(request: NextRequest) {
+  // SECURITY: Require vendor authentication
+  const authResult = await requireVendor(request);
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+
   try {
     const { vendorId, componentKey, currentProps, pageType, sectionComponents } =
       await request.json();

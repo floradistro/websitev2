@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { requireAdmin } from "@/lib/auth/middleware";
 import { createClient } from "@supabase/supabase-js";
 
 import { logger } from "@/lib/logger";
@@ -8,42 +9,16 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
 );
 
-// Admin token verification (supports admin and readonly roles)
-function verifyAdminToken(token: string): {
-  valid: boolean;
-  role?: string;
-  username?: string;
-} {
-  try {
-    const decoded = JSON.parse(Buffer.from(token, "base64").toString());
-    const isValid = (decoded.role === "admin" || decoded.role === "readonly") && decoded.username;
-    return {
-      valid: isValid,
-      role: decoded.role,
-      username: decoded.username,
-    };
-  } catch {
-    return { valid: false };
-  }
-}
-
 export async function GET(request: NextRequest) {
+  // SECURITY: Require admin authentication
+  const authResult = await requireAdmin(request);
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+
   try {
-    // Verify admin authentication
-    const authHeader = request.headers.get("authorization");
-    const token = authHeader?.replace("Bearer ", "");
-
-    if (!token) {
-      return NextResponse.json({ error: "Unauthorized - Admin access required" }, { status: 401 });
-    }
-
-    const authResult = verifyAdminToken(token);
-    if (!authResult.valid) {
-      return NextResponse.json({ error: "Unauthorized - Invalid token" }, { status: 401 });
-    }
-
-    const userRole = authResult.role;
-    const isReadOnly = userRole === "readonly";
+    const { user } = authResult;
+    const isReadOnly = user.role === "readonly";
 
     // Get vendors with product counts
     const { data: vendors, error } = await supabase

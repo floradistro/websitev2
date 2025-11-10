@@ -1484,7 +1484,7 @@ export default function MediaLibraryClient() {
       )}
 
       {/* Image Editor */}
-      {editingImage && (
+      {editingImage && vendor && (
         <ImageEditor
           image={{
             id: editingImage.id,
@@ -1493,6 +1493,7 @@ export default function MediaLibraryClient() {
             title: editingImage.title,
             alt_text: editingImage.alt_text,
           }}
+          vendorId={vendor.id}
           onClose={() => setEditingImage(null)}
           onSave={async (editedImageUrl) => {
             // TODO: Save the edited image back to the database

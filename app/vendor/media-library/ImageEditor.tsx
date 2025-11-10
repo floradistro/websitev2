@@ -126,7 +126,7 @@ export default function ImageEditor({ image, onClose, onSave }: ImageEditorProps
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-vendor-id": localStorage.getItem("vendorId") || "",
+          "x-vendor-id": vendorId,
         },
         body: JSON.stringify({
           imageUrl: currentImage,
@@ -170,7 +170,7 @@ export default function ImageEditor({ image, onClose, onSave }: ImageEditorProps
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-vendor-id": localStorage.getItem("vendorId") || "",
+          "x-vendor-id": vendorId,
         },
         body: JSON.stringify({
           imageUrl: currentImage,
@@ -180,7 +180,8 @@ export default function ImageEditor({ image, onClose, onSave }: ImageEditorProps
       });
 
       if (!response.ok) {
-        throw new Error("Failed to remove background");
+        const errorData = await response.json().catch(() => ({ error: "Unknown error" }));
+        throw new Error(errorData.error || "Failed to remove background");
       }
 
       const data = await response.json();
@@ -191,7 +192,13 @@ export default function ImageEditor({ image, onClose, onSave }: ImageEditorProps
       }
     } catch (error) {
       console.error("Error removing background:", error);
-      alert("Failed to remove background. This feature requires a specialized background removal service.");
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+
+      if (errorMessage.includes("API key not configured")) {
+        alert("Remove.bg API key is not configured. Please add REMOVE_BG_API_KEY to your .env.local file.");
+      } else {
+        alert(`Failed to remove background: ${errorMessage}`);
+      }
     } finally {
       setIsProcessing(false);
       setActiveTool(null);
@@ -207,7 +214,7 @@ export default function ImageEditor({ image, onClose, onSave }: ImageEditorProps
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-vendor-id": localStorage.getItem("vendorId") || "",
+          "x-vendor-id": vendorId,
         },
         body: JSON.stringify({
           imageUrl: currentImage,
@@ -624,9 +631,6 @@ export default function ImageEditor({ image, onClose, onSave }: ImageEditorProps
             </div>
           </div>
         </div>
-      </div>
-      </div>
-      </div>
       </div>
       </div>
     </div>

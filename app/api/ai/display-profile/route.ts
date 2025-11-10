@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { requireVendor } from "@/lib/auth/middleware";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
 import { logger } from "@/lib/logger";
@@ -8,6 +9,12 @@ import { toError } from "@/lib/errors";
  * POST /api/ai/display-profile
  */
 export async function POST(request: NextRequest) {
+  // SECURITY: Require vendor authentication
+  const authResult = await requireVendor(request);
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+
   try {
     const body = await request.json();
     const {
@@ -122,6 +129,12 @@ export async function POST(request: NextRequest) {
  * GET /api/ai/display-profile?deviceId=xxx
  */
 export async function GET(request: NextRequest) {
+  // SECURITY: Require vendor authentication
+  const authResult = await requireVendor(request);
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+
   try {
     const { searchParams } = new URL(request.url);
     const deviceId = searchParams.get("deviceId");

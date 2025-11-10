@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { requireVendor } from "@/lib/auth/middleware";
 import Anthropic from "@anthropic-ai/sdk";
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { MCP_TOOLS, executeMCPTool } from "@/lib/ai/mcp-tools";
@@ -16,6 +17,12 @@ import { toError } from "@/lib/errors";
  * - Understand Yacht Club architecture
  */
 export async function POST(request: NextRequest) {
+  // SECURITY: Require vendor authentication
+  const authResult = await requireVendor(request);
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+
   try {
     const {
       prompt,
@@ -592,6 +599,12 @@ function parseClaudeResponse(responseText: string, action: string): any {
  * GET endpoint to check AI config status
  */
 export async function GET(request: NextRequest) {
+  // SECURITY: Require vendor authentication
+  const authResult = await requireVendor(request);
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+
   try {
     const supabase = getServiceSupabase();
     const { data: config, error } = await supabase

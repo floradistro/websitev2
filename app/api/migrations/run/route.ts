@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { requireAdmin } from "@/lib/auth/middleware";
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { readFileSync } from "fs";
 import { join } from "path";
@@ -9,6 +10,12 @@ export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 export async function POST(request: NextRequest) {
+  // SECURITY: Require admin authentication
+  const authResult = await requireAdmin(request);
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+
   try {
     const supabase = getServiceSupabase();
     const { migrationName } = await request.json();

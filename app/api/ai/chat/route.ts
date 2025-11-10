@@ -5,7 +5,8 @@
  * Streaming responses with tool use
  */
 
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { requireVendor } from "@/lib/auth/middleware";
 import Anthropic from "@anthropic-ai/sdk";
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { ExaClient } from "@/lib/ai/exa-client";
@@ -22,6 +23,12 @@ export const runtime = "nodejs";
 export const maxDuration = 300;
 
 export async function POST(request: NextRequest) {
+  // SECURITY: Require vendor authentication
+  const authResult = await requireVendor(request);
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+
   const encoder = new TextEncoder();
 
   const { messages, agentId, conversationId, context = {} } = await request.json();

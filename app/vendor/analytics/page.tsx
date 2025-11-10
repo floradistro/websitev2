@@ -3,6 +3,8 @@
 import { useState } from "react";
 import useSWR from "swr";
 import { useAppAuth } from "@/context/AppAuthContext";
+import { DateRangePicker } from "@/components/ui/DateRangePicker";
+import { SkeletonKPIGrid, SkeletonTable } from "@/components/ui/Skeleton";
 import {
   DollarSign,
   ShoppingCart,
@@ -991,6 +993,18 @@ export default function AnalyticsPage() {
     reportType: "",
   });
 
+  // Initialize date range for DateRangePicker
+  const getInitialDateRange = () => {
+    const end = new Date();
+    end.setHours(23, 59, 59, 999);
+    const start = new Date(end);
+    start.setDate(start.getDate() - 29); // Default to 30 days
+    start.setHours(0, 0, 0, 0);
+    return { start, end };
+  };
+
+  const [dateRange, setDateRange] = useState(getInitialDateRange());
+
   // Build query params
   const queryParams = `?range=${timeRange}`;
 
@@ -1027,51 +1041,44 @@ export default function AnalyticsPage() {
   ];
 
   return (
-    <div className="dashboard-container">
-      <div className="max-w-[1600px] mx-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="heading-1 mb-2">Analytics</h1>
-            <p className="body-text">
-              Comprehensive business insights and reporting
-            </p>
-          </div>
-          <div className="flex gap-3">
-            {/* Time Range Selector */}
-            <div className="flex gap-2">
-              {[
-                { value: "7d", label: "7 Days" },
-                { value: "30d", label: "30 Days" },
-                { value: "90d", label: "90 Days" },
-                { value: "1y", label: "1 Year" },
-              ].map((range) => (
-                <button
-                  key={range.value}
-                  onClick={() => setTimeRange(range.value as TimeRange)}
-                  className={`px-4 py-2 text-xs uppercase tracking-wider transition-all duration-300 border rounded-xl ${
-                    timeRange === range.value
-                      ? "bg-white/10 text-white border-white/20"
-                      : "bg-black/20 text-white/50 border-white/10 hover:border-white/20"
-                  }`}
-                >
-                  {range.label}
-                </button>
-              ))}
+    <div className="analytics-page dashboard-container">
+      <div className="max-w-[1600px] mx-auto h-full flex flex-col">
+        {/* Header - Sticky */}
+        <div className="analytics-header">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="heading-1 mb-1">Analytics</h1>
+              <p className="body-text text-sm">
+                Comprehensive business insights and reporting
+              </p>
             </div>
-            <button
-              onClick={() => handleExportClick(activeTab)}
-              className="flex items-center gap-2 px-4 py-2 text-sm text-white bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-all"
-            >
-              <Download className="w-4 h-4" />
-              Export
-            </button>
+            <div className="flex gap-3 items-center">
+              {/* Date Range Picker */}
+              <DateRangePicker
+                value={dateRange}
+                onChange={(range) => {
+                  setDateRange(range);
+                  // Keep timeRange in sync for backward compatibility with existing queries
+                  setTimeRange("30d");
+                }}
+              />
+              <button
+                onClick={() => handleExportClick(activeTab)}
+                className="flex items-center gap-2 px-4 py-2 text-sm text-white bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-all"
+              >
+                <Download className="w-4 h-4" />
+                Export
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* Overview Stats */}
-        {overview?.data && (
-          <div className="grid grid-cols-4 gap-4 mb-8">
+        {/* KPI Section - Sticky */}
+        <div className="analytics-kpi-section">
+          {!overview?.data ? (
+            <SkeletonKPIGrid count={4} />
+          ) : (
+            <div className="grid grid-cols-4 gap-4">
             <StatCard
               label="Total Revenue"
               value={`$${(overview.data.gross_sales || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}`}
@@ -1128,12 +1135,13 @@ export default function AnalyticsPage() {
               icon={Target}
               onClick={() => setActiveTab("products")}
             />
-          </div>
-        )}
+            </div>
+          )}
+        </div>
 
-        {/* Tab Navigation */}
-        <div className="minimal-glass mb-6">
-          <div className="flex gap-1 p-2 overflow-x-auto">
+        {/* Tab Navigation - Sticky */}
+        <div className="analytics-tabs">
+          <div className="flex gap-1 py-3 overflow-x-auto">
             {tabs.map((tab) => {
               const Icon = tab.icon;
               return (
@@ -1154,8 +1162,9 @@ export default function AnalyticsPage() {
           </div>
         </div>
 
-        {/* Report Content */}
-        <div className="minimal-glass p-8">
+        {/* Report Content - Independent Scroll */}
+        <div className="analytics-content">
+          <div className="minimal-glass p-8">
           {activeTab === "sales" && (
             <div>
               <div className="flex items-center justify-between mb-6">
@@ -1355,9 +1364,8 @@ export default function AnalyticsPage() {
               </div>
               {sessions?.data ? (
                 <>
-                  <SessionsTable data={sessions.data} />
                   {sessions.summary && (
-                    <div className="grid grid-cols-5 gap-4 mt-6">
+                    <div className="grid grid-cols-5 gap-4 mb-6">
                       <div className="minimal-glass p-4">
                         <div className="text-white/40 text-[10px] uppercase tracking-wider mb-1">Total Sessions</div>
                         <div className="text-white text-2xl font-light">{sessions.summary.total_sessions}</div>
@@ -1386,12 +1394,14 @@ export default function AnalyticsPage() {
                       </div>
                     </div>
                   )}
+                  <SessionsTable data={sessions.data} />
                 </>
               ) : (
                 <div className="text-center text-white/40 py-12">Loading...</div>
               )}
             </div>
           )}
+          </div>
         </div>
       </div>
 
