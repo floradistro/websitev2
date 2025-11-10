@@ -4,9 +4,16 @@
  */
 
 import { NextResponse } from "next/server";
+import { requireAuth } from "@/lib/auth/middleware";
 import { cookies } from "next/headers";
 
 export async function GET() {
+  // SECURITY: Require authentication
+  const authResult = await requireAuth(request);
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+
   const cookieStore = await cookies();
 
   // Check for visit tracking cookie

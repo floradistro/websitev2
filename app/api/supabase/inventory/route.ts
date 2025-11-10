@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { requireVendor } from "@/lib/auth/middleware";
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { inventoryCache, generateCacheKey } from "@/lib/cache-manager";
 
@@ -8,6 +9,12 @@ import { toError } from "@/lib/errors";
  * Get inventory for a product or vendor
  */
 export async function GET(request: NextRequest) {
+  // SECURITY: Require authentication
+  const authResult = await requireVendor(request);
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+
   const startTime = performance.now();
 
   try {

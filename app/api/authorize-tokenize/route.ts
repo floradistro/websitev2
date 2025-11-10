@@ -1,8 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
+import { requireVendor } from "@/lib/auth/middleware";
 
 import { logger } from "@/lib/logger";
 import { toError } from "@/lib/errors";
 export async function POST(request: NextRequest) {
+  // SECURITY: Require authentication
+  const authResult = await requireVendor(request);
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+
   try {
     const { cardNumber, expMonth, expYear, cvv, customerEmail, customerName } =
       await request.json();

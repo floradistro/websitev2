@@ -155,88 +155,75 @@ export function DateRangePicker({
         </button>
       </div>
 
-      {/* Custom Date Modal - Apple Style Dark Theme */}
+      {/* Custom Date Popover - Dropdown Style */}
       {isOpen && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-md">
+        <>
+          {/* Backdrop */}
+          <div className="fixed inset-0 z-[9998]" onClick={() => setIsOpen(false)} />
+
+          {/* Popover */}
           <div
             ref={modalRef}
-            className="bg-[#1c1c1e] border border-white/10 rounded-2xl shadow-2xl w-full max-w-lg p-6"
+            className="absolute right-0 top-full mt-2 bg-[#1c1c1e] border border-white/10 rounded-xl shadow-2xl w-[360px] p-5 z-[9999]"
             style={{
-              animation: 'fadeIn 0.2s ease-out',
+              animation: 'fadeIn 0.15s ease-out',
             }}
           >
             {/* Modal Header */}
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-semibold text-white">Select Date Range</h3>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-base font-semibold text-white">Select Range</h3>
               <button
                 onClick={() => setIsOpen(false)}
-                className="w-8 h-8 flex items-center justify-center rounded-full text-white/40 hover:text-white hover:bg-white/10 transition-all"
+                className="w-7 h-7 flex items-center justify-center rounded-full text-white/40 hover:text-white hover:bg-white/10 transition-all"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4" />
               </button>
             </div>
 
             {/* Current Selection Display */}
-            <div className="bg-white/5 rounded-xl p-4 mb-6 border border-white/5">
-              <div className="text-white/40 text-xs uppercase tracking-wider mb-2 font-medium">Selected Range</div>
-              <div className="text-white text-base font-medium">{formatDateRange(value)}</div>
+            <div className="bg-white/5 rounded-lg p-3 mb-4 border border-white/5">
+              <div className="text-white/40 text-[10px] uppercase tracking-wider mb-1 font-medium">Selected Range</div>
+              <div className="text-white text-sm font-medium">{formatDateRange(value)}</div>
             </div>
 
             {/* Calendar Component */}
             <CalendarGrid value={value} onChange={onChange} onClose={() => setIsOpen(false)} />
 
-            {/* Comparison Toggle */}
-            {onCompareChange && (
-              <div className="mt-6 pt-6 border-t border-white/10">
-                <label className="flex items-center gap-3 cursor-pointer group">
-                  <div className="relative">
-                    <input
-                      type="checkbox"
-                      checked={isCompareEnabled}
-                      onChange={handleCompareToggle}
-                      className="w-5 h-5 rounded border-white/20 bg-white/5 text-blue-500 focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
-                    />
-                  </div>
-                  <span className="text-white/80 text-sm group-hover:text-white transition-colors">
-                    Compare to previous period
-                  </span>
-                </label>
-              </div>
-            )}
-
             {/* Action Buttons */}
-            <div className="flex gap-3 mt-6">
+            <div className="flex gap-2 mt-4">
               <button
                 onClick={() => setIsOpen(false)}
-                className="flex-1 px-4 py-3 bg-white/5 hover:bg-white/10 text-white/70 hover:text-white rounded-xl font-medium transition-all border border-white/10"
+                className="flex-1 px-3 py-2 bg-white/5 hover:bg-white/10 text-white/70 hover:text-white rounded-lg text-sm font-medium transition-all border border-white/10"
               >
                 Cancel
               </button>
               <button
                 onClick={() => setIsOpen(false)}
-                className="flex-1 px-4 py-3 bg-[#007AFF] hover:bg-[#0051D5] text-white rounded-xl font-medium transition-all shadow-lg shadow-blue-500/20"
+                className="flex-1 px-3 py-2 bg-[#007AFF] hover:bg-[#0051D5] text-white rounded-lg text-sm font-medium transition-all"
               >
                 Apply
               </button>
             </div>
           </div>
-        </div>
+        </>
       )}
     </div>
   );
 }
 
-// Calendar Grid Component
+// Calendar Grid Component - Apple Style
 function CalendarGrid({
   value,
   onChange,
+  onClose,
 }: {
   value: DateRange;
   onChange: (range: DateRange) => void;
+  onClose?: () => void;
 }) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selecting, setSelecting] = useState<'start' | 'end'>('start');
-  const [tempStart, setTempStart] = useState<Date | null>(value.start);
+  const [tempStart, setTempStart] = useState<Date | null>(null);
 
   const daysInMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0).getDate();
   const firstDayOfMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1).getDay();
@@ -251,6 +238,7 @@ function CalendarGrid({
 
   const handleDateClick = (day: number) => {
     const selectedDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
+    selectedDate.setHours(0, 0, 0, 0);
 
     if (selecting === 'start') {
       setTempStart(selectedDate);
@@ -258,64 +246,78 @@ function CalendarGrid({
     } else {
       if (tempStart && selectedDate < tempStart) {
         // Swap if end is before start
-        onChange({ start: selectedDate, end: tempStart });
+        const endDate = new Date(tempStart);
+        endDate.setHours(23, 59, 59, 999);
+        onChange({ start: selectedDate, end: endDate });
       } else if (tempStart) {
-        onChange({ start: tempStart, end: selectedDate });
+        const endDate = new Date(selectedDate);
+        endDate.setHours(23, 59, 59, 999);
+        onChange({ start: tempStart, end: endDate });
       }
       setSelecting('start');
+      setTempStart(null);
     }
   };
 
   const isDateInRange = (day: number) => {
+    if (!value?.start || !value?.end) return false;
     const date = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
     return date >= value.start && date <= value.end;
   };
 
   const isStartDate = (day: number) => {
+    if (!value?.start) return false;
     const date = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
     return date.toDateString() === value.start.toDateString();
   };
 
   const isEndDate = (day: number) => {
+    if (!value?.end) return false;
     const date = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
     return date.toDateString() === value.end.toDateString();
   };
 
+  const isToday = (day: number) => {
+    const date = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
+    const today = new Date();
+    return date.toDateString() === today.toDateString();
+  };
+
   return (
     <div>
-      {/* Month Navigation */}
-      <div className="flex items-center justify-between mb-4">
+      {/* Month Navigation - Compact */}
+      <div className="flex items-center justify-between mb-3 px-1">
         <button
           onClick={prevMonth}
-          className="p-2 text-white/60 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+          className="w-7 h-7 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 rounded-md transition-all"
         >
-          <ChevronLeft className="w-5 h-5" />
+          <ChevronLeft className="w-4 h-4" />
         </button>
-        <div className="text-white font-medium">
+        <div className="text-white text-sm font-semibold">
           {currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
         </div>
         <button
           onClick={nextMonth}
-          className="p-2 text-white/60 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+          className="w-7 h-7 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 rounded-md transition-all"
         >
-          <ChevronRight className="w-5 h-5" />
+          <ChevronRight className="w-4 h-4" />
         </button>
       </div>
 
-      {/* Day Headers */}
+      {/* Day Headers - Compact */}
       <div className="grid grid-cols-7 gap-1 mb-2">
-        {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((day) => (
-          <div key={day} className="text-center text-white/40 text-xs font-medium py-2">
+        {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, idx) => (
+          <div key={`${day}-${idx}`} className="text-center text-white/40 text-[10px] font-semibold py-1 uppercase">
             {day}
           </div>
         ))}
       </div>
 
-      {/* Calendar Days */}
+      {/* Calendar Days - Compact */}
       <div className="grid grid-cols-7 gap-1">
         {/* Empty cells for days before month starts */}
         {Array.from({ length: firstDayOfMonth }).map((_, i) => (
-          <div key={`empty-${i}`} className="aspect-square" />
+          <div key={`empty-${i}`} className="w-10 h-10" />
         ))}
 
         {/* Days of month */}
@@ -324,19 +326,23 @@ function CalendarGrid({
           const inRange = isDateInRange(day);
           const isStart = isStartDate(day);
           const isEnd = isEndDate(day);
+          const today = isToday(day);
 
           return (
             <button
               key={day}
               onClick={() => handleDateClick(day)}
               className={`
-                aspect-square rounded-lg text-sm font-medium transition-all duration-150
+                w-10 h-10 rounded-full text-xs font-semibold transition-all duration-150
+                flex items-center justify-center relative
                 ${
                   isStart || isEnd
-                    ? 'bg-blue-500 text-white shadow-lg'
+                    ? 'bg-[#007AFF] text-white'
                     : inRange
-                    ? 'bg-blue-500/20 text-white'
-                    : 'text-white/60 hover:bg-white/5 hover:text-white'
+                    ? 'bg-[#007AFF]/20 text-white'
+                    : today
+                    ? 'bg-white/5 text-white ring-1 ring-[#007AFF]'
+                    : 'text-white/60 hover:bg-white/10 hover:text-white'
                 }
               `}
             >
@@ -344,6 +350,13 @@ function CalendarGrid({
             </button>
           );
         })}
+      </div>
+
+      {/* Selection Hint */}
+      <div className="mt-3 pt-3 border-t border-white/10">
+        <div className="text-white/40 text-[10px] text-center uppercase tracking-wide">
+          {selecting === 'start' ? 'Select start date' : 'Select end date'}
+        </div>
       </div>
     </div>
   );

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { requireAuth } from "@/lib/auth/middleware";
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { PaymentSchema, validateData } from "@/lib/validation/schemas";
 import { rateLimiter, RateLimitConfigs, getIdentifier } from "@/lib/rate-limiter";
@@ -10,6 +11,12 @@ import type { CartItem, AuthorizeNetTransactionResponse } from "@/types/payment"
 import { toError } from "@/lib/errors";
 
 export const POST = withErrorHandler(async (request: NextRequest) => {
+  // SECURITY: Require authentication
+  const authResult = await requireAuth(request);
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+
   const supabase = getServiceSupabase();
 
   try {

@@ -1,6 +1,7 @@
 /**
  * API: Vendor Template Imports
  * GET - Get all templates imported by a vendor
+import { requireAdmin } from "@/lib/auth/middleware";
  */
 
 import { NextRequest, NextResponse } from "next/server";
@@ -9,6 +10,12 @@ import { getServiceSupabase } from "@/lib/supabase/client";
 import { logger } from "@/lib/logger";
 import { toError } from "@/lib/errors";
 export async function GET(request: NextRequest) {
+  // SECURITY: Require admin authentication
+  const authResult = await requireAdmin(request);
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+
   try {
     const { searchParams } = new URL(request.url);
     const vendorId = searchParams.get("vendor_id");

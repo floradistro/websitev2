@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { requireAdmin } from "@/lib/auth/middleware";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
 import { logger } from "@/lib/logger";
@@ -13,6 +14,12 @@ import { toError } from "@/lib/errors";
  * List all display groups for a vendor
  */
 export async function GET(request: NextRequest) {
+  // SECURITY: Require authentication
+  const authResult = await requireAdmin(request);
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+
   try {
     const { searchParams } = new URL(request.url);
     const vendorId = searchParams.get("vendor_id");
@@ -69,6 +76,12 @@ export async function GET(request: NextRequest) {
  * All config (grid, theme, pricing, display settings) is in main menu editor per category
  */
 export async function POST(request: NextRequest) {
+  // SECURITY: Require authentication
+  const authResult = await requireAdmin(request);
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+
   try {
     const body = await request.json();
     const {

@@ -31,11 +31,12 @@ interface ImageEditorProps {
     title?: string | null;
     alt_text?: string | null;
   };
+  vendorId: string;
   onClose: () => void;
   onSave?: (editedImageUrl: string) => void;
 }
 
-type Tool = "perfect" | "background" | "enhance" | "erase" | "color" | "light";
+type Tool = "perfect" | "background" | "enhance" | "erase" | "restore" | "magic-remove" | "refine-edges" | "color" | "light";
 
 interface EditHistory {
   url: string;
@@ -43,7 +44,7 @@ interface EditHistory {
   timestamp: number;
 }
 
-export default function ImageEditor({ image, onClose, onSave }: ImageEditorProps) {
+export default function ImageEditor({ image, vendorId, onClose, onSave }: ImageEditorProps) {
   const [currentImage, setCurrentImage] = useState(image.file_url);
   const [originalImage] = useState(image.file_url);
   const [activeTool, setActiveTool] = useState<Tool | null>(null);

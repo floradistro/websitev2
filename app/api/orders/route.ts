@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { requireAuth } from "@/lib/auth/middleware";
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { isStockAvailable } from "@/lib/unit-conversion";
 import { AlpineIQClient } from "@/lib/marketing/alpineiq-client";
@@ -124,6 +125,12 @@ async function syncOrderToAlpineIQ(orderId: string, customerId: string) {
 }
 
 export async function GET(request: NextRequest) {
+  // SECURITY: Require authentication
+  const authResult = await requireAuth(request);
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+
   try {
     const searchParams = request.nextUrl.searchParams;
     const customerId = searchParams.get("customer");
@@ -214,6 +221,12 @@ export async function GET(request: NextRequest) {
  * Handles inventory deduction in GRAMS
  */
 export async function POST(request: NextRequest) {
+  // SECURITY: Require authentication
+  const authResult = await requireAuth(request);
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+
   const supabase = getServiceSupabase();
 
   try {

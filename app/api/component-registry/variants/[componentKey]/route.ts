@@ -4,6 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { requireAdmin } from "@/lib/auth/middleware";
 import { getComponentVariants } from "@/lib/component-registry";
 
 import { logger } from "@/lib/logger";
@@ -11,6 +12,12 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ componentKey: string }> },
 ) {
+  // SECURITY: Require admin authentication
+  const authResult = await requireAdmin(request);
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+
   try {
     const { componentKey } = await params;
 

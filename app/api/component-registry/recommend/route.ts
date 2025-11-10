@@ -5,10 +5,17 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { requireVendor } from "@/lib/auth/middleware";
 import { getRecommendedComponents } from "@/lib/component-registry";
 
 import { logger } from "@/lib/logger";
 export async function POST(request: NextRequest) {
+  // SECURITY: Require vendor authentication
+  const authResult = await requireVendor(request);
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+
   try {
     const body = await request.json();
     const { fieldTypes } = body;

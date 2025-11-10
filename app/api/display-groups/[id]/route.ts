@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { requireAdmin } from "@/lib/auth/middleware";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
 import { logger } from "@/lib/logger";
@@ -9,7 +10,13 @@ import { toError } from "@/lib/errors";
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
+  {
+  // SECURITY: Require authentication
+  const authResult = await requireAdmin(request);
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+ params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params;
@@ -41,7 +48,13 @@ export async function DELETE(
  * Update a display group - GROUPING ONLY (name, description, category assignment)
  * All config (grid, theme, pricing, display settings) is in main menu editor per category
  */
-export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function PUT(request: NextRequest, {
+  // SECURITY: Require authentication
+  const authResult = await requireAdmin(request);
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+ params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
     const body = await request.json();
