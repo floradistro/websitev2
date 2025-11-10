@@ -350,10 +350,11 @@ export async function PUT(request: NextRequest) {
               await supabase.storage.from("vendor-product-images").remove([p.value.tempPath]);
             } catch (cleanupError) {
               // Non-critical: Log cleanup failure but continue processing
-              logger.warn("Failed to cleanup temp file", cleanupError, {
+              logger.warn("Failed to cleanup temp file", {
+                error: cleanupError,
                 tempPath: p.value.tempPath,
                 vendorId,
-                operation: 'upscale-cleanup'
+                operation: "upscale-cleanup",
               });
             }
           }

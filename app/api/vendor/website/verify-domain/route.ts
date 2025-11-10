@@ -234,16 +234,14 @@ export async function POST(request: NextRequest) {
     const err = toError(error);
     // Log full error details server-side only
     logger.error("Domain verification failed", err, {
-      domain: domain || 'unknown',
-      vendorId: vendor_id,
-      operation: 'verify-domain'
+      operation: "verify-domain",
     });
 
     // Return generic error to client (no internal details)
     return NextResponse.json(
       {
         error: "Domain verification failed. Please check your DNS settings and try again.",
-        success: false
+        success: false,
       },
       { status: 500 },
     );

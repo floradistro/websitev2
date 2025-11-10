@@ -28,34 +28,25 @@ const fallbackCache = new LRUCache<string, string>({
 function getRedisClient(): Redis | null {
   if (redisClient) return redisClient;
 
-  const redisUrl = process.env.REDIS_URL;
-  const redisHost = process.env.REDIS_HOST;
-  const redisPort = process.env.REDIS_PORT;
-  const redisPassword = process.env.REDIS_PASSWORD;
+  // Check for Upstash REST API credentials (preferred)
+  const upstashUrl = process.env.UPSTASH_REDIS_REST_URL;
+  const upstashToken = process.env.UPSTASH_REDIS_REST_TOKEN;
 
-  if (!redisUrl && (!redisHost || !redisPort || !redisPassword)) {
-    logger.warn("Redis configuration incomplete - using in-memory cache only");
+  if (!upstashUrl || !upstashToken) {
+    logger.warn(
+      "UPSTASH_REDIS_REST_URL or UPSTASH_REDIS_REST_TOKEN not configured - using in-memory cache only",
+    );
     return null;
   }
 
   try {
-    if (redisUrl) {
-      // Use REDIS_URL if provided (Upstash format)
-      redisClient = new Redis({
-        url: redisUrl,
-        automaticDeserialization: true,
-      });
-    } else {
-      // Construct from individual components
-      redisClient = new Redis({
-        host: redisHost!,
-        port: parseInt(redisPort!, 10),
-        password: redisPassword!,
-        automaticDeserialization: true,
-      });
-    }
+    // Use Upstash REST API (recommended for serverless)
+    redisClient = new Redis({
+      url: upstashUrl,
+      token: upstashToken,
+    });
 
-    logger.info("Redis cache initialized successfully");
+    logger.info("Redis cache initialized successfully via Upstash REST API");
     return redisClient;
   } catch (error) {
     logger.error("Failed to initialize Redis", error);

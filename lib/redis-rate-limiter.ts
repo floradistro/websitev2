@@ -24,19 +24,24 @@ const fallbackLimits = new Map<string, { count: number; resetAt: number }>();
 function getRedisClient(): Redis | null {
   if (redisClient) return redisClient;
 
-  const redisUrl = process.env.REDIS_URL;
+  // Check for Upstash REST API credentials (preferred)
+  const upstashUrl = process.env.UPSTASH_REDIS_REST_URL;
+  const upstashToken = process.env.UPSTASH_REDIS_REST_TOKEN;
 
-  if (!redisUrl) {
-    logger.warn("REDIS_URL not configured - using in-memory rate limiting only");
+  if (!upstashUrl || !upstashToken) {
+    logger.warn(
+      "UPSTASH_REDIS_REST_URL or UPSTASH_REDIS_REST_TOKEN not configured - using in-memory rate limiting only",
+    );
     return null;
   }
 
   try {
+    // Use Upstash REST API (recommended for serverless)
     redisClient = new Redis({
-      url: redisUrl,
-      automaticDeserialization: false, // We'll handle serialization manually
+      url: upstashUrl,
+      token: upstashToken,
     });
-    logger.info("Redis rate limiter initialized");
+    logger.info("Redis rate limiter initialized via Upstash REST API");
     return redisClient;
   } catch (error) {
     logger.error("Failed to initialize Redis rate limiter", error);

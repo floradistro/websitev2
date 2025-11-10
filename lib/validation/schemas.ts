@@ -196,7 +196,7 @@ export function validateData<T>(
       return {
         success: false,
         error: "Validation failed",
-        details: error.errors.map((e) => ({
+        details: error.issues.map((e) => ({
           field: e.path.join("."),
           message: e.message,
         })),
