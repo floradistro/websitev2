@@ -18,6 +18,9 @@ import {
   EyeOff,
   Check,
   AlertCircle,
+  ChevronRight,
+  ArrowLeft,
+  Image as ImageIcon,
 } from "lucide-react";
 
 interface ImageEditorProps {
@@ -257,13 +260,42 @@ export default function ImageEditor({ image, onClose, onSave }: ImageEditorProps
 
   return (
     <div
-      className="fixed inset-0 z-[100] bg-black flex"
+      className="fixed inset-0 z-[100] bg-black flex flex-col"
       style={{
         background: "linear-gradient(135deg, #000000 0%, #0a0a0a 100%)",
       }}
     >
-      {/* Left Sidebar - Tools */}
-      <div className="w-64 border-r border-white/10 bg-black/40 backdrop-blur-sm flex flex-col">
+      {/* Breadcrumb Navigation Bar */}
+      <div className="h-12 border-b border-white/10 bg-black/60 backdrop-blur-md flex items-center px-4 flex-shrink-0">
+        <button
+          onClick={onClose}
+          className="flex items-center gap-2 text-white/60 hover:text-white transition-all group"
+        >
+          <ArrowLeft className="w-4 h-4 group-hover:scale-110 transition-transform" />
+          <span className="text-sm font-medium">Back to Media Library</span>
+        </button>
+
+        <div className="flex items-center gap-2 ml-4 text-xs">
+          <ChevronRight className="w-3.5 h-3.5 text-white/30" />
+          <div className="flex items-center gap-1.5 text-white/40">
+            <ImageIcon className="w-3.5 h-3.5" />
+            <span className="font-medium">Editing</span>
+          </div>
+          <ChevronRight className="w-3.5 h-3.5 text-white/30" />
+          <span className="text-white/60 font-medium max-w-xs truncate">{image.file_name}</span>
+        </div>
+
+        {/* Keyboard shortcut hint */}
+        <div className="ml-auto flex items-center gap-2 text-xs text-white/30">
+          <kbd className="px-2 py-1 bg-white/5 border border-white/10 rounded text-[10px] font-mono">ESC</kbd>
+          <span>to close</span>
+        </div>
+      </div>
+
+      {/* Main Content Area */}
+      <div className="flex-1 flex min-h-0">
+        {/* Left Sidebar - Tools */}
+        <div className="w-64 border-r border-white/10 bg-black/40 backdrop-blur-sm flex flex-col">
         {/* Header */}
         <div className="p-4 border-b border-white/10">
           <div className="flex items-center justify-between mb-2">
@@ -592,6 +624,10 @@ export default function ImageEditor({ image, onClose, onSave }: ImageEditorProps
             </div>
           </div>
         </div>
+      </div>
+      </div>
+      </div>
+      </div>
       </div>
     </div>
   );

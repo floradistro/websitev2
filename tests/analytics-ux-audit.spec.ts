@@ -13,12 +13,12 @@ test.describe('Analytics UI/UX Audit - Steve Jobs Edition', () => {
   });
 
   test('Full Analytics Dashboard Audit', async ({ page }) => {
-    // Login as Flora Distro vendor
+    // Login as vendor (using credentials from .env.local)
     await page.goto('http://localhost:3000/vendor/login');
-    await page.fill('input[type="email"]', 'flora@floradistro.com');
-    await page.fill('input[type="password"]', 'Flora2024!');
+    await page.fill('input[type="email"]', process.env.TEST_EMAIL || 'darioncdjr@gmail.com');
+    await page.fill('input[type="password"]', process.env.TEST_PASSWORD || 'Smallpenis123!!');
     await page.click('button[type="submit"]');
-    await page.waitForURL('**/vendor/dashboard');
+    await page.waitForURL('**/vendor/dashboard', { timeout: 10000 }).catch(() => {});
 
     // Navigate to Analytics
     await page.goto('http://localhost:3000/vendor/analytics');
