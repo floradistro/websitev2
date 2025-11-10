@@ -14,13 +14,16 @@ const getBaseUrl = () => {
   return "http://localhost:3000";
 };
 
-export async function GET(request: NextRequest, {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
   // SECURITY: Require authentication
   const authResult = await requireAuth(request);
   if (authResult instanceof NextResponse) {
     return authResult;
   }
- params }: { params: Promise<{ id: string }> }) {
+
   try {
     const { id } = await params;
 
