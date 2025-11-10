@@ -186,7 +186,7 @@ export async function GET(request: NextRequest) {
         const pricing_tiers: any[] = [];
 
         pricingAssignments.forEach((assignment) => {
-          const blueprint = assignment.blueprint as any;
+          const blueprint = assignment.blueprint?.[0];
           if (!blueprint) return;
 
           // Get vendor's pricing config for this blueprint
@@ -315,7 +315,7 @@ export async function DELETE(request: NextRequest) {
         const locationsList = inventory
           .filter((inv) => parseFloat(inv.quantity || "0") > 0)
           .map((inv) => {
-            const location = inv.location as any;
+            const location = inv.location?.[0];
             return `${location?.name || "Unknown"}: ${inv.quantity}g`;
           })
           .join(", ");

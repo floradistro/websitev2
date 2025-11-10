@@ -3,7 +3,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import Exa from "exa-js";
 
 import { logger } from "@/lib/logger";
-import { toError } from "@/lib/errors";
+import { toError, isAxiosError } from "@/lib/errors";
 const SYSTEM_PROMPT = `Extract cannabis product data from web sources. Return ONLY JSON.
 
 RULES:
@@ -154,7 +154,7 @@ export async function POST(request: NextRequest) {
         logger.error("Error details:", {
           message: err.message,
           stack: err.stack,
-          response: (error as any).response?.data,
+          response: isAxiosError(error) ? error.response?.data : undefined,
         });
       }
     }

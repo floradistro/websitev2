@@ -73,15 +73,15 @@ export async function POST(request: NextRequest) {
     // If we have a single match, return it
     if (matches.length === 1) {
       const match = matches[0];
-      const customerData = match.customers as any;
+      const customerData = match.customers?.[0];
       const customer = {
-        id: customerData.id,
-        first_name: customerData.first_name || "",
-        last_name: customerData.last_name || "",
-        email: customerData.email,
-        phone: customerData.phone,
-        display_name: customerData.display_name,
-        date_of_birth: customerData.date_of_birth,
+        id: customerData?.id,
+        first_name: customerData?.first_name || "",
+        last_name: customerData?.last_name || "",
+        email: customerData?.email,
+        phone: customerData?.phone,
+        display_name: customerData?.display_name,
+        date_of_birth: customerData?.date_of_birth,
         loyalty_points: match.loyalty_points || 0,
         loyalty_tier: match.loyalty_tier || "bronze",
         vendor_customer_number: match.vendor_customer_number,
@@ -98,15 +98,15 @@ export async function POST(request: NextRequest) {
     // If we have multiple matches, return them all for manual selection
     if (matches.length > 1) {
       const customers = matches.map((match: any) => {
-        const customerData = match.customers as any;
+        const customerData = match.customers?.[0];
         return {
-          id: customerData.id,
-          first_name: customerData.first_name || "",
-          last_name: customerData.last_name || "",
-          email: customerData.email,
-          phone: customerData.phone,
-          display_name: customerData.display_name,
-          date_of_birth: customerData.date_of_birth,
+          id: customerData?.id,
+          first_name: customerData?.first_name || "",
+          last_name: customerData?.last_name || "",
+          email: customerData?.email,
+          phone: customerData?.phone,
+          display_name: customerData?.display_name,
+          date_of_birth: customerData?.date_of_birth,
           loyalty_points: match.loyalty_points || 0,
           loyalty_tier: match.loyalty_tier || "bronze",
           vendor_customer_number: match.vendor_customer_number,

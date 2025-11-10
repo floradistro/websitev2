@@ -72,7 +72,7 @@ export async function GET(request: NextRequest) {
     const categoryToTiers = new Map<string, Set<string>>();
 
     for (const product of products) {
-      const category = product.categories as any;
+      const category = product.categories?.[0];
       const categoryName = category?.name;
       if (!categoryName) continue;
 
@@ -86,7 +86,7 @@ export async function GET(request: NextRequest) {
       // Extract tier names (break_ids) from pricing blueprints
       const assignments = product.product_pricing_assignments || [];
       for (const assignment of assignments) {
-        const blueprint = assignment.pricing_tier_blueprints as any;
+        const blueprint = assignment.pricing_tier_blueprints?.[0];
         if (!blueprint?.price_breaks || !Array.isArray(blueprint.price_breaks)) {
           continue;
         }

@@ -27,34 +27,49 @@ export async function GET(request: NextRequest) {
     const dateRange = parseDateRange(searchParams);
     const filters = parseFilters(searchParams);
 
-    // Get daily cache data grouped by location
-    let query = supabase
-      .from("analytics_daily_cache")
-      .select(
-        `
-        location_id,
-        gross_sales,
-        net_sales,
-        total_orders,
-        gross_profit,
-        gross_margin,
+    // Get orders by location
+    let ordersQuery = supabase
+      .from("orders")
+      .select(`
+        pickup_location_id,
+        total_amount,
+        subtotal,
         locations(id, name)
-      `,
-      )
+      `)
       .eq("vendor_id", vendorId)
-      .gte("date", dateRange.start_date)
-      .lte("date", dateRange.end_date)
-      .not("location_id", "is", null);
+      .gte("order_date", dateRange.start_date)
+      .lte("order_date", dateRange.end_date)
+      .in("status", ["completed", "processing"]);
 
     if (filters.location_ids && filters.location_ids.length > 0) {
-      query = query.in("location_id", filters.location_ids);
+      ordersQuery = ordersQuery.in("pickup_location_id", filters.location_ids);
     }
 
-    const { data, error } = await query;
+    const { data: orders, error: ordersError } = await ordersQuery;
+    if (ordersError) throw ordersError;
 
-    if (error) throw error;
+    // Get POS transactions by location
+    let posQuery = supabase
+      .from("pos_transactions")
+      .select(`
+        location_id,
+        total_amount,
+        subtotal,
+        locations(id, name)
+      `)
+      .eq("vendor_id", vendorId)
+      .gte("transaction_date", dateRange.start_date)
+      .lte("transaction_date", dateRange.end_date)
+      .eq("payment_status", "completed");
 
-    if (!data || data.length === 0) {
+    if (filters.location_ids && filters.location_ids.length > 0) {
+      posQuery = posQuery.in("location_id", filters.location_ids);
+    }
+
+    const { data: posTransactions, error: posError } = await posQuery;
+    if (posError) throw posError;
+
+    if ((!orders || orders.length === 0) && (!posTransactions || posTransactions.length === 0)) {
       return NextResponse.json({
         success: true,
         data: [],
@@ -67,28 +82,59 @@ export async function GET(request: NextRequest) {
     }
 
     // Group by location
-    const locationData = data.reduce((acc: any, record: any) => {
-      const locId = record.location_id;
-      if (!acc[locId]) {
-        acc[locId] = {
+    const locationData: any = {};
+
+    // Process orders
+    orders?.forEach((order: any) => {
+      const locId = order.pickup_location_id || "no-location";
+      const locName = order.locations?.name || "No Location";
+
+      if (!locationData[locId]) {
+        locationData[locId] = {
           location_id: locId,
-          location_name: record.locations?.name || "Unknown",
+          location_name: locName,
           gross_sales: 0,
           net_sales: 0,
           orders: 0,
+          subtotal: 0,
           gross_profit: 0,
-          count: 0,
         };
       }
 
-      acc[locId].gross_sales += parseFloat(record.gross_sales || "0");
-      acc[locId].net_sales += parseFloat(record.net_sales || "0");
-      acc[locId].orders += record.total_orders || 0;
-      acc[locId].gross_profit += parseFloat(record.gross_profit || "0");
-      acc[locId].count += 1;
+      locationData[locId].gross_sales += parseFloat(order.total_amount || "0");
+      locationData[locId].net_sales += parseFloat(order.total_amount || "0");
+      locationData[locId].subtotal += parseFloat(order.subtotal || "0");
+      locationData[locId].orders += 1;
+    });
 
-      return acc;
-    }, {});
+    // Process POS transactions
+    posTransactions?.forEach((tx: any) => {
+      const locId = tx.location_id || "no-location";
+      const locName = tx.locations?.name || "No Location";
+
+      if (!locationData[locId]) {
+        locationData[locId] = {
+          location_id: locId,
+          location_name: locName,
+          gross_sales: 0,
+          net_sales: 0,
+          orders: 0,
+          subtotal: 0,
+          gross_profit: 0,
+        };
+      }
+
+      locationData[locId].gross_sales += parseFloat(tx.total_amount || "0");
+      locationData[locId].net_sales += parseFloat(tx.total_amount || "0");
+      locationData[locId].subtotal += parseFloat(tx.subtotal || "0");
+      locationData[locId].orders += 1;
+    });
+
+    // Calculate profits (50% COGS estimate)
+    Object.values(locationData).forEach((loc: any) => {
+      const estimatedCogs = loc.subtotal * 0.5;
+      loc.gross_profit = loc.subtotal - estimatedCogs;
+    });
 
     // Calculate metrics and percentages
     const totalSales = Object.values(locationData).reduce(

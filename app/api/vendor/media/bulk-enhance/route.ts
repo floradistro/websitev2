@@ -5,7 +5,7 @@ import FormData from "form-data";
 import axios from "axios";
 
 import { logger } from "@/lib/logger";
-import { toError } from "@/lib/errors";
+import { toError, isAxiosError } from "@/lib/errors";
 const REMOVE_BG_API_KEY = process.env.REMOVE_BG_API_KEY || "";
 
 // Process a single image with enhancements
@@ -91,7 +91,7 @@ async function enhanceImage(
       const err = toError(error);
       lastError = error;
 
-      if ((error as any).response?.status === 429 && attempt < retries) {
+      if (isAxiosError(error) && error.response?.status === 429 && attempt < retries) {
         continue;
       }
 

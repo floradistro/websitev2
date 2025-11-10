@@ -5,7 +5,7 @@ import type { ProcessPaymentRequest } from "@/lib/payment-processors/types";
 import { requireVendor } from "@/lib/auth/middleware";
 
 import { logger } from "@/lib/logger";
-import { toError } from "@/lib/errors";
+import { toError, isPaymentError } from "@/lib/errors";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
@@ -117,9 +117,9 @@ export async function POST(request: NextRequest) {
         logger.error("Payment processing error:", err);
       }
       // Check if it's a Dejavoo-specific error
-      const isDeclined = (error as any).isDeclined?.() || (error as any).statusCode !== "0000";
-      const isTerminalError = (error as any).isTerminalError?.();
-      const isTimeout = (error as any).isTimeout?.();
+      const isDeclined = isPaymentError(error) ? (error.isDeclined?.() || error.statusCode !== "0000") : false;
+      const isTerminalError = isPaymentError(error) ? error.isTerminalError?.() : false;
+      const isTimeout = isPaymentError(error) ? error.isTimeout?.() : false;
 
       return NextResponse.json(
         {
@@ -128,7 +128,7 @@ export async function POST(request: NextRequest) {
           isDeclined,
           isTerminalError,
           isTimeout,
-          details: (error as any).statusCode ? `Status: ${(error as any).statusCode}` : undefined,
+          details: isPaymentError(error) && error.statusCode ? `Status: ${error.statusCode}` : undefined,
         },
         { status: isTerminalError ? 503 : 400 },
       );

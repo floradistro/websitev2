@@ -5,7 +5,6 @@ import { createClient } from "@supabase/supabase-js";
 import {
   parseDateRange,
   parseFilters,
-  getEmployeeCacheData,
 } from "@/lib/analytics/query-helpers";
 import type { SalesByEmployee } from "@/lib/analytics/types";
 
@@ -28,53 +27,7 @@ export async function GET(request: NextRequest) {
     const dateRange = parseDateRange(searchParams);
     const filters = parseFilters(searchParams);
 
-    // Try cache first
-    const cacheData = await getEmployeeCacheData(vendorId, dateRange, filters);
-
-    if (cacheData && cacheData.length > 0) {
-      // Use cached data
-      const result: SalesByEmployee[] = cacheData.map((emp: any) => ({
-        employee_id: emp.employee_id,
-        employee_name: emp.users?.full_name || emp.users?.email || "Unknown",
-        transactions: emp.total_transactions,
-        gross_sales: parseFloat(emp.total_sales || "0"),
-        net_sales: parseFloat(emp.total_sales || "0") - parseFloat(emp.total_refunds || "0"),
-        avg_transaction: parseFloat(emp.avg_transaction_value || "0"),
-        items_per_transaction: parseFloat(emp.avg_items_per_transaction || "0"),
-        discounts_given: parseFloat(emp.total_discounts || "0"),
-        discount_percent:
-          parseFloat(emp.total_sales || "0") > 0
-            ? (parseFloat(emp.total_discounts || "0") / parseFloat(emp.total_sales || "0")) * 100
-            : 0,
-        gross_profit: parseFloat(emp.gross_profit || "0"),
-        gross_margin: parseFloat(emp.gross_margin || "0"),
-        tips_collected: parseFloat(emp.tips_collected || "0"),
-        payment_breakdown: {
-          cash: parseFloat(emp.cash_collected || "0"),
-          card: parseFloat(emp.card_processed || "0"),
-        },
-      }));
-
-      // Sort by total sales descending
-      result.sort((a, b) => b.gross_sales - a.gross_sales);
-
-      return NextResponse.json({
-        success: true,
-        data: result,
-        metadata: {
-          start_date: dateRange.start_date,
-          end_date: dateRange.end_date,
-          total_records: result.length,
-        },
-        summary: {
-          total_sales: result.reduce((sum, emp) => sum + emp.gross_sales, 0),
-          total_transactions: result.reduce((sum, emp) => sum + emp.transactions, 0),
-          total_profit: result.reduce((sum, emp) => sum + emp.gross_profit, 0),
-        },
-      });
-    }
-
-    // If no cache, calculate live from POS transactions
+    // Query live from POS transactions
     let query = supabase
       .from("pos_transactions")
       .select(

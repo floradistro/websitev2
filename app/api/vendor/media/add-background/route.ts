@@ -5,7 +5,7 @@ import FormData from "form-data";
 import axios from "axios";
 
 import { logger } from "@/lib/logger";
-import { toError } from "@/lib/errors";
+import { toError, isAxiosError } from "@/lib/errors";
 const REMOVE_BG_API_KEY = "CTYgh57QAP1FvqrEAHAwzFqG";
 
 // Add custom background to image
@@ -91,9 +91,9 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     const err = toError(error);
     if (process.env.NODE_ENV === "development") {
-      logger.error("❌ Add background error:", (error as any).response?.data || err.message);
+      logger.error("❌ Add background error:", isAxiosError(error) ? error.response?.data : err.message);
     }
-    if ((error as any).response?.status === 402) {
+    if (isAxiosError(error) && error.response?.status === 402) {
       return NextResponse.json(
         {
           error: "API credits exhausted. Please contact support.",
@@ -104,7 +104,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(
       {
-        error: (error as any).response?.data?.errors?.[0]?.title || err.message,
+        error: isAxiosError(error) ? error.response?.data?.errors?.[0]?.title : err.message,
       },
       { status: 500 },
     );

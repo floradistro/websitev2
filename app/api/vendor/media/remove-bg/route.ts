@@ -6,7 +6,7 @@ import axios from "axios";
 import { removeBgRateLimiter } from "@/lib/rate-limiter-advanced";
 
 import { logger } from "@/lib/logger";
-import { toError } from "@/lib/errors";
+import { toError, isAxiosError } from "@/lib/errors";
 const REMOVE_BG_API_KEY = process.env.REMOVE_BG_API_KEY || "";
 
 export async function POST(request: NextRequest) {
@@ -105,10 +105,10 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     const err = toError(error);
     if (process.env.NODE_ENV === "development") {
-      logger.error("❌ Remove.bg error:", (error as any).response?.data || err.message);
+      logger.error("❌ Remove.bg error:", isAxiosError(error) ? error.response?.data : err.message);
     }
     // Handle remove.bg specific errors
-    if ((error as any).response?.status === 402) {
+    if (isAxiosError(error) && error.response?.status === 402) {
       return NextResponse.json(
         {
           error: "API credits exhausted. Please contact support.",
@@ -117,7 +117,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if ((error as any).response?.status === 403) {
+    if (isAxiosError(error) && error.response?.status === 403) {
       return NextResponse.json(
         {
           error: "Invalid API key. Please contact support.",
@@ -128,7 +128,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(
       {
-        error: (error as any).response?.data?.errors?.[0]?.title || err.message,
+        error: isAxiosError(error) ? error.response?.data?.errors?.[0]?.title : err.message,
       },
       { status: 500 },
     );
@@ -231,8 +231,8 @@ async function processImage(file: { url: string; name: string }, vendorId: strin
       let errorMessage = err.message || "Unknown error";
       let shouldRetry = false;
 
-      if ((error as any).response) {
-        const status = (error as any).response.status;
+      if (isAxiosError(error)) {
+        const status = error.response?.status;
 
         // Rate limit error - retry with backoff
         if (status === 429) {
@@ -240,25 +240,26 @@ async function processImage(file: { url: string; name: string }, vendorId: strin
           errorMessage = "Rate limit exceeded";
         }
         // Server errors - retry
-        else if (status >= 500) {
+        else if (status && status >= 500) {
           shouldRetry = attempt < retries;
           errorMessage = `Server error: ${status}`;
         }
         // Client errors - don't retry
         else {
           errorMessage =
-            (error as any).response?.data?.errors?.[0]?.title ||
-            (error as any).response?.data?.message ||
+            error.response?.data?.errors?.[0]?.title ||
+            error.response?.data?.message ||
             `API Error: ${status}`;
         }
 
         if (process.env.NODE_ENV === "development") {
-          logger.error(`API Response:`, (error as any).response.data);
+          logger.error(`API Response:`, error.response?.data);
         }
-      } else if ((error as any).code) {
+      } else if (error && typeof error === "object" && "code" in error) {
         // Network errors - retry
         shouldRetry = attempt < retries;
-        errorMessage = `${(error as any).code}: ${err.message}`;
+        const errorCode = (error as { code: string }).code;
+        errorMessage = `${errorCode}: ${err.message}`;
       }
 
       // If we should retry and haven't exhausted retries, continue loop
@@ -370,6 +371,6 @@ export async function PUT(request: NextRequest) {
     if (process.env.NODE_ENV === "development") {
       logger.error("Error:", err);
     }
-    return NextResponse.json({ error: (error as any).message }, { status: 500 });
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }

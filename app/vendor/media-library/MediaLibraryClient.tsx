@@ -979,8 +979,8 @@ export default function MediaLibraryClient() {
                 return null;
               })()}
               {galleryProduct && vendor ? (
-                /* GALLERY MODE */
-                <div className="relative h-full w-full">
+                /* GALLERY MODE - Replaces grid */
+                <div className="relative flex-1 w-full h-full">
                   <ProductGallery
                     product={galleryProduct}
                     vendorId={vendor.id}
@@ -1099,7 +1099,7 @@ export default function MediaLibraryClient() {
 
           {/* Gallery or Grid */}
           {galleryProduct && vendor ? (
-            <div className="flex-1 overflow-hidden h-full">
+            <div className="relative flex-1 w-full">
               <ProductGallery
                 product={galleryProduct}
                 vendorId={vendor.id}

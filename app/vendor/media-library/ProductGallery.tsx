@@ -198,26 +198,25 @@ export default function ProductGallery({
   logger.debug("🎨 Render state:", { loading, imageCount: images.length, currentIndex, currentImage: currentImage?.file_name });
 
   return (
-    <div className="fixed inset-0 flex flex-col z-[9999]" style={{
-      background: 'linear-gradient(45deg, #ff0000 0%, #00ff00 50%, #0000ff 100%)',
-      border: '20px solid yellow',
-      minHeight: '100vh',
-      minWidth: '100vw'
-    }}>
-      {/* EXTREME DEBUG: Rainbow gradient + thick border */}
+    <div
+      className="absolute inset-0 flex flex-col"
+      style={{
+        background: 'linear-gradient(135deg, #000000 0%, #1a1a1a 100%)',
+      }}
+    >
       {/* Header */}
-      <div className="flex-shrink-0 px-6 py-4 border-b border-white/10">
+      <div className="flex-shrink-0 px-6 py-4 border-b border-white/10 bg-gradient-to-b from-white/[0.02] to-transparent">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <button
               onClick={onBack}
-              className="p-2 text-white/60 hover:text-white transition-colors rounded-lg hover:bg-white/10"
+              className="p-2 text-white/60 hover:text-white transition-all rounded-lg hover:bg-white/10 hover:scale-105"
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
             <div>
-              <h2 className="text-lg font-light text-white">{product.name}</h2>
-              <p className="text-xs text-white/40">
+              <h2 className="text-lg font-medium text-white tracking-tight">{product.name}</h2>
+              <p className="text-xs text-white/40 mt-0.5">
                 {loading ? "Loading..." : `${images.length} image${images.length !== 1 ? "s" : ""}`}
               </p>
             </div>
@@ -231,8 +230,8 @@ export default function ProductGallery({
                 disabled={isFeatured}
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 ${
                   isFeatured
-                    ? "bg-white/20 text-white cursor-not-allowed"
-                    : "bg-white/10 text-white/80 hover:bg-white/20 hover:text-white"
+                    ? "bg-amber-500/20 text-amber-300 cursor-not-allowed"
+                    : "bg-white/10 text-white/80 hover:bg-white/20 hover:text-white hover:scale-105"
                 }`}
               >
                 <Star className={`w-3.5 h-3.5 ${isFeatured ? "fill-current" : ""}`} />
@@ -240,14 +239,14 @@ export default function ProductGallery({
               </button>
               <button
                 onClick={handleDownload}
-                className="p-2 text-white/60 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+                className="p-2 text-white/60 hover:text-white hover:bg-white/10 rounded-lg transition-all hover:scale-105"
                 title="Download"
               >
                 <Download className="w-4 h-4" />
               </button>
               <button
                 onClick={handleDelete}
-                className="p-2 text-white/60 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
+                className="p-2 text-white/60 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all hover:scale-105"
                 title="Delete"
               >
                 <Trash2 className="w-4 h-4" />
@@ -273,12 +272,6 @@ export default function ProductGallery({
           </div>
         ) : (
           <>
-            {logger.debug("🖼️ RENDERING IMAGE:", {
-              currentImage: currentImage?.file_name,
-              file_url: currentImage?.file_url,
-              id: currentImage?.id,
-              timestamp: new Date().toISOString()
-            })}
             <img
               key={currentImage.id}
               src={currentImage.file_url}
@@ -286,14 +279,8 @@ export default function ProductGallery({
               className="max-w-full max-h-full object-contain"
               style={{
                 imageRendering: "-webkit-optimize-contrast",
-                display: "block",
-                position: "relative",
-                zIndex: 1
               }}
-              onLoad={() => logger.debug("✅ Image loaded successfully", {
-                src: currentImage.file_url,
-                timestamp: new Date().toISOString()
-              })}
+              onLoad={() => logger.debug("✅ Image loaded successfully")}
               onError={(e) => logger.error("❌ Image failed to load:", e)}
             />
 
@@ -302,15 +289,15 @@ export default function ProductGallery({
               <>
                 <button
                   onClick={handlePrevious}
-                  className="absolute left-4 p-2.5 bg-black/30 backdrop-blur-sm text-white/80 rounded-full hover:bg-black/50 hover:text-white transition-all"
+                  className="absolute left-8 p-3 bg-black/40 backdrop-blur-md text-white/90 rounded-full hover:bg-black/60 hover:text-white hover:scale-110 transition-all duration-200 border border-white/10"
                 >
-                  <ChevronLeft className="w-5 h-5" />
+                  <ChevronLeft className="w-6 h-6" />
                 </button>
                 <button
                   onClick={handleNext}
-                  className="absolute right-4 p-2.5 bg-black/30 backdrop-blur-sm text-white/80 rounded-full hover:bg-black/50 hover:text-white transition-all"
+                  className="absolute right-8 p-3 bg-black/40 backdrop-blur-md text-white/90 rounded-full hover:bg-black/60 hover:text-white hover:scale-110 transition-all duration-200 border border-white/10"
                 >
-                  <ChevronRight className="w-5 h-5" />
+                  <ChevronRight className="w-6 h-6" />
                 </button>
               </>
             )}
@@ -320,24 +307,26 @@ export default function ProductGallery({
 
       {/* Bottom: Thumbnails & Counter */}
       {!loading && images.length > 0 && (
-        <div className="flex-shrink-0 border-t border-white/10">
+        <div className="flex-shrink-0 border-t border-white/10 bg-gradient-to-t from-black/20 to-transparent backdrop-blur-sm">
           {/* Counter */}
-          <div className="px-6 py-2 text-center text-xs text-white/40">
-            {currentIndex + 1} of {images.length}
+          <div className="px-6 py-3 text-center">
+            <span className="text-sm font-medium text-white/60">
+              {currentIndex + 1} <span className="text-white/30">of</span> {images.length}
+            </span>
           </div>
 
           {/* Thumbnails */}
           {images.length > 1 && (
             <div className="px-6 pb-4 overflow-x-auto">
-              <div className="flex gap-2 justify-center">
+              <div className="flex gap-3 justify-center">
                 {images.map((image, index) => (
                   <button
                     key={image.id}
                     onClick={() => setCurrentIndex(index)}
-                    className={`flex-shrink-0 w-14 h-14 rounded-lg overflow-hidden transition-all duration-200 ${
+                    className={`flex-shrink-0 w-16 h-16 rounded-xl overflow-hidden transition-all duration-300 border-2 ${
                       index === currentIndex
-                        ? "ring-2 ring-white scale-110"
-                        : "opacity-40 hover:opacity-100 hover:scale-105"
+                        ? "ring-2 ring-white ring-offset-2 ring-offset-black scale-110 border-white/50"
+                        : "opacity-50 hover:opacity-100 hover:scale-105 border-white/10"
                     }`}
                   >
                     <img

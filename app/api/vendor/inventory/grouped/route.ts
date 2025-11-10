@@ -86,7 +86,7 @@ export async function GET(request: NextRequest) {
         product_id: product.id,
         product_name: product.name,
         sku: product.sku || "",
-        category: (product.primary_category as any)?.name || "Uncategorized",
+        category: product.primary_category?.[0]?.name || "Uncategorized",
         price: parseFloat(product.price) || 0,
         cost_price: product.cost_price ? parseFloat(product.cost_price) : undefined,
         total_quantity,

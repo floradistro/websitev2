@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
     const dateRange = parseDateRange(searchParams);
     const filters = parseFilters(searchParams);
 
-    // Get order items with category info
+    // Get order items with product and category info
     let query = supabase
       .from("order_items")
       .select(
@@ -32,13 +32,7 @@ export async function GET(request: NextRequest) {
         quantity,
         line_total,
         tax_amount,
-        products!inner(
-          id,
-          name,
-          cost_price,
-          primary_category_id,
-          categories(id, name, slug)
-        ),
+        product_id,
         orders!inner(
           order_date,
           status,
@@ -56,11 +50,11 @@ export async function GET(request: NextRequest) {
       query = query.in("orders.pickup_location_id", filters.location_ids);
     }
 
-    const { data, error } = await query;
+    const { data: orderItems, error: itemsError } = await query;
 
-    if (error) throw error;
+    if (itemsError) throw itemsError;
 
-    if (!data || data.length === 0) {
+    if (!orderItems || orderItems.length === 0) {
       return NextResponse.json({
         success: true,
         data: [],
@@ -72,9 +66,32 @@ export async function GET(request: NextRequest) {
       });
     }
 
+    // Get unique product IDs
+    const productIds = [...new Set(orderItems.map((item: any) => item.product_id).filter(Boolean))];
+
+    // Get products with categories
+    const { data: products, error: productsError } = await supabase
+      .from("products")
+      .select(`
+        id,
+        cost_price,
+        primary_category_id,
+        categories(id, name, slug)
+      `)
+      .in("id", productIds);
+
+    if (productsError) throw productsError;
+
+    // Create product lookup map
+    const productMap = new Map();
+    products?.forEach((p: any) => {
+      productMap.set(p.id, p);
+    });
+
     // Group by category
-    const categoryData = data.reduce((acc: any, item: any) => {
-      const category = item.products?.categories;
+    const categoryData = orderItems.reduce((acc: any, item: any) => {
+      const product = productMap.get(item.product_id);
+      const category = product?.categories;
       const categoryId = category?.id || "uncategorized";
       const categoryName = category?.name || "Uncategorized";
 
@@ -93,7 +110,7 @@ export async function GET(request: NextRequest) {
 
       const quantity = parseFloat(item.quantity || "0");
       const lineTotal = parseFloat(item.line_total || "0");
-      const cost = quantity * parseFloat(item.products?.cost_price || "0");
+      const cost = quantity * parseFloat(product?.cost_price || "0");
       const tax = parseFloat(item.tax_amount || "0");
 
       acc[categoryId].items_sold += quantity;

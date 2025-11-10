@@ -5,7 +5,7 @@ import axios from "axios";
 import sharp from "sharp";
 
 import { logger } from "@/lib/logger";
-import { toError } from "@/lib/errors";
+import { toError, isAxiosError } from "@/lib/errors";
 const REPLICATE_API_KEY = process.env.REPLICATE_API_KEY || "";
 
 // Real-ESRGAN model for 4x upscaling
@@ -193,7 +193,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     const err = toError(error);
     if (process.env.NODE_ENV === "development") {
-      logger.error("❌ Upscale error:", (error as any).response?.data || err.message);
+      logger.error("❌ Upscale error:", isAxiosError(error) ? error.response?.data : err.message);
     }
     return NextResponse.json(
       {

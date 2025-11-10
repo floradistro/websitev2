@@ -5,7 +5,7 @@ import FormData from "form-data";
 import axios from "axios";
 
 import { logger } from "@/lib/logger";
-import { toError } from "@/lib/errors";
+import { toError, isAxiosError } from "@/lib/errors";
 const REMOVE_BG_API_KEY = "CTYgh57QAP1FvqrEAHAwzFqG";
 
 // Image enhancement with multiple options
@@ -115,11 +115,11 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     const err = toError(error);
     if (process.env.NODE_ENV === "development") {
-      logger.error("❌ Enhance error:", (error as any).response?.data || err.message);
+      logger.error("❌ Enhance error:", isAxiosError(error) ? error.response?.data : err.message);
     }
     return NextResponse.json(
       {
-        error: (error as any).response?.data?.errors?.[0]?.title || err.message,
+        error: isAxiosError(error) ? error.response?.data?.errors?.[0]?.title : err.message,
       },
       { status: 500 },
     );

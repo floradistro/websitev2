@@ -96,7 +96,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         id: product.id,
         name: product.name,
         sku: product.sku || "",
-        category: (product.categories as any)?.name || "",
+        category: product.categories?.[0]?.name || "",
         category_id: product.primary_category_id || "",
         price: parseFloat(product.price) || 0,
         regular_price: parseFloat(product.price) || 0,

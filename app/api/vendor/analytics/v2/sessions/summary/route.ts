@@ -31,6 +31,7 @@ export async function GET(request: NextRequest) {
         id,
         session_number,
         status,
+        user_id,
         opening_cash,
         closing_cash,
         expected_cash,
@@ -42,8 +43,8 @@ export async function GET(request: NextRequest) {
         total_refunds,
         opened_at,
         closed_at,
-        locations(name),
-        users(full_name, email)
+        location_id,
+        locations(name)
       `,
       )
       .eq("vendor_id", vendorId)
@@ -58,6 +59,21 @@ export async function GET(request: NextRequest) {
     const { data: sessions, error } = await sessionsQuery;
 
     if (error) throw error;
+
+    // Get unique user IDs to fetch user names
+    const userIds = [...new Set(sessions?.map((s: any) => s.user_id).filter(Boolean))];
+    let userMap = new Map();
+
+    if (userIds.length > 0) {
+      const { data: users } = await supabase
+        .from("users")
+        .select("id, full_name, email")
+        .in("id", userIds);
+
+      users?.forEach((u: any) => {
+        userMap.set(u.id, u.full_name || u.email || "Unknown");
+      });
+    }
 
     if (!sessions || sessions.length === 0) {
       return NextResponse.json({
@@ -76,7 +92,7 @@ export async function GET(request: NextRequest) {
       session_id: session.id,
       session_number: session.session_number,
       location_name: session.locations?.name || "Unknown",
-      employee_name: session.users?.full_name || session.users?.email || "Unknown",
+      employee_name: session.user_id ? userMap.get(session.user_id) || "Unknown" : "Unknown",
       opened_at: session.opened_at,
       closed_at: session.closed_at,
       opening_cash: parseFloat(session.opening_cash || "0"),

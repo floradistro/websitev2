@@ -38,6 +38,7 @@ export async function GET(request: NextRequest) {
         discount_amount,
         total_amount,
         payment_method,
+        pickup_location_id,
         locations(name),
         order_items(
           product_id,
@@ -45,8 +46,7 @@ export async function GET(request: NextRequest) {
           quantity,
           unit_price,
           line_total,
-          tax_amount,
-          products(categories(name))
+          tax_amount
         )
       `,
       )
@@ -76,6 +76,27 @@ export async function GET(request: NextRequest) {
       });
     }
 
+    // Get all unique product IDs from order items
+    const productIds = new Set<string>();
+    orders.forEach((order: any) => {
+      order.order_items?.forEach((item: any) => {
+        if (item.product_id) productIds.add(item.product_id);
+      });
+    });
+
+    // Get products with categories if we have product IDs
+    let productCategoryMap = new Map();
+    if (productIds.size > 0) {
+      const { data: products } = await supabase
+        .from("products")
+        .select("id, primary_category_id, categories(name)")
+        .in("id", Array.from(productIds));
+
+      products?.forEach((p: any) => {
+        productCategoryMap.set(p.id, p.categories?.name || "Uncategorized");
+      });
+    }
+
     // Format itemized sales
     const itemizedSales = orders.map((order: any) => ({
       transaction_id: order.id,
@@ -86,7 +107,7 @@ export async function GET(request: NextRequest) {
       customer_id: order.customer_id,
       items: (order.order_items || []).map((item: any) => ({
         product_name: item.product_name,
-        category: item.products?.categories?.name || "Uncategorized",
+        category: productCategoryMap.get(item.product_id) || "Uncategorized",
         quantity: parseFloat(item.quantity || "0"),
         unit_price: parseFloat(item.unit_price || "0"),
         line_total: parseFloat(item.line_total || "0"),

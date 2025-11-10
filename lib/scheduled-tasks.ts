@@ -96,8 +96,8 @@ async function checkLowStockAlerts(): Promise<void> {
 
     // Queue email notifications for vendors
     for (const item of lowStock) {
-      const product = item.product as any;
-      const vendor = item.vendor as any;
+      const product = item.product?.[0];
+      const vendor = item.vendor?.[0];
 
       if (vendor?.email && product?.name) {
         await jobQueue.enqueue(
