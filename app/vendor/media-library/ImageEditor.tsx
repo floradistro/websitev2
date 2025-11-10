@@ -67,6 +67,7 @@ export default function ImageEditor({ image, vendorId, onClose, onSave }: ImageE
   // Brush tools - Canva-style real-time editing
   const [brushSize, setBrushSize] = useState(20);
   const [isDrawing, setIsDrawing] = useState(false);
+  const isDrawingRef = useRef(false); // Synchronous drawing state
   const workingCanvasRef = useRef<HTMLCanvasElement>(null);
   const originalImageRef = useRef<HTMLImageElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
@@ -400,7 +401,9 @@ export default function ImageEditor({ image, vendorId, onClose, onSave }: ImageE
     if (!activeTool || (activeTool !== "erase" && activeTool !== "restore")) return;
     e.preventDefault();
     e.stopPropagation();
+    console.log("🎨 Starting drawing stroke");
     setIsDrawing(true);
+    isDrawingRef.current = true;
     draw(e);
   };
 
@@ -408,13 +411,28 @@ export default function ImageEditor({ image, vendorId, onClose, onSave }: ImageE
     if (activeTool === "erase" || activeTool === "restore") {
       e.preventDefault();
       e.stopPropagation();
+
+      // Save canvas state after stroke ends (Canva-style undo)
+      console.log("🛑 Stopping drawing, isDrawingRef:", isDrawingRef.current);
+      if (workingCanvasRef.current && isDrawingRef.current) {
+        const newState = workingCanvasRef.current.toDataURL();
+        // Trim any redo history and add new state
+        const newHistory = brushHistory.slice(0, brushHistoryIndex + 1);
+        newHistory.push(newState);
+        setBrushHistory(newHistory);
+        setBrushHistoryIndex(newHistory.length - 1);
+        console.log("✓ Saved brush stroke to history, total states:", newHistory.length, "new index:", newHistory.length - 1);
+      } else {
+        console.log("❌ Not saving - canvas:", !!workingCanvasRef.current, "was drawing:", isDrawingRef.current);
+      }
     }
     setIsDrawing(false);
+    isDrawingRef.current = false;
   };
 
   const draw = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    console.log("🖊️ Draw called - isDrawing:", isDrawing, "eventType:", e.type);
-    if (!isDrawing && e.type !== "mousedown") return;
+    console.log("🖊️ Draw called - isDrawingRef:", isDrawingRef.current, "eventType:", e.type);
+    if (!isDrawingRef.current && e.type !== "mousedown") return;
     if (!workingCanvasRef.current || !originalImageRef.current) {
       console.log("❌ Missing refs - workingCanvas:", !!workingCanvasRef.current, "originalImage:", !!originalImageRef.current);
       return;
@@ -501,6 +519,51 @@ export default function ImageEditor({ image, vendorId, onClose, onSave }: ImageE
     }
   };
 
+  // Brush undo - restore previous canvas state
+  const handleBrushUndo = () => {
+    console.log("🔄 handleBrushUndo called, brushHistoryIndex:", brushHistoryIndex, "brushHistory.length:", brushHistory.length);
+    if (brushHistoryIndex > 0 && workingCanvasRef.current) {
+      const newIndex = brushHistoryIndex - 1;
+      setBrushHistoryIndex(newIndex);
+
+      // Restore previous state
+      const img = new Image();
+      img.onload = () => {
+        const ctx = workingCanvasRef.current?.getContext("2d");
+        if (ctx && workingCanvasRef.current) {
+          ctx.clearRect(0, 0, workingCanvasRef.current.width, workingCanvasRef.current.height);
+          ctx.drawImage(img, 0, 0);
+          setHasUnsavedBrushChanges(newIndex !== 0); // Only unsaved if not at initial state
+        }
+      };
+      img.src = brushHistory[newIndex];
+      console.log("↩️ Brush undo, moved to index:", newIndex);
+    } else {
+      console.log("❌ Cannot undo: index =", brushHistoryIndex, "canvas exists:", !!workingCanvasRef.current);
+    }
+  };
+
+  // Brush redo - restore next canvas state
+  const handleBrushRedo = () => {
+    if (brushHistoryIndex < brushHistory.length - 1 && workingCanvasRef.current) {
+      const newIndex = brushHistoryIndex + 1;
+      setBrushHistoryIndex(newIndex);
+
+      // Restore next state
+      const img = new Image();
+      img.onload = () => {
+        const ctx = workingCanvasRef.current?.getContext("2d");
+        if (ctx && workingCanvasRef.current) {
+          ctx.clearRect(0, 0, workingCanvasRef.current.width, workingCanvasRef.current.height);
+          ctx.drawImage(img, 0, 0);
+          setHasUnsavedBrushChanges(true);
+        }
+      };
+      img.src = brushHistory[newIndex];
+      console.log("↪️ Brush redo, moved to index:", newIndex);
+    }
+  };
+
   // Step 1: When brush tool is activated, set isUsingBrush to true to render the canvas
   useEffect(() => {
     console.log("🎯 useEffect (step 1) - activeTool:", activeTool, "isUsingBrush:", isUsingBrush);
@@ -521,6 +584,27 @@ export default function ImageEditor({ image, vendorId, onClose, onSave }: ImageE
       initializeBrushCanvas();
     }
   }, [isUsingBrush]);
+
+  // Keyboard shortcuts for brush undo/redo
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Only handle shortcuts when brush mode is active
+      if (!isUsingBrush) return;
+
+      if ((e.metaKey || e.ctrlKey) && e.key === "z" && !e.shiftKey) {
+        e.preventDefault();
+        handleBrushUndo();
+      } else if ((e.metaKey || e.ctrlKey) && e.key === "z" && e.shiftKey) {
+        e.preventDefault();
+        handleBrushRedo();
+      }
+    };
+
+    if (isUsingBrush) {
+      window.addEventListener("keydown", handleKeyDown);
+      return () => window.removeEventListener("keydown", handleKeyDown);
+    }
+  }, [isUsingBrush, brushHistoryIndex, brushHistory]);
 
   return (
     <div
@@ -708,6 +792,39 @@ export default function ImageEditor({ image, vendorId, onClose, onSave }: ImageE
               />
               <div className="mt-2 text-xs text-white/40 text-center">
                 {activeTool === "erase" ? "Paint to remove" : "Paint to restore"}
+              </div>
+
+              {/* Undo/Redo Buttons */}
+              <div className="mt-3 flex gap-2">
+                <button
+                  onClick={(e) => {
+                    console.log("🔘 Undo button clicked");
+                    e.preventDefault();
+                    handleBrushUndo();
+                  }}
+                  disabled={brushHistoryIndex <= 0}
+                  className="flex-1 px-3 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-white text-xs font-medium flex items-center justify-center gap-1.5 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                  title={`Undo last stroke (⌘Z) - index: ${brushHistoryIndex}`}
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  Undo
+                </button>
+                <button
+                  onClick={(e) => {
+                    console.log("🔘 Redo button clicked");
+                    e.preventDefault();
+                    handleBrushRedo();
+                  }}
+                  disabled={brushHistoryIndex >= brushHistory.length - 1}
+                  className="flex-1 px-3 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-white text-xs font-medium flex items-center justify-center gap-1.5 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                  title={`Redo (⌘⇧Z) - index: ${brushHistoryIndex}/${brushHistory.length - 1}`}
+                >
+                  <RotateCw className="w-3.5 h-3.5" />
+                  Redo
+                </button>
+              </div>
+              <div className="mt-2 text-[10px] text-white/30 text-center">
+                {brushHistory.length > 0 && `State ${brushHistoryIndex + 1} / ${brushHistory.length}`}
               </div>
             </div>
           )}

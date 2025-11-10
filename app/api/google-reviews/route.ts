@@ -6,7 +6,8 @@ import { toError } from "@/lib/errors";
 export const revalidate = 3600; // 1 hour cache
 export const runtime = "nodejs";
 
-const GOOGLE_API_KEY = "AIzaSyB29Ebv0A4fYIY-ZB08khDUQ227oTqevaE";
+// SECURITY: Load API key from environment variable
+const GOOGLE_API_KEY = process.env.GOOGLE_MAPS_API_KEY;
 
 // In-memory cache for reviews (persists during server lifetime)
 const reviewsCache = new Map<string, { data: any; timestamp: number }>();
@@ -74,6 +75,15 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const locationName = searchParams.get("location");
   const address = searchParams.get("address");
+
+  // SECURITY: Check API key is configured
+  if (!GOOGLE_API_KEY) {
+    logger.error("GOOGLE_MAPS_API_KEY not configured");
+    return NextResponse.json(
+      { error: "Google Reviews service not configured" },
+      { status: 503 },
+    );
+  }
 
   if (!locationName || !address) {
     return NextResponse.json({ error: "Missing location or address" }, { status: 400 });

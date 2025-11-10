@@ -6,7 +6,9 @@ import axios from "axios";
 
 import { logger } from "@/lib/logger";
 import { toError, isAxiosError } from "@/lib/errors";
-const REMOVE_BG_API_KEY = "CTYgh57QAP1FvqrEAHAwzFqG";
+
+// SECURITY: Load API key from environment variable
+const REMOVE_BG_API_KEY = process.env.REMOVE_BG_API_KEY;
 
 // Add custom background to image
 export async function POST(request: NextRequest) {
@@ -15,6 +17,17 @@ export async function POST(request: NextRequest) {
     const authResult = await requireVendor(request);
     if (authResult instanceof NextResponse) return authResult;
     const { vendorId } = authResult;
+
+    // SECURITY: Check API key is configured
+    if (!REMOVE_BG_API_KEY) {
+      logger.error("REMOVE_BG_API_KEY not configured");
+      return NextResponse.json(
+        {
+          error: "Image enhancement service not configured",
+        },
+        { status: 503 },
+      );
+    }
 
     const body = await request.json();
     const { imageUrl, fileName, backgroundColor, backgroundImageUrl } = body;

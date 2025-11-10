@@ -1204,6 +1204,17 @@ export default function AnalyticsPage() {
               </p>
             </div>
             <div className="flex gap-3 items-center">
+              {/* Inline Filters Bar */}
+              <InlineFiltersBar
+                filters={filters}
+                onChange={setFilters}
+                locations={locations}
+                categories={categories}
+                employees={employees}
+                onApply={() => {
+                  // Filters are already applied via state change
+                }}
+              />
               {/* Date Range Picker */}
               <DateRangePicker
                 value={dateRange}
@@ -1236,18 +1247,6 @@ export default function AnalyticsPage() {
             </div>
           )}
         </div>
-
-        {/* Inline Filters Bar */}
-        <InlineFiltersBar
-          filters={filters}
-          onChange={setFilters}
-          locations={locations}
-          categories={categories}
-          employees={employees}
-          onApply={() => {
-            // Filters are already applied via state change
-          }}
-        />
 
         {/* KPI Section - Sticky */}
         <div className="analytics-kpi-section">

@@ -81,22 +81,22 @@ function FilterCheckbox({
   label,
   isSelected,
   onClick,
-  color = "blue",
+  color = "white",
 }: {
   label: string;
   isSelected: boolean;
   onClick: () => void;
-  color?: "blue" | "green" | "orange" | "purple";
+  color?: "white" | "green" | "orange" | "purple";
 }) {
   const colorClasses = {
-    blue: "bg-[#007AFF] border-[#007AFF]",
+    white: "bg-white/90 border-white/90",
     green: "bg-[#34C759] border-[#34C759]",
     orange: "bg-[#FF9500] border-[#FF9500]",
     purple: "bg-[#AF52DE] border-[#AF52DE]",
   };
 
   const hoverColorClasses = {
-    blue: "group-hover:border-[#007AFF]/40",
+    white: "group-hover:border-white/40",
     green: "group-hover:border-[#34C759]/40",
     orange: "group-hover:border-[#FF9500]/40",
     purple: "group-hover:border-[#AF52DE]/40",
@@ -122,7 +122,7 @@ function FilterCheckbox({
           {isSelected && (
             <div className="absolute inset-0 flex items-center justify-center">
               <svg
-                className="w-3 h-3 text-white"
+                className="w-3 h-3 text-black"
                 viewBox="0 0 12 12"
                 fill="none"
               >
@@ -176,13 +176,13 @@ function FilterRadio({
         <div
           className={`w-5 h-5 rounded-full border-2 transition-all duration-200 ${
             isSelected
-              ? "bg-[#007AFF] border-[#007AFF] shadow-lg"
-              : "border-white/20 group-hover:border-[#007AFF]/40"
+              ? "bg-white/90 border-white/90 shadow-lg"
+              : "border-white/20 group-hover:border-white/40"
           }`}
         >
           {isSelected && (
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-2 h-2 rounded-full bg-white" />
+              <div className="w-2 h-2 rounded-full bg-black" />
             </div>
           )}
         </div>
@@ -214,16 +214,16 @@ function FilterSectionHeader({
 }) {
   return (
     <div className="flex items-center gap-3 mb-3">
-      <div className="w-8 h-8 rounded-[8px] bg-[#007AFF]/12 flex items-center justify-center">
-        <Icon className="w-4 h-4 text-[#007AFF]" strokeWidth={2} />
+      <div className="w-8 h-8 rounded-[8px] bg-white/5 flex items-center justify-center">
+        <Icon className="w-4 h-4 text-white/60" strokeWidth={2} />
       </div>
       <div className="flex items-center gap-2">
         <span className="text-[13px] font-semibold text-white/90 tracking-tight">
           {label}
         </span>
         {count !== undefined && count > 0 && (
-          <div className="px-2 py-0.5 bg-[#007AFF]/15 rounded-full">
-            <span className="text-[11px] font-semibold text-[#007AFF]">
+          <div className="px-2 py-0.5 bg-white/10 rounded-full">
+            <span className="text-[11px] font-semibold text-white/70">
               {count}
             </span>
           </div>
@@ -315,66 +315,37 @@ export function InlineFiltersBar({
   };
 
   return (
-    <div className="relative w-full">
-      {/* Toggle Button Row */}
-      <div className="flex items-center justify-between px-6 py-4 bg-white/[0.03] hover:bg-white/[0.05] border-b border-white/5 transition-all duration-200">
-        {/* Left: Toggle Button */}
-        <button
-          onClick={() => setIsExpanded(!isExpanded)}
-          className="flex items-center gap-3 group"
+    <div className="relative">
+      {/* Toggle Button */}
+      <button
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="flex items-center gap-2 px-4 py-2 text-sm text-white bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-all"
+      >
+        <svg
+          className="w-4 h-4 text-white/60"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
         >
-          <div className="w-8 h-8 rounded-[8px] bg-[#007AFF]/12 flex items-center justify-center group-hover:scale-105 transition-transform duration-200">
-            <svg
-              className="w-4 h-4 text-[#007AFF]"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
-            </svg>
-          </div>
-          <div className="text-left">
-            <div className="flex items-center gap-2">
-              <span className="text-[15px] font-medium text-white tracking-tight">
-                Advanced Filters
-              </span>
-              {getActiveFilterCount() > 0 && (
-                <div className="px-2.5 py-1 bg-[#007AFF]/15 rounded-full">
-                  <span className="text-[11px] font-semibold text-[#007AFF]">
-                    {getActiveFilterCount()} Active
-                  </span>
-                </div>
-              )}
-            </div>
-            <span className="text-[11px] text-white/40 mt-0.5 block">
-              {isExpanded
-                ? "Click to hide filters"
-                : "Click to show filters"}
+          <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+        </svg>
+        <span>Filters</span>
+        {getActiveFilterCount() > 0 && (
+          <div className="px-1.5 py-0.5 bg-white/10 rounded-full">
+            <span className="text-[10px] font-semibold text-white/70">
+              {getActiveFilterCount()}
             </span>
           </div>
-          {isExpanded ? (
-            <ChevronUp className="w-5 h-5 text-white/40 group-hover:text-white/60 transition-colors ml-2" />
-          ) : (
-            <ChevronDown className="w-5 h-5 text-white/40 group-hover:text-white/60 transition-colors ml-2" />
-          )}
-        </button>
-
-        {/* Right: Reset Button (separate, not nested) */}
-        <div>
-          {getActiveFilterCount() > 0 && (
-            <button
-              onClick={handleReset}
-              className="flex items-center gap-2 px-3 py-1.5 text-[11px] text-white/60 hover:text-white bg-white/[0.03] hover:bg-white/[0.08] border border-white/10 hover:border-white/20 rounded-lg transition-all duration-200"
-            >
-              <RefreshCw className="w-3 h-3" />
-              Reset
-            </button>
-          )}
-        </div>
-      </div>
+        )}
+        {isExpanded ? (
+          <ChevronUp className="w-4 h-4 text-white/60" />
+        ) : (
+          <ChevronDown className="w-4 h-4 text-white/60" />
+        )}
+      </button>
 
       {/* Dropdown Overlay */}
       {isExpanded && (
@@ -386,7 +357,7 @@ export function InlineFiltersBar({
           />
 
           {/* Dropdown Panel */}
-          <div className="absolute left-0 right-0 top-full z-[101] bg-gradient-to-b from-[#0a0a0a] via-[#0f0f0f] to-[#0a0a0a] border border-white/10 border-t-0 shadow-2xl animate-in slide-in-from-top-2 duration-300">
+          <div className="absolute right-0 top-full mt-2 w-[900px] z-[101] bg-gradient-to-b from-[#0a0a0a] via-[#0f0f0f] to-[#0a0a0a] border border-white/10 rounded-xl shadow-2xl animate-in slide-in-from-top-2 duration-300">
             <div className="px-6 py-6 max-h-[500px] overflow-y-auto custom-scrollbar">
               <div className="grid grid-cols-4 gap-6">
                 {/* Column 1: Locations */}
@@ -408,7 +379,6 @@ export function InlineFiltersBar({
                         label={location.name}
                         isSelected={filters.locationIds.includes(location.id)}
                         onClick={() => toggleLocation(location.id)}
-                        color="blue"
                       />
                     ))}
                   </div>
@@ -428,7 +398,6 @@ export function InlineFiltersBar({
                         label={category.name}
                         isSelected={filters.categoryIds.includes(category.id)}
                         onClick={() => toggleCategory(category.id)}
-                        color="green"
                       />
                     ))}
                   </div>
@@ -448,7 +417,6 @@ export function InlineFiltersBar({
                         label={method.label}
                         isSelected={filters.paymentMethods.includes(method.id)}
                         onClick={() => togglePaymentMethod(method.id)}
-                        color="purple"
                       />
                     ))}
                   </div>
