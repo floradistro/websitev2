@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-
+import { requireAdmin } from "@/lib/auth/middleware";
 import { logger } from "@/lib/logger";
 import { toError } from "@/lib/errors";
 // Force dynamic rendering
@@ -24,6 +24,12 @@ function getSupabaseClient() {
 }
 
 export async function POST(request: NextRequest) {
+  // SECURITY: Require admin authentication
+  const authResult = await requireAdmin(request);
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+
   const supabase = getSupabaseClient();
   try {
     const formData = await request.formData();
@@ -125,6 +131,12 @@ export async function POST(request: NextRequest) {
 
 // DELETE - Remove image from storage
 export async function DELETE(request: NextRequest) {
+  // SECURITY: Require admin authentication
+  const authResult = await requireAdmin(request);
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+
   const supabase = getSupabaseClient();
 
   try {

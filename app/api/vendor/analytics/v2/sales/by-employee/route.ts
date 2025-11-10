@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
     const dateRange = parseDateRange(searchParams);
     const filters = parseFilters(searchParams);
 
-    // Query live from POS transactions
+    // Query live from POS transactions (exclude those linked to orders)
     let query = supabase
       .from("pos_transactions")
       .select(
@@ -45,7 +45,8 @@ export async function GET(request: NextRequest) {
       .gte("transaction_date", dateRange.start_date)
       .lte("transaction_date", dateRange.end_date)
       .eq("payment_status", "completed")
-      .not("user_id", "is", null);
+      .not("user_id", "is", null)
+      .is("order_id", null); // Exclude POS transactions linked to orders
 
     if (filters.location_ids && filters.location_ids.length > 0) {
       query = query.in("location_id", filters.location_ids);

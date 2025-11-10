@@ -39,14 +39,15 @@ export async function GET(request: NextRequest) {
     const { data: orders, error: ordersError } = await ordersQuery;
     if (ordersError) throw ordersError;
 
-    // Get POS transactions data
+    // Get POS transactions data (exclude those already counted in orders)
     let posQuery = supabase
       .from("pos_transactions")
       .select("id, transaction_date, total_amount, subtotal, tax_amount, payment_status")
       .eq("vendor_id", vendorId)
       .gte("transaction_date", dateRange.start_date)
       .lte("transaction_date", dateRange.end_date)
-      .eq("payment_status", "completed");
+      .eq("payment_status", "completed")
+      .is("order_id", null); // Exclude POS transactions linked to orders
 
     if (filters.location_ids && filters.location_ids.length > 0) {
       posQuery = posQuery.in("location_id", filters.location_ids);
@@ -136,14 +137,15 @@ export async function GET(request: NextRequest) {
       .lte("order_date", prevEnd.toISOString())
       .in("status", ["completed", "processing"]);
 
-    // Get previous period POS transactions
+    // Get previous period POS transactions (exclude those linked to orders)
     const { data: prevPosTransactions } = await supabase
       .from("pos_transactions")
       .select("total_amount")
       .eq("vendor_id", vendorId)
       .gte("transaction_date", prevStart.toISOString())
       .lte("transaction_date", prevEnd.toISOString())
-      .eq("payment_status", "completed");
+      .eq("payment_status", "completed")
+      .is("order_id", null);
 
     const prevOrderSales = prevOrders?.reduce((sum, o) => sum + parseFloat(o.total_amount || "0"), 0) || 0;
     const prevPosSales = prevPosTransactions?.reduce((sum, t) => sum + parseFloat(t.total_amount || "0"), 0) || 0;

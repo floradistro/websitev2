@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
 
     if (ordersError) throw ordersError;
 
-    // Get POS transactions
+    // Get POS transactions (exclude those linked to orders)
     let posQuery = supabase
       .from("pos_transactions")
       .select("payment_method, total_amount, transaction_date, location_id, tip_amount")
@@ -49,7 +49,8 @@ export async function GET(request: NextRequest) {
       .gte("transaction_date", dateRange.start_date)
       .lte("transaction_date", dateRange.end_date)
       .eq("payment_status", "completed")
-      .not("payment_method", "is", null);
+      .not("payment_method", "is", null)
+      .is("order_id", null); // Exclude POS transactions linked to orders
 
     if (filters.location_ids && filters.location_ids.length > 0) {
       posQuery = posQuery.in("location_id", filters.location_ids);

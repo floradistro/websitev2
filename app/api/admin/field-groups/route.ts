@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-
+import { requireAdmin } from "@/lib/auth/middleware";
 import { logger } from "@/lib/logger";
 import { toError } from "@/lib/errors";
 const supabase = createClient(
@@ -43,6 +43,12 @@ export async function GET(request: NextRequest) {
 
 // POST - Create new field group
 export async function POST(request: NextRequest) {
+  // SECURITY: Require admin authentication
+  const authResult = await requireAdmin(request);
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+
   try {
     const body = await request.json();
     const { name, slug, description, fields, is_active = true, display_order = 0 } = body;
@@ -92,6 +98,12 @@ export async function POST(request: NextRequest) {
 
 // PUT - Update field group
 export async function PUT(request: NextRequest) {
+  // SECURITY: Require admin authentication
+  const authResult = await requireAdmin(request);
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+
   try {
     const body = await request.json();
     const { id, name, slug, description, fields, is_active, display_order } = body;
@@ -135,6 +147,12 @@ export async function PUT(request: NextRequest) {
 
 // DELETE - Delete field group
 export async function DELETE(request: NextRequest) {
+  // SECURITY: Require admin authentication
+  const authResult = await requireAdmin(request);
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");

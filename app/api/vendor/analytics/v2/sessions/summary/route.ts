@@ -71,11 +71,12 @@ export async function GET(request: NextRequest) {
     if (userIds.length > 0) {
       const { data: users } = await supabase
         .from("users")
-        .select("id, full_name, email")
+        .select("id, first_name, last_name, email")
         .in("id", userIds);
 
       users?.forEach((u: any) => {
-        userMap.set(u.id, u.full_name || u.email || "Unknown");
+        const fullName = [u.first_name, u.last_name].filter(Boolean).join(" ") || u.email || "Unknown";
+        userMap.set(u.id, fullName);
       });
     }
 

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-
+import { requireAdmin } from "@/lib/auth/middleware";
 import { logger } from "@/lib/logger";
 import { toError } from "@/lib/errors";
 // Force dynamic rendering
@@ -61,6 +61,12 @@ export async function GET() {
 
 // POST - Create new category
 export async function POST(request: NextRequest) {
+  // SECURITY: Require admin authentication
+  const authResult = await requireAdmin(request);
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+
   const supabase = getSupabaseClient();
 
   try {
@@ -123,6 +129,12 @@ export async function POST(request: NextRequest) {
 
 // PATCH - Update category
 export async function PATCH(request: NextRequest) {
+  // SECURITY: Require admin authentication
+  const authResult = await requireAdmin(request);
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+
   const supabase = getSupabaseClient();
 
   try {
@@ -184,6 +196,12 @@ export async function PATCH(request: NextRequest) {
 
 // DELETE - Delete category
 export async function DELETE(request: NextRequest) {
+  // SECURITY: Require admin authentication
+  const authResult = await requireAdmin(request);
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+
   const supabase = getSupabaseClient();
 
   try {

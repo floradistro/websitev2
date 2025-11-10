@@ -33,6 +33,7 @@ export async function GET(request: NextRequest) {
         line_total,
         tax_amount,
         product_id,
+        order_id,
         orders!inner(
           order_date,
           status,
@@ -121,7 +122,7 @@ export async function GET(request: NextRequest) {
       acc[categoryId].gross_sales += lineTotal;
       acc[categoryId].cost += cost;
       acc[categoryId].tax_amount += tax;
-      acc[categoryId].order_count.add(item.orders?.order_date);
+      acc[categoryId].order_count.add(item.order_id); // FIX: Use order_id instead of order_date
 
       return acc;
     }, {});
