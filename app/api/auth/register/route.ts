@@ -3,6 +3,7 @@ import { getServiceSupabase } from "@/lib/supabase/client";
 import { logger } from "@/lib/logger";
 import { rateLimiter, RateLimitConfigs, getIdentifier } from "@/lib/rate-limiter";
 import { toError } from "@/lib/errors";
+import { RegisterSchema, validateData } from "@/lib/validation/schemas";
 
 /**
  * Customer registration endpoint
@@ -31,11 +32,25 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { email, password, firstName, lastName } = body;
 
-    if (!email || !password || !firstName || !lastName) {
-      return NextResponse.json({ success: false, error: "All fields required" }, { status: 400 });
+    // SECURITY: Validate input with Zod schema
+    const validation = validateData(RegisterSchema, body);
+    if (!validation.success) {
+      logger.warn("Registration validation failed", {
+        errors: validation.details,
+        ip: request.headers.get("x-forwarded-for") || "unknown",
+      });
+      return NextResponse.json(
+        {
+          success: false,
+          error: validation.error,
+          details: validation.details,
+        },
+        { status: 400 },
+      );
     }
+
+    const { email, password, firstName, lastName } = validation.data;
 
     const supabase = getServiceSupabase();
 

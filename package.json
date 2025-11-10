@@ -24,7 +24,9 @@
     "type-check": "tsc --noEmit",
     "validate:no-bugs": "bash scripts/validate-no-disappearing-bugs.sh",
     "nightly": "npm run cleanup && npm run db:optimize && npm run analyze",
-    "prepare": "husky"
+    "prepare": "husky",
+    "roadmap": "npx tsx scripts/roadmap-tracker.ts",
+    "roadmap:update": "npx tsx scripts/roadmap-tracker.ts update"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.67.1",

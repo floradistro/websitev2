@@ -5,7 +5,7 @@ import useSWR from "swr";
 import { useAppAuth } from "@/context/AppAuthContext";
 import { DateRangePicker } from "@/components/ui/DateRangePicker";
 import { SkeletonKPIGrid, SkeletonTable } from "@/components/ui/Skeleton";
-import { AdvancedFiltersPanel, FilterState } from "@/components/analytics/AdvancedFiltersPanel";
+import { InlineFiltersBar, FilterState } from "@/components/analytics/InlineFiltersBar";
 import { ActiveFilterChips } from "@/components/analytics/ActiveFilterChips";
 import {
   DollarSign,
@@ -24,7 +24,6 @@ import {
   PieChart,
   Receipt,
   Clock,
-  Filter,
   ChevronRight,
 } from "@/lib/icons";
 import {
@@ -989,7 +988,7 @@ function ProductsTable({ data }: { data: any[] }) {
           {data.map((product, idx) => (
             <tr key={idx} className="border-b border-white/5 hover:bg-white/[0.01] transition-colors">
               <td className="text-white text-sm font-light px-4 py-3">{product.product_name}</td>
-              <td className="text-white/60 text-sm px-4 py-3">{product.category_name || 'Uncategorized'}</td>
+              <td className="text-white/60 text-sm px-4 py-3">{product.category || 'Uncategorized'}</td>
               <td className="text-white/60 text-sm text-right px-4 py-3">{product.units_sold || 0}</td>
               <td className="text-white text-sm text-right px-4 py-3">
                 ${(product.gross_sales || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
@@ -1018,7 +1017,6 @@ export default function AnalyticsPage() {
     isOpen: false,
     reportType: "",
   });
-  const [filtersPanelOpen, setFiltersPanelOpen] = useState(false);
 
   // Initialize date range for DateRangePicker
   const getInitialDateRange = () => {
@@ -1046,7 +1044,10 @@ export default function AnalyticsPage() {
 
   // Fetch filter data
   const { data: locationsData } = useSWR('/api/vendor/locations', fetcher);
-  const { data: categoriesData } = useSWR('/api/categories', fetcher);
+  const { data: categoriesData } = useSWR(
+    user?.id ? `/api/categories?vendor_id=${user.id}` : null,
+    fetcher
+  );
 
   const locations = locationsData?.locations || [];
   const categories = categoriesData?.categories || [];
@@ -1208,19 +1209,6 @@ export default function AnalyticsPage() {
                 value={dateRange}
                 onChange={handleDateRangeChange}
               />
-              {/* Filters Button */}
-              <button
-                onClick={() => setFiltersPanelOpen(true)}
-                className="flex items-center gap-2 px-4 py-2 text-sm text-white bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-all relative"
-              >
-                <Filter className="w-4 h-4" />
-                Filters
-                {getActiveFilterCount() > 0 && (
-                  <span className="absolute -top-1 -right-1 min-w-[20px] h-5 px-1.5 bg-[#007AFF] text-white rounded-full text-xs font-semibold flex items-center justify-center">
-                    {getActiveFilterCount()}
-                  </span>
-                )}
-              </button>
               <button
                 onClick={() => handleExportClick(getExportReportType(activeTab))}
                 className="flex items-center gap-2 px-4 py-2 text-sm text-white bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-all"
@@ -1248,6 +1236,18 @@ export default function AnalyticsPage() {
             </div>
           )}
         </div>
+
+        {/* Inline Filters Bar */}
+        <InlineFiltersBar
+          filters={filters}
+          onChange={setFilters}
+          locations={locations}
+          categories={categories}
+          employees={employees}
+          onApply={() => {
+            // Filters are already applied via state change
+          }}
+        />
 
         {/* KPI Section - Sticky */}
         <div className="analytics-kpi-section">
@@ -1587,21 +1587,6 @@ export default function AnalyticsPage() {
         onClose={() => setExportModal({ isOpen: false, reportType: "" })}
         reportType={exportModal.reportType}
         filters={{ dateRange }}
-      />
-
-      {/* Advanced Filters Panel */}
-      <AdvancedFiltersPanel
-        isOpen={filtersPanelOpen}
-        onClose={() => setFiltersPanelOpen(false)}
-        filters={filters}
-        onChange={setFilters}
-        locations={locations}
-        categories={categories}
-        employees={employees}
-        onApply={() => {
-          // Filters are already applied via state change
-          // This is just to close the panel and trigger any additional logic
-        }}
       />
     </div>
   );

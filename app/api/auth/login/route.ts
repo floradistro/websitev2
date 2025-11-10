@@ -65,11 +65,19 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
 
-    // Validate input
+    // SECURITY: Validate input with Zod schema
     const validation = validateData(LoginSchema, body);
     if (!validation.success) {
+      logger.warn("Login validation failed", {
+        errors: validation.details,
+        ip: request.headers.get("x-forwarded-for") || "unknown",
+      });
       return NextResponse.json(
-        { success: false, error: validation.error },
+        {
+          success: false,
+          error: validation.error,
+          details: validation.details,
+        },
         { status: 400, headers: corsHeaders },
       );
     }

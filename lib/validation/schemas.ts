@@ -10,21 +10,46 @@ import { z } from "zod";
 // ============================================================================
 
 export const LoginSchema = z.object({
-  email: z.string().email("Invalid email format").toLowerCase().trim(),
-  password: z.string().min(12, "Password must be at least 12 characters"),
+  email: z
+    .string()
+    .email("Invalid email format")
+    .max(255, "Email too long")
+    .transform((email) => email.toLowerCase().trim()),
+  password: z.string().min(1, "Password is required"), // Login doesn't need complexity validation
 });
 
 export const RegisterSchema = z.object({
-  email: z.string().email("Invalid email format").toLowerCase().trim(),
+  email: z
+    .string()
+    .email("Invalid email format")
+    .max(255, "Email too long")
+    .transform((email) => email.toLowerCase().trim()),
   password: z
     .string()
     .min(12, "Password must be at least 12 characters")
+    .max(128, "Password too long")
+    .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+    .regex(/[a-z]/, "Password must contain at least one lowercase letter")
+    .regex(/[0-9]/, "Password must contain at least one number")
+    .regex(/[^A-Za-z0-9]/, "Password must contain at least one special character"),
+  firstName: z
+    .string()
+    .min(1, "First name required")
+    .max(50, "First name too long")
     .regex(
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-      "Password must contain at least one uppercase letter, one lowercase letter, and one number",
-    ),
-  firstName: z.string().min(1, "First name required").max(100).trim(),
-  lastName: z.string().min(1, "Last name required").max(100).trim(),
+      /^[a-zA-Z\s'\-]+$/,
+      "Name can only contain letters, spaces, hyphens, and apostrophes",
+    )
+    .transform((name) => name.trim()),
+  lastName: z
+    .string()
+    .min(1, "Last name required")
+    .max(50, "Last name too long")
+    .regex(
+      /^[a-zA-Z\s'\-]+$/,
+      "Name can only contain letters, spaces, hyphens, and apostrophes",
+    )
+    .transform((name) => name.trim()),
   phone: z.string().optional(),
 });
 
@@ -155,21 +180,33 @@ export const VendorSchema = z.object({
 
 /**
  * Safely parse and validate data with a schema
- * Returns { success: true, data } or { success: false, error }
+ * Returns { success: true, data } or { success: false, error, details }
  */
 export function validateData<T>(
   schema: z.ZodSchema<T>,
   data: unknown,
-): { success: true; data: T } | { success: false; error: string } {
+):
+  | { success: true; data: T }
+  | { success: false; error: string; details: Array<{ field: string; message: string }> } {
   try {
     const validated = schema.parse(data);
     return { success: true, data: validated };
   } catch (error) {
     if (error instanceof z.ZodError) {
-      const messages = error.issues.map((e: any) => `${e.path.join(".")}: ${e.message}`);
-      return { success: false, error: messages.join(", ") };
+      return {
+        success: false,
+        error: "Validation failed",
+        details: error.errors.map((e) => ({
+          field: e.path.join("."),
+          message: e.message,
+        })),
+      };
     }
-    return { success: false, error: "Validation failed" };
+    return {
+      success: false,
+      error: "Invalid input data",
+      details: [],
+    };
   }
 }
 

@@ -124,383 +124,218 @@ export function AdvancedFiltersPanel({
 
   return (
     <>
-      {/* Backdrop */}
+      {/* Glass Morphism Backdrop */}
       <div
-        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] transition-opacity duration-300"
+        className="fixed inset-0 bg-black/40 backdrop-blur-xl z-[100] panel-fade-in"
         onClick={onClose}
-        style={{ animation: 'fadeIn 0.3s ease-out' }}
       />
 
-      {/* Slide-in Panel */}
-      <div
-        className="fixed right-0 top-0 h-full w-[420px] bg-[#1c1c1e] z-[101] shadow-2xl overflow-y-auto"
-        style={{ animation: 'slideInRight 0.3s cubic-bezier(0.4, 0, 0.2, 1)' }}
-      >
-        {/* Header */}
-        <div className="sticky top-0 bg-[#1c1c1e] border-b border-white/10 p-6 z-10">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h2 className="text-xl font-semibold text-white">Filters</h2>
-              {getActiveFilterCount() > 0 && (
-                <p className="text-sm text-white/50 mt-1">
-                  {getActiveFilterCount()} active {getActiveFilterCount() === 1 ? 'filter' : 'filters'}
-                </p>
-              )}
+      {/* Slide-in Panel with Glass Effect */}
+      <div className="fixed right-0 top-0 h-full w-[440px] z-[101] panel-slide-in">
+        {/* Frosted Glass Background */}
+        <div className="absolute inset-0 bg-gradient-to-b from-[#1d1d1f]/95 via-[#1d1d1f]/90 to-[#1d1d1f]/95 backdrop-blur-3xl" />
+
+        {/* Subtle Inner Glow */}
+        <div className="absolute inset-0 bg-gradient-to-b from-white/[0.02] to-transparent pointer-events-none" />
+
+        {/* Content */}
+        <div className="relative h-full flex flex-col">
+          {/* Header with Frosted Glass */}
+          <div className="flex-none">
+            <div className="px-8 pt-8 pb-6 border-b border-white/[0.08]">
+              <div className="flex items-start justify-between mb-6">
+                <div>
+                  <h2 className="text-[28px] font-semibold text-white tracking-tight leading-none">
+                    Filters
+                  </h2>
+                  {getActiveFilterCount() > 0 && (
+                    <div className="flex items-center gap-2 mt-2">
+                      <div className="px-2.5 py-1 bg-[#007AFF]/15 rounded-full">
+                        <p className="text-xs font-semibold text-[#007AFF]">
+                          {getActiveFilterCount()} Active
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                <button
+                  onClick={onClose}
+                  className="w-9 h-9 flex items-center justify-center rounded-full bg-white/[0.08] text-white/60 hover:bg-white/[0.12] hover:text-white transition-all duration-200 hover:scale-105"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Premium Search Bar */}
+              <div className="relative group">
+                <div className="absolute inset-0 bg-gradient-to-r from-[#007AFF]/20 to-[#5856D6]/20 rounded-2xl blur-xl opacity-0 group-focus-within:opacity-100 transition-opacity duration-300" />
+                <div className="relative">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-white/30 group-focus-within:text-[#007AFF] transition-colors duration-200" />
+                  <input
+                    type="text"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    placeholder="Search filters..."
+                    className="w-full pl-12 pr-5 py-3.5 bg-white/[0.06] border border-white/[0.08] rounded-xl text-[15px] text-white placeholder-white/30 focus:outline-none focus:border-[#007AFF]/50 focus:bg-white/[0.08] transition-all duration-200"
+                  />
+                </div>
+              </div>
             </div>
-            <button
-              onClick={onClose}
-              className="w-8 h-8 flex items-center justify-center rounded-full text-white/60 hover:text-white hover:bg-white/10 transition-all"
-            >
-              <X className="w-5 h-5" />
-            </button>
           </div>
 
-          {/* Search */}
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Search filters..."
-              className="w-full pl-10 pr-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white placeholder-white/40 text-sm focus:outline-none focus:border-[#007AFF] transition-colors"
-            />
-          </div>
-        </div>
-
-        {/* Filter Sections */}
-        <div className="p-6 space-y-6">
-          {/* Locations */}
-          <div className="space-y-3">
-            <button
-              onClick={() => toggleSection('locations')}
-              className="w-full flex items-center justify-between text-left group"
+          {/* Scrollable Filter Sections */}
+          <div className="flex-1 overflow-y-auto custom-scrollbar px-8 py-6 space-y-6">
+            {/* Locations - Blue */}
+            <FilterSection
+              icon={<MapPin className="w-[18px] h-[18px]" />}
+              title="Locations"
+              color="blue"
+              count={localFilters.locationIds.length}
+              isExpanded={expandedSections.locations}
+              onToggle={() => toggleSection('locations')}
             >
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-[#007AFF]/10 flex items-center justify-center">
-                  <MapPin className="w-4 h-4 text-[#007AFF]" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-semibold text-white">Locations</h3>
-                  {localFilters.locationIds.length > 0 && (
-                    <p className="text-xs text-white/50">
-                      {localFilters.locationIds.length} selected
-                    </p>
-                  )}
-                </div>
-              </div>
-              <ChevronDown
-                className={`w-5 h-5 text-white/40 transition-transform duration-200 ${
-                  expandedSections.locations ? 'rotate-180' : ''
-                }`}
+              <FilterOption
+                label="All Locations"
+                isSelected={localFilters.locationIds.length === 0}
+                onClick={() => setLocalFilters({ ...localFilters, locationIds: [] })}
+                color="blue"
+                isRadio
               />
-            </button>
+              {locations.map(location => (
+                <FilterOption
+                  key={location.id}
+                  label={location.name}
+                  isSelected={localFilters.locationIds.includes(location.id)}
+                  onClick={() => toggleLocation(location.id)}
+                  color="blue"
+                />
+              ))}
+            </FilterSection>
 
-            {expandedSections.locations && (
-              <div className="space-y-2 pl-11 animate-in">
-                <button
-                  onClick={() => setLocalFilters({ ...localFilters, locationIds: [] })}
-                  className={`w-full flex items-center gap-3 p-2.5 rounded-lg transition-all ${
-                    localFilters.locationIds.length === 0
-                      ? 'bg-[#007AFF]/10 text-white border border-[#007AFF]/30'
-                      : 'bg-white/5 text-white/70 hover:bg-white/10'
-                  }`}
-                >
-                  <div className={`w-4 h-4 rounded border ${
-                    localFilters.locationIds.length === 0
-                      ? 'border-[#007AFF] bg-[#007AFF]'
-                      : 'border-white/30'
-                  } flex items-center justify-center`}>
-                    {localFilters.locationIds.length === 0 && (
-                      <div className="w-2 h-2 rounded-full bg-white" />
-                    )}
-                  </div>
-                  <span className="text-sm">All Locations</span>
-                </button>
-                {locations.map(location => (
-                  <button
-                    key={location.id}
-                    onClick={() => toggleLocation(location.id)}
-                    className={`w-full flex items-center gap-3 p-2.5 rounded-lg transition-all ${
-                      localFilters.locationIds.includes(location.id)
-                        ? 'bg-[#007AFF]/10 text-white border border-[#007AFF]/30'
-                        : 'bg-white/5 text-white/70 hover:bg-white/10'
-                    }`}
-                  >
-                    <div className={`w-4 h-4 rounded border ${
-                      localFilters.locationIds.includes(location.id)
-                        ? 'border-[#007AFF] bg-[#007AFF]'
-                        : 'border-white/30'
-                    } flex items-center justify-center`}>
-                      {localFilters.locationIds.includes(location.id) && (
-                        <svg className="w-3 h-3 text-white" viewBox="0 0 12 12" fill="none">
-                          <path d="M10 3L4.5 8.5L2 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        </svg>
-                      )}
-                    </div>
-                    <span className="text-sm">{location.name}</span>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Categories */}
-          <div className="space-y-3">
-            <button
-              onClick={() => toggleSection('categories')}
-              className="w-full flex items-center justify-between text-left group"
+            {/* Categories - Green */}
+            <FilterSection
+              icon={<Tag className="w-[18px] h-[18px]" />}
+              title="Categories"
+              color="green"
+              count={localFilters.categoryIds.length}
+              isExpanded={expandedSections.categories}
+              onToggle={() => toggleSection('categories')}
             >
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-[#34C759]/10 flex items-center justify-center">
-                  <Tag className="w-4 h-4 text-[#34C759]" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-semibold text-white">Categories</h3>
-                  {localFilters.categoryIds.length > 0 && (
-                    <p className="text-xs text-white/50">
-                      {localFilters.categoryIds.length} selected
-                    </p>
-                  )}
-                </div>
-              </div>
-              <ChevronDown
-                className={`w-5 h-5 text-white/40 transition-transform duration-200 ${
-                  expandedSections.categories ? 'rotate-180' : ''
-                }`}
-              />
-            </button>
+              {categories.filter(c => !c.parent_id).map(category => (
+                <FilterOption
+                  key={category.id}
+                  label={category.name}
+                  isSelected={localFilters.categoryIds.includes(category.id)}
+                  onClick={() => toggleCategory(category.id)}
+                  color="green"
+                />
+              ))}
+            </FilterSection>
 
-            {expandedSections.categories && (
-              <div className="space-y-2 pl-11 animate-in">
-                {categories.filter(c => !c.parent_id).map(category => (
-                  <button
-                    key={category.id}
-                    onClick={() => toggleCategory(category.id)}
-                    className={`w-full flex items-center gap-3 p-2.5 rounded-lg transition-all ${
-                      localFilters.categoryIds.includes(category.id)
-                        ? 'bg-[#34C759]/10 text-white border border-[#34C759]/30'
-                        : 'bg-white/5 text-white/70 hover:bg-white/10'
-                    }`}
-                  >
-                    <div className={`w-4 h-4 rounded border ${
-                      localFilters.categoryIds.includes(category.id)
-                        ? 'border-[#34C759] bg-[#34C759]'
-                        : 'border-white/30'
-                    } flex items-center justify-center`}>
-                      {localFilters.categoryIds.includes(category.id) && (
-                        <svg className="w-3 h-3 text-white" viewBox="0 0 12 12" fill="none">
-                          <path d="M10 3L4.5 8.5L2 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        </svg>
-                      )}
-                    </div>
-                    <span className="text-sm">{category.name}</span>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Employees */}
-          <div className="space-y-3">
-            <button
-              onClick={() => toggleSection('employees')}
-              className="w-full flex items-center justify-between text-left group"
+            {/* Employees - Orange */}
+            <FilterSection
+              icon={<Users className="w-[18px] h-[18px]" />}
+              title="Employees"
+              color="orange"
+              count={localFilters.employeeIds.length}
+              isExpanded={expandedSections.employees}
+              onToggle={() => toggleSection('employees')}
             >
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-[#FF9500]/10 flex items-center justify-center">
-                  <Users className="w-4 h-4 text-[#FF9500]" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-semibold text-white">Employees</h3>
-                  {localFilters.employeeIds.length > 0 && (
-                    <p className="text-xs text-white/50">
-                      {localFilters.employeeIds.length} selected
-                    </p>
-                  )}
-                </div>
-              </div>
-              <ChevronDown
-                className={`w-5 h-5 text-white/40 transition-transform duration-200 ${
-                  expandedSections.employees ? 'rotate-180' : ''
-                }`}
-              />
-            </button>
-
-            {expandedSections.employees && (
-              <div className="space-y-2 pl-11 animate-in max-h-60 overflow-y-auto">
+              <div className="max-h-64 overflow-y-auto custom-scrollbar">
                 {employees.map(employee => (
-                  <button
+                  <FilterOption
                     key={employee.id}
+                    label={employee.name}
+                    isSelected={localFilters.employeeIds.includes(employee.id)}
                     onClick={() => toggleEmployee(employee.id)}
-                    className={`w-full flex items-center gap-3 p-2.5 rounded-lg transition-all ${
-                      localFilters.employeeIds.includes(employee.id)
-                        ? 'bg-[#FF9500]/10 text-white border border-[#FF9500]/30'
-                        : 'bg-white/5 text-white/70 hover:bg-white/10'
-                    }`}
-                  >
-                    <div className={`w-4 h-4 rounded border ${
-                      localFilters.employeeIds.includes(employee.id)
-                        ? 'border-[#FF9500] bg-[#FF9500]'
-                        : 'border-white/30'
-                    } flex items-center justify-center`}>
-                      {localFilters.employeeIds.includes(employee.id) && (
-                        <svg className="w-3 h-3 text-white" viewBox="0 0 12 12" fill="none">
-                          <path d="M10 3L4.5 8.5L2 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        </svg>
-                      )}
-                    </div>
-                    <span className="text-sm">{employee.name}</span>
-                  </button>
+                    color="orange"
+                  />
                 ))}
               </div>
-            )}
+            </FilterSection>
+
+            {/* Payment Methods - Purple */}
+            <FilterSection
+              icon={<CreditCard className="w-[18px] h-[18px]" />}
+              title="Payment Methods"
+              color="purple"
+              count={localFilters.paymentMethods.length}
+              isExpanded={expandedSections.payments}
+              onToggle={() => toggleSection('payments')}
+            >
+              {paymentMethods.map(method => (
+                <FilterOption
+                  key={method.id}
+                  label={method.label}
+                  isSelected={localFilters.paymentMethods.includes(method.id)}
+                  onClick={() => togglePaymentMethod(method.id)}
+                  color="purple"
+                />
+              ))}
+            </FilterSection>
+
+            {/* Options with iOS Toggle Switches */}
+            <FilterSection
+              icon={<Package className="w-[18px] h-[18px]" />}
+              title="Options"
+              color="gray"
+              count={0}
+              isExpanded={expandedSections.options}
+              onToggle={() => toggleSection('options')}
+            >
+              <IOSToggle
+                label="Include Refunds"
+                isOn={localFilters.includeRefunds}
+                onToggle={() => setLocalFilters({ ...localFilters, includeRefunds: !localFilters.includeRefunds })}
+              />
+              <IOSToggle
+                label="Include Discounts"
+                isOn={localFilters.includeDiscounts}
+                onToggle={() => setLocalFilters({ ...localFilters, includeDiscounts: !localFilters.includeDiscounts })}
+              />
+            </FilterSection>
           </div>
 
-          {/* Payment Methods */}
-          <div className="space-y-3">
+          {/* Premium Footer Buttons */}
+          <div className="flex-none px-8 pb-8 pt-6 border-t border-white/[0.08] space-y-3">
             <button
-              onClick={() => toggleSection('payments')}
-              className="w-full flex items-center justify-between text-left group"
+              onClick={handleApply}
+              className="w-full group relative overflow-hidden"
             >
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-[#AF52DE]/10 flex items-center justify-center">
-                  <CreditCard className="w-4 h-4 text-[#AF52DE]" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-semibold text-white">Payment Methods</h3>
-                  {localFilters.paymentMethods.length > 0 && (
-                    <p className="text-xs text-white/50">
-                      {localFilters.paymentMethods.length} selected
-                    </p>
-                  )}
-                </div>
+              <div className="absolute inset-0 bg-gradient-to-r from-[#007AFF] to-[#0051D5] rounded-[14px]" />
+              <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <div className="relative px-6 py-4 flex items-center justify-center">
+                <span className="text-[17px] font-semibold text-white tracking-tight">
+                  Apply Filters
+                </span>
               </div>
-              <ChevronDown
-                className={`w-5 h-5 text-white/40 transition-transform duration-200 ${
-                  expandedSections.payments ? 'rotate-180' : ''
-                }`}
-              />
             </button>
 
-            {expandedSections.payments && (
-              <div className="space-y-2 pl-11 animate-in">
-                {paymentMethods.map(method => (
-                  <button
-                    key={method.id}
-                    onClick={() => togglePaymentMethod(method.id)}
-                    className={`w-full flex items-center gap-3 p-2.5 rounded-lg transition-all ${
-                      localFilters.paymentMethods.includes(method.id)
-                        ? 'bg-[#AF52DE]/10 text-white border border-[#AF52DE]/30'
-                        : 'bg-white/5 text-white/70 hover:bg-white/10'
-                    }`}
-                  >
-                    <div className={`w-4 h-4 rounded border ${
-                      localFilters.paymentMethods.includes(method.id)
-                        ? 'border-[#AF52DE] bg-[#AF52DE]'
-                        : 'border-white/30'
-                    } flex items-center justify-center`}>
-                      {localFilters.paymentMethods.includes(method.id) && (
-                        <svg className="w-3 h-3 text-white" viewBox="0 0 12 12" fill="none">
-                          <path d="M10 3L4.5 8.5L2 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        </svg>
-                      )}
-                    </div>
-                    <span className="text-sm">{method.label}</span>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Options */}
-          <div className="space-y-3">
             <button
-              onClick={() => toggleSection('options')}
-              className="w-full flex items-center justify-between text-left group"
+              onClick={handleReset}
+              className="w-full px-6 py-4 bg-white/[0.06] hover:bg-white/[0.10] rounded-[14px] transition-all duration-200 hover:scale-[1.02]"
             >
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
-                  <Package className="w-4 h-4 text-white/70" />
-                </div>
-                <h3 className="text-sm font-semibold text-white">Options</h3>
-              </div>
-              <ChevronDown
-                className={`w-5 h-5 text-white/40 transition-transform duration-200 ${
-                  expandedSections.options ? 'rotate-180' : ''
-                }`}
-              />
+              <span className="text-[17px] font-medium text-white/80 hover:text-white transition-colors">
+                Reset All
+              </span>
             </button>
-
-            {expandedSections.options && (
-              <div className="space-y-2 pl-11 animate-in">
-                <button
-                  onClick={() => setLocalFilters({ ...localFilters, includeRefunds: !localFilters.includeRefunds })}
-                  className="w-full flex items-center gap-3 p-2.5 rounded-lg bg-white/5 text-white/70 hover:bg-white/10 transition-all"
-                >
-                  <div className={`w-4 h-4 rounded border ${
-                    localFilters.includeRefunds
-                      ? 'border-[#007AFF] bg-[#007AFF]'
-                      : 'border-white/30'
-                  } flex items-center justify-center`}>
-                    {localFilters.includeRefunds && (
-                      <svg className="w-3 h-3 text-white" viewBox="0 0 12 12" fill="none">
-                        <path d="M10 3L4.5 8.5L2 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
-                    )}
-                  </div>
-                  <span className="text-sm">Include Refunds</span>
-                </button>
-                <button
-                  onClick={() => setLocalFilters({ ...localFilters, includeDiscounts: !localFilters.includeDiscounts })}
-                  className="w-full flex items-center gap-3 p-2.5 rounded-lg bg-white/5 text-white/70 hover:bg-white/10 transition-all"
-                >
-                  <div className={`w-4 h-4 rounded border ${
-                    localFilters.includeDiscounts
-                      ? 'border-[#007AFF] bg-[#007AFF]'
-                      : 'border-white/30'
-                  } flex items-center justify-center`}>
-                    {localFilters.includeDiscounts && (
-                      <svg className="w-3 h-3 text-white" viewBox="0 0 12 12" fill="none">
-                        <path d="M10 3L4.5 8.5L2 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
-                    )}
-                  </div>
-                  <span className="text-sm">Include Discounts</span>
-                </button>
-              </div>
-            )}
           </div>
-        </div>
-
-        {/* Footer */}
-        <div className="sticky bottom-0 bg-[#1c1c1e] border-t border-white/10 p-6 space-y-3">
-          <button
-            onClick={handleApply}
-            className="w-full px-4 py-3 bg-[#007AFF] hover:bg-[#0051D5] text-white rounded-xl font-semibold transition-all"
-          >
-            Apply Filters
-          </button>
-          <button
-            onClick={handleReset}
-            className="w-full px-4 py-3 bg-white/5 hover:bg-white/10 text-white rounded-xl font-medium transition-all"
-          >
-            Reset All
-          </button>
         </div>
       </div>
 
-      <style jsx>{`
-        @keyframes slideInRight {
+      <style jsx global>{`
+        @keyframes panelSlideIn {
           from {
             transform: translateX(100%);
+            opacity: 0;
           }
           to {
             transform: translateX(0);
+            opacity: 1;
           }
         }
 
-        @keyframes fadeIn {
+        @keyframes panelFadeIn {
           from {
             opacity: 0;
           }
@@ -509,10 +344,221 @@ export function AdvancedFiltersPanel({
           }
         }
 
-        .animate-in {
-          animation: fadeIn 0.2s ease-out;
+        @keyframes filterExpand {
+          from {
+            opacity: 0;
+            transform: translateY(-8px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        .panel-slide-in {
+          animation: panelSlideIn 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .panel-fade-in {
+          animation: panelFadeIn 0.3s ease-out;
+        }
+
+        .filter-expand {
+          animation: filterExpand 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 6px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: transparent;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: rgba(255, 255, 255, 0.1);
+          border-radius: 10px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: rgba(255, 255, 255, 0.2);
         }
       `}</style>
     </>
+  );
+}
+
+// Premium Filter Section Component
+function FilterSection({
+  icon,
+  title,
+  color,
+  count,
+  isExpanded,
+  onToggle,
+  children,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  color: 'blue' | 'green' | 'orange' | 'purple' | 'gray';
+  count: number;
+  isExpanded: boolean;
+  onToggle: () => void;
+  children: React.ReactNode;
+}) {
+  const colorClasses = {
+    blue: 'bg-[#007AFF]/12 text-[#007AFF]',
+    green: 'bg-[#34C759]/12 text-[#34C759]',
+    orange: 'bg-[#FF9500]/12 text-[#FF9500]',
+    purple: 'bg-[#AF52DE]/12 text-[#AF52DE]',
+    gray: 'bg-white/10 text-white/70',
+  };
+
+  return (
+    <div className="space-y-3">
+      <button
+        onClick={onToggle}
+        className="w-full group"
+      >
+        <div className="flex items-center justify-between p-4 rounded-[14px] bg-white/[0.03] hover:bg-white/[0.06] transition-all duration-200">
+          <div className="flex items-center gap-4">
+            <div className={`w-10 h-10 rounded-[12px] ${colorClasses[color]} flex items-center justify-center group-hover:scale-105 transition-transform duration-200`}>
+              {icon}
+            </div>
+            <div className="text-left">
+              <h3 className="text-[17px] font-semibold text-white tracking-tight leading-none">
+                {title}
+              </h3>
+              {count > 0 && (
+                <p className="text-[13px] text-white/40 mt-1">
+                  {count} selected
+                </p>
+              )}
+            </div>
+          </div>
+          <ChevronDown
+            className={`w-5 h-5 text-white/30 transition-all duration-300 ${
+              isExpanded ? 'rotate-180 text-white/50' : ''
+            }`}
+          />
+        </div>
+      </button>
+
+      {isExpanded && (
+        <div className="space-y-2 filter-expand">
+          {children}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Premium Filter Option Component
+function FilterOption({
+  label,
+  isSelected,
+  onClick,
+  color,
+  isRadio = false,
+}: {
+  label: string;
+  isSelected: boolean;
+  onClick: () => void;
+  color: 'blue' | 'green' | 'orange' | 'purple';
+  isRadio?: boolean;
+}) {
+  const colorClasses = {
+    blue: 'border-[#007AFF] bg-[#007AFF]',
+    green: 'border-[#34C759] bg-[#34C759]',
+    orange: 'border-[#FF9500] bg-[#FF9500]',
+    purple: 'border-[#AF52DE] bg-[#AF52DE]',
+  };
+
+  const hoverColorClasses = {
+    blue: 'group-hover:border-[#007AFF]/30',
+    green: 'group-hover:border-[#34C759]/30',
+    orange: 'group-hover:border-[#FF9500]/30',
+    purple: 'group-hover:border-[#AF52DE]/30',
+  };
+
+  return (
+    <button
+      onClick={onClick}
+      className={`w-full group flex items-center gap-4 px-4 py-3 rounded-[12px] transition-all duration-200 ${
+        isSelected
+          ? 'bg-white/[0.08] hover:bg-white/[0.10]'
+          : 'bg-white/[0.03] hover:bg-white/[0.06]'
+      }`}
+    >
+      {/* Custom Checkbox/Radio */}
+      <div className="relative flex items-center justify-center">
+        <div
+          className={`w-5 h-5 rounded-${isRadio ? 'full' : '[6px]'} border-2 transition-all duration-200 ${
+            isSelected
+              ? `${colorClasses[color]} shadow-lg`
+              : `border-white/20 ${hoverColorClasses[color]}`
+          }`}
+        >
+          {isSelected && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              {isRadio ? (
+                <div className="w-2 h-2 rounded-full bg-white" />
+              ) : (
+                <svg className="w-3 h-3 text-white" viewBox="0 0 12 12" fill="none">
+                  <path
+                    d="M10 3L4.5 8.5L2 6"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+
+      <span className={`text-[15px] transition-colors duration-200 ${
+        isSelected ? 'text-white font-medium' : 'text-white/70 group-hover:text-white/90'
+      }`}>
+        {label}
+      </span>
+    </button>
+  );
+}
+
+// iOS-Style Toggle Switch
+function IOSToggle({
+  label,
+  isOn,
+  onToggle,
+}: {
+  label: string;
+  isOn: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <button
+      onClick={onToggle}
+      className="w-full flex items-center justify-between px-4 py-3 rounded-[12px] bg-white/[0.03] hover:bg-white/[0.06] transition-all duration-200 group"
+    >
+      <span className="text-[15px] text-white/80 group-hover:text-white transition-colors">
+        {label}
+      </span>
+
+      {/* iOS Toggle */}
+      <div
+        className={`relative w-[51px] h-[31px] rounded-full transition-all duration-300 ${
+          isOn ? 'bg-[#34C759]' : 'bg-white/20'
+        }`}
+      >
+        <div
+          className={`absolute top-[2px] w-[27px] h-[27px] bg-white rounded-full shadow-lg transition-all duration-300 ${
+            isOn ? 'left-[22px]' : 'left-[2px]'
+          }`}
+        />
+      </div>
+    </button>
   );
 }

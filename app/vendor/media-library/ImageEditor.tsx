@@ -64,11 +64,14 @@ export default function ImageEditor({ image, vendorId, onClose, onSave }: ImageE
   const [saturation, setSaturation] = useState(100);
   const [processingProgress, setProcessingProgress] = useState(0);
 
-  // Brush tools
+  // Brush tools - Canva-style real-time editing
   const [brushSize, setBrushSize] = useState(20);
   const [isDrawing, setIsDrawing] = useState(false);
-  const [maskCanvas, setMaskCanvas] = useState<HTMLCanvasElement | null>(null);
+  const workingCanvasRef = useRef<HTMLCanvasElement>(null);
+  const originalImageRef = useRef<HTMLImageElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
+  const [isUsingBrush, setIsUsingBrush] = useState(false);
+  const [hasUnsavedBrushChanges, setHasUnsavedBrushChanges] = useState(false);
 
   // Quality score (mock for now)
   const [qualityScore] = useState(85);
@@ -338,87 +341,176 @@ export default function ImageEditor({ image, vendorId, onClose, onSave }: ImageE
     }
   };
 
-  // Canvas brush drawing handlers
-  const startDrawing = (e: React.MouseEvent<HTMLDivElement>) => {
+  // Initialize working canvas when brush tool is activated
+  const initializeBrushCanvas = async () => {
+    console.log("🎨 initializeBrushCanvas called");
+    console.log("  workingCanvasRef.current:", workingCanvasRef.current);
+    console.log("  originalImageRef.current:", originalImageRef.current);
+
+    if (!workingCanvasRef.current || !originalImageRef.current) {
+      console.log("❌ Missing refs, cannot initialize");
+      return;
+    }
+
+    const img = originalImageRef.current;
+    console.log("📷 Image element:", img, "src:", img.src, "complete:", img.complete);
+
+    await new Promise((resolve) => {
+      if (img.complete) {
+        console.log("✓ Image already loaded");
+        resolve(null);
+      } else {
+        console.log("⏳ Waiting for image to load...");
+        img.onload = () => {
+          console.log("✓ Image loaded");
+          resolve(null);
+        };
+      }
+    });
+
+    const canvas = workingCanvasRef.current;
+    canvas.width = img.naturalWidth || img.width;
+    canvas.height = img.naturalHeight || img.height;
+
+    console.log("🖼️ Canvas size:", canvas.width, "x", canvas.height);
+
+    const ctx = canvas.getContext("2d");
+    if (ctx) {
+      ctx.drawImage(img, 0, 0);
+      console.log("✓ Drew image to canvas");
+    }
+
+    setIsUsingBrush(true);
+    setHasUnsavedBrushChanges(false);
+    console.log("✓ Brush canvas initialized");
+  };
+
+  // Canva-style real-time brush drawing
+  const startDrawing = (e: React.MouseEvent<HTMLCanvasElement>) => {
     if (!activeTool || (activeTool !== "erase" && activeTool !== "restore")) return;
+    e.preventDefault();
+    e.stopPropagation();
     setIsDrawing(true);
     draw(e);
   };
 
-  const stopDrawing = () => {
+  const stopDrawing = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (activeTool === "erase" || activeTool === "restore") {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     setIsDrawing(false);
   };
 
-  const draw = (e: React.MouseEvent<HTMLDivElement>) => {
+  const draw = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    console.log("🖊️ Draw called - isDrawing:", isDrawing, "eventType:", e.type);
     if (!isDrawing && e.type !== "mousedown") return;
-    if (!imageRef.current) return;
+    if (!workingCanvasRef.current || !originalImageRef.current) {
+      console.log("❌ Missing refs - workingCanvas:", !!workingCanvasRef.current, "originalImage:", !!originalImageRef.current);
+      return;
+    }
 
-    const rect = imageRef.current.getBoundingClientRect();
+    e.preventDefault();
+    e.stopPropagation();
+
+    const canvas = workingCanvasRef.current;
+    const rect = canvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
 
-    // Create or get mask canvas
-    if (!maskCanvas) {
-      const canvas = document.createElement("canvas");
-      canvas.width = imageRef.current.naturalWidth;
-      canvas.height = imageRef.current.naturalHeight;
-      setMaskCanvas(canvas);
-    }
+    // Scale to canvas coordinates
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const canvasX = x * scaleX;
+    const canvasY = y * scaleY;
 
-    if (maskCanvas) {
-      const ctx = maskCanvas.getContext("2d");
-      if (!ctx) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
 
-      // Scale coordinates to image size
-      const scaleX = imageRef.current.naturalWidth / rect.width;
-      const scaleY = imageRef.current.naturalHeight / rect.height;
-
-      ctx.globalCompositeOperation = activeTool === "erase" ? "destination-out" : "source-over";
-      ctx.fillStyle = activeTool === "erase" ? "rgba(0,0,0,1)" : "rgba(255,255,255,1)";
+    if (activeTool === "erase") {
+      // Erase by making transparent
+      ctx.globalCompositeOperation = "destination-out";
+      ctx.fillStyle = "rgba(0,0,0,1)";
       ctx.beginPath();
-      ctx.arc(x * scaleX, y * scaleY, brushSize * scaleX, 0, Math.PI * 2);
+      ctx.arc(canvasX, canvasY, brushSize * scaleX, 0, Math.PI * 2);
       ctx.fill();
+    } else if (activeTool === "restore") {
+      // Restore by copying from original image
+      ctx.globalCompositeOperation = "source-over";
+      const originalImg = originalImageRef.current;
+
+      // Draw the original image portion within a circular clip
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(canvasX, canvasY, brushSize * scaleX, 0, Math.PI * 2);
+      ctx.clip();
+      ctx.drawImage(originalImg, 0, 0, canvas.width, canvas.height);
+      ctx.restore();
     }
+
+    setHasUnsavedBrushChanges(true);
   };
 
-  // Apply brush mask to image
-  const applyBrushMask = async () => {
-    if (!maskCanvas || !imageRef.current) return;
+  // Save brush changes to server
+  const saveBrushChanges = async () => {
+    if (!workingCanvasRef.current || !hasUnsavedBrushChanges) return;
 
     setIsProcessing(true);
     try {
-      // Convert mask canvas to data URL
-      const maskDataUrl = maskCanvas.toDataURL("image/png");
-
-      const response = await fetch("/api/vendor/media/apply-mask", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-vendor-id": vendorId,
-        },
-        body: JSON.stringify({
-          imageUrl: currentImage,
-          maskDataUrl,
-          fileName: image.file_name,
-        }),
+      // Convert canvas to blob
+      const blob = await new Promise<Blob | null>((resolve) => {
+        workingCanvasRef.current?.toBlob(resolve, "image/png");
       });
 
-      if (!response.ok) throw new Error("Failed to apply mask");
+      if (!blob) throw new Error("Failed to create image blob");
+
+      // Create form data for upload
+      const formData = new FormData();
+      formData.append("file", blob, `brushed_${Date.now()}_${image.file_name}`);
+
+      const response = await fetch(`/api/vendor/media?vendorId=${vendorId}`, {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) throw new Error("Failed to upload image");
 
       const data = await response.json();
-      if (data.success && data.url) {
+      if (data.url) {
         setCurrentImage(data.url);
-        addToHistory(data.url, activeTool === "erase" ? "Brush Erased" : "Brush Restored");
-        setMaskCanvas(null); // Reset mask
+        addToHistory(data.url, "Brush Edit");
+        setHasUnsavedBrushChanges(false);
+        setIsUsingBrush(false);
         setActiveTool(null);
       }
     } catch (error) {
-      console.error("Error applying mask:", error);
-      alert("Failed to apply brush changes");
+      console.error("Error saving brush changes:", error);
+      alert("Failed to save changes");
     } finally {
       setIsProcessing(false);
     }
   };
+
+  // Step 1: When brush tool is activated, set isUsingBrush to true to render the canvas
+  useEffect(() => {
+    console.log("🎯 useEffect (step 1) - activeTool:", activeTool, "isUsingBrush:", isUsingBrush);
+    if ((activeTool === "erase" || activeTool === "restore") && !isUsingBrush) {
+      console.log("✅ Setting isUsingBrush to true to render canvas");
+      setIsUsingBrush(true);
+    } else if (activeTool !== "erase" && activeTool !== "restore" && isUsingBrush) {
+      console.log("🔄 Deactivating brush mode");
+      setIsUsingBrush(false);
+    }
+  }, [activeTool]);
+
+  // Step 2: After canvas is rendered, initialize it
+  useEffect(() => {
+    console.log("🎯 useEffect (step 2) - isUsingBrush:", isUsingBrush, "workingCanvas exists:", !!workingCanvasRef.current);
+    if (isUsingBrush && workingCanvasRef.current && originalImageRef.current) {
+      console.log("✅ Canvas now exists, calling initializeBrushCanvas");
+      initializeBrushCanvas();
+    }
+  }, [isUsingBrush]);
 
   return (
     <div
@@ -517,7 +609,10 @@ export default function ImageEditor({ image, vendorId, onClose, onSave }: ImageE
               Magic Remove
             </button>
             <button
-              onClick={() => setActiveTool(activeTool === "erase" ? null : "erase")}
+              onClick={() => {
+                console.log("🖌️ Brush Erase clicked, current tool:", activeTool);
+                setActiveTool(activeTool === "erase" ? null : "erase");
+              }}
               disabled={isProcessing}
               className={`px-3 py-2 border rounded-lg text-white text-xs font-medium flex items-center justify-center gap-1.5 transition-all disabled:opacity-50 ${
                 activeTool === "erase"
@@ -546,14 +641,40 @@ export default function ImageEditor({ image, vendorId, onClose, onSave }: ImageE
               onClick={async () => {
                 setIsProcessing(true);
                 try {
-                  alert("Refine Edges will use AI to clean jagged edges - Coming soon!");
+                  const response = await fetch("/api/vendor/media/refine-edges", {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json",
+                      "x-vendor-id": vendorId,
+                    },
+                    body: JSON.stringify({
+                      imageUrl: currentImage,
+                      fileName: image.file_name,
+                      intensity: 1,
+                    }),
+                  });
+
+                  if (!response.ok) throw new Error("Failed to refine edges");
+
+                  const data = await response.json();
+                  if (data.success && data.url) {
+                    setCurrentImage(data.url);
+                    addToHistory(data.url, "Edges Refined");
+                  }
+                } catch (error) {
+                  console.error("Error refining edges:", error);
+                  const errorMessage =
+                    error instanceof Error ? error.message : "Unknown error";
+                  alert(
+                    `Failed to refine edges: ${errorMessage}\n\nCheck console for details.`,
+                  );
                 } finally {
                   setIsProcessing(false);
                 }
               }}
               disabled={isProcessing}
               className="px-3 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-white text-xs font-medium flex items-center justify-center gap-1.5 transition-all disabled:opacity-50"
-              title="Automatically refine edges (Coming soon)"
+              title="Automatically smooth jagged edges"
             >
               <Minimize2 className="w-3.5 h-3.5" />
               Refine Edges
@@ -796,10 +917,6 @@ export default function ImageEditor({ image, vendorId, onClose, onSave }: ImageE
             <div
               className="relative"
               onClick={handleMagicRemoveClick}
-              onMouseDown={startDrawing}
-              onMouseMove={draw}
-              onMouseUp={stopDrawing}
-              onMouseLeave={stopDrawing}
               style={{
                 cursor:
                   activeTool === "magic-remove"
@@ -809,15 +926,42 @@ export default function ImageEditor({ image, vendorId, onClose, onSave }: ImageE
                     : "default",
               }}
             >
+              {/* Hidden original image for brush restore */}
               <img
-                ref={imageRef}
+                ref={originalImageRef}
                 src={currentImage}
-                alt="Editing"
-                className="max-w-full max-h-full object-contain rounded-lg"
-                style={{
-                  filter: `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%)`,
-                }}
+                alt="Original"
+                className="hidden"
+                crossOrigin="anonymous"
               />
+
+              {/* Show canvas when using brush, otherwise show image */}
+              {isUsingBrush ? (
+                <canvas
+                  ref={workingCanvasRef}
+                  onMouseDown={startDrawing}
+                  onMouseMove={draw}
+                  onMouseUp={stopDrawing}
+                  onMouseLeave={stopDrawing}
+                  className="max-w-full max-h-full object-contain rounded-lg cursor-crosshair"
+                  style={{
+                    filter: `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%)`,
+                  }}
+                />
+              ) : (
+                <img
+                  ref={imageRef}
+                  src={currentImage}
+                  alt="Editing"
+                  draggable={false}
+                  className="max-w-full max-h-full object-contain rounded-lg select-none"
+                  style={{
+                    filter: `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%)`,
+                    userSelect: "none",
+                    WebkitUserDrag: "none",
+                  }}
+                />
+              )}
               {/* Tool indicators */}
               {activeTool === "magic-remove" && (
                 <div className="absolute top-2 right-2 px-3 py-2 bg-black/60 backdrop-blur-sm rounded-lg border border-orange-500/50">
@@ -834,16 +978,21 @@ export default function ImageEditor({ image, vendorId, onClose, onSave }: ImageE
                   <div className="text-xs text-white/80 font-medium mb-1">
                     {activeTool === "erase" ? "🖌️ Erase Mode" : "↩️ Restore Mode"}
                   </div>
-                  <div className="text-xs text-white/60">
+                  <div className="text-xs text-white/60 mb-1">
                     Brush: {brushSize}px
                   </div>
-                  <button
-                    onClick={applyBrushMask}
-                    disabled={!maskCanvas}
-                    className="mt-2 w-full px-2 py-1 bg-white/10 hover:bg-white/20 border border-white/20 rounded text-xs text-white disabled:opacity-50"
-                  >
-                    Apply Changes
-                  </button>
+                  <div className="text-xs text-green-400">
+                    Drawing in real-time ✓
+                  </div>
+                  {hasUnsavedBrushChanges && (
+                    <button
+                      onClick={saveBrushChanges}
+                      disabled={isProcessing}
+                      className="mt-2 w-full px-2 py-1 bg-green-500/20 hover:bg-green-500/30 border border-green-500/50 rounded text-xs text-green-400 disabled:opacity-50"
+                    >
+                      Save Now
+                    </button>
+                  )}
                 </div>
               )}
             </div>
