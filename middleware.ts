@@ -1,6 +1,21 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
+import { generateRequestId } from "@/lib/api-logger";
+
+/**
+ * Apply request ID and timing headers to response
+ */
+function applyRequestHeaders(
+  response: NextResponse,
+  requestId: string,
+  startTime: number
+): NextResponse {
+  response.headers.set("X-Request-ID", requestId);
+  const duration = Date.now() - startTime;
+  response.headers.set("X-Response-Time", `${duration.toFixed(2)}ms`);
+  return response;
+}
 
 /**
  * Apply comprehensive security headers to response
@@ -59,6 +74,9 @@ function applySecurityHeaders(response: NextResponse, hostname: string): NextRes
 }
 
 export async function middleware(request: NextRequest) {
+  const startTime = Date.now();
+  const requestId = generateRequestId();
+
   const hostname = request.headers.get("host") || "";
   const pathname = request.nextUrl.pathname;
 
@@ -78,6 +96,7 @@ export async function middleware(request: NextRequest) {
   if (isYachtClubDomain && pathname === "/") {
     const response = NextResponse.next();
     response.headers.set("x-tenant-type", "whaletools");
+    applyRequestHeaders(response, requestId, startTime);
     return applySecurityHeaders(response, hostname);
   }
 
@@ -117,7 +136,9 @@ export async function middleware(request: NextRequest) {
         pathname.startsWith("/returns") ||
         pathname.startsWith("/cookies")))
   ) {
-    return applySecurityHeaders(NextResponse.next(), hostname);
+    const response = NextResponse.next();
+    applyRequestHeaders(response, requestId, startTime);
+    return applySecurityHeaders(response, hostname);
   }
 
   // Check if this is a custom vendor domain
@@ -156,6 +177,7 @@ export async function middleware(request: NextRequest) {
           response.headers.set("x-coming-soon", "true");
           response.headers.set("x-tenant-type", "vendor");
           response.headers.set("x-is-custom-domain", "true");
+          applyRequestHeaders(response, requestId, startTime);
           return applySecurityHeaders(response, hostname);
         }
       }
@@ -172,6 +194,7 @@ export async function middleware(request: NextRequest) {
       response.headers.set("x-vendor-id", domainRecord.vendor_id);
       response.headers.set("x-tenant-type", "vendor");
       response.headers.set("x-is-custom-domain", "true");
+      applyRequestHeaders(response, requestId, startTime);
       return applySecurityHeaders(response, hostname);
     }
 
@@ -193,6 +216,7 @@ export async function middleware(request: NextRequest) {
             const response = NextResponse.next();
             response.headers.set("x-vendor-id", vendor.id);
             response.headers.set("x-coming-soon", "true");
+            applyRequestHeaders(response, requestId, startTime);
             return response;
           }
         }
@@ -204,6 +228,7 @@ export async function middleware(request: NextRequest) {
           const redirect = NextResponse.redirect(url);
           redirect.headers.set("x-vendor-id", vendor.id);
           redirect.headers.set("x-is-subdomain", "true");
+          applyRequestHeaders(redirect, requestId, startTime);
           return redirect;
         }
 
@@ -211,6 +236,7 @@ export async function middleware(request: NextRequest) {
         const response = NextResponse.next();
         response.headers.set("x-vendor-id", vendor.id);
         response.headers.set("x-is-subdomain", "true");
+        applyRequestHeaders(response, requestId, startTime);
         return applySecurityHeaders(response, hostname);
       }
     }
@@ -241,6 +267,7 @@ export async function middleware(request: NextRequest) {
               const response = NextResponse.next();
               response.headers.set("x-vendor-id", vendor.id);
               response.headers.set("x-coming-soon", "true");
+              applyRequestHeaders(response, requestId, startTime);
               return response;
             }
           }
@@ -248,6 +275,7 @@ export async function middleware(request: NextRequest) {
           const response = NextResponse.next();
           response.headers.set("x-vendor-id", vendor.id);
           response.headers.set("x-tenant-type", "vendor");
+          applyRequestHeaders(response, requestId, startTime);
           return applySecurityHeaders(response, hostname);
         }
       } catch (error) {
@@ -258,6 +286,7 @@ export async function middleware(request: NextRequest) {
     // No vendor param on storefront path = blank template mode
     const response = NextResponse.next();
     response.headers.set("x-tenant-type", "template-preview");
+    applyRequestHeaders(response, requestId, startTime);
     return applySecurityHeaders(response, hostname);
   }
 
@@ -265,12 +294,14 @@ export async function middleware(request: NextRequest) {
   if (isYachtClubDomain && pathname === "/") {
     const response = NextResponse.next();
     response.headers.set("x-tenant-type", "whaletools");
+    applyRequestHeaders(response, requestId, startTime);
     return applySecurityHeaders(response, hostname);
   }
 
   // Default: Continue to main Yacht Club marketplace
   const response = NextResponse.next();
   response.headers.set("x-tenant-type", "marketplace");
+  applyRequestHeaders(response, requestId, startTime);
   return applySecurityHeaders(response, hostname);
 }
 

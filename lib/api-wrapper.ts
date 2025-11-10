@@ -29,6 +29,13 @@ import {
   getIdentifier,
   getRateLimitHeaders,
 } from "./redis-rate-limiter";
+import {
+  generateRequestId,
+  logApiRequest,
+  logApiResponse,
+  logApiError,
+  logSecurityEvent,
+} from "./api-logger";
 
 export interface ApiHandlerOptions<TBody = any, TResponse = any> {
   /** Zod schema for request body validation */
@@ -58,6 +65,10 @@ export function apiHandler<TBody = any, TResponse = any>(
     const endpoint = request.nextUrl.pathname;
     const method = request.method;
 
+    // Generate unique request ID for correlation
+    const requestId = generateRequestId();
+    let body: TBody | undefined;
+
     try {
       // 1. Rate limiting
       if (options.rateLimit) {
@@ -67,17 +78,18 @@ export function apiHandler<TBody = any, TResponse = any>(
 
         if (!allowed) {
           const resetTime = await redisRateLimiter.getResetTime(identifier, rateLimitConfig);
-          logger.warn("Rate limit exceeded", {
-            endpoint,
-            method,
-            ip: identifier,
+
+          // Log security event
+          logSecurityEvent("Rate limit exceeded", request, {
+            requestId,
             limit: options.rateLimit,
+            resetTime,
           });
 
           return NextResponse.json(
             {
               success: false,
-              error: rateLimitConfig.message || "Rate limit exceeded",
+              error: ("message" in rateLimitConfig ? rateLimitConfig.message : undefined) || "Rate limit exceeded",
               retryAfter: resetTime,
             },
             {
@@ -87,6 +99,7 @@ export function apiHandler<TBody = any, TResponse = any>(
                 "X-RateLimit-Limit": rateLimitConfig.maxRequests.toString(),
                 "X-RateLimit-Remaining": "0",
                 "X-RateLimit-Reset": resetTime.toString(),
+                "X-Request-ID": requestId,
               },
             },
           );
@@ -102,47 +115,66 @@ export function apiHandler<TBody = any, TResponse = any>(
       }
 
       // 3. Body validation
-      let body: TBody | undefined;
       if (options.bodySchema && (method === "POST" || method === "PUT" || method === "PATCH")) {
         try {
           const rawBody = await request.json();
           body = options.bodySchema.parse(rawBody);
+
+          // Log request with sanitized body
+          logApiRequest(request, body, requestId);
         } catch (error) {
           if (error instanceof z.ZodError) {
-            logger.warn("Validation failed", {
-              endpoint,
-              method,
+            // Log validation failure
+            logSecurityEvent("Validation failed", request, {
+              requestId,
               errors: error.issues,
             });
 
-            return NextResponse.json(
-              {
-                success: false,
-                error: "Validation failed",
-                details: error.issues.map((e) => ({
-                  field: e.path.join("."),
-                  message: e.message,
-                })),
+            const duration = Date.now() - startTime;
+            const responseData = {
+              success: false,
+              error: "Validation failed",
+              details: error.issues.map((e) => ({
+                field: e.path.join("."),
+                message: e.message,
+              })),
+            };
+
+            // Log response
+            logApiResponse(requestId, endpoint, method, 400, responseData, duration);
+
+            return NextResponse.json(responseData, {
+              status: 400,
+              headers: {
+                "X-Request-ID": requestId,
+                "X-Response-Time": `${duration.toFixed(2)}ms`,
               },
-              { status: 400 },
-            );
+            });
           }
           throw error;
         }
+      } else {
+        // Log request without body for GET requests
+        logApiRequest(request, undefined, requestId);
       }
 
       // 4. Execute handler
       const result = await options.handler(request, body);
 
-      // 5. Log success
+      // 5. Calculate duration and prepare response
       const duration = Date.now() - startTime;
-      logger.info(`${method} ${endpoint}`, {
-        duration: `${duration}ms`,
-        status: 200,
-      });
+      const statusCode = 200;
+      const responseData = { success: true, data: result };
+
+      // Log successful response
+      logApiResponse(requestId, endpoint, method, statusCode, responseData, duration);
 
       // 6. Add rate limit headers
-      const headers: Record<string, string> = {};
+      const headers: Record<string, string> = {
+        "X-Request-ID": requestId,
+        "X-Response-Time": `${duration.toFixed(2)}ms`,
+      };
+
       if (options.rateLimit) {
         const rateLimitConfig = RateLimitConfigs[options.rateLimit];
         const identifier = getIdentifier(request);
@@ -150,26 +182,13 @@ export function apiHandler<TBody = any, TResponse = any>(
         Object.assign(headers, rateLimitHeaders);
       }
 
-      return NextResponse.json(
-        { success: true, data: result },
-        {
-          headers: {
-            ...headers,
-            "X-Response-Time": `${duration}ms`,
-          },
-        },
-      );
+      return NextResponse.json(responseData, { headers });
     } catch (error) {
       const err = toError(error);
       const duration = Date.now() - startTime;
 
       // Log error with full context
-      logger.error(`${method} ${endpoint} failed`, err, {
-        duration: `${duration}ms`,
-        endpoint,
-        method,
-        stack: err.stack,
-      });
+      logApiError(requestId, endpoint, method, err, body, duration);
 
       // Call custom error handler if provided
       if (options.onError) {
@@ -177,19 +196,23 @@ export function apiHandler<TBody = any, TResponse = any>(
       }
 
       // Default error response
-      return NextResponse.json(
-        {
-          success: false,
-          error: "An error occurred processing your request",
-          ...(process.env.NODE_ENV === "development" && { message: err.message }),
+      const statusCode = 500;
+      const responseData = {
+        success: false,
+        error: "An error occurred processing your request",
+        ...(process.env.NODE_ENV === "development" && { message: err.message }),
+      };
+
+      // Log error response
+      logApiResponse(requestId, endpoint, method, statusCode, responseData, duration);
+
+      return NextResponse.json(responseData, {
+        status: statusCode,
+        headers: {
+          "X-Request-ID": requestId,
+          "X-Response-Time": `${duration.toFixed(2)}ms`,
         },
-        {
-          status: 500,
-          headers: {
-            "X-Response-Time": `${duration}ms`,
-          },
-        },
-      );
+      });
     }
   };
 }
