@@ -112,6 +112,7 @@ const getCachedProductComplete = unstable_cache(
         },
       };
     } catch (error) {
+      const err = toError(error);
       if (process.env.NODE_ENV === "development") {
         logger.error(`Error fetching product ${productId}:`, err);
       }
@@ -142,6 +143,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       ...data,
     });
   } catch (error) {
+    const err = toError(error);
     if (!err.message?.includes("404")) {
       if (process.env.NODE_ENV === "development") {
         logger.error("Product API error:", err);

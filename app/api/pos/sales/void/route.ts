@@ -31,6 +31,7 @@ async function getAlpineIQClient(supabase: any, vendorId: string): Promise<Alpin
     }
     return null;
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Failed to get AlpineIQ client:", err);
     }
@@ -319,6 +320,7 @@ export async function POST(request: NextRequest) {
           }
         }
       } catch (error) {
+        const err = toError(error);
         logger.error("⚠️  Alpine IQ sync failed (continuing anyway):", err);
 
         // Queue for retry
@@ -378,6 +380,7 @@ export async function POST(request: NextRequest) {
       alpineIQSynced,
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("💥 Error voiding transaction:", err);
     }

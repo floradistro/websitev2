@@ -16,9 +16,9 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("Error fetching products:", err);
+        logger.error("Error fetching products:", error);
       }
-      return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+      return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 
     // Fetch ALL inventory
@@ -87,6 +87,7 @@ export async function GET(request: NextRequest) {
       },
     );
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error in products-cache API:", err);
     }

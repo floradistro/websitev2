@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
       .order("store_name");
 
     if (error) {
-      return NextResponse.json({ error: err.message }, { status: 400 });
+      return NextResponse.json({ error: error.message }, { status: 400 });
     }
 
     return NextResponse.json({ success: true, vendors: data });

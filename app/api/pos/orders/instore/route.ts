@@ -64,9 +64,9 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("❌ Error fetching in-store orders:", err);
+        logger.error("❌ Error fetching in-store orders:", error);
       }
-      return NextResponse.json({ error: err.message }, { status: 500 });
+      return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
     // Filter to only POS sales (exclude online pickup orders that were fulfilled)
@@ -80,6 +80,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ orders: posOrders });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error in in-store orders endpoint:", err);
     }

@@ -178,6 +178,7 @@ export async function POST(request: NextRequest) {
       throw new Error(`Failed to sync vendor repo: ${syncError.message}`);
     }
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("GitHub webhook error:", err);
     }

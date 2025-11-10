@@ -51,6 +51,7 @@ export async function POST(request: NextRequest) {
       message: "Constraint updated successfully",
     });
   } catch (error) {
+    const err = toError(error);
     // Return the SQL so it can be run manually
     const sql = `
 ALTER TABLE public.pos_transactions DROP CONSTRAINT IF EXISTS pos_transactions_transaction_type_check;

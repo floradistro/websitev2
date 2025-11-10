@@ -191,6 +191,7 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("❌ Upscale error:", error.response?.data || err.message);
     }
@@ -312,6 +313,7 @@ export async function PUT(request: NextRequest) {
             wasResized: processImageUrl !== file.url,
           };
         } catch (error) {
+          const err = toError(error);
           throw new Error(`Failed to start prediction for ${file.name}: ${err.message}`);
         }
       });
@@ -380,6 +382,7 @@ export async function PUT(request: NextRequest) {
             },
           };
         } catch (error) {
+          const err = toError(error);
           if (process.env.NODE_ENV === "development") {
             logger.error(`❌ Upscale failed for ${chunk[index].name}:`, err.message);
           }
@@ -424,6 +427,7 @@ export async function PUT(request: NextRequest) {
       errors,
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error:", err);
     }

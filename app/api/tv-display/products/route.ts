@@ -52,9 +52,9 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("❌ Error fetching TV display products:", err);
+        logger.error("❌ Error fetching TV display products:", error);
       }
-      return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+      return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 
     // Fetch parent categories for products that have a parent_id

@@ -162,6 +162,7 @@ export async function POST(request: NextRequest) {
       login_note: `Vendor can login at /vendor/login with email: ${email}`,
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Create vendor error:", err);
     }

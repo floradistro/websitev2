@@ -23,13 +23,14 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("Error loading employees:", err);
+        logger.error("Error loading employees:", error);
       }
-      return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+      return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 
     return NextResponse.json({ success: true, employees: data || [] });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error in vendor employees API:", err);
     }
@@ -144,6 +145,7 @@ export async function POST(request: NextRequest) {
           message: `${first_name} ${last_name} added successfully. Password reset email sent to ${email}.`,
         });
       } catch (error) {
+        const err = toError(error);
         if (process.env.NODE_ENV === "development") {
           logger.error("Error in employee creation:", err);
         }
@@ -201,7 +203,7 @@ export async function POST(request: NextRequest) {
         .eq("vendor_id", vendorId);
 
       if (error) {
-        return NextResponse.json({ success: false, error: err.message }, { status: 400 });
+        return NextResponse.json({ success: false, error: error.message }, { status: 400 });
       }
 
       return NextResponse.json({
@@ -230,7 +232,7 @@ export async function POST(request: NextRequest) {
         .eq("vendor_id", vendorId);
 
       if (error) {
-        return NextResponse.json({ success: false, error: err.message }, { status: 400 });
+        return NextResponse.json({ success: false, error: error.message }, { status: 400 });
       }
 
       return NextResponse.json({
@@ -284,9 +286,9 @@ export async function POST(request: NextRequest) {
 
       if (error) {
         if (process.env.NODE_ENV === "development") {
-          logger.error("Error assigning locations:", err);
+          logger.error("Error assigning locations:", error);
         }
-        return NextResponse.json({ success: false, error: err.message }, { status: 400 });
+        return NextResponse.json({ success: false, error: error.message }, { status: 400 });
       }
 
       return NextResponse.json({
@@ -402,7 +404,7 @@ export async function POST(request: NextRequest) {
         .eq("vendor_id", vendorId);
 
       if (error) {
-        return NextResponse.json({ success: false, error: err.message }, { status: 400 });
+        return NextResponse.json({ success: false, error: error.message }, { status: 400 });
       }
 
       return NextResponse.json({
@@ -419,6 +421,7 @@ export async function POST(request: NextRequest) {
       { status: 400 },
     );
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error in vendor employees API:", err);
     }

@@ -119,9 +119,9 @@ export async function PATCH(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("Bulk update error:", err);
+        logger.error("Bulk update error:", error);
       }
-      return NextResponse.json({ error: err.message }, { status: 500 });
+      return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
     return NextResponse.json({
@@ -138,6 +138,7 @@ export async function PATCH(request: NextRequest) {
       },
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Bulk update products error:", err);
     }
@@ -162,9 +163,9 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("Bulk approve error:", err);
+        logger.error("Bulk approve error:", error);
       }
-      return NextResponse.json({ error: err.message }, { status: 500 });
+      return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
     return NextResponse.json({
@@ -181,6 +182,7 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Bulk approve products error:", err);
     }

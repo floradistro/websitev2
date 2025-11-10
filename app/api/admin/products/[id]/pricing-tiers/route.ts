@@ -20,10 +20,10 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("Get tiers error:", err);
+        logger.error("Get tiers error:", error);
       }
       return NextResponse.json(
-        { error: "Failed to get pricing tiers", details: err.message },
+        { error: "Failed to get pricing tiers", details: error.message },
         { status: 500 },
       );
     }
@@ -103,6 +103,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       message: `Updated ${tiers.length} pricing tiers`,
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Update pricing tiers error:", err);
     }

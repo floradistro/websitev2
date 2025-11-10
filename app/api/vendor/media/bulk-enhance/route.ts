@@ -88,6 +88,7 @@ async function enhanceImage(
         url: publicUrl,
       };
     } catch (error) {
+      const err = toError(error);
       lastError = error;
 
       if (error.response?.status === 429 && attempt < retries) {
@@ -158,6 +159,7 @@ export async function POST(request: NextRequest) {
       errors,
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error:", err);
     }

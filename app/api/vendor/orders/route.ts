@@ -323,6 +323,7 @@ export async function GET(request: NextRequest) {
       },
     );
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("❌ Vendor orders API error:", err);
     }

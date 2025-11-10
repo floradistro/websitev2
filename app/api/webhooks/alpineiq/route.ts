@@ -287,6 +287,7 @@ export async function POST(request: NextRequest) {
       processed_at: new Date().toISOString(),
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Webhook error:", err);
     }

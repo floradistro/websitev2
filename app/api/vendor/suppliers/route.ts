@@ -46,9 +46,9 @@ export async function GET(request: NextRequest) {
 
       if (error) {
         if (process.env.NODE_ENV === "development") {
-          logger.error("Error fetching suppliers:", err);
+          logger.error("Error fetching suppliers:", error);
         }
-        return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+        return NextResponse.json({ success: false, error: error.message }, { status: 500 });
       }
 
       const filtered = allSuppliers?.filter((supplier) => {
@@ -69,9 +69,9 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("Error fetching suppliers:", err);
+        logger.error("Error fetching suppliers:", error);
       }
-      return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+      return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 
     return NextResponse.json({
@@ -80,6 +80,7 @@ export async function GET(request: NextRequest) {
       count: count || suppliers?.length || 0,
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error in GET /api/vendor/suppliers:", err);
     }
@@ -140,9 +141,9 @@ export async function POST(request: NextRequest) {
 
         if (error) {
           if (process.env.NODE_ENV === "development") {
-            logger.error("❌ Error creating supplier:", err);
+            logger.error("❌ Error creating supplier:", error);
           }
-          return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+          return NextResponse.json({ success: false, error: error.message }, { status: 500 });
         }
 
         if (!newSupplier) {
@@ -210,9 +211,9 @@ export async function POST(request: NextRequest) {
 
         if (error) {
           if (process.env.NODE_ENV === "development") {
-            logger.error("❌ Error updating supplier:", err);
+            logger.error("❌ Error updating supplier:", error);
           }
-          return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+          return NextResponse.json({ success: false, error: error.message }, { status: 500 });
         }
 
         if (!updatedSupplier) {
@@ -259,9 +260,9 @@ export async function POST(request: NextRequest) {
 
         if (error) {
           if (process.env.NODE_ENV === "development") {
-            logger.error("❌ Error deleting supplier:", err);
+            logger.error("❌ Error deleting supplier:", error);
           }
-          return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+          return NextResponse.json({ success: false, error: error.message }, { status: 500 });
         }
 
         if (!deletedSupplier) {
@@ -291,6 +292,7 @@ export async function POST(request: NextRequest) {
         );
     }
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error in POST /api/vendor/suppliers:", err);
     }

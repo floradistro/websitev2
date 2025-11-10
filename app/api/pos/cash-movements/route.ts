@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("Error fetching cash movements:", err);
+        logger.error("Error fetching cash movements:", error);
       }
       return NextResponse.json({ error: "Failed to fetch cash movements" }, { status: 500 });
     }
@@ -76,6 +76,7 @@ export async function GET(request: NextRequest) {
       summary,
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error in GET /api/pos/cash-movements:", err);
     }
@@ -138,7 +139,7 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("Error creating cash movement:", err);
+        logger.error("Error creating cash movement:", error);
       }
       return NextResponse.json({ error: "Failed to create cash movement" }, { status: 500 });
     }
@@ -149,6 +150,7 @@ export async function POST(request: NextRequest) {
       message: `Cash movement recorded: ${reason}`,
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error in POST /api/pos/cash-movements:", err);
     }

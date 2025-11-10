@@ -19,7 +19,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     if (error) {
       return NextResponse.json(
-        { error: "Customer not found", details: err.message },
+        { error: "Customer not found", details: error.message },
         { status: 404 },
       );
     }

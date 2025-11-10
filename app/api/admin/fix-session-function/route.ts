@@ -124,7 +124,7 @@ $function$;
     if (error) {
       // If exec_sql doesn't exist, log the SQL for manual execution
       if (process.env.NODE_ENV === "development") {
-        logger.error("❌ Could not execute via RPC:", err);
+        logger.error("❌ Could not execute via RPC:", error);
       }
       return NextResponse.json(
         {
@@ -143,6 +143,7 @@ $function$;
       details: "walk_in_sales type changed from numeric to integer",
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("❌ Error fixing function:", err);
     }

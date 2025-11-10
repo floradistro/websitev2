@@ -127,6 +127,7 @@ export async function POST(request: NextRequest) {
       message: `Session ${sessionNumber} opened successfully`,
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error in open session endpoint:", err);
     }

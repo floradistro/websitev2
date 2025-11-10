@@ -175,6 +175,7 @@ export async function POST(request: NextRequest) {
       duration_ms: Date.now() - startTime,
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("💥 Diagnostic failed:", err);
     }
@@ -222,7 +223,7 @@ async function createTestOrder(supabase: any, paymentMethod: string, sequence: n
     error: error
       ? {
           code: error.code,
-          message: err.message,
+          message: error.message,
         }
       : null,
   };

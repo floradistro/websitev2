@@ -208,6 +208,7 @@ export async function POST(request: NextRequest) {
 
     return response;
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("❌ Login error:", err);
     }

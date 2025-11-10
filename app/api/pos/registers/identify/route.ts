@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
 
       if (error) {
         if (process.env.NODE_ENV === "development") {
-          logger.error("Error claiming register:", err);
+          logger.error("Error claiming register:", error);
         }
         return NextResponse.json({ error: "Failed to claim register" }, { status: 500 });
       }
@@ -88,6 +88,7 @@ export async function POST(request: NextRequest) {
       message: "Please select a register for this device",
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error in POST /api/pos/registers/identify:", err);
     }

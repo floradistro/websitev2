@@ -63,9 +63,9 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("[Customer API] Error:", err);
+        logger.error("[Customer API] Error:", error);
       }
-      return NextResponse.json({ error: err.message }, { status: 500 });
+      return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
     // Format customers
@@ -124,6 +124,7 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
       },
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("[Customer API] Error:", err);
     }

@@ -59,6 +59,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       rule,
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Automation rule update error:", err);
     }
@@ -106,6 +107,7 @@ export async function DELETE(
       message: "Automation rule deleted",
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Automation rule deletion error:", err);
     }

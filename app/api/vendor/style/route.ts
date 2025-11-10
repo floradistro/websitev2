@@ -54,6 +54,7 @@ export async function GET(request: NextRequest) {
       style: null, // Will use default in hook
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error fetching style:", err);
     }
@@ -88,6 +89,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error updating style:", err);
     }

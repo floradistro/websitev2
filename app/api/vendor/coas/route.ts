@@ -173,6 +173,7 @@ export async function GET(request: NextRequest) {
       total: transformedCoas.length,
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Vendor COAs API error:", err);
     }
@@ -291,6 +292,7 @@ export async function POST(request: NextRequest) {
       message: "COA uploaded successfully and pending verification",
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("COA upload error:", err);
     }
@@ -353,6 +355,7 @@ export async function PUT(request: NextRequest) {
       message: "COA assigned to product successfully",
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("COA update error:", err);
     }
@@ -408,6 +411,7 @@ export async function DELETE(request: NextRequest) {
       message: "COA deleted successfully",
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("COA delete error:", err);
     }

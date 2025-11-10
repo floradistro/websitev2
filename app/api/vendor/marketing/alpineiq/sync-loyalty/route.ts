@@ -113,6 +113,7 @@ export async function POST(request: NextRequest) {
           });
         }
       } catch (error) {
+        const err = toError(error);
         if (process.env.NODE_ENV === "development") {
           logger.error(`Failed to lookup ${customer.email}:`, err);
         }
@@ -162,6 +163,7 @@ export async function POST(request: NextRequest) {
           });
         }
       } catch (error) {
+        const err = toError(error);
         if (process.env.NODE_ENV === "development") {
           logger.error("Error processing member:", err);
         }
@@ -177,6 +179,7 @@ export async function POST(request: NextRequest) {
       sample: results.slice(0, 5),
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Loyalty sync error:", err);
     }

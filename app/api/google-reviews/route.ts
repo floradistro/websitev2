@@ -34,6 +34,7 @@ async function findPlaceId(query: string): Promise<string | null> {
     }
     return null;
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error searching place:", err);
     }
@@ -61,6 +62,7 @@ async function getPlaceDetails(placeId: string) {
     }
     return null;
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error fetching place details:", err);
     }
@@ -139,6 +141,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json(details);
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error in Google Reviews API:", err);
     }

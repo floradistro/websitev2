@@ -91,6 +91,7 @@ export async function POST(request: NextRequest) {
       application,
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Submit wholesale application error:", err);
     }
@@ -139,16 +140,17 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("Get applications error:", err);
+        logger.error("Get applications error:", error);
       }
       return NextResponse.json(
-        { error: "Failed to get applications", details: err.message },
+        { error: "Failed to get applications", details: error.message },
         { status: 500 },
       );
     }
 
     return NextResponse.json({ applications });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Get wholesale applications error:", err);
     }

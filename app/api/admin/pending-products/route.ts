@@ -16,12 +16,12 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("❌ Error fetching pending products:", err);
+        logger.error("❌ Error fetching pending products:", error);
       }
       return NextResponse.json(
         {
           success: false,
-          error: err.message,
+          error: error.message,
           pending: [],
         },
         { status: 500 },
@@ -108,6 +108,7 @@ export async function GET(request: NextRequest) {
       count: pendingProducts.length,
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Get pending products error:", err);
     }

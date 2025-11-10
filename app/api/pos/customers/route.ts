@@ -237,6 +237,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ customers, total: totalCount || 0 });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error in customers endpoint:", err);
     }

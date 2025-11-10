@@ -79,6 +79,7 @@ Respond with ONLY the JSON, no other text.`,
 
     return analysis;
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("❌ AI analysis error:", err.message);
     }
@@ -133,9 +134,9 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("❌ Error listing files:", err);
+        logger.error("❌ Error listing files:", error);
       }
-      return NextResponse.json({ error: err.message }, { status: 500 });
+      return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
     // Get smart collections stats
@@ -151,6 +152,7 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
       smart_collections: stats?.[0] || null,
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error:", err);
     }
@@ -302,6 +304,7 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
         : null,
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error:", err);
     }
@@ -344,9 +347,9 @@ export const PATCH = withErrorHandler(async (request: NextRequest) => {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("❌ Update error:", err);
+        logger.error("❌ Update error:", error);
       }
-      return NextResponse.json({ error: err.message }, { status: 500 });
+      return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
     return NextResponse.json({
@@ -354,6 +357,7 @@ export const PATCH = withErrorHandler(async (request: NextRequest) => {
       file: data,
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error:", err);
     }
@@ -420,6 +424,7 @@ export const DELETE = withErrorHandler(async (request: NextRequest) => {
       message: "File deleted successfully",
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error:", err);
     }

@@ -40,9 +40,9 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("Error fetching reviews:", err);
+        logger.error("Error fetching reviews:", error);
       }
-      return NextResponse.json({ error: err.message }, { status: 500 });
+      return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
     // Map to frontend format
@@ -64,6 +64,7 @@ export async function GET(request: NextRequest) {
       reviews: mappedReviews,
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Reviews API error:", err);
     }
@@ -105,9 +106,9 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("Error updating review:", err);
+        logger.error("Error updating review:", error);
       }
-      return NextResponse.json({ error: err.message }, { status: 500 });
+      return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
     return NextResponse.json({
@@ -115,6 +116,7 @@ export async function POST(request: NextRequest) {
       review,
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Review response error:", err);
     }

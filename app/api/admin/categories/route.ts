@@ -45,6 +45,7 @@ export async function GET() {
       categories: categories || [],
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error fetching categories:", err);
     }
@@ -106,6 +107,7 @@ export async function POST(request: NextRequest) {
       category: data,
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error creating category:", err);
     }
@@ -166,6 +168,7 @@ export async function PATCH(request: NextRequest) {
       category: data,
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error updating category:", err);
     }
@@ -245,6 +248,7 @@ export async function DELETE(request: NextRequest) {
       message: "Category deleted successfully",
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error deleting category:", err);
     }

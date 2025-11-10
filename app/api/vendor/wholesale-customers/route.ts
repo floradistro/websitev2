@@ -50,9 +50,9 @@ export async function GET(request: NextRequest) {
 
       if (error) {
         if (process.env.NODE_ENV === "development") {
-          logger.error("Error fetching wholesale customers:", err);
+          logger.error("Error fetching wholesale customers:", error);
         }
-        return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+        return NextResponse.json({ success: false, error: error.message }, { status: 500 });
       }
 
       const filtered = allCustomers?.filter((customer) => {
@@ -73,9 +73,9 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("Error fetching wholesale customers:", err);
+        logger.error("Error fetching wholesale customers:", error);
       }
-      return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+      return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 
     return NextResponse.json({
@@ -84,6 +84,7 @@ export async function GET(request: NextRequest) {
       count: count || customers?.length || 0,
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error in GET /api/vendor/wholesale-customers:", err);
     }
@@ -153,9 +154,9 @@ export async function POST(request: NextRequest) {
 
         if (error) {
           if (process.env.NODE_ENV === "development") {
-            logger.error("Error creating wholesale customer:", err);
+            logger.error("Error creating wholesale customer:", error);
           }
-          return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+          return NextResponse.json({ success: false, error: error.message }, { status: 500 });
         }
 
         return NextResponse.json({
@@ -222,9 +223,9 @@ export async function POST(request: NextRequest) {
 
         if (error) {
           if (process.env.NODE_ENV === "development") {
-            logger.error("Error updating wholesale customer:", err);
+            logger.error("Error updating wholesale customer:", error);
           }
-          return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+          return NextResponse.json({ success: false, error: error.message }, { status: 500 });
         }
 
         return NextResponse.json({
@@ -258,9 +259,9 @@ export async function POST(request: NextRequest) {
 
         if (error) {
           if (process.env.NODE_ENV === "development") {
-            logger.error("Error deleting wholesale customer:", err);
+            logger.error("Error deleting wholesale customer:", error);
           }
-          return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+          return NextResponse.json({ success: false, error: error.message }, { status: 500 });
         }
 
         return NextResponse.json({
@@ -277,6 +278,7 @@ export async function POST(request: NextRequest) {
         );
     }
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error in POST /api/vendor/wholesale-customers:", err);
     }

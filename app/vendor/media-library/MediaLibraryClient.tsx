@@ -980,7 +980,7 @@ export default function MediaLibraryClient() {
               })()}
               {galleryProduct && vendor ? (
                 /* GALLERY MODE */
-                <div className="h-full">
+                <div className="relative h-full w-full">
                   <ProductGallery
                     product={galleryProduct}
                     vendorId={vendor.id}

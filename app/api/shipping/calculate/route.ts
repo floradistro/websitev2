@@ -67,6 +67,7 @@ export async function POST(request: NextRequest) {
       rates,
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Shipping calculation error:", err);
     }

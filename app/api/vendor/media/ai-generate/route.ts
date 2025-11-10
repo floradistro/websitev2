@@ -92,6 +92,7 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
       message: "Image generated successfully (pending approval)",
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error:", err);
     }

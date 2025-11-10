@@ -131,6 +131,7 @@ export async function POST(request: NextRequest) {
       message: `Order ${order.order_number} fulfilled successfully`,
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error in POS fulfill endpoint:", err);
     }

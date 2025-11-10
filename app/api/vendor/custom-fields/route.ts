@@ -30,6 +30,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ success: true, customFields });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error fetching custom fields:", err);
     }
@@ -109,6 +110,7 @@ export async function POST(request: NextRequest) {
       message: "Custom field added successfully",
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error adding custom field:", err);
     }
@@ -165,6 +167,7 @@ export async function DELETE(request: NextRequest) {
       message: "Custom field removed successfully",
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error deleting custom field:", err);
     }

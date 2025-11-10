@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("Error fetching vendors:", err);
+        logger.error("Error fetching vendors:", error);
       }
       return NextResponse.json(
         { success: false, error: "Failed to fetch vendors" },
@@ -30,6 +30,7 @@ export async function GET(request: NextRequest) {
       vendors,
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Get vendors error:", err);
     }
@@ -66,7 +67,7 @@ export async function PATCH(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("Error updating vendor POS status:", err);
+        logger.error("Error updating vendor POS status:", error);
       }
       return NextResponse.json(
         { success: false, error: "Failed to update vendor POS status" },
@@ -80,6 +81,7 @@ export async function PATCH(request: NextRequest) {
       message: `POS ${pos_enabled ? "enabled" : "disabled"} for ${vendor.store_name}`,
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Update vendor POS error:", err);
     }

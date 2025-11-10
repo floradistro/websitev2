@@ -69,10 +69,10 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("❌ Error fetching admin products:", err);
+        logger.error("❌ Error fetching admin products:", error);
       }
       return NextResponse.json(
-        { error: "Failed to fetch products", details: err.message },
+        { error: "Failed to fetch products", details: error.message },
         { status: 500 },
       );
     }
@@ -373,6 +373,7 @@ export async function DELETE(request: NextRequest) {
       message: "Product deleted successfully",
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Delete product error:", err);
     }

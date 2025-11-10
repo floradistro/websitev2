@@ -82,6 +82,7 @@ export async function POST(request: NextRequest) {
       ai_ready: true,
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error in AI field creation:", err);
     }
@@ -145,6 +146,7 @@ export async function PATCH(request: NextRequest) {
       message: "Field updated successfully",
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error in AI field update:", err);
     }
@@ -187,6 +189,7 @@ export async function DELETE(request: NextRequest) {
       message: "Field removed successfully",
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error in AI field deletion:", err);
     }

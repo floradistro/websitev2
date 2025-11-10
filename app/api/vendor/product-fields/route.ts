@@ -173,6 +173,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error fetching product fields:", err);
     }
@@ -244,6 +245,7 @@ export async function POST(request: NextRequest) {
       message: "Product field added successfully",
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error adding product field:", err);
     }
@@ -303,6 +305,7 @@ export async function PUT(request: NextRequest) {
       message: "Product field updated successfully",
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error updating product field:", err);
     }
@@ -345,6 +348,7 @@ export async function DELETE(request: NextRequest) {
       message: "Product field deleted successfully",
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error deleting product field:", err);
     }

@@ -33,6 +33,7 @@ export async function GET(request: NextRequest) {
       field_groups: data || [],
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error fetching field groups:", err);
     }
@@ -81,6 +82,7 @@ export async function POST(request: NextRequest) {
       field_group: data,
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error creating field group:", err);
     }
@@ -123,6 +125,7 @@ export async function PUT(request: NextRequest) {
       field_group: data,
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error updating field group:", err);
     }
@@ -152,6 +155,7 @@ export async function DELETE(request: NextRequest) {
       message: "Field group deleted successfully",
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error deleting field group:", err);
     }

@@ -61,7 +61,7 @@ COMMENT ON FUNCTION increment_session_counter IS
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("❌ Could not execute via RPC:", err);
+        logger.error("❌ Could not execute via RPC:", error);
       }
       return NextResponse.json(
         {
@@ -79,6 +79,7 @@ COMMENT ON FUNCTION increment_session_counter IS
       message: "increment_session_counter function created successfully",
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("❌ Error creating function:", err);
     }

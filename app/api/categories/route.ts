@@ -47,6 +47,7 @@ export async function GET(request: NextRequest) {
       categories: categories || [],
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Categories API error:", err);
     }
@@ -113,6 +114,7 @@ export async function POST(request: NextRequest) {
       category,
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Create category error:", err);
     }
@@ -186,6 +188,7 @@ export async function PUT(request: NextRequest) {
       category,
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Update category error:", err);
     }
@@ -252,6 +255,7 @@ export async function DELETE(request: NextRequest) {
       message: "Category deleted successfully",
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Delete category error:", err);
     }

@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("❌ Atomic session error:", err);
+        logger.error("❌ Atomic session error:", error);
       }
       // Fallback: If function doesn't exist, use the old approach
       // (This will happen until SQL is run in Supabase)
@@ -132,6 +132,7 @@ export async function POST(request: NextRequest) {
       message: "Enterprise-grade atomic session management",
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("❌ Session endpoint error:", err);
     }

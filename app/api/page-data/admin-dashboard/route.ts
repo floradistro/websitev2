@@ -192,6 +192,7 @@ export async function GET(request: NextRequest) {
       },
     );
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("❌ Error in /api/page-data/admin-dashboard:", err);
     }

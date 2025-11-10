@@ -211,6 +211,7 @@ export async function POST(request: NextRequest) {
       message: "Items received successfully",
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error in receive items API:", err);
     }

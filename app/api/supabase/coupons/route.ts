@@ -30,9 +30,9 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("Error fetching coupons:", err);
+        logger.error("Error fetching coupons:", error);
       }
-      return NextResponse.json({ error: err.message }, { status: 500 });
+      return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
     return NextResponse.json({
@@ -40,6 +40,7 @@ export async function GET(request: NextRequest) {
       coupons: data || [],
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error:", err);
     }
@@ -121,6 +122,7 @@ export async function POST(request: NextRequest) {
       coupon,
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error:", err);
     }

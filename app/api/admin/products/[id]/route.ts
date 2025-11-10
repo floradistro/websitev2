@@ -36,10 +36,10 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("Get product error:", err);
+        logger.error("Get product error:", error);
       }
       return NextResponse.json(
-        { error: "Product not found", details: err.message },
+        { error: "Product not found", details: error.message },
         { status: 404 },
       );
     }
@@ -108,6 +108,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       product,
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Update product error:", err);
     }

@@ -56,9 +56,9 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("❌ Products fetch error:", err);
+        logger.error("❌ Products fetch error:", error);
       }
-      return NextResponse.json({ error: err.message }, { status: 500 });
+      return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
     // Transform to include category info
@@ -83,6 +83,7 @@ export async function GET(request: NextRequest) {
       total: transformedProducts.length,
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error:", err);
     }

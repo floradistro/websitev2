@@ -22,7 +22,7 @@ export async function GET() {
       try {
         const { data, error } = await supabase.from(table).select("*").limit(0);
 
-        results[table] = error ? { exists: false, error: err.message } : { exists: true };
+        results[table] = error ? { exists: false, error: error.message } : { exists: true };
       } catch (err: any) {
         results[table] = { exists: false, error: err.message };
       }
@@ -33,6 +33,7 @@ export async function GET() {
       tables: results,
     });
   } catch (error) {
+    const err = toError(error);
     return NextResponse.json(
       {
         success: false,

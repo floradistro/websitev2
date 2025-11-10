@@ -39,7 +39,7 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
           .order("created_at", { ascending: false });
 
         if (error) {
-          logger.error("Error fetching vendor products:", err);
+          logger.error("Error fetching vendor products:", error);
           throw error;
         }
 
@@ -53,6 +53,7 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
       products,
     });
   } catch (error) {
+    const err = toError(error);
     logger.error("Get vendor products error:", err);
     return NextResponse.json(
       { error: err.message || "Failed to fetch products" },
@@ -344,6 +345,7 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
       message: "Product submitted for approval",
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("❌ Create product error:", err);
     }
@@ -429,6 +431,7 @@ export const DELETE = withErrorHandler(async (request: NextRequest) => {
       message: "Product deleted successfully",
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Delete product error:", err);
     }

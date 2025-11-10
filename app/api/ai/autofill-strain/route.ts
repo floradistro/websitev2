@@ -298,6 +298,7 @@ Return ONLY JSON.`,
           await sendProgress(`Saved successfully`);
           await sendComplete(product.id, strainData);
         } catch (error) {
+          const err = toError(error);
           if (process.env.NODE_ENV === "development") {
             logger.error(`Error processing product ${product.id}:`, err);
           }
@@ -309,6 +310,7 @@ Return ONLY JSON.`,
       await sendProgress(`\n---\n\n## Batch Complete\n\nProcessed ${products.length} products`);
       await writer.close();
     } catch (error) {
+      const err = toError(error);
       if (process.env.NODE_ENV === "development") {
         logger.error("Fatal error:", err);
       }

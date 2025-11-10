@@ -24,10 +24,10 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("Get vendor error:", err);
+        logger.error("Get vendor error:", error);
       }
       return NextResponse.json(
-        { error: "Vendor not found", details: err.message },
+        { error: "Vendor not found", details: error.message },
         { status: 404 },
       );
     }
@@ -93,6 +93,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       vendor,
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Update vendor error:", err);
     }

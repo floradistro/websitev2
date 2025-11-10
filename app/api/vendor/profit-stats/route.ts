@@ -28,12 +28,12 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("Error fetching products for profit stats:", err);
+        logger.error("Error fetching products for profit stats:", error);
       }
       return NextResponse.json(
         {
           success: false,
-          error: err.message,
+          error: error.message,
         },
         { status: 500 },
       );
@@ -101,6 +101,7 @@ export async function GET(request: NextRequest) {
       stats,
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("❌ Profit stats error:", err);
     }

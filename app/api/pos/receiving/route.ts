@@ -48,9 +48,9 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("Error fetching POs for POS:", err);
+        logger.error("Error fetching POs for POS:", error);
       }
-      return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+      return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 
     // Filter out POs where all items are fully received
@@ -65,6 +65,7 @@ export async function GET(request: NextRequest) {
       count: activePOs.length,
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error in POS receiving API:", err);
     }

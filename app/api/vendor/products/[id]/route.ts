@@ -130,6 +130,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       },
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Product GET error:", err);
     }
@@ -323,6 +324,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       product: updated,
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Product PUT error:", err);
     }
@@ -393,6 +395,7 @@ export async function DELETE(
       message: `Product "${existing.name}" deleted successfully`,
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Product DELETE error:", err);
     }

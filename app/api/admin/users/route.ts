@@ -22,13 +22,14 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("Error loading users:", err);
+        logger.error("Error loading users:", error);
       }
-      return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+      return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 
     return NextResponse.json({ success: true, users: data || [] });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error in users API:", err);
     }
@@ -146,6 +147,7 @@ export async function POST(request: NextRequest) {
           message: `User ${first_name} ${last_name} created successfully. Password reset email sent to ${email}.`,
         });
       } catch (error) {
+        const err = toError(error);
         if (process.env.NODE_ENV === "development") {
           logger.error("Error in user creation:", err);
         }
@@ -184,9 +186,9 @@ export async function POST(request: NextRequest) {
 
       if (error) {
         if (process.env.NODE_ENV === "development") {
-          logger.error("Error updating user:", err);
+          logger.error("Error updating user:", error);
         }
-        return NextResponse.json({ success: false, error: err.message }, { status: 400 });
+        return NextResponse.json({ success: false, error: error.message }, { status: 400 });
       }
 
       return NextResponse.json({
@@ -214,7 +216,7 @@ export async function POST(request: NextRequest) {
         .eq("id", user_id);
 
       if (error) {
-        return NextResponse.json({ success: false, error: err.message }, { status: 400 });
+        return NextResponse.json({ success: false, error: error.message }, { status: 400 });
       }
 
       return NextResponse.json({
@@ -240,9 +242,9 @@ export async function POST(request: NextRequest) {
 
       if (error) {
         if (process.env.NODE_ENV === "development") {
-          logger.error("Error deleting user:", err);
+          logger.error("Error deleting user:", error);
         }
-        return NextResponse.json({ success: false, error: err.message }, { status: 400 });
+        return NextResponse.json({ success: false, error: error.message }, { status: 400 });
       }
 
       return NextResponse.json({
@@ -259,6 +261,7 @@ export async function POST(request: NextRequest) {
       { status: 400 },
     );
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error in users API:", err);
     }

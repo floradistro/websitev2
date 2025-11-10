@@ -23,7 +23,7 @@ export async function GET(
       .order("filepath");
 
     if (error) {
-      return NextResponse.json({ error: err.message }, { status: 500 });
+      return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
     // Find the page.tsx content
@@ -75,6 +75,7 @@ export async function GET(
       headers: { "Content-Type": "text/html" },
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Preview error:", err);
     }

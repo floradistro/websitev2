@@ -65,10 +65,10 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("Error fetching locations:", err);
+        logger.error("Error fetching locations:", error);
       }
       endTimer();
-      return NextResponse.json({ error: err.message }, { status: 500 });
+      return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
     // Store in cache
@@ -87,6 +87,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error:", err);
     }
@@ -147,6 +148,7 @@ export async function POST(request: NextRequest) {
       location,
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error:", err);
     }

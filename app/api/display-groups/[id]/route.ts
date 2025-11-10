@@ -19,15 +19,16 @@ export async function DELETE(
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("Error deleting display group:", err);
+        logger.error("Error deleting display group:", error);
       }
-      return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+      return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 
     return NextResponse.json({
       success: true,
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Display group DELETE error:", err);
     }
@@ -104,6 +105,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       group,
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Display group PUT error:", err);
     }

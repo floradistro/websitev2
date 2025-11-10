@@ -32,6 +32,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       template,
     });
   } catch (error) {
+    const err = toError(error);
     logger.error("GET /prompt-templates/[id] error:", err);
     return NextResponse.json({ error: err.message || "Internal server error" }, { status: 500 });
   }
@@ -78,7 +79,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       .single();
 
     if (error) {
-      logger.error("Error updating template:", err);
+      logger.error("Error updating template:", error);
       return NextResponse.json({ error: "Failed to update template" }, { status: 500 });
     }
 
@@ -87,6 +88,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       template,
     });
   } catch (error) {
+    const err = toError(error);
     logger.error("PUT /prompt-templates/[id] error:", err);
     return NextResponse.json({ error: err.message || "Internal server error" }, { status: 500 });
   }
@@ -120,7 +122,7 @@ export async function DELETE(
     const { error } = await supabase.from("prompt_templates").delete().eq("id", id);
 
     if (error) {
-      logger.error("Error deleting template:", err);
+      logger.error("Error deleting template:", error);
       return NextResponse.json({ error: "Failed to delete template" }, { status: 500 });
     }
 
@@ -129,6 +131,7 @@ export async function DELETE(
       message: "Template deleted successfully",
     });
   } catch (error) {
+    const err = toError(error);
     logger.error("DELETE /prompt-templates/[id] error:", err);
     return NextResponse.json({ error: err.message || "Internal server error" }, { status: 500 });
   }
@@ -168,6 +171,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       success: true,
     });
   } catch (error) {
+    const err = toError(error);
     logger.error("POST /prompt-templates/[id] error:", err);
     return NextResponse.json({ error: err.message || "Internal server error" }, { status: 500 });
   }

@@ -45,7 +45,7 @@ export interface ComparisonPeriod {
 // =====================================================
 
 export function parseDateRange(params: URLSearchParams): DateRange {
-  const time_range = params.get("time_range") || "30d";
+  const range = params.get("range") || params.get("time_range") || "30d";
   const custom_start = params.get("start_date");
   const custom_end = params.get("end_date");
 
@@ -59,7 +59,7 @@ export function parseDateRange(params: URLSearchParams): DateRange {
   const end = new Date();
   const start = new Date();
 
-  switch (time_range) {
+  switch (range) {
     case "7d":
       start.setDate(start.getDate() - 7);
       break;
@@ -77,8 +77,8 @@ export function parseDateRange(params: URLSearchParams): DateRange {
   }
 
   return {
-    start_date: start.toISOString().split("T")[0],
-    end_date: end.toISOString().split("T")[0],
+    start_date: start.toISOString(),
+    end_date: end.toISOString(),
   };
 }
 

@@ -88,6 +88,7 @@ export async function GET(req: NextRequest) {
       subCategories: subCategoriesByParent,
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error fetching sub-categories:", err);
     }

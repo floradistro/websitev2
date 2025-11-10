@@ -112,6 +112,7 @@ export async function POST(request: NextRequest) {
         metadata: result.metadata,
       });
     } catch (error) {
+      const err = toError(error);
       if (process.env.NODE_ENV === "development") {
         logger.error("Payment processing error:", err);
       }
@@ -133,6 +134,7 @@ export async function POST(request: NextRequest) {
       );
     }
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Payment API error:", err);
     }
@@ -211,6 +213,7 @@ export async function PUT(request: NextRequest) {
         receiptData: result.receiptData,
       });
     } catch (error) {
+      const err = toError(error);
       if (process.env.NODE_ENV === "development") {
         logger.error("Refund processing error:", err);
       }
@@ -223,6 +226,7 @@ export async function PUT(request: NextRequest) {
       );
     }
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Refund API error:", err);
     }
@@ -295,6 +299,7 @@ export async function DELETE(request: NextRequest) {
         message: result.message,
       });
     } catch (error) {
+      const err = toError(error);
       if (process.env.NODE_ENV === "development") {
         logger.error("Void processing error:", err);
       }
@@ -307,6 +312,7 @@ export async function DELETE(request: NextRequest) {
       );
     }
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Void API error:", err);
     }

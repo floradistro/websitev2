@@ -80,6 +80,7 @@ export async function PUT(request: NextRequest) {
       url: publicUrl,
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error:", err);
     }

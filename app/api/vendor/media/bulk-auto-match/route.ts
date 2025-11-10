@@ -188,6 +188,7 @@ export async function POST(request: NextRequest) {
       results,
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Bulk auto-match error:", err);
     }

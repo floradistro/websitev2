@@ -61,6 +61,7 @@ export async function POST(request: NextRequest) {
     try {
       adminUsers = getAdminUsers();
     } catch (error) {
+      const err = toError(error);
       return NextResponse.json({ error: "Admin authentication not configured" }, { status: 500 });
     }
 
@@ -103,7 +104,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     // Don't log the actual error details in production for security
     if (process.env.NODE_ENV === "development") {
-      logger.error("Admin login error:", err);
+      logger.error("Admin login error:", error);
     }
     return NextResponse.json({ error: "Login failed" }, { status: 500 });
   }

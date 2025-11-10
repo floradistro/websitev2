@@ -89,7 +89,7 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("❌ Supabase error fetching product pricing assignments:", err);
+        logger.error("❌ Supabase error fetching product pricing assignments:", error);
       }
       logger.error("Error details:", JSON.stringify(error, null, 2));
       // Return empty array instead of throwing to prevent modal crashes
@@ -104,6 +104,7 @@ export async function GET(request: NextRequest) {
       assignments: assignments || [],
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("❌ Error fetching product pricing assignments:", err);
     }
@@ -208,6 +209,7 @@ export async function POST(request: NextRequest) {
       assigned_count: validProductIds.length,
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error assigning product pricing:", err);
     }
@@ -251,6 +253,7 @@ export async function PUT(request: NextRequest) {
       assignment: data,
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error updating product pricing assignment:", err);
     }
@@ -298,6 +301,7 @@ export async function DELETE(request: NextRequest) {
       message: "Product pricing assignment removed",
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error removing product pricing assignment:", err);
     }

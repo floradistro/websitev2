@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("Error fetching TV menus:", err);
+        logger.error("Error fetching TV menus:", error);
       }
       throw error;
     }
@@ -58,6 +58,7 @@ export async function GET(request: NextRequest) {
       menus: menus || [],
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("TV menus API error:", err);
     }
@@ -118,7 +119,7 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("Error creating TV menu:", err);
+        logger.error("Error creating TV menu:", error);
       }
       throw error;
     }
@@ -128,6 +129,7 @@ export async function POST(request: NextRequest) {
       menu,
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("TV menu creation error:", err);
     }

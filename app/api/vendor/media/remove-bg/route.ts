@@ -103,6 +103,7 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("❌ Remove.bg error:", error.response?.data || err.message);
     }
@@ -223,6 +224,7 @@ async function processImage(file: { url: string; name: string }, vendorId: strin
         url: cacheBustedUrl,
       };
     } catch (error) {
+      const err = toError(error);
       lastError = error;
 
       // Capture detailed error information
@@ -253,10 +255,10 @@ async function processImage(file: { url: string; name: string }, vendorId: strin
         if (process.env.NODE_ENV === "development") {
           logger.error(`API Response:`, error.response.data);
         }
-      } else if (error.code) {
+      } else if ((error as any).code) {
         // Network errors - retry
         shouldRetry = attempt < retries;
-        errorMessage = `${error.code}: ${err.message}`;
+        errorMessage = `${(error as any).code}: ${err.message}`;
       }
 
       // If we should retry and haven't exhausted retries, continue loop
@@ -297,6 +299,7 @@ async function processInParallel(
 
           return { success: true, result, file };
         } catch (error) {
+          const err = toError(error);
           if (process.env.NODE_ENV === "development") {
             logger.error(`❌ Failed ${index + 1}/${files.length}: ${file.name} - ${err.message}`);
           }
@@ -363,9 +366,10 @@ export async function PUT(request: NextRequest) {
       errors,
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error:", err);
     }
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

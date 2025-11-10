@@ -126,6 +126,7 @@ export async function POST(request: NextRequest) {
                   total: files.length,
                 });
               } catch (error) {
+                const err = toError(error);
                 completedCount++;
                 send({
                   type: "error",
@@ -152,6 +153,7 @@ export async function POST(request: NextRequest) {
           });
           controller.close();
         } catch (error) {
+          const err = toError(error);
           send({ type: "error", error: err.message });
           controller.close();
         }
@@ -166,6 +168,7 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
+    const err = toError(error);
     return new Response(JSON.stringify({ error: err.message }), {
       status: 500,
     });

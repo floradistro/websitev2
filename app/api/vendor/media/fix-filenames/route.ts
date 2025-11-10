@@ -78,6 +78,7 @@ export async function POST(request: NextRequest) {
       total: jpgFiles.length,
     });
   } catch (error) {
+    const err = toError(error);
     logger.error("Error fixing filenames:", err);
     return NextResponse.json({ error: err.message }, { status: 500 });
   }

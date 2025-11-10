@@ -59,9 +59,9 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("Error fetching purchase orders:", err);
+        logger.error("Error fetching purchase orders:", error);
       }
-      return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+      return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 
     return NextResponse.json({
@@ -70,6 +70,7 @@ export async function GET(request: NextRequest) {
       count: purchaseOrders?.length || 0,
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error in GET /api/vendor/purchase-orders:", err);
     }
@@ -430,9 +431,9 @@ export async function POST(request: NextRequest) {
 
         if (error) {
           if (process.env.NODE_ENV === "development") {
-            logger.error("❌ Error updating purchase order status:", err);
+            logger.error("❌ Error updating purchase order status:", error);
           }
-          return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+          return NextResponse.json({ success: false, error: error.message }, { status: 500 });
         }
 
         if (!updatedPO) {
@@ -507,9 +508,9 @@ export async function POST(request: NextRequest) {
 
         if (error) {
           if (process.env.NODE_ENV === "development") {
-            logger.error("❌ Error adding payment:", err);
+            logger.error("❌ Error adding payment:", error);
           }
-          return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+          return NextResponse.json({ success: false, error: error.message }, { status: 500 });
         }
 
         if (!newPayment) {
@@ -821,9 +822,9 @@ export async function POST(request: NextRequest) {
 
         if (error) {
           if (process.env.NODE_ENV === "development") {
-            logger.error("❌ Error updating PO status:", err);
+            logger.error("❌ Error updating PO status:", error);
           }
-          return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+          return NextResponse.json({ success: false, error: error.message }, { status: 500 });
         }
 
         if (!updatedPO) {
@@ -853,6 +854,7 @@ export async function POST(request: NextRequest) {
         );
     }
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error in POST /api/vendor/purchase-orders:", err);
     }

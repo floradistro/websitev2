@@ -27,6 +27,7 @@ export async function POST(request: NextRequest) {
       { status: 501 },
     );
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Apple Pay validation error:", err);
     }

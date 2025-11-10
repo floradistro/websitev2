@@ -51,6 +51,7 @@ export async function DELETE(request: NextRequest) {
       message: "Domain removed successfully",
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error deleting domain:", err);
     }

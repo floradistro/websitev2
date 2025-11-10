@@ -194,6 +194,7 @@ export async function GET(request: NextRequest) {
       pagination: data.pagination,
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Orders API error:", err);
     }
@@ -442,6 +443,7 @@ export async function POST(request: NextRequest) {
     // ============================================================================
     // Push order to Alpine IQ for loyalty points (don't await - let it run in background)
     syncOrderToAlpineIQ(order.id, customer_id).catch((error) => {
+      const err = toError(error);
       logger.error("⚠️ Alpine IQ sync failed (order still created):", err.message);
     });
 
@@ -472,6 +474,7 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("❌ Order creation error:", err);
     }

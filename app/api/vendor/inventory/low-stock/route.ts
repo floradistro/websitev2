@@ -133,6 +133,7 @@ export async function GET(request: NextRequest) {
       threshold_used: threshold,
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error fetching low stock items:", err);
     }
@@ -199,7 +200,7 @@ export async function PATCH(request: NextRequest) {
       .single();
 
     if (error) {
-      throw new Error(err.message);
+      throw new Error(error.message);
     }
 
     return NextResponse.json({
@@ -208,6 +209,7 @@ export async function PATCH(request: NextRequest) {
       message: `Reorder point updated to ${reorder_point}`,
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error updating reorder point:", err);
     }

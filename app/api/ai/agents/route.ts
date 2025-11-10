@@ -16,6 +16,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ agents });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error fetching agents:", err);
     }
@@ -48,6 +49,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ agent }, { status: 201 });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error creating agent:", err);
     }
@@ -72,6 +74,7 @@ export async function PUT(request: NextRequest) {
 
     return NextResponse.json({ agent });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error updating agent:", err);
     }
@@ -95,6 +98,7 @@ export async function DELETE(request: NextRequest) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error deleting agent:", err);
     }

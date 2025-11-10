@@ -30,10 +30,10 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("Automation rules fetch error:", err);
+        logger.error("Automation rules fetch error:", error);
       }
       return NextResponse.json(
-        { error: "Failed to fetch automation rules", message: err.message },
+        { error: "Failed to fetch automation rules", message: error.message },
         { status: 500 },
       );
     }
@@ -57,6 +57,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(rulesWithStats);
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Automation API error:", err);
     }
@@ -119,6 +120,7 @@ export async function POST(request: NextRequest) {
       rule,
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Automation rule creation error:", err);
     }

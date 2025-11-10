@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("Error fetching deployments:", err);
+        logger.error("Error fetching deployments:", error);
       }
       return NextResponse.json(
         { success: false, error: "Failed to fetch deployments" },
@@ -42,6 +42,7 @@ export async function GET(request: NextRequest) {
       data: deployments || [],
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error in deployments endpoint:", err);
     }

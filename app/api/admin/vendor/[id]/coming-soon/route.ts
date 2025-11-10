@@ -23,11 +23,12 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       .single();
 
     if (error) {
-      return NextResponse.json({ error: err.message }, { status: 400 });
+      return NextResponse.json({ error: error.message }, { status: 400 });
     }
 
     return NextResponse.json({ success: true, data });
   } catch (error) {
+    const err = toError(error);
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
@@ -44,11 +45,12 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       .single();
 
     if (error) {
-      return NextResponse.json({ error: err.message }, { status: 400 });
+      return NextResponse.json({ error: error.message }, { status: 400 });
     }
 
     return NextResponse.json({ success: true, data });
   } catch (error) {
+    const err = toError(error);
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }

@@ -77,6 +77,7 @@ export async function POST(request: NextRequest) {
       inventory,
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Create inventory error:", err);
     }

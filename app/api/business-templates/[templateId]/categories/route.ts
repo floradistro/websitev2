@@ -29,6 +29,7 @@ export async function GET(
       categories: categories || [],
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Template categories API error:", err);
     }

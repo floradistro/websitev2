@@ -47,7 +47,7 @@ export async function GET(request: NextRequest) {
     const { data: templates, error } = await query;
 
     if (error) {
-      logger.error("Error fetching templates:", err);
+      logger.error("Error fetching templates:", error);
       return NextResponse.json({ error: "Failed to fetch templates" }, { status: 500 });
     }
 
@@ -57,6 +57,7 @@ export async function GET(request: NextRequest) {
       count: templates?.length || 0,
     });
   } catch (error) {
+    const err = toError(error);
     logger.error("GET /prompt-templates error:", err);
     return NextResponse.json({ error: err.message || "Internal server error" }, { status: 500 });
   }
@@ -100,7 +101,7 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (error) {
-      logger.error("Error creating template:", err);
+      logger.error("Error creating template:", error);
       return NextResponse.json({ error: "Failed to create template" }, { status: 500 });
     }
 
@@ -109,6 +110,7 @@ export async function POST(request: NextRequest) {
       template,
     });
   } catch (error) {
+    const err = toError(error);
     logger.error("POST /prompt-templates error:", err);
     return NextResponse.json({ error: err.message || "Internal server error" }, { status: 500 });
   }

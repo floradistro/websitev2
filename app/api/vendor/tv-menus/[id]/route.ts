@@ -16,7 +16,7 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("Error fetching TV menu:", err);
+        logger.error("Error fetching TV menu:", error);
       }
       throw error;
     }
@@ -26,6 +26,7 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
       menu,
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("TV menu fetch error:", err);
     }
@@ -73,7 +74,7 @@ export async function PUT(request: NextRequest, context: { params: Promise<{ id:
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("Error updating TV menu:", err);
+        logger.error("Error updating TV menu:", error);
       }
       throw error;
     }
@@ -88,6 +89,7 @@ export async function PUT(request: NextRequest, context: { params: Promise<{ id:
       menu,
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("TV menu update error:", err);
     }
@@ -114,7 +116,7 @@ export async function DELETE(request: NextRequest, context: { params: Promise<{ 
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("Error deleting TV menu:", err);
+        logger.error("Error deleting TV menu:", error);
       }
       throw error;
     }
@@ -123,6 +125,7 @@ export async function DELETE(request: NextRequest, context: { params: Promise<{ 
       success: true,
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("TV menu deletion error:", err);
     }
@@ -160,6 +163,7 @@ async function sendMenuUpdateCommand(menuId: string) {
 
     await supabase.from("tv_commands").insert(commands);
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error sending menu update commands:", err);
     }

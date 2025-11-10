@@ -183,6 +183,7 @@ export async function POST(request: NextRequest) {
 
             controller.close();
           } catch (error) {
+            const err = toError(error);
             controller.enqueue(
               encoder.encode(
                 `data: ${JSON.stringify({
@@ -234,6 +235,7 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Claude code gen error:", err);
     }
@@ -612,6 +614,7 @@ export async function GET(request: NextRequest) {
       model: config.model,
     });
   } catch (error) {
+    const err = toError(error);
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }
 }

@@ -179,7 +179,13 @@ export default function ProductGallery({
   logger.debug("🎨 Render state:", { loading, imageCount: images.length, currentIndex, currentImage: currentImage?.file_name });
 
   return (
-    <div className="absolute inset-0 flex flex-col bg-black/95 backdrop-blur-xl z-50 animate-in fade-in slide-in-from-right-4 duration-300">
+    <div className="fixed inset-0 flex flex-col z-[9999]" style={{
+      background: 'linear-gradient(45deg, #ff0000 0%, #00ff00 50%, #0000ff 100%)',
+      border: '20px solid yellow',
+      minHeight: '100vh',
+      minWidth: '100vw'
+    }}>
+      {/* EXTREME DEBUG: Rainbow gradient + thick border */}
       {/* Header */}
       <div className="flex-shrink-0 px-6 py-4 border-b border-white/10">
         <div className="flex items-center justify-between">

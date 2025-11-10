@@ -136,6 +136,7 @@ export async function POST(request: NextRequest) {
       throw new Error(`Failed to sync vendor repo: ${syncError.message}`);
     }
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Deployment error:", err);
     }
@@ -189,6 +190,7 @@ export async function GET(request: NextRequest) {
       commit_message: deployment.commit_message,
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error getting deployment status:", err);
     }

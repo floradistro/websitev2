@@ -32,6 +32,7 @@ export async function GET(request: NextRequest) {
       imports: imports || [],
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Get template imports error:", err);
     }

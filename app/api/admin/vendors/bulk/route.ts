@@ -24,9 +24,9 @@ export async function DELETE(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("Bulk delete vendors error:", err);
+        logger.error("Bulk delete vendors error:", error);
       }
-      return NextResponse.json({ error: err.message }, { status: 500 });
+      return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
     const results = data || [];
@@ -72,9 +72,9 @@ export async function PATCH(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("Bulk update vendors error:", err);
+        logger.error("Bulk update vendors error:", error);
       }
-      return NextResponse.json({ error: err.message }, { status: 500 });
+      return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
     const results = data || [];
@@ -91,6 +91,7 @@ export async function PATCH(request: NextRequest) {
       },
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Bulk update vendors error:", err);
     }

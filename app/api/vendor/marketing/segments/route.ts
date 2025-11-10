@@ -30,10 +30,10 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("Segments fetch error:", err);
+        logger.error("Segments fetch error:", error);
       }
       return NextResponse.json(
-        { error: "Failed to fetch segments", message: err.message },
+        { error: "Failed to fetch segments", message: error.message },
         { status: 500 },
       );
     }
@@ -51,6 +51,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(segmentsWithCounts);
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Segments API error:", err);
     }
@@ -110,6 +111,7 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Segment creation error:", err);
     }

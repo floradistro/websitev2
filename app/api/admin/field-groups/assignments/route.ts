@@ -43,6 +43,7 @@ export async function GET(request: NextRequest) {
       assignments: data || [],
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error fetching assignments:", err);
     }
@@ -90,6 +91,7 @@ export async function POST(request: NextRequest) {
       assignment: data,
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error creating assignment:", err);
     }
@@ -134,6 +136,7 @@ export async function PUT(request: NextRequest) {
       assignment: data,
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error updating assignment:", err);
     }
@@ -163,6 +166,7 @@ export async function DELETE(request: NextRequest) {
       message: "Assignment removed successfully",
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error deleting assignment:", err);
     }

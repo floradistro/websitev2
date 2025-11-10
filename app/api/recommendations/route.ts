@@ -85,6 +85,7 @@ Return ONLY a JSON array of product IDs. Example: [707, 786, 798, 773]`;
     // Fallback if no matches
     throw new Error("No valid recommendations");
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("AI recommendation error:", err);
     }

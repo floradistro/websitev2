@@ -44,11 +44,11 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("Error fetching registers:", err);
+        logger.error("Error fetching registers:", error);
       }
       logger.error("Error details:", JSON.stringify(error, null, 2));
       return NextResponse.json(
-        { error: "Failed to fetch registers", details: err.message },
+        { error: "Failed to fetch registers", details: error.message },
         { status: 500 },
       );
     }
@@ -99,6 +99,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ registers: formattedRegisters });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error in GET /api/pos/registers:", err);
     }
@@ -149,7 +150,7 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("Error creating register:", err);
+        logger.error("Error creating register:", error);
       }
       return NextResponse.json({ error: "Failed to create register" }, { status: 500 });
     }
@@ -160,6 +161,7 @@ export async function POST(request: NextRequest) {
       message: `Register ${registerNumber} created successfully`,
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error in POST /api/pos/registers:", err);
     }

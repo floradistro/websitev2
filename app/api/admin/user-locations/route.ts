@@ -39,12 +39,12 @@ export async function POST(request: NextRequest) {
 
       if (error) {
         if (process.env.NODE_ENV === "development") {
-          logger.error("Error assigning locations:", err);
+          logger.error("Error assigning locations:", error);
         }
         return NextResponse.json(
           {
             success: false,
-            error: err.message,
+            error: error.message,
           },
           { status: 400 },
         );
@@ -56,6 +56,7 @@ export async function POST(request: NextRequest) {
       message: `Assigned to ${location_ids.length} location(s)`,
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error in user-locations API:", err);
     }
@@ -103,12 +104,12 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("Error fetching user locations:", err);
+        logger.error("Error fetching user locations:", error);
       }
       return NextResponse.json(
         {
           success: false,
-          error: err.message,
+          error: error.message,
         },
         { status: 400 },
       );
@@ -119,6 +120,7 @@ export async function GET(request: NextRequest) {
       locations: data || [],
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error in user-locations GET:", err);
     }

@@ -148,6 +148,7 @@ async function searchStrain(name: string, category: string, exa: Exa, attempt: n
 
     return response.results || [];
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error(`❌ [${name}] Search error:`, err.message);
     }
@@ -255,6 +256,7 @@ Use extract_strain tool with ALL available data.`;
       description: data.description || null,
     };
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error(`❌ [${name}] AI error:`, err.message);
     }
@@ -478,6 +480,7 @@ export async function POST(request: NextRequest) {
 
         closeStream();
       } catch (error) {
+        const err = toError(error);
         if (process.env.NODE_ENV === "development") {
           logger.error("❌ Error:", err);
         }

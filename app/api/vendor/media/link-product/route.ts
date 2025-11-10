@@ -44,6 +44,7 @@ export async function POST(request: NextRequest) {
       message: "Product image linked successfully",
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error:", err);
     }
@@ -85,6 +86,7 @@ export async function DELETE(request: NextRequest) {
       message: "Product image unlinked",
     });
   } catch (error) {
+    const err = toError(error);
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }

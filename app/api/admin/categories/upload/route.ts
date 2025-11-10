@@ -93,7 +93,7 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("Supabase storage error:", err);
+        logger.error("Supabase storage error:", error);
       }
       throw error;
     }
@@ -109,6 +109,7 @@ export async function POST(request: NextRequest) {
       path: filePath,
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error uploading category image:", err);
     }
@@ -149,6 +150,7 @@ export async function DELETE(request: NextRequest) {
       message: "Image deleted successfully",
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error deleting category image:", err);
     }

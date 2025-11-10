@@ -54,6 +54,7 @@ export async function GET(request: NextRequest) {
       total: data.pagination?.total || products.length,
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Products cache error:", err);
     }

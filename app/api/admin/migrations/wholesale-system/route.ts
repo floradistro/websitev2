@@ -40,9 +40,9 @@ export async function POST(request: NextRequest) {
           const directResult = await supabase.from("_raw").select("*").limit(0);
           // If that fails, log and continue
           if (process.env.NODE_ENV === "development") {
-            logger.error(`Statement ${i + 1} error:`, err.message);
+            logger.error(`Statement ${i + 1} error:`, error.message);
           }
-          errors.push({ statement: i + 1, error: err.message });
+          errors.push({ statement: i + 1, error: error.message });
         } else {
           successCount++;
         }

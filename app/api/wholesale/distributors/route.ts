@@ -43,9 +43,9 @@ export async function GET(request: NextRequest) {
     const { data: distributors, error, count } = await query;
 
     if (error) {
-      logger.error("Get distributors error:", err);
+      logger.error("Get distributors error:", error);
       return NextResponse.json(
-        { error: "Failed to get distributors", details: err.message },
+        { error: "Failed to get distributors", details: error.message },
         { status: 500 },
       );
     }
@@ -58,6 +58,7 @@ export async function GET(request: NextRequest) {
       totalPages: Math.ceil((count || 0) / limit),
     });
   } catch (error) {
+    const err = toError(error);
     logger.error("Get distributors error:", err);
     return NextResponse.json(
       { error: "Failed to get distributors", details: err.message },

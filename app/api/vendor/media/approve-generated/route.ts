@@ -151,6 +151,7 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
       message: "Image approved and saved successfully",
     });
   } catch (error) {
+    const err = toError(error);
     logger.error("Error:", err);
     return NextResponse.json(
       {

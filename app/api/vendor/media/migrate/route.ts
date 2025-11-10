@@ -57,6 +57,7 @@ Respond with ONLY the JSON.`,
 
     return JSON.parse(jsonMatch[0]);
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("AI analysis error:", err.message);
     }
@@ -238,6 +239,7 @@ export async function POST(request: NextRequest) {
             }
           }
         } catch (error) {
+          const err = toError(error);
           if (process.env.NODE_ENV === "development") {
             logger.error(`❌ Error migrating ${file.name}:`, err.message);
           }
@@ -254,6 +256,7 @@ export async function POST(request: NextRequest) {
       already_migrated: existingFileNames.size,
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Migration error:", err);
     }

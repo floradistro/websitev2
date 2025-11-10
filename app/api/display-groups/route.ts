@@ -45,9 +45,9 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("Error fetching display groups:", err);
+        logger.error("Error fetching display groups:", error);
       }
-      return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+      return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 
     return NextResponse.json({
@@ -55,6 +55,7 @@ export async function GET(request: NextRequest) {
       groups: groups || [],
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Display groups GET error:", err);
     }
@@ -134,6 +135,7 @@ export async function POST(request: NextRequest) {
       group,
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Display groups POST error:", err);
     }

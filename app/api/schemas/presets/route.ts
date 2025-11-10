@@ -31,6 +31,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ success: true, presets });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error fetching style presets:", err);
     }
@@ -105,6 +106,7 @@ export async function POST(request: NextRequest) {
       preset: preset,
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error applying style preset:", err);
     }

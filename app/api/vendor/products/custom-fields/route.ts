@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("Error fetching products for custom fields:", err);
+        logger.error("Error fetching products for custom fields:", error);
       }
       throw error;
     }
@@ -50,6 +50,7 @@ export async function GET(request: NextRequest) {
       customFields,
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Custom fields API error:", err);
     }

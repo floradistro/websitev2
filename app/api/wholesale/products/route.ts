@@ -80,10 +80,10 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("Get wholesale products error:", err);
+        logger.error("Get wholesale products error:", error);
       }
       return NextResponse.json(
-        { error: "Failed to get products", details: err.message },
+        { error: "Failed to get products", details: error.message },
         { status: 500 },
       );
     }
@@ -96,6 +96,7 @@ export async function GET(request: NextRequest) {
       totalPages: Math.ceil((count || 0) / limit),
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Get wholesale products error:", err);
     }

@@ -101,6 +101,7 @@ export async function GET(request: NextRequest) {
       assignments: formattedAssignments,
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error fetching category pricing assignments:", err);
     }
@@ -213,6 +214,7 @@ export async function POST(request: NextRequest) {
       message: `Pricing tier ${assign ? "assigned to" : "removed from"} ${productIds.length} products in ${category}`,
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error updating category pricing assignments:", err);
     }

@@ -131,6 +131,7 @@ export async function PATCH(request: NextRequest) {
       product: updated,
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Product update error:", err);
     }

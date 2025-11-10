@@ -78,6 +78,7 @@ Respond with ONLY the JSON, no other text.`,
     const analysis = JSON.parse(jsonMatch[0]);
     return analysis;
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("❌ AI analysis error:", err.message);
     }
@@ -150,6 +151,7 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
       analysis: aiAnalysis,
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error:", err);
     }

@@ -169,6 +169,7 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error:", err);
     }
@@ -208,7 +209,7 @@ export async function PUT(request: NextRequest) {
       if (error) {
         failed++;
         if (process.env.NODE_ENV === "development") {
-          logger.error(`Failed to link ${match.productId}:`, err);
+          logger.error(`Failed to link ${match.productId}:`, error);
         }
       } else {
         linked++;
@@ -222,6 +223,7 @@ export async function PUT(request: NextRequest) {
       total: matches.length,
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error:", err);
     }
