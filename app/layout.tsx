@@ -5,6 +5,7 @@ import "./globals.css";
 import NotificationToast from "@/components/NotificationToast";
 import LoadingBar from "@/components/LoadingBar";
 import InstallPWAPrompt from "@/components/InstallPWAPrompt";
+import ErrorBoundary from "@/components/ErrorBoundary";
 import Providers from "./providers";
 
 // Enable static optimization for better performance
@@ -97,14 +98,16 @@ export default function RootLayout({
         }}
         suppressHydrationWarning
       >
-        <Providers>
-          <Suspense fallback={null}>
-            <LoadingBar />
-          </Suspense>
-          {children}
-          <NotificationToast />
-          <InstallPWAPrompt />
-        </Providers>
+        <ErrorBoundary>
+          <Providers>
+            <Suspense fallback={null}>
+              <LoadingBar />
+            </Suspense>
+            {children}
+            <NotificationToast />
+            <InstallPWAPrompt />
+          </Providers>
+        </ErrorBoundary>
       </body>
     </html>
   );

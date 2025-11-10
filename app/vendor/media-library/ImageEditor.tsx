@@ -484,17 +484,28 @@ export default function ImageEditor({ image, vendorId, onClose, onSave }: ImageE
   const handleBrushUndo = () => {
     if (brushHistoryIndex > 0 && workingCanvasRef.current) {
       const newIndex = brushHistoryIndex - 1;
+      const canvas = workingCanvasRef.current;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+
+      // Store current canvas dimensions
+      const width = canvas.width;
+      const height = canvas.height;
 
       // Restore previous state
       const img = new Image();
       img.onload = () => {
-        const ctx = workingCanvasRef.current?.getContext("2d");
-        if (ctx && workingCanvasRef.current) {
-          const canvas = workingCanvasRef.current;
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-          setHasUnsavedBrushChanges(newIndex !== 0);
-        }
+        // Ensure canvas dimensions haven't changed
+        canvas.width = width;
+        canvas.height = height;
+
+        // Draw the restored image
+        ctx.clearRect(0, 0, width, height);
+        ctx.drawImage(img, 0, 0, width, height);
+        setHasUnsavedBrushChanges(newIndex !== 0);
+      };
+      img.onerror = () => {
+        console.error("Failed to load undo state");
       };
       img.src = brushHistory[newIndex];
       setBrushHistoryIndex(newIndex);
@@ -505,17 +516,28 @@ export default function ImageEditor({ image, vendorId, onClose, onSave }: ImageE
   const handleBrushRedo = () => {
     if (brushHistoryIndex < brushHistory.length - 1 && workingCanvasRef.current) {
       const newIndex = brushHistoryIndex + 1;
+      const canvas = workingCanvasRef.current;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+
+      // Store current canvas dimensions
+      const width = canvas.width;
+      const height = canvas.height;
 
       // Restore next state
       const img = new Image();
       img.onload = () => {
-        const ctx = workingCanvasRef.current?.getContext("2d");
-        if (ctx && workingCanvasRef.current) {
-          const canvas = workingCanvasRef.current;
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-          setHasUnsavedBrushChanges(true);
-        }
+        // Ensure canvas dimensions haven't changed
+        canvas.width = width;
+        canvas.height = height;
+
+        // Draw the restored image
+        ctx.clearRect(0, 0, width, height);
+        ctx.drawImage(img, 0, 0, width, height);
+        setHasUnsavedBrushChanges(true);
+      };
+      img.onerror = () => {
+        console.error("Failed to load redo state");
       };
       img.src = brushHistory[newIndex];
       setBrushHistoryIndex(newIndex);

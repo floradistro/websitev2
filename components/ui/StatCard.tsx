@@ -1,4 +1,5 @@
 import { LucideIcon } from "lucide-react";
+import { Sparkline, SparklineBars } from "./Sparkline";
 
 interface StatCardProps {
   label: string;
@@ -11,6 +12,9 @@ interface StatCardProps {
     value: string;
     direction: "up" | "down";
   };
+  sparklineData?: number[];
+  sparklineType?: "line" | "bars";
+  showSparkline?: boolean;
 }
 
 export function StatCard({
@@ -21,6 +25,9 @@ export function StatCard({
   delay = "0s",
   loading = false,
   trend,
+  sparklineData,
+  sparklineType = "line",
+  showSparkline = true,
 }: StatCardProps) {
   if (loading) {
     return (
@@ -48,6 +55,50 @@ export function StatCard({
         />
       </div>
       <div className="text-xl md:text-3xl font-light text-white/90 mb-1 md:mb-2">{value}</div>
+
+      {/* Sparkline - Apple-style trend visualization */}
+      {showSparkline && sparklineData && sparklineData.length > 0 && (
+        <div className="my-2 md:my-3">
+          {sparklineType === "bars" ? (
+            <SparklineBars
+              data={sparklineData}
+              width={120}
+              height={24}
+              gap={2}
+              className="hidden md:block"
+            />
+          ) : (
+            <Sparkline
+              data={sparklineData}
+              width={120}
+              height={24}
+              showGradient={true}
+              animate={true}
+              className="hidden md:block"
+            />
+          )}
+          {/* Mobile version - smaller */}
+          {sparklineType === "bars" ? (
+            <SparklineBars
+              data={sparklineData}
+              width={80}
+              height={16}
+              gap={1}
+              className="md:hidden"
+            />
+          ) : (
+            <Sparkline
+              data={sparklineData}
+              width={80}
+              height={16}
+              showGradient={true}
+              animate={true}
+              className="md:hidden"
+            />
+          )}
+        </div>
+      )}
+
       <div className="flex items-center justify-between">
         <div className="text-sublabel text-[8px] md:text-[9px]">{sublabel}</div>
         {trend && (

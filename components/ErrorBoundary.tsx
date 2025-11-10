@@ -27,9 +27,13 @@ class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    if (process.env.NODE_ENV === "development") {
-      logger.error("ErrorBoundary caught an error:", error, errorInfo);
-    }
+    // ALWAYS log to Sentry (dev + production)
+    logger.error("ErrorBoundary caught an error", error, {
+      componentStack: errorInfo.componentStack,
+      timestamp: new Date().toISOString(),
+      errorBoundary: "global",
+    });
+
     this.setState({
       error,
       errorInfo,
@@ -38,11 +42,6 @@ class ErrorBoundary extends Component<Props, State> {
     // Call optional error handler
     if (this.props.onError) {
       this.props.onError(error, errorInfo);
-    }
-
-    // In production, send to error tracking service
-    if (process.env.NODE_ENV === "production") {
-      // Example: sendToErrorTracking(error, errorInfo);
     }
   }
 
