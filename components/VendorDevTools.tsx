@@ -106,7 +106,7 @@ export default function VendorDevTools({ onRefresh }: DevToolsProps) {
     <div className="fixed bottom-6 right-6 z-[200]">
       {/* Message Toast */}
       {message && (
-        <div className="absolute bottom-16 right-0 bg-black border border-white/20 px-4 py-3 mb-2 min-w-[200px] animate-fadeIn">
+        <div className="absolute bottom-16 right-0 bg-black border border-white/20 px-4 py-3 mb-2 min-w-[200px]">
           <p className="text-white text-xs">{message}</p>
         </div>
       )}
@@ -131,7 +131,7 @@ export default function VendorDevTools({ onRefresh }: DevToolsProps) {
 
         {/* Dropdown Menu */}
         {isOpen && (
-          <div className="absolute bottom-full right-0 mb-2 w-72 bg-black border border-white/20 animate-fadeIn">
+          <div className="absolute bottom-full right-0 mb-2 w-72 bg-black border border-white/20">
             <div className="border-b border-white/10 px-4 py-3">
               <h3 className="text-white text-xs uppercase tracking-wider font-medium flex items-center gap-2">
                 <Zap size={14} className="text-yellow-500" />

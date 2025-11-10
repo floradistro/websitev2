@@ -1,5 +1,6 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { requireAdmin } from "@/lib/auth/middleware";
 
 import { logger } from "@/lib/logger";
 import { toError } from "@/lib/errors";
@@ -12,8 +13,14 @@ export const dynamic = "force-dynamic";
 export const revalidate = 30; // Cache for 30 seconds
 
 // Aggregated dashboard stats - single API call
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    // SECURITY: Require admin authentication
+    const authResult = await requireAdmin(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
+    }
+
     // Execute all queries in parallel for maximum speed
     const [
       productsCount,

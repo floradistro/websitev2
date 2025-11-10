@@ -1,0 +1,20 @@
+{
+  "extends": "next/core-web-vitals",
+  "rules": {
+    "no-restricted-syntax": [
+      "error",
+      {
+        "selector": "JSXAttribute[name.name='className'][value.value=/animate-fadeIn/]",
+        "message": "⚠️ NEVER use animate-fadeIn class - it causes 'flash then disappear' bugs! Use standard CSS transitions instead. See docs/POSITIONING_BEST_PRACTICES.md"
+      },
+      {
+        "selector": "JSXAttribute[name.name='className'][value.value=/animate-in/]",
+        "message": "⚠️ NEVER use Tailwind animate-in classes - they hide elements after animation! Use standard CSS transitions instead. See docs/POSITIONING_BEST_PRACTICES.md"
+      },
+      {
+        "selector": "JSXAttribute[name.name='className'][value.value=/animate-scaleIn/]",
+        "message": "⚠️ NEVER use animate-scaleIn class - it causes 'flash then disappear' bugs! Use standard CSS transitions instead. See docs/POSITIONING_BEST_PRACTICES.md"
+      }
+    ]
+  }
+}

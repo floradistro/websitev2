@@ -1,14 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
+import { requireAuth } from "@/lib/auth/middleware";
 
 import { logger } from "@/lib/logger";
 /**
  * Bulk Vendors API - Fast vendor fetching
  * GET /api/bulk/vendors?limit=100&status=active
+ *
+ * NOTE: Vendor data may be considered public for marketplace purposes,
+ * but we still require authentication to prevent abuse.
  */
 
 export async function GET(request: NextRequest) {
   try {
+    // SECURITY: Require authentication to prevent abuse
+    const authResult = await requireAuth(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
+    }
+
     const { searchParams } = new URL(request.url);
     const limit = Math.min(parseInt(searchParams.get("limit") || "100"), 500);
     const status = searchParams.get("status") || "active";
@@ -92,6 +102,12 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
+    // SECURITY: Require authentication to prevent abuse
+    const authResult = await requireAuth(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
+    }
+
     const { ids } = await request.json();
 
     if (!ids || !Array.isArray(ids) || ids.length === 0) {

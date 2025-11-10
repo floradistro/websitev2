@@ -38,8 +38,7 @@ export async function GET(request: NextRequest) {
         discount_amount,
         tip_amount,
         cost_of_goods,
-        payment_method,
-        users(id, email, full_name)
+        payment_method
       `,
       )
       .eq("vendor_id", vendorId)
@@ -72,13 +71,34 @@ export async function GET(request: NextRequest) {
       });
     }
 
+    // Get unique user IDs to fetch user names
+    const userIdsSet = new Set<string>();
+    data.forEach((tx: any) => {
+      if (tx.user_id) userIdsSet.add(tx.user_id);
+    });
+    const userIds = Array.from(userIdsSet);
+
+    // Fetch user names
+    let userMap = new Map();
+    if (userIds.length > 0) {
+      const { data: users } = await supabase
+        .from("users")
+        .select("id, first_name, last_name, email")
+        .in("id", userIds);
+
+      users?.forEach((u: any) => {
+        const fullName = [u.first_name, u.last_name].filter(Boolean).join(" ") || u.email || "Unknown";
+        userMap.set(u.id, fullName);
+      });
+    }
+
     // Group by employee
     const employeeData = data.reduce((acc: any, tx: any) => {
       const empId = tx.user_id;
       if (!acc[empId]) {
         acc[empId] = {
           employee_id: empId,
-          employee_name: tx.users?.full_name || tx.users?.email || "Unknown",
+          employee_name: userMap.get(empId) || "Unknown",
           transactions: 0,
           gross_sales: 0,
           discounts_given: 0,

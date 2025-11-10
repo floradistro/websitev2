@@ -69,7 +69,7 @@ export default function LocationDropdown({
       </button>
 
       {isOpen && (
-        <div className="absolute top-full left-0 mt-2 w-64 bg-[#3a3a3a] shadow-2xl border border-white/20 z-[999] animate-fadeIn">
+        <div className="absolute top-full left-0 mt-2 w-64 bg-[#3a3a3a] shadow-2xl border border-white/20 z-[999]">
           <div className="p-1">
             <button
               onClick={() => {

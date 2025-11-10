@@ -172,7 +172,7 @@ export default function SearchModal({ isOpen, onClose, vendorId }: SearchModalPr
         style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 4rem)" }}
       >
         <div
-          className="bg-[#1a1a1a] border border-white/10 max-w-2xl w-full rounded-none animate-scaleIn relative z-10"
+          className="bg-[#1a1a1a] border border-white/10 max-w-2xl w-full rounded-none relative z-10"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Search Header */}

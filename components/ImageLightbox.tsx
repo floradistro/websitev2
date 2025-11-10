@@ -184,7 +184,7 @@ export default function ImageLightbox({
 
   const lightboxContent = (
     <div
-      className="fixed inset-0 z-[9999] bg-black/95 flex items-center justify-center animate-fadeIn"
+      className="fixed inset-0 z-[9999] bg-black/95 flex items-center justify-center"
       onClick={onClose}
     >
       {/* Close Button */}

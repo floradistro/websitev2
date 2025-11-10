@@ -265,7 +265,7 @@ export default function DeliveryAvailability({
       {/* Delivery Tab */}
       {selectedTab === "delivery" && (
         <div
-          className={`border border-white/20 rounded-[24px] p-6 animate-fadeIn space-y-3 relative ${isDropdownOpen ? "min-h-[400px]" : ""}`}
+          className={`border border-white/20 rounded-[24px] p-6 space-y-3 relative ${isDropdownOpen ? "min-h-[400px]" : ""}`}
         >
           {isInStock ? (
             <>
@@ -395,7 +395,7 @@ export default function DeliveryAvailability({
       {/* Pickup Tab */}
       {selectedTab === "pickup" && (
         <div
-          className={`border border-white/20 rounded-[24px] p-6 animate-fadeIn space-y-3 relative ${isDropdownOpen ? "min-h-[400px]" : ""}`}
+          className={`border border-white/20 rounded-[24px] p-6 space-y-3 relative ${isDropdownOpen ? "min-h-[400px]" : ""}`}
         >
           {locationsWithStock.length > 0 ? (
             <>

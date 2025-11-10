@@ -1,14 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
+import { requireAuth } from "@/lib/auth/middleware";
 
 import { logger } from "@/lib/logger";
 /**
  * Bulk Products API - Lightning fast product fetching
  * POST /api/bulk/products
  * Body: { ids: string[], include_inventory?: boolean, include_categories?: boolean }
+ *
+ * NOTE: This is a public-facing endpoint for fetching published products.
+ * Auth is required but allows any authenticated user (customers can view products).
  */
 export async function POST(request: NextRequest) {
   try {
+    // SECURITY: Require authentication (any user can view published products)
+    const authResult = await requireAuth(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
+    }
+
     const { ids, include_inventory = false, include_categories = true } = await request.json();
 
     if (!ids || !Array.isArray(ids) || ids.length === 0) {
@@ -126,6 +136,12 @@ export async function POST(request: NextRequest) {
  */
 export async function GET(request: NextRequest) {
   try {
+    // SECURITY: Require authentication (any user can view published products)
+    const authResult = await requireAuth(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
+    }
+
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get("page") || "1");
     const limit = Math.min(parseInt(searchParams.get("limit") || "50"), 200); // Max 200

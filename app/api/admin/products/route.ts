@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { productCache, vendorCache, inventoryCache } from "@/lib/cache-manager";
+import { requireAdmin } from "@/lib/auth/middleware";
 
 import { logger } from "@/lib/logger";
 import { toError } from "@/lib/errors";
@@ -13,6 +14,12 @@ export const revalidate = 30; // Cache for 30 seconds
  */
 export async function GET(request: NextRequest) {
   try {
+    // SECURITY: Require admin authentication
+    const authResult = await requireAdmin(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
+    }
+
     const { searchParams } = new URL(request.url);
 
     const page = parseInt(searchParams.get("page") || "1");
@@ -266,6 +273,12 @@ export async function GET(request: NextRequest) {
  */
 export async function DELETE(request: NextRequest) {
   try {
+    // SECURITY: Require admin authentication
+    const authResult = await requireAdmin(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
+    }
+
     const { searchParams } = new URL(request.url);
     const productId = searchParams.get("product_id");
     const forceDelete = searchParams.get("force") === "true";

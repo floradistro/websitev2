@@ -250,15 +250,17 @@ export default function NotificationToast() {
         <div className="fixed inset-0 z-[300] flex items-center justify-center px-4">
           {/* Backdrop */}
           <div
-            className="absolute inset-0 bg-black/80 backdrop-blur-md animate-fadeIn"
+            className="absolute inset-0 bg-black/80 backdrop-blur-md"
+            style={{ transition: "opacity 0.3s ease-out" }}
             onClick={() => handleCancel(confirmDialogs[0])}
           />
 
           {/* Dialog */}
           <div
-            className={`relative bg-[#1a1a1a] border ${getDialogColor(confirmDialogs[0].type)} max-w-md w-full animate-scaleIn shadow-2xl`}
+            className={`relative bg-[#1a1a1a] border ${getDialogColor(confirmDialogs[0].type)} max-w-md w-full shadow-2xl`}
             style={{
               boxShadow: "0 25px 100px -20px rgba(0,0,0,0.9)",
+              transition: "opacity 0.3s ease-out, transform 0.3s ease-out",
             }}
           >
             {/* Yacht Club Branding */}

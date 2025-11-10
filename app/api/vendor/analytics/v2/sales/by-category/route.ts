@@ -73,14 +73,14 @@ export async function GET(request: NextRequest) {
     });
     const productIds = Array.from(productIdsSet);
 
-    // Get products with categories
+    // Get products with categories (specify the foreign key to avoid ambiguity)
     const { data: products, error: productsError } = await supabase
       .from("products")
       .select(`
         id,
         cost_price,
         primary_category_id,
-        categories(id, name, slug)
+        categories!products_primary_category_id_fkey(id, name, slug)
       `)
       .in("id", productIds);
 

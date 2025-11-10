@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { requireAdmin } from "@/lib/auth/middleware";
 
 import { logger } from "@/lib/logger";
 import { toError } from "@/lib/errors";
@@ -11,6 +12,12 @@ const supabase = createClient(
 // Bulk delete vendors
 export async function DELETE(request: NextRequest) {
   try {
+    // SECURITY: Require admin authentication
+    const authResult = await requireAdmin(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
+    }
+
     const { vendor_ids } = await request.json();
 
     if (!vendor_ids || !Array.isArray(vendor_ids) || vendor_ids.length === 0) {
@@ -54,6 +61,12 @@ export async function DELETE(request: NextRequest) {
 // Bulk update vendor status
 export async function PATCH(request: NextRequest) {
   try {
+    // SECURITY: Require admin authentication
+    const authResult = await requireAdmin(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
+    }
+
     const { vendor_ids, status } = await request.json();
 
     if (!vendor_ids || !Array.isArray(vendor_ids) || vendor_ids.length === 0) {

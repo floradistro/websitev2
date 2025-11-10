@@ -678,12 +678,20 @@ a {
   animation: slideInRight 0.3s ease-out;
 }
 
-.animate-fadeIn {
+/* ⚠️ WARNING: DO NOT USE THESE CLASSES - They cause "flash then disappear" bugs!
+ * These classes start with opacity: 0 which makes modals/overlays invisible
+ * Use standard CSS transitions instead: transition: opacity 0.3s ease-out
+ * See: docs/POSITIONING_BEST_PRACTICES.md
+ */
+
+/* DEPRECATED - DO NOT USE */
+.animate-fadeIn-DEPRECATED {
   animation: fadeIn 1s ease-out forwards;
   opacity: 0;
 }
 
-.animate-scaleIn {
+/* DEPRECATED - DO NOT USE */
+.animate-scaleIn-DEPRECATED {
   animation: scaleIn 1s ease-out forwards;
   opacity: 0;
 }
@@ -699,10 +707,7 @@ a {
   }
 }
 
-.animate-fadeIn {
-  animation: fadeIn 0.4s ease-out forwards;
-}
-
+/* SAFE VERSION - No initial opacity: 0 */
 .animate-slideIn {
   animation: slideIn 0.3s ease-out forwards;
 }

@@ -22,6 +22,7 @@
     "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
     "lint:fix": "eslint . --ext .ts,.tsx,.js,.jsx --fix",
     "type-check": "tsc --noEmit",
+    "validate:no-bugs": "bash scripts/validate-no-disappearing-bugs.sh",
     "nightly": "npm run cleanup && npm run db:optimize && npm run analyze",
     "prepare": "husky"
   },

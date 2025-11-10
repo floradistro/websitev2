@@ -89,7 +89,7 @@ export async function GET(request: NextRequest) {
     if (productIds.size > 0) {
       const { data: products } = await supabase
         .from("products")
-        .select("id, primary_category_id, categories(name)")
+        .select("id, primary_category_id, categories!products_primary_category_id_fkey(name)")
         .in("id", Array.from(productIds));
 
       products?.forEach((p: any) => {

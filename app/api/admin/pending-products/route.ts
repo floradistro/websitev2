@@ -1,10 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
+import { requireAdmin } from "@/lib/auth/middleware";
 
 import { logger } from "@/lib/logger";
 import { toError } from "@/lib/errors";
 export async function GET(request: NextRequest) {
   try {
+    // SECURITY: Require admin authentication
+    const authResult = await requireAdmin(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
+    }
+
     const supabase = getServiceSupabase();
 
     // Get all pending products from Supabase

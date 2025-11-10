@@ -86,7 +86,7 @@ export default function VendorSupportChat({ isOpen, onClose }: VendorSupportChat
     <>
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[9998] animate-fadeIn"
+        className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[9998]"
         onClick={onClose}
       />
 
@@ -127,7 +127,7 @@ export default function VendorSupportChat({ isOpen, onClose }: VendorSupportChat
           {messages.map((message) => (
             <div
               key={message.id}
-              className={`flex gap-3 ${message.sender === "user" ? "justify-end" : "justify-start"} animate-fadeIn`}
+              className={`flex gap-3 ${message.sender === "user" ? "justify-end" : "justify-start"}`}
             >
               <div
                 className={`max-w-[85%] flex flex-col ${message.sender === "user" ? "items-end" : "items-start"}`}
@@ -161,7 +161,7 @@ export default function VendorSupportChat({ isOpen, onClose }: VendorSupportChat
 
           {/* Typing Indicator */}
           {typing && (
-            <div className="flex justify-start animate-fadeIn">
+            <div className="flex justify-start">
               <div className="flex flex-col items-start">
                 <div className="text-[10px] text-white/40 uppercase tracking-[0.15em] mb-1 px-1">
                   Flora Support

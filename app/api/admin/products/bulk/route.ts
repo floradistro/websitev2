@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { requireAdmin } from "@/lib/auth/middleware";
 
 import { logger } from "@/lib/logger";
 import { toError } from "@/lib/errors";
@@ -11,6 +12,12 @@ const supabase = createClient(
 // Bulk delete products - optimized for performance
 export async function DELETE(request: NextRequest) {
   try {
+    // SECURITY: Require admin authentication
+    const authResult = await requireAdmin(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
+    }
+
     const { product_ids, force = false } = await request.json();
 
     if (!product_ids || !Array.isArray(product_ids) || product_ids.length === 0) {
@@ -101,6 +108,12 @@ export async function DELETE(request: NextRequest) {
 // Bulk update product status - optimized
 export async function PATCH(request: NextRequest) {
   try {
+    // SECURITY: Require admin authentication
+    const authResult = await requireAdmin(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
+    }
+
     const { product_ids, status } = await request.json();
 
     if (!product_ids || !Array.isArray(product_ids) || product_ids.length === 0) {
@@ -149,6 +162,12 @@ export async function PATCH(request: NextRequest) {
 // Bulk approve products - optimized
 export async function POST(request: NextRequest) {
   try {
+    // SECURITY: Require admin authentication
+    const authResult = await requireAdmin(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
+    }
+
     const { product_ids } = await request.json();
 
     if (!product_ids || !Array.isArray(product_ids) || product_ids.length === 0) {

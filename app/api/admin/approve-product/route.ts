@@ -3,11 +3,18 @@ import { getServiceSupabase } from "@/lib/supabase/client";
 import { productCache, vendorCache, inventoryCache } from "@/lib/cache-manager";
 import { jobQueue } from "@/lib/job-queue";
 import { withErrorHandler } from "@/lib/api-handler";
+import { requireAdmin } from "@/lib/auth/middleware";
 
 import { logger } from "@/lib/logger";
 import { toError } from "@/lib/errors";
 export const POST = withErrorHandler(async (request: NextRequest) => {
   try {
+    // SECURITY: Require admin authentication
+    const authResult = await requireAdmin(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
+    }
+
     const body = await request.json();
     const { productId, submission_id, action } = body; // action: 'approve' or 'reject'
 

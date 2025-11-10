@@ -1,15 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
+import { requireAuth } from "@/lib/auth/middleware";
 
 import { logger } from "@/lib/logger";
 /**
  * Bulk Inventory API - Fast inventory lookups
  * POST /api/bulk/inventory
  * Body: { product_ids: [...], location_ids: [...] }
+ *
+ * NOTE: Inventory is sensitive data - require authentication
  */
 
 export async function POST(request: NextRequest) {
   try {
+    // SECURITY: Require authentication - inventory is sensitive data
+    const authResult = await requireAuth(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
+    }
+
     const { product_ids, location_ids, vendor_id } = await request.json();
 
     if (!product_ids || !Array.isArray(product_ids) || product_ids.length === 0) {
@@ -90,6 +99,12 @@ export async function POST(request: NextRequest) {
  */
 export async function GET(request: NextRequest) {
   try {
+    // SECURITY: Require authentication - inventory is sensitive data
+    const authResult = await requireAuth(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
+    }
+
     const { searchParams } = new URL(request.url);
     const locationId = searchParams.get("location_id");
     const vendorId = searchParams.get("vendor_id");

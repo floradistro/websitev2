@@ -1,15 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
+import { requireAuth } from "@/lib/auth/middleware";
 
 import { logger } from "@/lib/logger";
 /**
  * Bulk Categories API - Lightning fast category fetching
  * GET /api/bulk/categories?limit=100
  * POST /api/bulk/categories { ids: [...] }
+ *
+ * NOTE: Categories are public data, but we require auth to prevent abuse
  */
 
 export async function GET(request: NextRequest) {
   try {
+    // SECURITY: Require authentication to prevent abuse
+    const authResult = await requireAuth(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
+    }
+
     const { searchParams } = new URL(request.url);
     const limit = Math.min(parseInt(searchParams.get("limit") || "100"), 500);
     const parentId = searchParams.get("parent_id");
@@ -95,6 +104,12 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    // SECURITY: Require authentication to prevent abuse
+    const authResult = await requireAuth(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
+    }
+
     const { ids } = await request.json();
 
     if (!ids || !Array.isArray(ids) || ids.length === 0) {
