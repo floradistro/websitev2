@@ -105,6 +105,17 @@ export const RateLimitConfigs = {
     windowMs: 5 * 60 * 1000,
     message: "AI generation rate limit exceeded",
   }, // 10 req/5min
+  // Admin endpoints - brute force protection
+  admin: {
+    maxRequests: 60,
+    windowMs: 60 * 1000,
+    message: "Admin rate limit exceeded",
+  }, // 60 req/min
+  adminSensitive: {
+    maxRequests: 10,
+    windowMs: 60 * 1000,
+    message: "Sensitive operation rate limit exceeded",
+  }, // 10 req/min for sensitive operations
 } as const;
 
 export function getIdentifier(request: Request): string {
@@ -128,6 +139,17 @@ export function getIdentifier(request: Request): string {
 export function checkAIRateLimit(
   request: Request,
   config: RateLimitConfig = RateLimitConfigs.ai,
+): Response | null {
+  return checkRateLimit(request, config);
+}
+
+/**
+ * General rate limit check helper
+ * Can be used for any endpoint type
+ */
+export function checkRateLimit(
+  request: Request,
+  config: RateLimitConfig,
 ): Response | null {
   const identifier = getIdentifier(request);
   const allowed = rateLimiter.check(identifier, config);

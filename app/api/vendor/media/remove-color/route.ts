@@ -58,24 +58,34 @@ export async function POST(request: NextRequest) {
 
     // Get image metadata
     const metadata = await sharp(imageBuffer).metadata();
-    const { width, height } = metadata;
+    const { width, height, channels: originalChannels } = metadata;
 
     if (!width || !height) {
       throw new Error("Could not read image dimensions");
     }
 
-    // Get raw pixel data
-    const { data, info } = await sharp(imageBuffer)
+    logger.info("Image metadata", { width, height, originalChannels });
+
+    // Get raw pixel data with explicit RGBA format
+    const image = sharp(imageBuffer);
+    const { data, info } = await image
       .ensureAlpha() // Ensure image has alpha channel
       .raw()
       .toBuffer({ resolveWithObject: true });
 
-    const channels = info.channels; // Should be 4 (RGBA)
+    const channels = 4; // RGBA always has 4 channels after ensureAlpha
+
+    logger.info("Raw pixel data obtained", {
+      dataLength: data.length,
+      channels: info.channels,
+      expectedLength: width * height * channels,
+    });
 
     // Process pixels - remove matching colors
     const targetR = color.r;
     const targetG = color.g;
     const targetB = color.b;
+    let pixelsRemoved = 0;
 
     for (let i = 0; i < data.length; i += channels) {
       const r = data[i];
@@ -96,15 +106,18 @@ export async function POST(request: NextRequest) {
       // If color is within tolerance, make it transparent
       if (distance <= tolerance) {
         data[i + 3] = 0; // Set alpha to 0 (transparent)
+        pixelsRemoved++;
       }
     }
+
+    logger.info("Pixels processed", { pixelsRemoved });
 
     // Convert back to image
     const processedImage = await sharp(data, {
       raw: {
         width: info.width,
         height: info.height,
-        channels: info.channels,
+        channels: 4, // Explicitly set to 4 for RGBA
       },
     })
       .png() // Use PNG to preserve transparency

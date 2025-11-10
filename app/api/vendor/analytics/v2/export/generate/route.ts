@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireVendor } from "@/lib/auth/middleware";
 import { logger } from "@/lib/logger";
 import { createClient } from "@supabase/supabase-js";
-import { parseDateRange } from "@/lib/analytics/query-helpers";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
