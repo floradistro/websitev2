@@ -37,6 +37,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       vendor,
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Get vendor error:", err);
     }

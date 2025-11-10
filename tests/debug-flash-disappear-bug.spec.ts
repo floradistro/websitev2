@@ -23,116 +23,104 @@ test.describe('Flash-Then-Disappear Bug Investigation', () => {
       console.error('❌ Page Error:', error.message);
     });
 
-    // Go to media library
+    // Log in first
+    await page.goto('http://localhost:3000');
+
+    // Check if already logged in
+    const isLoggedIn = await page.locator('text=Dashboard').isVisible().catch(() => false);
+
+    if (!isLoggedIn) {
+      // Fill in login form
+      await page.fill('input[type="email"]', process.env.TEST_EMAIL || 'darioncdjr@gmail.com');
+      await page.fill('input[type="password"]', process.env.TEST_PASSWORD || 'Smallpenis123!!');
+      await page.click('button[type="submit"]');
+
+      // Wait for login to complete
+      await page.waitForURL(/vendor|admin/, { timeout: 10000 });
+    }
+
+    // Navigate to media library
     await page.goto('http://localhost:3000/vendor/media-library');
     await page.waitForLoadState('networkidle');
+
+    // Wait for products to load
+    await page.waitForSelector('text=Products', { timeout: 10000 });
   });
 
   test('Gallery View - Component Lifecycle Investigation', async ({ page }) => {
     console.log('🔍 Starting Gallery View Investigation...');
 
-    // Wait for product list to load
-    await page.waitForSelector('text=Products', { timeout: 10000 });
+    // Wait a moment for everything to settle
+    await page.waitForTimeout(1000);
 
-    // Find a product with images (look for checkmark icon)
-    const productWithImage = page.locator('[class*="bg-white"][class*="border"]').filter({ hasText: 'Bolo Candy' }).first();
+    // Find first product (any product)
+    const firstProduct = page.locator('[class*="bg-white"][class*="border"]').first();
+    await firstProduct.waitFor({ state: 'visible', timeout: 5000 });
 
     // Take screenshot before click
     await page.screenshot({ path: 'tests/screenshots/01-before-click.png', fullPage: true });
     console.log('📸 Screenshot 1: Before click');
 
-    // Monitor DOM mutations
-    const mutations: string[] = [];
-    await page.evaluate(() => {
-      const observer = new MutationObserver((mutationsList) => {
-        for (const mutation of mutationsList) {
-          if (mutation.type === 'childList') {
-            mutation.removedNodes.forEach((node) => {
-              if (node.nodeType === 1) {
-                const el = node as Element;
-                console.log('🗑️ DOM REMOVED:', {
-                  tag: el.tagName,
-                  class: el.className,
-                  id: el.id,
-                });
-              }
-            });
-          }
-        }
-      });
-      observer.observe(document.body, { childList: true, subtree: true });
-    });
-
     // Click the product
     console.log('🖱️  Clicking product...');
-    await productWithImage.click();
+    await firstProduct.click();
 
     // Take rapid screenshots to catch the flash
     console.log('📸 Taking rapid screenshots...');
-    await page.waitForTimeout(50);
-    await page.screenshot({ path: 'tests/screenshots/02-at-50ms.png', fullPage: true });
-
     await page.waitForTimeout(100);
-    await page.screenshot({ path: 'tests/screenshots/03-at-150ms.png', fullPage: true });
+    await page.screenshot({ path: 'tests/screenshots/02-at-100ms.png', fullPage: true });
 
-    await page.waitForTimeout(100);
-    await page.screenshot({ path: 'tests/screenshots/04-at-250ms.png', fullPage: true });
+    await page.waitForTimeout(200);
+    await page.screenshot({ path: 'tests/screenshots/03-at-300ms.png', fullPage: true });
 
-    await page.waitForTimeout(250);
-    await page.screenshot({ path: 'tests/screenshots/05-at-500ms.png', fullPage: true });
+    await page.waitForTimeout(200);
+    await page.screenshot({ path: 'tests/screenshots/04-at-500ms.png', fullPage: true });
 
     await page.waitForTimeout(500);
-    await page.screenshot({ path: 'tests/screenshots/06-at-1000ms.png', fullPage: true });
+    await page.screenshot({ path: 'tests/screenshots/05-at-1000ms.png', fullPage: true });
 
-    // Check if gallery component exists at different times
-    const checks = [
+    await page.waitForTimeout(1000);
+    await page.screenshot({ path: 'tests/screenshots/06-at-2000ms.png', fullPage: true });
+
+    // Check if gallery is visible at different timestamps
+    const timestamps = [
       { time: 0, label: 'immediately' },
       { time: 100, label: 'at 100ms' },
       { time: 500, label: 'at 500ms' },
-      { time: 1000, label: 'at 1000ms' },
+      { time: 1000, label: 'at 1s' },
+      { time: 2000, label: 'at 2s' },
     ];
 
-    for (const check of checks) {
+    const galleryVisibilityHistory: any[] = [];
+
+    for (const check of timestamps) {
       await page.waitForTimeout(check.time);
 
-      const galleryExists = await page.locator('[class*="ProductGallery"]').count() > 0 ||
-                            await page.locator('text=Go Back').count() > 0 ||
-                            await page.locator('text=Bolo Candy').count() > 1; // Product name in header
+      const backButton = page.locator('button:has-text("Go Back"), button:has(svg.lucide-arrow-left)');
+      const isVisible = await backButton.isVisible().catch(() => false);
 
-      console.log(`✓ Gallery exists ${check.label}:`, galleryExists);
-
-      // Check computed styles
-      const mainContent = page.locator('.flex-1').last();
-      const styles = await mainContent.evaluate((el) => {
-        const computed = window.getComputedStyle(el);
-        return {
-          display: computed.display,
-          visibility: computed.visibility,
-          opacity: computed.opacity,
-          zIndex: computed.zIndex,
-          position: computed.position,
-          transform: computed.transform,
-        };
+      galleryVisibilityHistory.push({
+        time: check.label,
+        galleryVisible: isVisible
       });
 
-      console.log(`🎨 Styles ${check.label}:`, styles);
+      console.log(`✓ Gallery visible ${check.label}:`, isVisible);
     }
 
-    // Check for React errors in console
-    const reactErrors = await page.evaluate(() => {
-      return window.localStorage.getItem('react-errors') || 'none';
-    });
-    console.log('⚛️  React errors:', reactErrors);
+    // Print visibility history
+    console.log('\n📊 Gallery Visibility History:');
+    console.table(galleryVisibilityHistory);
 
-    // Final check: Is the gallery visible?
-    const finalGalleryVisible = await page.locator('text=Go Back').isVisible().catch(() => false);
-    console.log('🎯 Final gallery visible:', finalGalleryVisible);
+    // Final assertion
+    const finalVisible = await page.locator('button:has-text("Go Back"), button:has(svg.lucide-arrow-left)').isVisible().catch(() => false);
 
-    // Get all console errors
-    const allErrors = await page.evaluate(() => {
-      return (window as any).__errors || [];
-    });
-    console.log('❌ All errors:', allErrors);
+    if (!finalVisible) {
+      console.error('❌ BUG CONFIRMED: Gallery disappeared!');
+      // Fail the test
+      expect(finalVisible).toBe(true);
+    } else {
+      console.log('✅ Gallery is stable and visible');
+    }
   });
 
   test('Z-Index Conflict Detection', async ({ page }) => {

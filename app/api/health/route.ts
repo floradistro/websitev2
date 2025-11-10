@@ -72,6 +72,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
+    const err = toError(error);
     checks.status = "unhealthy";
     return NextResponse.json(
       {

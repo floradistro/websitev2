@@ -75,6 +75,7 @@ export async function GET(request: NextRequest) {
       total: data.pagination?.total || orders.length,
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Customer orders error:", err);
     }

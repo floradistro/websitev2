@@ -27,6 +27,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     return NextResponse.json(data.customer);
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Customer API error:", err);
     }

@@ -214,7 +214,9 @@ export default function ProductBrowser({
                   }
                   setDragOver(null);
                 }}
-                onClick={() => {
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
                   if (selectionMode) {
                     handleToggleSelection(product.id);
                   } else {

@@ -24,6 +24,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ success: true, vendors: data });
   } catch (error) {
+    const err = toError(error);
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }

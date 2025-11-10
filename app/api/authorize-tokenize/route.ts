@@ -46,6 +46,7 @@ export async function POST(request: NextRequest) {
       message: "Card tokenized successfully",
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Tokenization error:", err);
     }

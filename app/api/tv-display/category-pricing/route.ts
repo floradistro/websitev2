@@ -73,6 +73,7 @@ export async function GET(request: Request) {
       totalCategories: Object.keys(result).length,
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error fetching category pricing:", err);
     }

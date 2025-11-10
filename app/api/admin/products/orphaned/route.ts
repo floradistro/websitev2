@@ -63,6 +63,7 @@ export async function DELETE() {
       products: orphanedProducts.map((p) => ({ id: p.id, name: p.name })),
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Orphaned products cleanup error:", err);
     }

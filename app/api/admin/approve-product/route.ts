@@ -133,6 +133,7 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
 
     return NextResponse.json({ error: "Invalid action" }, { status: 400 });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Approve product error:", err);
     }

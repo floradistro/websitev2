@@ -58,6 +58,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       vendor,
     });
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("Update vendor wholesale settings error:", err);
     }

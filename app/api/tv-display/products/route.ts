@@ -158,6 +158,7 @@ export async function GET(request: NextRequest) {
 
     return response;
   } catch (error) {
+    const err = toError(error);
     if (process.env.NODE_ENV === "development") {
       logger.error("❌ TV Display products API error:", err);
     }
