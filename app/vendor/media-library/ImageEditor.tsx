@@ -166,7 +166,7 @@ export default function ImageEditor({ image, onClose, onSave }: ImageEditorProps
     setActiveTool("background");
 
     try {
-      const response = await fetch("/api/vendor/media/edit", {
+      const response = await fetch("/api/vendor/media/remove-bg", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -174,8 +174,7 @@ export default function ImageEditor({ image, onClose, onSave }: ImageEditorProps
         },
         body: JSON.stringify({
           imageUrl: currentImage,
-          operation: "remove-background",
-          params: {},
+          fileName: image.file_name,
         }),
       });
 
@@ -186,16 +185,16 @@ export default function ImageEditor({ image, onClose, onSave }: ImageEditorProps
 
       const data = await response.json();
 
-      if (data.success && data.url) {
-        setCurrentImage(data.url);
-        addToHistory(data.url, "Background Removed");
+      if (data.success && data.file?.url) {
+        setCurrentImage(data.file.url);
+        addToHistory(data.file.url, "Background Removed");
       }
     } catch (error) {
       console.error("Error removing background:", error);
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
 
-      if (errorMessage.includes("API key not configured")) {
-        alert("Remove.bg API key is not configured. Please add REMOVE_BG_API_KEY to your .env.local file.");
+      if (errorMessage.includes("API key")) {
+        alert("Background removal service is not available. Please contact support.");
       } else {
         alert(`Failed to remove background: ${errorMessage}`);
       }

@@ -107,7 +107,10 @@ export async function POST(request: NextRequest) {
       if (process.env.NODE_ENV === "development") {
         logger.error("Error saving profile:", result.error);
       }
-      return NextResponse.json({ success: false, error: result.error.message }, { status: 500 });
+      return NextResponse.json(
+        { success: false, error: result.error.message },
+        { status: 500 },
+      );
     }
 
     return NextResponse.json({
@@ -120,7 +123,10 @@ export async function POST(request: NextRequest) {
     if (process.env.NODE_ENV === "development") {
       logger.error("Save profile error:", err);
     }
-    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+    return NextResponse.json(
+      { success: false, error: err.message },
+      { status: 500 },
+    );
   }
 }
 
@@ -140,7 +146,10 @@ export async function GET(request: NextRequest) {
     const deviceId = searchParams.get("deviceId");
 
     if (!deviceId) {
-      return NextResponse.json({ success: false, error: "Device ID required" }, { status: 400 });
+      return NextResponse.json(
+        { success: false, error: "Device ID required" },
+        { status: 400 },
+      );
     }
 
     const supabase = getServiceSupabase();
@@ -168,6 +177,9 @@ export async function GET(request: NextRequest) {
     if (process.env.NODE_ENV === "development") {
       logger.error("Get profile error:", err);
     }
-    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+    return NextResponse.json(
+      { success: false, error: err.message },
+      { status: 500 },
+    );
   }
 }

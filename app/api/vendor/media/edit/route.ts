@@ -18,7 +18,10 @@ export async function POST(request: NextRequest) {
     const supabase = await createClient();
     const vendorId = request.headers.get("x-vendor-id");
     if (!vendorId) {
-      return NextResponse.json({ error: "Vendor ID required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Vendor ID required" },
+        { status: 400 },
+      );
     }
 
     const body = await request.json();
@@ -27,7 +30,7 @@ export async function POST(request: NextRequest) {
     if (!imageUrl || !operation) {
       return NextResponse.json(
         { error: "Image URL and operation required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -67,7 +70,7 @@ export async function POST(request: NextRequest) {
         if (!process.env.REMOVE_BG_API_KEY) {
           return NextResponse.json(
             { error: "Remove.bg API key not configured" },
-            { status: 500 }
+            { status: 500 },
           );
         }
 
@@ -76,20 +79,23 @@ export async function POST(request: NextRequest) {
           formData.append("image_file", new Blob([imageBuffer]), "image.jpg");
           formData.append("size", "auto");
 
-          const removeBgResponse = await fetch("https://api.remove.bg/v1.0/removebg", {
-            method: "POST",
-            headers: {
-              "X-Api-Key": process.env.REMOVE_BG_API_KEY,
+          const removeBgResponse = await fetch(
+            "https://api.remove.bg/v1.0/removebg",
+            {
+              method: "POST",
+              headers: {
+                "X-Api-Key": process.env.REMOVE_BG_API_KEY,
+              },
+              body: formData,
             },
-            body: formData,
-          });
+          );
 
           if (!removeBgResponse.ok) {
             const errorData = await removeBgResponse.json();
             logger.error("Remove.bg API error:", errorData);
             return NextResponse.json(
               { error: "Background removal failed", details: errorData },
-              { status: 500 }
+              { status: 500 },
             );
           }
 
@@ -97,8 +103,11 @@ export async function POST(request: NextRequest) {
         } catch (error) {
           logger.error("Remove.bg error:", error);
           return NextResponse.json(
-            { error: "Failed to remove background", details: error instanceof Error ? error.message : "Unknown error" },
-            { status: 500 }
+            {
+              error: "Failed to remove background",
+              details: error instanceof Error ? error.message : "Unknown error",
+            },
+            { status: 500 },
           );
         }
         break;
@@ -113,7 +122,10 @@ export async function POST(request: NextRequest) {
         break;
 
       default:
-        return NextResponse.json({ error: "Unknown operation" }, { status: 400 });
+        return NextResponse.json(
+          { error: "Unknown operation" },
+          { status: 400 },
+        );
     }
 
     // Upload processed image to Supabase Storage
@@ -129,7 +141,10 @@ export async function POST(request: NextRequest) {
 
     if (uploadError) {
       console.error("Upload error:", uploadError);
-      return NextResponse.json({ error: "Failed to upload processed image" }, { status: 500 });
+      return NextResponse.json(
+        { error: "Failed to upload processed image" },
+        { status: 500 },
+      );
     }
 
     // Get public URL
@@ -145,8 +160,11 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("Error processing image:", error);
     return NextResponse.json(
-      { error: "Failed to process image", details: error instanceof Error ? error.message : "Unknown error" },
-      { status: 500 }
+      {
+        error: "Failed to process image",
+        details: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500 },
     );
   }
 }

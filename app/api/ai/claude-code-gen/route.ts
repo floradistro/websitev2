@@ -35,7 +35,10 @@ export async function POST(request: NextRequest) {
     } = await request.json();
 
     if (!prompt) {
-      return NextResponse.json({ success: false, error: "Prompt required" }, { status: 400 });
+      return NextResponse.json(
+        { success: false, error: "Prompt required" },
+        { status: 400 },
+      );
     }
 
     // Get Claude API key from Supabase
@@ -228,7 +231,8 @@ export async function POST(request: NextRequest) {
     });
 
     // Extract response
-    const responseText = message.content[0].type === "text" ? message.content[0].text : "";
+    const responseText =
+      message.content[0].type === "text" ? message.content[0].text : "";
 
     // Parse Claude's response
     const parsed = parseClaudeResponse(responseText, action);
@@ -535,7 +539,15 @@ Be specific, use REAL data, and create components that convert!`;
  * Build user message with full context
  */
 function buildUserMessage(context: any): string {
-  const { prompt, componentKey, currentProps, currentCode, pageType, vendorId, action } = context;
+  const {
+    prompt,
+    componentKey,
+    currentProps,
+    currentCode,
+    pageType,
+    vendorId,
+    action,
+  } = context;
 
   let message = `Action: ${action}\n\n`;
 
@@ -628,6 +640,9 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     const err = toError(error);
-    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+    return NextResponse.json(
+      { success: false, error: err.message },
+      { status: 500 },
+    );
   }
 }

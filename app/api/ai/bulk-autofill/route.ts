@@ -92,7 +92,10 @@ export async function POST(request: NextRequest) {
     const { products, category } = await request.json();
 
     if (!products || !Array.isArray(products) || products.length === 0) {
-      return NextResponse.json({ error: "Products array required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Products array required" },
+        { status: 400 },
+      );
     }
 
     // Process in batches of 5 for optimal performance
@@ -133,7 +136,9 @@ export async function POST(request: NextRequest) {
         }
 
         // Combine search results
-        const context = searchResults.results.map((r) => `${r.title}\n${r.text}`).join("\n---\n");
+        const context = searchResults.results
+          .map((r) => `${r.title}\n${r.text}`)
+          .join("\n---\n");
 
         // Claude extraction for entire batch
         const response = await anthropic.messages.create({
@@ -178,8 +183,12 @@ export async function POST(request: NextRequest) {
             batchData[idx] ||
             batchData.find(
               (d: any) =>
-                d.product_name?.toLowerCase().includes(product.name.toLowerCase()) ||
-                product.name.toLowerCase().includes(d.product_name?.toLowerCase()),
+                d.product_name
+                  ?.toLowerCase()
+                  .includes(product.name.toLowerCase()) ||
+                product.name
+                  .toLowerCase()
+                  .includes(d.product_name?.toLowerCase()),
             );
 
           if (data) {

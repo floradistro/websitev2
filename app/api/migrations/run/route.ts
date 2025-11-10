@@ -21,7 +21,10 @@ export async function POST(request: NextRequest) {
     const { migrationName } = await request.json();
 
     if (migrationName !== "001_enterprise_session_management") {
-      return NextResponse.json({ error: "Invalid migration name" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Invalid migration name" },
+        { status: 400 },
+      );
     }
 
     // Step 1: Create unique index

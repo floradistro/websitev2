@@ -87,7 +87,7 @@ export function DateRangePicker({
 }: DateRangePickerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isCompareEnabled, setIsCompareEnabled] = useState(compareEnabled);
-  const [activePreset, setActivePreset] = useState<string | null>(null);
+  const [activePreset, setActivePreset] = useState<string | null>('30 Days');
   const modalRef = useRef<HTMLDivElement>(null);
 
   // Close modal on outside click
@@ -116,9 +116,14 @@ export function DateRangePicker({
   };
 
   const formatDateRange = (range: DateRange) => {
-    const startStr = range.start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-    const endStr = range.end.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-    return `${startStr} - ${endStr}`;
+    if (!range || !range.start || !range.end) return 'Select dates';
+    try {
+      const startStr = range.start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      const endStr = range.end.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      return `${startStr} - ${endStr}`;
+    } catch (e) {
+      return 'Select dates';
+    }
   };
 
   return (
@@ -130,11 +135,11 @@ export function DateRangePicker({
             key={preset.label}
             onClick={() => handlePresetClick(preset)}
             className={`
-              px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200
+              px-4 py-2 rounded-lg text-xs uppercase tracking-wider transition-all duration-200
               ${
                 activePreset === preset.label
-                  ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/30'
-                  : 'bg-white/5 text-white/70 hover:bg-white/10 hover:text-white'
+                  ? 'bg-white/10 text-white border border-white/20'
+                  : 'bg-black/20 text-white/50 border border-white/10 hover:border-white/20 hover:text-white/70'
               }
             `}
           >
@@ -143,62 +148,77 @@ export function DateRangePicker({
         ))}
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="px-4 py-2 rounded-lg text-sm font-medium bg-white/5 text-white/70 hover:bg-white/10 hover:text-white transition-all duration-200 flex items-center gap-2"
+          className="px-4 py-2 rounded-lg text-xs uppercase tracking-wider bg-black/20 text-white/50 border border-white/10 hover:border-white/20 hover:text-white/70 transition-all duration-200 flex items-center gap-2"
         >
           <Calendar className="w-4 h-4" />
           Custom
         </button>
       </div>
 
-      {/* Custom Date Modal */}
+      {/* Custom Date Modal - Apple Style Dark Theme */}
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-md">
           <div
             ref={modalRef}
-            className="bg-gray-900 border border-white/10 rounded-2xl shadow-2xl w-full max-w-md p-6 animate-in fade-in zoom-in-95 duration-200"
+            className="bg-[#1c1c1e] border border-white/10 rounded-2xl shadow-2xl w-full max-w-lg p-6"
+            style={{
+              animation: 'fadeIn 0.2s ease-out',
+            }}
           >
             {/* Modal Header */}
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-lg font-semibold text-white">Select Date Range</h3>
               <button
                 onClick={() => setIsOpen(false)}
-                className="text-white/40 hover:text-white transition-colors"
+                className="w-8 h-8 flex items-center justify-center rounded-full text-white/40 hover:text-white hover:bg-white/10 transition-all"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {/* Current Selection Display */}
-            <div className="bg-white/5 rounded-lg p-4 mb-6">
-              <div className="text-white/40 text-xs uppercase tracking-wider mb-2">Selected Range</div>
-              <div className="text-white text-sm">{formatDateRange(value)}</div>
+            <div className="bg-white/5 rounded-xl p-4 mb-6 border border-white/5">
+              <div className="text-white/40 text-xs uppercase tracking-wider mb-2 font-medium">Selected Range</div>
+              <div className="text-white text-base font-medium">{formatDateRange(value)}</div>
             </div>
 
             {/* Calendar Component */}
-            <CalendarGrid value={value} onChange={onChange} />
+            <CalendarGrid value={value} onChange={onChange} onClose={() => setIsOpen(false)} />
 
             {/* Comparison Toggle */}
             {onCompareChange && (
               <div className="mt-6 pt-6 border-t border-white/10">
-                <label className="flex items-center gap-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={isCompareEnabled}
-                    onChange={handleCompareToggle}
-                    className="w-4 h-4 rounded border-white/20 bg-white/5 text-blue-500 focus:ring-2 focus:ring-blue-500/20"
-                  />
-                  <span className="text-white/80 text-sm">Compare to previous period</span>
+                <label className="flex items-center gap-3 cursor-pointer group">
+                  <div className="relative">
+                    <input
+                      type="checkbox"
+                      checked={isCompareEnabled}
+                      onChange={handleCompareToggle}
+                      className="w-5 h-5 rounded border-white/20 bg-white/5 text-blue-500 focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
+                    />
+                  </div>
+                  <span className="text-white/80 text-sm group-hover:text-white transition-colors">
+                    Compare to previous period
+                  </span>
                 </label>
               </div>
             )}
 
-            {/* Apply Button */}
-            <button
-              onClick={() => setIsOpen(false)}
-              className="w-full mt-6 px-4 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium transition-colors"
-            >
-              Apply
-            </button>
+            {/* Action Buttons */}
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => setIsOpen(false)}
+                className="flex-1 px-4 py-3 bg-white/5 hover:bg-white/10 text-white/70 hover:text-white rounded-xl font-medium transition-all border border-white/10"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => setIsOpen(false)}
+                className="flex-1 px-4 py-3 bg-[#007AFF] hover:bg-[#0051D5] text-white rounded-xl font-medium transition-all shadow-lg shadow-blue-500/20"
+              >
+                Apply
+              </button>
+            </div>
           </div>
         </div>
       )}

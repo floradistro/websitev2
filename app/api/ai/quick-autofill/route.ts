@@ -70,10 +70,14 @@ export async function POST(request: NextRequest) {
     });
     const exa = new Exa(process.env.EXASEARCH_API_KEY);
 
-    const { productName, category, selectedFields, customPrompt } = await request.json();
+    const { productName, category, selectedFields, customPrompt } =
+      await request.json();
 
     if (!productName) {
-      return NextResponse.json({ error: "Product name required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Product name required" },
+        { status: 400 },
+      );
     }
 
     // Quick web search

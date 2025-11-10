@@ -31,12 +31,19 @@ export async function POST(request: NextRequest) {
 
   const encoder = new TextEncoder();
 
-  const { messages, agentId, conversationId, context = {} } = await request.json();
+  const {
+    messages,
+    agentId,
+    conversationId,
+    context = {},
+  } = await request.json();
 
   const stream = new ReadableStream({
     async start(controller) {
       const send = (event: string, data: any) => {
-        controller.enqueue(encoder.encode(`data: ${JSON.stringify({ event, ...data })}\n\n`));
+        controller.enqueue(
+          encoder.encode(`data: ${JSON.stringify({ event, ...data })}\n\n`),
+        );
       };
 
       try {

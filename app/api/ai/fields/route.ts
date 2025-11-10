@@ -49,7 +49,8 @@ export async function POST(request: NextRequest) {
 
     // AI generates a unique field_id if not provided
     const field_id =
-      field_config.field_id || `ai_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      field_config.field_id ||
+      `ai_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
     const { data, error } = await supabase
       .from("vendor_custom_fields")
