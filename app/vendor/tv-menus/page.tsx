@@ -135,14 +135,6 @@ export default function SimpleTVMenusPage() {
   // Open New Display modal
   const [showOpenNewDisplay, setShowOpenNewDisplay] = useState(false);
 
-  // Reset location filter on mount to prevent React Fast Refresh from preserving stale state
-  useEffect(() => {
-    setSelectedLocation(null);
-  }, []);
-
-  // Debug: Track when selectedLocation changes
-  useEffect(() => {}, [selectedLocation]);
-
   // Load user location permissions
   useEffect(() => {
     const loadUserLocations = async () => {
@@ -157,6 +149,7 @@ export default function SimpleTVMenusPage() {
       if (isAdmin) {
         setAccessibleLocationIds([]); // Empty array means "all locations"
         setPermissionsLoaded(true);
+        // Don't auto-select - let them choose from location picker (unless only 1 location exists)
         return;
       }
 
@@ -183,10 +176,23 @@ export default function SimpleTVMenusPage() {
       if (locationIds.length === 1) {
         setSelectedLocation(locationIds[0]);
       }
+      // If staff has multiple locations, they'll see the location picker
     };
 
     loadUserLocations();
   }, [user, vendor, role]);
+
+  // Auto-select location if there's only one (for admins too)
+  useEffect(() => {
+    if (
+      permissionsLoaded &&
+      !selectedLocation &&
+      locations.length === 1 &&
+      locations[0]
+    ) {
+      setSelectedLocation(locations[0].id);
+    }
+  }, [permissionsLoaded, selectedLocation, locations]);
 
   // Load everything
   const loadData = useCallback(async () => {
@@ -695,6 +701,92 @@ export default function SimpleTVMenusPage() {
     );
   }
 
+  // Handle case where user has no locations at all
+  if (permissionsLoaded && locations.length === 0) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center p-6">
+        <div className="text-center max-w-md">
+          <Tv size={64} className="text-white/20 mx-auto mb-6" />
+          <h1 className="text-3xl font-black text-white mb-3">
+            No Locations Found
+          </h1>
+          <p className="text-white/60">
+            You need at least one location to manage digital signage displays.
+            Please contact your administrator.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Location Selection Screen - Force users to pick a location first if they have multiple
+  const needsLocationSelection =
+    permissionsLoaded &&
+    !selectedLocation &&
+    locations.length > 1 &&
+    (accessibleLocationIds.length === 0 || accessibleLocationIds.length > 1);
+
+  if (needsLocationSelection) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center p-6">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="max-w-2xl w-full"
+        >
+          <div className="text-center mb-12">
+            <h1 className="text-4xl font-black text-white mb-3">
+              Digital Signage
+            </h1>
+            <p className="text-white/60 text-lg">
+              Select a location to manage its displays
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {locations.map((location) => (
+              <motion.button
+                key={location.id}
+                onClick={() => setSelectedLocation(location.id)}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 rounded-2xl p-8 text-left transition-all group"
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <Tv
+                    size={32}
+                    className="text-white/40 group-hover:text-white/60 transition-colors"
+                  />
+                  <div className="text-white/40 text-sm">
+                    {
+                      devices.filter(
+                        (d) =>
+                          d.location_id === location.id &&
+                          d.connection_status === "online",
+                      ).length
+                    }{" "}
+                    online
+                  </div>
+                </div>
+                <h2 className="text-2xl font-bold text-white mb-2">
+                  {location.name}
+                </h2>
+                <p className="text-white/60 text-sm">
+                  {devices.filter((d) => d.location_id === location.id).length}{" "}
+                  displays
+                </p>
+              </motion.button>
+            ))}
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
+
+  // Get the current location name for display
+  const currentLocationName =
+    locations.find((loc) => loc.id === selectedLocation)?.name || "Location";
+
   return (
     <div className="min-h-screen bg-black">
       {/* Header */}
@@ -709,47 +801,30 @@ export default function SimpleTVMenusPage() {
                 Digital Signage
               </h1>
               <p className="text-[10px] uppercase tracking-[0.15em] text-white/40">
+                {currentLocationName} ·{" "}
                 {devices.filter((d) => d.connection_status === "online").length}{" "}
                 of {devices.length} Displays Online · {menus.length} Menus
-                {user && (
-                  <span className="ml-2">
-                    · Logged in as: {user.email} ({role})
-                  </span>
-                )}
               </p>
             </div>
 
             <div className="flex items-center gap-3">
-              {/* Location Selector - Only show if user has access to multiple locations or is admin */}
-              {/* Hide dropdown for staff with single location */}
-              {(() => {
-                const shouldShowDropdown =
-                  permissionsLoaded &&
-                  locations.length > 0 &&
-                  (accessibleLocationIds.length === 0 ||
-                    accessibleLocationIds.length > 1);
-
-                return shouldShowDropdown;
-              })() && (
-                <select
-                  value={selectedLocation || ""}
-                  onChange={(e) => setSelectedLocation(e.target.value || null)}
-                  className="appearance-none bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm font-medium cursor-pointer hover:bg-white/10 transition-colors focus:outline-none focus:ring-2 focus:ring-white/20"
-                >
-                  {/* Show "All Locations" only for admins or staff with multiple locations */}
-                  {(accessibleLocationIds.length === 0 ||
-                    accessibleLocationIds.length > 1) && (
-                    <option value="" className="bg-black">
-                      All Locations
-                    </option>
-                  )}
-                  {locations.map((loc) => (
-                    <option key={loc.id} value={loc.id} className="bg-black">
-                      {loc.name}
-                    </option>
-                  ))}
-                </select>
-              )}
+              {/* Location Switcher - Show for multi-location users */}
+              {permissionsLoaded &&
+                locations.length > 1 &&
+                (accessibleLocationIds.length === 0 ||
+                  accessibleLocationIds.length > 1) && (
+                  <select
+                    value={selectedLocation || ""}
+                    onChange={(e) => setSelectedLocation(e.target.value || null)}
+                    className="appearance-none bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm font-medium cursor-pointer hover:bg-white/10 transition-colors focus:outline-none focus:ring-2 focus:ring-white/20"
+                  >
+                    {locations.map((loc) => (
+                      <option key={loc.id} value={loc.id} className="bg-black">
+                        {loc.name}
+                      </option>
+                    ))}
+                  </select>
+                )}
 
               {/* Open New Display Button */}
               <button

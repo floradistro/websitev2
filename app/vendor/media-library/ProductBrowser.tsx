@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Search, Package, AlertCircle, CheckCircle2, Loader2, Sparkles } from "lucide-react";
+import { Search, Package, AlertCircle, CheckCircle2, Loader2, Sparkles, Square, CheckSquare } from "lucide-react";
 
 interface Product {
   id: string;
@@ -21,6 +21,9 @@ interface ProductBrowserProps {
   onDragStart?: (product: Product) => void;
   onProductSelect?: (product: Product) => void;
   onLinkMedia?: (productId: string, mediaFilePath: string) => void;
+  selectionMode?: boolean;
+  selectedProducts?: Set<string>;
+  onSelectionChange?: (selectedIds: Set<string>) => void;
 }
 
 export default function ProductBrowser({
@@ -28,6 +31,9 @@ export default function ProductBrowser({
   onDragStart,
   onProductSelect,
   onLinkMedia,
+  selectionMode = false,
+  selectedProducts = new Set(),
+  onSelectionChange,
 }: ProductBrowserProps) {
   const [dragOver, setDragOver] = useState<string | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
@@ -93,6 +99,18 @@ export default function ProductBrowser({
       loadStats();
     }
   }, [vendorId, filter, search]);
+
+  const handleToggleSelection = (productId: string) => {
+    if (!selectionMode || !onSelectionChange) return;
+
+    const newSelection = new Set(selectedProducts);
+    if (newSelection.has(productId)) {
+      newSelection.delete(productId);
+    } else {
+      newSelection.add(productId);
+    }
+    onSelectionChange(newSelection);
+  };
 
   return (
     <div className="h-full flex flex-col bg-black border-r border-white/[0.08]">
@@ -188,9 +206,17 @@ export default function ProductBrowser({
                   }
                   setDragOver(null);
                 }}
-                onClick={() => onProductSelect?.(product)}
+                onClick={() => {
+                  if (selectionMode) {
+                    handleToggleSelection(product.id);
+                  } else {
+                    onProductSelect?.(product);
+                  }
+                }}
                 className={`group p-2.5 rounded-lg border transition-all cursor-pointer ${
-                  dragOver === product.id
+                  selectionMode && selectedProducts.has(product.id)
+                    ? "bg-purple-500/20 border-purple-500/50"
+                    : dragOver === product.id
                     ? "bg-purple-500/20 border-purple-500/50 scale-105"
                     : product.has_image
                     ? "bg-white/[0.02] border-white/[0.06] opacity-60"
@@ -199,7 +225,13 @@ export default function ProductBrowser({
               >
                 <div className="flex items-start gap-2">
                   <div className="flex-shrink-0 mt-0.5">
-                    {product.has_image ? (
+                    {selectionMode ? (
+                      selectedProducts.has(product.id) ? (
+                        <CheckSquare className="w-3.5 h-3.5 text-purple-500" />
+                      ) : (
+                        <Square className="w-3.5 h-3.5 text-white/40" />
+                      )
+                    ) : product.has_image ? (
                       <CheckCircle2 className="w-3.5 h-3.5 text-green-500/60" />
                     ) : (
                       <AlertCircle className="w-3.5 h-3.5 text-orange-500/60" />

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, memo, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { useAppAuth } from "@/context/AppAuthContext";
 import {
   ImagePlus,
@@ -26,6 +27,8 @@ import {
   Zap,
 } from "lucide-react";
 import ProductBrowser from "./ProductBrowser";
+import GenerationInterface from "./GenerationInterface";
+import type { PromptTemplate } from "@/lib/types/prompt-template";
 
 interface MediaFile {
   id: string;
@@ -136,6 +139,7 @@ const GridItem = memo(
 GridItem.displayName = "GridItem";
 
 export default function MediaLibraryClient() {
+  const router = useRouter();
   const { vendor } = useAppAuth();
   const [files, setFiles] = useState<MediaFile[]>([]);
   const [loading, setLoading] = useState(true);
@@ -151,8 +155,34 @@ export default function MediaLibraryClient() {
   const [autoMatching, setAutoMatching] = useState(false);
   const [contextMenu, setContextMenu] = useState<ContextMenu | null>(null);
   const [editingFile, setEditingFile] = useState<MediaFile | null>(null);
-  const [showGeneratePanel, setShowGeneratePanel] = useState(false);
-  const [generatePrompt, setGeneratePrompt] = useState("");
+
+  // Generation mode state
+  const [generationMode, setGenerationMode] = useState(false);
+  const [selectedProductsForGeneration, setSelectedProductsForGeneration] = useState<Set<string>>(new Set());
+  const [productsForGeneration, setProductsForGeneration] = useState<Array<{ id: string; name: string }>>([]);
+
+  // Load products for generation when mode is enabled
+  useEffect(() => {
+    const loadProductsForGen = async () => {
+      if (!generationMode || !vendor?.id) return;
+
+      try {
+        const response = await fetch(`/api/vendor/products/list?filter=all`, {
+          headers: { "x-vendor-id": vendor.id },
+        });
+        const data = await response.json();
+        if (data.success && data.products) {
+          setProductsForGeneration(
+            data.products.map((p: any) => ({ id: p.id, name: p.name }))
+          );
+        }
+      } catch (error) {
+        console.error("Error loading products for generation:", error);
+      }
+    };
+
+    loadProductsForGen();
+  }, [generationMode, vendor?.id]);
 
   // Individual loading states for each AI operation
   const [retagging, setRetagging] = useState(false);
@@ -596,36 +626,10 @@ export default function MediaLibraryClient() {
     }
   };
 
-  // Generate Image with AI
+  // Generate Image with AI - TODO: Re-implement with proper state
   const handleGenerateImage = async () => {
-    if (!vendor?.id || !generatePrompt.trim()) return;
-    setGenerating(true);
-
-    try {
-      const response = await fetch("/api/vendor/media/ai-generate", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-vendor-id": vendor.id,
-        },
-        body: JSON.stringify({
-          prompt: generatePrompt,
-          category: selectedCategory || "product_photos",
-        }),
-      });
-
-      if (response.ok) {
-        await loadMedia();
-        setGeneratePrompt("");
-        setShowGeneratePanel(false);
-      }
-    } catch (error) {
-      if (process.env.NODE_ENV === "development") {
-        console.error("Generate image error:", error);
-      }
-    } finally {
-      setGenerating(false);
-    }
+    // Disabled until generationPrompt state is properly implemented
+    return;
   };
 
   // Fix broken image records (.jpg -> .png)
@@ -843,18 +847,6 @@ export default function MediaLibraryClient() {
             )}
 
             <button
-              onClick={() => setShowGeneratePanel(!showGeneratePanel)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${
-                showGeneratePanel
-                  ? "bg-white/[0.12] text-white"
-                  : "bg-white/[0.06] text-white/80 hover:bg-white/[0.1] hover:text-white"
-              }`}
-            >
-              <Sparkles className="w-3 h-3 inline mr-1.5" />
-              Generate
-            </button>
-
-            <button
               onClick={() => fileInputRef.current?.click()}
               disabled={isUploading}
               className="bg-white text-black px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-white/90 transition-all disabled:opacity-50 flex items-center gap-1.5 whitespace-nowrap"
@@ -875,50 +867,6 @@ export default function MediaLibraryClient() {
         </div>
       </div>
 
-      {/* AI Generate Panel */}
-      {showGeneratePanel && (
-        <div className="bg-white/[0.02] border-b border-white/[0.06] px-6 py-4">
-          <div className="flex items-center gap-3">
-            <input
-              type="text"
-              value={generatePrompt}
-              onChange={(e) => setGeneratePrompt(e.target.value)}
-              onKeyPress={(e) => {
-                if (
-                  e.key === "Enter" &&
-                  generatePrompt.trim() &&
-                  !aiProcessing
-                ) {
-                  handleGenerateImage();
-                }
-              }}
-              placeholder="Describe image to generate..."
-              className="flex-1 bg-white/[0.04] border border-white/[0.06] rounded-xl px-4 py-2 text-sm text-white placeholder:text-white/30 focus:outline-none focus:bg-white/[0.06] focus:border-white/[0.12] transition-colors"
-            />
-            <button
-              onClick={handleGenerateImage}
-              disabled={generating || !generatePrompt.trim()}
-              className="bg-white text-black px-4 py-2 rounded-xl text-sm font-medium hover:bg-white/90 transition-colors disabled:opacity-50 flex items-center gap-2"
-            >
-              {generating ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Generating...</span>
-                </>
-              ) : (
-                <span>Generate</span>
-              )}
-            </button>
-            <button
-              onClick={() => setShowGeneratePanel(false)}
-              className="p-2 text-white/40 hover:text-white transition-colors"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-      )}
-
       {/* Main Content - Split View or Media-Only */}
       {splitViewMode ? (
         <div className="flex-1 flex overflow-hidden">
@@ -930,6 +878,9 @@ export default function MediaLibraryClient() {
                 onDragStart={(product) => setDropTargetProduct(product.id)}
                 onProductSelect={(product) => console.log("Selected:", product)}
                 onLinkMedia={handleLinkProductToMedia}
+                selectionMode={generationMode}
+                selectedProducts={selectedProductsForGeneration}
+                onSelectionChange={setSelectedProductsForGeneration}
               />
             )}
           </div>
@@ -941,7 +892,16 @@ export default function MediaLibraryClient() {
               {categories.map((cat) => (
                 <button
                   key={cat.label}
-                  onClick={() => setSelectedCategory(cat.value)}
+                  onClick={() => {
+                    setSelectedCategory(cat.value);
+                    // Auto-enable generation mode for non-"All Media" categories
+                    if (cat.value !== null) {
+                      setGenerationMode(true);
+                      if (!splitViewMode) setSplitViewMode(true);
+                    } else {
+                      setGenerationMode(false);
+                    }
+                  }}
                   className={`flex-shrink-0 px-4 py-1.5 rounded-xl text-xs font-medium transition-colors ${
                     selectedCategory === cat.value
                       ? "bg-white/[0.12] text-white"
@@ -957,9 +917,32 @@ export default function MediaLibraryClient() {
               </span>
             </div>
 
-            {/* Grid with Drop Zone */}
-            <div className="flex-1 overflow-y-auto p-6">
-              {filteredFiles.length === 0 ? (
+            {/* Grid with Drop Zone OR Generation Interface */}
+            <div className="flex-1 overflow-hidden">
+              {generationMode && selectedCategory === "product_photos" ? (
+                /* GENERATION MODE - Products */
+                <GenerationInterface
+                  vendorId={vendor?.id || ""}
+                  selectedProducts={selectedProductsForGeneration}
+                  products={productsForGeneration}
+                  onGenerated={() => loadMedia()}
+                />
+              ) : generationMode ? (
+                /* GENERATION MODE - Other categories (Coming Soon) */
+                <div className="h-full flex items-center justify-center">
+                  <div className="text-center max-w-md">
+                    <Sparkles className="w-16 h-16 text-white/30 mx-auto mb-4" strokeWidth={1} />
+                    <h3 className="text-xl text-white font-light mb-2">
+                      {selectedCategory === "marketing" && "Marketing Generation"}
+                      {selectedCategory === "menus" && "Menu Generation"}
+                      {selectedCategory === "brand" && "Brand Generation"}
+                    </h3>
+                    <p className="text-sm text-white/50 font-light">
+                      Coming soon
+                    </p>
+                  </div>
+                </div>
+              ) : filteredFiles.length === 0 ? (
                 <div className="h-full flex items-center justify-center">
                   <div className="text-center">
                     <div className="w-20 h-20 rounded-2xl bg-white/[0.04] border border-white/[0.06] flex items-center justify-center mx-auto mb-6">
@@ -1360,6 +1343,7 @@ export default function MediaLibraryClient() {
         onChange={(e) => e.target.files && handleFileUpload(e.target.files)}
         className="hidden"
       />
+
     </div>
   );
 }
