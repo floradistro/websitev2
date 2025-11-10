@@ -52,7 +52,10 @@ export async function POST(request: NextRequest) {
     const { section_key } = await request.json();
 
     if (!section_key) {
-      return NextResponse.json({ error: "section_key required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "section_key required" },
+        { status: 400 },
+      );
     }
 
     const supabase = getServiceSupabase();

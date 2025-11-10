@@ -9,7 +9,10 @@ export async function POST(request: NextRequest) {
     const { code, customer_id, cart_total, product_ids = [] } = body;
 
     if (!code) {
-      return NextResponse.json({ error: "Coupon code required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Coupon code required" },
+        { status: 400 },
+      );
     }
 
     const supabase = getServiceSupabase();
@@ -74,7 +77,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Check email restrictions
-    if (coupon.allowed_emails && coupon.allowed_emails.length > 0 && customer_id) {
+    if (
+      coupon.allowed_emails &&
+      coupon.allowed_emails.length > 0 &&
+      customer_id
+    ) {
       const { data: customer } = await supabase
         .from("customers")
         .select("email")

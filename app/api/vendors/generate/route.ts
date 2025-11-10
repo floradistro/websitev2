@@ -28,7 +28,8 @@ export async function POST(request: NextRequest) {
     }
 
     const agentUrl = process.env.MCP_AGENT_URL || "http://localhost:3001";
-    const agentSecret = process.env.MCP_AGENT_SECRET || "yacht-club-secret-2025";
+    const agentSecret =
+      process.env.MCP_AGENT_SECRET || "yacht-club-secret-2025";
 
     // Call AI Agent server
     const response = await fetch(`${agentUrl}/api/generate-storefront`, {
@@ -47,7 +48,9 @@ export async function POST(request: NextRequest) {
     if (!response.ok) {
       const error = await response.text();
       if (process.env.NODE_ENV === "development") {
-        logger.error("Agent server error", new Error(error), { status: response.status });
+        logger.error("Agent server error", new Error(error), {
+          status: response.status,
+        });
       }
       throw new Error(`Agent server error: ${response.status}`);
     }

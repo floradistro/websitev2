@@ -83,7 +83,8 @@ export async function POST(request: NextRequest) {
     if (!code || !discount_type || discount_amount === undefined) {
       return NextResponse.json(
         {
-          error: "Missing required fields: code, discount_type, discount_amount",
+          error:
+            "Missing required fields: code, discount_type, discount_amount",
         },
         { status: 400 },
       );

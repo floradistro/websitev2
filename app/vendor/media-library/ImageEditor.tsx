@@ -274,6 +274,69 @@ export default function ImageEditor({ image, vendorId, onClose, onSave }: ImageE
     link.click();
   };
 
+  // Magic Remove - Click to remove similar colors
+  const handleMagicRemoveClick = async (e: React.MouseEvent<HTMLDivElement>) => {
+    if (activeTool !== "magic-remove") return;
+    if (!imageRef.current) return;
+
+    const rect = imageRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    // Get color at clicked position
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    canvas.width = imageRef.current.naturalWidth;
+    canvas.height = imageRef.current.naturalHeight;
+
+    // Draw image to canvas
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.src = currentImage;
+    await new Promise((resolve) => (img.onload = resolve));
+
+    ctx.drawImage(img, 0, 0);
+
+    // Get pixel color at click position
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const imageData = ctx.getImageData(x * scaleX, y * scaleY, 1, 1);
+    const [r, g, b] = imageData.data;
+
+    setIsProcessing(true);
+    try {
+      const response = await fetch("/api/vendor/media/remove-color", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-vendor-id": vendorId,
+        },
+        body: JSON.stringify({
+          imageUrl: currentImage,
+          color: { r, g, b },
+          tolerance: 30, // Color similarity tolerance
+          fileName: image.file_name,
+        }),
+      });
+
+      if (!response.ok) throw new Error("Failed to remove color");
+
+      const data = await response.json();
+      if (data.success && data.url) {
+        setCurrentImage(data.url);
+        addToHistory(data.url, "Magic Removed");
+        setActiveTool(null);
+      }
+    } catch (error) {
+      console.error("Error removing color:", error);
+      alert("Failed to remove color. This feature requires server-side implementation.");
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   // Canvas brush drawing handlers
   const startDrawing = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!activeTool || (activeTool !== "erase" && activeTool !== "restore")) return;
@@ -479,10 +542,17 @@ export default function ImageEditor({ image, vendorId, onClose, onSave }: ImageE
               Brush Restore
             </button>
             <button
-              onClick={() => alert("Refine Edges - Auto-clean edges (Coming soon)")}
+              onClick={async () => {
+                setIsProcessing(true);
+                try {
+                  alert("Refine Edges will use AI to clean jagged edges - Coming soon!");
+                } finally {
+                  setIsProcessing(false);
+                }
+              }}
               disabled={isProcessing}
               className="px-3 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-white text-xs font-medium flex items-center justify-center gap-1.5 transition-all disabled:opacity-50"
-              title="Automatically refine edges"
+              title="Automatically refine edges (Coming soon)"
             >
               <Minimize2 className="w-3.5 h-3.5" />
               Refine Edges
@@ -724,13 +794,16 @@ export default function ImageEditor({ image, vendorId, onClose, onSave }: ImageE
           ) : (
             <div
               className="relative"
+              onClick={handleMagicRemoveClick}
               onMouseDown={startDrawing}
               onMouseMove={draw}
               onMouseUp={stopDrawing}
               onMouseLeave={stopDrawing}
               style={{
                 cursor:
-                  activeTool === "erase" || activeTool === "restore"
+                  activeTool === "magic-remove"
+                    ? `pointer`
+                    : activeTool === "erase" || activeTool === "restore"
                     ? `crosshair`
                     : "default",
               }}
@@ -744,7 +817,17 @@ export default function ImageEditor({ image, vendorId, onClose, onSave }: ImageE
                   filter: `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%)`,
                 }}
               />
-              {/* Brush cursor indicator */}
+              {/* Tool indicators */}
+              {activeTool === "magic-remove" && (
+                <div className="absolute top-2 right-2 px-3 py-2 bg-black/60 backdrop-blur-sm rounded-lg border border-orange-500/50">
+                  <div className="text-xs text-orange-300 font-medium mb-1">
+                    🪄 Magic Remove Mode
+                  </div>
+                  <div className="text-xs text-white/60">
+                    Click on a color to remove it
+                  </div>
+                </div>
+              )}
               {(activeTool === "erase" || activeTool === "restore") && (
                 <div className="absolute top-2 right-2 px-3 py-2 bg-black/60 backdrop-blur-sm rounded-lg border border-white/20">
                   <div className="text-xs text-white/80 font-medium mb-1">

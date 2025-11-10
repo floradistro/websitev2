@@ -53,7 +53,10 @@ export async function POST(request: NextRequest) {
     const { preset_id, section_id, apply_globally } = await request.json();
 
     if (!preset_id) {
-      return NextResponse.json({ error: "preset_id required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "preset_id required" },
+        { status: 400 },
+      );
     }
 
     const supabase = getServiceSupabase();

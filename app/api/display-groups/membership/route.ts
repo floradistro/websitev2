@@ -20,7 +20,10 @@ export async function GET(request: NextRequest) {
     const deviceId = searchParams.get("device_id");
 
     if (!deviceId) {
-      return NextResponse.json({ success: false, error: "Device ID required" }, { status: 400 });
+      return NextResponse.json(
+        { success: false, error: "Device ID required" },
+        { status: 400 },
+      );
     }
 
     const supabase = getServiceSupabase();
@@ -40,7 +43,10 @@ export async function GET(request: NextRequest) {
       if (process.env.NODE_ENV === "development") {
         logger.error("Error checking group membership:", memberError);
       }
-      return NextResponse.json({ success: false, error: memberError.message }, { status: 500 });
+      return NextResponse.json(
+        { success: false, error: memberError.message },
+        { status: 500 },
+      );
     }
 
     // Check if any results were returned
@@ -67,6 +73,9 @@ export async function GET(request: NextRequest) {
     if (process.env.NODE_ENV === "development") {
       logger.error("Group membership GET error:", err);
     }
-    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+    return NextResponse.json(
+      { success: false, error: err.message },
+      { status: 500 },
+    );
   }
 }

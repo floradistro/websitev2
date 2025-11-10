@@ -10,15 +10,15 @@ import { toError } from "@/lib/errors";
  */
 export async function GET(
   request: NextRequest,
-  {
-  // SECURITY: Require authentication
-  const authResult = await requireAuth(request);
-  if (authResult instanceof NextResponse) {
-    return authResult;
-  }
- params }: { params: Promise<{ appId: string }> },
+  { params }: { params: Promise<{ appId: string }> },
 ) {
   try {
+    // SECURITY: Require authentication
+    const authResult = await requireAuth(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
+    }
+
     const { appId } = await params;
     const supabase = getServiceSupabase();
 

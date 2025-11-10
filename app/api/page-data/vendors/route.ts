@@ -76,9 +76,13 @@ export async function GET(request: NextRequest) {
     const vendors = (vendorsResult.data || []).map((v: any) => {
       const stats = vendorStats[v.id] || { count: 0, categories: new Set() };
       const socialLinks =
-        typeof v.social_links === "string" ? JSON.parse(v.social_links) : v.social_links || {};
+        typeof v.social_links === "string"
+          ? JSON.parse(v.social_links)
+          : v.social_links || {};
       const brandColors =
-        typeof v.brand_colors === "string" ? JSON.parse(v.brand_colors) : v.brand_colors || {};
+        typeof v.brand_colors === "string"
+          ? JSON.parse(v.brand_colors)
+          : v.brand_colors || {};
 
       return {
         id: v.id,
@@ -117,7 +121,10 @@ export async function GET(request: NextRequest) {
       totalProducts: vendors.reduce((sum, v) => sum + v.totalProducts, 0),
       averageRating:
         vendors.length > 0
-          ? (vendors.reduce((sum, v) => sum + (v.rating || 0), 0) / vendors.length).toFixed(1)
+          ? (
+              vendors.reduce((sum, v) => sum + (v.rating || 0), 0) /
+              vendors.length
+            ).toFixed(1)
           : "0.0",
       featuredVendor: vendors.find((v) => v.featured) || vendors[0] || null,
     };

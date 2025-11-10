@@ -67,7 +67,10 @@ export async function POST(request: NextRequest) {
       if (process.env.NODE_ENV === "development") {
         logger.error("Error creating vendor:", error);
       }
-      return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+      return NextResponse.json(
+        { success: false, error: error.message },
+        { status: 500 },
+      );
     }
 
     return NextResponse.json({

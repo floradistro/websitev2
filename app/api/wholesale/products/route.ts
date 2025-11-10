@@ -81,7 +81,9 @@ export async function GET(request: NextRequest) {
     }
 
     // Pagination
-    query = query.range(offset, offset + limit - 1).order("created_at", { ascending: false });
+    query = query
+      .range(offset, offset + limit - 1)
+      .order("created_at", { ascending: false });
 
     const { data: products, error, count } = await query;
 
