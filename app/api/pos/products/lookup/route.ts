@@ -1,11 +1,18 @@
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { NextRequest, NextResponse } from "next/server";
+import { requireVendor } from "@/lib/auth/middleware";
 
 import { logger } from "@/lib/logger";
 import { toError } from "@/lib/errors";
 // GET /api/pos/products/lookup?sku=ABC-123&location_id=xxx
 export async function GET(request: NextRequest) {
-  try {
+  
+  // SECURITY: Require vendor authentication
+  const authResult = await requireVendor(request);
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+try {
     const supabase = getServiceSupabase();
     const { searchParams } = new URL(request.url);
 
@@ -150,7 +157,13 @@ export async function GET(request: NextRequest) {
 
 // POST /api/pos/products/lookup - Batch lookup by multiple SKUs
 export async function POST(request: NextRequest) {
-  try {
+  
+  // SECURITY: Require vendor authentication
+  const authResult = await requireVendor(request);
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+try {
     const supabase = getServiceSupabase();
     const body = await request.json();
     const { skus, location_id } = body;

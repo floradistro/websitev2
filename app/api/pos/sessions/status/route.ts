@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { requireVendor } from "@/lib/auth/middleware";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
 import { logger } from "@/lib/logger";
@@ -12,7 +13,13 @@ export const runtime = "nodejs";
  * Used by POS for 2-second polling to detect closed sessions
  */
 export async function GET(request: NextRequest) {
-  try {
+  
+  // SECURITY: Require vendor authentication
+  const authResult = await requireVendor(request);
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+try {
     const { searchParams } = new URL(request.url);
     const sessionId = searchParams.get("sessionId");
 

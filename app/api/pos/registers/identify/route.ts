@@ -1,11 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
+import { requireVendor } from "@/lib/auth/middleware";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
 import { logger } from "@/lib/logger";
 import { toError } from "@/lib/errors";
 // POST /api/pos/registers/identify - Identify/claim a register for this device
 export async function POST(request: NextRequest) {
-  try {
+  
+  // SECURITY: Require vendor authentication
+  const authResult = await requireVendor(request);
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+try {
     const body = await request.json();
     const { deviceId, locationId, registerId } = body;
 

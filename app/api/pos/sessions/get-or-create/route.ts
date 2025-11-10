@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { requireVendor } from "@/lib/auth/middleware";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
 import { logger } from "@/lib/logger";
@@ -25,7 +26,13 @@ export const runtime = "nodejs";
  */
 
 export async function POST(request: NextRequest) {
-  try {
+  
+  // SECURITY: Require vendor authentication
+  const authResult = await requireVendor(request);
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+try {
     const supabase = getServiceSupabase();
     const { registerId, locationId, vendorId, userId, openingCash = 200.0 } = await request.json();
 

@@ -55,7 +55,7 @@ export default function ImageEditor({ image, onClose, onSave }: ImageEditorProps
   const [brightness, setBrightness] = useState(100);
   const [contrast, setContrast] = useState(100);
   const [saturation, setSaturation] = useState(100);
-  const [sharpness, setSharpness] = useState(0);
+  const [processingProgress, setProcessingProgress] = useState(0);
 
   // Quality score (mock for now)
   const [qualityScore] = useState(85);
@@ -111,22 +111,50 @@ export default function ImageEditor({ image, onClose, onSave }: ImageEditorProps
   const handleMakePerfect = async () => {
     setIsProcessing(true);
     setActiveTool("perfect");
+    setProcessingProgress(0);
+
+    // Simulate progress animation
+    const progressInterval = setInterval(() => {
+      setProcessingProgress((prev) => Math.min(prev + 10, 90));
+    }, 200);
 
     try {
-      // TODO: Call AI API to auto-enhance
-      // For now, simulate processing
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      const response = await fetch("/api/vendor/media/edit", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-vendor-id": localStorage.getItem("vendorId") || "",
+        },
+        body: JSON.stringify({
+          imageUrl: currentImage,
+          operation: "auto-enhance",
+          params: {},
+        }),
+      });
 
-      // Mock: In reality, this would be the enhanced image URL from API
-      addToHistory(currentImage, "Made Perfect");
+      clearInterval(progressInterval);
+      setProcessingProgress(100);
 
-      alert("✨ Image enhanced! (API integration pending)");
+      if (!response.ok) {
+        throw new Error("Failed to enhance image");
+      }
+
+      const data = await response.json();
+
+      if (data.success && data.url) {
+        setCurrentImage(data.url);
+        addToHistory(data.url, "Made Perfect");
+      }
     } catch (error) {
+      clearInterval(progressInterval);
       console.error("Error enhancing image:", error);
       alert("Failed to enhance image");
     } finally {
-      setIsProcessing(false);
-      setActiveTool(null);
+      setTimeout(() => {
+        setIsProcessing(false);
+        setActiveTool(null);
+        setProcessingProgress(0);
+      }, 500);
     }
   };
 
@@ -135,15 +163,32 @@ export default function ImageEditor({ image, onClose, onSave }: ImageEditorProps
     setActiveTool("background");
 
     try {
-      // TODO: Call background removal API
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      const response = await fetch("/api/vendor/media/edit", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-vendor-id": localStorage.getItem("vendorId") || "",
+        },
+        body: JSON.stringify({
+          imageUrl: currentImage,
+          operation: "remove-background",
+          params: {},
+        }),
+      });
 
-      addToHistory(currentImage, "Background Removed");
+      if (!response.ok) {
+        throw new Error("Failed to remove background");
+      }
 
-      alert("🎨 Background removed! (API integration pending)");
+      const data = await response.json();
+
+      if (data.success && data.url) {
+        setCurrentImage(data.url);
+        addToHistory(data.url, "Background Removed");
+      }
     } catch (error) {
       console.error("Error removing background:", error);
-      alert("Failed to remove background");
+      alert("Failed to remove background. This feature requires a specialized background removal service.");
     } finally {
       setIsProcessing(false);
       setActiveTool(null);
@@ -155,12 +200,37 @@ export default function ImageEditor({ image, onClose, onSave }: ImageEditorProps
     setActiveTool("enhance");
 
     try {
-      // TODO: Apply enhancement with current slider values
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const response = await fetch("/api/vendor/media/edit", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-vendor-id": localStorage.getItem("vendorId") || "",
+        },
+        body: JSON.stringify({
+          imageUrl: currentImage,
+          operation: "enhance",
+          params: {
+            brightness,
+            contrast,
+            saturation,
+          },
+        }),
+      });
 
-      addToHistory(currentImage, "Enhanced");
+      if (!response.ok) {
+        throw new Error("Failed to enhance image");
+      }
 
-      alert("⚡ Image enhanced! (API integration pending)");
+      const data = await response.json();
+
+      if (data.success && data.url) {
+        setCurrentImage(data.url);
+        addToHistory(data.url, "Enhanced");
+        // Reset sliders
+        setBrightness(100);
+        setContrast(100);
+        setSaturation(100);
+      }
     } catch (error) {
       console.error("Error enhancing:", error);
       alert("Failed to enhance image");
@@ -297,23 +367,15 @@ export default function ImageEditor({ image, onClose, onSave }: ImageEditorProps
               />
             </div>
 
-            {/* Sharpness */}
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <label className="text-xs text-white/60 flex items-center gap-1.5">
-                  <Zap className="w-3.5 h-3.5" />
-                  Sharpness
-                </label>
-                <span className="text-xs text-white/40">{sharpness}%</span>
+            {/* Info about sharpening */}
+            <div className="bg-white/5 border border-white/10 rounded-lg p-3">
+              <div className="flex items-center gap-2 mb-1">
+                <Zap className="w-3.5 h-3.5 text-purple-400" />
+                <span className="text-xs text-white/80 font-medium">Pro Tip</span>
               </div>
-              <input
-                type="range"
-                min="0"
-                max="100"
-                value={sharpness}
-                onChange={(e) => setSharpness(Number(e.target.value))}
-                className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer"
-              />
+              <p className="text-xs text-white/60 leading-relaxed">
+                For sharpening, use "Make It Perfect" for AI-powered enhancement
+              </p>
             </div>
 
             <button
@@ -402,14 +464,22 @@ export default function ImageEditor({ image, onClose, onSave }: ImageEditorProps
         <div className="flex-1 flex items-center justify-center p-8 relative">
           {isProcessing && (
             <div className="absolute inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-10">
-              <div className="text-center">
+              <div className="text-center max-w-xs w-full px-8">
                 <div className="w-16 h-16 border-4 border-white/20 border-t-purple-500 rounded-full animate-spin mx-auto mb-4"></div>
-                <p className="text-white text-sm font-medium">Processing...</p>
-                <p className="text-white/40 text-xs mt-1">
+                <p className="text-white text-sm font-medium mb-2">Processing...</p>
+                <p className="text-white/40 text-xs mb-4">
                   {activeTool === "perfect" && "Making it perfect"}
                   {activeTool === "background" && "Removing background"}
-                  {activeTool === "enhance" && "Enhancing image"}
+                  {activeTool === "enhance" && "Applying enhancements"}
                 </p>
+                {/* Progress bar */}
+                <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-gradient-to-r from-purple-500 to-pink-500 transition-all duration-300 ease-out"
+                    style={{ width: `${processingProgress}%` }}
+                  />
+                </div>
+                <p className="text-white/60 text-xs mt-2 tabular-nums">{processingProgress}%</p>
               </div>
             </div>
           )}
