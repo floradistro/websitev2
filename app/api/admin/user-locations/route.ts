@@ -3,7 +3,14 @@ import { getServiceSupabase } from "@/lib/supabase/client";
 
 import { logger } from "@/lib/logger";
 import { toError } from "@/lib/errors";
+import { requireAdmin } from "@/lib/auth/middleware";
 export async function POST(request: NextRequest) {
+  // SECURITY: Require admin authentication
+  const authResult = await requireAdmin(request);
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+
   try {
     const { user_id, location_ids, is_primary_location } = await request.json();
 
@@ -71,6 +78,12 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET(request: NextRequest) {
+  // SECURITY: Require admin authentication
+  const authResult = await requireAdmin(request);
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+
   try {
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get("user_id");

@@ -3,12 +3,19 @@ import { jobQueue } from "@/lib/job-queue";
 
 import { logger } from "@/lib/logger";
 import { toError } from "@/lib/errors";
+import { requireAdmin } from "@/lib/auth/middleware";
 /**
  * Job Queue Management API
  * GET - Get job statistics and history
  * POST - Retry a failed job
  */
 export async function GET(request: NextRequest) {
+  // SECURITY: Require admin authentication
+  const authResult = await requireAdmin(request);
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+
   try {
     const { searchParams } = new URL(request.url);
     const action = searchParams.get("action");
@@ -79,6 +86,12 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  // SECURITY: Require admin authentication
+  const authResult = await requireAdmin(request);
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+
   try {
     const body = await request.json();
     const { action, jobId } = body;

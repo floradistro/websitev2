@@ -1,12 +1,19 @@
 import { createClient } from "@supabase/supabase-js";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { readFileSync } from "fs";
 import { join } from "path";
 
 import { logger } from "@/lib/logger";
 import { toError } from "@/lib/errors";
+import { requireAdmin } from "@/lib/auth/middleware";
 // This endpoint uses service role key to run migrations
-export async function POST() {
+export async function POST(request: NextRequest) {
+  // SECURITY: Require admin authentication
+  const authResult = await requireAdmin(request);
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+
   try {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
     const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;

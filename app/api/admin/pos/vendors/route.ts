@@ -3,10 +3,17 @@ import { getServiceSupabase } from "@/lib/supabase/client";
 
 import { logger } from "@/lib/logger";
 import { toError } from "@/lib/errors";
+import { requireAdmin } from "@/lib/auth/middleware";
 /**
  * GET - Get all vendors with their POS status
  */
 export async function GET(request: NextRequest) {
+  // SECURITY: Require admin authentication
+  const authResult = await requireAdmin(request);
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+
   try {
     const supabase = getServiceSupabase();
 
@@ -42,6 +49,12 @@ export async function GET(request: NextRequest) {
  * PATCH - Update vendor POS status
  */
 export async function PATCH(request: NextRequest) {
+  // SECURITY: Require admin authentication
+  const authResult = await requireAdmin(request);
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+
   try {
     const body = await request.json();
     const { vendorId, pos_enabled } = body;

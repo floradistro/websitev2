@@ -27,8 +27,39 @@ export async function GET(request: NextRequest) {
     const dateRange = parseDateRange(searchParams);
     const filters = parseFilters(searchParams);
 
-    // Query live from POS transactions (exclude those linked to orders)
-    let query = supabase
+    // Get orders with their employee info from linked POS transactions
+    let ordersQuery = supabase
+      .from("orders")
+      .select(
+        `
+        id,
+        total_amount,
+        subtotal,
+        discount_amount,
+        cost_of_goods,
+        pickup_location_id,
+        pos_transactions!inner(user_id, payment_method)
+      `,
+      )
+      .eq("vendor_id", vendorId)
+      .gte("order_date", dateRange.start_date)
+      .lte("order_date", dateRange.end_date)
+      .in("status", ["completed", "processing"])
+      .not("pos_transactions.user_id", "is", null);
+
+    if (filters.location_ids && filters.location_ids.length > 0) {
+      ordersQuery = ordersQuery.in("pickup_location_id", filters.location_ids);
+    }
+
+    if (filters.employee_ids && filters.employee_ids.length > 0) {
+      ordersQuery = ordersQuery.in("pos_transactions.user_id", filters.employee_ids);
+    }
+
+    const { data: orders, error: ordersError } = await ordersQuery;
+    if (ordersError) throw ordersError;
+
+    // Also get standalone POS transactions (not linked to orders)
+    let posQuery = supabase
       .from("pos_transactions")
       .select(
         `
@@ -46,19 +77,36 @@ export async function GET(request: NextRequest) {
       .lte("transaction_date", dateRange.end_date)
       .eq("payment_status", "completed")
       .not("user_id", "is", null)
-      .is("order_id", null); // Exclude POS transactions linked to orders
+      .is("order_id", null); // Only standalone POS transactions
 
     if (filters.location_ids && filters.location_ids.length > 0) {
-      query = query.in("location_id", filters.location_ids);
+      posQuery = posQuery.in("location_id", filters.location_ids);
     }
 
     if (filters.employee_ids && filters.employee_ids.length > 0) {
-      query = query.in("user_id", filters.employee_ids);
+      posQuery = posQuery.in("user_id", filters.employee_ids);
     }
 
-    const { data, error } = await query;
+    const { data: posTransactions, error: posError } = await posQuery;
+    if (posError) throw posError;
 
-    if (error) throw error;
+    // Combine data from orders and standalone POS
+    const allData: any[] = [
+      // Orders (get employee from linked POS transaction)
+      ...(orders || []).map((order: any) => ({
+        user_id: order.pos_transactions?.[0]?.user_id,
+        total_amount: order.total_amount,
+        subtotal: order.subtotal,
+        discount_amount: order.discount_amount,
+        tip_amount: 0,
+        cost_of_goods: order.cost_of_goods,
+        payment_method: order.pos_transactions?.[0]?.payment_method,
+      })),
+      // Standalone POS transactions
+      ...(posTransactions || []),
+    ];
+
+    const data = allData.filter((d) => d.user_id); // Remove any without user_id
 
     if (!data || data.length === 0) {
       return NextResponse.json({

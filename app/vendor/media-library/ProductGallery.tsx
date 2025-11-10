@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ArrowLeft, ChevronLeft, ChevronRight, Star, Download, Trash2 } from "lucide-react";
+import { ArrowLeft, ChevronLeft, ChevronRight, Star, Download, Trash2, Wand2 } from "lucide-react";
 import { logger } from "@/lib/logger";
 
 interface VendorMedia {
@@ -24,6 +24,7 @@ interface ProductGalleryProps {
   vendorId: string;
   onBack: () => void;
   onImageUpdate?: () => void;
+  onEdit?: (image: VendorMedia) => void;
 }
 
 export default function ProductGallery({
@@ -31,6 +32,7 @@ export default function ProductGallery({
   vendorId,
   onBack,
   onImageUpdate,
+  onEdit,
 }: ProductGalleryProps) {
   logger.debug("🖼️ ProductGallery rendered", { productName: product?.name });
   const [images, setImages] = useState<VendorMedia[]>([]);
@@ -237,6 +239,16 @@ export default function ProductGallery({
                 <Star className={`w-3.5 h-3.5 ${isFeatured ? "fill-current" : ""}`} />
                 {isFeatured ? "Featured" : "Set Featured"}
               </button>
+              {onEdit && (
+                <button
+                  onClick={() => onEdit(currentImage)}
+                  className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 bg-purple-500/20 text-purple-300 hover:bg-purple-500/30 hover:text-purple-200 hover:scale-105 border border-purple-500/30"
+                  title="Edit Image"
+                >
+                  <Wand2 className="w-3.5 h-3.5" />
+                  Edit
+                </button>
+              )}
               <button
                 onClick={handleDownload}
                 className="p-2 text-white/60 hover:text-white hover:bg-white/10 rounded-lg transition-all hover:scale-105"

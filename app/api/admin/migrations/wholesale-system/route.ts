@@ -5,7 +5,14 @@ import { join } from "path";
 
 import { logger } from "@/lib/logger";
 import { toError } from "@/lib/errors";
+import { requireAdmin } from "@/lib/auth/middleware";
 export async function POST(request: NextRequest) {
+  // SECURITY: Require admin authentication
+  const authResult = await requireAdmin(request);
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+
   try {
     const supabase = getServiceSupabase();
 

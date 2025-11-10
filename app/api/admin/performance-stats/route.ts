@@ -4,11 +4,18 @@ import { productCache, vendorCache, inventoryCache } from "@/lib/cache-manager";
 
 import { logger } from "@/lib/logger";
 import { toError } from "@/lib/errors";
+import { requireAdmin } from "@/lib/auth/middleware";
 /**
  * Performance monitoring dashboard endpoint
  * Provides real-time system health metrics
  */
 export async function GET(request: NextRequest) {
+  // SECURITY: Require admin authentication
+  const authResult = await requireAdmin(request);
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+
   try {
     // Get performance summary
     const summary = monitor.getSummary();

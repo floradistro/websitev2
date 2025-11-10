@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
-
+import { requireAdmin } from "@/lib/auth/middleware";
 import { logger } from "@/lib/logger";
 import { toError } from "@/lib/errors";
 export const dynamic = "force-dynamic";
@@ -17,6 +17,12 @@ export const runtime = "nodejs";
  * 4. Return detailed diagnostic info
  */
 export async function POST(request: NextRequest) {
+  // SECURITY: Require admin authentication
+  const authResult = await requireAdmin(request);
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+
   const startTime = Date.now();
 
   try {

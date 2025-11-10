@@ -3,10 +3,17 @@ import { getServiceSupabase } from "@/lib/supabase/client";
 
 import { logger } from "@/lib/logger";
 import { toError } from "@/lib/errors";
+import { requireAdmin } from "@/lib/auth/middleware";
 /**
  * Get pricing tiers for a product
  */
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  // SECURITY: Require admin authentication
+  const authResult = await requireAdmin(request);
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+
   try {
     const supabase = getServiceSupabase();
     const { id: productId } = await params;
@@ -45,6 +52,12 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
  * Update pricing tiers for a product
  */
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  // SECURITY: Require admin authentication
+  const authResult = await requireAdmin(request);
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+
   try {
     const supabase = getServiceSupabase();
     const { id: productId } = await params;

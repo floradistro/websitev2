@@ -29,6 +29,7 @@ import {
 import ProductBrowser from "./ProductBrowser";
 import GenerationInterface from "./GenerationInterface";
 import ProductGallery from "./ProductGallery";
+import ImageEditor from "./ImageEditor";
 import type { PromptTemplate } from "@/lib/types/prompt-template";
 
 import { logger } from "@/lib/logger";
@@ -70,6 +71,7 @@ const GridItem = memo(
     onContextMenu,
     onQuickView,
     onDragStart,
+    onDoubleClick,
   }: {
     file: MediaFile;
     isSelected: boolean;
@@ -77,6 +79,7 @@ const GridItem = memo(
     onContextMenu: (e: React.MouseEvent) => void;
     onQuickView: () => void;
     onDragStart?: (file: MediaFile) => void;
+    onDoubleClick?: () => void;
   }) => {
     // Use Supabase render API for thumbnails with cache-busting
     const thumbnailUrl = file.file_url.includes("supabase.co")
@@ -95,6 +98,7 @@ const GridItem = memo(
           }
         }}
         onClick={onSelect}
+        onDoubleClick={onDoubleClick}
         onContextMenu={onContextMenu}
         className={`group relative aspect-square rounded-xl overflow-hidden cursor-pointer ${
           isSelected ? "ring-2 ring-white" : ""
@@ -216,6 +220,9 @@ export default function MediaLibraryClient() {
     name: string;
     featured_image_storage: string | null;
   } | null>(null);
+
+  // Image editor state
+  const [editingImage, setEditingImage] = useState<MediaFile | null>(null);
 
   // DEBUG: Track gallery product changes
   useEffect(() => {
@@ -745,51 +752,51 @@ export default function MediaLibraryClient() {
       <div className="h-12 bg-gradient-to-b from-white/[0.03] to-transparent border-b border-white/[0.08] flex items-center px-3 flex-shrink-0 backdrop-blur-sm">
         <div className="flex items-center gap-2 flex-1 min-w-0">
           {/* View Mode - Compact pill */}
-          <div className="flex items-center gap-0.5 bg-black/40 rounded-full p-0.5 border border-white/[0.08] flex-shrink-0">
+          <div className="flex items-center gap-0.5 bg-black/40 rounded-full p-1 border border-white/[0.08] flex-shrink-0">
             <button
               onClick={() => setSplitViewMode(!splitViewMode)}
-              className={`p-1.5 rounded-full transition-all duration-300 ${
+              className={`p-1.5 rounded-full transition-all duration-300 flex items-center justify-center ${
                 splitViewMode
                   ? "bg-white text-black shadow-lg shadow-white/20"
                   : "text-white/50 hover:text-white/80 hover:bg-white/10"
               }`}
               title="Split View"
             >
-              <Columns2 className="w-3.5 h-3.5" />
+              <Columns2 className="w-4 h-4" />
             </button>
             <button
               onClick={() => setViewMode("grid")}
-              className={`p-1.5 rounded-full transition-all duration-300 ${
+              className={`p-1.5 rounded-full transition-all duration-300 flex items-center justify-center ${
                 viewMode === "grid"
                   ? "bg-white text-black shadow-lg shadow-white/20"
                   : "text-white/50 hover:text-white/80 hover:bg-white/10"
               }`}
               title="Grid View"
             >
-              <Grid3x3 className="w-3.5 h-3.5" />
+              <Grid3x3 className="w-4 h-4" />
             </button>
             <button
               onClick={() => setViewMode("list")}
-              className={`p-1.5 rounded-full transition-all duration-300 ${
+              className={`p-1.5 rounded-full transition-all duration-300 flex items-center justify-center ${
                 viewMode === "list"
                   ? "bg-white text-black shadow-lg shadow-white/20"
                   : "text-white/50 hover:text-white/80 hover:bg-white/10"
               }`}
               title="List View"
             >
-              <List className="w-3.5 h-3.5" />
+              <List className="w-4 h-4" />
             </button>
           </div>
 
           {/* Search - Glassmorphic */}
           <div className="relative w-56 flex-shrink-0">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/40 pointer-events-none" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none" />
             <input
               type="text"
               placeholder="Search..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-black/40 border border-white/[0.08] rounded-full pl-8 pr-3 py-1.5 text-xs text-white placeholder:text-white/40 focus:outline-none focus:bg-black/60 focus:border-white/20 transition-all duration-200 focus:shadow-lg focus:shadow-white/5"
+              className="w-full bg-black/40 border border-white/[0.08] rounded-full pl-9 pr-3 py-2 text-xs text-white placeholder:text-white/40 focus:outline-none focus:bg-black/60 focus:border-white/20 transition-all duration-200 focus:shadow-lg focus:shadow-white/5"
             />
           </div>
 
@@ -811,17 +818,17 @@ export default function MediaLibraryClient() {
               </div>
 
               {/* Quick actions */}
-              <div className="flex items-center gap-1 bg-black/40 border border-white/[0.08] rounded-full p-0.5">
+              <div className="flex items-center gap-1 bg-black/40 border border-white/[0.08] rounded-full p-1">
                 <button
                   onClick={handleBulkRetag}
                   disabled={retagging || removingBg}
-                  className="px-2.5 py-1 hover:bg-white/10 text-white/70 hover:text-white rounded-full text-xs font-medium transition-all flex items-center gap-1.5 disabled:opacity-40"
+                  className="px-3 py-1.5 hover:bg-white/10 text-white/70 hover:text-white rounded-full text-xs font-medium transition-all flex items-center justify-center gap-1.5 disabled:opacity-40"
                   title="Re-tag with AI"
                 >
                   {retagging ? (
-                    <Loader2 className="w-3 h-3 animate-spin" />
+                    <Loader2 className="w-4 h-4 animate-spin" />
                   ) : (
-                    <Brain className="w-3 h-3" />
+                    <Brain className="w-4 h-4" />
                   )}
                   {retagging && bulkProgress?.operation === "retag" ? (
                     <span className="tabular-nums">{bulkProgress.completed}/{bulkProgress.total}</span>
@@ -830,18 +837,18 @@ export default function MediaLibraryClient() {
                   )}
                 </button>
 
-                <div className="h-4 w-px bg-white/10" />
+                <div className="h-5 w-px bg-white/10" />
 
                 <button
                   onClick={handleRemoveBackground}
                   disabled={retagging || removingBg}
-                  className="px-2.5 py-1 hover:bg-white/10 text-white/70 hover:text-white rounded-full text-xs font-medium transition-all flex items-center gap-1.5 disabled:opacity-40"
+                  className="px-3 py-1.5 hover:bg-white/10 text-white/70 hover:text-white rounded-full text-xs font-medium transition-all flex items-center justify-center gap-1.5 disabled:opacity-40"
                   title="Remove background"
                 >
                   {removingBg ? (
-                    <Loader2 className="w-3 h-3 animate-spin" />
+                    <Loader2 className="w-4 h-4 animate-spin" />
                   ) : (
-                    <Scissors className="w-3 h-3" />
+                    <Scissors className="w-4 h-4" />
                   )}
                   {removingBg && bulkProgress?.operation === "remove-bg" ? (
                     <span className="tabular-nums">{bulkProgress.completed}/{bulkProgress.total}</span>
@@ -850,39 +857,39 @@ export default function MediaLibraryClient() {
                   )}
                 </button>
 
-                <div className="h-4 w-px bg-white/10" />
+                <div className="h-5 w-px bg-white/10" />
 
                 <button
                   onClick={handleAutoMatch}
                   disabled={autoMatching}
-                  className="px-2.5 py-1 hover:bg-white/10 text-white/70 hover:text-white rounded-full text-xs font-medium transition-all flex items-center gap-1.5 disabled:opacity-40"
+                  className="px-3 py-1.5 hover:bg-white/10 text-white/70 hover:text-white rounded-full text-xs font-medium transition-all flex items-center justify-center gap-1.5 disabled:opacity-40"
                   title="Link to products"
                 >
                   {autoMatching ? (
-                    <Loader2 className="w-3 h-3 animate-spin" />
+                    <Loader2 className="w-4 h-4 animate-spin" />
                   ) : (
-                    <Link2 className="w-3 h-3" />
+                    <Link2 className="w-4 h-4" />
                   )}
                   <span>Link</span>
                 </button>
 
-                <div className="h-4 w-px bg-white/10" />
+                <div className="h-5 w-px bg-white/10" />
 
                 <button
                   onClick={handleDelete}
-                  className="px-2.5 py-1 hover:bg-red-500/20 text-red-400/70 hover:text-red-300 rounded-full text-xs font-medium transition-all flex items-center gap-1.5"
+                  className="px-2.5 py-1.5 hover:bg-red-500/20 text-red-400/70 hover:text-red-300 rounded-full text-xs font-medium transition-all flex items-center justify-center"
                   title="Delete selected"
                 >
-                  <Trash2 className="w-3 h-3" />
+                  <Trash2 className="w-4 h-4" />
                 </button>
               </div>
 
               <button
                 onClick={() => setSelectedFiles(new Set())}
-                className="p-1.5 text-white/40 hover:text-white hover:bg-white/10 rounded-full transition-all"
+                className="p-2 text-white/40 hover:text-white hover:bg-white/10 rounded-full transition-all flex items-center justify-center"
                 title="Clear selection"
               >
-                <X className="w-3 h-3" />
+                <X className="w-4 h-4" />
               </button>
             </div>
           )}
@@ -895,16 +902,16 @@ export default function MediaLibraryClient() {
               <button
                 onClick={handleAutoMatch}
                 disabled={autoMatching}
-                className="px-3 py-1.5 bg-gradient-to-r from-purple-500/20 to-pink-500/20 hover:from-purple-500/30 hover:to-pink-500/30 border border-purple-500/30 rounded-full text-xs font-semibold text-purple-300 transition-all flex items-center gap-1.5 disabled:opacity-40 shadow-lg shadow-purple-500/10"
+                className="px-3 py-2 bg-gradient-to-r from-purple-500/20 to-pink-500/20 hover:from-purple-500/30 hover:to-pink-500/30 border border-purple-500/30 rounded-full text-xs font-semibold text-purple-300 transition-all flex items-center justify-center gap-1.5 disabled:opacity-40 shadow-lg shadow-purple-500/10"
               >
                 {autoMatching ? (
                   <>
-                    <Loader2 className="w-3 h-3 animate-spin" />
+                    <Loader2 className="w-4 h-4 animate-spin" />
                     <span>Matching...</span>
                   </>
                 ) : (
                   <>
-                    <Zap className="w-3 h-3" />
+                    <Zap className="w-4 h-4" />
                     <span>Auto-Match</span>
                   </>
                 )}
@@ -914,16 +921,16 @@ export default function MediaLibraryClient() {
             <button
               onClick={() => fileInputRef.current?.click()}
               disabled={isUploading}
-              className="px-3 py-1.5 bg-white text-black rounded-full text-xs font-semibold hover:bg-white/90 transition-all disabled:opacity-50 flex items-center gap-1.5 shadow-lg shadow-white/20"
+              className="px-3 py-2 bg-white text-black rounded-full text-xs font-semibold hover:bg-white/90 transition-all disabled:opacity-50 flex items-center justify-center gap-1.5 shadow-lg shadow-white/20"
             >
               {isUploading ? (
                 <>
-                  <Loader2 className="w-3 h-3 animate-spin" />
+                  <Loader2 className="w-4 h-4 animate-spin" />
                   <span>Uploading...</span>
                 </>
               ) : (
                 <>
-                  <Upload className="w-3 h-3" />
+                  <Upload className="w-4 h-4" />
                   <span>Upload</span>
                 </>
               )}
@@ -1028,6 +1035,20 @@ export default function MediaLibraryClient() {
                     onImageUpdate={() => {
                       loadMedia();
                     }}
+                    onEdit={(image) => {
+                      setEditingImage({
+                        id: image.id,
+                        file_name: image.file_name,
+                        file_url: image.file_url,
+                        file_size: 0,
+                        file_path: "",
+                        file_type: "image",
+                        category: "product_photos",
+                        title: image.title,
+                        alt_text: image.alt_text,
+                        created_at: image.created_at,
+                      });
+                    }}
                   />
                 </div>
               ) : generationMode && selectedCategory === "product_photos" ? (
@@ -1079,6 +1100,7 @@ export default function MediaLibraryClient() {
                         file={file}
                         isSelected={selectedFiles.has(file.file_name)}
                         onSelect={() => toggleFileSelection(file.file_name)}
+                        onDoubleClick={() => setEditingImage(file)}
                         onContextMenu={(e) => {
                           e.preventDefault();
                           setContextMenu({ x: e.clientX, y: e.clientY, file });
@@ -1140,6 +1162,20 @@ export default function MediaLibraryClient() {
                 onImageUpdate={() => {
                   loadMedia();
                 }}
+                onEdit={(image) => {
+                  setEditingImage({
+                    id: image.id,
+                    file_name: image.file_name,
+                    file_url: image.file_url,
+                    file_size: 0,
+                    file_path: "",
+                    file_type: "image",
+                    category: "product_photos",
+                    title: image.title,
+                    alt_text: image.alt_text,
+                    created_at: image.created_at,
+                  });
+                }}
               />
             </div>
           ) : (
@@ -1169,6 +1205,7 @@ export default function MediaLibraryClient() {
                       file={file}
                       isSelected={selectedFiles.has(file.file_name)}
                       onSelect={() => toggleFileSelection(file.file_name)}
+                      onDoubleClick={() => setEditingImage(file)}
                       onContextMenu={(e) => {
                         e.preventDefault();
                         setContextMenu({ x: e.clientX, y: e.clientY, file });
@@ -1444,6 +1481,25 @@ export default function MediaLibraryClient() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Image Editor */}
+      {editingImage && (
+        <ImageEditor
+          image={{
+            id: editingImage.id,
+            file_url: editingImage.file_url,
+            file_name: editingImage.file_name,
+            title: editingImage.title,
+            alt_text: editingImage.alt_text,
+          }}
+          onClose={() => setEditingImage(null)}
+          onSave={async (editedImageUrl) => {
+            // TODO: Save the edited image back to the database
+            await loadMedia();
+            setEditingImage(null);
+          }}
+        />
       )}
 
       <input
