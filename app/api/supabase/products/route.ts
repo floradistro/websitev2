@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
-import { productCache, generateCacheKey } from "@/lib/cache-manager";
+import { redisCache, CacheKeys } from "@/lib/redis-cache";
 import { monitor } from "@/lib/performance-monitor";
 
 import { logger } from "@/lib/logger";
@@ -15,15 +15,11 @@ export async function GET(request: NextRequest) {
     const category = searchParams.get("category");
     const vendorId = searchParams.get("vendor_id");
 
-    // Generate cache key based on query parameters
-    const cacheKey = generateCacheKey("products", {
-      perPage,
-      category: category || "all",
-      vendorId: vendorId || "all",
-    });
+    // Generate cache key with vendor and category context
+    const cacheKey = `${CacheKeys.products(vendorId || "all", category || "all")}:limit:${perPage}`;
 
-    // Check cache first
-    const cached = productCache.get(cacheKey);
+    // Check Redis cache first
+    const cached = await redisCache.get(cacheKey);
     if (cached) {
       const duration = performance.now() - startTime;
       endTimer(); // Record in performance monitor
@@ -209,8 +205,8 @@ export async function GET(request: NextRequest) {
       products: inStockProducts,
     };
 
-    // Store in cache
-    productCache.set(cacheKey, responseData);
+    // Store in Redis cache (5 minutes TTL)
+    await redisCache.set(cacheKey, responseData, 300);
 
     const duration = performance.now() - startTime;
     endTimer(); // Record in performance monitor
