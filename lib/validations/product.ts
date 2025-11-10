@@ -46,8 +46,19 @@ export const productVariantSchema = z.object({
   manage_stock: z.boolean().optional(),
 });
 
-// Custom fields schema (vendor autonomy - any valid JSON object)
-export const customFieldsSchema = z.record(z.string(), z.any());
+// Custom fields schema (vendor autonomy - validated JSON values)
+// SECURITY: Prevent XSS by validating field values
+export const customFieldsSchema = z.record(
+  z.string().max(100, "Field name too long"),
+  z.union([
+    z.string().max(5000, "Field value too long"),
+    z.number(),
+    z.boolean(),
+    z.null(),
+    z.array(z.string().max(500)),
+    z.array(z.number()),
+  ]),
+);
 
 // Field visibility schema
 export const fieldVisibilitySchema = z.record(z.string(), z.boolean());
@@ -68,17 +79,44 @@ export const createProductSchema = z
     sku: z.string().max(100).optional(),
 
     // Pricing
-    price: z.union([z.string(), z.number()]).optional(),
-    regular_price: z.union([z.string(), z.number()]).optional(),
-    cost_price: z.union([z.string(), z.number()]).optional(),
+    // SECURITY: Validate positive numbers, prevent negative prices
+    price: z
+      .union([
+        z.string().regex(/^\d+(\.\d{1,2})?$/, "Invalid price format"),
+        z.number().positive("Price must be positive").max(999999.99),
+      ])
+      .optional(),
+    regular_price: z
+      .union([
+        z.string().regex(/^\d+(\.\d{1,2})?$/, "Invalid price format"),
+        z.number().positive("Price must be positive").max(999999.99),
+      ])
+      .optional(),
+    cost_price: z
+      .union([
+        z.string().regex(/^\d+(\.\d{1,2})?$/, "Invalid cost format"),
+        z.number().nonnegative("Cost cannot be negative").max(999999.99),
+      ])
+      .optional(),
 
     // Stock
-    initial_quantity: z.union([z.string(), z.number()]).optional(),
-    stock_quantity: z.union([z.string(), z.number()]).optional(),
+    // SECURITY: Validate non-negative stock quantities
+    initial_quantity: z
+      .union([
+        z.string().regex(/^\d+(\.\d{1,2})?$/, "Invalid quantity format"),
+        z.number().nonnegative("Quantity cannot be negative").max(9999999),
+      ])
+      .optional(),
+    stock_quantity: z
+      .union([
+        z.string().regex(/^\d+(\.\d{1,2})?$/, "Invalid quantity format"),
+        z.number().nonnegative("Quantity cannot be negative").max(9999999),
+      ])
+      .optional(),
     manage_stock: z.boolean().optional(),
     stock_status: stockStatusSchema.optional(),
     backorders_allowed: z.boolean().optional(),
-    low_stock_amount: z.number().optional(),
+    low_stock_amount: z.number().nonnegative("Low stock amount cannot be negative").max(9999999).optional(),
 
     // Product type and visibility
     product_type: productTypeSchema.default("simple"),
@@ -86,10 +124,11 @@ export const createProductSchema = z
     status: productStatusSchema.optional(),
 
     // Media
-    image_urls: z.array(z.string().url()).optional(),
-    featured_image_storage: z.string().optional(),
-    image_gallery_storage: z.array(z.string()).optional(),
-    coa_url: z.string().url().optional(),
+    // SECURITY: Validate image URLs for proper format and reasonable length
+    image_urls: z.array(z.string().url().max(2000)).max(20, "Too many images").optional(),
+    featured_image_storage: z.string().max(2000).optional(),
+    image_gallery_storage: z.array(z.string().max(2000)).max(20, "Too many images").optional(),
+    coa_url: z.string().url().max(2000).optional(),
 
     // Variable product attributes
     attributes: z.array(productAttributeSchema).optional(),
@@ -108,12 +147,13 @@ export const createProductSchema = z
     field_visibility: fieldVisibilitySchema.optional(),
 
     // Meta data (deprecated fields for backwards compatibility)
-    thc_percentage: z.string().optional(),
-    cbd_percentage: z.string().optional(),
-    strain_type: z.string().optional(),
-    lineage: z.string().optional(),
-    terpenes: z.string().optional(),
-    effects: z.string().optional(),
+    // SECURITY: Add max length constraints to prevent DoS
+    thc_percentage: z.string().max(10).optional(),
+    cbd_percentage: z.string().max(10).optional(),
+    strain_type: z.string().max(50).optional(),
+    lineage: z.string().max(500).optional(),
+    terpenes: z.string().max(1000).optional(),
+    effects: z.string().max(1000).optional(),
   })
   .refine(
     (data) => {
@@ -159,27 +199,47 @@ export const updateProductSchema = z.object({
   name: z.string().min(1).max(255).optional(),
   description: z.string().max(5000).optional(),
   sku: z.string().max(100).optional(),
-  slug: z.string().optional(),
+  slug: z.string().max(255).optional(),
 
-  // Pricing
-  price: z.union([z.string(), z.number()]).optional(),
-  regular_price: z.union([z.string(), z.number()]).optional(),
-  cost_price: z.union([z.string(), z.number()]).optional(),
+  // Pricing (same security constraints as create)
+  price: z
+    .union([
+      z.string().regex(/^\d+(\.\d{1,2})?$/, "Invalid price format"),
+      z.number().positive("Price must be positive").max(999999.99),
+    ])
+    .optional(),
+  regular_price: z
+    .union([
+      z.string().regex(/^\d+(\.\d{1,2})?$/, "Invalid price format"),
+      z.number().positive("Price must be positive").max(999999.99),
+    ])
+    .optional(),
+  cost_price: z
+    .union([
+      z.string().regex(/^\d+(\.\d{1,2})?$/, "Invalid cost format"),
+      z.number().nonnegative("Cost cannot be negative").max(999999.99),
+    ])
+    .optional(),
 
-  // Stock
-  stock_quantity: z.union([z.string(), z.number()]).optional(),
+  // Stock (same security constraints as create)
+  stock_quantity: z
+    .union([
+      z.string().regex(/^\d+(\.\d{1,2})?$/, "Invalid quantity format"),
+      z.number().nonnegative("Quantity cannot be negative").max(9999999),
+    ])
+    .optional(),
   manage_stock: z.boolean().optional(),
   stock_status: stockStatusSchema.optional(),
   backorders_allowed: z.boolean().optional(),
-  low_stock_amount: z.number().optional(),
+  low_stock_amount: z.number().nonnegative("Low stock amount cannot be negative").max(9999999).optional(),
 
   // Status and visibility
   status: productStatusSchema.optional(),
   product_visibility: productVisibilitySchema.optional(),
 
-  // Media
-  featured_image_storage: z.string().optional(),
-  image_gallery_storage: z.array(z.string()).optional(),
+  // Media (same security constraints as create)
+  featured_image_storage: z.string().max(2000).optional(),
+  image_gallery_storage: z.array(z.string().max(2000)).max(20, "Too many images").optional(),
 
   // Pricing
   pricing_mode: z.enum(["single", "tiered"]).optional(),
