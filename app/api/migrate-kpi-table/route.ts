@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { requireAdmin } from "@/lib/auth/middleware";
 import { createClient } from "@supabase/supabase-js";
 
 import { logger } from "@/lib/logger";
@@ -8,6 +9,12 @@ const supabase = createClient(
 );
 
 export async function POST() {
+  // SECURITY: Require authentication
+  const authResult = await requireAdmin(request);
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+
   try {
     // Create the table
     const { error: tableError } = await supabase.rpc("exec_sql", {

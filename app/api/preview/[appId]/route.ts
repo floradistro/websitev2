@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { requireAuth } from "@/lib/auth/middleware";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
 import { logger } from "@/lib/logger";
@@ -9,7 +10,13 @@ import { toError } from "@/lib/errors";
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ appId: string }> },
+  {
+  // SECURITY: Require authentication
+  const authResult = await requireAuth(request);
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+ params }: { params: Promise<{ appId: string }> },
 ) {
   try {
     const { appId } = await params;

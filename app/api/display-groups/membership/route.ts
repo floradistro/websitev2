@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { requireAuth } from "@/lib/auth/middleware";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
 import { logger } from "@/lib/logger";
@@ -8,6 +9,12 @@ import { toError } from "@/lib/errors";
  * Check if a device is part of a display group
  */
 export async function GET(request: NextRequest) {
+  // SECURITY: Require authentication
+  const authResult = await requireAuth(request);
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+
   try {
     const { searchParams } = new URL(request.url);
     const deviceId = searchParams.get("device_id");

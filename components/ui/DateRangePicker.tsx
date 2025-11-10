@@ -164,7 +164,7 @@ export function DateRangePicker({
           {/* Popover */}
           <div
             ref={modalRef}
-            className="absolute right-0 top-full mt-2 bg-[#1c1c1e] border border-white/10 rounded-xl shadow-2xl w-[360px] p-5 z-[9999]"
+            className="absolute right-0 top-full mt-2 bg-[#1c1c1e] border border-white/10 rounded-xl shadow-2xl w-[340px] p-4 z-[9999]"
             style={{
               animation: 'fadeIn 0.15s ease-out',
             }}
@@ -286,10 +286,10 @@ function CalendarGrid({
   return (
     <div>
       {/* Month Navigation - Compact */}
-      <div className="flex items-center justify-between mb-3 px-1">
+      <div className="flex items-center justify-between mb-2">
         <button
           onClick={prevMonth}
-          className="w-7 h-7 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 rounded-md transition-all"
+          className="w-8 h-8 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 rounded-md transition-all"
         >
           <ChevronLeft className="w-4 h-4" />
         </button>
@@ -298,7 +298,7 @@ function CalendarGrid({
         </div>
         <button
           onClick={nextMonth}
-          className="w-7 h-7 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 rounded-md transition-all"
+          className="w-8 h-8 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 rounded-md transition-all"
         >
           <ChevronRight className="w-4 h-4" />
         </button>
@@ -317,7 +317,7 @@ function CalendarGrid({
       <div className="grid grid-cols-7 gap-1">
         {/* Empty cells for days before month starts */}
         {Array.from({ length: firstDayOfMonth }).map((_, i) => (
-          <div key={`empty-${i}`} className="w-10 h-10" />
+          <div key={`empty-${i}`} className="w-9 h-9" />
         ))}
 
         {/* Days of month */}
@@ -333,7 +333,7 @@ function CalendarGrid({
               key={day}
               onClick={() => handleDateClick(day)}
               className={`
-                w-10 h-10 rounded-full text-xs font-semibold transition-all duration-150
+                w-9 h-9 rounded-full text-xs font-semibold transition-all duration-150
                 flex items-center justify-center relative
                 ${
                   isStart || isEnd

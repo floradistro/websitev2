@@ -21,6 +21,9 @@ import {
   ChevronRight,
   ArrowLeft,
   Image as ImageIcon,
+  Paintbrush,
+  MousePointer2,
+  Minimize2,
 } from "lucide-react";
 
 interface ImageEditorProps {
@@ -60,6 +63,12 @@ export default function ImageEditor({ image, vendorId, onClose, onSave }: ImageE
   const [contrast, setContrast] = useState(100);
   const [saturation, setSaturation] = useState(100);
   const [processingProgress, setProcessingProgress] = useState(0);
+
+  // Brush tools
+  const [brushSize, setBrushSize] = useState(20);
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [maskCanvas, setMaskCanvas] = useState<HTMLCanvasElement | null>(null);
+  const imageRef = useRef<HTMLImageElement>(null);
 
   // Quality score (mock for now)
   const [qualityScore] = useState(85);
@@ -265,6 +274,88 @@ export default function ImageEditor({ image, vendorId, onClose, onSave }: ImageE
     link.click();
   };
 
+  // Canvas brush drawing handlers
+  const startDrawing = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!activeTool || (activeTool !== "erase" && activeTool !== "restore")) return;
+    setIsDrawing(true);
+    draw(e);
+  };
+
+  const stopDrawing = () => {
+    setIsDrawing(false);
+  };
+
+  const draw = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!isDrawing && e.type !== "mousedown") return;
+    if (!imageRef.current) return;
+
+    const rect = imageRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    // Create or get mask canvas
+    if (!maskCanvas) {
+      const canvas = document.createElement("canvas");
+      canvas.width = imageRef.current.naturalWidth;
+      canvas.height = imageRef.current.naturalHeight;
+      setMaskCanvas(canvas);
+    }
+
+    if (maskCanvas) {
+      const ctx = maskCanvas.getContext("2d");
+      if (!ctx) return;
+
+      // Scale coordinates to image size
+      const scaleX = imageRef.current.naturalWidth / rect.width;
+      const scaleY = imageRef.current.naturalHeight / rect.height;
+
+      ctx.globalCompositeOperation = activeTool === "erase" ? "destination-out" : "source-over";
+      ctx.fillStyle = activeTool === "erase" ? "rgba(0,0,0,1)" : "rgba(255,255,255,1)";
+      ctx.beginPath();
+      ctx.arc(x * scaleX, y * scaleY, brushSize * scaleX, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  };
+
+  // Apply brush mask to image
+  const applyBrushMask = async () => {
+    if (!maskCanvas || !imageRef.current) return;
+
+    setIsProcessing(true);
+    try {
+      // Convert mask canvas to data URL
+      const maskDataUrl = maskCanvas.toDataURL("image/png");
+
+      const response = await fetch("/api/vendor/media/apply-mask", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-vendor-id": vendorId,
+        },
+        body: JSON.stringify({
+          imageUrl: currentImage,
+          maskDataUrl,
+          fileName: image.file_name,
+        }),
+      });
+
+      if (!response.ok) throw new Error("Failed to apply mask");
+
+      const data = await response.json();
+      if (data.success && data.url) {
+        setCurrentImage(data.url);
+        addToHistory(data.url, activeTool === "erase" ? "Brush Erased" : "Brush Restored");
+        setMaskCanvas(null); // Reset mask
+        setActiveTool(null);
+      }
+    } catch (error) {
+      console.error("Error applying mask:", error);
+      alert("Failed to apply brush changes");
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   return (
     <div
       className="fixed inset-0 z-[100] bg-black flex flex-col"
@@ -340,6 +431,84 @@ export default function ImageEditor({ image, vendorId, onClose, onSave }: ImageE
               Remove Background
             </button>
           </div>
+        </div>
+
+        {/* Manual Refinement */}
+        <div className="p-4 border-b border-white/10">
+          <h3 className="text-xs font-semibold text-white/60 uppercase tracking-wider mb-3">
+            Manual Refinement
+          </h3>
+          <div className="grid grid-cols-2 gap-2 mb-3">
+            <button
+              onClick={() => setActiveTool(activeTool === "magic-remove" ? null : "magic-remove")}
+              disabled={isProcessing}
+              className={`px-3 py-2 border rounded-lg text-white text-xs font-medium flex items-center justify-center gap-1.5 transition-all disabled:opacity-50 ${
+                activeTool === "magic-remove"
+                  ? "bg-orange-500/20 border-orange-500/50"
+                  : "bg-white/5 hover:bg-white/10 border-white/10"
+              }`}
+              title="Click on image to remove similar colors"
+            >
+              <MousePointer2 className="w-3.5 h-3.5" />
+              Magic Remove
+            </button>
+            <button
+              onClick={() => setActiveTool(activeTool === "erase" ? null : "erase")}
+              disabled={isProcessing}
+              className={`px-3 py-2 border rounded-lg text-white text-xs font-medium flex items-center justify-center gap-1.5 transition-all disabled:opacity-50 ${
+                activeTool === "erase"
+                  ? "bg-red-500/20 border-red-500/50"
+                  : "bg-white/5 hover:bg-white/10 border-white/10"
+              }`}
+              title="Paint to remove unwanted areas"
+            >
+              <Eraser className="w-3.5 h-3.5" />
+              Brush Erase
+            </button>
+            <button
+              onClick={() => setActiveTool(activeTool === "restore" ? null : "restore")}
+              disabled={isProcessing}
+              className={`px-3 py-2 border rounded-lg text-white text-xs font-medium flex items-center justify-center gap-1.5 transition-all disabled:opacity-50 ${
+                activeTool === "restore"
+                  ? "bg-blue-500/20 border-blue-500/50"
+                  : "bg-white/5 hover:bg-white/10 border-white/10"
+              }`}
+              title="Paint to restore removed areas"
+            >
+              <Paintbrush className="w-3.5 h-3.5" />
+              Brush Restore
+            </button>
+            <button
+              onClick={() => alert("Refine Edges - Auto-clean edges (Coming soon)")}
+              disabled={isProcessing}
+              className="px-3 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-white text-xs font-medium flex items-center justify-center gap-1.5 transition-all disabled:opacity-50"
+              title="Automatically refine edges"
+            >
+              <Minimize2 className="w-3.5 h-3.5" />
+              Refine Edges
+            </button>
+          </div>
+
+          {/* Brush Size Slider - Only show when erase or restore is active */}
+          {(activeTool === "erase" || activeTool === "restore") && (
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-xs text-white/60">Brush Size</label>
+                <span className="text-xs text-white/40">{brushSize}px</span>
+              </div>
+              <input
+                type="range"
+                min="5"
+                max="100"
+                value={brushSize}
+                onChange={(e) => setBrushSize(Number(e.target.value))}
+                className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer"
+              />
+              <div className="mt-2 text-xs text-white/40 text-center">
+                {activeTool === "erase" ? "Paint to remove" : "Paint to restore"}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Enhancement Tools */}
@@ -553,14 +722,47 @@ export default function ImageEditor({ image, vendorId, onClose, onSave }: ImageE
               </div>
             </div>
           ) : (
-            <img
-              src={currentImage}
-              alt="Editing"
-              className="max-w-full max-h-full object-contain rounded-lg"
+            <div
+              className="relative"
+              onMouseDown={startDrawing}
+              onMouseMove={draw}
+              onMouseUp={stopDrawing}
+              onMouseLeave={stopDrawing}
               style={{
-                filter: `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%)`,
+                cursor:
+                  activeTool === "erase" || activeTool === "restore"
+                    ? `crosshair`
+                    : "default",
               }}
-            />
+            >
+              <img
+                ref={imageRef}
+                src={currentImage}
+                alt="Editing"
+                className="max-w-full max-h-full object-contain rounded-lg"
+                style={{
+                  filter: `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%)`,
+                }}
+              />
+              {/* Brush cursor indicator */}
+              {(activeTool === "erase" || activeTool === "restore") && (
+                <div className="absolute top-2 right-2 px-3 py-2 bg-black/60 backdrop-blur-sm rounded-lg border border-white/20">
+                  <div className="text-xs text-white/80 font-medium mb-1">
+                    {activeTool === "erase" ? "🖌️ Erase Mode" : "↩️ Restore Mode"}
+                  </div>
+                  <div className="text-xs text-white/60">
+                    Brush: {brushSize}px
+                  </div>
+                  <button
+                    onClick={applyBrushMask}
+                    disabled={!maskCanvas}
+                    className="mt-2 w-full px-2 py-1 bg-white/10 hover:bg-white/20 border border-white/20 rounded text-xs text-white disabled:opacity-50"
+                  >
+                    Apply Changes
+                  </button>
+                </div>
+              )}
+            </div>
           )}
         </div>
 

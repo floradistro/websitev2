@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { requireVendor } from "@/lib/auth/middleware";
 import { createClient } from "@supabase/supabase-js";
 
 import { logger } from "@/lib/logger";
@@ -9,6 +10,12 @@ const supabase = createClient(
 
 // GET - Fetch all KPI widgets for a vendor
 export async function GET(request: NextRequest) {
+  // SECURITY: Require authentication
+  const authResult = await requireVendor(request);
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+
   try {
     const { searchParams } = new URL(request.url);
     const vendorId = searchParams.get("vendorId");
@@ -48,6 +55,12 @@ export async function GET(request: NextRequest) {
 
 // POST - Save a new KPI widget
 export async function POST(request: NextRequest) {
+  // SECURITY: Require authentication
+  const authResult = await requireVendor(request);
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+
   try {
     const body = await request.json();
     const { vendorId, kpi } = body;
@@ -114,6 +127,12 @@ export async function POST(request: NextRequest) {
 
 // DELETE - Delete a KPI widget
 export async function DELETE(request: NextRequest) {
+  // SECURITY: Require authentication
+  const authResult = await requireVendor(request);
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+
   try {
     const { searchParams } = new URL(request.url);
     const widgetId = searchParams.get("id");

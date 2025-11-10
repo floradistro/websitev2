@@ -1005,10 +1005,10 @@ export default function AnalyticsPage() {
 
   const [dateRange, setDateRange] = useState(getInitialDateRange());
 
-  // Build query params
-  const queryParams = `?range=${timeRange}`;
+  // Build query params with actual date range (API expects start_date and end_date)
+  const queryParams = `?start_date=${dateRange.start.toISOString()}&end_date=${dateRange.end.toISOString()}`;
 
-  // Fetch all reports
+  // Fetch all reports with date range
   const { data: overview } = useSWR(`/api/vendor/analytics/v2/overview${queryParams}`, fetcher, {
     refreshInterval: 60000,
   });
@@ -1410,7 +1410,7 @@ export default function AnalyticsPage() {
         isOpen={exportModal.isOpen}
         onClose={() => setExportModal({ isOpen: false, reportType: "" })}
         reportType={exportModal.reportType}
-        filters={{ range: timeRange }}
+        filters={{ dateRange }}
       />
     </div>
   );
