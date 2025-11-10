@@ -30,16 +30,12 @@ export function withErrorHandler(handler: ApiHandler): ApiHandler {
       if (process.env.NODE_ENV === "production") {
         // TODO: Send to error monitoring service (Sentry, etc.)
         // await logError({ message: errorMessage, code: errorCode, stack: error?.stack });
-      } else {
-        if (process.env.NODE_ENV === "development") {
-          if (process.env.NODE_ENV === "development") {
-            logger.error("[API Error]", {
-              message: errorMessage,
-              code: errorCode,
-              path: request.url,
-            });
-          }
-        }
+      } else if (process.env.NODE_ENV === "development") {
+        logger.error("[API Error]", {
+          message: errorMessage,
+          code: errorCode,
+          path: request.url,
+        });
       }
 
       // Return user-friendly error
