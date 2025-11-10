@@ -4,10 +4,15 @@ import { productCache, vendorCache, inventoryCache } from "@/lib/cache-manager";
 import { jobQueue } from "@/lib/job-queue";
 import { requireVendor } from "@/lib/auth/middleware";
 import { withErrorHandler } from "@/lib/api-handler";
+import { logger } from "@/lib/logger";
+import { createProductSchema, safeValidateProductData } from "@/lib/validations/product";
 import {
-  createProductSchema,
-  safeValidateProductData,
-} from "@/lib/validations/product";
+  cacheGetOrSet,
+  CacheTTL,
+  buildCacheKey,
+  CachePrefix,
+  CacheInvalidation,
+} from "@/lib/redis";
 
 export const GET = withErrorHandler(async (request: NextRequest) => {
   try {
@@ -18,28 +23,36 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
     }
     const { vendorId } = authResult;
 
-    const supabase = getServiceSupabase();
-    const { data: products, error } = await supabase
-      .from("products")
-      .select("*, categories:primary_category_id(id, name, slug), meta_data")
-      .eq("vendor_id", vendorId)
-      .order("created_at", { ascending: false });
+    // Redis cache key for this vendor's product list
+    const cacheKey = buildCacheKey(CachePrefix.PRODUCTS_LIST, vendorId);
 
-    if (error) {
-      if (process.env.NODE_ENV === "development") {
-        console.error("Error fetching vendor products:", error);
-      }
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
+    // Try cache first, fallback to database on miss
+    const products = await cacheGetOrSet(
+      cacheKey,
+      async () => {
+        const supabase = getServiceSupabase();
+        const { data, error } = await supabase
+          .from("products")
+          .select("*, categories:primary_category_id(id, name, slug), meta_data")
+          .eq("vendor_id", vendorId)
+          .order("created_at", { ascending: false });
+
+        if (error) {
+          logger.error("Error fetching vendor products:", error);
+          throw error;
+        }
+
+        return data || [];
+      },
+      CacheTTL.MEDIUM, // 5 minutes - good balance for product lists
+    );
 
     return NextResponse.json({
       success: true,
-      products: products || [],
+      products,
     });
   } catch (error: any) {
-    if (process.env.NODE_ENV === "development") {
-      console.error("Get vendor products error:", error);
-    }
+    logger.error("Get vendor products error:", error);
     return NextResponse.json(
       { error: error.message || "Failed to fetch products" },
       { status: 500 },
@@ -118,8 +131,7 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
     // - internal products: auto-publish (vendor has full control)
     // - marketplace products: pending approval (admin quality control)
     const productVisibility = productData.product_visibility || "internal";
-    const productStatus =
-      productVisibility === "internal" ? "published" : "pending";
+    const productStatus = productVisibility === "internal" ? "published" : "pending";
 
     const newProduct: any = {
       name: productData.name,
@@ -129,12 +141,8 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
       status: productStatus,
       product_visibility: productVisibility,
       vendor_id: vendorId,
-      regular_price: productData.price
-        ? parseFloat(productData.price.toString())
-        : null,
-      cost_price: productData.cost_price
-        ? parseFloat(productData.cost_price.toString())
-        : null,
+      regular_price: productData.price ? parseFloat(productData.price.toString()) : null,
+      cost_price: productData.cost_price ? parseFloat(productData.cost_price.toString()) : null,
       sku: productData.sku || `YC-${Date.now()}`,
       // Stock management follows enterprise patterns
       manage_stock: shouldManageStock,
@@ -178,7 +186,7 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
         newProduct.primary_category_id = categories[0].id;
       } else {
         if (process.env.NODE_ENV === "development") {
-          console.warn("⚠️ Category not found:", productData.category);
+          logger.warn("Category not found", { category: productData.category });
         }
       }
     }
@@ -192,7 +200,7 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
 
     if (productError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("❌ Error creating product:", productError);
+        logger.error("❌ Error creating product:", productError);
       }
       return NextResponse.json(
         {
@@ -236,10 +244,7 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
 
         if (inventoryError) {
           if (process.env.NODE_ENV === "development") {
-            console.warn(
-              "⚠️ Could not create inventory record:",
-              inventoryError,
-            );
+            logger.warn("⚠️ Could not create inventory record:", inventoryError);
           }
           // Don't fail the product creation, just log the warning
         } else {
@@ -258,9 +263,7 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
         }
       } else {
         if (process.env.NODE_ENV === "development") {
-          console.warn(
-            "⚠️ No primary location found for vendor, inventory not created",
-          );
+          logger.warn("⚠️ No primary location found for vendor, inventory not created");
         }
       }
     }
@@ -273,9 +276,7 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
     ) {
       const variantsToInsert = productData.variants.map((variant: any) => ({
         parent_product_id: product.id,
-        sku:
-          variant.sku ||
-          `${product.sku}-${variant.name.toLowerCase().replace(/\s/g, "-")}`,
+        sku: variant.sku || `${product.sku}-${variant.name.toLowerCase().replace(/\s/g, "-")}`,
         regular_price: variant.price ? parseFloat(variant.price) : null,
         stock_quantity: variant.stock ? parseInt(variant.stock) : 0,
         attributes: variant.attributes || {},
@@ -284,10 +285,8 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
       await supabase.from("product_variations").insert(variantsToInsert);
     }
 
-    // Invalidate relevant caches after product creation
-    productCache.invalidatePattern("products:.*");
-    vendorCache.invalidatePattern(`vendor-.*:.*vendorId:${vendorId}.*`);
-    inventoryCache.invalidatePattern(".*");
+    // Invalidate relevant caches after product creation (Redis)
+    await CacheInvalidation.products(vendorId);
 
     // Queue background jobs (non-blocking)
 
@@ -325,17 +324,15 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
 
     // Handle pricing template assignment if provided (NEW SYSTEM)
     if (productData.pricing_template_id) {
-      const { error: assignmentError } = await supabase
-        .from("product_pricing_assignments")
-        .insert({
-          product_id: product.id,
-          template_id: productData.pricing_template_id,
-          is_active: true,
-        });
+      const { error: assignmentError } = await supabase.from("product_pricing_assignments").insert({
+        product_id: product.id,
+        template_id: productData.pricing_template_id,
+        is_active: true,
+      });
 
       if (assignmentError) {
         if (process.env.NODE_ENV === "development") {
-          console.error("Template assignment error:", assignmentError);
+          logger.error("Template assignment error:", assignmentError);
         }
       }
     }
@@ -347,7 +344,7 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("❌ Create product error:", error);
+      logger.error("❌ Create product error:", error);
     }
     return NextResponse.json(
       {
@@ -372,10 +369,7 @@ export const DELETE = withErrorHandler(async (request: NextRequest) => {
     const productId = searchParams.get("product_id");
 
     if (!productId) {
-      return NextResponse.json(
-        { error: "Product ID required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Product ID required" }, { status: 400 });
     }
 
     const supabase = getServiceSupabase();
@@ -408,10 +402,7 @@ export const DELETE = withErrorHandler(async (request: NextRequest) => {
       .eq("product_id", product.id);
 
     if (inventory && inventory.length > 0) {
-      const totalQty = inventory.reduce(
-        (sum, inv) => sum + parseFloat(inv.quantity || "0"),
-        0,
-      );
+      const totalQty = inventory.reduce((sum, inv) => sum + parseFloat(inv.quantity || "0"), 0);
       if (totalQty > 0) {
         return NextResponse.json(
           {
@@ -423,14 +414,11 @@ export const DELETE = withErrorHandler(async (request: NextRequest) => {
     }
 
     // Delete the product (this will cascade to related records based on DB constraints)
-    const { error: deleteError } = await supabase
-      .from("products")
-      .delete()
-      .eq("id", productId);
+    const { error: deleteError } = await supabase.from("products").delete().eq("id", productId);
 
     if (deleteError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("❌ Error deleting product:", deleteError);
+        logger.error("❌ Error deleting product:", deleteError);
       }
       return NextResponse.json({ error: deleteError.message }, { status: 500 });
     }
@@ -441,7 +429,7 @@ export const DELETE = withErrorHandler(async (request: NextRequest) => {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Delete product error:", error);
+      logger.error("Delete product error:", error);
     }
     return NextResponse.json(
       { error: error.message || "Failed to delete product" },

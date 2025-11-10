@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { withSentryConfig } from "@sentry/nextjs";
 
 // Bundle analyzer (run with: ANALYZE=true npm run build)
 const withBundleAnalyzer = require("@next/bundle-analyzer")({
@@ -213,8 +214,7 @@ const nextConfig: NextConfig = {
           },
           {
             key: "Permissions-Policy",
-            value:
-              "camera=(), microphone=(), geolocation=(self), payment=(self)",
+            value: "camera=(), microphone=(), geolocation=(self), payment=(self)",
           },
           {
             key: "Content-Security-Policy",
@@ -224,8 +224,7 @@ const nextConfig: NextConfig = {
             ? [
                 {
                   key: "Cache-Control",
-                  value:
-                    "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0",
+                  value: "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0",
                 },
               ]
             : []),
@@ -270,4 +269,12 @@ const nextConfig: NextConfig = {
   // },
 };
 
-export default withBundleAnalyzer(nextConfig);
+// Wrap with Sentry for automatic error tracking
+export default withSentryConfig(withBundleAnalyzer(nextConfig), {
+  // Sentry config options
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  silent: !process.env.SENTRY_AUTH_TOKEN, // Only show logs if token is set
+  widenClientFileUpload: true,
+  disableLogger: true,
+});
