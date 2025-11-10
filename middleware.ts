@@ -2,6 +2,66 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
+/**
+ * Apply comprehensive security headers to response
+ */
+function applySecurityHeaders(
+  response: NextResponse,
+  hostname: string,
+): NextResponse {
+  const isDevelopment =
+    hostname.includes("localhost") || hostname.includes("127.0.0.1");
+
+  // Basic Security Headers
+  response.headers.set("X-Frame-Options", "SAMEORIGIN");
+  response.headers.set("X-Content-Type-Options", "nosniff");
+  response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
+  response.headers.set("X-XSS-Protection", "1; mode=block");
+
+  // HSTS (HTTP Strict Transport Security) - Only in production
+  if (!isDevelopment) {
+    response.headers.set(
+      "Strict-Transport-Security",
+      "max-age=31536000; includeSubDomains; preload",
+    );
+  }
+
+  // Content Security Policy (CSP)
+  const cspDirectives = [
+    "default-src 'self'",
+    // Allow scripts from self, inline (for Next.js), and eval (for Monaco editor)
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://vercel.live https://*.vercel.app",
+    // Allow styles from self and inline
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+    // Allow images from multiple sources
+    "img-src 'self' data: blob: https://*.supabase.co https://res.cloudinary.com https://*.cloudinary.com https://*.google.com https://*.googleusercontent.com",
+    // Allow fonts
+    "font-src 'self' data: https://fonts.gstatic.com",
+    // Allow connections to API endpoints and services
+    "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.cloudinary.com https://api.authorize.net https://apitest.authorize.net https://sentry.io https://*.sentry.io https://vercel.live wss://vercel.live",
+    // Allow frames from payment processors
+    "frame-src 'self' https://accept.authorize.net https://test.authorize.net",
+    // Allow workers for barcode scanning
+    "worker-src 'self' blob:",
+    // Block all object embeds
+    "object-src 'none'",
+    // Only allow form submissions to self
+    "form-action 'self'",
+    // Block old browsers from MIME-sniffing
+    "base-uri 'self'",
+  ];
+
+  response.headers.set("Content-Security-Policy", cspDirectives.join("; "));
+
+  // Permissions Policy (formerly Feature Policy)
+  response.headers.set(
+    "Permissions-Policy",
+    "camera=(), microphone=(), geolocation=(self), payment=(self)",
+  );
+
+  return response;
+}
+
 export async function middleware(request: NextRequest) {
   const hostname = request.headers.get("host") || "";
   const pathname = request.nextUrl.pathname;
@@ -22,10 +82,7 @@ export async function middleware(request: NextRequest) {
   if (isYachtClubDomain && pathname === "/") {
     const response = NextResponse.next();
     response.headers.set("x-tenant-type", "whaletools");
-    response.headers.set("X-Frame-Options", "SAMEORIGIN");
-    response.headers.set("X-Content-Type-Options", "nosniff");
-    response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
-    return response;
+    return applySecurityHeaders(response, hostname);
   }
 
   // Skip middleware for:
@@ -64,12 +121,7 @@ export async function middleware(request: NextRequest) {
         pathname.startsWith("/returns") ||
         pathname.startsWith("/cookies")))
   ) {
-    const response = NextResponse.next();
-    response.headers.set("X-Frame-Options", "SAMEORIGIN");
-    response.headers.set("X-Content-Type-Options", "nosniff");
-    response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
-
-    return response;
+    return applySecurityHeaders(NextResponse.next(), hostname);
   }
 
   // Check if this is a custom vendor domain
@@ -109,13 +161,7 @@ export async function middleware(request: NextRequest) {
           response.headers.set("x-coming-soon", "true");
           response.headers.set("x-tenant-type", "vendor");
           response.headers.set("x-is-custom-domain", "true");
-          response.headers.set("X-Frame-Options", "SAMEORIGIN");
-          response.headers.set("X-Content-Type-Options", "nosniff");
-          response.headers.set(
-            "Referrer-Policy",
-            "strict-origin-when-cross-origin",
-          );
-          return response;
+          return applySecurityHeaders(response, hostname);
         }
       }
 
@@ -131,14 +177,7 @@ export async function middleware(request: NextRequest) {
       response.headers.set("x-vendor-id", domainRecord.vendor_id);
       response.headers.set("x-tenant-type", "vendor");
       response.headers.set("x-is-custom-domain", "true");
-      response.headers.set("X-Frame-Options", "SAMEORIGIN");
-      response.headers.set("X-Content-Type-Options", "nosniff");
-      response.headers.set(
-        "Referrer-Policy",
-        "strict-origin-when-cross-origin",
-      );
-
-      return response;
+      return applySecurityHeaders(response, hostname);
     }
 
     // Check if this is a subdomain storefront (vendor-slug.yachtclub.com)
@@ -182,14 +221,7 @@ export async function middleware(request: NextRequest) {
         const response = NextResponse.next();
         response.headers.set("x-vendor-id", vendor.id);
         response.headers.set("x-is-subdomain", "true");
-        response.headers.set("X-Frame-Options", "SAMEORIGIN");
-        response.headers.set("X-Content-Type-Options", "nosniff");
-        response.headers.set(
-          "Referrer-Policy",
-          "strict-origin-when-cross-origin",
-        );
-
-        return response;
+        return applySecurityHeaders(response, hostname);
       }
     }
   } catch (error) {
@@ -227,13 +259,7 @@ export async function middleware(request: NextRequest) {
           const response = NextResponse.next();
           response.headers.set("x-vendor-id", vendor.id);
           response.headers.set("x-tenant-type", "vendor");
-          response.headers.set("X-Frame-Options", "SAMEORIGIN");
-          response.headers.set("X-Content-Type-Options", "nosniff");
-          response.headers.set(
-            "Referrer-Policy",
-            "strict-origin-when-cross-origin",
-          );
-          return response;
+          return applySecurityHeaders(response, hostname);
         }
       } catch (error) {
         // Silent fail
@@ -243,31 +269,20 @@ export async function middleware(request: NextRequest) {
     // No vendor param on storefront path = blank template mode
     const response = NextResponse.next();
     response.headers.set("x-tenant-type", "template-preview");
-    response.headers.set("X-Frame-Options", "SAMEORIGIN");
-    response.headers.set("X-Content-Type-Options", "nosniff");
-    response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
-    return response;
+    return applySecurityHeaders(response, hostname);
   }
 
   // WhaleTools platform landing page (root domain only)
   if (isYachtClubDomain && pathname === "/") {
     const response = NextResponse.next();
     response.headers.set("x-tenant-type", "whaletools");
-    response.headers.set("X-Frame-Options", "SAMEORIGIN");
-    response.headers.set("X-Content-Type-Options", "nosniff");
-    response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
-
-    return response;
+    return applySecurityHeaders(response, hostname);
   }
 
   // Default: Continue to main Yacht Club marketplace
   const response = NextResponse.next();
   response.headers.set("x-tenant-type", "marketplace");
-  response.headers.set("X-Frame-Options", "SAMEORIGIN");
-  response.headers.set("X-Content-Type-Options", "nosniff");
-  response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
-
-  return response;
+  return applySecurityHeaders(response, hostname);
 }
 
 export const config = {

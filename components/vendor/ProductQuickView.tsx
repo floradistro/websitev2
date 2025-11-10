@@ -58,10 +58,9 @@ export function ProductQuickView({
   >([]);
   const [selectedTemplateId, setSelectedTemplateId] = useState("");
 
-  // Image state
-  const [imageFiles, setImageFiles] = useState<File[]>([]);
-  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
-  const [uploadingImages, setUploadingImages] = useState(false);
+  // Image state - CLEAN REWRITE
+  const [currentImageUrl, setCurrentImageUrl] = useState<string | null>(null);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
 
   // Custom fields state
   const [customFieldValues, setCustomFieldValues] = useState<
@@ -116,9 +115,11 @@ export function ProductQuickView({
               setPricingTiers([]);
             }
 
-            // Load images
+            // Load current image - CLEAN REWRITE
             if (p.images && p.images.length > 0) {
-              setImagePreviews(p.images);
+              setCurrentImageUrl(p.images[0]);
+            } else {
+              setCurrentImageUrl(null);
             }
 
             // Fetch dynamic fields for category
@@ -189,66 +190,86 @@ export function ProductQuickView({
     }
   }, [isOpen, product?.id, vendorId]);
 
+  // CLEAN REWRITE: Simple image upload handler
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
-
-    const fileArray = Array.from(files);
-    setImageFiles((prev) => [...prev, ...fileArray]);
-
-    // Generate previews
-    fileArray.forEach((file) => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreviews((prev) => [...prev, reader.result as string]);
-      };
-      reader.readAsDataURL(file);
-    });
+    const file = e.target.files?.[0];
+    if (!file) return;
 
     try {
-      setUploadingImages(true);
+      setIsUploadingImage(true);
 
-      // Upload all files in parallel
-      const uploadPromises = fileArray.map(async (file) => {
-        const uploadFormData = new FormData();
-        uploadFormData.append("file", file);
-        uploadFormData.append("type", "product");
+      // Upload to Supabase
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("type", "product");
 
-        const response = await fetch("/api/supabase/vendor/upload", {
-          method: "POST",
-          headers: { "x-vendor-id": vendorId },
-          body: uploadFormData,
-        });
-
-        const data = await response.json();
-        if (!data.success) throw new Error(data.error || "Upload failed");
-        return data.file.url;
+      const uploadRes = await fetch("/api/supabase/vendor/upload", {
+        method: "POST",
+        headers: { "x-vendor-id": vendorId },
+        body: formData,
       });
 
-      const urls = await Promise.all(uploadPromises);
-
-      showNotification({
-        type: "success",
-        title: "Images Uploaded",
-        message: `${urls.length} image(s) uploaded`,
-      });
-    } catch (err) {
-      if (process.env.NODE_ENV === "development") {
-        console.error("Failed to upload images:", err);
+      const uploadData = await uploadRes.json();
+      if (!uploadData.success) {
+        throw new Error(uploadData.error || "Upload failed");
       }
+
+      const imageUrl = uploadData.file.url;
+
+      // Immediately update product in database
+      const updateRes = await axios.put(
+        `/api/vendor/products/${product.id}`,
+        { featured_image_storage: imageUrl },
+        { headers: { "x-vendor-id": vendorId } }
+      );
+
+      if (updateRes.data.success) {
+        setCurrentImageUrl(imageUrl);
+        showNotification({
+          type: "success",
+          title: "Image Updated",
+          message: "Product image uploaded successfully",
+        });
+        onSave(); // Refresh product list
+      }
+    } catch (error) {
+      console.error("Image upload error:", error);
       showNotification({
         type: "error",
         title: "Upload Failed",
-        message: err instanceof Error ? err.message : "Failed to upload images",
+        message: error instanceof Error ? error.message : "Failed to upload image",
       });
     } finally {
-      setUploadingImages(false);
+      setIsUploadingImage(false);
     }
   };
 
-  const removeImage = (index: number) => {
-    setImageFiles((prev) => prev.filter((_, i) => i !== index));
-    setImagePreviews((prev) => prev.filter((_, i) => i !== index));
+  // CLEAN REWRITE: Simple image remove handler
+  const handleImageRemove = async () => {
+    try {
+      const updateRes = await axios.put(
+        `/api/vendor/products/${product.id}`,
+        { featured_image_storage: "" },
+        { headers: { "x-vendor-id": vendorId } }
+      );
+
+      if (updateRes.data.success) {
+        setCurrentImageUrl(null);
+        showNotification({
+          type: "success",
+          title: "Image Removed",
+          message: "Product image removed successfully",
+        });
+        onSave(); // Refresh product list
+      }
+    } catch (error) {
+      console.error("Image remove error:", error);
+      showNotification({
+        type: "error",
+        title: "Remove Failed",
+        message: "Failed to remove image",
+      });
+    }
   };
 
   const handleNewTierChange = (
@@ -368,10 +389,7 @@ export function ProductQuickView({
         updateData.pricing_template_id = selectedTemplateId;
       }
 
-      // Add images if uploaded
-      if (imagePreviews.length > 0) {
-        updateData.image_urls = imagePreviews;
-      }
+      // Image is already updated via handleImageUpload, no need to send here
 
       const response = await axios.put(
         `/api/vendor/products/${product.id}`,
@@ -667,75 +685,74 @@ export function ProductQuickView({
               </div>
             )}
 
-            {/* Images Section */}
+            {/* Images Section - CLEAN REWRITE */}
             {activeSection === "images" && (
               <div className="space-y-4">
-                <div>
-                  <label
-                    className={cn(
-                      ds.typography.size.xs,
-                      ds.colors.text.tertiary,
-                      "block mb-3",
-                    )}
-                  >
-                    Product Images
-                  </label>
-
-                  {imagePreviews.length > 0 && (
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
-                      {imagePreviews.map((preview, index) => (
-                        <div
-                          key={index}
-                          className="relative aspect-square rounded-lg overflow-hidden border border-white/10"
-                        >
-                          <img
-                            src={preview}
-                            alt={`Preview ${index + 1}`}
-                            className="w-full h-full object-cover"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => removeImage(index)}
-                            className="absolute top-2 right-2 p-1.5 bg-black/80 rounded-full text-white/60 hover:text-white/90 transition-colors"
-                            aria-label="Remove image"
-                          >
-                            <X className="w-3 h-3" strokeWidth={1.5} />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
+                <label
+                  className={cn(
+                    ds.typography.size.xs,
+                    ds.colors.text.tertiary,
+                    "block mb-3",
                   )}
+                >
+                  Product Image
+                </label>
 
-                  <label
-                    className={cn(
-                      "flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer transition-colors",
-                      ds.colors.border.default,
-                      "hover:border-white/30 hover:bg-white/5",
-                    )}
-                  >
-                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                      <ImageIcon className="w-8 h-8 mb-2 text-white/40" />
-                      <p
-                        className={cn(
-                          ds.typography.size.xs,
-                          ds.colors.text.tertiary,
-                        )}
-                      >
-                        {uploadingImages
-                          ? "Uploading..."
-                          : "Click to upload images"}
+                {/* Current Image Display */}
+                {currentImageUrl ? (
+                  <div className="relative w-full max-w-md aspect-square rounded-lg overflow-hidden border border-white/10 mb-4">
+                    <img
+                      src={currentImageUrl}
+                      alt="Product"
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        console.error("Image failed to load:", currentImageUrl);
+                        e.currentTarget.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Crect fill='%23333' width='100' height='100'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23666' font-size='14'%3EError%3C/text%3E%3C/svg%3E";
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={handleImageRemove}
+                      className="absolute top-2 right-2 p-2 bg-black/80 rounded-full text-white/60 hover:text-red-400 transition-colors"
+                      aria-label="Remove image"
+                    >
+                      <X className="w-4 h-4" strokeWidth={2} />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="w-full max-w-md aspect-square rounded-lg border-2 border-dashed border-white/10 flex items-center justify-center mb-4">
+                    <div className="text-center">
+                      <ImageIcon className="w-12 h-12 mx-auto mb-2 text-white/20" />
+                      <p className={cn(ds.typography.size.xs, ds.colors.text.quaternary)}>
+                        No image uploaded
                       </p>
                     </div>
-                    <input
-                      type="file"
-                      className="hidden"
-                      multiple
-                      accept="image/*"
-                      onChange={handleImageUpload}
-                      disabled={uploadingImages}
-                    />
-                  </label>
-                </div>
+                  </div>
+                )}
+
+                {/* Upload Button */}
+                <label
+                  className={cn(
+                    "flex flex-col items-center justify-center w-full h-24 border-2 border-dashed rounded-lg cursor-pointer transition-colors",
+                    isUploadingImage
+                      ? "border-white/20 bg-white/5 cursor-not-allowed"
+                      : "border-white/10 hover:border-white/30 hover:bg-white/5",
+                  )}
+                >
+                  <div className="flex flex-col items-center justify-center">
+                    <ImageIcon className="w-6 h-6 mb-2 text-white/40" />
+                    <p className={cn(ds.typography.size.xs, ds.colors.text.tertiary)}>
+                      {isUploadingImage ? "Uploading..." : currentImageUrl ? "Replace Image" : "Click to Upload Image"}
+                    </p>
+                  </div>
+                  <input
+                    type="file"
+                    className="hidden"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    disabled={isUploadingImage}
+                  />
+                </label>
               </div>
             )}
 

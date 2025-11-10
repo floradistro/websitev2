@@ -532,11 +532,11 @@ export default function POSRegisterPage() {
       );
 
       // Reload session in background (non-blocking)
-      loadActiveSession().catch(err =>
+      loadActiveSession().catch(err => {
         if (process.env.NODE_ENV === 'development') {
           console.error('Failed to reload session:', err);
         }
-      );
+      });
 
     } catch (error: any) {
       if (process.env.NODE_ENV === 'development') {

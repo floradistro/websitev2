@@ -90,13 +90,22 @@ export const ProductCard = memo(
 
     // Memoize image URL to avoid expensive string operations on every render
     const imageUrl = useMemo(() => {
-      if (!product.images?.[0]) return "";
-      const url =
-        typeof product.images[0] === "string"
+      // Support both database format (featured_image_storage) and API format (images array)
+      let url = "";
+
+      if (product.images?.[0]) {
+        url = typeof product.images[0] === "string"
           ? product.images[0]
           : product.images[0].url;
+      } else if ((product as any).featured_image_storage) {
+        url = (product as any).featured_image_storage;
+      } else if (product.featured_image) {
+        url = product.featured_image;
+      }
+
+      if (!url) return "";
       return getSupabaseImageUrl(url, 112, 112);
-    }, [product.images]);
+    }, [product.images, (product as any).featured_image_storage, product.featured_image]);
 
     const statusStyle =
       statusStyles[product.status as keyof typeof statusStyles] ||
@@ -346,7 +355,9 @@ export const ProductCard = memo(
       prevProps.product.name === nextProps.product.name &&
       prevProps.product.status === nextProps.product.status &&
       prevProps.product.price === nextProps.product.price &&
-      prevProps.product.images === nextProps.product.images
+      prevProps.product.images === nextProps.product.images &&
+      (prevProps.product as any).featured_image_storage === (nextProps.product as any).featured_image_storage &&
+      prevProps.product.featured_image === nextProps.product.featured_image
     );
   },
 );

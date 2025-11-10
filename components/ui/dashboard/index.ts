@@ -3,7 +3,7 @@
  * Works for Admin, Vendor, and any future dashboards
  *
  * Usage:
- * import { DashboardCard, DashboardButton } from '@/components/ui/dashboard';
+ * import { DashboardCard } from '@/components/ui/dashboard';
  * <DashboardCard theme="admin"> or <DashboardCard theme="vendor">
  */
 
@@ -13,7 +13,7 @@ export {
   DashboardCardContent,
   DashboardCardTitle,
 } from "./Card";
-export { DashboardButton } from "./Button";
+// DashboardButton removed (unused - 0 imports)
 export { DashboardStat } from "./Stat";
 
 // Re-export theme utilities

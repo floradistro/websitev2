@@ -1,7 +1,7 @@
 // Centralized exports for vendor UI components
 // Import once, use everywhere
 
-export { VendorButton } from "./Button";
+// VendorButton removed (unused - 0 imports)
 export {
   VendorCard,
   VendorCardHeader,
